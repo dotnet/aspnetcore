@@ -963,4 +963,137 @@ public class VirtualizeTest
             $"In-memory append on value-type TItem must not trigger prepend detection (shift by countDelta). " +
             $"Before: {itemsBeforeAfterInit}, After: {renderedVirtualize._itemsBefore}, Shift: {shift}");
     }
+
+    [Fact]
+    public void ScrollToItemAsync_ThrowsBeforeJsInteropInitialized()
+    {
+        var virtualize = new Virtualize<int>();
+
+        var ex = Assert.Throws<InvalidOperationException>(
+            (Action)(() => { _ = virtualize.ScrollToItemAsync(0); }));
+        Assert.Contains(nameof(Virtualize<int>.ScrollToItemAsync), ex.Message);
+        Assert.Contains(nameof(Virtualize<int>.InitialItemIndex), ex.Message);
+    }
+
+    [Fact]
+    public async Task ScrollToItemAsync_NegativeIndexDoesNotThrow()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(-5); });
+        Assert.NotNull(task);
+    }
+
+    [Fact]
+    public async Task ScrollToItemAsync_IndexBeyondCountDoesNotThrow()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(99_999); });
+
+        Assert.NotNull(task);
+    }
+
+    [Fact]
+    public async Task ScrollToItemAsync_AlreadyCancelledTokenProducesCancelledTask()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(10, cts.Token); });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
+    }
+
+    [Fact]
+    public async Task ScrollToItemAsync_SecondCallCancelsFirstTask()
+    {
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
+
+        var callbacks = (IVirtualizeJsCallbacks)virtualize;
+        await renderer.Dispatcher.InvokeAsync(() =>
+            callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
+
+        var (firstTask, secondTask) = await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            var first = virtualize.ScrollToItemAsync(500);
+            var second = virtualize.ScrollToItemAsync(750);
+            return (first, second);
+        });
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => firstTask);
+
+        if (secondTask.IsCompleted)
+        {
+            // Either successful convergence or cancellation is acceptable; an unhandled exception is not.
+            Assert.True(secondTask.IsCompletedSuccessfully || secondTask.IsCanceled, secondTask.Exception?.ToString());
+        }
+    }
+
+    [Fact]
+    public async Task InitialItemIndex_ParameterRoundTrip()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<Virtualize<int>>(0);
+                builder.AddComponentParameter(1, "ItemSize", 50f);
+                builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 100).ToList());
+                builder.AddComponentParameter(3, "InitialItemIndex", (int?)42);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b =>
+                {
+                    b.OpenElement(0, "span");
+                    b.AddContent(1, item);
+                    b.CloseElement();
+                }));
+                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = (Virtualize<int>)c);
+                builder.CloseComponent();
+            }
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        Assert.Equal(42, renderedVirtualize.InitialItemIndex);
+    }
+
+    [Fact]
+    public async Task InitialItemIndex_NullMeansNoInitialScroll()
+    {
+        Virtualize<int> renderedVirtualize = null;
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+        Assert.Null(renderedVirtualize.InitialItemIndex);
+        // No initial-scroll request was issued; component opens at item 0.
+        Assert.Equal(0, renderedVirtualize._itemsBefore);
+    }
 }

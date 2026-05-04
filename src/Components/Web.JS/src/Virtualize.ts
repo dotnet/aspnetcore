@@ -10,6 +10,9 @@ export const Virtualize = {
   refreshObservers,
   setAnchorMode,
   restoreAnchor,
+  scrollToItemEstimate,
+  alignToItem,
+  endScrollToItem,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -427,6 +430,47 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  // ScrollToItem: Stage 1 (estimated jump) — scrolls to target * avgItemHeight (clamped to scroll range).
+  // Forces instant behavior to bypass any user-set CSS scroll-behavior: smooth (Q12).
+  function scrollToItemEstimate(target: number, avgItemHeight: number): void {
+    if (avgItemHeight <= 0 || !Number.isFinite(avgItemHeight)) {
+      return;
+    }
+    const maxScroll = Math.max(0, scrollElement.scrollHeight - scrollElement.clientHeight);
+    const top = Math.max(0, Math.min(maxScroll, target * avgItemHeight));
+    ignoreAnchorScroll = true;
+    scrollElement.scrollTo({ top, behavior: 'instant' });
+  }
+
+  // ScrollToItem: Stage 2 — sibling-walk by local DOM child index (matches restoreAnchorForShift),
+  // measure the target's viewport-relative top, and align to containerTop. Returns the *measured*
+  // delta (NaN if the slot is missing) so C# can decide convergence.
+  function alignToItemAt(localIndex: number): number {
+    let el: Element | null = spacerBefore.nextElementSibling;
+    for (let i = 0; i < localIndex && el && el !== spacerAfter; i++) {
+      el = el.nextElementSibling;
+    }
+    if (!el || el === spacerAfter) {
+      return Number.NaN;
+    }
+    const containerTop = scrollElement === document.documentElement
+      ? 0
+      : scrollElement.getBoundingClientRect().top;
+    const delta = el.getBoundingClientRect().top - containerTop;
+    if (Math.abs(delta) > 0.5) {
+      ignoreAnchorScroll = true;
+      suppressSpacerCallbacks = true;
+      scrollElement.scrollTo({ top: scrollElement.scrollTop + delta, behavior: 'instant' });
+    }
+    return delta;
+  }
+
+  // ScrollToItem: completion / cancellation hook — restore IO state so subsequent user scroll works normally.
+  function endScrollToItemImpl(): void {
+    suppressSpacerCallbacks = false;
+    reobserveSpacers();
+  }
+
   observersByDotNetObjectId[id] = {
     intersectionObserver,
     resizeObserver,
@@ -436,6 +480,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     setConvergingToBottom: () => { convergingToBottom = true; },
     setAnchorMode: (mode: number) => { anchorMode = mode; },
     restoreAnchor: restoreAnchorForShift,
+    scrollToItemEstimate,
+    alignToItem: alignToItemAt,
+    endScrollToItem: endScrollToItemImpl,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
       stopConvergenceObserving();
@@ -657,6 +704,25 @@ function restoreAnchor(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   entry?.restoreAnchor?.();
+}
+
+function scrollToItemEstimate(dotNetHelper: DotNet.DotNetObject, target: number, avgItemHeight: number): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  entry?.scrollToItemEstimate?.(target, avgItemHeight);
+}
+
+function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): number {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  const fn = entry?.alignToItem;
+  return fn ? fn(localIndex) : Number.NaN;
+}
+
+function endScrollToItem(dotNetHelper: DotNet.DotNetObject): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  const entry = observersByDotNetObjectId[id];
+  entry?.endScrollToItem?.();
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {

@@ -27,9 +27,12 @@
         <button id="toggle-height" @onclick="ToggleVariableHeight">
             Heights: @(useVariableHeight ? "Variable (10-200px)" : "Fixed (50px)")
         </button>
+        <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
+        <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
     </div>
     <p id="status" style="margin: 0; font-size: 12px;">@statusMessage</p>
     <p id="current-mode" style="margin: 0; font-size: 12px;">@((int)anchorMode)</p>
+    <p id="scroll-status" style="margin: 0; font-size: 12px;">@scrollStatus</p>
 </div>
 
 <div id="virtualize-root" style="margin-top: 90px;">
@@ -65,6 +68,8 @@
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
     private Virtualize<DynamicItem> virtualizeRef;
+    private int scrollTargetIndex = 100;
+    private string scrollStatus = "Idle";
     private static readonly IEqualityComparer<DynamicItem> _itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
 
@@ -229,6 +234,21 @@
         var result = items.Skip(request.StartIndex).Take(request.Count)
             .Select(i => new DynamicItem { Index = i.Index, Height = i.Height });
         return new ItemsProviderResult<DynamicItem>(result, items.Count);
+    }
+
+    private async Task ScrollToTarget()
+    {
+        if (virtualizeRef == null) { scrollStatus = "Faulted: no virtualizeRef"; return; }
+        scrollStatus = $"Scrolling to {scrollTargetIndex}...";
+        try
+        {
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex);
+            scrollStatus = $"Completed: {scrollTargetIndex}";
+        }
+        catch (Exception ex)
+        {
+            scrollStatus = $"Faulted: {ex.Message}";
+        }
     }
 
     private class DynamicItem

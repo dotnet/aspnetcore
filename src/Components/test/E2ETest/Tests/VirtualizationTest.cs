@@ -3941,4 +3941,337 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
     }
+
+    private void MountAnchorModeForScrollToItem(bool variableHeight = false, bool delay = false)
+    {
+        Browser.MountTestComponent<VirtualizationAnchorMode>();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        // All ScrollToItem tests use ItemsProvider per design.
+        Browser.Exists(By.Id("toggle-provider")).Click();
+        Browser.True(() => GetElementCount(container, ".item") > 0);
+
+        if (variableHeight)
+        {
+            Browser.Exists(By.Id("toggle-height")).Click();
+            Browser.True(() => GetElementCount(container, ".item") > 0);
+        }
+
+        if (delay)
+        {
+            Browser.Exists(By.Id("toggle-delay")).Click();
+        }
+    }
+
+    private void SetScrollTargetIndex(int index)
+    {
+        // Use JS to set the value reliably (SendKeys-based clearing of <input type=number> is flaky).
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript(@"
+            var el = document.getElementById('scroll-target-index');
+            var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+            setter.call(el, arguments[0]);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.blur();
+        ", index.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private void WaitForScrollStatus(string expected, int timeoutSeconds = 30)
+    {
+        try
+        {
+            Browser.True(() =>
+                Browser.Exists(By.Id("scroll-status")).Text.StartsWith(expected, StringComparison.Ordinal),
+                TimeSpan.FromSeconds(timeoutSeconds));
+        }
+        catch (Exception ex)
+        {
+            string actual;
+            try { actual = Browser.Exists(By.Id("scroll-status")).Text; }
+            catch { actual = "<unable to read>"; }
+            string targetInputVal;
+            try
+            {
+                targetInputVal = (string)((IJavaScriptExecutor)Browser).ExecuteScript(
+                    "return document.getElementById('scroll-target-index')?.value ?? '<missing>';");
+            }
+            catch { targetInputVal = "<unable to read>"; }
+            throw new Exception(
+                $"WaitForScrollStatus timeout: expected status to start with '{expected}', " +
+                $"actual='{actual}', scroll-target-index value='{targetInputVal}'", ex);
+        }
+    }
+
+    // Returns the data-index of the topmost rendered .item visible inside #scroll-container.
+    // If the topmost rendered child is a placeholder, returns -1.
+    private long GetTopRenderedIndex(IJavaScriptExecutor js)
+    {
+        return (long)js.ExecuteScript(@"
+            var container = document.getElementById('scroll-container');
+            var rect = container.getBoundingClientRect();
+            var items = container.querySelectorAll('.item, .loading-placeholder');
+            var best = null;
+            var bestTop = Number.POSITIVE_INFINITY;
+            for (var i = 0; i < items.length; i++) {
+                var ir = items[i].getBoundingClientRect();
+                if (ir.bottom <= rect.top) continue; // above viewport
+                if (ir.top < bestTop) { bestTop = ir.top; best = items[i]; }
+            }
+            if (!best) return -1;
+            if (best.classList.contains('loading-placeholder')) return -1;
+            var idx = best.getAttribute('data-index');
+            return idx === null ? -1 : parseInt(idx, 10);
+        ");
+    }
+
+    private long GetScrollTop(IJavaScriptExecutor js, IWebElement container)
+        => (long)js.ExecuteScript("return Math.round(arguments[0].scrollTop)", container);
+
+    [Fact]
+    public void ScrollToItem_FixedHeight_LandsAtTop()
+    {
+        MountAnchorModeForScrollToItem();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(200);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 200");
+
+        Browser.True(() => GetTopRenderedIndex(js) == 200,
+            $"Top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
+    }
+
+    [Fact]
+    public void ScrollToItem_VariableHeight_LandsAtTop()
+    {
+        MountAnchorModeForScrollToItem(variableHeight: true);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(200);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 200");
+
+        Browser.True(() => GetTopRenderedIndex(js) == 200,
+            $"Variable-height: top rendered item should be 200 but was {GetTopRenderedIndex(js)}, scrollTop={GetScrollTop(js, container)}");
+    }
+
+    [Fact]
+    public void ScrollToItem_NegativeIndex_ScrollsToTop()
+    {
+        MountAnchorModeForScrollToItem();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // First scroll forward so we have somewhere to come back from.
+        SetScrollTargetIndex(150);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 150");
+
+        SetScrollTargetIndex(-1);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: -1");
+
+        Browser.True(() => GetScrollTop(js, container) <= 1,
+            $"Negative index should clamp to top; scrollTop={GetScrollTop(js, container)}");
+        Browser.True(() => GetTopRenderedIndex(js) == 0);
+    }
+
+    [Fact]
+    public void ScrollToItem_MaxIntIndex_ScrollsToLast()
+    {
+        MountAnchorModeForScrollToItem();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(int.MaxValue);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: " + int.MaxValue.ToString(CultureInfo.InvariantCulture));
+
+        // 1000 items total; last is index 999. After clamp it should be visible at the top of the viewport
+        // (or as close as possible — at the very end the page can't scroll further).
+        Browser.True(() =>
+        {
+            var st = GetScrollTop(js, container);
+            var sh = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            var ch = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            return st > 0 && st >= sh - ch - 2;
+        }, message: "Scroll should be at the bottom (last item region) after clamp to MaxValue.");
+
+        // The last item must be present in the DOM and inside the viewport.
+        Browser.True(() =>
+            (bool)js.ExecuteScript(@"
+                var el = document.querySelector('#scroll-container .item[data-index=""999""]');
+                if (!el) return false;
+                var cr = document.getElementById('scroll-container').getBoundingClientRect();
+                var er = el.getBoundingClientRect();
+                return er.top < cr.bottom && er.bottom > cr.top;
+            "));
+    }
+
+    [Fact]
+    public void ScrollToItem_ForwardThenBackward()
+    {
+        MountAnchorModeForScrollToItem();
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(300);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 300");
+
+        SetScrollTargetIndex(50);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 50");
+
+        Browser.True(() => GetTopRenderedIndex(js) == 50,
+            $"Top rendered item should be 50 after backward scroll but was {GetTopRenderedIndex(js)}");
+    }
+
+    [Fact]
+    public void ScrollToItem_WithProviderDelay_NoPlaceholderAtTarget()
+    {
+        // When ScrollToItemAsync completes, the target row must show content, not placeholder.
+        MountAnchorModeForScrollToItem(delay: true);
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(300);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 300", timeoutSeconds: 30);
+
+        Browser.True(() => GetTopRenderedIndex(js) == 300,
+            $"Top rendered should be real item 300 (not placeholder); got {GetTopRenderedIndex(js)}");
+
+        // Sanity: the .loading-placeholder template must be wired.
+        var topIsPlaceholder = (bool)js.ExecuteScript(@"
+            var container = document.getElementById('scroll-container');
+            var rect = container.getBoundingClientRect();
+            var els = container.querySelectorAll('.item, .loading-placeholder');
+            for (var i = 0; i < els.length; i++) {
+                var er = els[i].getBoundingClientRect();
+                if (er.bottom > rect.top && er.top < rect.top + 5) {
+                    return els[i].classList.contains('loading-placeholder');
+                }
+            }
+            return false;
+        ");
+        Assert.False(topIsPlaceholder, "Topmost element at viewport top must not be a loading placeholder.");
+    }
+
+    [Fact]
+    public void InitialItemIndex_OpensAtTargetWithRealContent()
+    {
+        // InitialItemIndex applies on first interactive render of the Virtualize instance.
+        // Use the test page's unload/reload flow so a fresh instance is created with
+        // InitialItemIndex=500 and provider-delay enabled — the user should land directly
+        // on real content for item 500 (no flash of 0).
+        MountAnchorModeForScrollToItem(delay: true);
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // Unload, set initial index, reload — this remounts Virtualize with a fresh instance.
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        var input = Browser.Exists(By.Id("manual-initial-index"));
+        input.Clear();
+        input.SendKeys("500");
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        // Wait until item 500 is the top rendered real item (no placeholder).
+        Browser.True(() => GetTopRenderedIndex(js) == 500,
+            TimeSpan.FromSeconds(30));
+
+        // scrollTop must be > 0 (we genuinely jumped to item 500's offset).
+        var st = GetScrollTop(js, container);
+        Assert.True(st > 0, $"Expected scrollTop > 0 after InitialItemIndex applied; got {st}");
+    }
+
+    [Fact]
+    public void ScrollToItem_RapidCalls_OnlyLastTargetReached()
+    {
+        // Q4: cancel-and-switch — even with 5 calls back-to-back, the final target wins.
+        MountAnchorModeForScrollToItem(delay: true);
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("scroll-to-item-rapid")).Click();
+        // 5 calls fired back-to-back: prior 4 must be canceled, only the last completes.
+        WaitForScrollStatus("Completed: 250 (canceled=4, completed=1, faulted=0)", timeoutSeconds: 30);
+
+        Browser.True(() => GetTopRenderedIndex(js) == 250,
+            $"After rapid-fire scroll, top should be 250 but was {GetTopRenderedIndex(js)}");
+    }
+
+    [Fact]
+    public void ScrollToItem_ExternalCancellation_TaskCancels()
+    {
+        MountAnchorModeForScrollToItem(delay: true);
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(450);
+        Browser.Exists(By.Id("scroll-to-item-cancellable")).Click();
+        // Cancel before the 500ms provider delay completes.
+        Browser.Exists(By.Id("cancel-scroll")).Click();
+        WaitForScrollStatus("Canceled");
+
+        // Component should still respond to a fresh scroll.
+        SetScrollTargetIndex(120);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 120", timeoutSeconds: 30);
+        Browser.True(() => GetTopRenderedIndex(js) == 120);
+    }
+
+    [Fact]
+    public void ScrollToItem_AnchorBeginning_AtTop_LandsAtTarget()
+    {
+        // Anchor restore must NOT fight an active scroll.
+        MountAnchorModeForScrollToItem();
+        var container = Browser.Exists(By.Id("scroll-container"));
+        var js = (IJavaScriptExecutor)Browser;
+
+        // AnchorMode is Beginning by default; verify we're at the top.
+        Browser.True(() => GetScrollTop(js, container) == 0);
+
+        SetScrollTargetIndex(2);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus("Completed: 2");
+
+        Browser.True(() => GetTopRenderedIndex(js) == 2,
+            $"With AnchorMode=Beginning, top should be 2 but was {GetTopRenderedIndex(js)}");
+    }
+
+    [Fact]
+    public void WindowScroll_ScrollToItem_LandsAtTarget()
+    {
+        Browser.MountTestComponent<VirtualizationAnchorModeWindowScroll>();
+        var root = Browser.Exists(By.Id("virtualize-root"));
+        Browser.True(() => GetElementCount(root, ".item") > 0);
+
+        Browser.Exists(By.Id("toggle-provider")).Click();
+        Browser.True(() => GetElementCount(root, ".item") > 0);
+
+        var input = Browser.Exists(By.Id("scroll-target-index"));
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Delete);
+        input.SendKeys("100");
+        input.SendKeys(Keys.Tab);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        Browser.True(() =>
+            Browser.Exists(By.Id("scroll-status")).Text.StartsWith("Completed: 100", StringComparison.Ordinal),
+            TimeSpan.FromSeconds(15));
+
+        var js = (IJavaScriptExecutor)Browser;
+        var scrollY = (long)js.ExecuteScript("return Math.round(window.scrollY)");
+        Assert.True(scrollY > 0, $"Window scroll should have moved; scrollY={scrollY}");
+
+        // Item 100 must be visible in the viewport.
+        Browser.True(() =>
+            (bool)js.ExecuteScript(@"
+                var el = document.querySelector('.item[data-index=""100""]');
+                if (!el) return false;
+                var er = el.getBoundingClientRect();
+                return er.top < window.innerHeight && er.bottom > 0;
+            "), "Item 100 must be visible in window viewport.");
+    }
 }
