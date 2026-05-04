@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
+using Components.TestServer.RazorComponents.Pages.CacheBoundaryTest;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -140,6 +141,22 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         app.UseAntiforgery();
         app.UseEndpoints(endpoints =>
         {
+            endpoints.MapGet("cache-component/clear", (HttpContext context) =>
+            {
+                var storeType = typeof(RazorComponentsServiceOptions).Assembly
+                    .GetType("Microsoft.AspNetCore.Components.Endpoints.ICacheBoundaryStore")
+                    ?? throw new InvalidOperationException("ICacheBoundaryStore type not found. The internal type may have been renamed or moved.");
+                var store = context.RequestServices.GetService(storeType)
+                    ?? throw new InvalidOperationException("ICacheBoundaryStore is not registered in DI.");
+                var clearMethod = storeType.GetMethod("Clear")
+                    ?? throw new InvalidOperationException("ICacheBoundaryStore.Clear() method not found.");
+                clearMethod.Invoke(store, null);
+                InnerCachedComponent.ResetRenderCount();
+            });
+            endpoints.MapGet("cache-component/render-count", () =>
+            {
+                return Results.Ok(InnerCachedComponent.RenderCount);
+            });
             endpoints.MapRazorComponents<TRootComponent>()
                 .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
         });

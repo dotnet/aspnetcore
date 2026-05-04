@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Component that renders an antiforgery token as a hidden field.
 /// </summary>
+[CacheBoundaryPolicy(Excluded = true)]
 public class AntiforgeryToken : IComponent
 {
     private RenderHandle _handle;

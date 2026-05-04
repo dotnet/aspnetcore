@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Components.Sections;
 /// <summary>
 /// Renders content provided by <see cref="SectionContent"/> components with matching <see cref="SectionId"/>s.
 /// </summary>
+[CacheBoundaryPolicy(Excluded = true)]
 public sealed class SectionOutlet : IComponent, IDisposable
 {
     private static readonly RenderFragment _emptyRenderFragment = _ => { };

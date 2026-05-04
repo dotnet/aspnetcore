@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -271,7 +273,47 @@ internal partial class EndpointHtmlRenderer
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
+
+        if (componentState.Component is CacheBoundary cacheBoundary)
+        {
+            if (cacheBoundary.Enabled && cacheBoundary.ResolvedCacheKey is { } cacheKey)
+            {
+                if (cacheBoundary.CachedData is not null)
+                {
+                    base.WriteComponentHtml(componentId, output);
+                    return;
+                }
+
+                if (_cacheStore is not null)
+                {
+                    var cacheCaptureWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions());
+                    cacheCaptureWriter.StartCapture();
+                    base.WriteComponentHtml(componentId, cacheCaptureWriter);
+                    var segments = cacheCaptureWriter.StopCapture();
+                    _cacheStore.Set(cacheKey, segments.Serialize(), new CacheStoreOptions
+                    {
+                        ExpiresAfter = cacheBoundary.ExpiresAfter,
+                        ExpiresOn = cacheBoundary.ExpiresOn,
+                        ExpiresSliding = cacheBoundary.ExpiresSliding,
+                        Priority = cacheBoundary.Priority,
+                    });
+                    return;
+                }
+            }
+        }
+
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
+        var captureWriter = output as CacheBoundaryTextWriter;
+        var pausedCapture = false;
+        if (captureWriter is not null && captureWriter.IsCapturing && (IsHoleComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
+        {
+            pausedCapture = true;
+            captureWriter.PauseCapture();
+            var renderModeName = componentState.Component is SSRRenderModeBoundary boundary2
+                ? CacheSegment.GetRenderModeName(boundary2.RenderMode)
+                : null;
+            captureWriter.CreateHole(componentState.Component.GetType(), renderModeName, sequenceAndKey.Key);
+        }
 
         ComponentEndMarker? endMarkerOrNull = default;
 
@@ -320,6 +362,24 @@ internal partial class EndpointHtmlRenderer
             output.Write(serializedEndRecord);
             output.Write("-->");
         }
+
+        if (pausedCapture)
+        {
+            captureWriter!.StartCapture();
+        }
+    }
+
+    private static readonly ConcurrentDictionary<Type, CacheBoundaryPolicyAttribute?> _cachedCacheExclusions = new();
+
+    internal static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
+    {
+        if (!_cachedCacheExclusions.TryGetValue(componentType, out var attr))
+        {
+            attr = componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
+            _cachedCacheExclusions.TryAdd(componentType, attr);
+        }
+
+        return attr is { Excluded: true } && (attr.VaryBy == CacheBoundaryVaryBy.None || (attr.VaryBy & varyBy) != attr.VaryBy);
     }
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)

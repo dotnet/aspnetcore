@@ -1,0 +1,15 @@
+<p id="inner-cached">@Guid.NewGuid()</p>
+
+@code
+{
+    private static int _renderCount;
+
+    public static int RenderCount => _renderCount;
+
+    public static void ResetRenderCount() => Interlocked.Exchange(ref _renderCount, 0);
+
+    protected override void OnInitialized()
+    {
+        Interlocked.Increment(ref _renderCount);
+    }
+}

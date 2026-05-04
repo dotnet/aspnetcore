@@ -1,4 +1,18 @@
 #nullable enable
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.CacheBoundaryPolicyAttribute() -> void
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.Excluded.get -> bool
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.Excluded.set -> void
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.VaryBy.get -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.VaryBy.set -> void
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Cookie = 8 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Culture = 32 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Header = 4 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.None = 0 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Query = 1 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.Route = 2 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
+Microsoft.AspNetCore.Components.CacheBoundaryVaryBy.User = 16 -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose() -> void
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
 Microsoft.AspNetCore.Components.CascadingParameterSubscription

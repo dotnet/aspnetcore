@@ -126,17 +126,8 @@ internal static class PersistentStateValueProviderKeyResolver
 
     private static ReadOnlySpan<char> ResolveKeySpan(object? key)
     {
-        if (key is IFormattable formattable)
-        {
-            var keyString = formattable.ToString("", CultureInfo.InvariantCulture);
-            return keyString.AsSpan();
-        }
-        else if (key is IConvertible convertible)
-        {
-            var keyString = convertible.ToString(CultureInfo.InvariantCulture);
-            return keyString.AsSpan();
-        }
-        return default;
+        var formatted = ComponentKeyHelper.FormatSerializableKey(key);
+        return formatted.AsSpan();
     }
 
     private static void GrowBuffer(ref byte[]? pool, ref Span<byte> keyBuffer, int? size = null)
@@ -154,7 +145,7 @@ internal static class PersistentStateValueProviderKeyResolver
     private static object? GetSerializableKey(ComponentState componentState)
     {
         var componentKey = componentState.GetComponentKey();
-        if (componentKey != null && IsSerializableKey(componentKey))
+        if (componentKey != null && ComponentKeyHelper.IsSerializableKey(componentKey))
         {
             return componentKey;
         }
@@ -195,20 +186,4 @@ internal static class PersistentStateValueProviderKeyResolver
 
     private static byte[] KeyFactory((string parentComponentType, string componentType, string propertyName) parts) =>
         SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(".", parts.parentComponentType, parts.componentType, parts.propertyName)));
-
-    private static bool IsSerializableKey(object key)
-    {
-        if (key == null)
-        {
-            return false;
-        }
-        var keyType = key.GetType();
-        var result = Type.GetTypeCode(keyType) != TypeCode.Object
-            || keyType == typeof(Guid)
-            || keyType == typeof(DateTimeOffset)
-            || keyType == typeof(DateOnly)
-            || keyType == typeof(TimeOnly);
-
-        return result;
-    }
 }

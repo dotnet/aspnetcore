@@ -1,0 +1,62 @@
+@page "/cache-component"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>CacheBoundary</h3>
+
+<div id="test-1">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+        <p class="cached">@Guid.NewGuid()</p>
+        <NotCacheBoundary>
+            <p class="not-cache-component">@Guid.NewGuid()</p>
+        </NotCacheBoundary>
+    </CacheBoundary>
+    <p class="not-cached">@Guid.NewGuid()</p>
+</div>
+
+<div id="test-2">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" Enabled="false">
+        <p class="cached">@Guid.NewGuid()</p>
+        <NotCacheBoundary>
+            <p class="not-cache-component">@Guid.NewGuid()</p>
+        </NotCacheBoundary>
+    </CacheBoundary>
+    <p class="not-cached">@Guid.NewGuid()</p>
+</div>
+
+<div id="test-3">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+        <EditForm Model="this" FormName="editFormTest" method="post">
+            <input id="message-input" type="text" name="Message" />
+            <button id="submit" type="submit">Submit</button>
+        </EditForm>
+        <NotCacheBoundary>
+            <p id="message">@Message</p>
+        </NotCacheBoundary>
+    </CacheBoundary>
+</div>
+
+<div id="test-4">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+        <p id="outer-cached">@Guid.NewGuid()</p>
+        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+            <InnerCachedComponent />
+        </CacheBoundary>
+    </CacheBoundary>
+</div>
+
+<div id="test-5">
+    @for (var i = 0; i < 3; i++)
+    {
+        <div class="loop-item" data-index="@i">
+            <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" CacheKey="@($"loop-{i}")">
+                <p class="cached-value">@Guid.NewGuid()</p>
+            </CacheBoundary>
+        </div>
+    }
+</div>
+
+@code
+{
+    [SupplyParameterFromForm(FormName = "editFormTest")]
+    private string Message { get; set; } = "never";
+}

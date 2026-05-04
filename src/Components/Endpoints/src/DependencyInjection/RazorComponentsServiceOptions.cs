@@ -103,4 +103,23 @@ public sealed class RazorComponentsServiceOptions
     /// Defaults to <see cref="TempDataProviderType.Cookie"/>.
     /// </summary>
     public TempDataProviderType TempDataProviderType { get; set; } = TempDataProviderType.Cookie;
+
+    /// <summary>
+    /// Gets or sets the maximum size, in bytes, of the memory cache used by <see cref="CacheBoundary"/>
+    /// for server-side rendering. When the limit is reached, no new entries are cached until
+    /// existing entries expire. Defaults to 100 MB. A value of 0 configures a zero-byte
+    /// cache size limit, so entries are not cached.
+    /// </summary>
+    public long CacheBoundarySizeLimit
+    {
+        get => _CacheBoundarySizeLimit;
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
+            _CacheBoundarySizeLimit = value;
+        }
+    }
+
+    private long _CacheBoundarySizeLimit = 100_000_000;
+    internal static readonly TimeSpan DefaultCacheBoundaryExpiration = TimeSpan.FromSeconds(30);
 }

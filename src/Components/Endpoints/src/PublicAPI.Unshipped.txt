@@ -1,6 +1,42 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Endpoints.BasePath
 Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheBoundarySizeLimit.get -> long
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.CacheBoundarySizeLimit.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary
+Microsoft.AspNetCore.Components.CacheBoundary.CacheBoundary() -> void
+Microsoft.AspNetCore.Components.CacheBoundary.CacheKey.get -> string?
+Microsoft.AspNetCore.Components.CacheBoundary.CacheKey.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.CacheBoundary.ChildContent.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.Enabled.get -> bool
+Microsoft.AspNetCore.Components.CacheBoundary.Enabled.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.ExpiresAfter.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheBoundary.ExpiresAfter.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.ExpiresOn.get -> System.DateTimeOffset?
+Microsoft.AspNetCore.Components.CacheBoundary.ExpiresOn.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.ExpiresSliding.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.CacheBoundary.ExpiresSliding.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.Priority.get -> Microsoft.Extensions.Caching.Memory.CacheItemPriority?
+Microsoft.AspNetCore.Components.CacheBoundary.Priority.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.VaryBy.get -> string?
+Microsoft.AspNetCore.Components.CacheBoundary.VaryBy.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByCookie.get -> string?
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByCookie.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByCulture.get -> bool?
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByCulture.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByHeader.get -> string?
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByHeader.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByQuery.get -> string?
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByQuery.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByRoute.get -> string?
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByRoute.set -> void
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByUser.get -> bool?
+Microsoft.AspNetCore.Components.CacheBoundary.VaryByUser.set -> void
+Microsoft.AspNetCore.Components.NotCacheBoundary
+Microsoft.AspNetCore.Components.NotCacheBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.NotCacheBoundary.ChildContent.set -> void
+Microsoft.AspNetCore.Components.NotCacheBoundary.NotCacheBoundary() -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
