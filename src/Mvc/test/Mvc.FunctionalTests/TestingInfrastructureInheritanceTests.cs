@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -127,6 +129,25 @@ public class TestingInfrastructureInheritanceTests
         Assert.True(factory.CreateWebHostBuilderCalled);
     }
 
+    [Fact]
+    public async Task TestingInfrastructure_WebApplicationBuilder_EarlyConfiguration()
+    {
+        // Arrange
+        using var factory = new CustomizedFactory<SimpleWebSiteWithWebApplicationBuilder.Program>(assertEarlyConfiguration: true);
+        var client = factory.CreateClient();
+
+        // Assert
+        Assert.Equal(["ConfigureWebHost"], factory.ConfigureWebHostCalled.ToArray());
+        Assert.False(factory.GetTestAssembliesCalled);
+        Assert.True(factory.CreateHostBuilderCalled);
+        Assert.True(factory.CreateHostCalled);
+        Assert.False(factory.CreateServerIWebHostBuilderCalled);
+        Assert.True(factory.CreateServerWithServiceProviderCalled);
+        Assert.True(factory.CreateWebHostBuilderCalled);
+
+        Assert.Equal("1", await client.GetStringAsync("/assert-early"));
+    }
+
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<GenericHostWebSite.Startup>()
         .ConfigureServices(s => s.AddScoped<DisposableService>());
@@ -147,6 +168,11 @@ public class TestingInfrastructureInheritanceTests
 
     private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
     {
+        private readonly bool _assertEarlyConfiguration;
+
+        public CustomizedFactory(bool assertEarlyConfiguration = false)
+            => _assertEarlyConfiguration = assertEarlyConfiguration;
+
         public bool GetTestAssembliesCalled { get; private set; }
         public bool CreateWebHostBuilderCalled { get; private set; }
         public bool CreateHostBuilderCalled { get; private set; }
@@ -180,7 +206,22 @@ public class TestingInfrastructureInheritanceTests
         protected override IHost CreateHost(IHostBuilder builder)
         {
             CreateHostCalled = true;
+
+            if (_assertEarlyConfiguration)
+            {
+                builder.ConfigureHostConfiguration(configuration =>
+                {
+                    configuration.AddInMemoryCollection([new KeyValuePair<string, string>("ASSERT_EARLY_DUMMY_CONFIGURATION_AVAILABLE", "1")]);
+                });
+            }
+
             return base.CreateHost(builder);
+        }
+
+        protected override void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
+        {
+            hostApplicationBuilder.Configuration.Add(new MyCustomConfigSource());
+            base.ConfigureHostApplicationBuilder(hostApplicationBuilder);
         }
 
         protected override IWebHostBuilder CreateWebHostBuilder()
@@ -200,5 +241,16 @@ public class TestingInfrastructureInheritanceTests
             GetTestAssembliesCalled = true;
             return base.GetTestAssemblies();
         }
+    }
+
+    private sealed class MyCustomConfigSource : ConfigurationProvider, IConfigurationSource
+    {
+        public MyCustomConfigSource()
+        {
+            Data.Add("PingEarlyConfig", "PongEarlyConfig");
+        }
+
+        public IConfigurationProvider Build(IConfigurationBuilder builder)
+            => this;
     }
 }
