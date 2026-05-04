@@ -1,8 +1,8 @@
-{
+﻿{
   "openapi": "3.1.2",
   "info": {
     "title": "Sample | localized",
-    "description": "This is a localized OpenAPI document for fran�ais (France).",
+    "description": "This is a localized OpenAPI document for français (France).",
     "version": "1.0.0"
   },
   "servers": [
@@ -1698,6 +1698,56 @@
                   "schema": {
                     "$ref": "#/components/schemas/MvcTodo"
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/multi-content-type": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/one-of": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/CurrentWeather"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MvcTodo"
+                    }
+                  ]
                 }
               }
             }

@@ -67,10 +67,10 @@ public class TestController : ControllerBase
         => Ok(new MvcTodo("Title", "Description", true));
 
     [HttpGet]
-    [Route("/one-of")]
+    [Route("/any-of")]
     [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, "application/json")]
     [ProducesResponseType(typeof(CurrentWeather), StatusCodes.Status200OK, "application/json")]
-    public IActionResult GetOneOf()
+    public IActionResult GetAnyOf()
         => Ok(new MvcTodo("Title", "Description", true));
 
     public class HttpQuery() : HttpMethodAttribute(["QUERY"]);

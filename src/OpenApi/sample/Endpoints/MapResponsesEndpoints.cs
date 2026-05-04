@@ -24,7 +24,7 @@ public static class ResponseEndpoints
             .Produces<TodoWithDueDate>(StatusCodes.Status200OK, "application/json")
             .Produces<Todo>(StatusCodes.Status200OK, "text/xml");
 
-        responses.MapGet("/200-one-of", () => Results.Ok())
+        responses.MapGet("/200-any-of", () => Results.Ok())
             .Produces<Todo>(StatusCodes.Status200OK, "application/json")
             .Produces<TodoWithDueDate>(StatusCodes.Status200OK, "application/json");
 
