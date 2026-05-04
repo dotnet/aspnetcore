@@ -60,7 +60,41 @@ internal sealed class RoutePatternMatcher
 
     public RoutePattern RoutePattern { get; }
 
+#if !COMPONENTS
+    // This matcher is also compiled into the Components routing build, where there is
+    // no HttpContext or RawTarget. Keep the PathString-only path working there and only
+    // light up the RawTarget-aware overload for server-side routing.
+    public bool TryMatch(HttpContext httpContext, RouteValueDictionary values)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+
+        if (httpContext.Request.Path.Value?.Contains('%') != true)
+        {
+            return TryMatchCore(httpContext.Request.Path, values, httpContext: null);
+        }
+
+        return TryMatchCore(httpContext.Request.Path, values, httpContext);
+    }
+#endif
+
     public bool TryMatch(PathString path, RouteValueDictionary values)
+    {
+        return TryMatchCore(
+            path,
+            values
+#if !COMPONENTS
+            , httpContext: null
+#endif
+        );
+    }
+
+    private bool TryMatchCore(
+        PathString path,
+        RouteValueDictionary values
+#if !COMPONENTS
+        , HttpContext httpContext
+#endif
+    )
     {
         ArgumentNullException.ThrowIfNull(values);
 
@@ -144,10 +178,28 @@ internal sealed class RoutePatternMatcher
 
         // At this point we've very likely got a match, so start capturing values for real.
         i = 0;
+#if !COMPONENTS
+        // The match above already used PathString semantics. RawTarget is only consulted
+        // here so the captured route value can reflect the original encoded segment.
+        PathTokenizer rawPathTokenizer = default;
+        var rawSegmentIndex = 0;
+        var useRawText = httpContext != null && Matching.RawTargetRouteValueDecoder.TryGetPathTokenizer(httpContext, out rawPathTokenizer, out rawSegmentIndex);
+#else
+        PathTokenizer rawPathTokenizer = default;
+        var rawSegmentIndex = 0;
+        const bool useRawText = false;
+#endif
         foreach (var requestSegment in pathTokenizer)
         {
             var pathSegment = RoutePattern.PathSegments[i++];
-            if (SavePathSegmentsAsValues(i, values, requestSegment, pathSegment))
+            var rawRequestSegment = default(StringSegment);
+            var hasRawRequestSegment = useRawText && (uint)rawSegmentIndex < (uint)rawPathTokenizer.Count;
+            if (hasRawRequestSegment)
+            {
+                rawRequestSegment = rawPathTokenizer[rawSegmentIndex++];
+            }
+
+            if (SavePathSegmentsAsValues(i, values, requestSegment, rawRequestSegment, hasRawRequestSegment, pathSegment))
             {
                 break;
             }
@@ -244,12 +296,27 @@ internal sealed class RoutePatternMatcher
         return true;
     }
 
-    private bool SavePathSegmentsAsValues(int index, RouteValueDictionary values, StringSegment requestSegment, RoutePatternPathSegment pathSegment)
+    private bool SavePathSegmentsAsValues(
+        int index,
+        RouteValueDictionary values,
+        StringSegment requestSegment,
+        StringSegment rawRequestSegment,
+        bool useRawText,
+        RoutePatternPathSegment pathSegment)
     {
         if (pathSegment.IsSimple && pathSegment.Parts[0] is RoutePatternParameterPart parameter && parameter.IsCatchAll)
         {
             // A catch-all captures til the end of the string.
             var captured = requestSegment.Buffer.Substring(requestSegment.Offset);
+#if !COMPONENTS
+            if (useRawText)
+            {
+                captured = Matching.RawTargetRouteValueDecoder.Decode(new StringSegment(
+                    rawRequestSegment.Buffer,
+                    rawRequestSegment.Offset,
+                    rawRequestSegment.Buffer.Length - rawRequestSegment.Offset));
+            }
+#endif
             if (captured.Length > 0)
             {
                 values[parameter.Name] = captured;
@@ -270,7 +337,14 @@ internal sealed class RoutePatternMatcher
             parameter = (RoutePatternParameterPart)pathSegment.Parts[0];
             if (requestSegment.Length > 0)
             {
-                values[parameter.Name] = requestSegment.ToString();
+                var captured = requestSegment.ToString();
+#if !COMPONENTS
+                if (useRawText)
+                {
+                    captured = Matching.RawTargetRouteValueDecoder.Decode(rawRequestSegment);
+                }
+#endif
+                values[parameter.Name] = captured;
             }
             else
             {

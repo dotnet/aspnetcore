@@ -84,4 +84,12 @@ public class TemplateMatcher
 
         return _routePatternMatcher.TryMatch(path, values);
     }
+
+    internal bool TryMatch(HttpContext httpContext, RouteValueDictionary values)
+    {
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(values);
+
+        return _routePatternMatcher.TryMatch(httpContext, values);
+    }
 }

@@ -193,7 +193,7 @@ internal partial class TreeRouter
                     var matcher = item.TemplateMatcher;
                     try
                     {
-                        if (!matcher.TryMatch(context.HttpContext.Request.Path, context.RouteData.Values))
+                        if (!matcher.TryMatch(context.HttpContext, context.RouteData.Values))
                         {
                             continue;
                         }

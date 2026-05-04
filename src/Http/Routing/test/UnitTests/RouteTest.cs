@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.InternalTesting;
@@ -101,6 +102,54 @@ public class RouteTest
         Assert.Equal("Contoso", context.RouteData.DataTokens["company"]);
         Assert.Equal("Friday", context.RouteData.DataTokens["today"]);
         Assert.Same(originalDataTokens, context.RouteData.DataTokens);
+    }
+
+    [Theory]
+    [InlineData("{value}", "/foo%2Fbar", "/foo%2Fbar", "foo/bar")]
+    [InlineData("{value}", "/foo%2Fbar", "/foo%252Fbar", "foo%2Fbar")]
+    [InlineData("{*value}", "/foo%2Fbar/baz%2Fqux", "/foo%2Fbar/baz%2Fqux", "foo/bar/baz/qux")]
+    public async Task RouteAsync_UsesRawTargetToDecodeRouteValues(string template, string path, string rawTarget, string expected)
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddOptions();
+        services.AddRouting();
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = services.BuildServiceProvider(),
+        };
+        httpContext.Request.Path = path;
+        httpContext.Features.Get<IHttpRequestFeature>()!.RawTarget = rawTarget;
+
+        var context = new RouteContext(httpContext);
+
+        IDictionary<string, object> routeValues = null;
+        var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+        mockTarget
+            .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+            .Callback<RouteContext>(ctx =>
+            {
+                routeValues = ctx.RouteData.Values;
+                ctx.Handler = NullHandler;
+            })
+            .Returns(Task.FromResult(true));
+
+        var route = new Route(
+            mockTarget.Object,
+            template,
+            defaults: null,
+            constraints: null,
+            dataTokens: null,
+            inlineConstraintResolver: _inlineConstraintResolver);
+
+        // Act
+        await route.RouteAsync(context);
+
+        // Assert
+        Assert.NotNull(routeValues);
+        Assert.Equal(expected, routeValues["value"]);
     }
 
     [Fact]

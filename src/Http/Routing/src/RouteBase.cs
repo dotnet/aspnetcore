@@ -110,9 +110,7 @@ public abstract partial class RouteBase : IRouter, INamedRouter
         EnsureMatcher();
         EnsureLoggers(context.HttpContext);
 
-        var requestPath = context.HttpContext.Request.Path;
-
-        if (!_matcher.TryMatch(requestPath, context.RouteData.Values))
+        if (!_matcher.TryMatch(context.HttpContext, context.RouteData.Values))
         {
             // If we got back a null value set, that means the URI did not match
             return Task.CompletedTask;
