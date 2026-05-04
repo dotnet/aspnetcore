@@ -8,8 +8,9 @@
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
     <ImplicitUsings>disable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!-- Skip these in all internal builds to avoid restoring vulnerable packages for CG -->
-    <ExcludeFromBuild Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal' ">true</ExcludeFromBuild>
+    <!-- Suppress obsolete warnings: FORWARDCOMPAT blocks intentionally use old APIs
+         (IHostingEnvironment, IApplicationLifetime) to exercise legacy code paths -->
+    <NoWarn>$(NoWarn);CS0618;CS0612</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -30,37 +31,43 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- This package is hard-coded to the 2.2.0 package as a part of ensuring ANCM stays forward compatible.  -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.6">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-  </ItemGroup>
+    <!--
+      These packages were previously hard-coded to 2.2.0 to verify ANCM forward compatibility
+      with the oldest supported version. Updated to use shared framework references since
+      ASP.NET Core packages were consolidated into the shared framework in 3.0, and the
+      old 2.2 Microsoft.Extensions.* packages cause TypeLoadException on .NET 11+ due to
+      PackageOverrides.txt (see dotnet/dotnet#5206).
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
+      The FORWARDCOMPAT define is kept to exercise the old-style WebHostBuilder code paths.
+    -->
+    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.WebSockets" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.Extensions.Http" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="xunit.assert" />
   </ItemGroup>
 </Project>
