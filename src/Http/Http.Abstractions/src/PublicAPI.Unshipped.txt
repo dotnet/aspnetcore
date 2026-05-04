@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.CrossOriginAntiforgeryResult
+Microsoft.AspNetCore.Antiforgery.CrossOriginAntiforgeryResult.Allowed = 0 -> Microsoft.AspNetCore.Antiforgery.CrossOriginAntiforgeryResult
+Microsoft.AspNetCore.Antiforgery.CrossOriginAntiforgeryResult.Denied = 1 -> Microsoft.AspNetCore.Antiforgery.CrossOriginAntiforgeryResult
+Microsoft.AspNetCore.Antiforgery.ICrossOriginProtection
+Microsoft.AspNetCore.Antiforgery.ICrossOriginProtection.Validate(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Antiforgery.CrossOriginAntiforgeryResult

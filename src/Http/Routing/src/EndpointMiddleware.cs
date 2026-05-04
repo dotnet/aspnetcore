@@ -19,15 +19,18 @@ internal sealed partial class EndpointMiddleware
     private readonly ILogger _logger;
     private readonly RequestDelegate _next;
     private readonly RouteOptions _routeOptions;
+    private readonly ICrossOriginProtection? _crossOriginProtection;
 
     public EndpointMiddleware(
         ILogger<EndpointMiddleware> logger,
         RequestDelegate next,
-        IOptions<RouteOptions> routeOptions)
+        IOptions<RouteOptions> routeOptions,
+        ICrossOriginProtection? crossOriginProtection = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _routeOptions = routeOptions?.Value ?? throw new ArgumentNullException(nameof(routeOptions));
+        _crossOriginProtection = crossOriginProtection;
     }
 
     public Task Invoke(HttpContext httpContext)
@@ -50,10 +53,29 @@ internal sealed partial class EndpointMiddleware
                     ThrowMissingCorsMiddlewareException(endpoint);
                 }
 
-                if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
-                    !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
+                if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
                 {
-                    ThrowMissingAntiforgeryMiddlewareException(endpoint);
+                    // Cross-origin protection runs as an independent layer for every
+                    // endpoint that requires antiforgery validation, regardless of whether
+                    // the token-based antiforgery middleware is also in the pipeline.
+                    if (_crossOriginProtection is not null)
+                    {
+                        var crossOriginResult = _crossOriginProtection.Validate(httpContext);
+                        if (crossOriginResult == CrossOriginAntiforgeryResult.Denied)
+                        {
+                            Log.CrossOriginRequestBlocked(_logger, endpoint);
+                            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                            return Task.CompletedTask;
+                        }
+                    }
+
+                    // If the token-based antiforgery middleware hasn't run and no cross-origin
+                    // protection is registered, fail closed with an actionable error message.
+                    if (_crossOriginProtection is null &&
+                        !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
+                    {
+                        ThrowMissingAntiforgeryMiddlewareException(endpoint);
+                    }
                 }
             }
 
@@ -133,5 +155,8 @@ internal sealed partial class EndpointMiddleware
 
         [LoggerMessage(1, LogLevel.Information, "Executed endpoint '{EndpointName}'", EventName = "ExecutedEndpoint")]
         public static partial void ExecutedEndpoint(ILogger logger, Endpoint endpointName);
+
+        [LoggerMessage(2, LogLevel.Warning, "Cross-origin request to endpoint '{EndpointName}' was blocked by Sec-Fetch-Site / Origin header validation.", EventName = "CrossOriginRequestBlocked")]
+        public static partial void CrossOriginRequestBlocked(ILogger logger, Endpoint endpointName);
     }
 }
