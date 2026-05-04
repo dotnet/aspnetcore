@@ -322,4 +322,154 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public IReadOnlyList<IFormFile>? FormFiles { get; set; }
         public IFormFileCollection? FormFileCollection { get; set; }
     }
+
+    // Test for issue #62329 - AsParameters with FromForm and IEnumerable properties
+    [Fact]
+    public async Task RequestDelegateHandlesAsParametersWithFromFormIEnumerable()
+    {
+        var httpContext = CreateHttpContext();
+        var formFiles = new FormFileCollection
+        {
+            new FormFile(Stream.Null, 0, 10, "File", "test.txt")
+        };
+        httpContext.Request.Form = new FormCollection(
+            new Dictionary<string, StringValues>
+            {
+                ["Values"] = new(new[] { "1", "2", "3" })
+            },
+            formFiles);
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([AsParameters] DocumentUploadRequest request) =>
+            {
+                return TypedResults.Ok();
+            });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    public class DocumentUploadRequest
+    {
+        public IFormFile? File { get; set; }
+
+        [FromForm]
+        public IEnumerable<int>? Values { get; set; }
+    }
+
+    // Additional tests for other collection interface types
+    [Fact]
+    public async Task RequestDelegateHandlesAsParametersWithFromFormIList()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(
+            new Dictionary<string, StringValues>
+            {
+                ["Values"] = new(new[] { "10", "20", "30" })
+            });
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([AsParameters] DocumentUploadRequestIList request) =>
+            {
+                return TypedResults.Ok(request.Values);
+            });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesAsParametersWithFromFormList()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(
+            new Dictionary<string, StringValues>
+            {
+                ["Items"] = new(new[] { "100", "200" })
+            });
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([AsParameters] DocumentUploadRequestList request) =>
+            {
+                return TypedResults.Ok(request.Items);
+            });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesAsParametersWithFromFormIEnumerableString()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(
+            new Dictionary<string, StringValues>
+            {
+                ["Tags"] = new(new[] { "tag1", "tag2", "tag3" })
+            });
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([AsParameters] DocumentUploadRequestStringEnum request) =>
+            {
+                return TypedResults.Ok(request.Tags);
+            });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    public class DocumentUploadRequestIList
+    {
+        [FromForm]
+        public IList<int>? Values { get; set; }
+    }
+
+    public class DocumentUploadRequestList
+    {
+        [FromForm]
+        public List<int>? Items { get; set; }
+    }
+
+    public class DocumentUploadRequestStringEnum
+    {
+        [FromForm]
+        public IEnumerable<string>? Tags { get; set; }
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesAsParametersWithFromFormIntArray()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(
+            new Dictionary<string, StringValues>
+            {
+                ["Numbers"] = new(new[] { "42", "84", "126" })
+            });
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([AsParameters] DocumentUploadRequestIntArray request) =>
+            {
+                return TypedResults.Ok(request.Numbers);
+            });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+    }
+
+    public class DocumentUploadRequestIntArray
+    {
+        [FromForm]
+        public int[]? Numbers { get; set; }
+    }
 }
