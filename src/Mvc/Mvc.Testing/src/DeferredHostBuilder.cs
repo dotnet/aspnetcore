@@ -13,7 +13,6 @@ internal sealed class DeferredHostBuilder : IHostBuilder
     public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
     private Action<IHostBuilder> _configureHostBuilder;
-    private Action<IHostApplicationBuilder>? _configureHostApplicationBuilder;
 
     private Func<string[], object>? _hostFactory;
 
@@ -57,13 +56,7 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
     public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
     {
-        // We don't have HostBuilderContext here.
-        // Also, HostBuilderContext is private in HostApplicationBuilder
-        // For that most part, HostBuilderContext is only exposed during HostBuilderAdapter.ApplyChanges.
-        // This is done only in Build().
-        // Build is already late as we want configuration to apply very early.
-        // Do we need new API for this functionality? (the new API will only then be Action<IConfigurationBuilder>.
-        _configureHostApplicationBuilder += b => configureDelegate(null!, b.Configuration);
+        _configureHostBuilder += b => b.ConfigureAppConfiguration(configureDelegate);
         return this;
     }
 
@@ -103,11 +96,6 @@ internal sealed class DeferredHostBuilder : IHostBuilder
     public void ConfigureHostBuilder(object hostBuilder)
     {
         _configureHostBuilder(((IHostBuilder)hostBuilder));
-    }
-
-    public void ConfigureHostApplicationBuilder(object hostApplicationBuilder)
-    {
-        _configureHostApplicationBuilder?.Invoke((IHostApplicationBuilder)hostApplicationBuilder);
     }
 
     public void EntryPointCompleted(Exception? exception)

@@ -289,7 +289,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 typeof(TEntryPoint).Assembly,
                 stopApplication: false,
                 configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
-                configureHostApplicationBuilder: deferredHostBuilder.ConfigureHostApplicationBuilder,
+                setupConfigurationBuilder: SetupConfigurationBuilder,
                 entrypointCompleted: deferredHostBuilder.EntryPointCompleted);
 
             if (factory is not null)
@@ -627,6 +627,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     /// <param name="builder">The <see cref="IWebHostBuilder"/> for the application.</param>
     protected virtual void ConfigureWebHost(IWebHostBuilder builder)
+    {
+    }
+
+    protected virtual void SetupConfigurationBuilder(IConfigurationBuilder configurationBuilder)
     {
     }
 

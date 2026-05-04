@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.Hosting
 {
@@ -63,7 +64,7 @@ namespace Microsoft.Extensions.Hosting
                                                                  TimeSpan? waitTimeout = null,
                                                                  bool stopApplication = true,
                                                                  Action<object>? configureHostBuilder = null,
-                                                                 Action<object>? configureHostApplicationBuilder = null,
+                                                                 Action<IConfigurationBuilder>? setupConfigurationBuilder = null,
                                                                  Action<Exception?>? entrypointCompleted = null)
         {
             if (assembly.EntryPoint is null)
@@ -90,7 +91,7 @@ namespace Microsoft.Extensions.Hosting
                 return null;
             }
 
-            return args => new HostingListener(args, assembly.EntryPoint, waitTimeout ?? s_defaultWaitTimeout, stopApplication, configureHostBuilder, configureHostApplicationBuilder, entrypointCompleted).CreateHost();
+            return args => new HostingListener(args, assembly.EntryPoint, waitTimeout ?? s_defaultWaitTimeout, stopApplication, configureHostBuilder, setupConfigurationBuilder, entrypointCompleted).CreateHost();
         }
 
         private static Func<string[], T>? ResolveFactory<T>(Assembly assembly, string name)
@@ -204,18 +205,18 @@ namespace Microsoft.Extensions.Hosting
             private readonly TaskCompletionSource<object> _hostTcs = new();
             private IDisposable? _disposable;
             private readonly Action<object>? _configureHostBuilder;
-            private readonly Action<object>? _configureHostApplicationBuilder;
+            private readonly Action<IConfigurationBuilder>? _setupConfigurationBuilder;
             private readonly Action<Exception?>? _entrypointCompleted;
             private static readonly AsyncLocal<HostingListener> _currentListener = new();
 
-            public HostingListener(string[] args, MethodInfo entryPoint, TimeSpan waitTimeout, bool stopApplication, Action<object>? configureHostBuilder, Action<object>? configureHostApplicationBuilder, Action<Exception?>? entrypointCompleted)
+            public HostingListener(string[] args, MethodInfo entryPoint, TimeSpan waitTimeout, bool stopApplication, Action<object>? configureHostBuilder, Action<IConfigurationBuilder>? setupConfigurationBuilder, Action<Exception?>? entrypointCompleted)
             {
                 _args = args;
                 _entryPoint = entryPoint;
                 _waitTimeout = waitTimeout;
                 _stopApplication = stopApplication;
                 _configureHostBuilder = configureHostBuilder;
-                _configureHostApplicationBuilder = configureHostApplicationBuilder;
+                _setupConfigurationBuilder = setupConfigurationBuilder;
                 _entrypointCompleted = entrypointCompleted;
             }
 
@@ -333,7 +334,7 @@ namespace Microsoft.Extensions.Hosting
 
                 if (value.Key == "HostApplicationBuilderConstructed")
                 {
-                    _configureHostApplicationBuilder?.Invoke(value.Value!);
+                    _setupConfigurationBuilder?.Invoke(((HostApplicationBuilder)value.Value!).Configuration);
                 }
 
                 if (value.Key == "HostBuilding")
