@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -135,14 +136,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _started = true;
 
-        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
-        cultureProvider.ThrowIfCultureChangeIsUnsupported();
-
-        // Application developers might have configured the culture based on some ambient state
-        // such as local storage, url etc as part of their Program.Main(Async).
-        // This is the earliest opportunity to fetch satellite assemblies for this selection.
-        await cultureProvider.LoadCurrentCultureResourcesAsync();
-
         var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
         var store = !string.IsNullOrEmpty(_persistedState) ?
             new PrerenderComponentApplicationStore(_persistedState) :
@@ -154,6 +147,19 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         // Start hosted services
         _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
         await _hostedServiceExecutor.StartAsync(cancellationToken);
+
+        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
+        cultureProvider.ThrowIfCultureChangeIsUnsupported();
+
+        if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
+        {
+            cultureStateProvider.ApplyStoredCulture();
+        }
+
+        // Application developers might have configured the culture based on some ambient state
+        // such as local storage, url etc as part of their Program.Main(Async).
+        // This is the earliest opportunity to fetch satellite assemblies for this selection.
+        await cultureProvider.LoadCurrentCultureResourcesAsync();
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))

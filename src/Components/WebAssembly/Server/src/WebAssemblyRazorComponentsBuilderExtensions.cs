@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -21,11 +24,33 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
     public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder)
+        => AddInteractiveWebAssemblyComponents(builder, persistCultureFromServer: true);
+
+    /// <summary>
+    /// Adds services to support rendering interactive WebAssembly components.
+    /// </summary>
+    /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
+    /// <param name="persistCultureFromServer">If set to <c>true</c>, the culture from the server is persisted and restored on the client.</param>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
+    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder, bool persistCultureFromServer)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
         builder.Services.TryAddScoped<LazyAssemblyLoader>();
+
+        if (persistCultureFromServer)
+        {
+            builder.Services.TryAddScoped(_ =>
+            {
+                var provider = new CultureStateProvider();
+                provider.CaptureCurrentCulture();
+                return provider;
+            });
+            RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(
+                builder.Services,
+                RenderMode.InteractiveWebAssembly);
+        }
 
         return builder;
     }
