@@ -412,5 +412,21 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
+# TEMPORARY: Overlay custom MSBuild bootstrap for investigating dotnet/msbuild#12927
+_bootstrap_dir="$repo_root/eng/msbuild-bootstrap"
+if [[ -f "$_bootstrap_dir/Microsoft.Build.Tasks.Core.dll" ]]; then
+  _sdk_version=$(cat "$repo_root/global.json" | sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
+  _target_dll="$DOTNET_INSTALL_DIR/sdk/$_sdk_version/Microsoft.Build.Tasks.Core.dll"
+  if [[ -f "$_target_dll" ]]; then
+    echo "=== MSBuild Bootstrap Overlay (dotnet/msbuild#12927) ==="
+    echo "Original: $(sha256sum "$_target_dll")"
+    cp "$_bootstrap_dir/Microsoft.Build.Tasks.Core.dll" "$_target_dll"
+    echo "Replaced: $(sha256sum "$_target_dll")"
+    echo "=== Overlay complete ==="
+  else
+    echo "WARNING: SDK target not found at $_target_dll - skipping MSBuild overlay"
+  fi
+fi
+
 MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0
