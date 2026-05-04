@@ -97,7 +97,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputTextInteractsWithEditContext()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
         var summaryMessagesAccessor = CreateValidationMessagesAccessor(
@@ -132,7 +132,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputNumberInteractsWithEditContext_NonNullableInt()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -165,7 +165,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputNumberInteractsWithEditContext_NullableFloat()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var heightInput = appElement.FindElement(By.ClassName("height")).FindElement(By.TagName("input"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -189,7 +189,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputTextAreaInteractsWithEditContext()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var descriptionInput = appElement.FindElement(By.ClassName("description")).FindElement(By.TagName("textarea"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -216,7 +216,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectInteractsWithEditContext()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
         var select = ticketClassInput.WrappedElement;
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
@@ -238,7 +238,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectInteractsWithEditContext_BoolValues()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("select-bool-values")).FindElement(By.TagName("select")));
         var select = ticketClassInput.WrappedElement;
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
@@ -266,7 +266,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectInteractsWithEditContext_MultipleAttribute()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var citiesInput = new SelectElement(appElement.FindElement(By.ClassName("cities")).FindElement(By.TagName("select")));
         var select = citiesInput.WrappedElement;
         var messagesAccesor = CreateValidationMessagesAccessor(appElement);
@@ -289,7 +289,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectIgnoresMultipleAttribute()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
         var select = ticketClassInput.WrappedElement;
 
@@ -308,7 +308,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectHandlesHostileStringValues()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var selectParagraph = appElement.FindElement(By.ClassName("select-multiple-hostile"));
         var hostileSelectInput = new SelectElement(selectParagraph.FindElement(By.TagName("select")));
         var select = hostileSelectInput.WrappedElement;
@@ -327,7 +327,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputCheckboxInteractsWithEditContext()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
         var isEvilInput = appElement.FindElement(By.ClassName("is-evil")).FindElement(By.TagName("input"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
@@ -358,7 +358,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputRadioGroupWithoutNameInteractsWithEditContext()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // By capturing the inputradio elements just once up front, we're implicitly showing
@@ -396,7 +396,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputRadioGroupsWithNamesNestedInteractWithEditContext()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
         var group = appElement.FindElement(By.ClassName("nested-radio-group"));
 
@@ -431,7 +431,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputRadioGroupWithBoolValuesInteractsWithEditContext()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         // Validate selected inputs
@@ -504,7 +504,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void ValidationMessageDisplaysMessagesForField()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var emailContainer = appElement.FindElement(By.ClassName("email"));
         var emailInput = emailContainer.FindElement(By.TagName("input"));
         var emailMessagesAccessor = CreateValidationMessagesAccessor(emailContainer, ".special-email-css-class-override");
@@ -531,7 +531,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void ErrorsFromCompareAttribute()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var emailContainer = appElement.FindElement(By.ClassName("email"));
         var emailInput = emailContainer.FindElement(By.TagName("input"));
         var confirmEmailContainer = appElement.FindElement(By.ClassName("confirm-email"));
@@ -584,7 +584,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputComponentsCauseContainerToRerenderOnChange()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
         var selectedTicketClassDisplay = appElement.FindElement(By.Id("selected-ticket-class"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
@@ -693,7 +693,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void RespectsCustomFieldCssClassProvider()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var socksInput = appElement.FindElement(By.ClassName("socks")).FindElement(By.TagName("input"));
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
@@ -721,7 +721,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void CanRemoveAndReAddDataAnnotationsSupport()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
         var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
         Func<string> lastLogEntryAccessor = () => appElement.FindElement(By.CssSelector(".submission-log-entry:last-of-type")).Text;
@@ -1100,7 +1100,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void ValidationSummaryAppliesCssClass()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
         var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
