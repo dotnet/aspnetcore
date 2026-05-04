@@ -227,6 +227,7 @@ export class HttpConnection implements IConnection {
         // as part of negotiating
         let url = this.baseUrl;
         this._accessTokenFactory = this._options.accessTokenFactory;
+        this._httpClient._accessToken = undefined;
         this._httpClient._accessTokenFactory = this._accessTokenFactory;
 
         try {

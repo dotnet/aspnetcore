@@ -1,5 +1,9 @@
 Change log contains changes for both @microsoft/signalr and @microsoft/signalr-protocol-msgpack.
 
+## v11.0.0-preview.3
+
+- Don't send Azure SignalR Service access token to app server on reconnect when accessTokenFactory is null. [#65638](https://github.com/dotnet/aspnetcore/pull/65638)
+
 ## v10.0.0-rc.1
 
 - Implemented fix for correctly reporting retries in the SignalR TS client. [#62812](https://github.com/dotnet/aspnetcore/pull/62812)
