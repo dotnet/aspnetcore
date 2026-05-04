@@ -1690,7 +1690,7 @@ public class DefaultObjectValidatorTests
         {
             var receivedService = validationContext.GetService<IExampleService>();
             Assert.Equal(_exampleService, receivedService);
-
+            receivedService.DoSomething();
             return new List<ValidationResult>();
         }
     }
