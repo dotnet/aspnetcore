@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Cryptography;
@@ -14,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal static class PersistentStateValueProviderKeyResolver
 {
-    private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
+    private static readonly IMaybeConcurrentDictionary<(string, string, string), byte[]> _keyCache = MaybeConcurrentDictionary.Create<(string, string, string), byte[]>();
 
     static PersistentStateValueProviderKeyResolver()
     {

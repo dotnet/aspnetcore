@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -15,8 +14,8 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal partial class PersistentValueProviderComponentSubscription : IDisposable
 {
-    private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
+    private static readonly IMaybeConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = MaybeConcurrentDictionary.Create<(Type, string), PropertyGetter>();
+    private static readonly IMaybeConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = MaybeConcurrentDictionary.Create<Type, IPersistentComponentStateSerializer?>();
     private static readonly object _uninitializedSentinel = new();
 
     static PersistentValueProviderComponentSubscription()

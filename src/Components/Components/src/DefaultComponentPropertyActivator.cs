@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -16,7 +15,7 @@ internal sealed class DefaultComponentPropertyActivator : IComponentPropertyActi
     private const BindingFlags InjectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedPropertyActivators = new();
+    private static readonly IMaybeConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedPropertyActivators = MaybeConcurrentDictionary.Create<Type, Action<IServiceProvider, IComponent>>();
 
     static DefaultComponentPropertyActivator()
     {

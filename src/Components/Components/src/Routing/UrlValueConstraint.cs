@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
@@ -14,7 +13,7 @@ internal abstract class UrlValueConstraint
 {
     public delegate bool TryParseDelegate<T>(ReadOnlySpan<char> str, [MaybeNullWhen(false)] out T result);
 
-    private static readonly ConcurrentDictionary<Type, UrlValueConstraint> _cachedInstances = new();
+    private static readonly IMaybeConcurrentDictionary<Type, UrlValueConstraint> _cachedInstances = MaybeConcurrentDictionary.Create<Type, UrlValueConstraint>();
 
     public static bool TryGetByTargetType(Type targetType, [MaybeNullWhen(false)] out UrlValueConstraint result)
     {

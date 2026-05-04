@@ -3,7 +3,6 @@
 
 #nullable disable warnings
 
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.HotReload;
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.Components;
 public class RouteView : IComponent
 {
     private RenderHandle _renderHandle;
-    private static readonly ConcurrentDictionary<Type, Type?> _layoutAttributeCache = new();
+    private static readonly IMaybeConcurrentDictionary<Type, Type?> _layoutAttributeCache = MaybeConcurrentDictionary.Create<Type, Type?>();
 
     static RouteView()
     {

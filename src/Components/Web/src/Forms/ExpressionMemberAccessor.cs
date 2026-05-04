@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
@@ -12,8 +11,8 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 internal static class ExpressionMemberAccessor
 {
-    private static readonly ConcurrentDictionary<Expression, MemberInfo> _memberInfoCache = new();
-    private static readonly ConcurrentDictionary<MemberInfo, string> _displayNameCache = new();
+    private static readonly IMaybeConcurrentDictionary<Expression, MemberInfo> _memberInfoCache = MaybeConcurrentDictionary.Create<Expression, MemberInfo>();
+    private static readonly IMaybeConcurrentDictionary<MemberInfo, string> _displayNameCache = MaybeConcurrentDictionary.Create<MemberInfo, string>();
 
     static ExpressionMemberAccessor()
     {
