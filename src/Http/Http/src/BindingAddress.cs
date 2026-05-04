@@ -203,10 +203,11 @@ public class BindingAddress
         var port = 0;
 
         var hasSpecifiedPort = false;
-        if (!isUnixPipe)
+        if (!isUnixPipe && !isNamedPipe)
         {
+            // Verify not a loopback uri.
             var portDelimiterStart = address.LastIndexOf(':', pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd);
-            if (portDelimiterStart >= 0)
+            if (portDelimiterStart >= 0 && address.Substring(pathDelimiterStart - 1, 1) != "]")
             {
                 var portDelimiterEnd = portDelimiterStart + ":".Length;
 
@@ -217,6 +218,10 @@ public class BindingAddress
                     hasSpecifiedPort = true;
                     host = address.Substring(schemeDelimiterEnd, portDelimiterStart - schemeDelimiterEnd);
                     port = portNumber;
+                }
+                else
+                {
+                    throw new FormatException($"Invalid port: '{portString}', only numbers are allowed.");
                 }
             }
 
