@@ -1439,7 +1439,7 @@
         }
       }
     },
-    "/responses/200-one-of": {
+    "/responses/200-any-of": {
       "get": {
         "tags": [
           "Sample"
@@ -1729,7 +1729,7 @@
         }
       }
     },
-    "/one-of": {
+    "/any-of": {
       "get": {
         "tags": [
           "Test"
