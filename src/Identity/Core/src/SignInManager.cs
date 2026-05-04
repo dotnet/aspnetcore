@@ -552,7 +552,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.
     /// </returns>
-    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync(string credentialJson)
+    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -596,7 +596,7 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.
     /// </returns>
-    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync(string credentialJson)
+    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         ThrowIfNoPasskeyHandler();
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
@@ -639,7 +639,7 @@ public class SignInManager<TUser> where TUser : class
     /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.
     /// </returns>
-    public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson)
+    public virtual async Task<SignInResult> PasskeySignInAsync([StringSyntax(StringSyntaxAttribute.Json)] string credentialJson)
     {
         var startTimestamp = Stopwatch.GetTimestamp();
         try
