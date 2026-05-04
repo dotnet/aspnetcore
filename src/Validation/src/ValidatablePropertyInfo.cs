@@ -6,6 +6,19 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
 
+internal static class AsyncValidationExtensions
+{
+    public static async ValueTask<ValidationResult?> GetValidationResultAsync(this ValidationAttribute validationAttribute, object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+    {
+        if (validationAttribute is AsyncValidationAttribute asyncValidationAttribute)
+        {
+            return await asyncValidationAttribute.GetValidationResultAsync(value, validationContext, cancellationToken);
+        }
+
+        return await ValueTask.FromResult(validationAttribute.GetValidationResult(value, validationContext));
+    }
+}
+
 /// <summary>
 /// Contains validation information for a member of a type.
 /// </summary>
@@ -81,7 +94,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
+            var result = await _requiredAttribute.GetValidationResultAsync(propertyValue, context.ValidationContext, cancellationToken);
 
             if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
             {
@@ -92,7 +105,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -150,14 +163,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = originalPrefix;
         }
 
-        void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
+        async Task ValidateValueAsync(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
         {
             for (var i = 0; i < validationAttributes.Length; i++)
             {
                 var attribute = validationAttributes[i];
                 try
                 {
-                    var result = attribute.GetValidationResult(val, context.ValidationContext);
+                    var result = await attribute.GetValidationResultAsync(val, context.ValidationContext, cancellationToken);
                     if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                     {
                         var key = errorPrefix.TrimStart('.');

@@ -1,1 +1,6 @@
 #nullable enable
+abstract System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValidAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.ComponentModel.DataAnnotations.ValidationResult?>
+override System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
+System.ComponentModel.DataAnnotations.AsyncValidationAttribute
+System.ComponentModel.DataAnnotations.AsyncValidationAttribute.AsyncValidationAttribute() -> void
+System.ComponentModel.DataAnnotations.AsyncValidationAttribute.GetValidationResultAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<System.ComponentModel.DataAnnotations.ValidationResult?>
