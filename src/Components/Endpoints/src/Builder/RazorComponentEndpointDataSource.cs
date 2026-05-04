@@ -1,15 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Discovery;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.StaticAssets.Infrastructure;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -184,6 +188,7 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
     private void AddBlazorWebEndpoints(List<Endpoint> endpoints)
     {
         List<EndpointBuilder> blazorWebEndpoints = [
+            ..GetBlazorWebJsEndpoint(_endpointRouteBuilder),
             OpaqueRedirection.GetBlazorOpaqueRedirectionEndpoint()];
 
         foreach (var endpoint in blazorWebEndpoints)
@@ -200,6 +205,50 @@ internal class RazorComponentEndpointDataSource<[DynamicallyAccessedMembers(Comp
 
             endpoints.Add(endpoint.Build());
         }
+    }
+
+    private static IEnumerable<EndpointBuilder> GetBlazorWebJsEndpoint(IEndpointRouteBuilder endpoints)
+    {
+        // TODO: Is this how we want to check?
+        if (StaticAssetsEndpointDataSourceHelper.HasStaticAssetsDataSource(endpoints))
+        {
+            return [];
+        }
+
+        var app = endpoints.CreateApplicationBuilder();
+
+        var webHostEnvironment = endpoints.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+
+        var options = new StaticFileOptions
+        {
+            FileProvider = webHostEnvironment.WebRootFileProvider,
+            OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders
+        };
+
+        app.Use(next => context =>
+        {
+            // Set endpoint to null so the static files middleware will handle the request.
+            context.SetEndpoint(null);
+
+            return next(context);
+        });
+
+        app.UseStaticFiles(options);
+
+        var requestDelegate = app.Build();
+
+        var blazorWebJsBuilder = new RouteEndpointBuilder(
+            requestDelegate,
+            RoutePatternFactory.Parse("/_framework/blazor.web.js"),
+            int.MinValue)
+        {
+            DisplayName = "Blazor web static files"
+        };
+
+        var allowedHttpMethods = new HttpMethodMetadata([HttpMethods.Get, HttpMethods.Head]);
+        blazorWebJsBuilder.Metadata.Add(allowedHttpMethods);
+
+        return [blazorWebJsBuilder];
     }
 
     public override IChangeToken GetChangeToken()
