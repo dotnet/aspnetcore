@@ -80,10 +80,11 @@ public static partial class EditContextDataAnnotationsExtensions
         private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
         {
             var fieldIdentifier = eventArgs.FieldIdentifier;
+            var modelType = fieldIdentifier.Model.GetType();
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-            if (_validatorTypeInfo is ValidatableTypeInfo typeInfo &&
-                typeInfo.GetProperty(fieldIdentifier.FieldName) is ValidatablePropertyInfo validatablePropertyInfo)
+            if (_validationOptions is not null &&
+                _validationOptions.TryGetValidatablePropertyInfo(modelType, fieldIdentifier.FieldName, out var validatablePropertyInfo))
             {
                 var cts = new CancellationTokenSource();
                 var task = ValidateFieldAsync(fieldIdentifier, validatablePropertyInfo, cts.Token);
