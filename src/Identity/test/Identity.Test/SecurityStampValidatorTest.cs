@@ -317,6 +317,77 @@ public class SecurityStampTest
         Assert.NotNull(context.Principal);
     }
 
+    [Fact]
+    public async Task OnValidateIdentityDoesNotRenewWhenAllowRefreshIsFalse()
+    {
+        var user = new PocoUser("test");
+        var timeProvider = new FakeTimeProvider();
+        var httpContext = new Mock<HttpContext>();
+        var userManager = MockHelpers.MockUserManager<PocoUser>();
+        var identityOptions = new Mock<IOptions<IdentityOptions>>();
+        identityOptions.Setup(a => a.Value).Returns(new IdentityOptions());
+        var claimsManager = new Mock<IUserClaimsPrincipalFactory<PocoUser>>();
+        var options = new Mock<IOptions<SecurityStampValidatorOptions>>();
+        options.Setup(a => a.Value).Returns(new SecurityStampValidatorOptions { ValidationInterval = TimeSpan.FromMinutes(1), TimeProvider = timeProvider });
+        var contextAccessor = new Mock<IHttpContextAccessor>();
+        contextAccessor.Setup(a => a.HttpContext).Returns(httpContext.Object);
+        var signInManager = new Mock<SignInManager<PocoUser>>(userManager.Object,
+            contextAccessor.Object, claimsManager.Object, identityOptions.Object, null, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
+        signInManager.Setup(s => s.ValidateSecurityStampAsync(It.IsAny<ClaimsPrincipal>())).Returns(Task.FromResult(user));
+        signInManager.Setup(s => s.CreateUserPrincipalAsync(It.IsAny<PocoUser>())).Returns(Task.FromResult(new ClaimsPrincipal(new ClaimsIdentity("auth"))));
+        var services = new ServiceCollection();
+        services.AddSingleton(options.Object);
+        services.AddSingleton(signInManager.Object);
+        services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager.Object, new LoggerFactory()));
+        httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
+        var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+        id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+
+        var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
+            new AuthenticationProperties
+            {
+                IssuedUtc = timeProvider.GetUtcNow() - TimeSpan.FromDays(1),
+                ExpiresUtc = timeProvider.GetUtcNow() + TimeSpan.FromDays(1),
+                AllowRefresh = false,
+            },
+            IdentityConstants.ApplicationScheme);
+        var context = new CookieValidatePrincipalContext(httpContext.Object, new AuthenticationSchemeBuilder(IdentityConstants.ApplicationScheme) { HandlerType = typeof(NoopHandler) }.Build(),
+            new CookieAuthenticationOptions(), ticket);
+        Assert.NotNull(context.Properties);
+        Assert.NotNull(context.Options);
+        Assert.NotNull(context.Principal);
+        await SecurityStampValidator.ValidatePrincipalAsync(context);
+
+        // Principal should still be replaced (claims updated in memory)
+        Assert.NotNull(context.Principal);
+        // But the cookie should NOT be renewed since AllowRefresh is false
+        Assert.False(context.ShouldRenew);
+    }
+
+    [Fact]
+    public async Task OnValidateIdentityRenewsWhenAllowRefreshIsNotSet()
+    {
+        var user = new PocoUser("test");
+        var httpContext = new Mock<HttpContext>();
+
+        await RunApplicationCookieTest(user, httpContext, /*shouldStampValidate*/true, async () =>
+        {
+            var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
+            id.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
+            var ticket = new AuthenticationTicket(new ClaimsPrincipal(id),
+                new AuthenticationProperties { IssuedUtc = DateTimeOffset.UtcNow.AddSeconds(-1) },
+                IdentityConstants.ApplicationScheme);
+
+            var context = new CookieValidatePrincipalContext(httpContext.Object, new AuthenticationSchemeBuilder(IdentityConstants.ApplicationScheme) { HandlerType = typeof(NoopHandler) }.Build(), new CookieAuthenticationOptions(), ticket);
+            // AllowRefresh is null (not set) — should default to true
+            Assert.Null(context.Properties.AllowRefresh);
+            await SecurityStampValidator.ValidatePrincipalAsync(context);
+
+            Assert.NotNull(context.Principal);
+            Assert.True(context.ShouldRenew);
+        });
+    }
+
     private async Task RunRememberClientCookieTest(bool shouldStampValidate, bool validationSuccess)
     {
         var user = new PocoUser("test");
