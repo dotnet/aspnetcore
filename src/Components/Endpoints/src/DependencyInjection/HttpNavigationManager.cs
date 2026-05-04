@@ -10,9 +10,14 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 {
     private const string _disableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException";
 
-    [FeatureSwitchDefinition(_disableThrowNavigationException)]
-    private static bool _throwNavigationException =>
+    // Not readonly so tests can override via reflection.
+#pragma warning disable IDE0044
+    private static bool s_throwNavigationException =
         !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
+#pragma warning restore IDE0044
+
+    [FeatureSwitchDefinition(_disableThrowNavigationException)]
+    private static bool _throwNavigationException => s_throwNavigationException;
 
     private Func<string, Task>? _onNavigateTo;
 

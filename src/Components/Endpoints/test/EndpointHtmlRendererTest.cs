@@ -988,55 +988,67 @@ public class EndpointHtmlRendererTest
     public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool allowException)
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: !allowException);
-        // Arrange
-        var ctx = new DefaultHttpContext();
-        ctx.Request.Scheme = "http";
-        ctx.Request.Host = new HostString("localhost");
-        ctx.Request.PathBase = "/base";
-        ctx.Request.Path = "/path";
-        ctx.Request.QueryString = new QueryString("?query=value");
-        ctx.Response.Body = new MemoryStream();
-        var responseMock = new Mock<IHttpResponseFeature>();
-        responseMock.Setup(r => r.HasStarted).Returns(true);
-        ctx.Features.Set(responseMock.Object);
-        var httpContext = GetHttpContext(ctx);
-        string redirectUri = "http://localhost/redirect";
-
-        // Act
-        if (allowException)
+        // The _throwNavigationException property is cached at static init time, so we need to update it via reflection.
+        var backingField = typeof(HttpNavigationManager).GetField("s_throwNavigationException", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        backingField.SetValue(null, allowException);
+        try
         {
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
-                httpContext,
-                typeof(RedirectComponent),
-                null,
-                ParameterView.FromDictionary(new Dictionary<string, object>
-                {
-                    { "RedirectUri", redirectUri }
-                })));
+            // Arrange
+            var ctx = new DefaultHttpContext();
+            ctx.Request.Scheme = "http";
+            ctx.Request.Host = new HostString("localhost");
+            ctx.Request.PathBase = "/base";
+            ctx.Request.Path = "/path";
+            ctx.Request.QueryString = new QueryString("?query=value");
+            ctx.Response.Body = new MemoryStream();
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(r => r.HasStarted).Returns(true);
+            ctx.Features.Set(responseMock.Object);
+            var httpContext = GetHttpContext(ctx);
+            string redirectUri = "http://localhost/redirect";
 
-            Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
-                            "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                            "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
-                exception.Message);
+            // Act
+            if (allowException)
+            {
+                var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
+                    httpContext,
+                    typeof(RedirectComponent),
+                    null,
+                    ParameterView.FromDictionary(new Dictionary<string, object>
+                    {
+                        { "RedirectUri", redirectUri }
+                    })));
+
+                Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                                "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                                "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
+                    exception.Message);
+            }
+            else
+            {
+                await renderer.PrerenderComponentAsync(
+                    httpContext,
+                    typeof(RedirectComponent),
+                    null,
+                    ParameterView.FromDictionary(new Dictionary<string, object>
+                    {
+                        { "RedirectUri", redirectUri }
+                    }));
+                // read the custom element from the response body
+                httpContext.Response.Body.Position = 0;
+                var reader = new StreamReader(httpContext.Response.Body);
+                var output = await reader.ReadToEndAsync();
+
+                // Assert that the output contains expected navigation instructions.
+                var pattern = "^<blazor-ssr><template type=\"redirection\".*>.*<\\/template><blazor-ssr-end><\\/blazor-ssr-end><\\/blazor-ssr>$";
+                Assert.Matches(pattern, output);
+            }
         }
-        else
+        finally
         {
-            await renderer.PrerenderComponentAsync(
-                httpContext,
-                typeof(RedirectComponent),
-                null,
-                ParameterView.FromDictionary(new Dictionary<string, object>
-                {
-                    { "RedirectUri", redirectUri }
-                }));
-            // read the custom element from the response body
-            httpContext.Response.Body.Position = 0;
-            var reader = new StreamReader(httpContext.Response.Body);
-            var output = await reader.ReadToEndAsync();
-
-            // Assert that the output contains expected navigation instructions.
-            var pattern = "^<blazor-ssr><template type=\"redirection\".*>.*<\\/template><blazor-ssr-end><\\/blazor-ssr-end><\\/blazor-ssr>$";
-            Assert.Matches(pattern, output);
+            // Restore default: _throwNavigationException = true (throw on navigation)
+            AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: false);
+            backingField.SetValue(null, true);
         }
     }
 
@@ -1343,7 +1355,7 @@ public class EndpointHtmlRendererTest
         lines[0] = AssertAndStripBrowserConfiguration(lines[0]);
         var serverMarkerMatch = Regex.Match(lines[0], PrerenderedComponentPattern);
         var serverNonPrerenderedMarkerMatch = Regex.Match(lines[1], ComponentPattern);
-        
+
         var webAssemblyMarkerMatch = Regex.Match(lines[2], PrerenderedComponentPattern);
         var webAssemblyNonPrerenderedMarkerMatch = Regex.Match(lines[3], ComponentPattern);
 
