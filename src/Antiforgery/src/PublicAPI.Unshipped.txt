@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Antiforgery.CrossOriginProtectionOptions
-Microsoft.AspNetCore.Antiforgery.CrossOriginProtectionOptions.CrossOriginProtectionOptions() -> void
-Microsoft.AspNetCore.Antiforgery.CrossOriginProtectionOptions.TrustedOrigins.get -> System.Collections.Generic.IList<string!>!
-static Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions.AddCrossOriginProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions.AddCrossOriginProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Antiforgery.CrossOriginProtectionOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
