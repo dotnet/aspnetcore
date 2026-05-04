@@ -874,15 +874,60 @@ public class EditContextAsyncTest
         using var pendingCts = new CancellationTokenSource();
         var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         editContext.AddValidationTask(field, pending.Task, pendingCts);
+        Assert.True(editContext.IsValidationPending(field));
 
         editContext.AddValidationTask(field, Task.FromException(new InvalidOperationException("failure")), new CancellationTokenSource());
 
+        // The supersede must clear the slot synchronously so the field is not reported as both
+        // pending (stale prior task) and faulted (new completed task) at the same time.
+        Assert.False(editContext.IsValidationPending(field));
         Assert.True(pendingCts.IsCancellationRequested);
         Assert.True(editContext.IsValidationFaulted(field));
         pending.SetResult();
         await WaitUntilAsync(() => !editContext.IsValidationPending(field));
 
         Assert.True(editContext.IsValidationFaulted(field));
+    }
+
+    [Fact]
+    public void AddValidationTask_CompletedSuccessfulTaskSupersedesPendingTask()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        using var pendingCts = new CancellationTokenSource();
+        var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        editContext.AddValidationTask(field, pending.Task, pendingCts);
+        Assert.True(editContext.IsValidationPending(field));
+
+        editContext.AddValidationTask(field, Task.CompletedTask, new CancellationTokenSource());
+
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.True(pendingCts.IsCancellationRequested);
+        pending.SetResult();
+    }
+
+    [Fact]
+    public void AddValidationTask_CompletedSuccessfulTaskSupersedesPending_ClearsPriorFault()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        // Seed a faulted state, then park a new pending task on top so we can verify that a
+        // completed-success supersede resets state cleanly.
+        editContext.AddValidationTask(field, Task.FromException(new InvalidOperationException("seed")), new CancellationTokenSource());
+        Assert.True(editContext.IsValidationFaulted(field));
+
+        using var pendingCts = new CancellationTokenSource();
+        var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        editContext.AddValidationTask(field, pending.Task, pendingCts);
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.True(editContext.IsValidationPending(field));
+
+        editContext.AddValidationTask(field, Task.CompletedTask, new CancellationTokenSource());
+
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+        pending.SetResult();
     }
 
     [Fact]
@@ -948,6 +993,49 @@ public class EditContextAsyncTest
         editContext.OnValidationRequestedAsync += (_, _) => null;
 
         var result = await editContext.ValidateAsync();
+
+        Assert.True(result);
+        Assert.False(editContext.IsValidationFaulted());
+    }
+
+    [Fact]
+    public async Task ValidateAsync_AsyncHandlerThrowsOperationCanceledExceptionSync_DoesNotMarkFormAsFaulted()
+    {
+        // Sync throw of OCE before the handler's first await must be classified as cancellation,
+        // not as a fault, matching the post-await OCE semantics.
+        var editContext = new EditContext(new TestModel());
+        editContext.OnValidationRequestedAsync += (_, args) =>
+        {
+            throw new OperationCanceledException();
+        };
+
+        var result = await editContext.ValidateAsync();
+
+        Assert.True(result);
+        Assert.False(editContext.IsValidationFaulted());
+    }
+
+    [Fact]
+    public async Task ValidateAsync_OneAsyncHandlerThrowsOceSync_OtherHandlerFaults_IsClassifiedAsFault()
+    {
+        // Cross-check: a sync OCE from one handler must not mask a real fault from another.
+        var editContext = new EditContext(new TestModel());
+        editContext.OnValidationRequestedAsync += (_, _) => throw new OperationCanceledException();
+        editContext.OnValidationRequestedAsync += (_, _) => Task.FromException(new InvalidOperationException("boom"));
+
+        var result = await editContext.ValidateAsync();
+
+        Assert.False(result);
+        Assert.True(editContext.IsValidationFaulted());
+    }
+
+    [Fact]
+    public void Validate_AsyncHandlerReturnsNull_TreatedAsCompletedTask()
+    {
+        var editContext = new EditContext(new TestModel());
+        editContext.OnValidationRequestedAsync += (_, _) => null;
+
+        var result = editContext.Validate();
 
         Assert.True(result);
         Assert.False(editContext.IsValidationFaulted());

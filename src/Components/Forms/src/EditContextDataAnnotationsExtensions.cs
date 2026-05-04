@@ -229,9 +229,10 @@ public static partial class EditContextDataAnnotationsExtensions
 
             // Clear stale messages up-front so the field shows neutral state during validation
             // and shows neutral state after a throw or cancellation. Any faulted state is signaled
-            // separately via EditContext.IsValidationFaulted.
+            // separately via EditContext.IsValidationFaulted. The caller (OnFieldChanged) registers
+            // this task via AddValidationTask immediately after this method's first await, which
+            // produces a single notification covering both the cleared messages and the pending flag.
             _messages.Clear(fieldIdentifier);
-            _editContext.NotifyValidationStateChanged();
 
             try
             {
@@ -239,9 +240,9 @@ public static partial class EditContextDataAnnotationsExtensions
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // Task was cancelled (user re-edited field or form is submitting). Messages were
-                // already cleared above; just notify so the UI re-renders.
-                _editContext.NotifyValidationStateChanged();
+                // Task was cancelled (user re-edited field or form is submitting). The new
+                // AddValidationTask call has already cleared messages and notified, so no extra
+                // notification is needed here.
                 return;
             }
 

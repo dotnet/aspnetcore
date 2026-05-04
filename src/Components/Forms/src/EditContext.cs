@@ -263,7 +263,8 @@ public sealed class EditContext
             for (var i = 0; i < delegates.Length; i++)
             {
                 var task = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
-                    .Invoke(this, ValidationRequestedEventArgs.Empty);
+                    .Invoke(this, ValidationRequestedEventArgs.Empty)
+                    ?? Task.CompletedTask;
 
                 if (!task.IsCompleted)
                 {
@@ -356,6 +357,15 @@ public sealed class EditContext
                             .Invoke(this, args)
                             ?? Task.CompletedTask;
                     }
+                    catch (OperationCanceledException oce)
+                    {
+                        // Sync throw of OCE before the handler's first await - normalize to a
+                        // Canceled task (not Faulted) so the classification loop's IsFaulted scan
+                        // naturally excludes it, matching the post-await OCE semantics.
+                        tasks[i] = Task.FromCanceled(oce.CancellationToken.IsCancellationRequested
+                            ? oce.CancellationToken
+                            : new CancellationToken(canceled: true));
+                    }
                     catch (Exception ex)
                     {
                         // Sync throw before the handler's first await - normalize to a faulted Task
@@ -446,17 +456,31 @@ public sealed class EditContext
 
         if (task.IsCompleted)
         {
+            // Clear the slot so a stale prior task does not keep the field reported as pending,
+            // and so a still-pending prior task cannot mask the new completed result. The prior
+            // observer's ReferenceEquals guard ensures it cannot stomp this state when it later runs.
+            var hadPriorPending = state.PendingValidationTask is { IsCompleted: false };
+            state.PendingValidationTask = null;
+            state.PendingValidationCts = null;
+
             // Settle synchronously without parking the slot. Mirrors observer policy: only set
             // IsValidationFaulted on a faulted task; cancel and success are no-ops on the fault flag.
+            var faultFlagChanged = false;
             if (task.IsFaulted)
             {
                 _ = task.Exception; // observe to suppress UnobservedTaskException
                 if (!state.IsValidationFaulted)
                 {
                     state.IsValidationFaulted = true;
-                    NotifyValidationStateChanged();
+                    faultFlagChanged = true;
                 }
             }
+
+            if (hadPriorPending || faultFlagChanged)
+            {
+                NotifyValidationStateChanged();
+            }
+
             cts.Dispose();
             return;
         }

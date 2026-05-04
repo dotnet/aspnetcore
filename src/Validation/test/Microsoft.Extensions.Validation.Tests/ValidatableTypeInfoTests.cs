@@ -648,6 +648,31 @@ public class ValidatableTypeInfoTests
         Assert.Equal("Property attribute error", propertyAttributeError.Value.Single());
     }
 
+    [Fact]
+    public void GetProperty_ThrowsArgumentNullException_WhenPropertyNameIsNull()
+    {
+        var typeInfo = new TestValidatableTypeInfo(typeof(Person), []);
+
+        Assert.Throws<ArgumentNullException>("propertyName", () => typeInfo.GetProperty(null!));
+    }
+
+    [Fact]
+    public void GetProperty_ReturnsNull_WhenPropertyNotFound()
+    {
+        var typeInfo = new TestValidatableTypeInfo(typeof(Person), []);
+
+        Assert.Null(typeInfo.GetProperty("NonExistent"));
+    }
+
+    [Fact]
+    public void GetProperty_ReturnsMatchingProperty_WhenPresent()
+    {
+        var nameProperty = CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name", []);
+        var typeInfo = new TestValidatableTypeInfo(typeof(Person), [nameProperty]);
+
+        Assert.Same(nameProperty, typeInfo.GetProperty("Name"));
+    }
+
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
     private class GlobalErrorObject : IValidatableObject
     {

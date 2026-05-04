@@ -54,6 +54,8 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// <returns>The <see cref="ValidatablePropertyInfo"/> for the property, or <see langword="null"/> if not found.</returns>
     public ValidatablePropertyInfo? GetProperty(string propertyName)
     {
+        ArgumentNullException.ThrowIfNull(propertyName);
+
         for (var i = 0; i < _membersCount; i++)
         {
             if (string.Equals(Members[i].Name, propertyName, StringComparison.Ordinal))
