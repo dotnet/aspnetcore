@@ -158,7 +158,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // in between the first call to htmlContent.WriteTo and the point where we start listening for subsequent
         // streaming SSR batches (inside SendStreamingUpdatesAsync). Otherwise some other code might dispatch to the
         // renderer sync context and cause a batch that would get missed.
-        htmlContent.WriteTo(bufferWriter, HtmlEncoder.Default); // Don't use WriteToAsync, as per the comment above
+        // We use WriteContentAsync which blocks the sync context queue during the async write to prevent this.
+        await WriteContentAsync(htmlContent, bufferWriter);
 
         if (!quiesceTask.IsCompletedSuccessfully)
         {
@@ -295,6 +296,26 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
         }
         return null;
+    }
+
+    /// <summary>
+    /// Writes HTML content to the response while blocking the renderer's sync context queue,
+    /// preventing other continuations from running until the write completes.
+    /// </summary>
+    private static async Task WriteContentAsync(EndpointHtmlRenderer.PrerenderedComponentHtmlContent htmlContent, TextWriter writer)
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var syncContext = (RendererSynchronizationContext)SynchronizationContext.Current!;
+        syncContext.EnqueueBlockingTask(tcs.Task);
+
+        try
+        {
+            await htmlContent.WriteToAsync(writer).ConfigureAwait(false);
+        }
+        finally
+        {
+            tcs.SetResult();
+        }
     }
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
