@@ -141,12 +141,6 @@
     <!-- don't warn about calling ConfigureAwait in test methods. we already commonly get off the xunit threads because they cause issues. -->
     <NoWarn>$(NoWarn);xUnit1030</NoWarn>
 
-    <!-- don't warn about unnecessary trim warning suppressions. can be removed with preview 6. -->
-    <NoWarn>$(NoWarn);IL2121</NoWarn>
-
-    <!-- // Temporary diagnostic code from https://github.com/dotnet/extensions/pull/4130 for metrics APIs used in test. -->
-    <NoWarn>$(NoWarn);TBD</NoWarn>
-
     <NoWarn Condition="'$(_DevBuild)' == 'true'">$(NoWarn);NU3027</NoWarn>
   </PropertyGroup>
 

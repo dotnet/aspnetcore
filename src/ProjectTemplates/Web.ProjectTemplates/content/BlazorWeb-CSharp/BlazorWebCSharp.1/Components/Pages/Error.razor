@@ -29,7 +29,7 @@
     private HttpContext? HttpContext { get; set; }
 
     [PersistentState]
-    private string? RequestId { get; set; }
+    public string? RequestId { get; set; }
 
     private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
 

@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Valores predeterminados del servicio Blazor WebAssembly",
+  "description": "Una plantilla de proyecto para crear una biblioteca predeterminada de servicio para aplicaciones Blazor WebAssembly. Incluye OpenTelemetry, detección de servicios y soporte de resiliencia para la integración de Aspire.",
+  "symbols/Framework/description": "Marco de destino del proyecto.",
+  "symbols/hosted/description": "Configurar para un escenario web de Blazor hospedado en el que la configuración fluye desde el servidor a través de un comentario DOM. Cuando es false (valor predeterminado), se configura para un escenario independiente con un punto de conexión de configuración y un inicializador JS.",
+  "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación.",
+  "postActions/restore/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
+  "postActions/restore/manualInstructions/default/text": "Ejecutar \"dotnet restore\""
+}

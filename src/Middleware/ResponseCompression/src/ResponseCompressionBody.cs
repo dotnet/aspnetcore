@@ -196,15 +196,18 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
     }
 
     /// <summary>
-    /// Checks if the response should be compressed and sets the response headers.
+    /// Examines the response on first write to see if compression should be used and if true sets the Vary Accept-Encoding header.
     /// </summary>
-    /// <returns>The compression provider to use if compression is enabled, otherwise null.</returns>
-    private ICompressionProvider? InitializeCompressionHeaders()
+    /// <param name="provider">current response compression provider</param>
+    /// <param name="context">The <see cref="HttpContext"/>.</param>
+    /// <returns><see langword="true" /> if the response should be compressed, otherwise <see langword="false" />.</returns>
+    internal static bool ShouldCompressResponseCommon(IResponseCompressionProvider provider, HttpContext context)
     {
-        if (_provider.ShouldCompressResponse(_context))
+        var result = provider.ShouldCompressResponse(context);
+
+        if (result)
         {
-            var headers = _context.Response.Headers;
-            // If the MIME type indicates that the response could be compressed, caches will need to vary by the Accept-Encoding header
+            var headers = context.Response.Headers;
             var varyValues = headers.GetCommaSeparatedValues(HeaderNames.Vary);
             var varyByAcceptEncoding = false;
 
@@ -219,10 +222,22 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
 
             if (!varyByAcceptEncoding)
             {
-                // Can't use += as StringValues does not override operator+
-                // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
                 headers.Vary = StringValues.Concat(headers.Vary, HeaderNames.AcceptEncoding);
             }
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Checks if the response should be compressed and sets the response headers.
+    /// </summary>
+    /// <returns>The compression provider to use if compression is enabled, otherwise null.</returns>
+    private ICompressionProvider? InitializeCompressionHeaders()
+    {
+        if (ShouldCompressResponseCommon(_provider, _context))
+        {
+            var headers = _context.Response.Headers;
 
             var compressionProvider = ResolveCompressionProvider();
             if (compressionProvider != null)

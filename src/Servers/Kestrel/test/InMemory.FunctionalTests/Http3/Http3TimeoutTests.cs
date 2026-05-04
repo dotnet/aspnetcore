@@ -728,4 +728,105 @@ public class Http3TimeoutTests : Http3TestBase
 
         _mockTimeoutHandler.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task HEADERS_TrailerIncompleteFrameReceivedWithinRequestHeadersTimeout_StreamError()
+    {
+        // Verifies that a fragmented trailer HEADERS frame (payload spans multiple reads)
+        // arms RequestHeadersTimeout, preventing the stream from hanging indefinitely.
+        var postRequestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        var timeProvider = _serviceContext.FakeTimeProvider;
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            // Read the request body to keep the stream alive
+            var buffer = new byte[1024];
+            while (await context.Request.Body.ReadAsync(buffer) > 0) { }
+        }).DefaultTimeout();
+
+        await Http3Api.CreateControlStream();
+        var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
+        await controlStream.ExpectSettingsAsync().DefaultTimeout();
+
+        var requestStream = await Http3Api.CreateRequestStream(postRequestHeaders, endStream: false);
+
+        await requestStream.OnHeaderReceivedTask.DefaultTimeout();
+
+        // Send some body data
+        await requestStream.SendDataAsync(_helloWorldBytes.AsMemory(), endStream: false);
+
+        // Send a partial trailer HEADERS frame (declares 100 bytes, only sends 1)
+        await requestStream.SendTrailerHeadersPartialAsync();
+
+        var serverRequestStream = Http3Api.Connection._streams[requestStream.StreamId];
+
+        // The stream should now have IsReceivingTrailerHeaders = true
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(limits.RequestHeadersTimeout);
+
+        Http3Api.TriggerTick(TimeSpan.FromTicks(1));
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.RequestRejected,
+            AssertExpectedErrorMessages,
+            CoreStrings.BadRequest_RequestHeadersTimeout);
+    }
+
+    [Fact]
+    public async Task HEADERS_TrailerCompleteFrameReceivedWithinRequestHeadersTimeout_Success()
+    {
+        // Verifies that a complete (non-fragmented) trailer HEADERS frame does not trigger
+        // a timeout and the stream completes successfully.
+        var postRequestHeaders = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        var requestReceivedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            var buffer = new byte[1024];
+            while (await context.Request.Body.ReadAsync(buffer) > 0) { }
+            requestReceivedTcs.SetResult();
+        }).DefaultTimeout();
+
+        await Http3Api.CreateControlStream();
+        var controlStream = await Http3Api.GetInboundControlStream().DefaultTimeout();
+        await controlStream.ExpectSettingsAsync().DefaultTimeout();
+
+        var requestStream = await Http3Api.CreateRequestStream(postRequestHeaders, endStream: false);
+
+        await requestStream.OnHeaderReceivedTask.DefaultTimeout();
+
+        // Send body data
+        await requestStream.SendDataAsync(_helloWorldBytes.AsMemory(), endStream: false);
+
+        // Send a complete trailer HEADERS frame with endStream by completing the transport
+        var trailerHeaders = new[]
+        {
+            new KeyValuePair<string, string>("x-trailer", "value"),
+        };
+        await requestStream.SendHeadersAsync(trailerHeaders, endStream: true);
+
+        // Wait for the request delegate to complete
+        await requestReceivedTcs.Task.DefaultTimeout();
+
+        await requestStream.ExpectHeadersAsync();
+        await requestStream.ExpectReceiveEndOfStream();
+
+        // No timeout should have fired
+        Http3Api.TriggerTick(_serviceContext.ServerOptions.Limits.RequestHeadersTimeout + TimeSpan.FromTicks(1));
+    }
 }

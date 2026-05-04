@@ -1,10 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -268,6 +272,60 @@ public static class ListenOptionsHttpsExtensions
 
             var middleware = new HttpsConnectionMiddleware(next, callbackOptions, loggerFactory, metrics);
             return middleware.OnConnectionAsync;
+        });
+
+        return listenOptions;
+    }
+
+    // The Client Hello is typically sent in the first flight of the connection,
+    // so a shorter timeout than the full handshake (10s default) is appropriate.
+    internal static readonly TimeSpan DefaultTlsClientHelloListenerTimeout = TimeSpan.FromSeconds(8);
+
+    /// <summary>
+    /// Adds a connection middleware that sniffs the TLS Client Hello message and invokes <paramref name="tlsClientHelloBytesCallback"/>
+    /// with the raw bytes before the TLS handshake is performed.
+    /// This must be called before <c>UseHttps()</c> so that the middleware runs prior to the TLS handshake.
+    /// </summary>
+    /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+    /// <param name="tlsClientHelloBytesCallback">
+    /// The callback to invoke with the <see cref="ConnectionContext"/> and the raw TLS Client Hello bytes
+    /// (still wrapped in the TLS record layer fragment).
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time to wait for the TLS Client Hello message. Defaults to 8 seconds if not specified.
+    /// </param>
+    /// <remarks>
+    /// Note that this timeout is additive with the TLS handshake timeout (default 10 seconds).
+    /// A slow client could take up to the sum of both timeouts (e.g. 8 + 10 = 18 seconds by default)
+    /// before the connection is aborted. Consider reducing each timeout accordingly
+    /// (e.g. 5 seconds for the Client Hello and 5 seconds for the handshake) to keep the total time bounded.
+    /// </remarks>
+    /// <returns>The <see cref="ListenOptions"/>.</returns>
+    public static ListenOptions UseTlsClientHelloListener(this ListenOptions listenOptions, Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback, TimeSpan? timeout = null)
+    {
+        ArgumentNullException.ThrowIfNull(listenOptions);
+        ArgumentNullException.ThrowIfNull(tlsClientHelloBytesCallback);
+        if (timeout.HasValue)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout.Value, TimeSpan.Zero, nameof(timeout));
+        }
+
+        var effectiveTimeout = timeout ?? DefaultTlsClientHelloListenerTimeout;
+        var tlsListener = new TlsListener(tlsClientHelloBytesCallback);
+        var ctsPool = new CancellationTokenSourcePool();
+
+        listenOptions.Use(next =>
+        {
+            return async context =>
+            {
+                using (var timeoutCts = ctsPool.Rent())
+                {
+                    timeoutCts.CancelAfter(effectiveTimeout);
+                    await tlsListener.OnTlsClientHelloAsync(context, timeoutCts.Token);
+                }
+
+                await next(context);
+            };
         });
 
         return listenOptions;

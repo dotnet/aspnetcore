@@ -18,7 +18,6 @@ public class AppOfflineIISExpressTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60482")]
     public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
     {
         // This test often hits a race between debug logging and stdout redirection closing the handle

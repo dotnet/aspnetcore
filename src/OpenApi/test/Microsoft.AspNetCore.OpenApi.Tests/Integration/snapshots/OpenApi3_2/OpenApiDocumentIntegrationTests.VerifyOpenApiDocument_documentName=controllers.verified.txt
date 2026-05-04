@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.2.0",
   "info": {
     "title": "Sample | controllers",
@@ -125,8 +125,8 @@
         }
       }
     },
-    "/multi-content-type": {
-      "get": {
+    "/query": {
+      "query": {
         "tags": [
           "Test"
         ],
@@ -134,14 +134,19 @@
           "200": {
             "description": "OK",
             "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MvcTodo"
-                }
-              },
               "text/plain": {
                 "schema": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
                 }
               }
             }
@@ -149,25 +154,48 @@
         }
       }
     },
-    "/one-of": {
-      "get": {
+    "/query-with-body": {
+      "query": {
         "tags": [
           "Test"
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/CurrentWeather"
-                    },
-                    {
-                      "$ref": "#/components/schemas/MvcTodo"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
                 }
               }
             }

@@ -38,7 +38,6 @@
     <Reference Include="Microsoft.OpenApi.YamlReader" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.OpenApi" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
     <Reference Include="Verify.XUnit" />

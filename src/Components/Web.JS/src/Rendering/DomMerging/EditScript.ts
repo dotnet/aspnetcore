@@ -17,7 +17,7 @@ export function computeEditScript<T>(before: ItemList<T>, after: ItemList<T>, up
   }
   const commonSuffixLength = lengthOfCommonSuffix(before, after, commonPrefixLength, commonPrefixLength, updateCost);
   before = ItemListSubset.create(before, commonPrefixLength, before.length - commonPrefixLength - commonSuffixLength);
-  after =  ItemListSubset.create(after, commonPrefixLength, after.length - commonPrefixLength - commonSuffixLength);
+  after = ItemListSubset.create(after, commonPrefixLength, after.length - commonPrefixLength - commonSuffixLength);
 
   const operations = computeOperations(before, after, updateCost);
   const edits = toEditScript(operations);
@@ -139,8 +139,8 @@ function toEditScript(operations: Operation[][]) {
 // Levenshtein naturally deals with these three specific cost values, so they are the only ones allowed.
 // If we allowed arbitrary cost numbers, things quickly get very unpredictable.
 export enum UpdateCost {
-  None,     // Implemented as cost 0
-  Some,     // Implemented as cost 1 (same as a single insertion or deletion)
+  None, // Implemented as cost 0
+  Some, // Implemented as cost 1 (same as a single insertion or deletion)
   Infinite, // Implemented as cost infinity (so we would always choose to insert+delete instead of update)
 }
 

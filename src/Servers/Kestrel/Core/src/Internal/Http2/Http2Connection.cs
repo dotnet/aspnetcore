@@ -795,7 +795,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             throw CreateStreamIdZeroException();
         }
 
-        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPadLength >= _incomingFrame.PayloadLength - 1)
+        if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPayloadLength <= 0)
         {
             throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidDataPadding);
         }
@@ -834,6 +834,18 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             // Since we found an active stream, this HEADERS frame contains trailers
             _currentHeadersStream = stream;
             _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
+
+            // Cancel keep-alive timeout and start header timeout if necessary.
+            if (!_incomingFrame.HeadersEndHeaders)
+            {
+                if (TimeoutControl.TimerReason != TimeoutReason.None)
+                {
+                    Debug.Assert(TimeoutControl.TimerReason == TimeoutReason.KeepAlive, "Non keep-alive timeout set at start of trailer headers.");
+                    TimeoutControl.CancelTimeout();
+                }
+
+                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
+            }
 
             var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
             return DecodeTrailersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
@@ -1195,6 +1207,11 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
         {
+            if (_incomingFrame.ContinuationEndHeaders)
+            {
+                TimeoutControl.CancelTimeout();
+            }
+
             return DecodeTrailersAsync(_incomingFrame.ContinuationEndHeaders, payload);
         }
         else
@@ -1251,12 +1268,21 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     {
         Debug.Assert(_currentHeadersStream != null);
 
-        _hpackDecoder.Decode(payload, endHeaders, handler: this);
-
-        if (endHeaders)
+        try
         {
-            _currentHeadersStream.OnEndStreamReceived();
+            _hpackDecoder.Decode(payload, endHeaders, handler: this);
+
+            if (endHeaders)
+            {
+                _currentHeadersStream.OnEndStreamReceived();
+                ResetRequestHeaderParsingState();
+            }
+        }
+        catch (Http2StreamErrorException)
+        {
+            _currentHeadersStream.Dispose();
             ResetRequestHeaderParsingState();
+            throw;
         }
 
         return Task.CompletedTask;

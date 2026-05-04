@@ -14,7 +14,7 @@ internal sealed class DefaultComponentActivator(IServiceProvider serviceProvider
 
     static DefaultComponentActivator()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }

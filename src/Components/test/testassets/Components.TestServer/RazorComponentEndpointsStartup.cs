@@ -95,6 +95,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         var circuitContextAccessor = new TestCircuitContextAccessor();
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
         services.AddSingleton(circuitContextAccessor);
+
+        services.AddScoped<PauseTrackingHandler>();
+        services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -189,7 +192,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
                     options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
                 })
-                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
+                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
+                .WithBrowserConfiguration(config =>
+                {
+                    config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
+                    config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                });
 
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
             StreamingRenderingForm.MapEndpoints(endpoints);

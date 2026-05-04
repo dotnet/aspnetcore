@@ -1,0 +1,49 @@
+﻿<p>This tests variable-height items inside an HTML table with SpacerElement="tr".</p>
+
+<table id="variable-height-table">
+    <thead style="position: sticky; top: 0; background-color: silver">
+        <tr>
+            <th>Item</th>
+            <th>Height</th>
+        </tr>
+    </thead>
+    <tbody>
+        <Virtualize Items="@items" ItemSize="50" SpacerElement="tr" OverscanCount="3">
+            <tr>
+                <td id="vht-row-@context.Index">Item @context.Index</td>
+                <td>
+                    <div style="height: @(context.Height)px; background-color: hsl(@(context.Hue), 70%, 80%);">
+                        @(context.Height)px
+                    </div>
+                </td>
+            </tr>
+        </Virtualize>
+    </tbody>
+</table>
+
+<p><span id="vht-total-items">Total items: @items.Count</span></p>
+
+<style>
+    html, body { overflow-y: scroll }
+</style>
+
+@code {
+    List<VariableHeightRow> items;
+
+    protected override void OnInitialized()
+    {
+        items = Enumerable.Range(0, 500).Select(i => new VariableHeightRow
+        {
+            Index = i,
+            Height = 30 + (i * 37 % 171),
+            Hue = i * 7 % 360
+        }).ToList();
+    }
+
+    class VariableHeightRow
+    {
+        public int Index { get; set; }
+        public int Height { get; set; }
+        public int Hue { get; set; }
+    }
+}
