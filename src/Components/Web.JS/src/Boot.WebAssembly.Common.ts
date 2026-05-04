@@ -8,6 +8,7 @@ import * as Environment from './Environment';
 import { monoPlatform, dispatcher, getInitializer } from './Platform/Mono/MonoPlatform';
 import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
+import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRenderBatch';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
@@ -119,6 +120,13 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     } finally {
       heapLock.release();
     }
+  };
+
+  Blazor._internal.renderBatchOOP = (browserRendererId: number, batchData: Uint8Array): void => {
+    // No heap lock needed — batchData is a self-contained byte[] copy,
+    // not a pointer into the .NET managed heap.
+    // Uses UTF-16LE string table encoding to avoid UTF-8 transcoding on both sides.
+    renderBatch(browserRendererId, new OutOfProcessRenderBatch(batchData, /* useUtf16StringTable */ true));
   };
 
   Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {

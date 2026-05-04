@@ -1,0 +1,90 @@
+@page "/oop-renderer-interactivity"
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.JSInterop
+@rendermode RenderMode.InteractiveWebAssembly
+@inject IJSRuntime JSRuntime
+
+<h1>OOP Renderer Interactivity Test</h1>
+
+<p>
+    Execution mode:
+    <strong id="execution-mode">@executionMode</strong>
+</p>
+
+<p>
+    OOP Renderer active:
+    <strong id="oop-renderer-active">@oopRendererActive</strong>
+</p>
+
+<p>
+    Counter: <strong id="counter-value">@currentCount</strong>
+</p>
+<button id="increment-button" @onclick="IncrementCount">Click me</button>
+
+<p>
+    <input id="text-input" @bind="textValue" @bind:event="oninput" />
+    You typed: <strong id="text-output">@textValue</strong>
+</p>
+
+<p>
+    <button id="jsinterop-button" @onclick="CallJSInterop">Call JSInterop</button>
+    JS result: <strong id="jsinterop-result">@jsResult</strong>
+</p>
+
+<p>
+    <button id="toggle-button" @onclick="ToggleVisibility">Toggle</button>
+    @if (isVisible)
+    {
+        <strong id="toggle-content">Visible</strong>
+    }
+</p>
+
+<p>
+    <button id="add-item-button" @onclick="AddItem">Add Item</button>
+</p>
+<ul id="item-list">
+    @foreach (var item in items)
+    {
+        <li>@item</li>
+    }
+</ul>
+
+@code {
+    private string executionMode = "static";
+    private string oopRendererActive = "(unknown)";
+    private int currentCount;
+    private string textValue = "";
+    private string jsResult = "(none)";
+    private bool isVisible = true;
+    private List<string> items = new() { "Item 1", "Item 2" };
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            executionMode = OperatingSystem.IsBrowser() ? "webassembly" : "server";
+            oopRendererActive = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OOP_RENDERER") ?? "(not set)";
+            StateHasChanged();
+        }
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    private async Task CallJSInterop()
+    {
+        jsResult = await JSRuntime.InvokeAsync<string>("String", "Hello from JS");
+    }
+
+    private void ToggleVisibility()
+    {
+        isVisible = !isVisible;
+    }
+
+    private void AddItem()
+    {
+        items.Add($"Item {items.Count + 1}");
+    }
+}

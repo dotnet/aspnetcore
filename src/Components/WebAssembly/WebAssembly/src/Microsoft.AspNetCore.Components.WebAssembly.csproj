@@ -38,6 +38,9 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Rendering" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Rendering" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Rendering" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentManager.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentParameters.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentMarker.cs" Link="Prerendering/ComponentMarker.cs" />
