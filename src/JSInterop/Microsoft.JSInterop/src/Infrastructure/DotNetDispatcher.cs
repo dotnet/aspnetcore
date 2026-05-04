@@ -61,6 +61,24 @@ public static class DotNetDispatcher
             return null;
         }
 
+        // When an async [JSInvokable] method is called synchronously via invokeMethod(), the raw
+        // Task/ValueTask is returned and serialization produces misleading JSON errors. Detect this
+        // and throw a clear exception instead.
+        if (syncResult is Task || syncResult is ValueTask)
+        {
+            throw new InvalidOperationException(
+                $"The method '{invocationInfo.MethodIdentifier}' returns an asynchronous type and cannot be invoked " +
+                $"synchronously from JavaScript. Use 'invokeMethodAsync' instead of 'invokeMethod'.");
+        }
+
+        var resultType = syncResult.GetType();
+        if (resultType.IsValueType && resultType.IsGenericType && resultType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+        {
+            throw new InvalidOperationException(
+                $"The method '{invocationInfo.MethodIdentifier}' returns an asynchronous type and cannot be invoked " +
+                $"synchronously from JavaScript. Use 'invokeMethodAsync' instead of 'invokeMethod'.");
+        }
+
         return JsonSerializer.Serialize(syncResult, jsRuntime.JsonSerializerOptions);
     }
 
