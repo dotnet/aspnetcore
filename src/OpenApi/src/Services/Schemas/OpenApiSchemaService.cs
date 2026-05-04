@@ -90,6 +90,11 @@ internal sealed class OpenApiSchemaService(
             {
                 schema = CreateSchemaForJsonPatch();
             }
+            else if (type.IsEnum && schema is JsonObject && schema[OpenApiSchemaKeywords.EnumKeyword] is not null && schema[OpenApiSchemaKeywords.TypeKeyword] is null)
+            {
+                schema[OpenApiSchemaKeywords.TypeKeyword] = "string";
+            }
+
             // STJ uses `true` in place of an empty object to represent a schema that matches
             // anything (like the `object` type) or types with user-defined converters. We override
             // this default behavior here to match the format expected in OpenAPI v3.
