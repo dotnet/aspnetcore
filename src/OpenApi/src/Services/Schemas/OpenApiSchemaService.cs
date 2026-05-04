@@ -47,8 +47,16 @@ internal sealed class OpenApiSchemaService(
             {
                 var hasRequiredAttribute = propertyInfo.AttributeProvider?
                     .GetCustomAttributes(inherit: false)
-                    .Any(attr => attr is RequiredAttribute);
-                propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
+                    .Any(attr => attr is RequiredAttribute)
+                    ?? false;
+                // Also check constructor parameter attributes for primary constructor classes
+                // where attributes are on the parameter, not the synthesized property.
+                hasRequiredAttribute = hasRequiredAttribute
+                    || (propertyInfo.AssociatedParameter?.AttributeProvider?
+                        .GetCustomAttributes(inherit: false)
+                        .Any(attr => attr is RequiredAttribute)
+                        ?? false);
+                propertyInfo.IsRequired |= hasRequiredAttribute;
             }
         })
     };
@@ -109,6 +117,37 @@ internal sealed class OpenApiSchemaService(
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
             }
+            // Apply constructor parameter attributes first for primary constructor classes
+            // where attributes are on the parameter, not the synthesized property.
+            // Property-level attributes applied below will override these.
+            if (context.PropertyInfo is { AssociatedParameter.AttributeProvider: { } parameterAttributeProvider })
+            {
+                var parameterAttributes = parameterAttributeProvider.GetCustomAttributes(inherit: false);
+                if (parameterAttributes.OfType<ValidationAttribute>() is { } paramValidationAttributes)
+                {
+                    schema.ApplyValidationAttributes(paramValidationAttributes);
+                }
+                if (parameterAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } paramDefaultValueAttribute)
+                {
+                    schema.ApplyDefaultValue(paramDefaultValueAttribute.Value, context.TypeInfo);
+                }
+                var isInlinedParamSchema = !schema.WillBeComponentized();
+                if (isInlinedParamSchema)
+                {
+                    if (parameterAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } paramDescriptionAttribute)
+                    {
+                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = paramDescriptionAttribute.Description;
+                    }
+                }
+                else
+                {
+                    if (parameterAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } paramDescriptionAttribute)
+                    {
+                        schema[OpenApiConstants.RefDescriptionAnnotation] = paramDescriptionAttribute.Description;
+                    }
+                }
+            }
+            // Property-level attributes override constructor parameter attributes.
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
                 var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
