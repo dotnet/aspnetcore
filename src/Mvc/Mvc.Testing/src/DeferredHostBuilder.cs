@@ -12,7 +12,7 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 {
     public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
-    private Action<IHostBuilder> _configureHostBuilder;
+    private Action<IHostBuilder> _configure;
 
     private Func<string[], object>? _hostFactory;
 
@@ -24,7 +24,7 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
     public DeferredHostBuilder()
     {
-        _configureHostBuilder = b =>
+        _configure = b =>
         {
             // Copy the properties from this builder into the builder
             // that we're going to receive
@@ -56,13 +56,13 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
     public IHostBuilder ConfigureAppConfiguration(Action<HostBuilderContext, IConfigurationBuilder> configureDelegate)
     {
-        _configureHostBuilder += b => b.ConfigureAppConfiguration(configureDelegate);
+        _configure += b => b.ConfigureAppConfiguration(configureDelegate);
         return this;
     }
 
     public IHostBuilder ConfigureContainer<TContainerBuilder>(Action<HostBuilderContext, TContainerBuilder> configureDelegate)
     {
-        _configureHostBuilder += b => b.ConfigureContainer(configureDelegate);
+        _configure += b => b.ConfigureContainer(configureDelegate);
         return this;
     }
 
@@ -77,25 +77,25 @@ internal sealed class DeferredHostBuilder : IHostBuilder
 
     public IHostBuilder ConfigureServices(Action<HostBuilderContext, IServiceCollection> configureDelegate)
     {
-        _configureHostBuilder += b => b.ConfigureServices(configureDelegate);
+        _configure += b => b.ConfigureServices(configureDelegate);
         return this;
     }
 
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory) where TContainerBuilder : notnull
     {
-        _configureHostBuilder += b => b.UseServiceProviderFactory(factory);
+        _configure += b => b.UseServiceProviderFactory(factory);
         return this;
     }
 
     public IHostBuilder UseServiceProviderFactory<TContainerBuilder>(Func<HostBuilderContext, IServiceProviderFactory<TContainerBuilder>> factory) where TContainerBuilder : notnull
     {
-        _configureHostBuilder += b => b.UseServiceProviderFactory(factory);
+        _configure += b => b.UseServiceProviderFactory(factory);
         return this;
     }
 
     public void ConfigureHostBuilder(object hostBuilder)
     {
-        _configureHostBuilder(((IHostBuilder)hostBuilder));
+        _configure(((IHostBuilder)hostBuilder));
     }
 
     public void EntryPointCompleted(Exception? exception)
