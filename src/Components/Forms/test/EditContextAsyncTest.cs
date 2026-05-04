@@ -931,6 +931,59 @@ public class EditContextAsyncTest
     }
 
     [Fact]
+    public void AddValidationTask_CompletedSuccessfulTask_ClearsPriorFaultFromCompletedFaultedTask()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        var notifications = 0;
+        editContext.OnValidationStateChanged += (_, _) => notifications++;
+
+        // Fast-path settle a faulted task to mark the field as faulted.
+        editContext.AddValidationTask(field, Task.FromException(new InvalidOperationException("seed")), new CancellationTokenSource());
+        Assert.True(editContext.IsValidationFaulted(field));
+        var notificationsAfterFault = notifications;
+
+        // Fast-path settle a successful task and verify the fault flag is cleared and a
+        // notification was emitted because the flag changed.
+        editContext.AddValidationTask(field, Task.CompletedTask, new CancellationTokenSource());
+
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.Equal(notificationsAfterFault + 1, notifications);
+    }
+
+    [Fact]
+    public void AddValidationTask_CompletedCancelledTask_ClearsPriorFaultFromCompletedFaultedTask()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+
+        editContext.AddValidationTask(field, Task.FromException(new InvalidOperationException("seed")), new CancellationTokenSource());
+        Assert.True(editContext.IsValidationFaulted(field));
+
+        editContext.AddValidationTask(field, Task.FromCanceled(new CancellationToken(canceled: true)), new CancellationTokenSource());
+
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+    }
+
+    [Fact]
+    public void AddValidationTask_CompletedSuccessfulTask_DoesNotNotifyWhenStateUnchanged()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        var notifications = 0;
+        editContext.OnValidationStateChanged += (_, _) => notifications++;
+
+        // Field has neither pending nor faulted state; a completed-success task should be a no-op.
+        editContext.AddValidationTask(field, Task.CompletedTask, new CancellationTokenSource());
+
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+        Assert.Equal(0, notifications);
+    }
+
+    [Fact]
     public void AddValidationTask_CompletedFaultedTask_ObservesException()
     {
         var editContext = new EditContext(new TestModel());

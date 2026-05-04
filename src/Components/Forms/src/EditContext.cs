@@ -424,9 +424,10 @@ public sealed class EditContext
     /// Registers an async validation task for a specific field. The task is tracked for
     /// pending/faulted state queries via <see cref="IsValidationPending(in FieldIdentifier)"/>
     /// and <see cref="IsValidationFaulted(in FieldIdentifier)"/>. If a task is already tracked
-    /// for this field, the previous task's <paramref name="cts"/> is cancelled and the new task replaces it.
-    /// The <see cref="EditContext"/> takes ownership of the supplied <paramref name="cts"/>: it will be
-    /// cancelled if a subsequent validation supersedes this one, and disposed once <paramref name="task"/> completes.
+    /// for this field, the previously registered <see cref="CancellationTokenSource"/> is cancelled
+    /// and the new task replaces it. The <see cref="EditContext"/> takes ownership of the supplied
+    /// <paramref name="cts"/>: it will be cancelled if a subsequent validation supersedes this one,
+    /// and disposed once <paramref name="task"/> completes.
     /// </summary>
     /// <remarks>
     /// If <paramref name="task"/> is already completed, it is settled synchronously: the field is
@@ -463,18 +464,14 @@ public sealed class EditContext
             state.PendingValidationTask = null;
             state.PendingValidationCts = null;
 
-            // Settle synchronously without parking the slot. Mirrors observer policy: only set
-            // IsValidationFaulted on a faulted task; cancel and success are no-ops on the fault flag.
-            var faultFlagChanged = false;
+            // Settle synchronously without parking the slot. Mirror the slow path: a successful
+            // or cancelled task clears any prior fault flag; a faulted task sets it.
             if (task.IsFaulted)
             {
                 _ = task.Exception; // observe to suppress UnobservedTaskException
-                if (!state.IsValidationFaulted)
-                {
-                    state.IsValidationFaulted = true;
-                    faultFlagChanged = true;
-                }
             }
+            var faultFlagChanged = task.IsFaulted != state.IsValidationFaulted;
+            state.IsValidationFaulted = task.IsFaulted;
 
             if (hadPriorPending || faultFlagChanged)
             {
@@ -543,9 +540,11 @@ public sealed class EditContext
         => IsValidationFaulted(FieldIdentifier.Create(accessor));
 
     /// <summary>
-    /// Returns <c>true</c> if the most recent <see cref="ValidateAsync"/> pass observed an
-    /// unhandled exception from any <see cref="OnValidationRequestedAsync"/> handler. Use this
-    /// to detect that validation itself failed (as opposed to producing validation messages).
+    /// Returns <c>true</c> if the most recent form-level validation pass observed an unhandled
+    /// exception from any <see cref="OnValidationRequestedAsync"/> handler. Both <see cref="Validate"/>
+    /// and <see cref="ValidateAsync"/> update this flag: a successful pass clears it, a faulted async
+    /// pass sets it, and a caller-cancelled <see cref="ValidateAsync"/> pass leaves it unchanged.
+    /// Use this to detect that validation itself failed (as opposed to producing validation messages).
     /// For per-field validator faults from <see cref="AddValidationTask"/>, use the
     /// <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
     /// </summary>

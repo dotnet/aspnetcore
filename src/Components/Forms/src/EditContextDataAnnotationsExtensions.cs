@@ -227,11 +227,12 @@ public static partial class EditContextDataAnnotationsExtensions
                 ValidationContext = validationContext,
             };
 
-            // Clear stale messages up-front so the field shows neutral state during validation
-            // and shows neutral state after a throw or cancellation. Any faulted state is signaled
-            // separately via EditContext.IsValidationFaulted. The caller (OnFieldChanged) registers
-            // this task via AddValidationTask immediately after this method's first await, which
-            // produces a single notification covering both the cleared messages and the pending flag.
+            // Clear stale messages up-front so the field shows neutral state during validation and
+            // after a throw or cancellation. Any faulted state is signalled separately via
+            // EditContext.IsValidationFaulted. _messages.Clear runs synchronously before this method
+            // suspends at the first await; the caller (OnFieldChanged) then synchronously calls
+            // AddValidationTask, whose NotifyValidationStateChanged covers both the cleared messages
+            // and the pending flag in a single notification.
             _messages.Clear(fieldIdentifier);
 
             try
@@ -240,9 +241,9 @@ public static partial class EditContextDataAnnotationsExtensions
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // Task was cancelled (user re-edited field or form is submitting). The new
-                // AddValidationTask call has already cleared messages and notified, so no extra
-                // notification is needed here.
+                // Task was cancelled (user re-edited field or form is submitting). The notification
+                // emitted by the superseding AddValidationTask call already reflects the cleared
+                // messages, so no extra notification is needed here.
                 return;
             }
 
