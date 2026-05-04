@@ -795,13 +795,12 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         ArgumentNullException.ThrowIfNull(user);
 
         var userId = user.Id;
-        var passkeys = await UserPasskeys
+        var rawPasskeys = await UserPasskeys
             .Where(p => p.UserId.Equals(userId))
-            .Select(p => p.ToUserPasskeyInfo())
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        return passkeys;
+        return rawPasskeys.Select(p => p.ToUserPasskeyInfo()).ToList();
     }
 
     /// <summary>
