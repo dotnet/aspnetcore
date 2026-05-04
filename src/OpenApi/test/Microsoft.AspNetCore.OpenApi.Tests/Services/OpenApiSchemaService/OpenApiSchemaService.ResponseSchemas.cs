@@ -1144,11 +1144,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     [Fact]
     public async Task GetOpenApiResponse_MvcController_SupportsAnyOfForSameContentType()
     {
-        var actionDescriptor = CreateActionDescriptor(nameof(MultiProducesController.GetOneOf), typeof(MultiProducesController));
+        var actionDescriptor = CreateActionDescriptor(nameof(MultiProducesController.GetAnyOf), typeof(MultiProducesController));
 
         await VerifyOpenApiDocument(actionDescriptor, document =>
         {
-            var operation = document.Paths["/oneof"].Operations[HttpMethod.Get];
+            var operation = document.Paths["/anyOf"].Operations[HttpMethod.Get];
             var response = Assert.Single(operation.Responses);
             Assert.Equal("200", response.Key);
             var content = Assert.Single(response.Value.Content);
@@ -1177,10 +1177,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         internal IActionResult GetMultiContentType() => throw new NotImplementedException();
 
         [HttpGet]
-        [Route("/oneof")]
+        [Route("/anyOf")]
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK, "application/json")]
         [ProducesResponseType(typeof(Error), StatusCodes.Status200OK, "application/json")]
-        internal IActionResult GetOneOf() => throw new NotImplementedException();
+        internal IActionResult GetAnyOf() => throw new NotImplementedException();
     }
 
     private class ClassWithObjectProperty
