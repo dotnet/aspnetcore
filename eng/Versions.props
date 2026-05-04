@@ -95,6 +95,8 @@
     <MicrosoftAspNetCoreRazorLanguageVersion>6.0.0</MicrosoftAspNetCoreRazorLanguageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsVersion>6.0.0</MicrosoftAspNetCoreMvcRazorExtensionsVersion>
     <MicrosoftCodeAnalysisRazorVersion>6.0.0</MicrosoftCodeAnalysisRazorVersion>
+    <!-- Local packages built in this repo -->
+    <MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>$(VersionPrefix)</MicrosoftAspNetCoreComponentsWebAssemblyDevServerVersion>
     <!-- Partner teams -->
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
