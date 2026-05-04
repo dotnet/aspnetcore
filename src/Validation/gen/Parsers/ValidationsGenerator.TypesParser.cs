@@ -75,6 +75,25 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Type parameters (e.g., TRequest from a generic MapCommand<TRequest>() extension)
+        // have DeclaredAccessibility == NotApplicable. The concrete type is only known at
+        // call sites, not inside the generic method body where the endpoint delegate is
+        // defined. Walk constraint types to discover any validatable types reachable
+        // through type constraints.
+        if (typeSymbol is ITypeParameterSymbol typeParam)
+        {
+            // Add to visitedTypes BEFORE iterating constraints to prevent
+            // infinite recursion through circular constraints such as
+            // where T : class, IEnumerable<T> (SEC-001).
+            visitedTypes.Add(typeSymbol);
+            var foundValidatable = false;
+            foreach (var constraintType in typeParam.ConstraintTypes)
+            {
+                foundValidatable |= TryExtractValidatableType(constraintType, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            }
+            return foundValidatable;
+        }
+
         // Skip types that are not accessible from generated code
         if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
         {
@@ -196,6 +215,16 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             validatableTypes,
                             visitedTypes);
 
+                        // Skip properties whose type is a type parameter (e.g., TSelf
+                        // from CRTP pattern RequestBase<TSelf>). The emitter would
+                        // generate typeof(TSelf) which is not valid C# (CRASH-001).
+                        // Concrete validatable types reachable through constraints are
+                        // already discovered by TryExtractValidatableType above.
+                        if (ContainsTypeParameter(correspondingProperty.Type))
+                        {
+                            continue;
+                        }
+
                         members.Add(new ValidatableProperty(
                             ContainingTypeFQN: correspondingProperty.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                             TypeFQN: correspondingProperty.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
@@ -256,6 +285,14 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
+            // Skip properties whose type is a type parameter (e.g., TSelf
+            // from CRTP pattern RequestBase<TSelf>). The emitter would
+            // generate typeof(TSelf) which is not valid C# (CRASH-001).
+            if (ContainsTypeParameter(member.Type))
+            {
+                continue;
+            }
+
             members.Add(new ValidatableProperty(
                 ContainingTypeFQN: member.ContainingType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
                 TypeFQN: member.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
@@ -286,5 +323,41 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     {
         var validatableObjectSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_IValidatableObject);
         return typeSymbol.ImplementsInterface(validatableObjectSymbol);
+    }
+
+    /// <summary>
+    /// Returns true if the given type symbol contains an unresolved type parameter
+    /// anywhere in its type tree. This catches not only bare <c>T</c> but also
+    /// constructed types like <c>List&lt;T&gt;</c>, <c>T[]</c>, <c>T?</c>, and
+    /// <c>Dictionary&lt;string, T&gt;</c> — all of which would produce invalid
+    /// <c>typeof(...)</c> expressions in the emitted code.
+    /// </summary>
+    private static bool ContainsTypeParameter(ITypeSymbol type)
+    {
+        // Bare type parameter: T, TSelf, TSelf?
+        if (type is ITypeParameterSymbol)
+        {
+            return true;
+        }
+
+        // Array: T[], T[,], List<T>[]
+        if (type is IArrayTypeSymbol arrayType)
+        {
+            return ContainsTypeParameter(arrayType.ElementType);
+        }
+
+        // Constructed generic: List<T>, Dictionary<string, T>, Nullable<T>, Func<T, bool>
+        if (type is INamedTypeSymbol { IsGenericType: true } namedType)
+        {
+            foreach (var typeArg in namedType.TypeArguments)
+            {
+                if (ContainsTypeParameter(typeArg))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
