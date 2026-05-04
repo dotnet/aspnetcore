@@ -228,7 +228,8 @@ permissions:
 network: defaults
 
 tools:
-  bash: [":*"]
+  # Default safe commands + commands observed in actual workflow runs
+  bash: ["cat", "cd", "cp", "date", "echo", "gh", "grep", "head", "jq", "ls", "mkdir", "mv", "python3", "pwd", "rm", "sort", "tail", "uniq", "wc", "xargs", "xxd"]
   github:
     toolsets: [repos, issues, pull_requests, search]
     # Allow reading PR data from external contributors. These PRs have already
@@ -369,9 +370,19 @@ previous entries. A companion feedback issue collects editorial comments.
 
 ## Important: available tools
 
-All shell commands are available via the `bash` tool. Prefer `cat` and `jq` for
-JSON processing (parsing, filtering, counting, transforming). Do **not** `cat`
-large JSON files in their entirety — use `jq` to extract only the fields you need.
+Only the commands in the `bash` allow list above are available — **not** all shell
+commands. Prefer `cat` and `jq` for JSON processing (parsing, filtering, counting,
+transforming). Do **not** `cat` large JSON files in their entirety — use `jq` to
+extract only the fields you need.
+
+**Shell syntax restriction:** The bash tool does **not** support shell builtins or
+syntax constructs like `for`, `while`, `if`, function definitions, or heredocs.
+These will be denied. To perform batch operations (e.g., writing multiple files),
+use one of these patterns:
+- Pipe data through `xargs` (e.g., `echo '...' | xargs -I{} sh -c '...'` is NOT
+  allowed — instead issue one `bash` call per file)
+- Use `python3 -c '...'` for complex batch logic
+- Issue separate `bash` tool calls for each file (preferred for clarity)
 
 ## Configuration
 
@@ -444,7 +455,7 @@ unprocessed PRs, sorted by `mergedAt` ascending (oldest first). Each entry conta
 1. **Exclude bot-authored PRs** — remove any PR whose `author.is_bot` is `true`,
    **except** these cases which should be processed normally:
    - `app/copilot-swe-agent` — makes product changes on behalf of developers.
-   - **Backport PRs** — PRs whose body contains the word `backport` or `port`
+   - **Backport PRs** — PRs whose body contains the word `backport`
      and, upon inspection, appears to be a backport of another PR (e.g.,
      references an original PR number). These are created by backport bots
      and contain the same meaningful changes as their source PRs, just
@@ -462,16 +473,18 @@ total number of changed lines (additions + deletions).
 ### 3a. Processing backport PRs
 
 Backport PRs are identified by checking whether the PR body contains the word
-`backport` or `port` (case-insensitive). If either word is present, inspect the
-body text to determine whether the PR is actually a backport of another PR —
-look for references to an original PR number (e.g., "Backport of #1234",
-"port of #5678", a markdown link to another PR, etc.). Their body typically
+`backport` (case-insensitive). Do **not** match on the standalone word `port` —
+it appears too frequently in non-backport contexts (e.g., "containerPort",
+"port binding", "transport"). If `backport` is present, inspect the body text
+to determine whether the PR is actually a backport of another PR — look for
+references to an original PR number (e.g., "Backport of #1234", a markdown
+link to another PR, etc.). Their body typically
 contains only this backport reference plus a shiproom template that may be unfilled
 or partially filled. To process them:
 
 1. **Extract the original PR number** from the body by inspecting the text for
-   a reference to the source PR (e.g., "Backport of #1234", "#1234", or a
-   full URL like `https://github.com/${REPO}/pull/1234`).
+   a reference to the source PR (e.g., "Backport of #1234", or a full URL
+   like `https://github.com/${REPO}/pull/1234`).
 2. **Fetch the original PR** using `pull_request_read` to get its full title,
    body/description, labels, and changed file paths. Use the original PR's
    content as the primary source for generating the changelog entry.
@@ -851,8 +864,8 @@ After the Table of Contents, add a **What's New** section that lists the
 of their most recent PR.
 Each item is a link to the area heading, using the format:
 `- [<date> — <change-emoji> <Name>](#<area-slug>)`
-where `<date>` is the merge date of the last PR in `YYYY-M-D HH:mm` format
-(no leading zeroes on month/day, 24-hour UTC time), `<change-emoji>` is the
+where `<date>` is the merge date of the last PR in `YYYY-MM-DD HH:mm` format
+(zero-padded month/day, 24-hour UTC time), `<change-emoji>` is the
 entry's individual emoji, `<Name>` is the changelog entry name, and
 `<area-slug>` is the GitHub-generated slug for that area's `##` heading
 (e.g., `-auth`, `-blazor`, `-signalr`). The `#` before the slug is mandatory
@@ -879,9 +892,9 @@ Use this exact format:
 
 ## What's New
 
-- [2026-4-22 22:48 — 🧭 Feature name](#-blazor)
-- [2026-4-21 07:30 — 🆕 New Blazor component](#-blazor)
-- [2026-4-20 23:05 — 🚀 Another feature](#-auth)
+- [2026-04-22 22:48 — 🧭 Feature name](#-blazor)
+- [2026-04-21 07:30 — 🆕 New Blazor component](#-blazor)
+- [2026-04-20 23:05 — 🚀 Another feature](#-auth)
 
 ## 🔐 Auth
 
@@ -889,20 +902,20 @@ Use this exact format:
 
 #### New features
 
-- **🧭 Feature name**
+1. **🧭 Feature name**
   Brief user-facing description
   Changes: [#51234](https://github.com/${REPO}/pull/51234), [#51235](https://github.com/${REPO}/pull/51235)
   ⚠️ **Breaking change**
   📝 **Documentation required**
 
-- **🚀 Another feature**
+1. **🚀 Another feature**
   What this means for users
   Changes: [#51236](https://github.com/${REPO}/pull/51236)
   📝 **Documentation required**
 
 #### Improvements
 
-- **⚡ Performance boost**
+1. **⚡ Performance boost**
   Faster authentication token validation
   Changes: [#51238](https://github.com/${REPO}/pull/51238)
 
@@ -912,13 +925,13 @@ Use this exact format:
 
 #### New features
 
-- **🆕 New Blazor component**
+1. **🆕 New Blazor component**
   Added a new interactive component for data grids
   Changes: [#51240](https://github.com/${REPO}/pull/51240)
 
 #### Bug fixes
 
-- **🐛 Fix crash on render**
+1. **🐛 Fix crash on render**
   Resolved a crash when rendering components with null parameters
   Changes: [#51239](https://github.com/${REPO}/pull/51239)
   ⚠️ **Breaking change**
@@ -930,7 +943,7 @@ Use this exact format:
 
 #### Improvements
 
-- **🎨 SignalR improvement**
+1. **🎨 SignalR improvement**
   Description of the change
   Changes: [#51237](https://github.com/${REPO}/pull/51237)
 
@@ -942,7 +955,7 @@ Use this exact format:
 
 **PRs processed:** ✅ 6 included · ❌ 1 excluded · ⏳ 93 unprocessed · 100 total merged in milestone
 ([View full PR tracker](https://github.com/${REPO}/blob/memory/milestone-changelog/${MILESTONE}/prs/))
-**PRs analyzed through:** [#<number>](https://github.com/${REPO}/pull/<number>) merged <merge date of the newest PR processed in this run, in UTC>
+**PRs analyzed through:** [#<number>](https://github.com/${REPO}/pull/<number>) merged <YYYY-MM-DD HH:mm> UTC
 ```
 
 At the bottom of the page (after the footer), include a **PRs processed** summary
@@ -952,7 +965,7 @@ through** line showing the newest PR processed in this run:
 ```
 **PRs processed:** ✅ <N> included · ❌ <N> excluded · ⏳ <N> unprocessed · <N> total merged in milestone
 ([View full PR tracker](https://github.com/${REPO}/blob/memory/milestone-changelog/${MILESTONE}/prs/))
-**PRs analyzed through:** [#<number>](https://github.com/${REPO}/pull/<number>) merged <date>
+**PRs analyzed through:** [#<number>](https://github.com/${REPO}/pull/<number>) merged <YYYY-MM-DD HH:mm> UTC
 ```
 
 Compute the counts:
