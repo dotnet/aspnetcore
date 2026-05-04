@@ -4,7 +4,7 @@
 <p id="items-provider-call-count">@ItemsProviderCallCount</p>
 
 <div id="grid" style="height: 200px; overflow: auto">
-    <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50">
+    <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50" OverscanCount="3">
         <PropertyColumn Property="@(p => p.Id)" />
         <PropertyColumn Property="@(p => p.Name)" />
     </QuickGrid>

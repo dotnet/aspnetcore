@@ -1,0 +1,13 @@
+@* Tests that Blazor's event binding works correctly with Shadow DOM elements.
+   The <shadow-dom-input> web component wraps an <input> inside a Shadow DOM.
+   Without the composedPath() fix, event.target points to the shadow host instead
+   of the actual input, breaking Blazor's two-way binding. *@
+
+<div id="shadow-dom-binding">
+    <shadow-dom-input id="shadow-input" @bind="BoundValue" @bind:event="oninput" />
+    <span id="shadow-bound-value">@BoundValue</span>
+</div>
+
+@code {
+    public string BoundValue { get; set; } = string.Empty;
+}
