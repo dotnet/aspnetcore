@@ -2093,4 +2093,61 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         javascript.ExecuteScript(
             $"document.querySelector('{cssSelector}').dispatchEvent(new KeyboardEvent('change'));");
     }
+
+    [Fact]
+    public void CanBindContentEditableDiv_WithOninput()
+    {
+        var target = Browser.Exists(By.Id("contenteditable-oninput"));
+        var boundValue = Browser.Exists(By.Id("contenteditable-oninput-value"));
+        Assert.Equal("Initial content", target.Text);
+        Assert.Equal("Initial content", boundValue.Text);
+
+        // Use JavaScript to set content and dispatch input event
+        // (SendKeys on contenteditable causes issues because Blazor re-rendering moves the caret)
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            var el = arguments[0];
+            el.textContent = 'New content';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        ", target);
+
+        Browser.Equal("New content", () => boundValue.Text);
+    }
+
+    [Fact]
+    public void CanBindContentEditableDiv_WithOnchange()
+    {
+        var target = Browser.Exists(By.Id("contenteditable-onchange"));
+        var boundValue = Browser.Exists(By.Id("contenteditable-onchange-value"));
+        Assert.Equal("Change on blur", target.Text);
+        Assert.Equal("Change on blur", boundValue.Text);
+
+        // Focus the element first, then set content, then blur
+        // The contentblur event fires on blur, so we need proper focus/blur sequence
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            var el = arguments[0];
+            el.focus();
+            el.textContent = 'Updated value';
+            el.blur();
+        ", target);
+
+        Browser.Equal("Updated value", () => boundValue.Text);
+    }
+
+    [Fact]
+    public void CanBindContentEditableDiv_InitiallyBlank()
+    {
+        var target = Browser.Exists(By.Id("contenteditable-initially-blank"));
+        var boundValue = Browser.Exists(By.Id("contenteditable-initially-blank-value"));
+        Assert.Equal(string.Empty, target.Text);
+        Assert.Equal(string.Empty, boundValue.Text);
+
+        // Use JavaScript to set content and dispatch input event
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            var el = arguments[0];
+            el.textContent = 'Added content';
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        ", target);
+
+        Browser.Equal("Added content", () => boundValue.Text);
+    }
 }
