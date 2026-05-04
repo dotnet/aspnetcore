@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
@@ -272,6 +273,28 @@ public static class WebHost
             services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
+
+            // Cross-origin protection (Sec-Fetch-* / Origin header validation).
+            // Enabled by default for all apps. Disable via configuration:
+            //   "CrossOriginProtection:Enabled": "false"
+            var crossOriginEnabled = hostingContext.Configuration["CrossOriginProtection:Enabled"];
+            if (!string.Equals("false", crossOriginEnabled, StringComparison.OrdinalIgnoreCase))
+            {
+                services.AddCrossOriginProtection();
+
+                services.PostConfigure<CrossOriginProtectionOptions>(options =>
+                {
+                    var trustedOrigins = hostingContext.Configuration["CrossOriginProtection:TrustedOrigins"]
+                        ?.Split(';', StringSplitOptions.RemoveEmptyEntries);
+                    if (trustedOrigins is not null)
+                    {
+                        foreach (var origin in trustedOrigins)
+                        {
+                            options.TrustedOrigins.Add(origin.Trim());
+                        }
+                    }
+                });
+            }
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
             // A lambda is used here because we don't want to reference AddRouting directly because of trimming.

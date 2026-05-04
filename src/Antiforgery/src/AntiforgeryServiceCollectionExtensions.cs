@@ -52,4 +52,39 @@ public static class AntiforgeryServiceCollectionExtensions
         services.Configure(setupAction);
         return services;
     }
+
+    /// <summary>
+    /// Adds cross-origin request protection services to the specified <see cref="IServiceCollection" />.
+    /// This provides lightweight CSRF protection based on Sec-Fetch-* and Origin headers
+    /// without requiring token generation or data protection.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddCrossOriginProtection(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddOptions();
+        services.TryAddSingleton<ICrossOriginProtection, DefaultCrossOriginProtection>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds cross-origin request protection services to the specified <see cref="IServiceCollection" />.
+    /// This provides lightweight CSRF protection based on Sec-Fetch-* and Origin headers
+    /// without requiring token generation or data protection.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+    /// <param name="setupAction">An <see cref="Action{CrossOriginProtectionOptions}"/> to configure the provided <see cref="CrossOriginProtectionOptions"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+    public static IServiceCollection AddCrossOriginProtection(this IServiceCollection services, Action<CrossOriginProtectionOptions> setupAction)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(setupAction);
+
+        services.AddCrossOriginProtection();
+        services.Configure(setupAction);
+        return services;
+    }
 }

@@ -50,10 +50,29 @@ internal sealed partial class EndpointMiddleware
                     ThrowMissingCorsMiddlewareException(endpoint);
                 }
 
-                if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true } &&
-                    !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
+                if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
                 {
-                    ThrowMissingAntiforgeryMiddlewareException(endpoint);
+                    // Cross-origin protection: independent always-on layer.
+                    // Runs for every endpoint with antiforgery metadata when registered in DI.
+                    var crossOriginProtection = httpContext.RequestServices.GetService(typeof(ICrossOriginProtection)) as ICrossOriginProtection;
+                    if (crossOriginProtection is not null)
+                    {
+                        var result = crossOriginProtection.Validate(httpContext);
+                        if (result == CrossOriginAntiforgeryResult.Denied)
+                        {
+                            Log.CrossOriginRequestDenied(_logger, endpoint);
+                            httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                            return Task.CompletedTask;
+                        }
+                    }
+
+                    // If no cross-origin protection is registered AND no antiforgery middleware
+                    // was invoked, throw the existing actionable error message.
+                    if (crossOriginProtection is null &&
+                        !httpContext.Items.ContainsKey(AntiforgeryMiddlewareWithEndpointInvokedKey))
+                    {
+                        ThrowMissingAntiforgeryMiddlewareException(endpoint);
+                    }
                 }
             }
 
@@ -133,5 +152,8 @@ internal sealed partial class EndpointMiddleware
 
         [LoggerMessage(1, LogLevel.Information, "Executed endpoint '{EndpointName}'", EventName = "ExecutedEndpoint")]
         public static partial void ExecutedEndpoint(ILogger logger, Endpoint endpointName);
+
+        [LoggerMessage(2, LogLevel.Warning, "Cross-origin request denied for endpoint '{EndpointName}'", EventName = "CrossOriginRequestDenied")]
+        public static partial void CrossOriginRequestDenied(ILogger logger, Endpoint endpointName);
     }
 }

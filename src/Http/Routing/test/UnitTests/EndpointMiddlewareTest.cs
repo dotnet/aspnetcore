@@ -417,7 +417,7 @@ public class EndpointMiddlewareTest
     {
         public object GetService(Type serviceType)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }
