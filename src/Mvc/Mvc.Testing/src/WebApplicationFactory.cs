@@ -285,11 +285,18 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 });
             });
             // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
+
+            var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
+            {
+                { "HostApplicationBuilderConstructed", hostApplicationBuilder => ConfigureHostApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!) }
+            };
+
             var factory = HostFactoryResolver.ResolveHostFactory(
                 typeof(TEntryPoint).Assembly,
                 stopApplication: false,
                 configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
-                entrypointCompleted: deferredHostBuilder.EntryPointCompleted);
+                entrypointCompleted: deferredHostBuilder.EntryPointCompleted,
+                arbitraryActions: arbitraryActions);
 
             if (factory is not null)
             {
@@ -626,6 +633,15 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     /// <param name="builder">The <see cref="IWebHostBuilder"/> for the application.</param>
     protected virtual void ConfigureWebHost(IWebHostBuilder builder)
+    {
+    }
+
+    /// <summary>
+    /// Gives a fixture an opportunity to configure the application builder.
+    /// This method will be called very early, during the entrypoint's call to WebApplication.CreateBuilder.
+    /// </summary>
+    /// <param name="hostApplicationBuilder">The host application builder to configure.</param>
+    protected virtual void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
     {
     }
 

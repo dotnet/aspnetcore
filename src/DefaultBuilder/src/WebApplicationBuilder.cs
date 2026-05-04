@@ -26,6 +26,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
     private const string UseRoutingKey = "__UseRouting";
 
+    private const string HostApplicationBuilderConstructedEventName = "HostApplicationBuilderConstructed";
+
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
 
@@ -45,6 +47,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+
+        OnHostApplicationBuilderConstructed(_hostApplicationBuilder);
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -100,6 +104,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+
+        OnHostApplicationBuilderConstructed(_hostApplicationBuilder);
 
         // Ensure the same behavior of the non-slim WebApplicationBuilder by adding the default "app" Configuration sources
         ApplyDefaultAppConfigurationSlim(_hostApplicationBuilder.Environment, configuration, options.Args);
@@ -164,6 +170,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             Configuration = configuration,
         });
 
+        OnHostApplicationBuilderConstructed(_hostApplicationBuilder);
+
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
         {
@@ -198,6 +206,18 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+    }
+
+    private static void OnHostApplicationBuilderConstructed(HostApplicationBuilder hostApplicationBuilder)
+    {
+        using var diagnosticListener = new DiagnosticListener("Microsoft.Extensions.Hosting");
+
+        if (diagnosticListener.IsEnabled() && diagnosticListener.IsEnabled(HostApplicationBuilderConstructedEventName))
+        {
+#pragma warning disable IL2026 // TODO
+            diagnosticListener.Write(HostApplicationBuilderConstructedEventName, hostApplicationBuilder);
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+        }
     }
 
     [MemberNotNull(nameof(Environment), nameof(Host), nameof(WebHost))]

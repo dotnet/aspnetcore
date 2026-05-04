@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>.ConfigureHostApplicationBuilder(Microsoft.Extensions.Hosting.IHostApplicationBuilder! hostApplicationBuilder) -> void
