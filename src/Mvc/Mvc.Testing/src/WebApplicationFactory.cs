@@ -285,11 +285,17 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 });
             });
             // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
+
+            var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
+            {
+                { "HostApplicationBuilderConstructed", hostApplicationBuilder => SetupConfigurationBuilder(((HostApplicationBuilder)hostApplicationBuilder!).Configuration) }
+            };
+
             var factory = HostFactoryResolver.ResolveHostFactory(
                 typeof(TEntryPoint).Assembly,
                 stopApplication: false,
                 configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
-                setupConfigurationBuilder: SetupConfigurationBuilder,
+                arbitraryActions: arbitraryActions,
                 entrypointCompleted: deferredHostBuilder.EntryPointCompleted);
 
             if (factory is not null)
