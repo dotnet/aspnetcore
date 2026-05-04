@@ -209,7 +209,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// Gets or sets the zero-based index of the item to scroll to on first interactive render.
     /// The value is applied once when the component first knows its item count and is ignored
     /// on subsequent re-renders. To scroll programmatically at any later point, call
-    /// <see cref="ScrollToItemAsync(int, CancellationToken)"/>.
+    /// <see cref="ScrollToIndexAsync(int, CancellationToken)"/>.
     ///
     /// Out-of-range values are silently clamped to the valid range. <see langword="null"/> means
     /// "no initial scroll" — the component opens at item 0 as today.
@@ -244,8 +244,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// item count on each iteration. Items added or removed mid-flight do <em>not</em> cause the
     /// in-flight target to follow the originally referenced item — callers that need
     /// identity-following semantics observe their own list mutations and re-issue
-    /// <see cref="ScrollToItemAsync(int, CancellationToken)"/> with the new index. The call
-    /// always cancels any previously-running <see cref="ScrollToItemAsync(int, CancellationToken)"/>
+    /// <see cref="ScrollToIndexAsync(int, CancellationToken)"/> with the new index. The call
+    /// always cancels any previously-running <see cref="ScrollToIndexAsync(int, CancellationToken)"/>
     /// operation (last call wins).</para>
     /// <para>If the user scrolls during the operation, the user's scroll wins; the operation either
     /// converges to the target (if reachable within the iteration budget) or completes with
@@ -259,13 +259,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// <param name="cancellationToken">A token that lets the caller request cancellation.</param>
     /// <returns>A <see cref="Task"/> that completes when the target item is aligned, or with
     /// <see cref="OperationCanceledException"/> if the operation is cancelled or superseded.</returns>
-    public Task ScrollToItemAsync(int itemIndex, CancellationToken cancellationToken = default)
+    public Task ScrollToIndexAsync(int itemIndex, CancellationToken cancellationToken = default)
     {
         if (_jsInterop is null)
         {
             // Pre-interactive call: piggyback on the JS-interop guard. Throw a clear message.
             throw new InvalidOperationException(
-                $"{nameof(ScrollToItemAsync)} cannot be called before the {GetType().Name} has been initialized for interactive rendering. " +
+                $"{nameof(ScrollToIndexAsync)} cannot be called before the {GetType().Name} has been initialized for interactive rendering. " +
                 $"Use the {nameof(InitialItemIndex)} parameter to set the initial scroll position.");
         }
 
@@ -290,11 +290,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             return newTcs.Task;
         }
 
-        _ = StartScrollToItemAsync(itemIndex, newTcs, newCts, token);
+        _ = StartScrollToIndexAsync(itemIndex, newTcs, newCts, token);
         return newTcs.Task;
     }
 
-    private async Task StartScrollToItemAsync(
+    private async Task StartScrollToIndexAsync(
         int itemIndex,
         TaskCompletionSource tcs,
         CancellationTokenSource ownedCts,
@@ -500,7 +500,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             // If a mutation captured an anchor snapshot before render,
             // restore it now to keep the same row at the same viewport offset.
-            // Skip anchor restore while a ScrollToItemAsync is active — we are intentionally
+            // Skip anchor restore while a ScrollToIndexAsync is active — we are intentionally
             // moving the viewport and don't want anchor restore to fight the scroll.
             var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom && _activeScrollTarget is null;
             _pendingAnchorRestore = false;
@@ -518,10 +518,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             _initialScrollApplied = true;
             // Fire-and-forget: failures are not fatal for component lifecycle.
-            _ = ScrollToItemAsync(initial);
+            _ = ScrollToIndexAsync(initial);
         }
 
-        // Drive Stage 2 of an in-flight ScrollToItemAsync.
+        // Drive Stage 2 of an in-flight ScrollToIndexAsync.
         if (_activeScrollTarget is int target && _jsInterop is not null && _scrollCompletion is { } tcs)
         {
             await DriveScrollIterationAsync(target, tcs);
@@ -584,7 +584,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             {
                 // Swallow during best-effort cap exit.
             }
-            Debug.WriteLine($"Virtualize.ScrollToItemAsync: iteration cap ({MaxScrollToItemRetries}) reached for target index {target}; resolving with best-effort alignment.");
+            Debug.WriteLine($"Virtualize.ScrollToIndexAsync: iteration cap ({MaxScrollToItemRetries}) reached for target index {target}; resolving with best-effort alignment.");
             tcs.TrySetResult();
             return;
         }

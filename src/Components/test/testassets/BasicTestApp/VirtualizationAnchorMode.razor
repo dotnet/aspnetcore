@@ -371,7 +371,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex}...";
         try
         {
-            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex);
+            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex);
             scrollStatus = $"Completed: {scrollTargetIndex}";
         }
         catch (OperationCanceledException)
@@ -392,11 +392,11 @@
         // Only the final target should land in the viewport.
         var tasks = new[]
         {
-            virtualizeRef.ScrollToItemAsync(50),
-            virtualizeRef.ScrollToItemAsync(400),
-            virtualizeRef.ScrollToItemAsync(100),
-            virtualizeRef.ScrollToItemAsync(350),
-            virtualizeRef.ScrollToItemAsync(250),
+            virtualizeRef.ScrollToIndexAsync(50),
+            virtualizeRef.ScrollToIndexAsync(400),
+            virtualizeRef.ScrollToIndexAsync(100),
+            virtualizeRef.ScrollToIndexAsync(350),
+            virtualizeRef.ScrollToIndexAsync(250),
         };
         foreach (var t in tasks) { await SafeAwait(t); }
         var canceled = tasks.Count(t => t.IsCanceled);
@@ -418,7 +418,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex} (cancellable)...";
         try
         {
-            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex, _userScrollCts.Token);
+            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex, _userScrollCts.Token);
             scrollStatus = $"Completed: {scrollTargetIndex}";
         }
         catch (OperationCanceledException)

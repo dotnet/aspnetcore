@@ -4133,7 +4133,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_WithProviderDelay_NoPlaceholderAtTarget()
     {
-        // When ScrollToItemAsync completes, the target row must show content, not placeholder.
+        // When ScrollToIndexAsync completes, the target row must show content, not placeholder.
         MountAnchorModeForScrollToItem(delay: true);
         var js = (IJavaScriptExecutor)Browser;
 

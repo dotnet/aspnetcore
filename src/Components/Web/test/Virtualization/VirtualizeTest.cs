@@ -965,27 +965,27 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public void ScrollToItemAsync_ThrowsBeforeJsInteropInitialized()
+    public void ScrollToIndexAsync_ThrowsBeforeJsInteropInitialized()
     {
         var virtualize = new Virtualize<int>();
 
         var ex = Assert.Throws<InvalidOperationException>(
-            (Action)(() => { _ = virtualize.ScrollToItemAsync(0); }));
-        Assert.Contains(nameof(Virtualize<int>.ScrollToItemAsync), ex.Message);
+            (Action)(() => { _ = virtualize.ScrollToIndexAsync(0); }));
+        Assert.Contains(nameof(Virtualize<int>.ScrollToIndexAsync), ex.Message);
         Assert.Contains(nameof(Virtualize<int>.InitialItemIndex), ex.Message);
     }
 
     [Fact]
-    public async Task ScrollToItemAsync_NegativeIndexDoesNotThrow()
+    public async Task ScrollToIndexAsync_NegativeIndexDoesNotThrow()
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(-5); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(-5); });
         Assert.NotNull(task);
     }
 
     [Fact]
-    public async Task ScrollToItemAsync_IndexBeyondCountDoesNotThrow()
+    public async Task ScrollToIndexAsync_IndexBeyondCountDoesNotThrow()
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
 
@@ -994,13 +994,13 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(99_999); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(99_999); });
 
         Assert.NotNull(task);
     }
 
     [Fact]
-    public async Task ScrollToItemAsync_AlreadyCancelledTokenProducesCancelledTask()
+    public async Task ScrollToIndexAsync_AlreadyCancelledTokenProducesCancelledTask()
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
 
@@ -1008,13 +1008,13 @@ public class VirtualizeTest
         cts.Cancel();
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(10, cts.Token); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(10, cts.Token); });
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
     }
 
     [Fact]
-    public async Task ScrollToItemAsync_SecondCallCancelsFirstTask()
+    public async Task ScrollToIndexAsync_SecondCallCancelsFirstTask()
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
 
@@ -1024,8 +1024,8 @@ public class VirtualizeTest
 
         var (firstTask, secondTask) = await renderer.Dispatcher.InvokeAsync(() =>
         {
-            var first = virtualize.ScrollToItemAsync(500);
-            var second = virtualize.ScrollToItemAsync(750);
+            var first = virtualize.ScrollToIndexAsync(500);
+            var second = virtualize.ScrollToIndexAsync(750);
             return (first, second);
         });
 
