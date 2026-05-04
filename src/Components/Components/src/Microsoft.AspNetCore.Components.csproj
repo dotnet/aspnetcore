@@ -18,6 +18,10 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterValueSupplier.cs" LinkBase="Routing" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\StringSegmentAccumulator.cs" LinkBase="Routing" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\QueryParameterNameComparer.cs" LinkBase="Routing" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\UrlValueConstraint.cs" LinkBase="Routing" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertyGetter.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertySetter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />

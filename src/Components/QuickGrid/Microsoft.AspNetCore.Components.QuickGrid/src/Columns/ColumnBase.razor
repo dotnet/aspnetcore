@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.AspNetCore.Components.Rendering
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @namespace Microsoft.AspNetCore.Components.QuickGrid
@@ -24,10 +24,26 @@
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
             {
-                <button class="col-title" type="button" @onclick="@(() => Grid.SortByColumnAsync(this))">
-                    <div class="col-title-text">@Title</div>
-                    <div class="sort-indicator" aria-hidden="true"></div>
-                </button>
+                @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting && Title is not null)
+                {
+                    <a class="col-title" href="@(Grid.GetSortUrl(this))">
+                        <div class="col-title-text">@Title</div>
+                        <div class="sort-indicator" aria-hidden="true"></div>
+                    </a>
+                }
+                else if (!QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting && Title is not null)
+                {
+                    <button class="col-title" type="button" @onclick="@(() => Grid.SortByColumnAsync(this))">
+                        <div class="col-title-text">@Title</div>
+                        <div class="sort-indicator" aria-hidden="true"></div>
+                    </button>
+                }
+                else
+                {
+                    <div class="col-title">
+                        <div class="col-title-text">@Title</div>
+                    </div>
+                }
             }
             else
             {
