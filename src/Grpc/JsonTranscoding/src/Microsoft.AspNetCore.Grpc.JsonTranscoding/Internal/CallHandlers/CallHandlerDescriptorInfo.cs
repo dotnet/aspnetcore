@@ -25,6 +25,13 @@ internal sealed class CallHandlerDescriptorInfo
         RouteParameterDescriptors = routeParameterDescriptors;
         RouteAdapter = routeAdapter;
         PathDescriptorsCache = new ConcurrentDictionary<string, List<FieldDescriptor>?>();
+
+        var jsonPaths = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var routeParameter in routeParameterDescriptors.Values)
+        {
+            jsonPaths.Add(routeParameter.JsonPath);
+        }
+        RouteParameterJsonPaths = jsonPaths;
     }
 
     public FieldDescriptor? ResponseBodyDescriptor { get; }
@@ -34,5 +41,6 @@ internal sealed class CallHandlerDescriptorInfo
     public FieldDescriptor? BodyFieldDescriptor { get; }
     public Dictionary<string, RouteParameter> RouteParameterDescriptors { get; }
     public JsonTranscodingRouteAdapter RouteAdapter { get; }
+    public HashSet<string> RouteParameterJsonPaths { get; }
     public ConcurrentDictionary<string, List<FieldDescriptor>?> PathDescriptorsCache { get; }
 }

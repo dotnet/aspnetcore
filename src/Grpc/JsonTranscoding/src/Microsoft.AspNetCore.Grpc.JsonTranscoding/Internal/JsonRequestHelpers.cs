@@ -408,24 +408,25 @@ internal static class JsonRequestHelpers
     {
         if (serverCallContext.DescriptorInfo.BodyDescriptor != null)
         {
-            var bodyFieldName = serverCallContext.DescriptorInfo.BodyFieldDescriptor?.Name;
+            var bodyFieldDescriptor = serverCallContext.DescriptorInfo.BodyFieldDescriptor;
 
-            // Null field name indicates "*" which means the entire message is bound to the body.
-            if (bodyFieldName == null)
+            // Null field descriptor indicates "*" which means the entire message is bound to the body.
+            if (bodyFieldDescriptor?.Name is null)
             {
                 return false;
             }
 
-            // Exact match
-            if (variable == bodyFieldName)
+            var bodyFieldName = bodyFieldDescriptor.Name;
+            var bodyFieldJsonName = bodyFieldDescriptor.JsonName;
+
+            // Exact match (proto name or JSON name)
+            if (variable == bodyFieldName || variable == bodyFieldJsonName)
             {
                 return false;
             }
 
-            // Nested field of field name.
-            if (bodyFieldName.Length + 1 < variable.Length &&
-                variable.StartsWith(bodyFieldName, StringComparison.Ordinal) &&
-                variable[bodyFieldName.Length] == '.')
+            // Nested field of body field (proto name prefix or JSON name prefix).
+            if (IsNestedBodyField(variable, bodyFieldName) || IsNestedBodyField(variable, bodyFieldJsonName))
             {
                 return false;
             }
@@ -436,6 +437,20 @@ internal static class JsonRequestHelpers
             return false;
         }
 
+        // Also check JSON name aliases. Route parameter keys use proto names (e.g. "user_id"),
+        // but query parameters can use JSON names (e.g. "userId") which resolve to the same field.
+        if (serverCallContext.DescriptorInfo.RouteParameterJsonPaths.Contains(variable))
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    private static bool IsNestedBodyField(string variable, string bodyFieldName)
+    {
+        return bodyFieldName.Length + 1 < variable.Length &&
+            variable.StartsWith(bodyFieldName, StringComparison.Ordinal) &&
+            variable[bodyFieldName.Length] == '.';
     }
 }

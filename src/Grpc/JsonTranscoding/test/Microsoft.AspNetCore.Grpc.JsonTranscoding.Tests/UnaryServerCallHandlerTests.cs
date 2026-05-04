@@ -41,6 +41,12 @@ public class UnaryServerCallHandlerTests : LoggedTest
         return new RouteParameter(descriptorPath, new HttpRouteVariable(), string.Empty);
     }
 
+    private static RouteParameter CreateRouteParameterWithJsonPath(List<FieldDescriptor> descriptorPath)
+    {
+        var jsonPath = string.Join(".", descriptorPath.Select(d => d.JsonName));
+        return new RouteParameter(descriptorPath, new HttpRouteVariable(), jsonPath);
+    }
+
     [Fact]
     public async Task HandleCallAsync_MatchingRouteValue_SetOnRequestMessage()
     {
@@ -1802,6 +1808,186 @@ public class UnaryServerCallHandlerTests : LoggedTest
         // Assert
         Assert.NotNull(request);
         Assert.Equal(fieldmask, request!.FieldMaskValue);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringJsonNameAlias_DoesNotOverwriteRouteValue()
+    {
+        // message HelloRequest {
+        // string name = 1;                                           // proto name: "name",       JSON name: "name"
+        // int32 age = 13;                                            // proto name: "age",        JSON name: "age"
+        // string field_name = 22 [json_name="json_customized_name"]; // proto name: "field_name", JSON name: "json_customized_name"
+        // ... other fields
+        // }
+
+        // Arrange
+        // A query parameter using the JSON name should not overwrite a route-bound field.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var fieldDescriptor = HelloRequest.Descriptor.FindFieldByName("field_name");
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["field_name"] = CreateRouteParameterWithJsonPath(new List<FieldDescriptor>(new[] { fieldDescriptor }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["field_name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["json_customized_name"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.FieldName);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringProtoName_DoesNotOverwriteRouteValue()
+    {
+        // Arrange
+        // A query parameter using the proto name is not overwriting the route-bound field.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["name"] = CreateRouteParameterWithJsonPath(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["name"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.Name);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringNonRouteField_StillBindsNormally()
+    {
+        // Arrange
+        // Query parameters for fields NOT bound via route should work.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var routeParameterDescriptors = new Dictionary<string, RouteParameter>
+        {
+            ["name"] = CreateRouteParameterWithJsonPath(new List<FieldDescriptor>(new[] { HelloRequest.Descriptor.FindFieldByNumber(HelloRequest.NameFieldNumber) }))
+        };
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(routeParameterDescriptors: routeParameterDescriptors);
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.RouteValues["name"] = "route_value";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["age"] = "30"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("route_value", request!.Name);
+        Assert.Equal(30, request!.Age);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringBodyFieldJsonNameAlias_DoesNotOverwriteBodyValue()
+    {
+        // Arrange
+        // body: "sub" binds the sub field from JSON body.
+        // A query parameter using the JSON name of the body field should not overwrite it.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(
+            bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
+            bodyFieldDescriptor: HelloRequest.Descriptor.FindFieldByName("sub"));
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonFormatter.Default.Format(new HelloRequest.Types.SubMessage
+        {
+            Subfield = "body_value"
+        })));
+        httpContext.Request.ContentType = "application/json";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["sub.subfield"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("body_value", request!.Sub.Subfield);
+    }
+
+    [Fact]
+    public async Task HandleCallAsync_QueryStringBodyFieldJsonNamePrefix_DoesNotOverwriteBodyValue()
+    {
+        // Arrange
+        // body field: "sub_data" (proto name) has JSON name "subData".
+        // A query parameter using the JSON name prefix "subData.subfield" should be blocked.
+        HelloRequest? request = null;
+        UnaryServerMethod<JsonTranscodingGreeterService, HelloRequest, HelloReply> invoker = (s, r, c) =>
+        {
+            request = r;
+            return Task.FromResult(new HelloReply());
+        };
+
+        var descriptorInfo = TestHelpers.CreateDescriptorInfo(
+            bodyDescriptor: HelloRequest.Types.SubMessage.Descriptor,
+            bodyFieldDescriptor: HelloRequest.Descriptor.FindFieldByName("sub_data"));
+        var unaryServerCallHandler = CreateCallHandler(invoker, descriptorInfo: descriptorInfo);
+        var httpContext = TestHelpers.CreateHttpContext();
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonFormatter.Default.Format(new HelloRequest.Types.SubMessage
+        {
+            Subfield = "body_value"
+        })));
+        httpContext.Request.ContentType = "application/json";
+        httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+        {
+            ["subData.subfield"] = "different_value"
+        });
+
+        // Act
+        await unaryServerCallHandler.HandleCallAsync(httpContext);
+
+        // Assert
+        Assert.NotNull(request);
+        Assert.Equal("body_value", request!.SubData.Subfield);
     }
 
     private UnaryServerCallHandler<JsonTranscodingGreeterService, HelloRequest, HelloReply> CreateCallHandler(
