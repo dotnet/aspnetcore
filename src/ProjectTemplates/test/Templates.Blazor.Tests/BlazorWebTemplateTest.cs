@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Playwright;
 using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
@@ -90,6 +91,38 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
         }
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_ErrorPage_RendersCorrectly(BrowserKind browserKind)
+    {
+        // Test that the Error page renders correctly with Server interactivity.
+        // This validates that the [PersistentState] attribute on the public RequestId property works,
+        // which previously failed with a private property because PersistentState requires the getter to be public.
+        var project = await CreateBuildPublishAsync(args: ["-int", "Server"]);
+
+        using var aspNetProcess = project.StartBuiltProjectAsync();
+        Assert.False(
+            aspNetProcess.Process.HasExited,
+            ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
+
+        if (!BrowserManager.IsAvailable(browserKind))
+        {
+            EnsureBrowserAvailable(browserKind);
+            return;
+        }
+
+        aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+        await using var browser = await BrowserManager.GetBrowserInstance(browserKind, BrowserContextInfo);
+        var page = await browser.NewPageAsync();
+        await page.GotoAsync(new Uri(aspNetProcess.ListeningUri, "/Error").AbsoluteUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await page.WaitForSelectorAsync("h1.text-danger >> text=Error.");
+        await page.WaitForSelectorAsync("h2.text-danger >> text=An error occurred while processing your request.");
+        // Verify the Request ID is shown, confirming the public [PersistentState] RequestId property is populated.
+        // A private property would cause PersistentValueProviderComponentSubscription to throw during rendering.
+        await page.WaitForSelectorAsync("strong >> text=Request ID:");
+        await page.CloseAsync();
     }
 
     [ConditionalTheory]
