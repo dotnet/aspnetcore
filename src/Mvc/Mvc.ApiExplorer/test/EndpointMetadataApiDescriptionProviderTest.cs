@@ -544,11 +544,12 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     /// <summary>
-    /// Setting the description grabs the LAST description.
-    // To validate this, we add multiple ProducesResponseType to validate that it only grabs the LAST ONE.
+    /// Description policy for the (StatusCode, Type) pair when multiple ProducesResponseType
+    /// attributes match: the first non-null Description wins. With descending-scope iteration,
+    /// this means the highest-scope description sticks.
     /// </summary>
     [Fact]
-    public void AddsResponseDescription_UsesLastOne()
+    public void AddsResponseDescription_FirstNonNullWinsForMerge_LastWinsForFallback()
     {
         const string expectedCreatedDescription = "A new item was created";
         const string expectedBadRequestDescription = "Validation failed for the request";
@@ -565,6 +566,10 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         var createdResponseType = apiDescription.SupportedResponseTypes[0];
 
+        // For status 201, only the (201, TimeSpan) entry survives merging (TypedResults.Created
+        // claims status 201 from endpoint metadata, dropping the (201, int) attribute entries) and
+        // type-compatibility filtering then picks the matching description from the dropped entries
+        // via the GetMatchingResponseTypeDescription fallback (which keeps the LAST match).
         Assert.Equal(201, createdResponseType.StatusCode);
         Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
         Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
@@ -575,6 +580,8 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
 
+        // For status 400 (no endpoint claim), both attribute entries are merged and the FIRST
+        // non-null Description wins per MergeApiResponseFormats.
         Assert.Equal(400, badRequestResponseType.StatusCode);
         Assert.Equal(typeof(void), badRequestResponseType.Type);
         Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);

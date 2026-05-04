@@ -1199,6 +1199,37 @@ public class ApiResponseTypeProviderTest
         Assert.Empty(responseType.ApiResponseFormats);
     }
 
+    [Fact]
+    public void GetApiResponseTypes_HigherScopeProviderWithNullType_DoesNotBlockLowerScope()
+    {
+        // Arrange — a custom IApiResponseMetadataProvider at action scope returns Type=null for
+        // status 404. Because the entry is dropped (Type stays null and the `if (Type != null)`
+        // guard skips it), the action scope does NOT register a claim on status 404 in
+        // statusCodeScopes. A controller-level [ProducesResponseType(typeof(DerivedModel), 404)]
+        // is therefore allowed to fill in the entry. This locks down behavior for the corner case
+        // where a custom provider intentionally yields no type information.
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new NullTypeMetadataProvider(404), FilterScope.Action));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(DerivedModel), 404), FilterScope.Controller));
+
+        // Act
+        var provider = GetProvider();
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert — controller-level (404, DerivedModel) survives because the higher-scope
+        // null-Type provider produced no entry.
+        Assert.Contains(result, r => r.StatusCode == 404 && r.Type == typeof(DerivedModel));
+    }
+
+    private sealed class NullTypeMetadataProvider : IApiResponseMetadataProvider
+    {
+        public NullTypeMetadataProvider(int statusCode) { StatusCode = statusCode; }
+        public Type Type => null;
+        public int StatusCode { get; }
+        public string Description => null;
+        public void SetContentTypes(MediaTypeCollection contentTypes) { }
+    }
+
     public class VoidController : ControllerBase
     {
         public Task Delete() => Task.CompletedTask;
