@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-internal struct ApiResponseMetadataProviderWithScope(IApiResponseMetadataProvider provider, int scope)
+internal readonly struct ApiResponseMetadataProviderWithScope(IApiResponseMetadataProvider provider, int scope)
 {
     public IApiResponseMetadataProvider Provider { get; } = provider;
     public int Scope { get; } = scope;
