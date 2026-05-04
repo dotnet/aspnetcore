@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
@@ -71,6 +72,11 @@ public static class SchemasEndpointsExtensions
             RequiredEnum = TestEnum.Value1,
             NullableEnum = null
         }));
+
+        // Additional verification for handling multiple results where some implement IEndpointMetadataProvider
+        schemas.MapGet("/favorite-shape", Results<Ok<Shape>, UnauthorizedHttpResult, ProblemHttpResult> (ClaimsPrincipal user) => user.Identity?.IsAuthenticated is true
+            ? TypedResults.Ok<Shape>(new Triangle { Color = "blue", Sides = 3, Hypotenuse = 42.0 })
+            : TypedResults.Unauthorized());
 
         return endpointRouteBuilder;
     }

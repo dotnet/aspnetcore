@@ -1,11 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.AspNetCore.Http.HttpResults;
-
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+
+namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class UnauthorizedResultTests
 {
@@ -52,6 +57,33 @@ public class UnauthorizedResultTests
         var result = Assert.IsAssignableFrom<IStatusCodeHttpResult>(new UnauthorizedHttpResult());
         Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsResponseTypeMetadata()
+    {
+        // Arrange
+        static UnauthorizedHttpResult MyApi() { throw new NotImplementedException(); }
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<UnauthorizedHttpResult>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status401Unauthorized, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
+    }
+
+    [Fact]
+    public void PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull()
+    {
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>("method", () => PopulateMetadata<UnauthorizedHttpResult>(null, new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0)));
+        Assert.Throws<ArgumentNullException>("builder", () => PopulateMetadata<UnauthorizedHttpResult>(((Delegate)PopulateMetadata_ThrowsArgumentNullException_WhenMethodOrBuilderAreNull).GetMethodInfo(), null));
+    }
+
+    private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(method, builder);
 
     private static IServiceCollection CreateServices()
     {

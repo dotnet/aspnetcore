@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -10,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 /// Represents an <see cref="IResult"/> that when executed will
 /// produce an HTTP response with the No Unauthorized (401) status code.
 /// </summary>
-public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult
+public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult, IEndpointMetadataProvider
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="UnauthorizedHttpResult"/> class.
@@ -39,5 +42,14 @@ public sealed class UnauthorizedHttpResult : IResult, IStatusCodeHttpResult
         httpContext.Response.StatusCode = StatusCode;
 
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc/>
+    static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status401Unauthorized, typeof(void)));
     }
 }
