@@ -91,6 +91,16 @@ internal static unsafe class CryptoUtil
 #endif
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void ZeroMemory(byte[] buffer)
+    {
+#if NET
+        CryptographicOperations.ZeroMemory(buffer);
+#else
+        Array.Clear(buffer, 0, buffer.Length);
+#endif
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
     public static bool TimeConstantBuffersAreEqual(ReadOnlySpan<byte> bufA, ReadOnlySpan<byte> bufB)
     {
