@@ -1195,6 +1195,12 @@ public partial class Startup
         }
     }
 
+    public async Task GetHostLifetime(HttpContext context)
+    {
+        var name = context.RequestServices.GetService<IHostLifetime>()?.GetType().Name;
+        await context.Response.WriteAsync(name);
+    }
+
 #if !FORWARDCOMPAT
     public Task ResponseTrailers_HTTP2_TrailersAvailable(HttpContext context)
     {
