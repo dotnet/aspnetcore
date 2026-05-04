@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.AspNetCore.Components.ErrorBoundaryBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose() -> void
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
 Microsoft.AspNetCore.Components.CascadingParameterSubscription
@@ -11,6 +12,8 @@ Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
+virtual Microsoft.AspNetCore.Components.ErrorBoundaryBase.RenderOnException.get -> bool
+virtual Microsoft.AspNetCore.Components.ErrorBoundaryBase.RenderOnException.set -> void
 static Microsoft.Extensions.DependencyInjection.CascadingValueServiceCollectionExtensions.TryAddCascadingValueSupplier<TAttribute>(this Microsoft.Extensions.DependencyInjection.IServiceCollection! serviceCollection, System.Func<System.IServiceProvider!, System.Func<Microsoft.AspNetCore.Components.Rendering.ComponentState!, TAttribute!, Microsoft.AspNetCore.Components.CascadingParameterInfo, Microsoft.AspNetCore.Components.CascadingParameterSubscription!>!>! subscribeFactory) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Components.BrowserConfiguration
 Microsoft.AspNetCore.Components.BrowserConfiguration.BrowserConfiguration() -> void

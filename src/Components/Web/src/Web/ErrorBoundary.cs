@@ -25,7 +25,11 @@ public class ErrorBoundary : ErrorBoundaryBase
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        if (CurrentException is null)
+        if (RenderOnException)
+        {
+            base.BuildRenderTree(builder);
+        }
+        else if (CurrentException is null)
         {
             builder.AddContent(0, ChildContent);
         }
