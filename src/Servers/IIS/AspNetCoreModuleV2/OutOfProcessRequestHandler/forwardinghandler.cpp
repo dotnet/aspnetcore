@@ -20,6 +20,68 @@ C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
 #define FORWARDING_HANDLER_SIGNATURE        ((DWORD)'FHLR')
 #define FORWARDING_HANDLER_SIGNATURE_FREE   ((DWORD)'fhlr')
 
+#define WEBSOCKET_TOKEN_LENGTH 9  // Length of "websocket"
+
+// Helper function to check if a comma-separated header value contains expected token.
+// This handles cases like "<token>", "<token>, <token>", "<token>, other", etc.
+static
+bool
+ContainsToken(
+    _In_ PCSTR pszHeaderValue,
+    _In_ USHORT cchHeaderValue,
+    _In_ PCSTR pszExpectedToken,
+    _In_ size_t cchExpectedToken
+){
+    if (pszHeaderValue == nullptr || cchHeaderValue == 0)
+    {
+        return false;
+    }
+
+    PCSTR pszCurrent = pszHeaderValue;
+    PCSTR pszEnd = pszHeaderValue + cchHeaderValue;
+
+    while (pszCurrent < pszEnd)
+    {
+        // Skip leading whitespace
+        while (pszCurrent < pszEnd && (*pszCurrent == ' ' || *pszCurrent == '\t'))
+        {
+            pszCurrent++;
+        }
+
+        // Find the end of this token (comma or end of string)
+        PCSTR pszTokenEnd = pszCurrent;
+        while (pszTokenEnd < pszEnd && *pszTokenEnd != ',')
+        {
+            pszTokenEnd++;
+        }
+
+        // Calculate token length (excluding trailing whitespace)
+        PCSTR pszTokenTrimEnd = pszTokenEnd;
+        while (pszTokenTrimEnd > pszCurrent && (*(pszTokenTrimEnd - 1) == ' ' || *(pszTokenTrimEnd - 1) == '\t'))
+        {
+            pszTokenTrimEnd--;
+        }
+
+        ptrdiff_t cchToken = pszTokenTrimEnd - pszCurrent;
+
+        // Check if this token matches the expected token (case-insensitive)
+        if (cchToken == (ptrdiff_t)cchExpectedToken && 
+            _strnicmp(pszCurrent, pszExpectedToken, cchExpectedToken) == 0)
+        {
+            return true;
+        }
+
+        // Move to the next token (skip the comma)
+        pszCurrent = pszTokenEnd;
+        if (pszCurrent < pszEnd && *pszCurrent == ',')
+        {
+            pszCurrent++;
+        }
+    }
+
+    return false;
+}
+
 ALLOC_CACHE_HANDLER *       FORWARDING_HANDLER::sm_pAlloc = nullptr;
 TRACE_LOG *                 FORWARDING_HANDLER::sm_pTraceLog = nullptr;
 PROTOCOL_CONFIG             FORWARDING_HANDLER::sm_ProtocolConfig;
@@ -177,7 +239,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
     {
         USHORT cchHeader = 0;
         PCSTR pszWebSocketHeader = pRequest->GetHeader("Upgrade", &cchHeader);
-        if (cchHeader == 9 && _stricmp(pszWebSocketHeader, "websocket") == 0)
+        if (ContainsToken(pszWebSocketHeader, cchHeader, "websocket", WEBSOCKET_TOKEN_LENGTH))
         {
             m_fWebSocketEnabled = TRUE;
 
