@@ -13,7 +13,6 @@ internal sealed class DeferredHostBuilder : IHostBuilder
     public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
     private Action<IHostBuilder> _configure;
-
     private Func<string[], object>? _hostFactory;
 
     private readonly ConfigurationManager _hostConfiguration = new();
