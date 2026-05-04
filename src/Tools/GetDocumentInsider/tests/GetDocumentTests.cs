@@ -237,4 +237,34 @@ public class GetDocumentTests(ITestOutputHelper output)
         Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
         Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
     }
+
+    [Theory]
+    [InlineData("Development")]
+    [InlineData("Staging")]
+    [InlineData("Production")]
+    public void GetDocument_WithDifferentEnvironments_Works(string environment)
+    {
+        // Arrange
+        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+        var app = new Program(_console);
+
+        // Act
+        app.Run([
+            "--assembly", _testAppAssembly,
+            "--project", _testAppProject,
+            "--framework", _testAppFrameworkMoniker,
+            "--tools-directory", _toolsDirectory,
+            "--output", outputPath.FullName,
+            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
+            "--environment", environment
+        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
+
+        // Assert
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
+        var result = OpenApiDocument.Load(stream, "json");
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
+
+        // Verify environment appears in summary - this proves --environment parameter is used
+        Assert.Equal($"Running in '{environment}' environment", result.Document.Info.Summary);
+    }
 }
