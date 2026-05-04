@@ -103,7 +103,7 @@
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</WebAssemblySdkPackVersion>
     </KnownWebAssemblySdkPack>
 
-    <KnownAspNetCorePack Update="Microsoft.AspNetCore.App.Internal.Assets">
+    <KnownAspNetCorePack Update="Microsoft.AspNetCore.App.Internal.Assets" Condition=" '$(DotNetBuildSourceOnly)' != 'true' ">
       <AspNetCorePackVersion
         Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftAspNetCoreAppRuntimeVersion}</AspNetCorePackVersion>
     </KnownAspNetCorePack>
