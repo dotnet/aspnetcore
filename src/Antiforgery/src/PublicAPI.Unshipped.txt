@@ -1,1 +1,15 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginAntiforgeryOptions
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginAntiforgeryOptions.CrossOriginAntiforgeryOptions() -> void
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginAntiforgeryOptions.TrustedOrigins.get -> System.Collections.Generic.IList<string!>!
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult.Allowed = 0 -> Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult.Denied = 1 -> Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult.Unknown = 2 -> Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.ICrossOriginAntiforgery
+Microsoft.AspNetCore.Antiforgery.CrossOrigin.ICrossOriginAntiforgery.Validate(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginValidationResult
+static Microsoft.AspNetCore.Builder.AntiforgeryApplicationBuilderExtensions.UseCrossOriginAntiforgery(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.AntiforgeryApplicationBuilderExtensions.UseTokenBasedAntiforgery(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions.AddAntiforgery(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions!>! setupAction, System.Action<Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginAntiforgeryOptions!>! crossOriginSetupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions.AddCrossOriginAntiforgery(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.AntiforgeryServiceCollectionExtensions.AddCrossOriginAntiforgery(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Antiforgery.CrossOrigin.CrossOriginAntiforgeryOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

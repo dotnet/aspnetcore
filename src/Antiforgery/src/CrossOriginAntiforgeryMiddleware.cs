@@ -1,14 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Antiforgery.CrossOrigin;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
-internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDelegate next)
+/// <summary>
+/// Middleware that performs cross-origin-only antiforgery validation.
+/// Unknown results are treated as denied (strict mode).
+/// </summary>
+internal sealed class CrossOriginAntiforgeryMiddleware(ICrossOriginAntiforgery crossOriginAntiforgery, RequestDelegate next)
 {
     private readonly RequestDelegate _next = next;
-    private readonly IAntiforgery _antiforgery = antiforgery;
 
     private const string AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
     private static readonly object AntiforgeryMiddlewareWithEndpointInvokedValue = new object();
@@ -30,23 +34,21 @@ internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDel
 
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
         {
-            return InvokeAwaited(context);
+            var result = crossOriginAntiforgery.Validate(context);
+
+            return result switch
+            {
+                CrossOriginValidationResult.Allowed => _next(context),
+                _ => HandleDenied(context)
+            };
         }
 
         return _next(context);
     }
 
-    public async Task InvokeAwaited(HttpContext context)
+    private async Task HandleDenied(HttpContext context)
     {
-        try
-        {
-            await _antiforgery.ValidateRequestAsync(context);
-            context.Features.Set(AntiforgeryValidationFeature.Valid);
-        }
-        catch (AntiforgeryValidationException e)
-        {
-            context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, e));
-        }
+        context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(isValid: false, exception: null));
         await _next(context);
     }
 }
