@@ -469,6 +469,31 @@ try {
         $global:VerbosePreference = 'Continue'
     }
 
+    # Compute affected test areas for PR builds to filter tests to only affected areas.
+    # Writes a .props file that Build.props conditionally imports to set AffectedTestAreas.
+    # The file is cached so subsequent build steps in the same CI job use the same areas
+    # (the build step may generate files that change the git diff result).
+    $affectedAreasPropsFile = Join-Path (Join-Path $ArtifactsDir "tmp") "AffectedTestAreas.props"
+    if ($CI -and $env:SYSTEM_PULLREQUEST_TARGETBRANCH -and -not (Test-Path $affectedAreasPropsFile)) {
+        $affectedAreasScript = Join-Path $PSScriptRoot "scripts/GetAffectedTestAreas.ps1"
+        if (Test-Path $affectedAreasScript) {
+            try {
+                Write-Host "Computing affected test areas for PR build..."
+                $result = & $affectedAreasScript -OutputFile $affectedAreasPropsFile
+                if ($result) {
+                    Write-Host "AffectedTestAreas set to: $result"
+                } else {
+                    Write-Host "No test area filtering applied (all tests will run)."
+                }
+            } catch {
+                Write-Host "Warning: Failed to compute affected test areas: $_"
+                Write-Host "All tests will run."
+            }
+        }
+    } elseif (Test-Path $affectedAreasPropsFile) {
+        Write-Host "AffectedTestAreas .props file already exists, reusing cached result."
+    }
+
     if ($performDesktopBuild) {
         Write-Host
         Remove-Item variable:global:_BuildTool -ErrorAction Ignore

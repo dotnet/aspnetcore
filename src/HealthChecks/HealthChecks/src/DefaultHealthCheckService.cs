@@ -15,6 +15,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Diagnostics.HealthChecks;
 
+// Add random comment for test build
 internal sealed partial class DefaultHealthCheckService : HealthCheckService
 {
     private readonly IServiceScopeFactory _scopeFactory;
