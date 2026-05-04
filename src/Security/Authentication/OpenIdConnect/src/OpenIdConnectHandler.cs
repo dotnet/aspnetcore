@@ -85,6 +85,47 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
     /// <inheritdoc />
     protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new OpenIdConnectEvents());
 
+    /// <summary>
+    /// Resolves the <see cref="OpenIdConnectClientRegistration"/> to use for the current authentication request.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// By default, this method returns a registration populated from
+    /// <see cref="OpenIdConnectOptions.ClientId"/>, <see cref="OpenIdConnectOptions.ClientSecret"/>,
+    /// and a clone of <see cref="OpenIdConnectOptions.TokenValidationParameters"/>.
+    /// Override this method to dynamically resolve client registration on a per-request basis.
+    /// This is useful in multi-tenant scenarios where different client registrations (with distinct
+    /// client identifiers, secrets, and token validation settings) are used depending on the
+    /// incoming request context.
+    /// </para>
+    /// <para>
+    /// The returned registration is used throughout the authentication flow:
+    /// <list type="bullet">
+    /// <item><description><see cref="OpenIdConnectClientRegistration.ClientId"/> sets the <c>client_id</c>
+    /// in the authorization request (challenge), the token endpoint request (code redemption),
+    /// pushed authorization requests, and protocol validation.</description></item>
+    /// <item><description><see cref="OpenIdConnectClientRegistration.ClientSecret"/> sets the <c>client_secret</c>
+    /// in the token endpoint request and pushed authorization requests. When <see langword="null"/> or empty,
+    /// no <c>client_secret</c> is sent. For advanced client authentication (e.g., <c>private_key_jwt</c>),
+    /// use <see cref="AuthorizationCodeReceivedContext.HandleClientAuthentication"/>.</description></item>
+    /// <item><description><see cref="OpenIdConnectClientRegistration.TokenValidationParameters"/> provides the
+    /// parameters used for ID token validation. Override to set a per-request
+    /// <see cref="TokenValidationParameters.ValidAudience"/> matching the dynamic client.</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <param name="properties">The <see cref="AuthenticationProperties"/> associated with the current authentication request.</param>
+    /// <returns>A <see cref="ValueTask{TResult}"/> that resolves to the <see cref="OpenIdConnectClientRegistration"/> to use.</returns>
+    protected virtual ValueTask<OpenIdConnectClientRegistration> ResolveClientRegistrationAsync(AuthenticationProperties properties)
+    {
+        return ValueTask.FromResult(new OpenIdConnectClientRegistration
+        {
+            ClientId = Options.ClientId,
+            ClientSecret = Options.ClientSecret,
+            TokenValidationParameters = Options.TokenValidationParameters.Clone(),
+        });
+    }
+
     /// <inheritdoc />
     public override Task<bool> HandleRequestAsync()
     {
@@ -400,9 +441,11 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             _configuration = await Options.ConfigurationManager.GetConfigurationAsync(Context.RequestAborted);
         }
 
+        var registration = await ResolveClientRegistrationAsync(properties);
+
         var message = new OpenIdConnectMessage
         {
-            ClientId = Options.ClientId,
+            ClientId = registration.ClientId,
             EnableTelemetryParameters = !Options.DisableTelemetry,
             IssuerAddress = _configuration?.AuthorizationEndpoint ?? string.Empty,
             RedirectUri = BuildRedirectUri(Options.CallbackPath),
@@ -498,7 +541,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 // Push if endpoint is in disco
                 if (!string.IsNullOrEmpty(parEndpoint))
                 {
-                    await PushAuthorizationRequest(message, properties, parEndpoint);
+                    await PushAuthorizationRequest(message, properties, parEndpoint, registration);
                 }
 
                 break;
@@ -519,7 +562,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 }
 
                 // Otherwise push
-                await PushAuthorizationRequest(message, properties, parEndpoint);
+                await PushAuthorizationRequest(message, properties, parEndpoint, registration);
                 break;
         }
 
@@ -554,7 +597,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
     }
 
-    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties, string parEndpoint)
+    private async Task PushAuthorizationRequest(OpenIdConnectMessage authorizeRequest, AuthenticationProperties properties, string parEndpoint, OpenIdConnectClientRegistration registration)
     {
         ArgumentException.ThrowIfNullOrEmpty(parEndpoint);
 
@@ -568,12 +611,12 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         {
             Logger.PushAuthorizationHandledClientAuthentication();
         }
-        // Otherwise, add the client secret to the parameters (if available)
+        // Otherwise, add the client secret from the registration (if available)
         else
         {
-            if (!string.IsNullOrEmpty(Options.ClientSecret))
+            if (!string.IsNullOrEmpty(registration.ClientSecret))
             {
-                parRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, Options.ClientSecret);
+                parRequest.Parameters.Add(OpenIdConnectParameterNames.ClientSecret, registration.ClientSecret);
             }
         }
 
@@ -602,7 +645,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         }
 
         authorizeRequest.Parameters.Clear();
-        authorizeRequest.Parameters.Add("client_id", Options.ClientId);
+        authorizeRequest.Parameters.Add("client_id", registration.ClientId);
         authorizeRequest.Parameters.Add("request_uri", requestUri);
     }
 
@@ -761,7 +804,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             ClaimsPrincipal? user = null;
             JwtSecurityToken? jwt = null;
             string? nonce = null;
-            var validationParameters = Options.TokenValidationParameters.Clone();
+            var registration = await ResolveClientRegistrationAsync(properties);
+            var validationParameters = registration.TokenValidationParameters;
 
             // Hybrid or Implicit flow
             if (!string.IsNullOrEmpty(authorizationResponse.IdToken))
@@ -799,7 +843,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
             Options.ProtocolValidator.ValidateAuthenticationResponse(new OpenIdConnectProtocolValidationContext()
             {
-                ClientId = Options.ClientId,
+                ClientId = registration.ClientId,
                 ProtocolMessage = authorizationResponse,
                 ValidatedIdToken = jwt,
                 Nonce = nonce
@@ -810,7 +854,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             // Authorization Code or Hybrid flow
             if (!string.IsNullOrEmpty(authorizationResponse.Code))
             {
-                var authorizationCodeReceivedContext = await RunAuthorizationCodeReceivedEventAsync(authorizationResponse, user, properties!, jwt);
+                var authorizationCodeReceivedContext = await RunAuthorizationCodeReceivedEventAsync(authorizationResponse, user, properties!, jwt, registration);
                 if (authorizationCodeReceivedContext.Result != null)
                 {
                     return authorizationCodeReceivedContext.Result;
@@ -895,7 +939,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                 {
                     Options.ProtocolValidator.ValidateTokenResponse(new OpenIdConnectProtocolValidationContext()
                     {
-                        ClientId = Options.ClientId,
+                        ClientId = registration.ClientId,
                         ProtocolMessage = tokenEndpointResponse,
                         ValidatedIdToken = jwt,
                         Nonce = nonce
@@ -1256,14 +1300,14 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         return context;
     }
 
-    private async Task<AuthorizationCodeReceivedContext> RunAuthorizationCodeReceivedEventAsync(OpenIdConnectMessage authorizationResponse, ClaimsPrincipal? user, AuthenticationProperties properties, JwtSecurityToken? jwt)
+    private async Task<AuthorizationCodeReceivedContext> RunAuthorizationCodeReceivedEventAsync(OpenIdConnectMessage authorizationResponse, ClaimsPrincipal? user, AuthenticationProperties properties, JwtSecurityToken? jwt, OpenIdConnectClientRegistration registration)
     {
         Logger.AuthorizationCodeReceived();
 
         var tokenEndpointRequest = new OpenIdConnectMessage()
         {
-            ClientId = Options.ClientId,
-            ClientSecret = Options.ClientSecret,
+            ClientId = registration.ClientId,
+            ClientSecret = registration.ClientSecret,
             Code = authorizationResponse.Code,
             GrantType = OpenIdConnectGrantTypes.AuthorizationCode,
             EnableTelemetryParameters = !Options.DisableTelemetry,
@@ -1287,6 +1331,14 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
         };
 
         await Events.AuthorizationCodeReceived(context);
+
+        // If the event handled client authentication, remove the default client_secret
+        // that was set on the token endpoint request.
+        if (context.HandledClientAuthentication)
+        {
+            context.TokenEndpointRequest?.Parameters.Remove(OpenIdConnectParameterNames.ClientSecret);
+        }
+
         if (context.Result != null)
         {
             if (context.Result.Handled)
