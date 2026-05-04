@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -47,6 +48,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private IDictionary<object, object?>? _items;
     private readonly CancellationTokenSource _connectionClosedTokenSource;
     private readonly CancellationTokenSource _connectionCloseRequested;
+    private readonly CancellationTokenRegistration _appStoppingRegistration;
 
     private CancellationTokenSource? _sendCts;
     private bool _activeSend;
@@ -66,7 +68,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// The caller is expected to set the <see cref="Transport"/> and <see cref="Application"/> pipes manually.
     /// </summary>
     public HttpConnectionContext(string connectionId, string connectionToken, ILogger logger, MetricsContext metricsContext,
-        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect)
+        IDuplexPipe transport, IDuplexPipe application, HttpConnectionDispatcherOptions options, bool useStatefulReconnect,
+        IHostApplicationLifetime applicationLifetime)
     {
         Transport = transport;
         _applicationStream = new PipeWriterStream(application.Output);
@@ -112,6 +115,13 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         ConnectionClosedRequested = _connectionCloseRequested.Token;
         AuthenticationExpiration = DateTimeOffset.MaxValue;
         _useStatefulReconnect = useStatefulReconnect;
+
+        // Must be called last in case the callback runs immediately
+        _appStoppingRegistration = applicationLifetime.ApplicationStopping.Register(() =>
+        {
+            // Can ignore the task here, HttpConnectionManager will await and observe any exceptions
+            _ = DisposeAsync();
+        });
     }
 
     public bool UseStatefulReconnect => _useStatefulReconnect;
@@ -286,6 +296,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             }
 
             ServiceScope?.Dispose();
+
+            _appStoppingRegistration.Dispose();
         }
 
         await disposeTask;
