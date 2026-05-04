@@ -253,8 +253,6 @@ public sealed class EditContext
     /// </exception>
     public bool Validate()
     {
-        var faultedThisPass = false;
-
         OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
 
         if (OnValidationRequestedAsync is { } asyncHandler)
@@ -277,10 +275,6 @@ public sealed class EditContext
                 task.GetAwaiter().GetResult();
             }
         }
-
-        // Synchronous pass completed normally. Clear any prior form-level fault since this
-        // pass observed a fresh non-faulted result.
-        _isFormValidationFaulted = faultedThisPass;
 
         return !GetValidationMessages().Any();
     }
@@ -540,15 +534,15 @@ public sealed class EditContext
         => IsValidationFaulted(FieldIdentifier.Create(accessor));
 
     /// <summary>
-    /// Returns <c>true</c> if the most recent form-level validation pass observed an unhandled
-    /// exception from any <see cref="OnValidationRequestedAsync"/> handler. Both <see cref="Validate"/>
-    /// and <see cref="ValidateAsync"/> update this flag: a successful pass clears it, a faulted async
-    /// pass sets it, and a caller-cancelled <see cref="ValidateAsync"/> pass leaves it unchanged.
-    /// Use this to detect that validation itself failed (as opposed to producing validation messages).
-    /// For per-field validator faults from <see cref="AddValidationTask"/>, use the
-    /// <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
+    /// Returns <c>true</c> if the most recent <see cref="ValidateAsync"/> pass observed an
+    /// unhandled exception from any <see cref="OnValidationRequestedAsync"/> handler. A subsequent
+    /// successful <see cref="ValidateAsync"/> pass clears the flag; a caller-cancelled pass
+    /// preserves it. <see cref="Validate"/> does not affect this flag — synchronous handler
+    /// faults propagate to the caller. Use this to detect that validation itself failed (as
+    /// opposed to producing validation messages). For per-field validator faults from
+    /// <see cref="AddValidationTask"/>, use the <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
     /// </summary>
-    /// <returns><c>true</c> if the most recent form-level validation pass faulted; otherwise <c>false</c>.</returns>
+    /// <returns><c>true</c> if the most recent <see cref="ValidateAsync"/> pass faulted; otherwise <c>false</c>.</returns>
     public bool IsValidationFaulted() => _isFormValidationFaulted;
 
     internal FieldState? GetFieldState(in FieldIdentifier fieldIdentifier)

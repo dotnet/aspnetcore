@@ -747,10 +747,15 @@ public class EditContextAsyncTest
     {
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
-        editContext.AddValidationTask(field, new TaskCompletionSource().Task, new CancellationTokenSource());
+        var pendingCts = new CancellationTokenSource();
+        var pendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var pendingRegistration = pendingCts.Token.Register(() => pendingTcs.TrySetCanceled(pendingCts.Token));
+        editContext.AddValidationTask(field, pendingTcs.Task, pendingCts);
 
         Assert.True(editContext.IsValidationPending(field));
         Assert.False(editContext.IsValidationPending());
+
+        pendingCts.Cancel();
     }
 
     [Fact]

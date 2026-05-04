@@ -123,8 +123,10 @@ public class EditFormAsyncSubmitTest
             OnValidSubmit = _ => validSubmitCount++,
         };
         await RenderRootAsync(rootComponent);
-        using var pendingCts = new CancellationTokenSource();
-        editContext.AddValidationTask(field, new TaskCompletionSource().Task, pendingCts);
+        var pendingCts = new CancellationTokenSource();
+        var pendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var pendingRegistration = pendingCts.Token.Register(() => pendingTcs.TrySetCanceled(pendingCts.Token));
+        editContext.AddValidationTask(field, pendingTcs.Task, pendingCts);
 
         await _testRenderer.DispatchEventAsync(GetSubmitEventHandlerId(), EventArgs.Empty).WaitAsync(DefaultTimeout);
 
