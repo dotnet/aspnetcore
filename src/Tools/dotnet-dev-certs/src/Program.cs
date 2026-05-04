@@ -375,7 +375,7 @@ internal sealed class Program
 
     private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
     {
-        var now = DateTimeOffset.Now;
+        var now = DateTimeOffset.UtcNow;
         var manager = CertificateManager.Instance;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
