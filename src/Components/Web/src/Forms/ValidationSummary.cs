@@ -25,6 +25,7 @@ public class ValidationSummary : ComponentBase, IDisposable
 
     /// <summary>
     /// Gets or sets a collection of additional attributes that will be applied to the created <c>ul</c> element.
+    /// A <c>class</c> attribute supplied here is appended to the built-in <c>validation-errors</c> class rather than replacing it.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -73,8 +74,8 @@ public class ValidationSummary : ComponentBase, IDisposable
                 first = false;
 
                 builder.OpenElement(0, "ul");
-                builder.AddAttribute(1, "class", "validation-errors");
-                builder.AddMultipleAttributes(2, AdditionalAttributes);
+                builder.AddMultipleAttributes(1, AdditionalAttributes);
+                builder.AddAttribute(2, "class", AttributeUtilities.CombineClassNames(AdditionalAttributes, "validation-errors"));
             }
 
             builder.OpenElement(3, "li");
