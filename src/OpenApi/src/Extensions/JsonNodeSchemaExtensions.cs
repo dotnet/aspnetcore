@@ -186,6 +186,22 @@ internal static class JsonNodeSchemaExtensions
         }
         else
         {
+            // The default value type may differ from the target type when attributes like
+            // DefaultParameterValue carry a literal (e.g. int32 literal for a uint64 parameter).
+            // Convert to the target type so SerializeToNode can unbox it correctly.
+            var targetType = Nullable.GetUnderlyingType(jsonTypeInfo.Type) ?? jsonTypeInfo.Type;
+            if (defaultValue.GetType() != targetType)
+            {
+                try
+                {
+                    defaultValue = Convert.ChangeType(defaultValue, targetType, CultureInfo.InvariantCulture);
+                }
+                catch
+                {
+                    // Value is not convertible to the target type; skip applying the default.
+                    return;
+                }
+            }
             schema[schemaAttribute] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
         }
     }
