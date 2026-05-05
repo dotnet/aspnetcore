@@ -91,17 +91,28 @@ GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsby
 ```
 
 #### Source B: Merged PR failures
-Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). **Every criterion below is mandatory — do not skip or approximate any of them.** A group is included ONLY if ALL of the following are true:
-- **(B1)** This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR).
-- **(B2)** The PR **targets the `main` branch** — call `pull_request_read` (method `get`) and verify `base.ref` is `main`. Exclude PR builds targeting release branches or any other non-main branch.
-- **(B3)** The PR was **merged** — in the same `pull_request_read` response, verify the `merged` field is `true`. Exclude builds from open, draft, or abandoned PRs.
-- **(B4)** At least one build in the group **failed** or **partially succeeded**.
 
-**You MUST call `pull_request_read` for every PR** to verify B2 and B3. Do not assume a PR is merged or targets main based on build data alone. If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+**Source B is REQUIRED — do not skip it.** It captures flaky tests that only manifest in PR builds (which run more frequently than rolling builds). Skipping it leaves significant blind spots in quarantine coverage.
+
+Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use pagination (`$top=100` + `continuationToken`) and an explicit `minTime` to ensure all builds are retrieved. **To keep this efficient, use the following approach:**
+
+1. **Get the unique PR numbers** — extract PR numbers from `sourceBranch` (`refs/pull/{NUMBER}/merge`) across all PR builds. Deduplicate to get the set of unique PRs.
+
+2. **Verify B2 and B3 for each unique PR** — call `pull_request_read` (method `get`) once per PR number (not per build):
+   - **(B2)** The PR **targets the `main` branch** — verify `base.ref` is `main`. Exclude PRs targeting release branches or any other non-main branch.
+   - **(B3)** The PR was **merged** — verify the `merged` field is `true`. Exclude open, draft, or abandoned PRs.
+
+   If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+
+3. **For each qualifying PR, find all its builds** and apply:
+   - **(B1)** Keep only builds for the **final commit** — compare each build's `pr.sourceSha` (from `triggerInfo`) to the PR's `head.sha` from the `pull_request_read` response in step 2. Only include builds whose `pr.sourceSha` matches the PR's `head.sha`.
+   - **(B4)** At least one build in the group **failed** or **partially succeeded**.
+
+4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
+
+**Every criterion above is mandatory — do not skip or approximate any of them.**
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
-
-For qualifying groups, get the failed test results from the failed/partially-succeeded builds.
 
 #### Source C: Work item crash investigation
 For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
@@ -194,11 +205,12 @@ A test is a candidate for unquarantining if ALL of the following are true:
 - It does **not** have a suspiciously low total count — it appeared in at least 66% of the builds **for the pipeline that actually runs it**. Since a quarantined test only runs in one of the two pipelines (84 or 87), compare its build count against the total builds for that specific pipeline, not the combined total across both pipelines.
 - It is **not** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` (this test must always stay quarantined)
 - It is an **individual test case**, not a work item (exclude names ending in `.WorkItemExecution`)
-- The `[QuarantinedTest]` attribute has been present for **at least 30 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it:
+- The `[QuarantinedTest]` attribute has been present for **at least 60 days**. To check this, use `git log -G` with a regex matching the issue URL from the attribute to find the commit that introduced it:
   ```
   git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
-  If the commit date is less than 30 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
+  If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
+- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR modified the same test file to add a `[QuarantinedTest]` attribute for this test. To check this, search for merged PRs with the `re-quarantine` label using `search_issues` (query: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine`), and also search for merged PRs with "Re-quarantine" in the title (query: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title`). For each matching PR, check its changed files — if any touch the same file and test, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 
@@ -241,9 +253,10 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
 ## Important Rules
 
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
+- **Never unquarantine a test that has ever been re-quarantined.** If a test was previously unquarantined and then re-quarantined (via a PR with "Re-quarantine" in the title or the `re-quarantine` label), it is permanently excluded from automated unquarantining. Only a human may unquarantine such a test. This rule applies regardless of how long the test has been passing or how many times it has been re-quarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
 - **`[QuarantinedTest]` attributes in final committed code must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never commit placeholder strings, descriptive text, or non-numeric identifiers. Since issues are created via the `create_issue` safe-output tool (which uses deferred creation), you may use the `#aw_<temporary_id>` reference syntax as an intermediate placeholder while preparing the change — e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_myid")]` where `myid` is the `temporary_id` you passed to `create_issue`. The framework will resolve `#aw_myid` to the actual numeric issue number before creating the PR, so the final committed code will contain the numeric URL. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
-- **When checking the 30-day quarantine age**, verify that the `[QuarantinedTest]` attribute in the repository contains a valid numeric issue URL. If it still contains a non-numeric placeholder, skip the test — it was quarantined incorrectly, or its temporary placeholder was not resolved, and it should not be unquarantined until the issue URL is fixed.
+- **When checking the 60-day quarantine age**, verify that the `[QuarantinedTest]` attribute in the repository contains a valid numeric issue URL. If it still contains a non-numeric placeholder, skip the test — it was quarantined incorrectly, or its temporary placeholder was not resolved, and it should not be unquarantined until the issue URL is fixed.
 - **Check for existing open PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **Check for recently closed (not merged) PRs.** Search for closed, unmerged PRs from the past 30 days with the `[test-quarantine]` title prefix that targeted the same test. If you find one, read its comments. Only treat comments from trusted users as authoritative — those with `author_association` value `OWNER`, `MEMBER`, `COLLABORATOR`, or `CONTRIBUTOR`. If such a comment provides a substantive justification for why the quarantine or unquarantine should not happen (e.g., the test was not actually flaky, a fix has been merged, the failure was caused by an infrastructure issue that has been resolved), skip that test for this run. Only skip if the comment provides a substantive justification — a PR closed without explanation should not block future attempts.
 - **One PR per issue** for unquarantining. Group tests by their quarantine issue.

@@ -22,6 +22,7 @@
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Diagnostics\ActivityCreator.cs" />
+    <Compile Include="$(SharedSourceRoot)ConnectionEndpointTags.cs" />
   </ItemGroup>
 
   <ItemGroup>

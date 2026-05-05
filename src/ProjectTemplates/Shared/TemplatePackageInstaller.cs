@@ -39,6 +39,7 @@ internal static class TemplatePackageInstaller
             "Microsoft.DotNet.Web.ProjectTemplates.10.0",
             "Microsoft.DotNet.Web.ProjectTemplates.11.0",
             "Microsoft.AspNetCore.Blazor.Templates",
+            "Microsoft.McpServer.ProjectTemplates",
         };
 
     public static string CustomHivePath { get; } = Path.GetFullPath((string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
@@ -98,7 +99,7 @@ internal static class TemplatePackageInstaller
             throw new InvalidOperationException($"Failed to find required templates in {packagesDir}. Please ensure the *Templates*.nupkg have been built.");
         }
 
-        Assert.Equal(3, builtPackages.Length);
+        Assert.Equal(4, builtPackages.Length);
 
         await VerifyCannotFindTemplateAsync(output, "web");
         await VerifyCannotFindTemplateAsync(output, "webapp");

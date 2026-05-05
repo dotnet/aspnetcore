@@ -31,6 +31,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        if (Configuration.GetValue<bool>("DisableUrlDrivenNavigation"))
+        {
+            AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", false);
+        }
+        else
+        {
+            AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
+        }
+
         services.AddValidation();
 
         services.AddRazorComponents(options =>
@@ -95,6 +104,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         var circuitContextAccessor = new TestCircuitContextAccessor();
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
         services.AddSingleton(circuitContextAccessor);
+
+        services.AddScoped<PauseTrackingHandler>();
+        services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
