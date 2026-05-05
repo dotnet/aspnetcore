@@ -114,6 +114,28 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
     }
 
+    [Fact]
+    public void CacheBoundary_HoleShapeShrinks_SkipsUnmatchedHoleAndKeepsOtherWidgets()
+    {
+        Navigate($"{ServerPathBase}/cache-component");
+        var test6 = Browser.FindElement(By.Id("test-6"));
+        Assert.Equal(3, test6.FindElements(By.CssSelector(".loop-label")).Count);
+        Assert.Equal(3, test6.FindElements(By.CssSelector(".loop-widget")).Count);
+
+        // Server-side: drop the last item so ChildContent now produces 2 holes instead of 3.
+        Navigate($"{ServerPathBase}/cache-component/drop-item");
+
+        Navigate($"{ServerPathBase}/cache-component");
+        test6 = Browser.FindElement(By.Id("test-6"));
+        var labels = test6.FindElements(By.CssSelector(".loop-label"));
+        var widgets = test6.FindElements(By.CssSelector(".loop-widget"));
+
+        Assert.Equal(3, labels.Count);
+        Browser.Equal("widget-a", () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".loop-widget"))[0].Text);
+        Browser.Equal("widget-b", () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".loop-widget"))[1].Text);
+        Assert.Equal(2, widgets.Count);
+    }
+
     private int GetRenderCount()
     {
         Navigate($"{ServerPathBase}/cache-component/render-count");

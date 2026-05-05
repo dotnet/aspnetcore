@@ -42,7 +42,7 @@ public class CacheBoundaryJsonTest
     {
         var json = new CacheBoundaryJson();
 
-        json.AddHole(typeof(NotCacheBoundary), "InteractiveServer", "my-key");
+        json.AddHole(typeof(NotCacheBoundary), sequence: 0, "InteractiveServer", "my-key");
 
         var segment = GetSegments(json)[0];
         Assert.Equal("InteractiveServer", segment.RenderModeName);
@@ -90,7 +90,7 @@ public class CacheBoundaryJsonTest
         original.AddHtml("<header>cached</header>");
         original.AddHole(typeof(NotCacheBoundary));
         original.AddHtml("<footer>also cached</footer>");
-        original.AddHole(typeof(CacheBoundary), "InteractiveWebAssembly", "key-1");
+        original.AddHole(typeof(CacheBoundary), sequence: 7, "InteractiveWebAssembly", "key-1");
 
         var serialized = original.Serialize();
         var restored = CacheBoundaryJson.Deserialize(serialized);
@@ -112,6 +112,7 @@ public class CacheBoundaryJsonTest
         Assert.Equal(CacheSegmentKind.Hole, segments[3].Kind);
         Assert.Equal(typeof(CacheBoundary), segments[3].ComponentType);
         Assert.Equal("InteractiveWebAssembly", segments[3].RenderModeName);
+        Assert.Equal(7, segments[3].Sequence);
         Assert.Equal("key-1", segments[3].ComponentKey);
     }
 

@@ -312,7 +312,7 @@ internal partial class EndpointHtmlRenderer
             var renderModeName = componentState.Component is SSRRenderModeBoundary boundary2
                 ? CacheSegment.GetRenderModeName(boundary2.RenderMode)
                 : null;
-            captureWriter.CreateHole(componentState.Component.GetType(), renderModeName, sequenceAndKey.Key);
+            captureWriter.CreateHole(componentState.Component.GetType(), sequenceAndKey.Sequence, renderModeName, sequenceAndKey.Key);
         }
 
         ComponentEndMarker? endMarkerOrNull = default;

@@ -168,12 +168,10 @@ public sealed class CacheBoundary : ComponentBase
         }
 
         using var scratchBuilder = new RenderTreeBuilder();
-        ArrayRange<RenderTreeFrame> freshFrames = default;
-        if (ChildContent is not null)
-        {
-            ChildContent(scratchBuilder);
-            freshFrames = scratchBuilder.GetFrames();
-        }
+        ChildContent?.Invoke(scratchBuilder);
+        var freshFrames = scratchBuilder.GetFrames();
+
+        ILogger? logger = null;
 
         int seq = 0;
         int freshFrameSearchStart = 0;
@@ -186,13 +184,33 @@ public sealed class CacheBoundary : ComponentBase
                     break;
 
                 case CacheSegmentKind.Hole:
+                    if (!TryFindFreshHole(freshFrames, ref freshFrameSearchStart, segment, out var matchedFrameIndex))
+                    {
+                        logger ??= GetLogger();
+                        logger?.LogWarning(
+                            "CacheBoundary: cached hole for component '{ComponentType}' (sequence {Sequence}, key '{Key}') was not found in the current ChildContent. The hole will be skipped.",
+                            segment.ComponentType,
+                            segment.Sequence,
+                            segment.ComponentKey);
+                        break;
+                    }
+
                     builder.OpenComponent(seq++, segment.ComponentType!);
                     if (segment.ComponentKey is not null)
                     {
                         builder.SetKey(segment.ComponentKey);
                     }
-                    freshFrameSearchStart = ApplyFreshAttributes(
-                        builder, ref seq, freshFrames, freshFrameSearchStart, segment.ComponentType!);
+
+                    for (var j = matchedFrameIndex + 1; j < freshFrames.Count; j++)
+                    {
+                        ref var attrFrame = ref freshFrames.Array[j];
+                        if (attrFrame.FrameType != RenderTreeFrameType.Attribute)
+                        {
+                            break;
+                        }
+                        builder.AddComponentParameter(seq++, attrFrame.AttributeName, attrFrame.AttributeValue);
+                    }
+
                     if (segment.RenderModeName is { } renderModeName)
                     {
                         builder.AddComponentRenderMode(renderModeName switch
@@ -209,31 +227,49 @@ public sealed class CacheBoundary : ComponentBase
         }
     }
 
-    private static int ApplyFreshAttributes(
-        RenderTreeBuilder builder, ref int seq,
-        ArrayRange<RenderTreeFrame> freshFrames, int searchStart, Type componentType)
+    private static bool TryFindFreshHole(
+        ArrayRange<RenderTreeFrame> freshFrames,
+        ref int searchStart,
+        in CacheSegment segment,
+        out int matchedFrameIndex)
     {
         for (var i = searchStart; i < freshFrames.Count; i++)
         {
             ref var frame = ref freshFrames.Array[i];
-            if (frame.FrameType != RenderTreeFrameType.Component || frame.ComponentType != componentType)
+            if (frame.FrameType != RenderTreeFrameType.Component)
             {
                 continue;
             }
 
-            for (var j = i + 1; j < freshFrames.Count; j++)
+            if (frame.ComponentType == segment.ComponentType
+                && frame.Sequence == segment.Sequence
+                && KeysEqual(frame.ComponentKey, segment.ComponentKey))
             {
-                ref var attrFrame = ref freshFrames.Array[j];
-                if (attrFrame.FrameType != RenderTreeFrameType.Attribute)
-                {
-                    break;
-                }
-                builder.AddComponentParameter(seq++, attrFrame.AttributeName, attrFrame.AttributeValue);
+                matchedFrameIndex = i;
+                searchStart = i + 1;
+                return true;
             }
-            return i + 1;
         }
-        return searchStart;
+
+        matchedFrameIndex = -1;
+        return false;
     }
+
+    private static bool KeysEqual(object? a, object? b)
+    {
+        if (ReferenceEquals(a, b))
+        {
+            return true;
+        }
+        if (a is null || b is null)
+        {
+            return false;
+        }
+        return a.Equals(b);
+    }
+
+    private ILogger? GetLogger()
+        => HttpContext?.RequestServices.GetService<ILoggerFactory>()?.CreateLogger<CacheBoundary>();
 
     private bool TryRestoreFromCache(out CacheBoundaryJson? cacheJson)
     {
@@ -251,9 +287,7 @@ public sealed class CacheBoundary : ComponentBase
         }
         catch (Exception ex)
         {
-            HttpContext?.RequestServices.GetService<ILoggerFactory>()
-                ?.CreateLogger<CacheBoundary>()
-                .LogWarning(ex, "Failed to restore CacheBoundary from cached data. Falling back to fresh render.");
+            GetLogger()?.LogWarning(ex, "Failed to restore CacheBoundary from cached data. Falling back to fresh render.");
             return false;
         }
     }

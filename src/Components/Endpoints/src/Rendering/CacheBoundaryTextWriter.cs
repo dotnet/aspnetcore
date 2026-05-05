@@ -57,9 +57,9 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         _capturing = true;
     }
 
-    public void CreateHole(Type componentType, string? renderModeName = null, object? componentKey = null)
+    public void CreateHole(Type componentType, int sequence = 0, string? renderModeName = null, object? componentKey = null)
     {
-        _segments.AddHole(componentType, renderModeName, componentKey);
+        _segments.AddHole(componentType, sequence, renderModeName, componentKey);
     }
 
     public CacheBoundaryJson StopCapture()

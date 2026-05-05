@@ -19,10 +19,10 @@ internal sealed partial class CacheBoundaryJson
         _segments.Add(CacheSegment.CreateHtml(html));
     }
 
-    public void AddHole(Type componentType, string? renderModeName = null, object? componentKey = null)
+    public void AddHole(Type componentType, int sequence = 0, string? renderModeName = null, object? componentKey = null)
     {
         ArgumentNullException.ThrowIfNull(componentType);
-        _segments.Add(CacheSegment.CreateHole(componentType, renderModeName, componentKey));
+        _segments.Add(CacheSegment.CreateHole(componentType, sequence, renderModeName, componentKey));
     }
 
     public List<CacheSegment>.Enumerator GetEnumerator() => _segments.GetEnumerator();
@@ -41,6 +41,7 @@ internal sealed partial class CacheBoundaryJson
                     Type = "hole",
                     Content = segment.ComponentType!.AssemblyQualifiedName,
                     RenderMode = segment.RenderModeName,
+                    Sequence = segment.Sequence,
                     Key = SerializeKey(segment.ComponentKey),
                     KeyType = segment.ComponentKey?.GetType().FullName,
                 },
@@ -72,7 +73,7 @@ internal sealed partial class CacheBoundaryJson
                     {
                         throw new InvalidOperationException($"Resolved type '{type.FullName}' is not a valid component type.");
                     }
-                    result.AddHole(type, entry.RenderMode, DeserializeKey(entry.Key, entry.KeyType));
+                    result.AddHole(type, entry.Sequence, entry.RenderMode, DeserializeKey(entry.Key, entry.KeyType));
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown cache segment type: '{entry.Type}'.");
@@ -109,6 +110,8 @@ internal sealed partial class CacheBoundaryJson
 
         public string? RenderMode { get; set; }
 
+        public int Sequence { get; set; }
+
         public string? Key { get; set; }
 
         public string? KeyType { get; set; }
@@ -125,21 +128,23 @@ internal readonly struct CacheSegment
     public CacheSegmentKind Kind { get; }
     public string? Html { get; }
     public Type? ComponentType { get; }
+    public int Sequence { get; }
     public string? RenderModeName { get; }
     public object? ComponentKey { get; }
 
-    private CacheSegment(CacheSegmentKind kind, string? html, Type? componentType, string? renderModeName = null, object? componentKey = null)
+    private CacheSegment(CacheSegmentKind kind, string? html, Type? componentType, int sequence = 0, string? renderModeName = null, object? componentKey = null)
     {
         Kind = kind;
         Html = html;
         ComponentType = componentType;
+        Sequence = sequence;
         RenderModeName = renderModeName;
         ComponentKey = componentKey;
     }
 
     public static CacheSegment CreateHtml(string html) => new(CacheSegmentKind.Html, html, componentType: null);
-    public static CacheSegment CreateHole(Type componentType, string? renderModeName = null, object? componentKey = null)
-        => new(CacheSegmentKind.Hole, html: null, componentType, renderModeName, componentKey);
+    public static CacheSegment CreateHole(Type componentType, int sequence = 0, string? renderModeName = null, object? componentKey = null)
+        => new(CacheSegmentKind.Hole, html: null, componentType, sequence, renderModeName, componentKey);
 
     internal static string? GetRenderModeName(IComponentRenderMode? renderMode)
     {
