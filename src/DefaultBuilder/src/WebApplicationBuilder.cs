@@ -26,6 +26,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
     private const string CsrfProtectionMiddlewareSetKey = "__CsrfProtectionMiddlewareSet";
+
     private const string UseRoutingKey = "__UseRouting";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
@@ -455,31 +456,35 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             }
         }
 
-        // Auto-inject cross-origin CSRF protection when ICsrfProtection is registered
-        if (serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true)
+        // Auto-inject cross-origin CSRF protection after auth.
+        // Config check happens here (during Build), so builder.WebHost.UseSetting("CrossOriginProtection", "disable") works.
+        if (!string.Equals("disable", _builtApplication.Configuration["CrossOriginProtection"], StringComparison.OrdinalIgnoreCase))
         {
-            if (!_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
+            if (serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true)
             {
-                _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
-                app.Use(static async (context, next) =>
+                if (!_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
                 {
-                    // Skip validation if endpoint explicitly opted out via DisableAntiforgery()
-                    var endpoint = context.GetEndpoint();
-                    if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
+                    _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
+                    app.Use(static async (context, next) =>
                     {
+                        // Skip validation if endpoint explicitly opted out via DisableAntiforgery()
+                        var endpoint = context.GetEndpoint();
+                        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
+                        {
+                            await next(context);
+                            return;
+                        }
+
+                        var csrfProtection = context.RequestServices.GetRequiredService<ICsrfProtection>();
+                        if (csrfProtection.Validate(context) == CsrfProtectionResult.Denied)
+                        {
+                            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                            return;
+                        }
+
                         await next(context);
-                        return;
-                    }
-
-                    var csrfProtection = context.RequestServices.GetRequiredService<ICsrfProtection>();
-                    if (csrfProtection.Validate(context) == CsrfProtectionResult.Denied)
-                    {
-                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                        return;
-                    }
-
-                    await next(context);
-                });
+                    });
+                }
             }
         }
 

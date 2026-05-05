@@ -275,12 +275,10 @@ public static class WebHost
             services.AddTransient<IStartupFilter, ForwardedHeadersStartupFilter>();
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
-            // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation). Registered by default for all apps.
-            var crossOriginEnabled = hostingContext.Configuration["CrossOriginProtection"];
-            if (!string.Equals("disable", crossOriginEnabled, StringComparison.OrdinalIgnoreCase))
-            {
-                services.TryAddSingleton<ICsrfProtection, DefaultCrossOriginProtection>();
-            }
+            // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation).
+            // Always registered; can be disabled at runtime via "CrossOriginProtection": "disable" in config
+            // (e.g., builder.WebHost.UseSetting("CrossOriginProtection", "disable")).
+            services.TryAddSingleton<ICsrfProtection, DefaultCrossOriginProtection>();
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
             // A lambda is used here because we don't want to reference AddRouting directly because of trimming.

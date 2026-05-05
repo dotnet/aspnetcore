@@ -84,11 +84,30 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
+    public async Task CsrfProtection_DisabledViaUseSetting_AllowsCrossOrigin()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.WebHost.UseSetting("CrossOriginProtection", "disable");
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
     public async Task CsrfProtection_NotRegistered_AllowsCrossOrigin()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        // Remove the auto-registered ICsrfProtection to simulate disabled config
+        // Remove the auto-registered ICsrfProtection to simulate disabled service
         builder.Services.RemoveAll<ICsrfProtection>();
         using var app = builder.Build();
 
