@@ -138,7 +138,7 @@
     <AzureIdentityVersion>1.11.4</AzureIdentityVersion>
     <AngleSharpVersion>0.9.9</AngleSharpVersion>
     <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
-    <CastleCoreVersion>4.2.1</CastleCoreVersion>
+    <CastleCoreVersion>5.2.1</CastleCoreVersion>
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
     <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
@@ -159,7 +159,7 @@
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
     <ModelContextProtocolVersion>1.2.0</ModelContextProtocolVersion>
     <ModelContextProtocolAspNetCoreVersion>$(ModelContextProtocolVersion)</ModelContextProtocolAspNetCoreVersion>
-    <MoqVersion>4.10.0</MoqVersion>
+    <MoqVersion>4.20.72</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
     <MonoTextTemplatingVersion>2.2.1</MonoTextTemplatingVersion>
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
