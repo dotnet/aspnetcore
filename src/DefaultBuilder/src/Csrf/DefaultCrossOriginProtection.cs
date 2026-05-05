@@ -19,8 +19,7 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
 
     private readonly HashSet<string> _trustedOrigins;
 
-    public DefaultCrossOriginProtection()
-        : this(Array.Empty<string>())
+    public DefaultCrossOriginProtection() : this([])
     {
     }
 
@@ -77,7 +76,7 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         if (!string.IsNullOrEmpty(origin) && origin != "null")
         {
             var requestOrigin = GetRequestOrigin(request);
-            if (requestOrigin != null && TryNormalizeOrigin(origin, out var normalizedOrigin))
+            if (requestOrigin is not null && TryNormalizeOrigin(origin, out var normalizedOrigin))
             {
                 return string.Equals(normalizedOrigin, requestOrigin, StringComparison.OrdinalIgnoreCase)
                     ? CsrfProtectionResult.Allowed
@@ -94,9 +93,6 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         return CsrfProtectionResult.Allowed;
     }
 
-    /// <summary>
-    /// Builds the canonical origin string for the current request from its scheme and host.
-    /// </summary>
     private static string? GetRequestOrigin(HttpRequest request)
     {
         var host = request.Host;
@@ -108,7 +104,6 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         var scheme = request.Scheme;
         var port = host.Port;
 
-        // Strip default ports for canonical comparison.
         if (IsDefaultPort(scheme, port))
         {
             return $"{scheme}://{host.Host}";
@@ -117,10 +112,6 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         return $"{scheme}://{host.Host}:{port}";
     }
 
-    /// <summary>
-    /// Normalizes an origin string to "scheme://host" or "scheme://host:port" form.
-    /// Returns false if the origin is malformed.
-    /// </summary>
     internal static bool TryNormalizeOrigin(string origin, [NotNullWhen(true)] out string? normalized)
     {
         normalized = null;
@@ -130,7 +121,6 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
             return false;
         }
 
-        // Parse as URI to extract scheme, host, port reliably.
         if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
         {
             return false;
