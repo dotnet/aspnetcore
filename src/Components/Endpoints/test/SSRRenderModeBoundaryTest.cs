@@ -3,6 +3,9 @@
 
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -112,7 +115,12 @@ public class SSRRenderModeBoundaryTest
     public void GetComponentMarkerKey_WorksWithVariousKeyTypes(object componentKey, string expectedFormattedKey)
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .BuildServiceProvider(),
+        };
         var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
 
         // Act
