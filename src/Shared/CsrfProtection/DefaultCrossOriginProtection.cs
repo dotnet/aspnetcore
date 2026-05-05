@@ -25,7 +25,6 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
 
     public DefaultCrossOriginProtection(IEnumerable<string> trustedOrigins)
     {
-        // Normalize trusted origins at construction time for fast lookup.
         _trustedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var origin in trustedOrigins)
         {
@@ -51,7 +50,7 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
 
         // Step 2: Check trusted origins against the Origin header.
         var origin = request.Headers.Origin.ToString();
-        if (!string.IsNullOrEmpty(origin) && origin != "null" && _trustedOrigins.Count > 0)
+        if (!string.IsNullOrEmpty(origin) && _trustedOrigins.Count > 0)
         {
             if (TryNormalizeOrigin(origin, out var normalizedOrigin) && _trustedOrigins.Contains(normalizedOrigin))
             {
@@ -59,7 +58,8 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
             }
         }
 
-        // Step 3: Sec-Fetch-Site header (set by browsers per Fetch Metadata spec).
+        // Step 3: Sec-Fetch-Site header (set by browsers per Fetch Metadata spec)
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site#same-site
         var secFetchSite = request.Headers["Sec-Fetch-Site"].ToString();
         if (!string.IsNullOrEmpty(secFetchSite))
         {
@@ -67,13 +67,12 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
             {
                 "same-origin" => CsrfProtectionResult.Allowed,
                 "none" => CsrfProtectionResult.Allowed,
-                // "cross-site", "same-site", or any other value → deny.
                 _ => CsrfProtectionResult.Denied,
             };
         }
 
         // Step 4: No Sec-Fetch-Site header. Fall back to Origin vs Host comparison.
-        if (!string.IsNullOrEmpty(origin) && origin != "null")
+        if (!string.IsNullOrEmpty(origin))
         {
             var requestOrigin = GetRequestOrigin(request);
             if (requestOrigin is not null && TryNormalizeOrigin(origin, out var normalizedOrigin))
