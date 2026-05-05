@@ -240,7 +240,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         var statusCode = HttpApi.HttpGetRequestProperty(
             requestQueueHandle: Server.RequestQueue.Handle,
             requestId,
-            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            propertyId: HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo,
             qualifier: null,
             qualifierSize: 0,
             output: &cipherInfo,
@@ -286,7 +286,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             statusCode = HttpApi.HttpGetRequestProperty(
                 requestQueueHandle: Server.RequestQueue.Handle,
                 requestId,
-                propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                propertyId: HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello,
                 qualifier: null,
                 qualifierSize: 0,
                 output: pBuffer,

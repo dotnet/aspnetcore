@@ -36,6 +36,7 @@ public class PaginationState
     /// </summary>
     public event EventHandler<int?>? TotalItemCountChanged;
 
+    internal string QueryName { get; set; } = "";
     internal EventCallbackSubscribable<PaginationState> CurrentPageItemsChanged { get; } = new();
     internal EventCallbackSubscribable<PaginationState> TotalItemCountChangedSubscribable { get; } = new();
 

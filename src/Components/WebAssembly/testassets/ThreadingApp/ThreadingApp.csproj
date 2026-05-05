@@ -9,4 +9,6 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
   </ItemGroup>
 
+  <Import Project="$(MSBuildThisFileDirectory)..\SpaFallback.targets" />
+
 </Project>

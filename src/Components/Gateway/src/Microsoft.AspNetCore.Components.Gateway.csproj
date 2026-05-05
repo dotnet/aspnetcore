@@ -1,0 +1,69 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>blazor-gateway</AssemblyName>
+    <PackageId>Microsoft.AspNetCore.Components.Gateway</PackageId>
+    <IsShippingPackage>true</IsShippingPackage>
+    <Description>Gateway server for hosting standalone Blazor WebAssembly applications.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Assemblies should not reference this assembly directly -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
+    <!-- Disable the default runtimeconfig.json in favor of the one we create via template,
+         which contains the correct framework version. -->
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <!-- Allow direct PackageReference for external packages not in the shared framework -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- Use the shared ASP.NET Core runtime from the SDK targeting pack instead of requiring
+         the local shared framework build (Microsoft.AspNetCore.App.Runtime.sfxproj).
+         UseAspNetCoreSharedRuntime prevents removal of the KnownFrameworkReference.
+         DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp prevents the version override to 10.0.0-dev. -->
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Yarp.ReverseProxy" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+  </ItemGroup>
+
+  <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
+    <PropertyGroup>
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' == 'true'">
+        FrameworkVersion=$(AspNetCoreMajorMinorVersion).0;
+      </_RuntimeConfigProperties>
+      <_RuntimeConfigProperties Condition="'$(IsServicingBuild)' != 'true'">
+        FrameworkVersion=$(SharedFxVersion);
+      </_RuntimeConfigProperties>
+
+      <_RuntimeConfigPath>$(OutputPath)blazor-gateway.runtimeconfig.json</_RuntimeConfigPath>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="blazor-gateway.runtimeconfig.json.in"
+      Properties="$(_RuntimeConfigProperties)"
+      OutputPath="$(_RuntimeConfigPath)" />
+  </Target>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);publish</GenerateNuspecDependsOn>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.AspNetCore.Components.Gateway.nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Templating" PrivateAssets="All" Version="$(MicrosoftDotNetBuildTasksTemplatingVersion)" IsImplicitlyDefined="true" AllowExplicitReference="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NuspecProperty Include="publishDir=$(PublishDir)" />
+    <NuspecProperty Include="binDir=$(OutputPath)" />
+    <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
+  </ItemGroup>
+
+</Project>

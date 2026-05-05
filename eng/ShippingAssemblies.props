@@ -154,6 +154,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.CustomElements" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Testing" />
     <AspNetCoreShippingAssembly Include="Microsoft.Authentication.WebAssembly.Msal" />
     <AspNetCoreShippingAssembly Include="Microsoft.JSInterop.WebAssembly" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />

@@ -33,6 +33,12 @@ public sealed class WebAssemblyHostBuilder
     private string? _persistedState;
     private ServiceProviderOptions? _serviceProviderOptions;
 
+    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+    internal static bool IsMeterSupported { get; } =
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : false;
+
+    internal static bool IsMeterEnabled { get; set; } = IsMeterSupported;
+
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
     /// conventions and settings.
@@ -348,8 +354,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSupplyValueFromQueryProvider();
         
         // Register metrics and tracing when explicitly enabled (opt-in via feature switch)
-        var isTelemetryEnabled = AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var switchValue) && switchValue == true;
-        if (isTelemetryEnabled)
+        if (IsMeterSupported && IsMeterEnabled)
         {
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
             ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Services);

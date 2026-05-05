@@ -21,4 +21,6 @@
     <Reference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
 
+  <Import Project="$(RepoRoot)src\Components\WebAssembly\testassets\SpaFallback.targets" />
+
 </Project>

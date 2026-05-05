@@ -1670,7 +1670,7 @@ public static class BindConverter
 
         static FormatterDelegateCache()
         {
-            if (HotReloadManager.Default.MetadataUpdateSupported)
+            if (HotReloadManager.IsSupported)
             {
                 HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
             }
@@ -1867,7 +1867,7 @@ public static class BindConverter
 
         static ParserDelegateCache()
         {
-            if (HotReloadManager.Default.MetadataUpdateSupported)
+            if (HotReloadManager.IsSupported)
             {
                 HotReloadManager.Default.OnDeltaApplied += _cache.Clear;
             }
