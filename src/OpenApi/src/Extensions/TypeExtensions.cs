@@ -104,6 +104,15 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(propertyInfo);
+
+        // For get-only properties (no setter) use the read-state; otherwise use the write-state.
+        // A get-only non-nullable property must not be reported as nullable merely because its
+        // write-state is Unknown/Nullable at runtime.
+        if (propertyInfo.SetMethod is null)
+        {
+            return nullabilityInfo.ReadState == NullabilityState.Nullable;
+        }
+        
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
 }
