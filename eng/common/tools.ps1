@@ -276,7 +276,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   if ($shouldDownload) {
     Create-Directory $dotnetRoot
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
-    $uri = "https://builds.dotnet.microsoft.com/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.ps1"
+    $uri = "https://raw.githubusercontent.com/dotnet/install-scripts/5147e32300a8e908f5d737c8cff63a76b4b63531/src/dotnet-install.ps1"
 
     Retry({
       Write-Host "GET $uri"
