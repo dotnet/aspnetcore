@@ -3,6 +3,8 @@
 
 using BlazorUnitedApp;
 using BlazorUnitedApp.Data;
+using BlazorUnitedApp.Services;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddSingleton<UserAvailabilityService>();
+builder.Services.AddScoped<IValidator<UserRegistration>, UserRegistrationValidator>();
 
 var app = builder.Build();
 

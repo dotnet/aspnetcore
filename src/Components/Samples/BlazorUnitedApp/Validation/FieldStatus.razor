@@ -1,0 +1,82 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Linq.Expressions
+@implements IDisposable
+
+<span class="field-status field-status-@_status">
+    @switch (_status)
+    {
+        case "pending":
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="status-text">Validating&hellip;</span>
+            break;
+        case "faulted":
+            <span class="status-icon" aria-hidden="true">!</span>
+            <span class="status-text">Could not validate. Please retry.</span>
+            break;
+        case "valid":
+            <span class="status-icon" aria-hidden="true">&#10003;</span>
+            <span class="status-text">Looks good</span>
+            break;
+        case "invalid":
+            <span class="status-icon" aria-hidden="true">&times;</span>
+            <ValidationMessage For="@For" />
+            break;
+        default:
+            break;
+    }
+</span>
+
+@code {
+    [CascadingParameter] private EditContext EditContext { get; set; } = default!;
+    [Parameter, EditorRequired] public Expression<Func<object?>> For { get; set; } = default!;
+
+    private FieldIdentifier _field;
+    private string _status = "idle";
+
+    protected override void OnParametersSet()
+    {
+        _field = FieldIdentifier.Create(For);
+        EditContext.OnValidationStateChanged -= HandleStateChanged;
+        EditContext.OnValidationStateChanged += HandleStateChanged;
+        Recompute();
+    }
+
+    private void HandleStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        var previous = _status;
+        Recompute();
+        if (previous != _status)
+        {
+            StateHasChanged();
+        }
+    }
+
+    private void Recompute()
+    {
+        if (EditContext.IsValidationPending(_field))
+        {
+            _status = "pending";
+        }
+        else if (EditContext.IsValidationFaulted(_field))
+        {
+            _status = "faulted";
+        }
+        else if (EditContext.GetValidationMessages(_field).Any())
+        {
+            _status = "invalid";
+        }
+        else if (EditContext.IsModified(_field))
+        {
+            _status = "valid";
+        }
+        else
+        {
+            _status = "idle";
+        }
+    }
+
+    public void Dispose()
+    {
+        EditContext.OnValidationStateChanged -= HandleStateChanged;
+    }
+}

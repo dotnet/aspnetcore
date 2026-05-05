@@ -1,0 +1,139 @@
+@page "/registration"
+@rendermode InteractiveServer
+@using BlazorUnitedApp.Data
+@using BlazorUnitedApp.Validation
+@using Microsoft.AspNetCore.Components.Forms
+@implements IDisposable
+
+<PageTitle>Registration</PageTitle>
+
+<h1>Register</h1>
+<p class="lead">
+    Demonstrates async form validation. Username and email run an async availability check
+    (with simulated network latency) using <code>FluentValidation</code> rules.
+</p>
+<p class="hint">
+    Try <code>alice</code> as a taken username, <code>foo-boom</code> to trigger a downstream error,
+    or any email at <code>blocked.example</code>. Submit triggers a full async validation pass.
+</p>
+
+<EditForm EditContext="_editContext" OnValidSubmit="HandleValidSubmit" FormName="registration">
+    <FluentValidationValidator TModel="UserRegistration" />
+
+    <div class="field">
+        <label for="username">Username</label>
+        <InputText id="username" @bind-Value="_model.Username" />
+        <FieldStatus For="@(() => _model.Username)" />
+    </div>
+
+    <div class="field">
+        <label for="email">Email</label>
+        <InputText id="email" @bind-Value="_model.Email" type="email" />
+        <FieldStatus For="@(() => _model.Email)" />
+    </div>
+
+    <div class="field">
+        <label for="password">Password</label>
+        <InputText id="password" @bind-Value="_model.Password" type="password" />
+        <FieldStatus For="@(() => _model.Password)" />
+    </div>
+
+    <div class="field">
+        <label for="confirm">Confirm password</label>
+        <InputText id="confirm" @bind-Value="_model.ConfirmPassword" type="password" />
+        <FieldStatus For="@(() => _model.ConfirmPassword)" />
+    </div>
+
+    <h4 class="section-heading">Address</h4>
+
+    <div class="field">
+        <label for="street">Street</label>
+        <InputText id="street" @bind-Value="_model.Address.Street" />
+        <FieldStatus For="@(() => _model.Address.Street)" />
+    </div>
+
+    <div class="field">
+        <label for="city">City</label>
+        <InputText id="city" @bind-Value="_model.Address.City" />
+        <FieldStatus For="@(() => _model.Address.City)" />
+    </div>
+
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary" disabled="@_isFormBusy">
+            @if (_isFormBusy)
+            {
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Submitting&hellip;</span>
+            }
+            else
+            {
+                <span>Register</span>
+            }
+        </button>
+
+        @if (_editContext.IsValidationPending())
+        {
+            <span class="form-status">Validating form&hellip;</span>
+        }
+        else if (_editContext.IsValidationFaulted())
+        {
+            <span class="form-status form-status-faulted">
+                Validation failed (infrastructure error). Please retry.
+            </span>
+        }
+    </div>
+</EditForm>
+
+@if (_submittedSnapshot is { } snapshot)
+{
+    <section class="success-card">
+        <h3>Registration submitted</h3>
+        <dl>
+            <dt>Username</dt><dd>@snapshot.Username</dd>
+            <dt>Email</dt><dd>@snapshot.Email</dd>
+        </dl>
+    </section>
+}
+
+@code {
+    private readonly UserRegistration _model = new();
+    private EditContext _editContext = default!;
+    private bool _isFormBusy;
+    private UserRegistration? _submittedSnapshot;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+        _editContext.OnValidationStateChanged += HandleStateChanged;
+    }
+
+    private void HandleStateChanged(object? sender, ValidationStateChangedEventArgs e)
+    {
+        // Re-render so the form-level pending/faulted indicators stay in sync.
+        StateHasChanged();
+    }
+
+    private async Task HandleValidSubmit(EditContext _)
+    {
+        _isFormBusy = true;
+        try
+        {
+            // Simulate persisting the registration.
+            await Task.Delay(400);
+            _submittedSnapshot = new UserRegistration
+            {
+                Username = _model.Username,
+                Email = _model.Email,
+            };
+        }
+        finally
+        {
+            _isFormBusy = false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _editContext.OnValidationStateChanged -= HandleStateChanged;
+    }
+}

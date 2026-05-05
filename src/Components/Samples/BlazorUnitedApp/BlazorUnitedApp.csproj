@@ -4,10 +4,16 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
+    <!-- Allow direct PackageReference for external packages used only for local sample testing. -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
   </ItemGroup>
 
   <ItemGroup>

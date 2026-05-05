@@ -1,0 +1,145 @@
+/* Async form validation demo styles */
+
+.field {
+    display: grid;
+    grid-template-columns: 160px 320px 1fr;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.field > label {
+    font-weight: 600;
+}
+
+.field > input {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.field > input.modified.valid {
+    border-color: #198754;
+}
+
+.field > input.modified.invalid {
+    border-color: #dc3545;
+}
+
+.field > input.pending,
+.field > input.modified.pending {
+    border-color: #0d6efd;
+    background-image: linear-gradient(90deg, rgba(13, 110, 253, 0.04) 0%, rgba(13, 110, 253, 0.12) 100%);
+}
+
+.field > input.faulted,
+.field > input.modified.faulted {
+    border-color: #fd7e14;
+    background-color: #fff8f1;
+}
+
+.field-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    min-height: 1.5rem;
+}
+
+.field-status-pending {
+    color: #0d6efd;
+}
+
+.field-status-faulted {
+    color: #fd7e14;
+}
+
+.field-status-valid {
+    color: #198754;
+}
+
+.field-status-invalid {
+    color: #dc3545;
+}
+
+.field-status-idle {
+    color: transparent;
+}
+
+.status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background-color: currentColor;
+    color: white;
+    font-weight: bold;
+    font-size: 0.75rem;
+}
+
+.spinner {
+    display: inline-block;
+    width: 0.9rem;
+    height: 0.9rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.form-status {
+    color: #0d6efd;
+    font-style: italic;
+}
+
+.form-status-faulted {
+    color: #fd7e14;
+    font-style: normal;
+}
+
+.success-card {
+    margin-top: 2rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid #198754;
+    border-radius: 6px;
+    background-color: #f0fff4;
+}
+
+.success-card dl {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0;
+}
+
+.success-card dt {
+    font-weight: 600;
+}
+
+.hint {
+    font-size: 0.9rem;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    border-left: 3px solid #6c757d;
+}
+
+.section-heading {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
