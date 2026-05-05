@@ -23,33 +23,17 @@ public class RateLimitingMiddlewareTests
 
         Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(
             null,
-            new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
             Mock.Of<IServiceProvider>(),
             new RateLimitingMetrics(new TestMeterFactory())));
 
-        Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
-            {
-                return Task.CompletedTask;
-            },
-            null,
-            options,
-            Mock.Of<IServiceProvider>(),
-            new RateLimitingMetrics(new TestMeterFactory())));
-
-        Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
-            {
-                return Task.CompletedTask;
-            },
+        Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(
             new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
             null,
             new RateLimitingMetrics(new TestMeterFactory())));
 
-        Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(c =>
-            {
-                return Task.CompletedTask;
-            },
+        Assert.Throws<ArgumentNullException>(() => new RateLimitingMiddleware(
             new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
             Mock.Of<IServiceProvider>(),
@@ -64,18 +48,18 @@ public class RateLimitingMiddlewareTests
         var options = CreateOptionsAccessor();
         options.Value.GlobalLimiter = new TestPartitionedRateLimiter<HttpContext>(new TestRateLimiter(true));
 
-        var middleware = new RateLimitingMiddleware(c =>
-            {
-                flag = true;
-                return Task.CompletedTask;
-            },
+        var middleware = new RateLimitingMiddleware(
             new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
             Mock.Of<IServiceProvider>(),
             new RateLimitingMetrics(new TestMeterFactory()));
 
         // Act
-        await middleware.Invoke(new DefaultHttpContext());
+        await middleware.InvokeAsync(new DefaultHttpContext(),c =>
+        {
+            flag = true;
+            return Task.CompletedTask;
+        });
 
         // Assert
         Assert.True(flag);
@@ -99,7 +83,7 @@ public class RateLimitingMiddlewareTests
         var context = new DefaultHttpContext();
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.True(onRejectedInvoked);
@@ -124,7 +108,7 @@ public class RateLimitingMiddlewareTests
         var context = new DefaultHttpContext();
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.True(onRejectedInvoked);
@@ -146,10 +130,10 @@ public class RateLimitingMiddlewareTests
         var middleware = CreateTestRateLimitingMiddleware(options, logger: loggerFactory.CreateLogger<RateLimitingMiddleware>());
 
         var context = new DefaultHttpContext();
-        context.RequestAborted = new CancellationToken(true); 
+        context.RequestAborted = new CancellationToken(true);
 
         // Act
-        await middleware.Invoke(context);
+        await middleware.InvokeAsync(context, c => Task.CompletedTask);
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
@@ -175,7 +159,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(context)).DefaultTimeout();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.InvokeAsync(context, c => Task.CompletedTask)).DefaultTimeout();
     }
 
     [Fact]
@@ -206,7 +190,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.True(onRejectedInvoked);
@@ -242,9 +226,9 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act & Assert
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.False(onRejectedInvoked);
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.True(onRejectedInvoked);
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
     }
@@ -273,7 +257,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.False(globalOnRejectedInvoked);
@@ -305,7 +289,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.True(globalOnRejectedInvoked);
@@ -337,7 +321,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.False(globalOnRejectedInvoked);
@@ -369,7 +353,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.True(globalOnRejectedInvoked);
@@ -412,7 +396,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.False(globalOnRejectedInvoked);
@@ -448,13 +432,13 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint1);
 
         // Act & Assert
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.False(globalOnRejectedInvoked);
         // This should hit endpointName1
         Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
 
         context.SetEndpoint(endpoint2);
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.False(globalOnRejectedInvoked);
         // This should hit endpointName2
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
@@ -499,7 +483,7 @@ public class RateLimitingMiddlewareTests
 
         // Act & Assert
         context.SetEndpoint(endpoint1);
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.True(globalOnRejectedInvoked);
         // This should hit endpointName1
         Assert.Equal(StatusCodes.Status429TooManyRequests, context.Response.StatusCode);
@@ -507,7 +491,7 @@ public class RateLimitingMiddlewareTests
         globalOnRejectedInvoked = false;
 
         context.SetEndpoint(endpoint2);
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.False(globalOnRejectedInvoked);
     }
 
@@ -535,7 +519,7 @@ public class RateLimitingMiddlewareTests
         var context = new DefaultHttpContext();
         // DisableRateLimitingAttribute last
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new EnableRateLimitingAttribute(name), new DisableRateLimitingAttribute()), "Test endpoint"));
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.False(globalOnRejectedInvoked);
 
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
@@ -544,7 +528,7 @@ public class RateLimitingMiddlewareTests
         context = new DefaultHttpContext();
         context.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(new DisableRateLimitingAttribute(), new EnableRateLimitingAttribute(name)), "Test endpoint"));
 
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
         Assert.False(globalOnRejectedInvoked);
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
     }
@@ -572,7 +556,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint);
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.False(globalOnRejectedInvoked);
@@ -612,7 +596,7 @@ public class RateLimitingMiddlewareTests
         context.SetEndpoint(endpoint.Build());
 
         // Act
-        await middleware.Invoke(context).DefaultTimeout();
+        await middleware.InvokeAsync(context, c => Task.CompletedTask).DefaultTimeout();
 
         // Assert
         Assert.False(globalOnRejectedInvoked);
@@ -644,10 +628,7 @@ public class RateLimitingMiddlewareTests
     }
 
     private RateLimitingMiddleware CreateTestRateLimitingMiddleware(IOptions<RateLimiterOptions> options, ILogger<RateLimitingMiddleware> logger = null, IServiceProvider serviceProvider = null) =>
-        new RateLimitingMiddleware(c =>
-        {
-            return Task.CompletedTask;
-        },
+        new RateLimitingMiddleware(
             logger ?? new NullLoggerFactory().CreateLogger<RateLimitingMiddleware>(),
             options,
             serviceProvider ?? Mock.Of<IServiceProvider>(),
