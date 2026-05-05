@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Cors.Infrastructure;
+
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
@@ -277,14 +277,22 @@ public static class WebHost
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
             // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation).
-            // Always registered; can be disabled at runtime via "CrossOriginProtection": "disable" in config
-            // (e.g., builder.WebHost.UseSetting("CrossOriginProtection", "disable")).
-            // Trusted origins are pulled from CORS policies if configured.
-            services.TryAddSingleton<ICsrfProtection>(sp =>
+            services.PostConfigure<CsrfProtectionOptions>(options =>
             {
-                var corsOptions = sp.GetService<IOptions<CorsOptions>>();
-                var trustedOrigins = GetTrustedOriginsFromCors(corsOptions);
-                return new DefaultCrossOriginProtection(trustedOrigins);
+                // "CsrfProtection:TrustedOrigins": "https://example.com;https://other.com"
+                var origins = hostingContext.Configuration["CsrfProtection:TrustedOrigins"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                if (origins?.Length > 0)
+                {
+                    foreach (var origin in origins)
+                    {
+                        options.TrustedOrigins.Add(origin);
+                    }
+                }
+            });
+            services.TryAddSingleton<ICsrfProtection>(static sp =>
+            {
+                var options = sp.GetRequiredService<IOptions<CsrfProtectionOptions>>().Value;
+                return new DefaultCrossOriginProtection(options.TrustedOrigins);
             });
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
@@ -321,19 +329,4 @@ public static class WebHost
     public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] TStartup>(string[] args) where TStartup : class =>
         CreateDefaultBuilder(args).UseStartup<TStartup>();
 
-    private static IEnumerable<string> GetTrustedOriginsFromCors(IOptions<CorsOptions>? corsOptions)
-    {
-        if (corsOptions?.Value is not { } options)
-        {
-            return [];
-        }
-
-        var policy = options.GetPolicy(options.DefaultPolicyName);
-        if (policy is null || policy.AllowAnyOrigin)
-        {
-            return [];
-        }
-
-        return policy.Origins;
-    }
 }

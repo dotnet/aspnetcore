@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionOptions
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionOptions.CsrfProtectionOptions() -> void
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionOptions.TrustedOrigins.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
 Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed = 0 -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
 Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Denied = 1 -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
