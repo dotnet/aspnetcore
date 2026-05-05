@@ -202,11 +202,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
-        {
-            _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
-            NavigationManager.LocationChanged += OnLocationChanged;
-        }
+        _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
 
     /// <inheritdoc />
@@ -320,11 +317,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
         _sortByColumn = column;
 
-        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
-        {
-            var newUri = GetSortQueryStringUrl(_sortByColumn, _sortByAscending);
-            NavigationManager.NavigateTo(newUri);
-        }
+        var newUri = GetSortQueryStringUrl(_sortByColumn, _sortByAscending);
+        NavigationManager.NavigateTo(newUri);
 
         return RefreshDataAsync();
     }
@@ -566,10 +560,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
-        {
-            NavigationManager.LocationChanged -= OnLocationChanged;
-        }
+        NavigationManager.LocationChanged -= OnLocationChanged;
         _wasDisposed = true;
         _currentPageItemsChanged.Dispose();
 

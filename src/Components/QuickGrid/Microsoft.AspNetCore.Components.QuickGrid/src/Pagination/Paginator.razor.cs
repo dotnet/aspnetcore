@@ -53,15 +53,15 @@ public partial class Paginator : IDisposable
     private bool CanGoBack => State.CurrentPageIndex > 0;
     private bool CanGoForwards => State.CurrentPageIndex < State.LastPageIndex;
     private Task GoToPageAsync(int pageIndex)
-        => State.SetCurrentPageIndexAsync(pageIndex);
+    {
+        NavigationManager.NavigateTo(GetPageUrl(pageIndex));
+        return Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
-        {
-            NavigationManager.LocationChanged += OnLocationChanged;
-        }
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
 
     /// <inheritdoc />
@@ -69,14 +69,11 @@ public partial class Paginator : IDisposable
     {
         _totalItemCountChanged.SubscribeOrMove(State.TotalItemCountChangedSubscribable);
 
-        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
+        _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
+        var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
+        if (pageFromQuery != State.CurrentPageIndex)
         {
-            _queryParameterValueSupplier.ReadParametersFromQuery(QueryParameterValueSupplier.GetQueryString(NavigationManager.Uri));
-            var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
-            if (pageFromQuery != State.CurrentPageIndex)
-            {
-                return State.SetCurrentPageIndexAsync(pageFromQuery);
-            }
+            return State.SetCurrentPageIndexAsync(pageFromQuery);
         }
 
         return Task.CompletedTask;
@@ -110,10 +107,7 @@ public partial class Paginator : IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
-        if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
-        {
-            NavigationManager.LocationChanged -= OnLocationChanged;
-        }
+        NavigationManager.LocationChanged -= OnLocationChanged;
         _totalItemCountChanged.Dispose();
     }
 }
