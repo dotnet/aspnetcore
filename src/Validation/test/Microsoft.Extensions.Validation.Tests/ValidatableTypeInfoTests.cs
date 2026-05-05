@@ -648,6 +648,124 @@ public class ValidatableTypeInfoTests
         Assert.Equal("Property attribute error", propertyAttributeError.Value.Single());
     }
 
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ThrowsArgumentNullException_WhenTypeIsNull()
+    {
+        var options = new ValidationOptions();
+
+        Assert.Throws<ArgumentNullException>("type", () => options.TryGetValidatablePropertyInfo(null!, "Name", out _));
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ThrowsArgumentNullException_WhenPropertyNameIsNull()
+    {
+        var options = new ValidationOptions();
+
+        Assert.Throws<ArgumentNullException>("propertyName", () => options.TryGetValidatablePropertyInfo(typeof(Person), null!, out _));
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsFalse_WhenTypeNotRegistered()
+    {
+        var options = new ValidationOptions();
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(Person), "Name", out var propertyInfo));
+        Assert.Null(propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsFalse_WhenPropertyNotFound()
+    {
+        var typeInfo = new TestValidatableTypeInfo(typeof(Person), []);
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(Person), typeInfo },
+        });
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(Person), "NonExistent", out var propertyInfo));
+        Assert.Null(propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsMatchingProperty_WhenPresent()
+    {
+        var nameProperty = CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name", []);
+        var typeInfo = new TestValidatableTypeInfo(typeof(Person), [nameProperty]);
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(Person), typeInfo },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(Person), "Name", out var propertyInfo));
+        Assert.Same(nameProperty, propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsInheritedProperty_FromSuperType()
+    {
+        // BaseEntity declares Id; DerivedEntity declares Name. Looking up Id on the derived type
+        // should resolve through the super-type info via the validation options resolver.
+        var idProperty = CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", []);
+        var baseType = new TestValidatableTypeInfo(typeof(BaseEntity), [idProperty]);
+        var nameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+        var derivedType = new TestValidatableTypeInfo(typeof(DerivedEntity), [nameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(BaseEntity), baseType },
+            { typeof(DerivedEntity), derivedType },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var localProperty));
+        Assert.Same(nameProperty, localProperty);
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var inheritedProperty));
+        Assert.Same(idProperty, inheritedProperty);
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "NonExistent", out var missingProperty));
+        Assert.Null(missingProperty);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_LocalDeclarationShadowsInheritedProperty()
+    {
+        // If both base and derived declare a property with the same name, the derived (local)
+        // declaration is returned, matching how ValidateAsync would visit derived members first.
+        var baseNameProperty = CreatePropertyInfo(typeof(BaseEntity), typeof(string), "Name", "Name", []);
+        var baseType = new TestValidatableTypeInfo(typeof(BaseEntity), [baseNameProperty]);
+        var derivedNameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+        var derivedType = new TestValidatableTypeInfo(typeof(DerivedEntity), [derivedNameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(BaseEntity), baseType },
+            { typeof(DerivedEntity), derivedType },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var propertyInfo));
+        Assert.Same(derivedNameProperty, propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsFalseForInheritedMember_WhenSuperTypeNotResolvable()
+    {
+        // Only the derived type is registered. Local lookup still works; inherited members
+        // remain unresolved and the method returns false without throwing.
+        var nameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+        var derivedType = new TestValidatableTypeInfo(typeof(DerivedEntity), [nameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(DerivedEntity), derivedType },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var localProperty));
+        Assert.Same(nameProperty, localProperty);
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var inheritedProperty));
+        Assert.Null(inheritedProperty);
+    }
+
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
     private class GlobalErrorObject : IValidatableObject
     {

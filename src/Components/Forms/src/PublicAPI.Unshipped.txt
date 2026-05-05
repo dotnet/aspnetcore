@@ -1,3 +1,14 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.ValidationRequestedEventArgs(System.Threading.CancellationToken cancellationToken) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.CancellationToken.get -> System.Threading.CancellationToken
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> System.IDisposable!
+Microsoft.AspNetCore.Components.Forms.EditContext.OnValidationRequestedAsync -> System.Func<object!, Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.Components.Forms.EditContext.ValidateAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Components.Forms.EditContext.AddValidationTask(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, System.Threading.Tasks.Task! task, System.Threading.CancellationTokenSource! cts) -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending() -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted() -> bool
