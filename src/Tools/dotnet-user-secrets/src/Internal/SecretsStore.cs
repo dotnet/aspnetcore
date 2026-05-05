@@ -91,11 +91,48 @@ public class SecretsStore
 
     protected virtual IDictionary<string, string> Load(string userSecretsId)
     {
-        return new ConfigurationBuilder()
-            .AddJsonFile(_secretsFilePath, optional: true)
-            .Build()
-            .AsEnumerable()
-            .Where(i => i.Value != null)
-            .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
+        var secrets = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        if (!File.Exists(_secretsFilePath))
+        {
+            return secrets;
+        }
+
+        var content = File.ReadAllText(_secretsFilePath);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            return secrets;
+        }
+
+        try
+        {
+            // Use ConfigurationBuilder for standard JSON parsing with flattened keys.
+            var config = new ConfigurationBuilder()
+                .AddJsonFile(_secretsFilePath, optional: true)
+                .Build();
+            foreach (var kvp in config.AsEnumerable())
+            {
+                if (kvp.Value is not null)
+                {
+                    secrets[kvp.Key] = kvp.Value;
+                }
+            }
+        }
+        catch (InvalidDataException)
+        {
+            // If the file contains case-different duplicate keys, the JSON configuration
+            // parser throws. Fall back to parsing the JSON directly and using last-wins
+            // semantics for case-insensitive key collisions.
+            var jObject = JObject.Parse(content);
+            foreach (var property in jObject.Properties())
+            {
+                if (property.Value.Type == Newtonsoft.Json.Linq.JTokenType.String)
+                {
+                    secrets[property.Name] = property.Value.ToString();
+                }
+            }
+        }
+
+        return secrets;
     }
 }
