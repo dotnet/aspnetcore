@@ -39,6 +39,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertyGetter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertySetter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderFragmentSerializer.cs" />
 
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
 

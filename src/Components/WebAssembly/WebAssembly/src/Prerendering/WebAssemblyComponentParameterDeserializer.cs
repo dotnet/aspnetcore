@@ -20,6 +20,8 @@ internal sealed class WebAssemblyComponentParameterDeserializer
 
     public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(new ComponentParametersTypeCache());
 
+    [DynamicDependency(JsonSerialized, typeof(SerializedRenderFragment))]
+    [DynamicDependency(JsonSerialized, typeof(RenderTreeFrameDTO))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
     public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues)
     {
@@ -49,20 +51,31 @@ internal sealed class WebAssemblyComponentParameterDeserializer
             }
             else
             {
-                var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
-                if (parameterType == null)
-                {
-                    throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
-                }
                 try
                 {
                     var value = (JsonElement)parameterValues[i];
-                    var parameterValue = JsonSerializer.Deserialize(
-                        value.GetRawText(),
-                        parameterType,
-                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
-                    parametersDictionary[definition.Name] = parameterValue;
+                    if (definition.TypeName == typeof(SerializedRenderFragment).FullName)
+                    {
+                        var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
+                            value.GetRawText(),
+                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                        parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Frames);
+                    }
+                    else
+                    {
+                        var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
+                        if (parameterType is null)
+                        {
+                            throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
+                        }
+
+                        var parameterValue = JsonSerializer.Deserialize(
+                            value.GetRawText(),
+                            parameterType,
+                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                        parametersDictionary[definition.Name] = parameterValue;
+                    }
                 }
                 catch (Exception e)
                 {
