@@ -67,6 +67,14 @@
     </CacheBoundary>
 </div>
 
+<div id="test-7">
+    <p id="test-7-non-cached">@Guid.NewGuid()</p>
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+        <p id="test-7-cached">@Guid.NewGuid()</p>
+        <ServerInteractiveCounter IncrementAmount="1" />
+    </CacheBoundary>
+</div>
+
 @code
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]

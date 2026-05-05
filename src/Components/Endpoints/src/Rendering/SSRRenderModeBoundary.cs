@@ -33,6 +33,9 @@ internal class SSRRenderModeBoundary : IComponent
 
     public IComponentRenderMode RenderMode { get; }
 
+    [DynamicallyAccessedMembers(Component)]
+    internal Type ComponentType => _componentType;
+
     public SSRRenderModeBoundary(
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type componentType,

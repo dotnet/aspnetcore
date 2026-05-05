@@ -12,11 +12,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
+public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
     public CacheBoundaryTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -134,6 +134,31 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("widget-a", () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".loop-widget"))[0].Text);
         Browser.Equal("widget-b", () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".loop-widget"))[1].Text);
         Assert.Equal(2, widgets.Count);
+    }
+
+    [Fact]
+    public void CacheBoundary_PreservesInteractivity_OfRenderModeChild_OnCacheHit()
+    {
+        Navigate($"{ServerPathBase}/cache-component");
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("count-server")).Text);
+
+        var firstCachedMarker = Browser.FindElement(By.Id("test-7-cached")).Text;
+        var firstNonCachedMarker = Browser.FindElement(By.Id("test-7-non-cached")).Text;
+
+        Browser.Click(By.Id("increment-server"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-server")).Text);
+
+        Navigate($"{ServerPathBase}/cache-component");
+
+        Browser.Equal(firstCachedMarker, () => Browser.FindElement(By.Id("test-7-cached")).Text);
+        Browser.NotEqual(firstNonCachedMarker, () => Browser.FindElement(By.Id("test-7-non-cached")).Text);
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-server")).Text);
+        Browser.Equal("0", () => Browser.FindElement(By.Id("count-server")).Text);
+
+        Browser.Click(By.Id("increment-server"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-server")).Text);
     }
 
     private int GetRenderCount()

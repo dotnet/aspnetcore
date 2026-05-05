@@ -309,10 +309,10 @@ internal partial class EndpointHtmlRenderer
         {
             pausedCapture = true;
             captureWriter.PauseCapture();
-            var renderModeName = componentState.Component is SSRRenderModeBoundary boundary2
-                ? CacheSegment.GetRenderModeName(boundary2.RenderMode)
-                : null;
-            captureWriter.CreateHole(componentState.Component.GetType(), sequenceAndKey.Sequence, renderModeName, sequenceAndKey.Key);
+            var (holeComponentType, renderModeName) = componentState.Component is SSRRenderModeBoundary boundary2
+                ? (boundary2.ComponentType, CacheSegment.GetRenderModeName(boundary2.RenderMode))
+                : (componentState.Component.GetType(), (string?)null);
+            captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, renderModeName, sequenceAndKey.Key);
         }
 
         ComponentEndMarker? endMarkerOrNull = default;
