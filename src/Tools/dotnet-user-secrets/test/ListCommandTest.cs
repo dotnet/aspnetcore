@@ -124,9 +124,26 @@ public class ListCommandTest
     {
         const string beginMarker = "//BEGIN";
         const string endMarker = "//END";
-        var beginIndex = output.IndexOf(beginMarker, StringComparison.Ordinal) + beginMarker.Length;
-        var endIndex = output.IndexOf(endMarker, StringComparison.Ordinal);
-        return output[beginIndex..endIndex].Trim();
+
+        var beginMarkerIndex = output.IndexOf(beginMarker, StringComparison.Ordinal);
+        var endMarkerIndex = output.IndexOf(endMarker, StringComparison.Ordinal);
+
+        Assert.True(
+            beginMarkerIndex >= 0,
+            $"Expected output to contain '{beginMarker}' marker, but it was not found.{Environment.NewLine}Actual output:{Environment.NewLine}{output}");
+
+        Assert.True(
+            endMarkerIndex >= 0,
+            $"Expected output to contain '{endMarker}' marker, but it was not found.{Environment.NewLine}Actual output:{Environment.NewLine}{output}");
+
+        Assert.True(
+            beginMarkerIndex < endMarkerIndex,
+            $"Expected '{beginMarker}' marker to appear before '{endMarker}' marker.{Environment.NewLine}Actual output:{Environment.NewLine}{output}");
+
+        var contentStartIndex = beginMarkerIndex + beginMarker.Length;
+        var contentEndIndex = endMarkerIndex;
+
+        return output[contentStartIndex..contentEndIndex].Trim();
     }
 
     private sealed class TestSecretsStore : SecretsStore
