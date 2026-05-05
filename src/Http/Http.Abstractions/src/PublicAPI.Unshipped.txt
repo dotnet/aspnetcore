@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed = 0 -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Denied = 1 -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection.Validate(Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult

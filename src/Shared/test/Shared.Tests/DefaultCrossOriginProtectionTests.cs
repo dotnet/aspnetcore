@@ -183,13 +183,13 @@ public class DefaultCrossOriginProtectionTests
     }
 
     [Fact]
-    public void NoSecFetchSite_NullOriginValue_Allowed()
+    public void NoSecFetchSite_NullOriginValue_Denied()
     {
-        // Origin: "null" is sent by privacy-sensitive contexts (e.g., redirects).
-        // Treated as "no Origin header" → step 5.
+        // Origin: "null" is sent by privacy-sensitive contexts (e.g., sandboxed iframes, redirects).
+        // It fails URI normalization (no valid scheme/host) → treated as malformed origin → denied.
         var context = CreateContext(secFetchSite: null);
         context.Request.Headers["Origin"] = "null";
-        Assert.Equal(CsrfProtectionResult.Allowed, _validator.Validate(context));
+        Assert.Equal(CsrfProtectionResult.Denied, _validator.Validate(context));
     }
 
     // Step 5: No Sec-Fetch-Site AND no Origin → non-browser client → allow.
