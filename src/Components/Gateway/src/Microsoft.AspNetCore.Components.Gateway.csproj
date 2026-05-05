@@ -6,6 +6,9 @@
     <AssemblyName>blazor-gateway</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Components.Gateway</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- Microsoft.NET.Sdk.Web defaults IsPackable to false. Override it so the
+         <NuspecFile> below is honored and the shipping package is produced. -->
+    <IsPackable>true</IsPackable>
     <Description>Gateway server for hosting standalone Blazor WebAssembly applications.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Assemblies should not reference this assembly directly -->
