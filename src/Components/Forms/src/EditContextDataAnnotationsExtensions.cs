@@ -67,7 +67,6 @@ public static partial class EditContextDataAnnotationsExtensions
                 : null;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _editContext.OnFieldChanged += OnFieldChanged;
-            _editContext.OnValidationRequested += OnValidationRequested;
             _editContext.OnValidationRequestedAsync += OnValidationRequestedAsync;
 
             if (MetadataUpdater.IsSupported)
@@ -97,30 +96,18 @@ public static partial class EditContextDataAnnotationsExtensions
             }
         }
 
-        private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
-        {
-            if (_validatorTypeInfo is not null)
-            {
-                // The IValidatableInfo path runs through OnValidationRequestedAsync.
-                // EditContext.Validate() drains async handlers synchronously and throws if any
-                // are truly async, preserving the behavior where sync IValidatableInfo validators
-                // run during Validate().
-                return;
-            }
-
-            ValidateForm();
-            _editContext.NotifyValidationStateChanged();
-        }
-
         private async Task OnValidationRequestedAsync(object sender, ValidationRequestedEventArgs e)
         {
-            if (_validatorTypeInfo is null)
+            // 
+            if (_validatorTypeInfo is not null)
             {
-                // The async path requires IValidatableInfo for the model.
-                return;
+                await ValidateFormAsync(_validatorTypeInfo, e.CancellationToken);
+            }
+            else
+            {
+                ValidateForm();
             }
 
-            await ValidateFormAsync(_validatorTypeInfo, e.CancellationToken);
             _editContext.NotifyValidationStateChanged();
         }
 
@@ -167,8 +154,7 @@ public static partial class EditContextDataAnnotationsExtensions
 
             // Clear stale messages up-front. If the validator throws partway through, the form
             // shows no per-field messages (form-level fault state is signaled separately via
-            // EditContext.IsValidationFaulted). Stale messages from a prior pass would be misleading
-            // because they reflect a different model state.
+            // EditContext.IsValidationFaulted).
             _messages.Clear();
 
             try
@@ -229,11 +215,7 @@ public static partial class EditContextDataAnnotationsExtensions
             };
 
             // Clear stale messages up-front so the field shows neutral state during validation and
-            // after a throw or cancellation. Any faulted state is signalled separately via
-            // EditContext.IsValidationFaulted. _messages.Clear runs synchronously before this method
-            // suspends at the first await; the caller (OnFieldChanged) then synchronously calls
-            // AddValidationTask, whose NotifyValidationStateChanged covers both the cleared messages
-            // and the pending flag in a single notification.
+            // after a throw or cancellation. Any faulted state is signalled separately via EditContext.IsValidationFaulted.
             _messages.Clear(fieldIdentifier);
 
             try
@@ -269,7 +251,6 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             _messages.Clear();
             _editContext.OnFieldChanged -= OnFieldChanged;
-            _editContext.OnValidationRequested -= OnValidationRequested;
             _editContext.OnValidationRequestedAsync -= OnValidationRequestedAsync;
             _editContext.NotifyValidationStateChanged();
 

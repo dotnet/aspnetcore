@@ -44,12 +44,16 @@ public sealed class EditContext
     /// to this event to perform synchronous validation.
     /// </summary>
     /// <remarks>
-    /// For a given source of validation, a validator component should subscribe to either
-    /// <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>, not
-    /// both. Subscribing to both causes the same validator to run twice on
-    /// <see cref="ValidateAsync"/>, with the second pass overwriting the first.
-    /// (The built-in <see cref="EditContextDataAnnotationsExtensions"/> validator subscribes
-    /// to both intentionally and routes between sync- and async-only execution internally.)
+    /// For a given source of validation, a validator component should subscribe to exactly one
+    /// of <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>.
+    /// Subscribing to both causes the same validator to run twice on <see cref="ValidateAsync"/>,
+    /// with the second pass overwriting the first.
+    /// <para>
+    /// New validator implementations are recommended to subscribe to
+    /// <see cref="OnValidationRequestedAsync"/> instead. This event remains supported for
+    /// existing sync validators and continues to be raised by both <see cref="Validate"/> and
+    /// <see cref="ValidateAsync"/>.
+    /// </para>
     /// </remarks>
     public event EventHandler<ValidationRequestedEventArgs>? OnValidationRequested;
 
@@ -61,9 +65,8 @@ public sealed class EditContext
     /// <see cref="Task"/>, <see cref="Validate"/> throws <see cref="InvalidOperationException"/>.
     /// </summary>
     /// <remarks>
-    /// For a given source of validation, a validator component should subscribe to either
-    /// <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>, not
-    /// both. See <see cref="OnValidationRequested"/> for details.
+    /// For a given source of validation, a validator component should subscribe to exactly one
+    /// of <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>.
     /// </remarks>
     public event Func<object, ValidationRequestedEventArgs, Task>? OnValidationRequestedAsync;
 
@@ -537,10 +540,8 @@ public sealed class EditContext
     /// Returns <c>true</c> if the most recent <see cref="ValidateAsync"/> pass observed an
     /// unhandled exception from any <see cref="OnValidationRequestedAsync"/> handler. A subsequent
     /// successful <see cref="ValidateAsync"/> pass clears the flag; a caller-cancelled pass
-    /// preserves it. <see cref="Validate"/> does not affect this flag — synchronous handler
-    /// faults propagate to the caller. Use this to detect that validation itself failed (as
-    /// opposed to producing validation messages). For per-field validator faults from
-    /// <see cref="AddValidationTask"/>, use the <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
+    /// preserves it. Use this to detect that validation itself failed (not just produced validation messages).
+    /// For per-field validator faults from <see cref="AddValidationTask"/>, use the <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
     /// </summary>
     /// <returns><c>true</c> if the most recent <see cref="ValidateAsync"/> pass faulted; otherwise <c>false</c>.</returns>
     public bool IsValidationFaulted() => _isFormValidationFaulted;
