@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
@@ -276,7 +277,15 @@ public static class WebHost
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
             // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation).
-            services.TryAddSingleton<ICsrfProtection, DefaultCrossOriginProtection>();
+            // Always registered; can be disabled at runtime via "CrossOriginProtection": "disable" in config
+            // (e.g., builder.WebHost.UseSetting("CrossOriginProtection", "disable")).
+            // Trusted origins are pulled from CORS policies if configured.
+            services.TryAddSingleton<ICsrfProtection>(sp =>
+            {
+                var corsOptions = sp.GetService<IOptions<CorsOptions>>();
+                var trustedOrigins = GetTrustedOriginsFromCors(corsOptions);
+                return new DefaultCrossOriginProtection(trustedOrigins);
+            });
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
             // A lambda is used here because we don't want to reference AddRouting directly because of trimming.
@@ -311,4 +320,20 @@ public static class WebHost
     /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] TStartup>(string[] args) where TStartup : class =>
         CreateDefaultBuilder(args).UseStartup<TStartup>();
+
+    private static IEnumerable<string> GetTrustedOriginsFromCors(IOptions<CorsOptions>? corsOptions)
+    {
+        if (corsOptions?.Value is not { } options)
+        {
+            return [];
+        }
+
+        var policy = options.GetPolicy(options.DefaultPolicyName);
+        if (policy is null || policy.AllowAnyOrigin)
+        {
+            return [];
+        }
+
+        return policy.Origins;
+    }
 }
