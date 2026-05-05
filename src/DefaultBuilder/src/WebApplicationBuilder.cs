@@ -463,15 +463,19 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
                 app.Use(static async (context, next) =>
                 {
+                    // Skip validation if endpoint explicitly opted out via DisableAntiforgery()
                     var endpoint = context.GetEndpoint();
-                    if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true })
+                    if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
                     {
-                        var csrfProtection = context.RequestServices.GetRequiredService<ICsrfProtection>();
-                        if (csrfProtection.Validate(context) == CsrfProtectionResult.Denied)
-                        {
-                            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                            return;
-                        }
+                        await next(context);
+                        return;
+                    }
+
+                    var csrfProtection = context.RequestServices.GetRequiredService<ICsrfProtection>();
+                    if (csrfProtection.Validate(context) == CsrfProtectionResult.Denied)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                        return;
                     }
 
                     await next(context);
