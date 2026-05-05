@@ -31,6 +31,7 @@ public static class IdentityBuilderExtensions
         var phoneNumberProviderType = typeof(PhoneNumberTokenProvider<>).MakeGenericType(builder.UserType);
         var emailTokenProviderType = typeof(EmailTokenProvider<>).MakeGenericType(builder.UserType);
         var authenticatorProviderType = typeof(AuthenticatorTokenProvider<>).MakeGenericType(builder.UserType);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<DataProtectionTokenProviderOptions>, PostConfigureDataProtectionTokenProviderOptions>());
         return builder.AddTokenProvider(TokenOptions.DefaultProvider, dataProtectionProviderType)
             .AddTokenProvider(TokenOptions.DefaultEmailProvider, emailTokenProviderType)
             .AddTokenProvider(TokenOptions.DefaultPhoneProvider, phoneNumberProviderType)
@@ -117,6 +118,22 @@ public static class IdentityBuilderExtensions
         private TimeProvider? TimeProvider { get; }
 
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
+        {
+            options.TimeProvider ??= TimeProvider;
+        }
+    }
+
+    // Set TimeProvider from DI on all options instances, if not already set by tests.
+    private sealed class PostConfigureDataProtectionTokenProviderOptions : IPostConfigureOptions<DataProtectionTokenProviderOptions>
+    {
+        public PostConfigureDataProtectionTokenProviderOptions(TimeProvider? timeProvider = null)
+        {
+            TimeProvider = timeProvider;
+        }
+
+        private TimeProvider? TimeProvider { get; }
+
+        public void PostConfigure(string? name, DataProtectionTokenProviderOptions options)
         {
             options.TimeProvider ??= TimeProvider;
         }
