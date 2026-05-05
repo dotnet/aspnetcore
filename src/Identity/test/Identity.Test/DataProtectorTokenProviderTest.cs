@@ -160,4 +160,30 @@ public class DataProtectorTokenProviderTest
 
         Assert.False(valid);
     }
+
+    [Fact]
+    public async Task TimeProviderFromDIIsInjectedViaAddIdentity()
+    {
+        var timeProvider = new FakeTimeProvider();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider(new LoggerFactory()));
+        services.AddSingleton<TimeProvider>(timeProvider);
+        services.AddIdentity<PocoUser, PocoRole>()
+            .AddDefaultTokenProviders()
+            .AddUserStore<NoopUserStore>()
+            .AddRoleStore<NoopRoleStore>();
+
+        var sp = services.BuildServiceProvider();
+        var manager = sp.GetRequiredService<UserManager<PocoUser>>();
+        var user = new PocoUser("testuser");
+
+        var token = await manager.GenerateUserTokenAsync(user, TokenOptions.DefaultProvider, "purpose");
+
+        timeProvider.Advance(TimeSpan.FromDays(1) + TimeSpan.FromSeconds(1));
+
+        var valid = await manager.VerifyUserTokenAsync(user, TokenOptions.DefaultProvider, "purpose", token);
+
+        Assert.False(valid);
+    }
 }

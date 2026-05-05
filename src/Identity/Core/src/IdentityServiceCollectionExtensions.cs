@@ -189,21 +189,6 @@ public static class IdentityServiceCollectionExtensions
         }
     }
 
-    private sealed class PostConfigureDataProtectionTokenProviderOptions : IPostConfigureOptions<DataProtectionTokenProviderOptions>
-    {
-        public PostConfigureDataProtectionTokenProviderOptions(TimeProvider? timeProvider = null)
-        {
-            TimeProvider = timeProvider;
-        }
-
-        private TimeProvider? TimeProvider { get; }
-
-        public void PostConfigure(string? name, DataProtectionTokenProviderOptions options)
-        {
-            options.TimeProvider ??= TimeProvider;
-        }
-    }
-
     private sealed class CompositeIdentityHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder)
         : SignInAuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder)
     {

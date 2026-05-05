@@ -122,20 +122,4 @@ public static class IdentityBuilderExtensions
             options.TimeProvider ??= TimeProvider;
         }
     }
-
-    // Set TimeProvider from DI on all options instances, if not already set by tests.
-    private sealed class PostConfigureDataProtectionTokenProviderOptions : IPostConfigureOptions<DataProtectionTokenProviderOptions>
-    {
-        public PostConfigureDataProtectionTokenProviderOptions(TimeProvider? timeProvider = null)
-        {
-            TimeProvider = timeProvider;
-        }
-
-        private TimeProvider? TimeProvider { get; }
-
-        public void PostConfigure(string? name, DataProtectionTokenProviderOptions options)
-        {
-            options.TimeProvider ??= TimeProvider;
-        }
-    }
 }
