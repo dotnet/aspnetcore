@@ -19,7 +19,7 @@ public class SSRRenderModeBoundaryTest
     public void DoesNotAssertAboutConfiguredRenderModesOnUnknownEndpoints()
     {
         // Arrange: an endpoint with no ConfiguredRenderModesMetadata
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(), null));
 
         // Act/Assert: no exception means we're OK
@@ -32,7 +32,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfServerRenderModeUsedAndNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new WebAssemblyRenderModeSubclass());
 
         // Act/Assert
@@ -46,7 +46,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfWebAssemblyRenderModeUsedAndNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new ServerRenderModeSubclass());
 
         // Act/Assert
@@ -60,7 +60,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfAutoRenderModeUsedAndServerNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new WebAssemblyRenderModeSubclass());
 
         // Act/Assert
@@ -74,7 +74,7 @@ public class SSRRenderModeBoundaryTest
     public void ThrowsIfAutoRenderModeUsedAndWebAssemblyNotConfigured()
     {
         // Arrange
-        var httpContext = new DefaultHttpContext();
+        var httpContext = CreateHttpContext();
         PrepareEndpoint(httpContext, new ServerRenderModeSubclass());
 
         // Act/Assert
@@ -88,6 +88,16 @@ public class SSRRenderModeBoundaryTest
     {
         httpContext.SetEndpoint(new Endpoint(null, new EndpointMetadataCollection(
             new ConfiguredRenderModesMetadata(configuredModes)), null));
+    }
+
+    private static DefaultHttpContext CreateHttpContext()
+    {
+        return new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .BuildServiceProvider(),
+        };
     }
 
     class TestComponent : IComponent
@@ -115,12 +125,7 @@ public class SSRRenderModeBoundaryTest
     public void GetComponentMarkerKey_WorksWithVariousKeyTypes(object componentKey, string expectedFormattedKey)
     {
         // Arrange
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = new ServiceCollection()
-                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-                .BuildServiceProvider(),
-        };
+        var httpContext = CreateHttpContext();
         var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
 
         // Act
