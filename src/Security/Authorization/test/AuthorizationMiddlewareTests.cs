@@ -676,7 +676,6 @@ public class AuthorizationMiddlewareTests
     {
         var field = typeof(AuthorizationMiddleware).GetField("_suppressUseHttpContextAsAuthorizationResource", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
         var originalValue = (bool)field.GetValue(null)!;
-        AppContext.SetSwitch("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", isEnabled: true);
         field.SetValue(null, true);
 
         try
@@ -703,7 +702,6 @@ public class AuthorizationMiddlewareTests
         }
         finally
         {
-            AppContext.SetSwitch("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", isEnabled: false);
             field.SetValue(null, originalValue);
         }
     }

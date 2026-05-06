@@ -4990,7 +4990,6 @@ public class RendererTest
         // Arrange
         try
         {
-            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
             backingField.SetValue(null, false);
             await using var renderer = new TestRenderer();
             var hotReloadManager = new HotReloadManager();
@@ -5011,7 +5010,6 @@ public class RendererTest
         }
         finally
         {
-            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
             backingField.SetValue(null, originalValue);
         }
     }

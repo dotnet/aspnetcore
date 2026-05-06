@@ -987,9 +987,9 @@ public class EndpointHtmlRendererTest
     [InlineData(false)]
     public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool allowException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: !allowException);
         // The _throwNavigationException property is cached at static init time, so we need to update it via reflection.
         var backingField = typeof(HttpNavigationManager).GetField("s_throwNavigationException", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+        var originalValue = (bool)backingField.GetValue(null)!;
         backingField.SetValue(null, allowException);
         try
         {
@@ -1046,9 +1046,7 @@ public class EndpointHtmlRendererTest
         }
         finally
         {
-            // Restore default: _throwNavigationException = true (throw on navigation)
-            AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: false);
-            backingField.SetValue(null, true);
+            backingField.SetValue(null, originalValue);
         }
     }
 
