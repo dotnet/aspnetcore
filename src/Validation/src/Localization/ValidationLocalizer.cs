@@ -54,6 +54,11 @@ public sealed class ValidationLocalizer
             return null;
         }
 
+        if (attribute.ErrorMessageResourceType is not null)
+        {
+            return null;
+        }
+
         var lookupKey = !string.IsNullOrEmpty(attribute.ErrorMessage)
             ? attribute.ErrorMessage
             : _keyProvider?.Invoke(new ErrorMessageKeyContext

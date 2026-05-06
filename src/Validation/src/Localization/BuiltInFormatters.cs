@@ -9,7 +9,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 internal sealed class CompareAttributeFormatter(CompareAttribute attribute) : IValidationAttributeFormatter
 {
     public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)
-        => string.Format(culture, messageTemplate, displayName, attribute.OtherProperty);
+        => string.Format(culture, messageTemplate, displayName, attribute.OtherPropertyDisplayName ?? attribute.OtherProperty);
 }
 
 internal sealed class FileExtensionsAttributeFormatter(FileExtensionsAttribute attribute) : IValidationAttributeFormatter

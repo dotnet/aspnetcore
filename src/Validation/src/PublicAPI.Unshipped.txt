@@ -21,10 +21,6 @@ Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInf
 Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string? displayName, System.Type? displayResourceType = null) -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationLocalizer.get -> Microsoft.Extensions.Validation.Localization.ValidationLocalizer!
 Microsoft.Extensions.Validation.ValidateContext.ValidationLocalizer.set -> void
-Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry
-Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.AddFormatter<TAttribute>(System.Func<TAttribute!, Microsoft.Extensions.Validation.IValidationAttributeFormatter!>! factory) -> void
-Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.IValidationAttributeFormatter?
-Microsoft.Extensions.Validation.ValidationAttributeFormatterRegistry.ValidationAttributeFormatterRegistry() -> void
 Microsoft.Extensions.Validation.ValidationOptions.AttributeFormatters.get -> Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry!
 Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageKeyProvider.get -> System.Func<Microsoft.Extensions.Validation.ErrorMessageKeyContext, string?>?
 Microsoft.Extensions.Validation.ValidationOptions.ErrorMessageKeyProvider.set -> void

@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
 using Microsoft.Extensions.Validation.Localization;
 
@@ -33,7 +34,9 @@ public static class ValidationServiceCollectionExtensions
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         });
 
-        services.TryAddSingleton<ValidationLocalizer>();
+        services.TryAddSingleton(sp => new ValidationLocalizer(
+            sp.GetRequiredService<IOptions<ValidationOptions>>().Value,
+            sp.GetService<IStringLocalizerFactory>()));
 
         return services;
     }

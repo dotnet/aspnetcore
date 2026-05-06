@@ -29,7 +29,6 @@ internal static class ValidationEndpointFilterFactory
         {
             return next;
         }
-        var validationLocalizer = context.ApplicationServices.GetRequiredService<ValidationLocalizer>();
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
         // Use a list to only store validatable parameters instead of arrays for all parameters
@@ -57,6 +56,8 @@ internal static class ValidationEndpointFilterFactory
         {
             return next;
         }
+
+        var validationLocalizer = context.ApplicationServices.GetRequiredService<ValidationLocalizer>();
 
         return async (context) =>
         {
