@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 [SupportedOSPlatform("windows")]
 internal sealed class WindowsCertificateManager : CertificateManager
 {
-    private const int UserCancelledErrorCode = 1223;
+    private const int UserCancelledErrorCode = unchecked((int)0x800704C7);
 
     public WindowsCertificateManager()
     {
