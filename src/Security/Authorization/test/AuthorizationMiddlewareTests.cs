@@ -14,6 +14,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Moq;
 
 namespace Microsoft.AspNetCore.Authorization.Test;
@@ -671,14 +673,14 @@ public class AuthorizationMiddlewareTests
         Assert.Equal(endpoint, resource.GetEndpoint());
     }
 
-    [Fact]
-    public async Task AuthZResourceShouldBeEndpointByDefaultWithCompatSwitch()
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void AuthZResourceShouldBeEndpointByDefaultWithCompatSwitch()
     {
-        var field = typeof(AuthorizationMiddleware).GetField("_suppressUseHttpContextAsAuthorizationResource", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
-        var originalValue = (bool)field.GetValue(null)!;
-        field.SetValue(null, true);
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource", "true");
 
-        try
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
             object resource = null;
             var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
@@ -688,22 +690,43 @@ public class AuthorizationMiddlewareTests
             }).Build();
             var policyProvider = new Mock<IAuthorizationPolicyProvider>();
             policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
-            var next = new TestRequestDelegate();
 
-            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
-            var endpoint = CreateEndpoint(new AuthorizeAttribute());
-            var context = GetHttpContext(endpoint: endpoint);
+            var services = new ServiceCollection().BuildServiceProvider();
+            var next = new RequestDelegate(context => Task.CompletedTask);
+            var middleware = new AuthorizationMiddleware(next, policyProvider.Object, services);
+
+            var endpoint = new Endpoint(context => Task.CompletedTask, new EndpointMetadataCollection(new AuthorizeAttribute()), "Test endpoint");
+
+            var basicPrincipal = new ClaimsPrincipal(
+                new ClaimsIdentity(
+                    new Claim[]
+                    {
+                        new Claim("Permission", "CanViewPage"),
+                        new Claim(ClaimTypes.Role, "Administrator"),
+                        new Claim(ClaimTypes.Role, "User"),
+                        new Claim(ClaimTypes.NameIdentifier, "John")
+                    },
+                    "Basic"));
+
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(Mock.Of<IAuthenticationService>());
+            serviceCollection.AddTransient<IAuthorizationMiddlewareResultHandler, AuthorizationMiddlewareResultHandler>();
+            serviceCollection.AddOptions();
+            serviceCollection.AddLogging();
+            serviceCollection.AddAuthorization();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.SetEndpoint(endpoint);
+            httpContext.RequestServices = serviceProvider;
+            httpContext.User = basicPrincipal;
 
             // Act
-            await middleware.Invoke(context);
+            await middleware.Invoke(httpContext);
 
             // Assert
             Assert.Equal(endpoint, resource);
-        }
-        finally
-        {
-            field.SetValue(null, originalValue);
-        }
+        }, options);
     }
 
     [Fact]

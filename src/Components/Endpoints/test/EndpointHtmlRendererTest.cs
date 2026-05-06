@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
@@ -982,18 +983,23 @@ public class EndpointHtmlRendererTest
             exception.Message);
     }
 
-    [Theory]
+    [ConditionalTheory]
+    [RemoteExecutionSupported]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool allowException)
+    public void UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool allowException)
     {
-        // The _throwNavigationException property is cached at static init time, so we need to update it via reflection.
-        var backingField = typeof(HttpNavigationManager).GetField("s_throwNavigationException", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
-        var originalValue = (bool)backingField.GetValue(null)!;
-        backingField.SetValue(null, allowException);
-        try
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add(
+            "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException",
+            (!allowException).ToString().ToLowerInvariant());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async (allowExceptionStr) =>
         {
-            // Arrange
+            var allowException = bool.Parse(allowExceptionStr);
+            var services = CreateDefaultServiceCollection().BuildServiceProvider();
+            var renderer = new TestEndpointHtmlRenderer(services, NullLoggerFactory.Instance);
+
             var ctx = new DefaultHttpContext();
             ctx.Request.Scheme = "http";
             ctx.Request.Host = new HostString("localhost");
@@ -1001,17 +1007,16 @@ public class EndpointHtmlRendererTest
             ctx.Request.Path = "/path";
             ctx.Request.QueryString = new QueryString("?query=value");
             ctx.Response.Body = new MemoryStream();
+            ctx.RequestServices = services;
             var responseMock = new Mock<IHttpResponseFeature>();
             responseMock.Setup(r => r.HasStarted).Returns(true);
             ctx.Features.Set(responseMock.Object);
-            var httpContext = GetHttpContext(ctx);
             string redirectUri = "http://localhost/redirect";
 
-            // Act
             if (allowException)
             {
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
-                    httpContext,
+                    ctx,
                     typeof(RedirectComponent),
                     null,
                     ParameterView.FromDictionary(new Dictionary<string, object>
@@ -1027,7 +1032,7 @@ public class EndpointHtmlRendererTest
             else
             {
                 await renderer.PrerenderComponentAsync(
-                    httpContext,
+                    ctx,
                     typeof(RedirectComponent),
                     null,
                     ParameterView.FromDictionary(new Dictionary<string, object>
@@ -1035,19 +1040,15 @@ public class EndpointHtmlRendererTest
                         { "RedirectUri", redirectUri }
                     }));
                 // read the custom element from the response body
-                httpContext.Response.Body.Position = 0;
-                var reader = new StreamReader(httpContext.Response.Body);
+                ctx.Response.Body.Position = 0;
+                var reader = new StreamReader(ctx.Response.Body);
                 var output = await reader.ReadToEndAsync();
 
                 // Assert that the output contains expected navigation instructions.
                 var pattern = "^<blazor-ssr><template type=\"redirection\".*>.*<\\/template><blazor-ssr-end><\\/blazor-ssr-end><\\/blazor-ssr>$";
                 Assert.Matches(pattern, output);
             }
-        }
-        finally
-        {
-            backingField.SetValue(null, originalValue);
-        }
+        }, allowException.ToString(), options);
     }
 
     [Fact]

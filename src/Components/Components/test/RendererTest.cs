@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -4981,16 +4982,18 @@ public class RendererTest
         Assert.True(wasOnSyncContext);
     }
 
-    [Fact]
-    public async Task NoHotReloadListenersAreRegistered_WhenHotReloadIsDisabled()
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void NoHotReloadListenersAreRegistered_WhenHotReloadIsDisabled()
     {
-        // The IsSupported property is cached at static init time, so we need to update it via reflection.
-        var backingField = typeof(HotReloadManager).GetField("s_isSupported", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
-        var originalValue = (bool)backingField.GetValue(null)!;
-        // Arrange
-        try
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Reflection.Metadata.MetadataUpdater.IsSupported", "false");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
-            backingField.SetValue(null, false);
+            // Set the switch before any code triggers HotReloadManager type initialization.
+            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
+
             await using var renderer = new TestRenderer();
             var hotReloadManager = new HotReloadManager();
             renderer.HotReloadManager = hotReloadManager;
@@ -5001,17 +5004,12 @@ public class RendererTest
                 builder.CloseElement();
             });
 
-            // Act
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
             Assert.False(hotReloadManager.IsSubscribedTo);
 
             await renderer.DisposeAsync();
-        }
-        finally
-        {
-            backingField.SetValue(null, originalValue);
-        }
+        }, options);
     }
 
     [Fact]
