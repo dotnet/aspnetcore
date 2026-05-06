@@ -4,11 +4,13 @@
 #nullable enable
 
 using System.Buffers;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Reflection;
@@ -21,14 +23,14 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Generators.Tests;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -3236,6 +3238,68 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(expectedIntArray, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToIntArray)]);
     }
 
+    [Fact]
+    public async Task RequestDelegateFactory_JsonException_ShouldWriteViaProblemDetailsService()
+    {
+        var httpContext = CreateHttpContext(serviceCollection => serviceCollection.AddSingleton<IProblemDetailsService>(
+            new ProblemDetailsService(
+                [new DefaultProblemDetailsWriter(
+                    Options.Create(new ProblemDetailsOptions()),
+                    Options.Create(new JsonOptions()))])));
+
+        httpContext.Request.ContentType = MediaTypeNames.Application.Json;
+        httpContext.Features[typeof(IHttpRequestBodyDetectionFeature)] = new RequestBodyDetectionFeature(true);
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{}"));
+        httpContext.Response.Body = new MemoryStream();
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+        
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        var result = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
+        Assert.Equal($$"""
+            {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+ModelWithRequiredProperty' was missing required properties including: 'prop'."]},"traceId":"{{httpContext.TraceIdentifier}}"}
+            """, result);
+
+        string TestAction(ModelWithRequiredProperty model)
+            => $"Hello {model.Prop}";
+    }
+
+    [Fact]
+    public async Task RequestDelegateFactory_JsonException_ShouldWriteViaProblemDetailsService_SimplifiedCustomProblemDetailsWriter()
+    {
+        var httpContext = CreateHttpContext(serviceCollection => serviceCollection.AddSingleton<IProblemDetailsService>(
+            new ProblemDetailsService(
+                [new SimplifiedCustomProblemDetailsWriter()])));
+
+        httpContext.Request.ContentType = MediaTypeNames.Application.Json;
+        httpContext.Features[typeof(IHttpRequestBodyDetectionFeature)] = new RequestBodyDetectionFeature(true);
+        httpContext.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{}"));
+        httpContext.Response.Body = new MemoryStream();
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        var result = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
+        Assert.Equal($$"""
+            {"title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+ModelWithRequiredProperty' was missing required properties including: 'prop'."]},"traceId":"{{httpContext.TraceIdentifier}}"}
+            """, result);
+
+        string TestAction(ModelWithRequiredProperty model)
+            => $"Hello {model.Prop}";
+    }
+
+    private sealed class ModelWithRequiredProperty
+    {
+        [Required]
+        public required string Prop { get; set; }
+    }
+
 #nullable disable
     private class ParameterListMixedRequiredStringsFromDifferentSources
     {
@@ -3333,13 +3397,16 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         }, options);
     }
 
-    private DefaultHttpContext CreateHttpContext()
+    private DefaultHttpContext CreateHttpContext(Action<IServiceCollection>? addAdditionalServices = null)
     {
         var responseFeature = new TestHttpResponseFeature();
 
+        var serviceCollection = new ServiceCollection().AddSingleton(LoggerFactory);
+        addAdditionalServices?.Invoke(serviceCollection);
+
         return new()
         {
-            RequestServices = new ServiceCollection().AddSingleton(LoggerFactory).BuildServiceProvider(),
+            RequestServices = serviceCollection.BuildServiceProvider(),
             Features =
                 {
                     [typeof(IHttpResponseFeature)] = responseFeature,
@@ -3881,6 +3948,17 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         public Task<X509Certificate2?> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
+        }
+    }
+
+    private sealed class SimplifiedCustomProblemDetailsWriter : IProblemDetailsWriter
+    {
+        public bool CanWrite(ProblemDetailsContext context)
+            => true;
+
+        public async ValueTask WriteAsync(ProblemDetailsContext context)
+        {
+            await context.HttpContext.Response.WriteAsJsonAsync(context.ProblemDetails);
         }
     }
 }
