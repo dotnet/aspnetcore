@@ -33,7 +33,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayResourceAccessor = null) : base(containingType, propertyType, name, displayName, displayResourceAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -53,7 +54,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName = null,
+            global::System.Func<string?>? displayResourceAccessor = null) : base(type, members, displayName, displayResourceAccessor)
         {
             Type = type;
         }
@@ -80,15 +83,19 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
                             name: "RequiredProperty",
-                            displayName: "RequiredProperty"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
                             name: "StringWithLength",
-                            displayName: "StringWithLength"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayResourceAccessor: null
                 );
                 return true;
             }
@@ -101,9 +108,12 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::SubTypeWithInheritance),
                             propertyType: typeof(string),
                             name: "EmailString",
-                            displayName: "EmailString"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayResourceAccessor: null
                 );
                 return true;
             }
@@ -116,57 +126,68 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(int),
                             name: "IntegerWithRange",
-                            displayName: "IntegerWithRange"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(int),
                             name: "IntegerWithRangeAndDisplayName",
-                            displayName: "Valid identifier"
+                            displayName: "Valid identifier",
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(global::SubType),
                             name: "PropertyWithMemberAttributes",
-                            displayName: "PropertyWithMemberAttributes"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(global::SubType),
                             name: "PropertyWithoutMemberAttributes",
-                            displayName: "PropertyWithoutMemberAttributes"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(global::SubTypeWithInheritance),
                             name: "PropertyWithInheritance",
-                            displayName: "PropertyWithInheritance"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(global::System.Collections.Generic.List<global::SubType>),
                             name: "ListOfSubTypes",
-                            displayName: "ListOfSubTypes"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(int),
                             name: "IntegerWithDerivedValidationAttribute",
-                            displayName: "IntegerWithDerivedValidationAttribute"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(int),
                             name: "IntegerWithCustomValidation",
-                            displayName: "IntegerWithCustomValidation"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
                             propertyType: typeof(int),
                             name: "PropertyWithMultipleAttributes",
-                            displayName: "PropertyWithMultipleAttributes"
+                            displayName: null,
+                            displayResourceAccessor: null
                         ),
-                    ]
+                    ],
+                    displayName: null,
+                    displayResourceAccessor: null
                 );
                 return true;
             }
@@ -268,6 +289,64 @@ namespace Microsoft.Extensions.Validation.Generated
                         .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(t, inherit: true);
                 return global::System.Linq.Enumerable.ToArray(typeAttributes);
             });
+        }
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file static class DisplayAttributeCache
+    {
+        private sealed record CacheKey(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+            [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+            global::System.Type ContainingType,
+            string PropertyName);
+
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _propertyCache = new();
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _typeCache = new();
+
+        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetPropertyDisplayAttribute(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName)
+        {
+            var key = new CacheKey(containingType, propertyName);
+            return _propertyCache.GetOrAdd(key, static k =>
+            {
+                // Check primary-constructor parameters first to handle record scenarios where
+                // [Display(ResourceType = ..., Name = ...)] is on the parameter rather than the property.
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
+                    {
+                        var paramDisplayAttr = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter);
+                        if (paramDisplayAttr is not null)
+                        {
+                            return paramDisplayAttr;
+                        }
+
+                        break;
+                    }
+                }
+
+                var property = k.ContainingType.GetProperty(k.PropertyName);
+                return property is null
+                    ? null
+                    : global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
+            });
+        }
+
+        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetTypeDisplayAttribute(
+            global::System.Type type)
+        {
+            return _typeCache.GetOrAdd(type, static t =>
+                global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t, inherit: true));
         }
     }
 }

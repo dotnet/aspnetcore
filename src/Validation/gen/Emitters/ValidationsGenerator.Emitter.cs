@@ -61,7 +61,8 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            string? displayName,
+            global::System.Func<string?>? displayResourceAccessor = null) : base(containingType, propertyType, name, displayName, displayResourceAccessor)
         {
             ContainingType = containingType;
             Name = name;
@@ -81,7 +82,9 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            string? displayName = null,
+            global::System.Func<string?>? displayResourceAccessor = null) : base(type, members, displayName, displayResourceAccessor)
         {
             Type = type;
         }
@@ -199,6 +202,64 @@ namespace Microsoft.Extensions.Validation.Generated
             });
         }
     }
+
+    {{GeneratedCodeAttribute}}
+    file static class DisplayAttributeCache
+    {
+        private sealed record CacheKey(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+            [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
+            global::System.Type ContainingType,
+            string PropertyName);
+
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _propertyCache = new();
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _typeCache = new();
+
+        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetPropertyDisplayAttribute(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName)
+        {
+            var key = new CacheKey(containingType, propertyName);
+            return _propertyCache.GetOrAdd(key, static k =>
+            {
+                // Check primary-constructor parameters first to handle record scenarios where
+                // [Display(ResourceType = ..., Name = ...)] is on the parameter rather than the property.
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
+                    {
+                        var paramDisplayAttr = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter);
+                        if (paramDisplayAttr is not null)
+                        {
+                            return paramDisplayAttr;
+                        }
+
+                        break;
+                    }
+                }
+
+                var property = k.ContainingType.GetProperty(k.PropertyName);
+                return property is null
+                    ? null
+                    : global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
+            });
+        }
+
+        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetTypeDisplayAttribute(
+            global::System.Type type)
+        {
+            return _typeCache.GetOrAdd(type, static t =>
+                global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t, inherit: true));
+        }
+    }
 }
 """;
 
@@ -216,7 +277,7 @@ namespace Microsoft.Extensions.Validation.Generated
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
             {
-                cw.WriteLine("members: []");
+                cw.WriteLine("members: [],");
             }
             else
             {
@@ -227,8 +288,10 @@ namespace Microsoft.Extensions.Validation.Generated
                     EmitValidatableMemberForCreate(member, cw);
                 }
                 cw.Indent--;
-                cw.WriteLine("]");
+                cw.WriteLine("],");
             }
+            cw.WriteLine($"displayName: {FormatNullableStringLiteral(validatableType.DisplayName)},");
+            cw.WriteLine($"displayResourceAccessor: {FormatTypeDisplayResourceAccessor(validatableType)}");
             cw.Indent--;
             cw.WriteLine(");");
             cw.WriteLine("return true;");
@@ -244,8 +307,24 @@ namespace Microsoft.Extensions.Validation.Generated
         cw.WriteLine($"containingType: typeof({member.ContainingTypeFQN}),");
         cw.WriteLine($"propertyType: typeof({member.TypeFQN}),");
         cw.WriteLine($"name: \"{member.Name}\",");
-        cw.WriteLine($"displayName: \"{member.DisplayName}\"");
+        cw.WriteLine($"displayName: {FormatNullableStringLiteral(member.DisplayName)},");
+        cw.WriteLine($"displayResourceAccessor: {FormatPropertyDisplayResourceAccessor(member)}");
         cw.Indent--;
         cw.WriteLine("),");
     }
+
+    private static string FormatNullableStringLiteral(string? value)
+        => value is null
+            ? "null"
+            : $"\"{value.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+
+    private static string FormatPropertyDisplayResourceAccessor(ValidatableProperty member)
+        => member.HasResourceDisplayAttribute
+            ? $"static () => DisplayAttributeCache.GetPropertyDisplayAttribute(typeof({member.ContainingTypeFQN}), \"{member.Name}\")?.GetName()"
+            : "null";
+
+    private static string FormatTypeDisplayResourceAccessor(ValidatableType validatableType)
+        => validatableType.HasResourceDisplayAttribute
+            ? $"static () => DisplayAttributeCache.GetTypeDisplayAttribute(typeof({validatableType.TypeFQN}))?.GetName()"
+            : "null";
 }

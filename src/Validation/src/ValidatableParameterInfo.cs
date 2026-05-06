@@ -20,18 +20,22 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The display name for the parameter.</param>
-    /// <param name="displayResource">Optional resource type for the display name.</param>
+    /// <param name="displayName">The literal display name for the parameter (sourced from
+    /// <see cref="DisplayAttribute.Name"/> when no <see cref="DisplayAttribute.ResourceType"/> is set,
+    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>).</param>
+    /// <param name="displayResourceAccessor">An accessor that resolves the localized display name
+    /// from a static resource property when the parameter is decorated with
+    /// <c>[Display(Name = ..., ResourceType = ...)]</c>; <see langword="null"/> otherwise.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
         string name,
         string? displayName,
-        Type? displayResource = null)
+        Func<string?>? displayResourceAccessor = null)
     {
         ParameterType = parameterType;
         Name = name;
         DisplayName = displayName;
-        DisplayResource = displayResource;
+        DisplayResourceAccessor = displayResourceAccessor;
     }
 
     /// <summary>
@@ -45,12 +49,18 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the parameter.
+    /// Gets the literal display name for the parameter.
     /// </summary>
+    /// <remarks>
+    /// When <see cref="DisplayAttribute.ResourceType"/> is set, the resolved display name is
+    /// produced by invoking <see cref="DisplayResourceAccessor"/> instead.
+    /// </remarks>
     internal string? DisplayName { get; }
 
-    // Gets the resource type for the display name.
-    internal Type? DisplayResource { get; }
+    /// <summary>
+    /// Gets the accessor that resolves the localized display name from a static resource property.
+    /// </summary>
+    internal Func<string?>? DisplayResourceAccessor { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -72,7 +82,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         }
 
         var localizer = context.ValidationLocalizer;
-        var displayName = localizer.ResolveDisplayName(DisplayName, DisplayResource, declaringType: null) ?? Name;
+        var displayName = localizer.ResolveDisplayName(Name, DisplayName, DisplayResourceAccessor, declaringType: null);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

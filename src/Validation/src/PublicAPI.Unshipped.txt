@@ -1,4 +1,7 @@
 #nullable enable
+*REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
+*REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
 Microsoft.Extensions.Validation.ErrorMessageKeyContext
 Microsoft.Extensions.Validation.ErrorMessageKeyContext.Attribute.get -> System.ComponentModel.DataAnnotations.ValidationAttribute!
 Microsoft.Extensions.Validation.ErrorMessageKeyContext.Attribute.init -> void
@@ -14,11 +17,12 @@ Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistr
 Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.IValidationAttributeFormatter?
 Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.ValidationAttributeFormatterRegistry() -> void
 Microsoft.Extensions.Validation.Localization.ValidationLocalizer
-Microsoft.Extensions.Validation.Localization.ValidationLocalizer.ResolveDisplayName(string? displayName, System.Type? displayResource, System.Type? declaringType) -> string?
+Microsoft.Extensions.Validation.Localization.ValidationLocalizer.ResolveDisplayName(string! defaultName, string? displayName, System.Func<string?>? displayResourceAccessor, System.Type? declaringType) -> string!
 Microsoft.Extensions.Validation.Localization.ValidationLocalizer.ResolveErrorMessage(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute, string! displayName, System.Type? declaringType) -> string?
 Microsoft.Extensions.Validation.Localization.ValidationLocalizer.ValidationLocalizer(Microsoft.Extensions.Validation.ValidationOptions! options, Microsoft.Extensions.Localization.IStringLocalizerFactory? factory) -> void
-Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string? displayName, System.Type? displayResource = null) -> void
-Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string? displayName, System.Type? displayResourceType = null) -> void
+Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string? displayName, System.Func<string?>? displayResourceAccessor = null) -> void
+Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string? displayName, System.Func<string?>? displayResourceAccessor = null) -> void
+Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members, string? displayName = null, System.Func<string?>? displayResourceAccessor = null) -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationLocalizer.get -> Microsoft.Extensions.Validation.Localization.ValidationLocalizer!
 Microsoft.Extensions.Validation.ValidateContext.ValidationLocalizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.AttributeFormatters.get -> Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry!

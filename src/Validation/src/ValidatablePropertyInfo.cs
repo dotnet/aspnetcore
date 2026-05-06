@@ -23,13 +23,13 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         Type propertyType,
         string name,
         string? displayName,
-        Type? displayResourceType = null)
+        Func<string?>? displayResourceAccessor = null)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
-        DisplayResource = displayResourceType;
+        DisplayResourceAccessor = displayResourceAccessor;
     }
 
     /// <summary>
@@ -49,12 +49,23 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the property.
+    /// Gets the literal display name for the property, sourced from
+    /// <see cref="DisplayAttribute.Name"/> (when no <see cref="DisplayAttribute.ResourceType"/> is set)
+    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>.
     /// </summary>
+    /// <remarks>
+    /// When <see cref="DisplayAttribute.ResourceType"/> is set, the resolved display name is
+    /// produced by invoking <see cref="DisplayResourceAccessor"/> instead.
+    /// </remarks>
     internal string? DisplayName { get; }
 
-    // Gets the resource type for the display name.
-    internal Type? DisplayResource { get; }
+    /// <summary>
+    /// Gets the accessor that resolves the localized display name from a static resource property
+    /// (e.g. <c>Resources.MyProperty</c>) when the property is decorated with
+    /// <c>[Display(Name = ..., ResourceType = ...)]</c>. Returns <see langword="null"/> for
+    /// properties without resource-based display names.
+    /// </summary>
+    internal Func<string?>? DisplayResourceAccessor { get; }
 
     /// <summary>
     /// Gets the validation attributes for this member.
@@ -81,7 +92,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         var localizer = context.ValidationLocalizer;
-        var displayName = localizer.ResolveDisplayName(DisplayName, DisplayResource, DeclaringType) ?? Name;
+        var displayName = localizer.ResolveDisplayName(Name, DisplayName, DisplayResourceAccessor, DeclaringType);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

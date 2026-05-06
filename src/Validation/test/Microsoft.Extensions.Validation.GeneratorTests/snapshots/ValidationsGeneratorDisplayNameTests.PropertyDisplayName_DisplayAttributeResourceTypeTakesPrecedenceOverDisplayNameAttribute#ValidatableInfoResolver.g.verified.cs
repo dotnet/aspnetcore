@@ -74,109 +74,17 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::SubType))
+            if (type == typeof(global::ResourceOverDisplayNameType))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::SubType),
+                    type: typeof(global::ResourceOverDisplayNameType),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::SubType),
-                            propertyType: typeof(string),
-                            name: "RequiredProperty",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::SubType),
-                            propertyType: typeof(string),
-                            name: "StringWithLength",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                    ],
-                    displayName: null,
-                    displayResourceAccessor: null
-                );
-                return true;
-            }
-            if (type == typeof(global::SubTypeWithInheritance))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::SubTypeWithInheritance),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::SubTypeWithInheritance),
-                            propertyType: typeof(string),
-                            name: "EmailString",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                    ],
-                    displayName: null,
-                    displayResourceAccessor: null
-                );
-                return true;
-            }
-            if (type == typeof(global::ComplexType))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::ComplexType),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
+                            containingType: typeof(global::ResourceOverDisplayNameType),
                             propertyType: typeof(int),
-                            name: "IntegerWithRange",
+                            name: "Value",
                             displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "IntegerWithRangeAndDisplayName",
-                            displayName: "Valid identifier",
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::SubType),
-                            name: "PropertyWithMemberAttributes",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::SubType),
-                            name: "PropertyWithoutMemberAttributes",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::SubTypeWithInheritance),
-                            name: "PropertyWithInheritance",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(global::System.Collections.Generic.List<global::SubType>),
-                            name: "ListOfSubTypes",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "IntegerWithCustomValidationAttribute",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "PropertyWithMultipleAttributes",
-                            displayName: null,
-                            displayResourceAccessor: null
+                            displayResourceAccessor: static () => DisplayAttributeCache.GetPropertyDisplayAttribute(typeof(global::ResourceOverDisplayNameType), "Value")?.GetName()
                         ),
                     ],
                     displayName: null,

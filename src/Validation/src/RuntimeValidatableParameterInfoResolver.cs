@@ -3,6 +3,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
@@ -48,32 +49,51 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             validatableInfo = null;
             return false;
         }
+
+        var (displayName, displayResourceAccessor) = ResolveDisplayInfo(parameterInfo);
+
         validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
-            displayName: GetDisplayName(parameterInfo),
+            displayName: displayName,
+            displayResourceAccessor: displayResourceAccessor,
             validationAttributes: validationAttributes
         );
         return true;
     }
 
-    private static string GetDisplayName(ParameterInfo parameterInfo)
+    private static (string? DisplayName, Func<string?>? DisplayResourceAccessor) ResolveDisplayInfo(ParameterInfo parameterInfo)
     {
         var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute != null)
+        if (displayAttribute is { ResourceType: not null, Name: not null })
         {
-            return displayAttribute.Name ?? parameterInfo.Name!;
+            // ResourceType path: emit a closure that defers to DisplayAttribute.GetName() at runtime.
+            return (DisplayName: null, DisplayResourceAccessor: displayAttribute.GetName);
         }
 
-        return parameterInfo.Name!;
+        if (displayAttribute?.Name is not null)
+        {
+            // Literal name from [Display(Name = "...")].
+            return (DisplayName: displayAttribute.Name, DisplayResourceAccessor: null);
+        }
+
+        var displayNameAttribute = parameterInfo.GetCustomAttribute<DisplayNameAttribute>();
+        if (displayNameAttribute is not null)
+        {
+            // Literal name from [DisplayName("...")].
+            return (DisplayName: displayNameAttribute.DisplayName, DisplayResourceAccessor: null);
+        }
+
+        return (DisplayName: null, DisplayResourceAccessor: null);
     }
 
     internal sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
+        string? displayName,
+        Func<string?>? displayResourceAccessor,
         ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName)
+            ValidatableParameterInfo(parameterType, name, displayName, displayResourceAccessor)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 

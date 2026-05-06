@@ -21,12 +21,22 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
+    /// <param name="displayName">The literal display name for the type (sourced from
+    /// <see cref="DisplayAttribute.Name"/> when no <see cref="DisplayAttribute.ResourceType"/> is set,
+    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>).</param>
+    /// <param name="displayResourceAccessor">An accessor that resolves the localized display name
+    /// from a static resource property when the type is decorated with
+    /// <c>[Display(Name = ..., ResourceType = ...)]</c>; <see langword="null"/> otherwise.</param>
     protected ValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
-        IReadOnlyList<ValidatablePropertyInfo> members)
+        IReadOnlyList<ValidatablePropertyInfo> members,
+        string? displayName = null,
+        Func<string?>? displayResourceAccessor = null)
     {
         Type = type;
         Members = members;
+        DisplayName = displayName;
+        DisplayResourceAccessor = displayResourceAccessor;
         _membersCount = members.Count;
         _superTypes = type.GetAllImplementedTypes();
     }
@@ -46,6 +56,16 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// The members that can be validated.
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+
+    /// <summary>
+    /// Gets the literal display name for the type.
+    /// </summary>
+    internal string? DisplayName { get; }
+
+    /// <summary>
+    /// Gets the accessor that resolves the localized display name from a static resource property.
+    /// </summary>
+    internal Func<string?>? DisplayResourceAccessor { get; }
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
@@ -127,6 +147,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
         var localizer = context.ValidationLocalizer;
+        var displayName = localizer.ResolveDisplayName(Type.Name, DisplayName, DisplayResourceAccessor, Type);
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
@@ -134,7 +155,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var result = attribute.GetValidationResult(value, context.ValidationContext);
             if (result is not null && result != ValidationResult.Success)
             {
-                var customMessage = localizer.ResolveErrorMessage(attribute, Type.Name, declaringType: null);
+                var customMessage = localizer.ResolveErrorMessage(attribute, displayName, declaringType: Type);
                 var errorMessage = customMessage ?? result.ErrorMessage;
 
                 // Create a validation error for each member name that is provided
@@ -160,14 +181,14 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     {
         if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
-            // Important: Set the DisplayName to the type name for top-level validations
-            // and restore the original validation context properties
+            // Important: Set the DisplayName to the type's resolved display name for top-level
+            // validations, and restore the original validation context properties when done.
             var originalDisplayName = context.ValidationContext.DisplayName;
             var originalMemberName = context.ValidationContext.MemberName;
             var errorPrefix = context.CurrentValidationPath;
 
-            // Set the display name to the class name for IValidatableObject validation
-            context.ValidationContext.DisplayName = Type.Name;
+            context.ValidationContext.DisplayName = context.ValidationLocalizer.ResolveDisplayName(
+                defaultName: Type.Name, displayName: DisplayName, displayResourceAccessor: DisplayResourceAccessor, declaringType: Type);
             context.ValidationContext.MemberName = null;
 
             var validationResults = validatable.Validate(context.ValidationContext);

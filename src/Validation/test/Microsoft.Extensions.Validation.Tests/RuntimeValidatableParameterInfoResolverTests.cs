@@ -68,7 +68,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayName);
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayName);
     }
 
     private static ParameterInfo GetParameter(Type parameterType)
