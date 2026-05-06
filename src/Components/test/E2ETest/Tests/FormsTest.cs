@@ -1100,7 +1100,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void ValidationSummaryAppliesCssClass()
     {
-        var appElement = MountTypicalValidationComponent();
+        var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
         var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 

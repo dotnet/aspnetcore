@@ -1,0 +1,40 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm EditContext="@editContext" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <p class="name">
+        Name: <InputText @bind-Value="person.Name" placeholder="Enter your name" />
+    </p>
+
+    <button type="submit">Submit</button>
+
+    <p class="all-errors">
+        <ValidationSummary />
+    </p>
+    <p class="all-errors-custom-class">
+        <ValidationSummary CssClass="custom-summary-css-class" />
+    </p>
+</EditForm>
+
+@code {
+    private EditContext editContext = default!;
+    private Person person = new();
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(person);
+    }
+
+    private void HandleValidSubmit() { }
+
+    private class Person
+    {
+        [Required, MaxLength(10)]
+        public string Name { get; set; } = string.Empty;
+    }
+}
