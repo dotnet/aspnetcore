@@ -147,7 +147,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
         var localizer = context.ValidationLocalizer;
-        var displayName = localizer.ResolveDisplayName(Type.Name, DisplayName, DisplayResourceAccessor, Type);
+        var displayName = localizer.ResolveDisplayName(DisplayName, DisplayResourceAccessor, Type, defaultName: Type.Name);
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
@@ -188,7 +188,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var errorPrefix = context.CurrentValidationPath;
 
             context.ValidationContext.DisplayName = context.ValidationLocalizer.ResolveDisplayName(
-                defaultName: Type.Name, displayName: DisplayName, displayResourceAccessor: DisplayResourceAccessor, declaringType: Type);
+                displayName: DisplayName, displayResourceAccessor: DisplayResourceAccessor, declaringType: Type, defaultName: Type.Name);
             context.ValidationContext.MemberName = null;
 
             var validationResults = validatable.Validate(context.ValidationContext);

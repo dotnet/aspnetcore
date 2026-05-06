@@ -315,6 +315,36 @@ public class TypeResources
     }
 
     [Fact]
+    public async Task RecordPropertyDisplayName_LiteralOnConstructorParameter()
+    {
+        // Without the [property:] prefix, [Display] on a record positional parameter is applied
+        // to the constructor parameter (not the generated property). The SG must read this and
+        // emit the literal display name into the validatable property metadata.
+        var source = Preamble + """
+        app.MapPost("/record-param-literal-display", (RecordWithParamLiteralDisplay model) => Results.Ok("Passed"!));
+
+        app.Run();
+
+        public record RecordWithParamLiteralDisplay(
+            [property: Range(10, 100, ErrorMessage = "Name:{0}")]
+            [Display(Name = "Param Literal Name")]
+            int Value);
+        """;
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/record-param-literal-display", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{ "Value": 5 }""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            var kvp = Assert.Single(problemDetails.Errors);
+            Assert.Equal("Value", kvp.Key);
+            Assert.Equal("Name:Param Literal Name", kvp.Value.Single());
+        });
+    }
+
+    [Fact]
     public async Task PropertyDisplayName_WithDisplayNameAttribute()
     {
         var source = Preamble + """

@@ -92,7 +92,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         var localizer = context.ValidationLocalizer;
-        var displayName = localizer.ResolveDisplayName(Name, DisplayName, DisplayResourceAccessor, DeclaringType);
+        var displayName = localizer.ResolveDisplayName(DisplayName, DisplayResourceAccessor, DeclaringType, defaultName: Name);
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

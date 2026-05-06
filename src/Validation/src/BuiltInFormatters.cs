@@ -4,7 +4,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
-namespace Microsoft.Extensions.Validation.Localization;
+namespace Microsoft.Extensions.Validation;
 
 internal sealed class CompareAttributeFormatter(CompareAttribute attribute) : IValidationAttributeFormatter
 {

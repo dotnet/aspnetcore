@@ -74,94 +74,16 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::DerivedType))
+            if (type == typeof(global::RecordWithParamLiteralDisplay))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::DerivedType),
+                    type: typeof(global::RecordWithParamLiteralDisplay),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::DerivedType),
-                            propertyType: typeof(string),
-                            name: "Value3",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                    ],
-                    displayName: null,
-                    displayResourceAccessor: null
-                );
-                return true;
-            }
-            if (type == typeof(global::BaseType))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::BaseType),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::BaseType),
+                            containingType: typeof(global::RecordWithParamLiteralDisplay),
                             propertyType: typeof(int),
-                            name: "Value1",
-                            displayName: "Value 1",
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::BaseType),
-                            propertyType: typeof(string),
-                            name: "Value2",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                    ],
-                    displayName: null,
-                    displayResourceAccessor: null
-                );
-                return true;
-            }
-            if (type == typeof(global::DerivedValidatableType))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::DerivedValidatableType),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::DerivedValidatableType),
-                            propertyType: typeof(string),
-                            name: "Value3",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                    ],
-                    displayName: null,
-                    displayResourceAccessor: null
-                );
-                return true;
-            }
-            if (type == typeof(global::BaseValidatableType))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::BaseValidatableType),
-                    members: [],
-                    displayName: null,
-                    displayResourceAccessor: null
-                );
-                return true;
-            }
-            if (type == typeof(global::ContainerType))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::ContainerType),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ContainerType),
-                            propertyType: typeof(global::BaseType),
-                            name: "BaseType",
-                            displayName: null,
-                            displayResourceAccessor: null
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ContainerType),
-                            propertyType: typeof(global::BaseValidatableType),
-                            name: "BaseValidatableType",
-                            displayName: null,
+                            name: "Value",
+                            displayName: "Param Literal Name",
                             displayResourceAccessor: null
                         ),
                     ],

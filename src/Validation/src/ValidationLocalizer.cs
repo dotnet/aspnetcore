@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using Microsoft.Extensions.Localization;
 
-namespace Microsoft.Extensions.Validation.Localization;
+namespace Microsoft.Extensions.Validation;
 
 /// <summary>
 /// Resolves localized display names and error messages for the validation pipeline.
@@ -29,10 +29,16 @@ public sealed class ValidationLocalizer
     /// Initializes a new instance of <see cref="ValidationLocalizer"/>.
     /// </summary>
     /// <param name="options">The validation options containing the localization configuration.</param>
-    /// <param name="factory">The factory used to obtain <see cref="IStringLocalizer"/> instances.
-    /// When <see langword="null"/>, only static resource-based display names (via
-    /// <see cref="DisplayAttribute.ResourceType"/>) are localized; literal display names and error
-    /// messages are returned as-is.</param>
+    /// <param name="factory">The factory used to obtain <see cref="IStringLocalizer"/> instances for
+    /// looking up literal display names and error message keys. When <see langword="null"/>:
+    /// (a) literal display names from <see cref="DisplayAttribute.Name"/> (without
+    /// <see cref="DisplayAttribute.ResourceType"/>) and <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>
+    /// are returned as-is by <see cref="ResolveDisplayName"/>; (b) <see cref="ResolveErrorMessage"/>
+    /// returns <see langword="null"/> for every attribute, causing the validation pipeline to fall
+    /// back to the attribute's default error message; (c) resource-based display names
+    /// (<see cref="DisplayAttribute.ResourceType"/>) are still resolved because they go through
+    /// the supplied <see cref="ResolveDisplayName(string?, Func{string?}?, Type?, string)"/>
+    /// accessor argument, not <see cref="IStringLocalizer"/>.</param>
     public ValidationLocalizer(ValidationOptions options, IStringLocalizerFactory? factory)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -61,8 +67,6 @@ public sealed class ValidationLocalizer
     ///   <item><description>Otherwise, returns <paramref name="defaultName"/> (typically the member name).</description></item>
     /// </list>
     /// </remarks>
-    /// <param name="defaultName">The value to return when neither the resource accessor nor the
-    /// literal display name produces a value. Typically the member or parameter name.</param>
     /// <param name="displayName">The literal display name from <see cref="DisplayAttribute.Name"/>
     /// (when no <see cref="DisplayAttribute.ResourceType"/>) or
     /// <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>.</param>
@@ -71,12 +75,14 @@ public sealed class ValidationLocalizer
     /// resource-based <see cref="DisplayAttribute"/>.</param>
     /// <param name="declaringType">The type that declares the member, used as the resource source
     /// for the per-type <see cref="IStringLocalizer"/>; or <see langword="null"/> for parameters.</param>
+    /// <param name="defaultName">The value to return when neither the resource accessor nor the
+    /// literal display name produces a value. Typically the member or parameter name.</param>
     /// <returns>The resolved display name. Never <see langword="null"/>.</returns>
     public string ResolveDisplayName(
-        string defaultName,
         string? displayName,
         Func<string?>? displayResourceAccessor,
-        Type? declaringType)
+        Type? declaringType,
+        string defaultName)
     {
         // Case 1: resource-based display name (DisplayAttribute.ResourceType path).
         if (displayResourceAccessor is not null)
@@ -168,6 +174,9 @@ public sealed class ValidationLocalizer
 
         return _localizerCache.GetOrAdd(resourceSource, _localizerProvider is not null
             ? t => _localizerProvider(t, factory)
+                ?? throw new InvalidOperationException(
+                    $"The {nameof(ValidationOptions.LocalizerProvider)} delegate returned null for type '{t.FullName}'. " +
+                    $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.")
             : factory.Create);
     }
 }

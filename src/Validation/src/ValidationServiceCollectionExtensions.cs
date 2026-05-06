@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
-using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.DependencyInjection;
 

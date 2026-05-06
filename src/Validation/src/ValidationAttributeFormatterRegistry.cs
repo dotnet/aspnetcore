@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.Extensions.Validation.Localization;
+namespace Microsoft.Extensions.Validation;
 
 /// <summary>
 /// Registry of <see cref="IValidationAttributeFormatter"/> factories keyed by
@@ -71,6 +71,10 @@ public sealed class ValidationAttributeFormatterRegistry
     /// Registers a formatter factory for the specified validation attribute type.
     /// Later registrations for the same type replace earlier ones.
     /// </summary>
+    /// <remarks>
+    /// Configuration is intended to happen during application startup. Mutating the registry
+    /// after the validation pipeline has begun processing requests is not thread-safe.
+    /// </remarks>
     /// <typeparam name="TAttribute">The validation attribute type to register a formatter for.</typeparam>
     /// <param name="factory">
     /// A factory delegate that creates an <see cref="IValidationAttributeFormatter"/>

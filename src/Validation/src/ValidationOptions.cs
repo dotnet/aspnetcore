@@ -5,7 +5,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.Localization;
-using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -56,6 +55,20 @@ public class ValidationOptions
     ///     factory.Create(typeof(SharedValidationMessages));
     /// </code>
     /// </example>
+    /// <para>
+    /// The delegate must return a non-null <see cref="IStringLocalizer"/>. Returning <see langword="null"/>
+    /// causes an <see cref="InvalidOperationException"/> to be thrown the next time validation tries
+    /// to localize a message for that declaring type. The result is cached per declaring type, so the
+    /// delegate is invoked at most once per type per <see cref="ValidationLocalizer"/> instance.
+    /// </para>
+    /// <para>
+    /// <b>Minimal API parameter validation note:</b> for top-level method parameters there is no
+    /// declaring type, so the validation pipeline passes <c>typeof(object)</c> as the declaring type
+    /// argument. With the default per-type lookup, this resolves to the <c>object</c> resource source
+    /// (typically not what the user wants). To localize Minimal API parameter messages, configure a
+    /// shared-resource <see cref="LocalizerProvider"/> that ignores the type argument:
+    /// <c>options.LocalizerProvider = (_, factory) =&gt; factory.Create(typeof(SharedValidationMessages));</c>
+    /// </para>
     /// </remarks>
     public Func<Type, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
 
@@ -86,6 +99,12 @@ public class ValidationOptions
     /// Gets the registry of formatters for attribute-specific error message template formatting.
     /// Built-in formatters for standard attributes are registered automatically.
     /// </summary>
+    /// <remarks>
+    /// The registry is intended to be configured during application startup (typically inside the
+    /// <c>AddValidation</c> options callback or via <c>AddValidationAttributeFormatter&lt;TAttribute&gt;</c>).
+    /// Mutating the registry after the validation pipeline has begun processing requests is not
+    /// thread-safe and is not supported.
+    /// </remarks>
     public ValidationAttributeFormatterRegistry AttributeFormatters { get; } = new();
 
     /// <summary>

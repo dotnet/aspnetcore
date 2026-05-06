@@ -8,7 +8,6 @@ using System.Globalization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
@@ -16,7 +15,61 @@ public class LocalizationTests
 {
     // --- Auto-detection / DI integration tests ---
 
-    // TODO
+    [Fact]
+    public void AddValidation_WithoutLocalization_LocalizerResolves()
+    {
+        // Regression test for the original DI bug where ValidationLocalizer registration
+        // could not be satisfied when IStringLocalizerFactory was not registered.
+        var services = new ServiceCollection();
+        services.AddValidation();
+
+        var provider = services.BuildServiceProvider();
+        var localizer = provider.GetRequiredService<ValidationLocalizer>();
+
+        Assert.NotNull(localizer);
+        // Without an IStringLocalizerFactory, literal display names pass through unchanged.
+        Assert.Equal("My Display", localizer.ResolveDisplayName(
+            displayName: "My Display", displayResourceAccessor: null, declaringType: null, defaultName: "Member"));
+        // And error messages are not localized at all (caller falls back to attribute defaults).
+        Assert.Null(localizer.ResolveErrorMessage(
+            new RequiredAttribute { ErrorMessage = "MyKey" }, displayName: "Member", declaringType: null));
+    }
+
+    [Fact]
+    public void AddValidation_WithLocalization_LocalizerUsesIStringLocalizer()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["MyDisplay"] = "Mon Affichage",
+            ["MyError"] = "Erreur sur {0}",
+        };
+        var services = new ServiceCollection();
+        services.AddValidation();
+        services.AddSingleton<IStringLocalizerFactory>(new TestStringLocalizerFactory(translations));
+
+        var provider = services.BuildServiceProvider();
+        var localizer = provider.GetRequiredService<ValidationLocalizer>();
+
+        Assert.Equal("Mon Affichage", localizer.ResolveDisplayName(
+            displayName: "MyDisplay", displayResourceAccessor: null, declaringType: typeof(object), defaultName: "Member"));
+        Assert.Equal("Erreur sur Mon Affichage", localizer.ResolveErrorMessage(
+            new RequiredAttribute { ErrorMessage = "MyError" }, displayName: "Mon Affichage", declaringType: typeof(object)));
+    }
+
+    [Fact]
+    public void AddValidation_LocalizerResolvedAsSingleton()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddValidation();
+        services.AddLocalization();
+
+        var provider = services.BuildServiceProvider();
+        var first = provider.GetRequiredService<ValidationLocalizer>();
+        var second = provider.GetRequiredService<ValidationLocalizer>();
+
+        Assert.Same(first, second);
+    }
 
     // --- Display name localization tests ---
 
@@ -66,9 +119,30 @@ public class LocalizationTests
     }
 
     [Fact]
-    public async Task DisplayName_WithResourceType_SkipsLocalization()
+    public async Task DisplayName_WithResourceAccessor_BypassesIStringLocalizer()
     {
-        // TODO
+        // When DisplayResourceAccessor is supplied, the resolved value comes from the accessor,
+        // not from IStringLocalizer (even if a translation for the same key is present).
+        var translations = new Dictionary<string, string>
+        {
+            ["ResourceValue"] = "Should not be used",
+            // Localizer should also not see the literal display name (it's null because the SG
+            // does not bake a literal when a resource accessor is emitted).
+            ["My Custom Name"] = "Should not be used either",
+        };
+        var propInfo = new TestValidatablePropertyInfo(
+            typeof(CustomerModel), typeof(string), "Name",
+            [new RequiredAttribute()],
+            displayName: null,
+            displayResourceAccessor: () => "ResourceValue");
+        var typeInfo = new TestValidatableTypeInfo(typeof(CustomerModel), [propInfo]);
+
+        var model = new CustomerModel { Name = null };
+        var context = CreateContext(model, null, translations);
+        await typeInfo.ValidateAsync(model, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal("The ResourceValue field is required.", context.ValidationErrors["Name"].First());
     }
 
     // --- Error message localization tests ---
@@ -140,6 +214,36 @@ public class LocalizationTests
             ["This field is required."] = "Should not use this"
         };
         var context = CreateContext(model, null, translations);
+        await typeInfo.ValidateAsync(model, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal(IntegrationResources.RequiredError, context.ValidationErrors["Value"].First());
+    }
+
+    [Fact]
+    public async Task ErrorMessage_WithResourceType_NotOverriddenByErrorMessageKeyProvider()
+    {
+        // Regression: when an attribute uses ErrorMessageResourceType for its own resource-based
+        // localization, a globally configured ErrorMessageKeyProvider must not override it.
+        var model = new ResourceModel { Value = null };
+        var requiredAttr = new RequiredAttribute
+        {
+            ErrorMessageResourceType = typeof(IntegrationResources),
+            ErrorMessageResourceName = nameof(IntegrationResources.RequiredError)
+        };
+        var propInfo = new TestValidatablePropertyInfo(
+            typeof(ResourceModel), typeof(string), "Value", [requiredAttr]);
+        var typeInfo = new TestValidatableTypeInfo(typeof(ResourceModel), [propInfo]);
+
+        var options = new ValidationOptions
+        {
+            ErrorMessageKeyProvider = ctx => $"{ctx.Attribute.GetType().Name}_Error"
+        };
+        var translations = new Dictionary<string, string>
+        {
+            ["RequiredAttribute_Error"] = "Should NOT be used (resource type wins)",
+        };
+        var context = CreateContext(model, options, translations);
         await typeInfo.ValidateAsync(model, context, default);
 
         Assert.NotNull(context.ValidationErrors);
@@ -265,7 +369,93 @@ public class LocalizationTests
 
     // --- LocalizerProvider tests ---
 
-    // TODO
+    [Fact]
+    public async Task LocalizerProvider_CalledWithDeclaringType()
+    {
+        var seenTypes = new List<Type>();
+        var translations = new Dictionary<string, string>
+        {
+            ["RequiredError"] = "Le {0} est requis."
+        };
+        var options = new ValidationOptions
+        {
+            LocalizerProvider = (type, factory) =>
+            {
+                seenTypes.Add(type);
+                return factory.Create(typeof(object));
+            }
+        };
+        var context = CreateContext(new IntegrationCustomer { Name = null }, options, translations);
+
+        var typeInfo = CreateCustomerTypeInfoWithErrorKeys();
+        await typeInfo.ValidateAsync(context.ValidationContext.ObjectInstance, context, default);
+
+        // Provider should be called with IntegrationCustomer (the declaring type) for the property.
+        Assert.Contains(typeof(IntegrationCustomer), seenTypes);
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal("Le Name est requis.", context.ValidationErrors["Name"].First());
+    }
+
+    [Fact]
+    public async Task LocalizerProvider_SharedResource_UsesSingleLocalizer()
+    {
+        var sharedTranslations = new Dictionary<string, string>
+        {
+            ["RequiredError"] = "Champ obligatoire: {0}"
+        };
+        var options = new ValidationOptions
+        {
+            // Always return the same shared localizer regardless of declaring type.
+            LocalizerProvider = (_, factory) => factory.Create(typeof(object))
+        };
+        var context = CreateContext(new IntegrationCustomer { Name = null }, options, sharedTranslations);
+
+        var typeInfo = CreateCustomerTypeInfoWithErrorKeys();
+        await typeInfo.ValidateAsync(context.ValidationContext.ObjectInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal("Champ obligatoire: Name", context.ValidationErrors["Name"].First());
+    }
+
+    [Fact]
+    public void LocalizerProvider_ReturnsNull_ThrowsInvalidOperationException()
+    {
+        // When the user-supplied provider returns null, the localizer surfaces a clear error
+        // rather than crashing with a NullReferenceException on the next access.
+        var options = new ValidationOptions
+        {
+            LocalizerProvider = (_, _) => null!
+        };
+        var localizer = new ValidationLocalizer(options, new TestStringLocalizerFactory([]));
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            localizer.ResolveDisplayName(
+                displayName: "Foo", displayResourceAccessor: null, declaringType: typeof(object), defaultName: "Member"));
+
+        Assert.Contains(nameof(ValidationOptions.LocalizerProvider), ex.Message);
+    }
+
+    [Fact]
+    public async Task LocalizerProvider_PerTypeIsolation()
+    {
+        // Per-type lookup: one resource not found in CustomerA's localizer should not leak into CustomerB's.
+        var perTypeTranslations = new Dictionary<Type, Dictionary<string, string>>
+        {
+            [typeof(IntegrationCustomer)] = new() { ["RequiredError"] = "Per-type required" },
+        };
+        var options = new ValidationOptions
+        {
+            LocalizerProvider = (type, _) => new TestStringLocalizer(
+                perTypeTranslations.TryGetValue(type, out var t) ? t : [])
+        };
+        var context = CreateContext(new IntegrationCustomer { Name = null }, options);
+
+        var typeInfo = CreateCustomerTypeInfoWithErrorKeys();
+        await typeInfo.ValidateAsync(context.ValidationContext.ObjectInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal("Per-type required", context.ValidationErrors["Name"].First());
+    }
 
     // --- AddValidationAttributeFormatter tests ---
 
@@ -283,6 +473,187 @@ public class LocalizationTests
         var formatter = options.AttributeFormatters.GetFormatter(new RequiredAttribute());
         Assert.NotNull(formatter);
         Assert.IsType<TestFormatter>(formatter);
+    }
+
+    // --- Standalone ValidationLocalizer tests (SSR / out-of-pipeline use) ---
+    // These exercise ValidationLocalizer directly without going through the validation pipeline,
+    // mirroring how a Blazor SSR client-side rule renderer would invoke it.
+
+    [Fact]
+    public void ResolveDisplayName_ResourceAccessor_BypassesIStringLocalizer()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            // The key here matches the resource accessor's return value. If the localizer were
+            // (incorrectly) consulted on the ResourceType path, it would re-translate this.
+            ["Resolved From Resource"] = "Should NOT be re-translated",
+        };
+        var localizer = new ValidationLocalizer(new ValidationOptions(), new TestStringLocalizerFactory(translations));
+
+        var result = localizer.ResolveDisplayName(
+            displayName: null,
+            displayResourceAccessor: () => "Resolved From Resource",
+            declaringType: typeof(object),
+            defaultName: "Member");
+
+        Assert.Equal("Resolved From Resource", result);
+    }
+
+    [Fact]
+    public void ResolveDisplayName_LiteralWithLocalizer_LooksUpAsKey()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["Customer Name"] = "Nom du client",
+        };
+        var localizer = new ValidationLocalizer(new ValidationOptions(), new TestStringLocalizerFactory(translations));
+
+        var result = localizer.ResolveDisplayName(
+            displayName: "Customer Name",
+            displayResourceAccessor: null,
+            declaringType: typeof(object),
+            defaultName: "Member");
+
+        Assert.Equal("Nom du client", result);
+    }
+
+    [Fact]
+    public void ResolveDisplayName_LiteralWithLocalizer_FallsBackToLiteralOnMiss()
+    {
+        var localizer = new ValidationLocalizer(new ValidationOptions(), new TestStringLocalizerFactory([]));
+
+        var result = localizer.ResolveDisplayName(
+            displayName: "Customer Name",
+            displayResourceAccessor: null,
+            declaringType: typeof(object),
+            defaultName: "Member");
+
+        Assert.Equal("Customer Name", result);
+    }
+
+    [Fact]
+    public void ResolveDisplayName_NoLiteralAndNoAccessor_ReturnsDefault()
+    {
+        var localizer = new ValidationLocalizer(new ValidationOptions(), factory: null);
+
+        var result = localizer.ResolveDisplayName(
+            displayName: null,
+            displayResourceAccessor: null,
+            declaringType: typeof(object),
+            defaultName: "MemberFallback");
+
+        Assert.Equal("MemberFallback", result);
+    }
+
+    [Fact]
+    public void ResolveDisplayName_AccessorReturnsNull_ReturnsDefault()
+    {
+        var localizer = new ValidationLocalizer(new ValidationOptions(), factory: null);
+
+        var result = localizer.ResolveDisplayName(
+            displayName: null,
+            displayResourceAccessor: () => null,
+            declaringType: typeof(object),
+            defaultName: "MemberFallback");
+
+        Assert.Equal("MemberFallback", result);
+    }
+
+    [Fact]
+    public void ResolveErrorMessage_NoFactory_ReturnsNull()
+    {
+        var localizer = new ValidationLocalizer(new ValidationOptions(), factory: null);
+
+        var result = localizer.ResolveErrorMessage(
+            new RequiredAttribute { ErrorMessage = "Anything" }, displayName: "X", declaringType: null);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void ResolveErrorMessage_RangeAttribute_FormatsWithMinMax()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["RangeKey"] = "{0} must be between {1} and {2}.",
+        };
+        var localizer = new ValidationLocalizer(new ValidationOptions(), new TestStringLocalizerFactory(translations));
+
+        var result = localizer.ResolveErrorMessage(
+            new RangeAttribute(1, 100) { ErrorMessage = "RangeKey" },
+            displayName: "Score",
+            declaringType: typeof(object));
+
+        Assert.Equal("Score must be between 1 and 100.", result);
+    }
+
+    [Fact]
+    public void ResolveErrorMessage_KeyProviderUsedWhenErrorMessageMissing()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["RequiredAttribute_Default"] = "Required: {0}",
+        };
+        var options = new ValidationOptions
+        {
+            ErrorMessageKeyProvider = ctx => $"{ctx.Attribute.GetType().Name}_Default"
+        };
+        var localizer = new ValidationLocalizer(options, new TestStringLocalizerFactory(translations));
+
+        var result = localizer.ResolveErrorMessage(
+            new RequiredAttribute(), displayName: "Name", declaringType: typeof(object));
+
+        Assert.Equal("Required: Name", result);
+    }
+
+    // --- Parameter-level localization tests ---
+
+    [Fact]
+    public void ResolveDisplayName_ParameterScenario_FallsBackToObjectResource()
+    {
+        // Parameter validation passes declaringType: null; the localizer falls back to
+        // typeof(object) as the resource source. This test pins the documented behavior.
+        var translations = new Dictionary<string, string>
+        {
+            ["MyParam"] = "Mon Paramètre",
+        };
+        var localizer = new ValidationLocalizer(new ValidationOptions(), new TestStringLocalizerFactory(translations));
+
+        var result = localizer.ResolveDisplayName(
+            displayName: "MyParam",
+            displayResourceAccessor: null,
+            declaringType: null,
+            defaultName: "param");
+
+        // The TestStringLocalizerFactory returns the same translations regardless of resource
+        // source, so the lookup succeeds. With a real per-type factory, this would miss because
+        // typeof(object) would resolve to a non-existent resource file.
+        Assert.Equal("Mon Paramètre", result);
+    }
+
+    [Fact]
+    public void ResolveDisplayName_ParameterScenario_SharedResourceProvider()
+    {
+        // The recommended pattern for Minimal API parameter validation: a shared-resource
+        // LocalizerProvider that ignores the declaring type.
+        var sharedTranslations = new Dictionary<string, string>
+        {
+            ["MyParam"] = "Mon Paramètre",
+        };
+        var sharedFactory = new TestStringLocalizerFactory(sharedTranslations);
+        var options = new ValidationOptions
+        {
+            LocalizerProvider = (_, factory) => factory.Create(typeof(object))
+        };
+        var localizer = new ValidationLocalizer(options, sharedFactory);
+
+        var result = localizer.ResolveDisplayName(
+            displayName: "MyParam",
+            displayResourceAccessor: null,
+            declaringType: null,
+            defaultName: "param");
+
+        Assert.Equal("Mon Paramètre", result);
     }
 
     // --- Helpers ---
@@ -367,7 +738,9 @@ public class LocalizationTests
         Type propertyType,
         string name,
         ValidationAttribute[] validationAttributes,
-        string? displayName = null) : ValidatablePropertyInfo(declaringType, propertyType, name, displayName ?? name)
+        string? displayName = null,
+        Func<string?>? displayResourceAccessor = null)
+        : ValidatablePropertyInfo(declaringType, propertyType, name, displayName ?? (displayResourceAccessor is null ? name : null), displayResourceAccessor)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => validationAttributes;
     }
