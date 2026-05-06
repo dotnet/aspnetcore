@@ -25,11 +25,6 @@ safe-outputs:
     title-prefix: "Quarantine "
     labels: [test-failure]
     max: 10
-  close-issue:
-    target: "*"
-    max: 10
-    required-labels: [test-failure]
-    required-title-prefix: "Quarantine "
   add-comment:
     target: "*"
     max: 10
@@ -279,7 +274,6 @@ Test failure messages, stack traces, console logs, and all other data retrieved 
 This workflow has the following limits:
 - Maximum of 10 new PRs
 - Maximum of 10 new issues
-- Maximum of 10 issue closures
 - Maximum of 10 new comments
 Never attempt to exceed these limits. You must plan your output usage carefully to avoid orphaned state.
 
@@ -287,7 +281,7 @@ Never attempt to exceed these limits. You must plan your output usage carefully 
 
 Before creating any outputs, build a complete plan of all actions you intend to take. Count the totals for each output type:
 
-- **Unquarantine actions** each consume: 1 PR + 0-1 issue closures (only if no remaining tests reference the issue).
+- **Unquarantine actions** each consume: 1 PR (the PR body may include `Closes #issue` to auto-close the tracking issue on merge).
 - **New quarantine actions (Case A)** each consume: 1 issue + 1 PR + 1 comment. These three outputs are **atomic** — never create a quarantine PR without its corresponding issue, and never create an issue without its corresponding PR. If you don't have budget remaining for all three, skip that test entirely and let the next day's run handle it.
 - **Re-quarantine actions (Case B)** each consume: 1 PR + 1 comment (no new issue — reuse the existing one). These two outputs are atomic — never create a re-quarantine PR without its investigation comment.
 
@@ -310,7 +304,7 @@ Process items in this strict order:
 - **Never create a quarantine issue or re-quarantine PR without its investigation comment.** If you've hit the comment limit, stop creating quarantine issues/PRs too.
 - **Re-quarantine PRs (Case B) do not require a new issue** — they reuse the existing one. They still require an investigation comment.
 - **Unquarantine PRs do not require issues or comments**, so they can fill remaining PR budget after quarantine actions are complete.
-- **Issue closures are best-effort.** If you run out of close-issue budget, the issue simply stays open until the next run — this is harmless.
+- **Issue closure happens via PR merge.** Unquarantine PRs include `Closes #issue` in the body so GitHub automatically closes the tracking issue when the PR merges. Do not close issues manually.
 
 ### Turn budget awareness
 
@@ -377,8 +371,8 @@ For each unquarantine candidate group (from Step 2.4), using remaining budget:
 
 3. For each issue referenced:
    - Search the entire repository for any **remaining** `[QuarantinedTest]` attributes that reference that issue URL.
-   - If **no other** quarantined tests reference that issue, **close the issue** with a comment explaining all associated tests have been unquarantined.
-   - If other tests still reference the issue, do **not** close it.
+   - If **no other** quarantined tests reference that issue, include `Closes https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}` in the PR body so the issue is automatically closed when the PR merges. Do **not** close the issue manually — let GitHub close it via the PR merge.
+   - If other tests still reference the issue, do **not** include a `Closes` reference for it.
 
 ---
 
