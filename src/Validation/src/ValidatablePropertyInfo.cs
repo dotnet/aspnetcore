@@ -22,12 +22,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         Type declaringType,
         Type propertyType,
         string name,
-        string displayName)
+        string? displayName,
+        Type? displayResourceType = null)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
+        DisplayResource = displayResourceType;
     }
 
     /// <summary>
@@ -47,9 +49,12 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute"/>.
+    /// Gets the display name for the property.
     /// </summary>
-    internal string DisplayName { get; }
+    internal string? DisplayName { get; }
+
+    // Gets the resource type for the display name.
+    internal Type? DisplayResource { get; }
 
     /// <summary>
     /// Gets the validation attributes for this member.
@@ -75,7 +80,10 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var localizer = context.ValidationLocalizer;
+        var displayName = localizer.ResolveDisplayName(DisplayName, DisplayResource, DeclaringType) ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first
@@ -83,9 +91,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                context.AddValidationError(Name, context.CurrentValidationPath, [result.ErrorMessage], value);
+                var customMessage = localizer.ResolveErrorMessage(_requiredAttribute, displayName, DeclaringType);
+                var errorMessage = customMessage ?? result.ErrorMessage;
+
+                if (errorMessage is not null)
+                {
+                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], value);
+                }
+
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
@@ -158,10 +173,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 try
                 {
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                    if (result is not null && result != ValidationResult.Success)
                     {
-                        var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
+                        var customMessage = localizer.ResolveErrorMessage(attribute, displayName, DeclaringType);
+                        var errorMessage = customMessage ?? result.ErrorMessage;
+
+                        if (errorMessage is not null)
+                        {
+                            var key = errorPrefix.TrimStart('.');
+                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
+                        }
                     }
                 }
                 catch (Exception ex)

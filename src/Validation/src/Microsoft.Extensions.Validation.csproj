@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.Validation.Tests" />
   </ItemGroup>
 

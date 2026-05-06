@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.Validation.Localization;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
@@ -49,6 +50,7 @@ public static partial class EditContextDataAnnotationsExtensions
         private readonly IServiceProvider? _serviceProvider;
         private readonly ValidationMessageStore _messages;
         private readonly ValidationOptions? _validationOptions;
+        private readonly ValidationLocalizer? _validationLocalizer;
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private readonly IValidatableInfo? _validatorTypeInfo;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -61,6 +63,9 @@ public static partial class EditContextDataAnnotationsExtensions
             _serviceProvider = serviceProvider;
             _messages = new ValidationMessageStore(_editContext);
             _validationOptions = _serviceProvider?.GetService<IOptions<ValidationOptions>>()?.Value;
+            _validationLocalizer = _validationOptions != null
+                ? _serviceProvider?.GetService<ValidationLocalizer>()
+                : null;
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _validatorTypeInfo = _validationOptions != null && _validationOptions.TryGetValidatableTypeInfo(_editContext.Model.GetType(), out var typeInfo)
                 ? typeInfo
@@ -155,6 +160,7 @@ public static partial class EditContextDataAnnotationsExtensions
             {
                 ValidationOptions = _validationOptions!,
                 ValidationContext = validationContext,
+                ValidationLocalizer = _validationLocalizer
             };
             try
             {

@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -32,6 +35,58 @@ public class ValidationOptions
     /// A maximum depth prevents stack overflows from circular references or extremely deep object graphs.
     /// </remarks>
     public int MaxDepth { get; set; } = 32;
+
+    /// <summary>
+    /// Gets or sets the delegate that controls which <see cref="IStringLocalizer"/> is used
+    /// for a given declaring type. The declaring type is the type that contains the property
+    /// being validated.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When <see langword="null"/> (the default), <see cref="IStringLocalizerFactory.Create(Type)"/>
+    /// is called with the declaring type, which follows the standard resource file naming convention
+    /// (e.g., <c>Resources/Models.Customer.fr.resx</c> for type <c>Models.Customer</c>).
+    /// </para>
+    /// <para>
+    /// Set this to use a shared resource file for all validation messages:
+    /// </para>
+    /// <example>
+    /// <code>
+    /// options.LocalizerProvider = (type, factory) =&gt;
+    ///     factory.Create(typeof(SharedValidationMessages));
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public Func<Type, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
+
+    /// <summary>
+    /// Gets or sets the delegate that determines the localization lookup key for a
+    /// validation attribute's error message. When <see langword="null"/> (the default),
+    /// only attributes with <see cref="ValidationAttribute.ErrorMessage"/> set are localized
+    /// (using the <see cref="ValidationAttribute.ErrorMessage"/> value as the key).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When configured, this delegate is called as a fallback for attributes without an
+    /// explicit <see cref="ValidationAttribute.ErrorMessage"/>, enabling convention-based
+    /// key selection.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// options.ErrorMessageKeyProvider = context =&gt;
+    ///     $"{context.Attribute.GetType().Name}_ValidationError";
+    /// // This makes the localizer look up "RequiredAttribute_ValidationError"
+    /// // instead of "The {0} field is required."
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public Func<ErrorMessageKeyContext, string?>? ErrorMessageKeyProvider { get; set; }
+
+    /// <summary>
+    /// Gets the registry of formatters for attribute-specific error message template formatting.
+    /// Built-in formatters for standard attributes are registered automatically.
+    /// </summary>
+    public ValidationAttributeFormatterRegistry AttributeFormatters { get; } = new();
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

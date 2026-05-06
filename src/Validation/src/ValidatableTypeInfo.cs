@@ -126,24 +126,31 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
+        var localizer = context.ValidationLocalizer;
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
             var result = attribute.GetValidationResult(value, context.ValidationContext);
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                // Create a validation error for each member name that is provided
-                foreach (var memberName in result.MemberNames)
-                {
-                    var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                    context.AddOrExtendValidationError(memberName, key, result.ErrorMessage, value);
-                }
+                var customMessage = localizer.ResolveErrorMessage(attribute, Type.Name, declaringType: null);
+                var errorMessage = customMessage ?? result.ErrorMessage;
 
-                if (!result.MemberNames.Any())
+                // Create a validation error for each member name that is provided
+                if (errorMessage is not null)
                 {
-                    // If no member names are specified, then treat this as a top-level error
-                    context.AddOrExtendValidationError(string.Empty, errorPrefix, result.ErrorMessage, value);
+                    foreach (var memberName in result.MemberNames)
+                    {
+                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                        context.AddOrExtendValidationError(memberName, key, errorMessage, value);
+                    }
+
+                    if (!result.MemberNames.Any())
+                    {
+                        // If no member names are specified, then treat this as a top-level error
+                        context.AddOrExtendValidationError(string.Empty, errorPrefix, errorMessage, value);
+                    }
                 }
             }
         }

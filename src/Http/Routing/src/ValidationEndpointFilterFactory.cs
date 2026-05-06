@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
@@ -28,7 +29,7 @@ internal static class ValidationEndpointFilterFactory
         {
             return next;
         }
-
+        var validationLocalizer = context.ApplicationServices.GetRequiredService<ValidationLocalizer>();
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
         // Use a list to only store validatable parameters instead of arrays for all parameters
@@ -81,7 +82,8 @@ internal static class ValidationEndpointFilterFactory
                     validateContext = new ValidateContext
                     {
                         ValidationOptions = options,
-                        ValidationContext = validationContext
+                        ValidationContext = validationContext,
+                        ValidationLocalizer = validationLocalizer,
                     };
                 }
                 else

@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -12,6 +13,8 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private ValidationLocalizer? _validationLocalizer;
+
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -65,6 +68,15 @@ public sealed class ValidateContext
     /// This value is used to prevent stack overflows from circular references.
     /// </remarks>
     public int CurrentDepth { get; set; }
+
+    /// <summary>
+    /// Gets or sets the validation localizer used to provide localized validation messages.
+    /// </summary>
+    public ValidationLocalizer ValidationLocalizer
+    {
+        get => _validationLocalizer ??= new ValidationLocalizer(ValidationOptions, null);
+        set => _validationLocalizer = value;
+    }
 
     /// <summary>
     /// Optional event raised when a validation error is reported.

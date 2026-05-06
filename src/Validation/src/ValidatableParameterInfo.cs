@@ -21,14 +21,17 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
     /// <param name="displayName">The display name for the parameter.</param>
+    /// <param name="displayResource">Optional resource type for the display name.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName)
+        string? displayName,
+        Type? displayResource = null)
     {
         ParameterType = parameterType;
         Name = name;
         DisplayName = displayName;
+        DisplayResource = displayResource;
     }
 
     /// <summary>
@@ -44,7 +47,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// <summary>
     /// Gets the display name for the parameter.
     /// </summary>
-    internal string DisplayName { get; }
+    internal string? DisplayName { get; }
+
+    // Gets the resource type for the display name.
+    internal Type? DisplayResource { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -65,7 +71,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var localizer = context.ValidationLocalizer;
+        var displayName = localizer.ResolveDisplayName(DisplayName, DisplayResource, declaringType: null) ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();
@@ -74,10 +83,17 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                context.AddValidationError(Name, key, [result.ErrorMessage], null);
+                var customMessage = localizer.ResolveErrorMessage(_requiredAttribute, displayName, declaringType: null);
+                var errorMessage = customMessage ?? result.ErrorMessage;
+
+                if (errorMessage is not null)
+                {
+                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                    context.AddValidationError(Name, key, [errorMessage], null);
+                }
+
                 return;
             }
         }
@@ -89,10 +105,16 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             try
             {
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                if (result is not null && result != ValidationResult.Success)
                 {
-                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    context.AddOrExtendValidationErrors(Name, key, [result.ErrorMessage], null);
+                    var customMessage = localizer.ResolveErrorMessage(attribute, displayName, declaringType: null);
+                    var errorMessage = customMessage ?? result.ErrorMessage;
+
+                    if (errorMessage is not null)
+                    {
+                        var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                        context.AddOrExtendValidationErrors(Name, key, [errorMessage], null);
+                    }
                 }
             }
             catch (Exception ex)
