@@ -3958,7 +3958,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         public async ValueTask WriteAsync(ProblemDetailsContext context)
         {
-            await context.HttpContext.Response.WriteAsJsonAsync(context.ProblemDetails);
+            await context.HttpContext.Response.WriteAsJsonAsync(context.ProblemDetails, context.ProblemDetails.GetType());
         }
     }
 }
