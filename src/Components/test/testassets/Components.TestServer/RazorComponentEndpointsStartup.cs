@@ -31,6 +31,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        if (Configuration.GetValue<bool>("DisableUrlDrivenNavigation"))
+        {
+            AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", false);
+        }
+        else
+        {
+            AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
+        }
+
         services.AddValidation();
 
         services.AddRazorComponents(options =>
