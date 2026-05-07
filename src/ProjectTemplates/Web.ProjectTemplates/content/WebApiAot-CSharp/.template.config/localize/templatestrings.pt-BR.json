@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "ASP.NET Core API Web (native AOT)",
   "description": "Um modelo de projeto para criar uma API Web RESTful usando ASP.NET Core APIs mínimas publicadas como native AOT.",

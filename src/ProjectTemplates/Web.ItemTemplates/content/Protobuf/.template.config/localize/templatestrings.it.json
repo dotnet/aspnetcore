@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "File buffer del protocollo",
   "description": "File di buffer del protocollo per descrivere messaggi e servizi per gRPC.",

@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "MVC コントローラー",
   "description": "読み取り/書き込みアクションの有無にかかわらない MVC コントローラー",
