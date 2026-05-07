@@ -31,14 +31,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        if (Configuration.GetValue<bool>("DisableUrlDrivenNavigation"))
-        {
-            AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", false);
-        }
-        else
-        {
-            AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
-        }
+        var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
+
+        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
+        // switch value once at static initialization and won't see subsequent AppContext changes.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, enableUrlNavigation);
 
         services.AddValidation();
 

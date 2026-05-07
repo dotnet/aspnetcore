@@ -1,10 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Components.QuickGrid;
 
 internal static class QuickGridFeatureFlags
 {
-    internal static bool EnableUrlBasedQuickGridNavigationAndSorting { get; } =
-        !AppContext.TryGetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", out var isEnabled) || isEnabled;
+    private const string EnableUrlBasedNavigationSwitchName =
+        "Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting";
+
+    private static bool s_enableUrlBasedQuickGridNavigationAndSorting =
+        !AppContext.TryGetSwitch(EnableUrlBasedNavigationSwitchName, out var isEnabled) || isEnabled;
+
+    [FeatureSwitchDefinition(EnableUrlBasedNavigationSwitchName)]
+    internal static bool EnableUrlBasedQuickGridNavigationAndSorting => s_enableUrlBasedQuickGridNavigationAndSorting;
 }
