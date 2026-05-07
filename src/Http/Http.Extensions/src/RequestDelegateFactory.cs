@@ -376,7 +376,7 @@ public static partial class RequestDelegateFactory
         }
 
         var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
-            CreateParamCheckingResponseWritingMethodCall(returnType, factoryContext) :
+            CreateParamCheckingResponseWritingMethodCall(returnType, factoryContext, filterPipeline is not null) :
             AddResponseWritingToMethodCall(factoryContext.MethodCall, returnType, factoryContext);
 
         if (factoryContext.UsingTempSourceString)
@@ -943,7 +943,7 @@ public static partial class RequestDelegateFactory
 
     // If we're calling TryParse or validating parameter optionality and
     // wasParamCheckFailure indicates it failed, set a 400 StatusCode instead of calling the method.
-    private static Expression CreateParamCheckingResponseWritingMethodCall(Type returnType, RequestDelegateFactoryContext factoryContext)
+    private static Expression CreateParamCheckingResponseWritingMethodCall(Type returnType, RequestDelegateFactoryContext factoryContext, bool filterPipelineBuilt)
     {
         // {
         //     string tempSourceString;
@@ -995,7 +995,7 @@ public static partial class RequestDelegateFactory
 
         // If filters have been registered, we set the `wasParamCheckFailure` property
         // but do not return from the invocation to allow the filters to run.
-        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0)
+        if (filterPipelineBuilt)
         {
             // if (wasParamCheckFailure)
             // {
@@ -1986,6 +1986,15 @@ public static partial class RequestDelegateFactory
     {
         if (defaultValue is null)
         {
+            // For non-nullable value types (e.g., Guid, DateTime, TimeSpan), reflection reports
+            // DefaultValue == null when the parameter default is `= default`. Using
+            // Expression.Constant(null, valueType) would throw an ArgumentException because null
+            // is not valid for a non-nullable value type. Use Expression.Default instead.
+            if (parameterType.IsValueType && Nullable.GetUnderlyingType(parameterType) is null)
+            {
+                return Expression.Default(parameterType);
+            }
+
             return Expression.Constant(null, parameterType);
         }
 

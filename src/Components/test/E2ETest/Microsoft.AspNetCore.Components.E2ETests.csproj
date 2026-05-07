@@ -99,7 +99,7 @@
 
     <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=false;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\ThreadingApp\;" />
 
-    <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Components.TestServer\;" />
+    <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;_SkipReferencedProjectPublishAssets=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Components.TestServer\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

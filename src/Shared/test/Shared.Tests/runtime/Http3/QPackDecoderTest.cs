@@ -273,6 +273,49 @@ namespace System.Net.Http.Unit.Tests.QPack
             Assert.Equal(_headerValueString, _handler.DecodedHeaders[_literalHeaderFieldString]);
         }
 
+        [Fact]
+        public void HuffmanDecodedHeaderName_ExceedsLimitAfterDecoding_Throws()
+        {
+            // '0' (ASCII 48) has a 5-bit Huffman code (00000).
+            // 16 '0' characters = 80 Huffman bits = 10 encoded bytes, but decodes to 16 bytes.
+            // Encoded length (10) passes the pre-decode check (<= 10), but decoded length (16) exceeds the limit.
+            using QPackDecoder decoder = new QPackDecoder(maxHeadersLength: 10);
+            TestHttpHeadersHandler handler = new TestHttpHeadersHandler();
+
+            byte[] encoded = new byte[]
+            {
+                0x00, 0x00, // Required insert count (0) and base (0)
+                0x2f, 0x03, // Literal field with literal name: N=0, H=1, name length = 10 (3-bit prefix: 7 + 3)
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10 bytes Huffman -> 16 '0' chars
+                0x01,       // Value length = 1 (no Huffman)
+                0x61        // Value = "a"
+            };
+
+            QPackDecodingException exception = Assert.Throws<QPackDecodingException>(() => decoder.Decode(encoded, endHeaders: true, handler: handler));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, 10), exception.Message);
+            Assert.Empty(handler.DecodedHeaders);
+        }
+
+        [Fact]
+        public void HuffmanDecodedHeaderValue_ExceedsLimitAfterDecoding_Throws()
+        {
+            using QPackDecoder decoder = new QPackDecoder(maxHeadersLength: 10);
+            TestHttpHeadersHandler handler = new TestHttpHeadersHandler();
+
+            byte[] encoded = new byte[]
+            {
+                0x00, 0x00, // Required insert count (0) and base (0)
+                0x21,       // Literal field with literal name: N=0, H=0, name length = 1 (3-bit prefix)
+                0x61,       // Name = "a"
+                0x8a,       // Huffman flag set (0x80) + value length 10 (7-bit prefix)
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00  // 10 bytes Huffman -> 16 '0' chars
+            };
+
+            QPackDecodingException exception = Assert.Throws<QPackDecodingException>(() => decoder.Decode(encoded, endHeaders: true, handler: handler));
+            Assert.Equal(SR.Format(SR.net_http_headers_exceeded_length, 10), exception.Message);
+            Assert.Empty(handler.DecodedHeaders);
+        }
+
         public static readonly TheoryData<byte[]> _incompleteHeaderBlockData = new TheoryData<byte[]>
         {
             // Incomplete header

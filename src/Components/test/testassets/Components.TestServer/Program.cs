@@ -3,11 +3,10 @@
 
 using System.Reflection;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.Gateway;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.Logging.Testing;
-using DevServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
-
 namespace TestServer;
 
 public class Program
@@ -59,13 +58,16 @@ public class Program
         var contentRoot = typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(a => a.Key == "Microsoft.AspNetCore.InternalTesting.BasicTestApp.ContentRoot")
             .Value;
+        var assemblyLocation = typeof(BasicTestApp.Program).Assembly.Location;
         var finalArgs = new List<string>();
         finalArgs.AddRange(args);
         finalArgs.AddRange(
         [
             "--contentroot", contentRoot,
             "--pathbase", "/subdir",
-            "--applicationpath", typeof(BasicTestApp.Program).Assembly.Location,
+            "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
+            "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
+            "--ClientApps:app:PathPrefix", "",
         ]);
 
         if (WebAssemblyTestHelper.MultithreadingIsEnabled())
@@ -73,7 +75,7 @@ public class Program
             finalArgs.Add("--apply-cop-headers");
         }
 
-        var host = DevServerProgram.BuildWebHost(finalArgs.ToArray());
+        var host = BlazorGateway.BuildWebHost(finalArgs.ToArray());
         return (host, "/subdir");
     }
 

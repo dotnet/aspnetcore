@@ -86,41 +86,48 @@ public class Program
         await page.GotoAsync(launchUrl);
         page.Console += WriteBrowserConsoleMessage;
 
-        do
+        try
         {
-            BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
-            using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
-            using var registration = runCancellationToken.Token.Register(async () =>
+            do
             {
-                var exceptionMessage = $"Timed out after {timeForEachRun}.";
-                try
+                BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
+                using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
+                using var registration = runCancellationToken.Token.Register(async () =>
                 {
-                    var innerHtml = await page.GetAttributeAsync(":first-child", "innerHTML");
-                    exceptionMessage += Environment.NewLine + "Browser state: " + Environment.NewLine + innerHtml;
-                }
-                catch
+                    var exceptionMessage = $"Timed out after {timeForEachRun}.";
+                    try
+                    {
+                        var innerHtml = await page.GetAttributeAsync(":first-child", "innerHTML");
+                        exceptionMessage += Environment.NewLine + "Browser state: " + Environment.NewLine + innerHtml;
+                    }
+                    catch
+                    {
+                        // Do nothing;
+                    }
+                    BenchmarkResultTask.TrySetException(new TimeoutException(exceptionMessage));
+                });
+
+                var results = await BenchmarkResultTask.Task;
+
+                FormatAsBenchmarksOutput(results,
+                    includeMetadata: firstRun,
+                    isStressRun: isStressRun);
+
+                if (!isStressRun)
                 {
-                    // Do nothing;
+                    PrettyPrint(results);
                 }
-                BenchmarkResultTask.TrySetException(new TimeoutException(exceptionMessage));
-            });
 
-            var results = await BenchmarkResultTask.Task;
+                firstRun = false;
+            } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
 
-            FormatAsBenchmarksOutput(results,
-                includeMetadata: firstRun,
-                isStressRun: isStressRun);
-
-            if (!isStressRun)
-            {
-                PrettyPrint(results);
-            }
-
-            firstRun = false;
-        } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
-
-        Console.WriteLine("Done executing benchmark");
-        return 0;
+            Console.WriteLine("Done executing benchmark");
+            return 0;
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
     }
 
     private static void WriteBrowserConsoleMessage(object sender, IConsoleMessage message)

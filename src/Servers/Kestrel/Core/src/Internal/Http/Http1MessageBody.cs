@@ -182,7 +182,9 @@ internal abstract class Http1MessageBody : MessageBody
             if (headers.ContentLength.HasValue)
             {
                 IHeaderDictionary headerDictionary = headers;
-                headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
+
+                // if user already passed X-Content-Length, we won't overwrite it
+                _ = headerDictionary.TryAdd("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
                 headers.ContentLength = null;
             }
 

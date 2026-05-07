@@ -9,6 +9,6 @@
     "build:production": "rollup -c --environment production --forceExit"
   },
   "dependencies": {
-    "@azure/msal-browser": "^2.28.3"
+    "@azure/msal-browser": "^4.30.0"
   }
 }

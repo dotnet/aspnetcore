@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -24,7 +23,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Microbenchmarks;
 
-public class RuntimePerformanceBenchmarkBase
+public abstract class RuntimePerformanceBenchmarkBase
 {
     private sealed class NullLoggerFactory : ILoggerFactory, ILogger
     {
@@ -115,9 +114,7 @@ public class RuntimePerformanceBenchmarkBase
     [GlobalSetup]
     public void GlobalSetup()
     {
-        var loader = new RazorCompiledItemLoader();
-        var viewsDll = Path.ChangeExtension(typeof(ViewAssemblyMarker).Assembly.Location, "Views.dll");
-        var viewsAssembly = Assembly.Load(File.ReadAllBytes(viewsDll));
+        var viewsAssembly = typeof(ViewAssemblyMarker).Assembly;
         var services = new ServiceCollection();
         var listener = new DiagnosticListener(GetType().Assembly.FullName);
         var partManager = new ApplicationPartManager();

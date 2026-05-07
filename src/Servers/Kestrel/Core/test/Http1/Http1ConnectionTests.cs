@@ -318,6 +318,32 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = "Reason phrase");
     }
 
+    [Theory]
+    [InlineData("Injected\r\nHeader: value")]
+    [InlineData("Has\rCarriageReturn")]
+    [InlineData("Has\nLineFeed")]
+    [InlineData("Has\0Null")]
+    [InlineData("Control\u001FChar")]
+    [InlineData("Del\u007FChar")]
+    [InlineData("Non-ASCII\u0080Char")]
+    [InlineData("Caf\u00E9")]
+    public void ThrowsWhenReasonPhraseContainsControlCharacters(string reasonPhrase)
+    {
+        Assert.Throws<InvalidOperationException>(() => ((IHttpResponseFeature)_http1Connection).ReasonPhrase = reasonPhrase);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("OK")]
+    [InlineData("Custom Reason")]
+    [InlineData("Includes\tHTAB")]
+    public void AcceptsValidReasonPhrase(string reasonPhrase)
+    {
+        ((IHttpResponseFeature)_http1Connection).ReasonPhrase = reasonPhrase;
+        Assert.Equal(reasonPhrase, ((IHttpResponseFeature)_http1Connection).ReasonPhrase);
+    }
+
     [Fact]
     public async Task ThrowsWhenOnStartingIsSetAfterResponseStarted()
     {
@@ -1024,6 +1050,27 @@ public class Http1ConnectionTests : Http1ConnectionTestsBase
         // Assert
         Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
         Assert.Equal(contentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
+        Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
+        Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
+    }
+
+    [Fact]
+    public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthAndXContentLengthRequestHeadersExist()
+    {
+        // Arrange
+        string contentLength = "1024";
+        string userXContentLength = "123";
+        _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, contentLength);
+        _http1Connection.RequestHeaders.Add(HeaderNames.TransferEncoding, "chunked");
+        _http1Connection.RequestHeaders.Add("X-Content-Length", userXContentLength); // user passed this explicitly
+
+        // Act
+        Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
+
+        // Assert
+        Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
+        Assert.Equal(userXContentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
         Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
         Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
         Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));

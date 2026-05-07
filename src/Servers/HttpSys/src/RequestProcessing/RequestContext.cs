@@ -192,7 +192,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     }
 
     // The request is being aborted, but large writes may be in progress. Cancel them.
-    internal void ForceCancelRequest()
+    internal unsafe void ForceCancelRequest()
     {
         try
         {
@@ -202,8 +202,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 return;
             }
 
-            var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle,
-                _requestId.Value, default);
+            var statusCode = PInvoke.HttpCancelHttpRequest(Server.RequestQueue.Handle, _requestId.Value, default);
 
             // Either the connection has already dropped, or the last write is in progress.
             // The requestId becomes invalid as soon as the last Content-Length write starts.
@@ -241,7 +240,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         var statusCode = HttpApi.HttpGetRequestProperty(
             requestQueueHandle: Server.RequestQueue.Handle,
             requestId,
-            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            propertyId: HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo,
             qualifier: null,
             qualifierSize: 0,
             output: &cipherInfo,
@@ -287,7 +286,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             statusCode = HttpApi.HttpGetRequestProperty(
                 requestQueueHandle: Server.RequestQueue.Handle,
                 requestId,
-                propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                propertyId: HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello,
                 qualifier: null,
                 qualifierSize: 0,
                 output: pBuffer,

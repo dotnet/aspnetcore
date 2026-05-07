@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="StackExchange.Redis" />
     <Reference Include="MessagePack" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />

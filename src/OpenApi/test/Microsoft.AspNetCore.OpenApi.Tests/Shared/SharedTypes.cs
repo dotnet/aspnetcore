@@ -219,3 +219,38 @@ internal class Product
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
 }
+
+/// <summary>
+/// An enum without a [JsonConverter] attribute — relies on global JsonStringEnumConverter configuration.
+/// Used to test that the OpenAPI schema emits C# member names (not naming-policy-transformed values)
+/// for non-body parameters when a global naming policy is configured.
+/// </summary>
+internal enum Priority
+{
+    HighPriority,
+    MediumPriority,
+    LowPriority,
+}
+
+/// <summary>
+/// An enum with duplicate underlying values — used to test that the naming-policy fix
+/// handles aliases correctly (e.g. ValueB and ValueC both map to 1).
+/// </summary>
+internal enum DuplicateValueEnum
+{
+    ValueA = 0,
+    ValueB = 1,
+    ValueC = 1,
+}
+
+/// <summary>
+/// An enum with values declared out of numeric order — used to test that the
+/// positional comparison between schema enum values and Enum.GetNames() works
+/// correctly since both sort by underlying value, not declaration order.
+/// </summary>
+internal enum OutOfOrderEnum
+{
+    Critical = 3,
+    Warning = 1,
+    Info = 0,
+}

@@ -30,7 +30,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                 operation.Responses["500"] = new OpenApiResponse
                 {
                     Description = "Error",
-                    Content = new Dictionary<string, OpenApiMediaType>()
+                    Content = new Dictionary<string, IOpenApiMediaType>()
                     {
                         ["application/problem+json"] = new OpenApiMediaType
                         {
@@ -97,7 +97,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "Success",
-                Content = new Dictionary<string, OpenApiMediaType>()
+                Content = new Dictionary<string, IOpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -109,7 +109,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["400"] = new OpenApiResponse
             {
                 Description = "Bad Request",
-                Content = new Dictionary<string, OpenApiMediaType>()
+                Content = new Dictionary<string, IOpenApiMediaType>()
                 {
                     ["application/problem+json"] = new OpenApiMediaType
                     {
@@ -260,7 +260,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                     ["200"] = new OpenApiResponse
                     {
                         Description = "Success",
-                        Content = new Dictionary<string, OpenApiMediaType>()
+                        Content = new Dictionary<string, IOpenApiMediaType>()
                         {
                             ["application/json"] = new OpenApiMediaType
                             {
@@ -346,7 +346,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "A product",
-                Content = new Dictionary<string, OpenApiMediaType>()
+                Content = new Dictionary<string, IOpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -414,7 +414,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "Concurrent schema generation test",
-                Content = new Dictionary<string, OpenApiMediaType>()
+                Content = new Dictionary<string, IOpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -467,7 +467,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "User with custom JSON options",
-                Content = new Dictionary<string, OpenApiMediaType>()
+                Content = new Dictionary<string, IOpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {

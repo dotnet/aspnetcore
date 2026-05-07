@@ -1,15 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.Tests;
+#if NET
 using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+#endif
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed;
 
@@ -32,7 +37,7 @@ public class ManagedAuthenticatedEncryptorTests
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
 
         // Assert
-        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
+        Assert.Equal(plaintext.AsSpan().ToArray(), decipheredtext.AsSpan().ToArray());
     }
 
     [Fact]
@@ -111,6 +116,7 @@ public class ManagedAuthenticatedEncryptorTests
         Assert.Equal("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAA=", retValAsString);
     }
 
+#if NET
     [Theory]
     [InlineData(128, "SHA256")]
     [InlineData(192, "SHA256")]
@@ -139,6 +145,7 @@ public class ManagedAuthenticatedEncryptorTests
 
         RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
+#endif
 
     [Fact]
     public void TimeLimitedDataProtector_WithJsonPayloadNearBufferBoundary_SucceedsWithoutBufferException()
@@ -146,7 +153,7 @@ public class ManagedAuthenticatedEncryptorTests
         // This test reproduces the issue from ServerComponentDeserializerTest.DoesNotParseMarkersWithUnknownComponentTypeAssembly
         // which uses ITimeLimitedDataProtector with ManagedAuthenticatedEncryptor under the hood.
         // The buffer boundary condition occurs when the output size calculation results in a value
-        // that is close to or exceeds 255 bytes (the initial stackalloc size).
+        // that is close to or exceeds 256 bytes (the initial stackalloc size).
 
         // Arrange
         var dataProtectionProvider = new TestsDataProtectionProvider<ManagedAuthenticatedEncryptorConfiguration>();
