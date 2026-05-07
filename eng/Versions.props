@@ -168,8 +168,8 @@
     <!-- OpenTelemetry packages for Blazor WASM Service Defaults -->
     <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.15.3</OpenTelemetryExporterOpenTelemetryProtocolVersion>
     <OpenTelemetryExtensionsHostingVersion>1.15.3</OpenTelemetryExtensionsHostingVersion>
-    <OpenTelemetryInstrumentationHttpVersion>1.15.3</OpenTelemetryInstrumentationHttpVersion>
-    <OpenTelemetryInstrumentationRuntimeVersion>1.15.3</OpenTelemetryInstrumentationRuntimeVersion>
+    <OpenTelemetryInstrumentationHttpVersion>1.15.1</OpenTelemetryInstrumentationHttpVersion>
+    <OpenTelemetryInstrumentationRuntimeVersion>1.15.1</OpenTelemetryInstrumentationRuntimeVersion>
     <PhotinoNETVersion>2.5.2</PhotinoNETVersion>
     <MicrosoftPlaywrightVersion>1.58.0</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
