@@ -5,7 +5,9 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -483,4 +485,70 @@ app.MapPost("/", handler);
         }
     }
 
+    [Fact]
+    public async Task JsonException_ShouldWriteViaProblemDetailsService()
+    {
+        var source = """
+            app.MapPost("/", string (ModelWithRequiredProperty model) => $"Hello {model.Prop}");
+            """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContextWithJson("{}", CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.AddSingleton<IProblemDetailsService>(new ProblemDetailsService(
+                [new DefaultProblemDetailsWriter(
+                    Options.Create(new ProblemDetailsOptions()),
+                    Options.Create(new Json.JsonOptions()))]));
+        }));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var logs = TestSink.Writes.ToArray();
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(httpContext.Response.Body);
+        var result = await streamReader.ReadToEndAsync();
+        Assert.Equal($$"""
+            {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'."]},"traceId":"{{httpContext.TraceIdentifier}}"}
+            """, result);
+    }
+
+    [Fact]
+    public async Task JsonException_ShouldWriteViaProblemDetailsService_SimplifiedCustomProblemDetailsWriter()
+    {
+        var source = """
+            app.MapPost("/", string (ModelWithRequiredProperty model) => $"Hello {model.Prop}");
+            """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContextWithJson("{}", CreateServiceProvider(serviceCollection =>
+        {
+            serviceCollection.AddSingleton<IProblemDetailsService>(new ProblemDetailsService(
+                [new SimplifiedCustomProblemDetailsWriter()]));
+        }));
+
+        await endpoint.RequestDelegate(httpContext);
+
+        var logs = TestSink.Writes.ToArray();
+
+        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
+        using var streamReader = new StreamReader(httpContext.Response.Body);
+        var result = await streamReader.ReadToEndAsync();
+        Assert.Equal("""
+            {"title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'."]}}
+            """, result);
+    }
+
+    private sealed class SimplifiedCustomProblemDetailsWriter : IProblemDetailsWriter
+    {
+        public bool CanWrite(ProblemDetailsContext context)
+            => true;
+
+        public async ValueTask WriteAsync(ProblemDetailsContext context)
+        {
+            await context.HttpContext.Response.WriteAsJsonAsync(context.ProblemDetails, context.ProblemDetails.GetType());
+        }
+    }
 }

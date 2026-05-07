@@ -3258,7 +3258,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
         
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
-        var result = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
+        using var streamReader = new StreamReader(httpContext.Response.Body);
+        var result = await streamReader.ReadToEndAsync();
         Assert.Equal($$"""
             {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+ModelWithRequiredProperty' was missing required properties including: 'prop'."]},"traceId":"{{httpContext.TraceIdentifier}}"}
             """, result);
@@ -3285,9 +3286,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         await requestDelegate(httpContext);
 
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
-        var result = await new StreamReader(httpContext.Response.Body).ReadToEndAsync();
-        Assert.Equal($$"""
-            {"title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+ModelWithRequiredProperty' was missing required properties including: 'prop'."]},"traceId":"{{httpContext.TraceIdentifier}}"}
+        using var streamReader = new StreamReader(httpContext.Response.Body);
+        var result = await streamReader.ReadToEndAsync();
+        Assert.Equal("""
+            {"title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+ModelWithRequiredProperty' was missing required properties including: 'prop'."]}}
             """, result);
 
         string TestAction(ModelWithRequiredProperty model)
