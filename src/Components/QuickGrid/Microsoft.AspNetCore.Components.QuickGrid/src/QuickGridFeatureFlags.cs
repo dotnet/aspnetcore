@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 
 internal static class QuickGridFeatureFlags
 {
-    internal static bool EnableUrlBasedQuickGridNavigationAndSorting =>
+    internal static bool EnableUrlBasedQuickGridNavigationAndSorting { get; } =
         !AppContext.TryGetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", out var isEnabled) || isEnabled;
 }
