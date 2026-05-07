@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 [SupportedOSPlatform("windows")]
 internal sealed class WindowsCertificateManager : CertificateManager
 {
-    private const int UserCancelledErrorCode = unchecked((int)0x800704C7);
+    private const int UserCancelledErrorCode = 1223;
 
     public WindowsCertificateManager()
     {
@@ -91,7 +91,9 @@ internal sealed class WindowsCertificateManager : CertificateManager
             store.Add(publicCertificate);
             return TrustLevel.Full;
         }
-        catch (CryptographicException exception) when (exception.HResult == UserCancelledErrorCode)
+        // https://msdn.microsoft.com/library/cc231198.aspx documents how HResult is formed.
+        // In short, the error code is only the 2 least significant bytes.
+        catch (CryptographicException exception) when ((exception.HResult & 0xFFFF) == UserCancelledErrorCode)
         {
             Log.WindowsCertificateTrustCanceled();
             throw new UserCancelledTrustException();
