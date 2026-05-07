@@ -21,7 +21,8 @@ internal sealed class WebAssemblyComponentParameterDeserializer
     public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(new ComponentParametersTypeCache());
 
     [DynamicDependency(JsonSerialized, typeof(SerializedRenderFragment))]
-    [DynamicDependency(JsonSerialized, typeof(RenderTreeFrameDTO))]
+    [DynamicDependency(JsonSerialized, typeof(RenderTreeNode))]
+    [DynamicDependency(JsonSerialized, typeof(RenderTreeAttribute))]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to preserve component parameter types.")]
     public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues)
     {
@@ -60,7 +61,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                         var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
                             value.GetRawText(),
                             WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
-                        parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Frames);
+                        parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes);
                     }
                     else
                     {

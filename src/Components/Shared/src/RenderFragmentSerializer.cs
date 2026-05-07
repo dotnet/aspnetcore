@@ -12,204 +12,268 @@ namespace Microsoft.AspNetCore.Components;
 
 internal static partial class RenderFragmentSerializer
 {
-    private const int MaxSerializationDepth = 50;
-
-    internal static List<RenderTreeFrameDTO> Serialize(RenderFragment renderFragment, ILogger logger, int depth = 0)
+    internal static List<RenderTreeNode> SerializeFrames(ReadOnlySpan<RenderTreeFrame> framesSpan, ILogger logger)
     {
-        if (depth > MaxSerializationDepth)
-        {
-            throw new InvalidOperationException(
-                $"RenderFragment serialization exceeded the maximum nesting depth of {MaxSerializationDepth}.");
-        }
-
-        using var builder = new RenderTreeBuilder();
-        renderFragment(builder);
-        var frames = builder.GetFrames();
-        var framesSpan = frames.Array.AsSpan(0, frames.Count);
-        var result = new List<RenderTreeFrameDTO>();
-
-        const int stackAllocThreshold = 128;
-        Span<(int OriginalEndIndex, RenderTreeFrameType Type)> containerStack = framesSpan.Length <= stackAllocThreshold
-            ? stackalloc (int, RenderTreeFrameType)[framesSpan.Length]
-            : new (int, RenderTreeFrameType)[framesSpan.Length];
-        var containerCount = 0;
-
-        for (var i = 0; i < framesSpan.Length; i++)
-        {
-            while (containerCount > 0 && containerStack[containerCount - 1].OriginalEndIndex <= i)
-            {
-                result.Add(new RenderTreeFrameDTO { Type = containerStack[--containerCount].Type, IsClosingFrame = true });
-            }
-
-            ref var frame = ref framesSpan[i];
-            var dto = new RenderTreeFrameDTO
-            {
-                Type = frame.FrameType,
-                Sequence = frame.Sequence,
-            };
-
-            switch (frame.FrameType)
-            {
-                case RenderTreeFrameType.Element:
-                    dto.ElementName = frame.ElementName;
-                    dto.ElementKey = frame.ElementKey;
-                    dto.ElementKeyType = frame.ElementKey?.GetType().AssemblyQualifiedName;
-                    containerStack[containerCount++] = (i + frame.ElementSubtreeLength, RenderTreeFrameType.Element);
-                    break;
-                case RenderTreeFrameType.Text:
-                    dto.TextContent = frame.TextContent;
-                    break;
-                case RenderTreeFrameType.Markup:
-                    dto.MarkupContent = frame.MarkupContent;
-                    break;
-                case RenderTreeFrameType.Attribute:
-                    dto.AttributeName = frame.AttributeName;
-                    if (frame.AttributeValue is RenderFragment nestedFragment)
-                    {
-                        dto.NestedRenderFragment = Serialize(nestedFragment, logger, depth + 1);
-                    }
-                    else if (frame.AttributeValue is Delegate d && d.GetType().IsGenericType && d.GetType().GetGenericTypeDefinition() == typeof(RenderFragment<>))
-                    {
-                        Log.GenericRenderFragmentSkipped(logger, frame.AttributeName);
-                        continue;
-                    }
-                    else if (frame.AttributeValue is Delegate)
-                    {
-                        Log.EventHandlerSkipped(logger, frame.AttributeName);
-                        continue;
-                    }
-                    else if (IsEventCallback(frame.AttributeValue))
-                    {
-                        Log.EventHandlerSkipped(logger, frame.AttributeName);
-                        continue;
-                    }
-                    else
-                    {
-                        dto.AttributeValue = frame.AttributeValue;
-                        dto.AttributeValueType = frame.AttributeValue?.GetType().AssemblyQualifiedName;
-                    }
-                    break;
-                case RenderTreeFrameType.Component:
-                    dto.ComponentType = frame.ComponentType?.AssemblyQualifiedName;
-                    if (frame.ComponentKey is not null)
-                    {
-                        dto.ComponentKey = frame.ComponentKey;
-                        dto.ComponentKeyType = frame.ComponentKey.GetType().AssemblyQualifiedName;
-                    }
-                    containerStack[containerCount++] = (i + frame.ComponentSubtreeLength, RenderTreeFrameType.Component);
-                    break;
-                case RenderTreeFrameType.Region:
-                    containerStack[containerCount++] = (i + frame.RegionSubtreeLength, RenderTreeFrameType.Region);
-                    break;
-                case RenderTreeFrameType.ElementReferenceCapture:
-                    Log.ElementReferenceCaptureSkipped(logger);
-                    continue;
-                case RenderTreeFrameType.ComponentReferenceCapture:
-                    Log.ComponentReferenceCaptureSkipped(logger);
-                    continue;
-                case RenderTreeFrameType.ComponentRenderMode:
-                    Log.ComponentRenderModeSkipped(logger);
-                    continue;
-                case RenderTreeFrameType.NamedEvent:
-                    Log.NamedEventSkipped(logger);
-                    continue;
-                default:
-                    throw new NotImplementedException($"Serialization for frame type '{frame.FrameType}' is not implemented.");
-            }
-            result.Add(dto);
-        }
-
-        while (containerCount > 0)
-        {
-            result.Add(new RenderTreeFrameDTO { Type = containerStack[--containerCount].Type, IsClosingFrame = true });
-        }
-
+        var result = new List<RenderTreeNode>();
+        var position = 0;
+        SerializeChildren(framesSpan, ref position, framesSpan.Length, result, logger);
         return result;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
-    internal static RenderFragment Deserialize(List<RenderTreeFrameDTO> frameDTOs)
+    private static void SerializeChildren(
+        ReadOnlySpan<RenderTreeFrame> frames,
+        ref int position,
+        int endExcl,
+        List<RenderTreeNode> target,
+        ILogger logger)
     {
-        return builder =>
+        while (position < endExcl)
         {
-            for (var i = 0; i < frameDTOs.Count; i++)
+            ref readonly var frame = ref frames[position];
+            switch (frame.FrameType)
             {
-                var dto = frameDTOs[i];
-
-                if (dto.IsClosingFrame)
+                case RenderTreeFrameType.Element:
                 {
-                    CloseContainer(builder, dto.Type);
-                    continue;
-                }
+                    var node = new RenderTreeNode
+                    {
+                        Type = "element",
+                        Tag = frame.ElementName,
+                    };
+                    if (frame.ElementKey is not null)
+                    {
+                        node.Key = frame.ElementKey;
+                        node.KeyType = frame.ElementKey.GetType().AssemblyQualifiedName;
+                    }
 
-                switch (dto.Type)
-                {
-                    case RenderTreeFrameType.Element:
-                        builder.OpenElement(dto.Sequence, dto.ElementName!);
-                        if (dto.ElementKey is not null)
+                    var subtreeEnd = position + frame.ElementSubtreeLength;
+                    position++;
+
+                    // Collect attributes
+                    while (position < subtreeEnd && frames[position].FrameType is RenderTreeFrameType.Attribute)
+                    {
+                        ref readonly var attrFrame = ref frames[position];
+                        if (TrySerializeAttribute(attrFrame, logger, out var attr))
                         {
-                            builder.SetKey(dto.ElementKey is JsonElement jsonElement
-                                ? ConvertTypedValue(jsonElement, dto.ElementKeyType!)!
-                                : dto.ElementKey);
+                            node.Attributes ??= new();
+                            node.Attributes.Add(attr);
                         }
-                        break;
-                    case RenderTreeFrameType.Text:
-                        builder.AddContent(dto.Sequence, dto.TextContent);
-                        break;
-                    case RenderTreeFrameType.Markup:
-                        builder.AddMarkupContent(dto.Sequence, dto.MarkupContent);
-                        break;
-                    case RenderTreeFrameType.Attribute:
-                        if (dto.NestedRenderFragment is not null)
-                        {
-                            var nestedFragment = Deserialize(dto.NestedRenderFragment);
-                            builder.AddAttribute(dto.Sequence, dto.AttributeName!, nestedFragment);
-                        }
-                        else
-                        {
-                            var value = dto.AttributeValue is JsonElement je
-                                ? ConvertTypedValue(je, dto.AttributeValueType!)
-                                : dto.AttributeValue;
-                            builder.AddAttribute(dto.Sequence, dto.AttributeName!, value);
-                        }
-                        break;
-                    case RenderTreeFrameType.Component:
-                        var componentType = Type.GetType(dto.ComponentType!);
-                        if (componentType is null)
-                        {
-                            throw new InvalidOperationException($"Cannot resolve component type '{dto.ComponentType}'.");
-                        }
-                        builder.OpenComponent(dto.Sequence, componentType);
-                        if (dto.ComponentKey is not null)
-                        {
-                            builder.SetKey(dto.ComponentKey is JsonElement jsonElement
-                                ? ConvertTypedValue(jsonElement, dto.ComponentKeyType!)!
-                                : dto.ComponentKey);
-                        }
-                        break;
-                    case RenderTreeFrameType.Region:
-                        builder.OpenRegion(dto.Sequence);
-                        break;
-                    default:
-                        throw new NotImplementedException($"Deserialization for frame type '{dto.Type}' is not implemented.");
+                        position++;
+                    }
+
+                    // Collect children
+                    if (position < subtreeEnd)
+                    {
+                        node.Children = new();
+                        SerializeChildren(frames, ref position, subtreeEnd, node.Children, logger);
+                    }
+
+                    target.Add(node);
+                    break;
                 }
+                case RenderTreeFrameType.Text:
+                    target.Add(new RenderTreeNode { Type = "text", Content = frame.TextContent });
+                    position++;
+                    break;
+                case RenderTreeFrameType.Markup:
+                    target.Add(new RenderTreeNode { Type = "markup", Content = frame.MarkupContent });
+                    position++;
+                    break;
+                case RenderTreeFrameType.Component:
+                {
+                    var node = new RenderTreeNode
+                    {
+                        Type = "component",
+                        ComponentType = frame.ComponentType?.AssemblyQualifiedName,
+                    };
+                    if (frame.ComponentKey is not null)
+                    {
+                        node.Key = frame.ComponentKey;
+                        node.KeyType = frame.ComponentKey.GetType().AssemblyQualifiedName;
+                    }
+
+                    var subtreeEnd = position + frame.ComponentSubtreeLength;
+                    position++;
+
+                    // Collect component parameters (attribute frames)
+                    while (position < subtreeEnd && frames[position].FrameType is RenderTreeFrameType.Attribute)
+                    {
+                        ref readonly var attrFrame = ref frames[position];
+                        if (TrySerializeAttribute(attrFrame, logger, out var attr))
+                        {
+                            node.ComponentParameters ??= new();
+                            node.ComponentParameters.Add(attr);
+                        }
+                        position++;
+                    }
+
+                    // Skip remaining child frames within the component subtree.
+                    // Components inside fragments are descriptors; their children are rendered on the client.
+                    position = subtreeEnd;
+                    target.Add(node);
+                    break;
+                }
+                case RenderTreeFrameType.Region:
+                {
+                    var subtreeEnd = position + frame.RegionSubtreeLength;
+                    position++;
+                    // Regions are transparent — inline their children into the parent
+                    SerializeChildren(frames, ref position, subtreeEnd, target, logger);
+                    break;
+                }
+                case RenderTreeFrameType.ElementReferenceCapture:
+                    Log.ElementReferenceCaptureSkipped(logger);
+                    position++;
+                    break;
+                case RenderTreeFrameType.ComponentReferenceCapture:
+                    Log.ComponentReferenceCaptureSkipped(logger);
+                    position++;
+                    break;
+                case RenderTreeFrameType.ComponentRenderMode:
+                    Log.ComponentRenderModeSkipped(logger);
+                    position++;
+                    break;
+                case RenderTreeFrameType.NamedEvent:
+                    Log.NamedEventSkipped(logger);
+                    position++;
+                    break;
+                case RenderTreeFrameType.Attribute:
+                    // Stray attribute outside an element/component — skip
+                    position++;
+                    break;
+
+                default:
+                    throw new NotImplementedException($"Serialization for frame type '{frame.FrameType}' is not implemented.");
             }
-        };
+        }
     }
 
-    private static void CloseContainer(RenderTreeBuilder builder, RenderTreeFrameType type)
+    private static bool TrySerializeAttribute(
+        in RenderTreeFrame frame,
+        ILogger logger,
+        [NotNullWhen(true)] out RenderTreeAttribute? result)
     {
-        switch (type)
+        result = null;
+
+        if (frame.AttributeValue is RenderFragment)
         {
-            case RenderTreeFrameType.Element:
-                builder.CloseElement();
-                break;
-            case RenderTreeFrameType.Component:
-                builder.CloseComponent();
-                break;
-            case RenderTreeFrameType.Region:
-                builder.CloseRegion();
-                break;
+            throw new NotSupportedException(
+                $"Serializing a RenderFragment that contains another RenderFragment attribute " +
+                $"('{frame.AttributeName}') across a rendermode boundary is not yet supported.");
+        }
+
+        if (frame.AttributeValue is Delegate d)
+        {
+            if (d.GetType().IsGenericType && d.GetType().GetGenericTypeDefinition() == typeof(RenderFragment<>))
+            {
+                Log.GenericRenderFragmentSkipped(logger, frame.AttributeName);
+                return false;
+            }
+
+            Log.EventHandlerSkipped(logger, frame.AttributeName);
+            return false;
+        }
+
+        if (IsEventCallback(frame.AttributeValue))
+        {
+            Log.EventHandlerSkipped(logger, frame.AttributeName);
+            return false;
+        }
+
+        result = new RenderTreeAttribute
+        {
+            Name = frame.AttributeName!,
+            Value = frame.AttributeValue,
+            ValueType = frame.AttributeValue?.GetType().AssemblyQualifiedName,
+        };
+        return true;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
+    internal static RenderFragment Deserialize(List<RenderTreeNode> nodes)
+    {
+        return builder => DeserializeNodes(builder, nodes);
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
+    private static void DeserializeNodes(RenderTreeBuilder builder, List<RenderTreeNode> nodes)
+    {
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            var node = nodes[i];
+            switch (node.Type)
+            {
+                case "element":
+                    builder.OpenElement(0, node.Tag!);
+                    if (node.Key is not null)
+                    {
+                        builder.SetKey(node.Key is JsonElement je ? ConvertTypedValue(je, node.KeyType!) : node.Key);
+                    }
+                    DeserializeAttributes(builder, node.Attributes);
+                    if (node.Children is not null)
+                    {
+                        DeserializeNodes(builder, node.Children);
+                    }
+                    builder.CloseElement();
+                    break;
+
+                case "text":
+                    builder.AddContent(0, node.Content);
+                    break;
+
+                case "markup":
+                    builder.AddMarkupContent(0, node.Content);
+                    break;
+
+                case "component":
+                    var componentType = Type.GetType(node.ComponentType!);
+                    if (componentType is null)
+                    {
+                        throw new InvalidOperationException($"Cannot resolve component type '{node.ComponentType}'.");
+                    }
+                    builder.OpenComponent(0, componentType);
+                    if (node.Key is not null)
+                    {
+                        builder.SetKey(node.Key is JsonElement je ? ConvertTypedValue(je, node.KeyType!) : node.Key);
+                    }
+                    DeserializeComponentParameters(builder, node.ComponentParameters);
+                    builder.CloseComponent();
+                    break;
+
+                default:
+                    throw new NotImplementedException($"Deserialization for node type '{node.Type}' is not implemented.");
+            }
+        }
+    }
+
+    private static void DeserializeAttributes(RenderTreeBuilder builder, List<RenderTreeAttribute>? attributes)
+    {
+        if (attributes is null)
+        {
+            return;
+        }
+
+        foreach (var attr in attributes)
+        {
+            var value = attr.Value is JsonElement je
+                ? ConvertTypedValue(je, attr.ValueType!)
+                : attr.Value;
+            builder.AddAttribute(0, attr.Name, value);
+        }
+    }
+
+    private static void DeserializeComponentParameters(RenderTreeBuilder builder, List<RenderTreeAttribute>? parameters)
+    {
+        if (parameters is null)
+        {
+            return;
+        }
+
+        foreach (var param in parameters)
+        {
+            var value = param.Value is JsonElement je
+                ? ConvertTypedValue(je, param.ValueType!)
+                : param.Value;
+            builder.AddComponentParameter(0, param.Name, value);
         }
     }
 
@@ -265,57 +329,45 @@ internal static partial class RenderFragmentSerializer
 
 internal sealed class SerializedRenderFragment
 {
-    public List<RenderTreeFrameDTO> Frames { get; init; } = [];
+    public List<RenderTreeNode> Nodes { get; init; } = [];
 }
 
-internal sealed class RenderTreeFrameDTO
+internal sealed class RenderTreeNode
 {
-    public RenderTreeFrameType Type { get; set; }
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public int Sequence { get; set; }
-
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public bool IsClosingFrame { get; set; }
-
-    // Element
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ElementName { get; set; }
+    public string Type { get; set; } = "";
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? ElementKey { get; set; }
+    public string? Tag { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ElementKeyType { get; set; }
-
-    // Text
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? TextContent { get; set; }
-
-    // Markup
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? MarkupContent { get; set; }
-
-    // Attribute
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? AttributeName { get; set; }
+    public List<RenderTreeAttribute>? Attributes { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? AttributeValue { get; set; }
+    public object? Key { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? AttributeValueType { get; set; }
+    public string? KeyType { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<RenderTreeFrameDTO>? NestedRenderFragment { get; set; }
+    public string? Content { get; set; }
 
-    // Component
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ComponentType { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public object? ComponentKey { get; set; }
+    public List<RenderTreeAttribute>? ComponentParameters { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ComponentKeyType { get; set; }
+    public List<RenderTreeNode>? Children { get; set; }
+}
+
+internal sealed class RenderTreeAttribute
+{
+    public string Name { get; set; } = "";
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? Value { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ValueType { get; set; }
 }

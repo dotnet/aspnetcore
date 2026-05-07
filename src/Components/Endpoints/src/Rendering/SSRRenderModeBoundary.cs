@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,7 @@ internal class SSRRenderModeBoundary : IComponent
     private readonly bool _prerender;
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
+    private Dictionary<string, (int Start, int End)>? _renderFragmentCaptures;
     private ComponentMarkerKey? _markerKey;
     private readonly HttpContext _httpContext;
     private readonly ILogger _logger;
@@ -111,6 +113,11 @@ internal class SSRRenderModeBoundary : IComponent
 
         ValidateParameters(_latestParameters);
 
+        if (_prerender)
+        {
+            WrapRenderFragmentsForCapture();
+        }
+
         if (RenderMode is InteractiveWebAssemblyRenderMode)
         {
             // Preload WebAssembly assets when using WebAssembly (not Auto) mode
@@ -162,6 +169,39 @@ internal class SSRRenderModeBoundary : IComponent
         }
     }
 
+    private void WrapRenderFragmentsForCapture()
+    {
+        var dict = (Dictionary<string, object?>)_latestParameters!;
+        List<string>? fragmentNames = null;
+
+        foreach (var (name, value) in dict)
+        {
+            if (value is RenderFragment)
+            {
+                fragmentNames ??= new();
+                fragmentNames.Add(name);
+            }
+        }
+
+        if (fragmentNames is null)
+        {
+            return;
+        }
+
+        foreach (var name in fragmentNames)
+        {
+            var original = (RenderFragment)dict[name]!;
+            dict[name] = (RenderFragment)(builder =>
+            {
+                var start = builder.GetFrames().Count;
+                original(builder);
+                var end = builder.GetFrames().Count;
+                _renderFragmentCaptures ??= new();
+                _renderFragmentCaptures[name] = (start, end);
+            });
+        }
+    }
+
     private void Prerender(RenderTreeBuilder builder)
     {
         builder.OpenComponent(0, _componentType);
@@ -174,7 +214,7 @@ internal class SSRRenderModeBoundary : IComponent
         builder.CloseComponent();
     }
 
-    public ComponentMarker ToMarker(HttpContext httpContext, int sequence, object? componentKey)
+    public ComponentMarker ToMarker(HttpContext httpContext, int sequence, object? componentKey, ArrayRange<RenderTreeFrame> userComponentFrames)
     {
         // We expect that the '@key' and sequence number shouldn't change for a given component instance,
         // so we lazily compute the marker key once.
@@ -183,7 +223,7 @@ internal class SSRRenderModeBoundary : IComponent
         // Build a serialization-safe copy of parameters, replacing RenderFragment delegates with DTOs
         var serializableParameters = _latestParameters is null
             ? ParameterView.Empty
-            : BuildSerializableParameterView(_latestParameters, _logger);
+            : BuildSerializableParameterView(_latestParameters, _logger, userComponentFrames);
 
         var marker = RenderMode switch
         {
@@ -211,14 +251,26 @@ internal class SSRRenderModeBoundary : IComponent
         return marker;
     }
 
-    private static ParameterView BuildSerializableParameterView(IReadOnlyDictionary<string, object?> latestParameters, ILogger logger)
+    private ParameterView BuildSerializableParameterView(
+        IReadOnlyDictionary<string, object?> latestParameters,
+        ILogger logger,
+        ArrayRange<RenderTreeFrame> userComponentFrames)
     {
         var dict = new Dictionary<string, object?>(latestParameters.Count);
         foreach (var (name, value) in latestParameters)
         {
-            if (value is RenderFragment renderFragment)
+            if (value is RenderFragment)
             {
-                dict[name] = new SerializedRenderFragment { Frames = RenderFragmentSerializer.Serialize(renderFragment, logger) };
+                if (_renderFragmentCaptures is null || !_renderFragmentCaptures.TryGetValue(name, out var range))
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}' " +
+                        $"with rendermode '{RenderMode.GetType().Name}' when prerendering is disabled. " +
+                        $"RenderFragment serialization across rendermode boundaries requires Prerender=true.");
+                }
+
+                var frames = userComponentFrames.Array.AsSpan(range.Start, range.End - range.Start);
+                dict[name] = new SerializedRenderFragment { Nodes = RenderFragmentSerializer.SerializeFrames(frames, logger) };
             }
             else
             {
