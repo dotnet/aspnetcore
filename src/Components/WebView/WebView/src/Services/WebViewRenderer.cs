@@ -42,6 +42,13 @@ internal sealed class WebViewRenderer : WebRenderer
         _ipcSender.NotifyUnhandledException(exception);
     }
 
+    protected override IComponent ResolveComponentForRenderMode(
+        Type componentType,
+        int? parentComponentId,
+        IComponentActivator componentActivator,
+        IComponentRenderMode renderMode)
+        => componentActivator.CreateInstance(componentType);
+
     protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
     {
         var batchId = nextRenderBatchId++;
