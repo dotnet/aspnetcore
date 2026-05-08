@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Shared.Tests;
+namespace Microsoft.AspNetCore.Tests;
 
 public class DefaultCrossOriginProtectionTests
 {

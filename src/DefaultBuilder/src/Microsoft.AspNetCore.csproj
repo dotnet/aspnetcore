@@ -47,7 +47,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)CsrfProtection\DefaultCrossOriginProtection.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
