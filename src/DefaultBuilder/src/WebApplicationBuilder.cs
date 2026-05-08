@@ -457,8 +457,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         }
 
         // Auto-inject cross-origin CSRF protection after auth.
-        // Config check during Build, so established mechanisms like builder.WebHost.UseSetting("CrossOriginProtection", "disable") work.
-        if (!string.Equals("disable", _builtApplication.Configuration["CrossOriginProtection"], StringComparison.OrdinalIgnoreCase))
+        if (!WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"]))
         {
             if (serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true)
             {

@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Antiforgery;
@@ -90,7 +91,7 @@ public class CsrfProtectionIntegrationTests
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.WebHost.UseSetting("CrossOriginProtection", "disable");
+        builder.WebHost.UseSetting("DisableCsrfProtection", "true");
         using var app = builder.Build();
 
         app.MapPost("/protected", () => "ok");
@@ -102,6 +103,53 @@ public class CsrfProtectionIntegrationTests
 
         var response = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("True")]
+    [InlineData("TRUE")]
+    [InlineData("1")]
+    public async Task CsrfProtection_DisableCsrfProtectionConfig_AcceptedValues(string value)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.WebHost.UseSetting("DisableCsrfProtection", value);
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("false")]
+    [InlineData("0")]
+    [InlineData("disable")]
+    [InlineData("yes")]
+    [InlineData("")]
+    public async Task CsrfProtection_DisableCsrfProtectionConfig_RejectedValues_StillProtects(string value)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.WebHost.UseSetting("DisableCsrfProtection", value);
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -418,6 +466,108 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(LogLevel.Debug, entry.Level);
         Assert.Contains("denied request POST /protected", entry.Message);
         Assert.Contains("https://evil.example.com", entry.Message);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_AllowedRequest_ReadFormUrlEncoded_Succeeds()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        string? capturedName = null;
+        string? capturedColor = null;
+        app.MapPost("/form", async (HttpContext context) =>
+        {
+            var form = await context.Request.ReadFormAsync();
+            capturedName = form["name"];
+            capturedColor = form["color"];
+            return "ok";
+        });
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/form")
+        {
+            Content = new FormUrlEncodedContent(
+            [
+                new KeyValuePair<string, string>("name", "alice"),
+                new KeyValuePair<string, string>("color", "purple"),
+            ]),
+        };
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("alice", capturedName);
+        Assert.Equal("purple", capturedColor);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_AllowedRequest_ReadFormMultipart_Succeeds()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        string? capturedName = null;
+        string? capturedFileContent = null;
+        app.MapPost("/form", async (HttpContext context) =>
+        {
+            var form = await context.Request.ReadFormAsync();
+            capturedName = form["name"];
+            var file = form.Files["upload"];
+            if (file is not null)
+            {
+                using var reader = new StreamReader(file.OpenReadStream());
+                capturedFileContent = await reader.ReadToEndAsync();
+            }
+            return "ok";
+        });
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var multipart = new MultipartFormDataContent
+        {
+            { new StringContent("alice"), "name" },
+            { new StringContent("hello world"), "upload", "greeting.txt" },
+        };
+        var request = new HttpRequestMessage(HttpMethod.Post, "/form") { Content = multipart };
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("alice", capturedName);
+        Assert.Equal("hello world", capturedFileContent);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_DeniedRequest_DoesNotReachFormReadingEndpoint()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        var endpointInvoked = false;
+        app.MapPost("/form", async (HttpContext context) =>
+        {
+            endpointInvoked = true;
+            await context.Request.ReadFormAsync();
+            return "ok";
+        });
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/form")
+        {
+            Content = new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("name", "alice") }),
+        };
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://evil.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.False(endpointInvoked, "CSRF middleware should short-circuit before reaching the endpoint.");
     }
 
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
