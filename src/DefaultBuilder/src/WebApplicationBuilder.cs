@@ -465,26 +465,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 if (!_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
                 {
                     _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
-                    var csrfProtection = _builtApplication.Services.GetRequiredService<ICsrfProtection>();
-
-                    app.Use(async (context, next) =>
-                    {
-                        // Skip validation if endpoint explicitly opted out via DisableAntiforgery()
-                        var endpoint = context.GetEndpoint();
-                        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
-                        {
-                            await next(context);
-                            return;
-                        }
-
-                        if (await csrfProtection.ValidateAsync(context) == CsrfProtectionResult.Denied)
-                        {
-                            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                            return;
-                        }
-
-                        await next(context);
-                    });
+                    app.UseMiddleware<CsrfProtectionMiddleware>();
                 }
             }
         }
