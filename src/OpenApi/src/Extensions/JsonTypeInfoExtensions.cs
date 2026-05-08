@@ -119,7 +119,7 @@ internal static class JsonTypeInfoExtensions
         if (type.IsArray)
         {
             var elementType = type.GetElementType()!;
-            return $"{elementType.GetSchemaReferenceId(options)}Array";
+            return $"ArrayOf{elementType.GetSchemaReferenceId(options)}";
         }
 
         // Special handling for generic types that are collections

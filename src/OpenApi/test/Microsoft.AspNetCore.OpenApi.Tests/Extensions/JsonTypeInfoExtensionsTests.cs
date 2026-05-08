@@ -81,10 +81,10 @@ public class JsonTypeInfoExtensionsTests
         [typeof(Dictionary<string, List<string[]>>), null],
         [typeof(Dictionary<string, IEnumerable<string[]>>), null],
         [typeof(Foo<int>.Bar<string>.Baz), "BazOfintAndstring"],
-        [typeof(Ok<string[]>), "OkOfstringArray"],
-        [typeof(Ok<int[]>), "OkOfintArray"],
-        [typeof(Ok<Todo[]>), "OkOfTodoArray"],
-        [typeof(Ok<string[][]>), "OkOfstringArrayArray"],
+        [typeof(Ok<string[]>), "OkOfArrayOfstring"],
+        [typeof(Ok<int[]>), "OkOfArrayOfint"],
+        [typeof(Ok<Todo[]>), "OkOfArrayOfTodo"],
+        [typeof(Ok<string[][]>), "OkOfArrayOfArrayOfstring"],
     ];
 
     [Theory]
