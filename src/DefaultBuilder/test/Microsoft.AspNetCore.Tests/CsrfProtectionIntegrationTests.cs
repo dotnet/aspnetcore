@@ -168,12 +168,12 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
-    public async Task CsrfProtection_TrustedOriginViaOptions_AllowsCrossOrigin()
+    public async Task CsrfProtection_TrustedOriginViaCorsDefaultPolicy_AllowsCrossOrigin()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.Configure<CsrfProtectionOptions>(options =>
-            options.TrustedOrigins.Add("https://trusted.example.com"));
+        builder.Services.AddCors(options =>
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com")));
         using var app = builder.Build();
 
         app.MapPost("/protected", () => "ok");
@@ -188,31 +188,12 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
-    public async Task CsrfProtection_TrustedOriginViaConfig_AllowsCrossOrigin()
+    public async Task CsrfProtection_CorsDefaultPolicyAllowAnyOrigin_IsIgnored()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.WebHost.UseSetting("CsrfProtection:TrustedOrigins", "https://trusted.example.com");
-        using var app = builder.Build();
-
-        app.MapPost("/protected", () => "ok");
-        await app.StartAsync();
-
-        var client = app.GetTestClient();
-        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
-        request.Headers.Add("Origin", "https://trusted.example.com");
-
-        var response = await client.SendAsync(request);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task CsrfProtection_UntrustedOrigin_Denied()
-    {
-        var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
-        builder.Services.Configure<CsrfProtectionOptions>(options =>
-            options.TrustedOrigins.Add("https://trusted.example.com"));
+        builder.Services.AddCors(options =>
+            options.AddDefaultPolicy(policy => policy.AllowAnyOrigin()));
         using var app = builder.Build();
 
         app.MapPost("/protected", () => "ok");
@@ -222,6 +203,144 @@ public class CsrfProtectionIntegrationTests
         var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
         request.Headers.Add("Sec-Fetch-Site", "cross-site");
         request.Headers.Add("Origin", "https://evil.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_UntrustedOrigin_Denied()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com")));
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://evil.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_PerEndpointEnableCors_TrustsNamedPolicyOrigins()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+        using var app = builder.Build();
+
+        app.UseCors();
+        app.MapPost("/webhook", () => "ok").RequireCors("Webhook");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://stripe.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_PerEndpointEnableCors_OverridesDefaultPolicy()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://app.example.com"));
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com"));
+        });
+        using var app = builder.Build();
+
+        app.UseCors();
+        app.MapPost("/webhook", () => "ok").RequireCors("Webhook");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        // Default-policy origin would be allowed app-wide, but this endpoint declared a stricter named policy.
+        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://app.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_PerEndpointInlineCorsPolicy_TrustsConfiguredOrigins()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors();
+        using var app = builder.Build();
+
+        app.UseCors();
+        // Inline-policy variant: RequireCors(lambda) builds a CorsPolicy and attaches it as ICorsPolicyMetadata.
+        app.MapPost("/webhook", () => "ok").RequireCors(p => p.WithOrigins("https://stripe.example.com"));
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://stripe.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_NoDefaultPolicy_NamedPolicyOnly_UnannotatedEndpoint_FallsThrough()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        // AddCors with only a named policy, no AddDefaultPolicy. Endpoint has no [EnableCors] either.
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        // The named policy's origin is NOT trusted here because the endpoint never opted into it
+        // and there's no default policy to fall back to → cross-site Sec-Fetch denies.
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://stripe.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_PerEndpointDisableCors_FallsThroughToSecFetchSite()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com")));
+        using var app = builder.Build();
+
+        // [DisableCors] tells us this endpoint has no CORS-derived trust list.
+        // The default-policy origin would have been trusted app-wide, but here it isn't.
+        app.MapPost("/no-cors", () => "ok").WithMetadata(new Cors.DisableCorsAttribute());
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/no-cors");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://trusted.example.com");
 
         var response = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -243,6 +362,7 @@ public class CsrfProtectionIntegrationTests
 
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
-        public CsrfProtectionResult Validate(HttpContext context) => CsrfProtectionResult.Allowed;
+        public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
+            => new(CsrfProtectionResult.Allowed);
     }
 }

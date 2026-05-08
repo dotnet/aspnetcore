@@ -277,23 +277,7 @@ public static class WebHost
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
             // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation).
-            services.PostConfigure<CsrfProtectionOptions>(options =>
-            {
-                // "CsrfProtection:TrustedOrigins": "https://example.com;https://other.com"
-                var origins = hostingContext.Configuration["CsrfProtection:TrustedOrigins"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                if (origins?.Length > 0)
-                {
-                    foreach (var origin in origins)
-                    {
-                        options.TrustedOrigins.Add(origin);
-                    }
-                }
-            });
-            services.TryAddSingleton<ICsrfProtection>(static sp =>
-            {
-                var options = sp.GetRequiredService<IOptions<CsrfProtectionOptions>>().Value;
-                return new DefaultCrossOriginProtection(options.TrustedOrigins);
-            });
+            services.TryAddSingleton<ICsrfProtection, DefaultCrossOriginProtection>();
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
             // A lambda is used here because we don't want to reference AddRouting directly because of trimming.
@@ -328,5 +312,4 @@ public static class WebHost
     /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
     public static IWebHostBuilder CreateDefaultBuilder<[DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] TStartup>(string[] args) where TStartup : class =>
         CreateDefaultBuilder(args).UseStartup<TStartup>();
-
 }

@@ -476,7 +476,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                         }
 
                         var csrfProtection = context.RequestServices.GetRequiredService<ICsrfProtection>();
-                        if (csrfProtection.Validate(context) == CsrfProtectionResult.Denied)
+                        if (await csrfProtection.ValidateAsync(context) == CsrfProtectionResult.Denied)
                         {
                             context.Response.StatusCode = StatusCodes.Status400BadRequest;
                             return;

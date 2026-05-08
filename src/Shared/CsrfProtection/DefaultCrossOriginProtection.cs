@@ -1,8 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -17,26 +18,8 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         HttpMethods.Trace,
     };
 
-    private readonly HashSet<string> _trustedOrigins;
-
-    public DefaultCrossOriginProtection() : this([])
-    {
-    }
-
-    public DefaultCrossOriginProtection(IEnumerable<string> trustedOrigins)
-    {
-        _trustedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var origin in trustedOrigins)
-        {
-            if (TryNormalizeOrigin(origin, out var normalized))
-            {
-                _trustedOrigins.Add(normalized);
-            }
-        }
-    }
-
     /// <inheritdoc />
-    public CsrfProtectionResult Validate(HttpContext context)
+    public async ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -48,17 +31,19 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
             return CsrfProtectionResult.Allowed;
         }
 
-        // Step 2: Check trusted origins against the Origin header.
+        // Step 2: Check trusted origins from the CORS policy that applies to this request
+        // (per-endpoint policy first, falling back to the default policy).
         var origin = request.Headers.Origin.ToString();
-        if (!string.IsNullOrEmpty(origin) && _trustedOrigins.Count > 0)
+        if (!string.IsNullOrEmpty(origin))
         {
-            if (TryNormalizeOrigin(origin, out var normalizedOrigin) && _trustedOrigins.Contains(normalizedOrigin))
+            var policy = await ResolveCorsPolicyAsync(context);
+            if (policy is not null && !policy.AllowAnyOrigin && policy.IsOriginAllowed(origin))
             {
                 return CsrfProtectionResult.Allowed;
             }
         }
 
-        // Step 3: Sec-Fetch-Site header (set by browsers per Fetch Metadata spec)
+        // Step 3: Sec-Fetch-Site header (set by browsers per Fetch Metadata spec).
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site#same-site
         var secFetchSite = request.Headers["Sec-Fetch-Site"].ToString();
         if (!string.IsNullOrEmpty(secFetchSite))
@@ -75,14 +60,12 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         if (!string.IsNullOrEmpty(origin))
         {
             var requestOrigin = GetRequestOrigin(request);
-            if (requestOrigin is not null && TryNormalizeOrigin(origin, out var normalizedOrigin))
+            if (requestOrigin is not null && string.Equals(origin, requestOrigin, StringComparison.OrdinalIgnoreCase))
             {
-                return string.Equals(normalizedOrigin, requestOrigin, StringComparison.OrdinalIgnoreCase)
-                    ? CsrfProtectionResult.Allowed
-                    : CsrfProtectionResult.Denied;
+                return CsrfProtectionResult.Allowed;
             }
 
-            // Malformed Origin header → deny (fail closed).
+            // Origin header is present but doesn't match the request's own origin → deny (fail closed).
             return CsrfProtectionResult.Denied;
         }
 
@@ -90,6 +73,34 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         // This is a non-browser client (curl, Postman, server-to-server).
         // Allow the request — CSRF is a browser-based attack vector.
         return CsrfProtectionResult.Allowed;
+    }
+
+    private static async ValueTask<CorsPolicy?> ResolveCorsPolicyAsync(HttpContext context)
+    {
+        var corsMetadata = context.GetEndpoint()?.Metadata.GetMetadata<ICorsMetadata>();
+
+        // [DisableCors] on the endpoint → no CORS-derived trust applies. Fall through to Sec-Fetch logic.
+        if (corsMetadata is IDisableCorsAttribute)
+        {
+            return null;
+        }
+
+        // Inline policy attached to the endpoint (rare, but supported by the CORS metadata model).
+        if (corsMetadata is ICorsPolicyMetadata inlinePolicyMetadata)
+        {
+            return inlinePolicyMetadata.Policy;
+        }
+
+        // [EnableCors("name")] selects a named policy; otherwise null → ICorsPolicyProvider falls back
+        // to the default policy registered via AddCors(o => o.AddDefaultPolicy(...)).
+        var policyName = (corsMetadata as IEnableCorsAttribute)?.PolicyName;
+        var provider = context.RequestServices.GetService<ICorsPolicyProvider>();
+        if (provider is null)
+        {
+            return null;
+        }
+
+        return await provider.GetPolicyAsync(context, policyName);
     }
 
     private static string? GetRequestOrigin(HttpRequest request)
@@ -109,42 +120,6 @@ internal sealed class DefaultCrossOriginProtection : ICsrfProtection
         }
 
         return $"{scheme}://{host.Host}:{port}";
-    }
-
-    internal static bool TryNormalizeOrigin(string origin, [NotNullWhen(true)] out string? normalized)
-    {
-        normalized = null;
-
-        if (string.IsNullOrWhiteSpace(origin))
-        {
-            return false;
-        }
-
-        if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri))
-        {
-            return false;
-        }
-
-        // Origins must not have a path (beyond "/"), query, or fragment.
-        if (uri.PathAndQuery != "/" || !string.IsNullOrEmpty(uri.Fragment))
-        {
-            return false;
-        }
-
-        var scheme = uri.Scheme;
-        var host = uri.Host;
-        var port = uri.Port;
-
-        if (IsDefaultPort(scheme, port))
-        {
-            normalized = $"{scheme}://{host}";
-        }
-        else
-        {
-            normalized = $"{scheme}://{host}:{port}";
-        }
-
-        return true;
     }
 
     private static bool IsDefaultPort(string scheme, int? port)
