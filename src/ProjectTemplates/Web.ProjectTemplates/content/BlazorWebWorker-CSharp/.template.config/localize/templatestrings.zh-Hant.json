@@ -1,9 +1,9 @@
 ﻿{
   "author": "Microsoft",
-  "name": "Blazor Web Worker",
-  "description": "A project for creating a class library that runs .NET code on a web worker from a Blazor WebAssembly or Blazor Web app.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+  "name": "Blazor 背景工作角色",
+  "description": "用於建立類別庫的專案，其可在 Blazor WebAssembly 或 Blazor Web 應用程式的背景工作角色上執行 .NET 程式碼。",
+  "symbols/Framework/description": "專案的目標架構。",
+  "symbols/skipRestore/description": "如果指定，則會在建立時跳過專案的自動還原。",
+  "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
+  "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'"
 }
