@@ -548,7 +548,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Gets the host domain name used by the prefix.
         /// </summary>
-        public string Host { get; } = string.Empty;
+        public string Host => throw new PlatformNotSupportedException();
 
         /// <summary>
         /// Gets a string representation of the port used by the prefix.
