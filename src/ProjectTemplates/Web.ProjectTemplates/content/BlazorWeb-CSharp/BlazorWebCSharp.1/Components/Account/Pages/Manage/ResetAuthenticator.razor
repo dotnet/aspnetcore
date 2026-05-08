@@ -10,7 +10,7 @@
 
 <PageTitle>Reset authenticator key</PageTitle>
 
-<StatusMessage />
+<StatusMessage Message="@message" />
 <h3>Reset authenticator key</h3>
 <div class="alert alert-warning" role="alert">
     <p>
@@ -30,15 +30,26 @@
 </div>
 
 @code {
+    private string? message;
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
+    protected override void OnInitialized()
+    {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
+    }
 
     private async Task OnSubmitAsync()
     {
         var user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -49,9 +60,7 @@
 
         await SignInManager.RefreshSignInAsync(user);
 
-        RedirectManager.RedirectToWithStatus(
-            "Account/Manage/EnableAuthenticator",
-            "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.",
-            HttpContext);
+        IdentityStatusMessage = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.";
+        RedirectManager.RedirectTo("Account/Manage/EnableAuthenticator");
     }
 }

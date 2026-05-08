@@ -102,4 +102,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UseInvokeVoidAsyncForObjectReturn_Description)));
+
+    public static readonly DiagnosticDescriptor VirtualizeItemsProviderRequiresItemComparer = new(
+        "BL0011",
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
 }

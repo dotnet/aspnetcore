@@ -1,3 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Server.Circuits.Circuit.RequestCircuitPauseAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<bool>
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>?
 Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.set -> void
