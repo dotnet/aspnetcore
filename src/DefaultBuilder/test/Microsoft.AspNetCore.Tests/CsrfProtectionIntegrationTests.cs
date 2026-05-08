@@ -360,9 +360,51 @@ public class CsrfProtectionIntegrationTests
         return app;
     }
 
+    [Fact]
+    public async Task CsrfProtection_CustomImplementation_IsResolvedFromDIAndInvokedPerRequest()
+    {
+        // Verifies that a custom ICsrfProtection registered before Build() is the exact instance
+        // resolved by the auto-injected middleware, and that its ValidateAsync is invoked once per request.
+        var counting = new CountingCsrfProtection();
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(counting);
+        using var app = builder.Build();
+
+        // Sanity: the instance the container returns is the one we registered.
+        Assert.Same(counting, app.Services.GetRequiredService<ICsrfProtection>());
+
+        app.MapPost("/protected", () => "ok");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        for (var i = 0; i < 3; i++)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+            request.Headers.Add("Sec-Fetch-Site", "cross-site");
+            var response = await client.SendAsync(request);
+            // Custom implementation always allows, so cross-site POST gets through.
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        Assert.Equal(3, counting.CallCount);
+    }
+
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
             => new(CsrfProtectionResult.Allowed);
+    }
+
+    private sealed class CountingCsrfProtection : ICsrfProtection
+    {
+        public int CallCount { get; private set; }
+
+        public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
+        {
+            CallCount++;
+            return new ValueTask<CsrfProtectionResult>(CsrfProtectionResult.Allowed);
+        }
     }
 }
