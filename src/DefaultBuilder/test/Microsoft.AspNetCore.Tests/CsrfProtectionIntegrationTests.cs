@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Tests;
 
@@ -391,6 +393,33 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(3, counting.CallCount);
     }
 
+    [Fact]
+    public async Task CsrfProtection_DeniedRequest_LogsDebug()
+    {
+        var captureProvider = new CaptureLoggerProvider("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", LogLevel.Debug);
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Logging.ClearProviders().AddProvider(captureProvider).SetMinimumLevel(LogLevel.Debug);
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://evil.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+
+        var entry = Assert.Single(captureProvider.Entries);
+        Assert.Equal(LogLevel.Debug, entry.Level);
+        Assert.Contains("denied request POST /protected", entry.Message);
+        Assert.Contains("https://evil.example.com", entry.Message);
+    }
+
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
@@ -405,6 +434,58 @@ public class CsrfProtectionIntegrationTests
         {
             CallCount++;
             return new ValueTask<CsrfProtectionResult>(CsrfProtectionResult.Allowed);
+        }
+    }
+
+    private sealed class CaptureLoggerProvider : ILoggerProvider
+    {
+        private readonly string _categoryFilter;
+        private readonly LogLevel _minLevel;
+
+        public List<LogEntry> Entries { get; } = new();
+
+        public CaptureLoggerProvider(string categoryFilter, LogLevel minLevel)
+        {
+            _categoryFilter = categoryFilter;
+            _minLevel = minLevel;
+        }
+
+        public ILogger CreateLogger(string categoryName)
+            => string.Equals(categoryName, _categoryFilter, StringComparison.Ordinal)
+                ? new CaptureLogger(this, _minLevel)
+                : NullLogger.Instance;
+
+        public void Dispose() { }
+
+        internal sealed record LogEntry(LogLevel Level, EventId EventId, string Message);
+
+        private sealed class CaptureLogger : ILogger
+        {
+            private readonly CaptureLoggerProvider _provider;
+            private readonly LogLevel _minLevel;
+
+            public CaptureLogger(CaptureLoggerProvider provider, LogLevel minLevel)
+            {
+                _provider = provider;
+                _minLevel = minLevel;
+            }
+
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+
+            public bool IsEnabled(LogLevel logLevel) => logLevel >= _minLevel;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+            {
+                if (!IsEnabled(logLevel))
+                {
+                    return;
+                }
+
+                lock (_provider.Entries)
+                {
+                    _provider.Entries.Add(new LogEntry(logLevel, eventId, formatter(state, exception)));
+                }
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
@@ -10,15 +11,20 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// Skips validation when the matched endpoint opted out via <c>DisableAntiforgery()</c>
 /// (i.e. carries <see cref="IAntiforgeryMetadata"/> with <see cref="IAntiforgeryMetadata.RequiresValidation"/> = <see langword="false"/>).
 /// </summary>
-internal sealed class CsrfProtectionMiddleware
+internal sealed partial class CsrfProtectionMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ICsrfProtection _csrfProtection;
+    private readonly ILogger<CsrfProtectionMiddleware> _logger;
 
-    public CsrfProtectionMiddleware(RequestDelegate next, ICsrfProtection csrfProtection)
+    public CsrfProtectionMiddleware(
+        RequestDelegate next,
+        ICsrfProtection csrfProtection,
+        ILogger<CsrfProtectionMiddleware> logger)
     {
         _next = next;
         _csrfProtection = csrfProtection;
+        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -32,10 +38,16 @@ internal sealed class CsrfProtectionMiddleware
 
         if (await _csrfProtection.ValidateAsync(context) == CsrfProtectionResult.Denied)
         {
+            RequestDenied(_logger, context.Request.Method, context.Request.Path, context.Request.Headers.Origin.ToString());
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
 
         await _next(context);
     }
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Debug,
+        Message = "Cross-origin CSRF protection denied request {Method} {Path} from origin '{Origin}'.")]
+    private static partial void RequestDenied(ILogger logger, string method, PathString path, string origin);
 }
+
