@@ -3719,6 +3719,7 @@
         "wwwroot/index.html",
         "wwwroot/css/app.css"
       ]
+    }
   },
   "mcpserver": {
     "Local": {
