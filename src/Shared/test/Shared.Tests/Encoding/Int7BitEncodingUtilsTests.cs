@@ -109,6 +109,22 @@ public class Int7BitEncodingUtilsTests
     }
 
     [Fact]
+    public void Read7BitEncodedInt_WithFifthByteOverflow_ThrowsFormatException()
+    {
+        // Regression test: the 5th byte must fit within 4 bits (32 - 28 = 4 bits remaining).
+        // A 5th byte value > 0x0F (0b_1111) would overflow a 32-bit integer.
+        // The correct behavior (matching BinaryReader/FormatterBinaryReader) is to throw,
+        // and the previous implementation silently misdecoded the value.
+        Assert.Throws<FormatException>(() =>
+        {
+            // First 4 bytes use continuation bits, 5th byte = 0x10 (> 0x0F, overflows 32 bits)
+            ReadOnlySpan<byte> source = [0x80, 0x80, 0x80, 0x80, 0x10];
+
+            return source.Read7BitEncodedInt(out _);
+        });
+    }
+
+    [Fact]
     public void Read7BitEncodedInt_WithExtraDataAfterValue_ConsumesOnlyNeededBytes()
     {
         // Value 127 followed by extra bytes

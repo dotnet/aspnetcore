@@ -148,7 +148,11 @@ function InitializeDotNetCli {
   if [[ $global_json_has_runtimes == false && -n "${DOTNET_INSTALL_DIR:-}" && -d "$DOTNET_INSTALL_DIR/sdk/$dotnet_sdk_version" ]]; then
     dotnet_root="$DOTNET_INSTALL_DIR"
   else
-    dotnet_root="${repo_root}.dotnet"
+    if [[ -n "${DOTNET_GLOBAL_INSTALL_DIR:-}" ]]; then
+      dotnet_root="$DOTNET_GLOBAL_INSTALL_DIR"
+    else
+      dotnet_root="${repo_root}.dotnet"
+    fi
 
     export DOTNET_INSTALL_DIR="$dotnet_root"
 
@@ -427,8 +431,19 @@ function InitializeToolset {
   fi
 
   local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_GetNuGetPackageCachePath")
-  if [[ -n "${NUGET_CONFIG:-}" ]]; then
-    download_args+=("--configfile" "$NUGET_CONFIG")
+  local nuget_config="${NUGET_CONFIG:-}"
+  if [[ -z "$nuget_config" ]]; then
+    # Search for any variation of nuget.config in the RepoRoot
+    local found_config
+    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname "nuget.config" -print -quit)
+
+    if [[ -n "$found_config" ]]; then
+      nuget_config="$found_config"
+    fi
+  fi
+
+  if [[ -n "$nuget_config" ]]; then
+    download_args+=("--configfile" "$nuget_config")
   fi
   DotNet "${download_args[@]}"
 
