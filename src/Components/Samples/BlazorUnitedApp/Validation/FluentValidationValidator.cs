@@ -61,11 +61,9 @@ public sealed class FluentValidationValidator<TModel> : ComponentBase, IDisposab
         var messages = _messages!;
         var validator = _validator!;
 
-        // Clear stale messages up-front so a thrown handler does not leave stale per-field
-        // errors around. The form-level fault flag is exposed separately via IsValidationFaulted().
-        messages.Clear();
-
         var result = await validator.ValidateAsync((TModel)editContext.Model, args.CancellationToken);
+
+        messages.Clear();
 
         foreach (var error in result.Errors)
         {
