@@ -390,25 +390,25 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>d64191f29ec9042e2696d8b7d8326c4bd10ba268</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.6.0-preview.1.26215.2">
+    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.7.0-preview.1.26257.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>4a53db27b7b38fbdedd8f0bf530f2b140a436a2b</Sha>
+      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="10.6.0-preview.1.26215.2">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="10.7.0-preview.1.26257.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>4a53db27b7b38fbdedd8f0bf530f2b140a436a2b</Sha>
+      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="10.6.0-preview.1.26215.2">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="10.7.0-preview.1.26257.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>4a53db27b7b38fbdedd8f0bf530f2b140a436a2b</Sha>
+      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ServiceDiscovery" Version="10.6.0-preview.1.26215.2">
+    <Dependency Name="Microsoft.Extensions.ServiceDiscovery" Version="10.7.0-preview.1.26257.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>4a53db27b7b38fbdedd8f0bf530f2b140a436a2b</Sha>
+      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="10.6.0-preview.1.26215.2">
+    <Dependency Name="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="10.7.0-preview.1.26257.2">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>4a53db27b7b38fbdedd8f0bf530f2b140a436a2b</Sha>
+      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
     </Dependency>
     <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.26180.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
