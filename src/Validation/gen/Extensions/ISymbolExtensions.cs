@@ -10,28 +10,64 @@ namespace Microsoft.Extensions.Validation;
 
 internal static class ISymbolExtensions
 {
-    public static string GetDisplayName(this ISymbol property, INamedTypeSymbol displayAttribute)
+    /// <summary>
+    /// Inspects the symbol's <c>[Display]</c> and <c>[DisplayName]</c> attributes and returns
+    /// (a) the literal display name to bake into the generated metadata, and
+    /// (b) whether <c>[Display]</c> uses <see cref="System.ComponentModel.DataAnnotations.DisplayAttribute.ResourceType"/>
+    /// (in which case the generator must emit a runtime accessor for the attribute instead of a literal).
+    /// </summary>
+    public static (string? LiteralDisplayName, bool HasResourceDisplayAttribute) GetDisplayInfo(
+        this ISymbol symbol,
+        INamedTypeSymbol displayAttributeSymbol,
+        INamedTypeSymbol displayNameAttributeSymbol)
     {
-        var displayNameAttribute = property.GetAttributes()
-            .FirstOrDefault(attribute =>
-                attribute.AttributeClass is { } attributeClass &&
-                SymbolEqualityComparer.Default.Equals(attributeClass, displayAttribute));
+        var displayAttr = symbol.GetAttributes().FirstOrDefault(a =>
+            a.AttributeClass is { } ac && SymbolEqualityComparer.Default.Equals(ac, displayAttributeSymbol));
 
-        if (displayNameAttribute is not null)
+        if (displayAttr is not null)
         {
-            if (!displayNameAttribute.NamedArguments.IsDefaultOrEmpty)
+            string? name = null;
+            bool hasResourceType = false;
+
+            foreach (var arg in displayAttr.NamedArguments)
             {
-                foreach (var namedArgument in displayNameAttribute.NamedArguments)
+                if (string.Equals(arg.Key, "Name", StringComparison.Ordinal))
                 {
-                    if (string.Equals(namedArgument.Key, "Name", StringComparison.Ordinal))
-                    {
-                        return namedArgument.Value.Value?.ToString() ?? property.Name;
-                    }
+                    name = arg.Value.Value as string;
                 }
+                else if (string.Equals(arg.Key, "ResourceType", StringComparison.Ordinal))
+                {
+                    hasResourceType = arg.Value.Value is INamedTypeSymbol;
+                }
+            }
+
+            // ResourceType is only meaningful when Name is also set; DisplayAttribute.GetName()
+            // returns null otherwise.
+            if (hasResourceType && name is not null)
+            {
+                // Defer to DisplayAttribute.GetName() at runtime; do not bake the literal Name.
+                return (LiteralDisplayName: null, HasResourceDisplayAttribute: true);
+            }
+
+            // [Display(Name = "X")] without ResourceType → bake literal.
+            if (name is not null)
+            {
+                return (LiteralDisplayName: name, HasResourceDisplayAttribute: false);
             }
         }
 
-        return property.Name;
+        var displayNameAttr = symbol.GetAttributes().FirstOrDefault(a =>
+            a.AttributeClass is { } ac && SymbolEqualityComparer.Default.Equals(ac, displayNameAttributeSymbol));
+
+        if (displayNameAttr is not null
+            && !displayNameAttr.ConstructorArguments.IsDefaultOrEmpty
+            && displayNameAttr.ConstructorArguments[0].Value is string dn)
+        {
+            // [DisplayName("X")] → bake literal. (No ResourceType to consider.)
+            return (LiteralDisplayName: dn, HasResourceDisplayAttribute: false);
+        }
+
+        return (LiteralDisplayName: null, HasResourceDisplayAttribute: false);
     }
 
     public static bool IsEqualityContract(this IPropertySymbol prop, WellKnownTypes wellKnownTypes) =>

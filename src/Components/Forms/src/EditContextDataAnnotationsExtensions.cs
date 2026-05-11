@@ -88,6 +88,8 @@ public static partial class EditContextDataAnnotationsExtensions
                 };
                 var results = new List<ValidationResult>();
 
+                // TODO: Add path for per-field validation via ValidatablePropertyInfo to support localization
+
                 Validator.TryValidateProperty(propertyValue, validationContext, results);
                 _messages.Clear(fieldIdentifier);
                 foreach (var result in CollectionsMarshal.AsSpan(results))

@@ -165,6 +165,8 @@
       "src\\Validation\\src\\Microsoft.Extensions.Validation.csproj",
       "src\\Validation\\test\\Microsoft.Extensions.Validation.GeneratorTests\\Microsoft.Extensions.Validation.GeneratorTests.csproj",
       "src\\Validation\\test\\Microsoft.Extensions.Validation.Tests\\Microsoft.Extensions.Validation.Tests.csproj",
+      "src\\Validation\\Localization\\src\\Microsoft.Extensions.Validation.Localization.csproj",
+      "src\\Validation\\Localization\\test\\Microsoft.Extensions.Validation.Localization.Tests.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }

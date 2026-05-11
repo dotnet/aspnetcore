@@ -17,44 +17,69 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
     /// </summary>
+    /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
+    /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
+    /// <param name="name">The property name.</param>
+    /// <param name="displayName">The literal display name for the property (sourced from
+    /// <see cref="DisplayAttribute.Name"/> when no <see cref="DisplayAttribute.ResourceType"/> is set,
+    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>).</param>
+    /// <param name="displayResourceAccessor">An accessor that resolves the localized display name
+    /// from a static resource property when the property is decorated with
+    /// <c>[Display(Name = ..., ResourceType = ...)]</c>; <see langword="null"/> otherwise.</param>
     protected ValidatablePropertyInfo(
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
         Type propertyType,
         string name,
-        string displayName)
+        string? displayName,
+        Func<string?>? displayResourceAccessor = null)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
+        DisplayResourceAccessor = displayResourceAccessor;
     }
 
     /// <summary>
-    /// Gets the member type.
+    /// Gets the type that declares the property.
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     internal Type DeclaringType { get; }
 
     /// <summary>
-    /// Gets the member type.
+    /// Gets the property type.
     /// </summary>
     internal Type PropertyType { get; }
 
     /// <summary>
-    /// Gets the member name.
+    /// Gets the property name.
     /// </summary>
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute"/>.
+    /// Gets the literal display name for the property, sourced from
+    /// <see cref="DisplayAttribute.Name"/> (when no <see cref="DisplayAttribute.ResourceType"/> is set)
+    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>.
     /// </summary>
-    internal string DisplayName { get; }
+    /// <remarks>
+    /// When <see cref="DisplayAttribute.ResourceType"/> is set, the resolved display name is
+    /// produced by invoking <see cref="DisplayResourceAccessor"/> instead.
+    /// </remarks>
+    internal string? DisplayName { get; }
 
     /// <summary>
-    /// Gets the validation attributes for this member.
+    /// Gets the accessor that resolves the localized display name from a static resource property
+    /// (e.g. <c>Resources.MyProperty</c>) when the property is decorated with
+    /// <c>[Display(Name = ..., ResourceType = ...)]</c>. Returns <see langword="null"/> for
+    /// properties without resource-based display names.
     /// </summary>
-    /// <returns>An array of validation attributes to apply to this member.</returns>
+    internal Func<string?>? DisplayResourceAccessor { get; }
+
+    /// <summary>
+    /// Gets the validation attributes for this property.
+    /// </summary>
+    /// <returns>An array of validation attributes to apply to this property.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <inheritdoc />
@@ -75,7 +100,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var localizer = context.ValidationOptions.Localizer;
+        var displayName = LocalizationHelper.ResolveDisplayName(
+            memberName: Name,
+            DisplayName,
+            DisplayResourceAccessor,
+            DeclaringType,
+            localizer
+        );
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first
@@ -83,9 +117,22 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                context.AddValidationError(Name, context.CurrentValidationPath, [result.ErrorMessage], value);
+                var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                    memberName: Name,
+                    displayName,
+                    declaringType: DeclaringType,
+                    attribute: _requiredAttribute,
+                    result,
+                    localizer
+                );
+
+                if (errorMessage is not null)
+                {
+                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], value);
+                }
+
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
@@ -158,10 +205,22 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 try
                 {
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                    if (result is not null && result != ValidationResult.Success)
                     {
-                        var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
+                        var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                            memberName: Name,
+                            displayName,
+                            declaringType: DeclaringType,
+                            attribute,
+                            result,
+                            localizer
+                        );
+
+                        if (errorMessage is not null)
+                        {
+                            var key = errorPrefix.TrimStart('.');
+                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
+                        }
                     }
                 }
                 catch (Exception ex)

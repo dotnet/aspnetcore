@@ -20,15 +20,22 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The display name for the parameter.</param>
+    /// <param name="displayName">The literal display name for the parameter (sourced from
+    /// <see cref="DisplayAttribute.Name"/> when no <see cref="DisplayAttribute.ResourceType"/> is set,
+    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>).</param>
+    /// <param name="displayResourceAccessor">An accessor that resolves the localized display name
+    /// from a static resource property when the parameter is decorated with
+    /// <c>[Display(Name = ..., ResourceType = ...)]</c>; <see langword="null"/> otherwise.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName)
+        string? displayName,
+        Func<string?>? displayResourceAccessor = null)
     {
         ParameterType = parameterType;
         Name = name;
         DisplayName = displayName;
+        DisplayResourceAccessor = displayResourceAccessor;
     }
 
     /// <summary>
@@ -42,9 +49,21 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the parameter.
+    /// Gets the literal display name for the parameter.
     /// </summary>
-    internal string DisplayName { get; }
+    /// <remarks>
+    /// When <see cref="DisplayAttribute.ResourceType"/> is set, the resolved display name is
+    /// produced by invoking <see cref="DisplayResourceAccessor"/> instead.
+    /// </remarks>
+    internal string? DisplayName { get; }
+
+    /// <summary>
+    /// Gets the accessor that resolves the localized display name from a static resource property
+    /// (e.g. <c>Resources.MyParam</c>) when the parameter is decorated with
+    /// <c>[Display(Name = ..., ResourceType = ...)]</c>. Returns <see langword="null"/> for
+    /// parameters without resource-based display names.
+    /// </summary>
+    internal Func<string?>? DisplayResourceAccessor { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -65,7 +84,16 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var localizer = context.ValidationOptions.Localizer;
+        var displayName = LocalizationHelper.ResolveDisplayName(
+            memberName: Name,
+            DisplayName,
+            DisplayResourceAccessor,
+            declaringType: null,
+            localizer
+        );
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();
@@ -74,10 +102,23 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                context.AddValidationError(Name, key, [result.ErrorMessage], null);
+                var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                    memberName: Name,
+                    displayName,
+                    declaringType: null,
+                    attribute: _requiredAttribute,
+                    result,
+                    localizer
+                );
+
+                if (errorMessage is not null)
+                {
+                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                    context.AddValidationError(Name, key, [errorMessage], null);
+                }
+
                 return;
             }
         }
@@ -89,10 +130,22 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             try
             {
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                if (result is not null && result != ValidationResult.Success)
                 {
-                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    context.AddOrExtendValidationErrors(Name, key, [result.ErrorMessage], null);
+                    var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                        memberName: Name,
+                        displayName,
+                        declaringType: null,
+                        attribute,
+                        result,
+                        localizer
+                    );
+
+                    if (errorMessage is not null)
+                    {
+                        var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                        context.AddOrExtendValidationErrors(Name, key, [errorMessage], null);
+                    }
                 }
             }
             catch (Exception ex)
