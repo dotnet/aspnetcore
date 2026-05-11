@@ -6,9 +6,9 @@
 /.azuredevops/                                                                    @dotnet/aspnet-build @wtgodbe
 /.config/                                                                         @dotnet/aspnet-build @wtgodbe
 /.github/                                                                         @dotnet/aspnet-build @wtgodbe
-/.github/*_TEMPLATE/                                                              @dotnet/aspnet-build @wtgodbe @mkArtakMSFT
+/.github/*_TEMPLATE/                                                              @dotnet/aspnet-build @wtgodbe @sammonort
 /.github/workflows/                                                               @dotnet/aspnet-build @wtgodbe
-/docs/                                                                            @mkArtakMSFT
+/docs/                                                                            @sammonort
 /eng/                                                                             @dotnet/aspnet-build @wtgodbe
 /eng/Versions.props                                                               @dotnet/aspnet-build @wtgodbe
 /eng/Version.Details.xml                                                          @dotnet/aspnet-build @wtgodbe
