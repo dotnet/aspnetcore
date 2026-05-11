@@ -63,6 +63,20 @@
       }
     },
     {
+      "label": "build-blazorunited",
+      "type": "shell",
+      "command": "source activate.sh && dotnet build src/Components/Samples/BlazorUnitedApp/BlazorUnitedApp.csproj",
+      "windows": {
+        "command": ". .\\activate.ps1; dotnet build src\\Components\\Samples\\BlazorUnitedApp\\BlazorUnitedApp.csproj"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "Clean artifacts",
       "type": "shell",
       "command": "./clean.sh",

@@ -2,6 +2,27 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch BlazorUnitedApp",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-blazorunited",
+      "program": "${workspaceFolder}/.dotnet/dotnet",
+      "args": [
+        "exec",
+        "${workspaceFolder}/artifacts/bin/BlazorUnitedApp/Debug/net11.0/BlazorUnitedApp.dll"
+      ],
+      "cwd": "${workspaceFolder}/src/Components/Samples/BlazorUnitedApp",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ROOT": "${workspaceFolder}/.dotnet"
+      }
+    },
+    {
       "type": "PowerShell",
       "request": "launch",
       "name": "ps: Interactive Session",
