@@ -102,7 +102,7 @@ Microsoft.AspNetCore.Components.ElementReference.Context.get -> Microsoft.AspNet
 Microsoft.AspNetCore.Components.ElementReference.ElementReference() -> void
 Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id, Microsoft.AspNetCore.Components.ElementReferenceContext? context) -> void
 Microsoft.AspNetCore.Components.ElementReference.ElementReference(string! id) -> void
-Microsoft.AspNetCore.Components.ElementReference.Id.get -> string!
+Microsoft.AspNetCore.Components.ElementReference.Id.get -> string?
 Microsoft.AspNetCore.Components.ElementReferenceContext
 Microsoft.AspNetCore.Components.ElementReferenceContext.ElementReferenceContext() -> void
 Microsoft.AspNetCore.Components.ErrorBoundaryBase
