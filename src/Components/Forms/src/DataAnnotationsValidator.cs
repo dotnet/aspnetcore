@@ -19,8 +19,6 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
     [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
 
-    [Inject] private IClientValidationService? ClientValidationService { get; set; }
-
     /// <summary>
     /// Gets or sets whether client-side validation attributes (data-val-*) should be emitted
     /// on input components within this form. Default is <c>true</c>.
@@ -42,9 +40,12 @@ public class DataAnnotationsValidator : ComponentBase, IDisposable
 
         // Enable client-side validation only in static SSR context.
         // AssignedRenderMode is null when rendering statically (no interactive mode assigned).
-        if (EnableClientValidation && ClientValidationService is not null && AssignedRenderMode is null)
+        if (EnableClientValidation && AssignedRenderMode is null)
         {
-            CurrentEditContext.Properties[typeof(IClientValidationService)] = ClientValidationService;
+            if (ServiceProvider.GetService(typeof(IClientValidationService)) is { } service)
+            {
+                CurrentEditContext.Properties[typeof(IClientValidationService)] = service;
+            }
         }
     }
 

@@ -64,11 +64,11 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
 
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
 
-        // Pass client validation attributes to child InputRadio components.
+        // Pass client validation attributes to child InputRadio components via shared context.
         // Unlike MVC (which uses FormContext to emit data-val-* on only the first radio button),
-        // Blazor's component model renders children independently without render-order tracking.
-        // Instead, we pass validation attributes to ALL children via cascading context, and the
-        // JS validation library deduplicates at scan time (tracking one radio per name group).
+        // Blazor's component model renders children independently. We achieve the same first-only
+        // behavior by mutating the shared context: the first InputRadio reads the attributes,
+        // renders them, and clears the property so subsequent radios in the group get nothing.
         _context.ClientValidationAttributes = ExtractClientValidationAttributes();
     }
 

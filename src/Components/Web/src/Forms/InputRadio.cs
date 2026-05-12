@@ -62,8 +62,14 @@ public class InputRadio<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTyp
     {
         Debug.Assert(Context != null);
 
+        // Render client validation attributes (data-val-*) only on the first radio in the group.
+        // Subsequent radios get null because we clear the context's attributes after consuming them.
+        // The JS validation library only needs to discover the rules once per radio group.
+        var clientValidationAttributes = Context.ClientValidationAttributes;
+        Context.ClientValidationAttributes = null;
+
         builder.OpenElement(0, "input");
-        builder.AddMultipleAttributes(1, Context.ClientValidationAttributes);
+        builder.AddMultipleAttributes(1, clientValidationAttributes);
         builder.AddMultipleAttributes(2, AdditionalAttributes);
         builder.AddAttributeIfNotNullOrEmpty(3, "class", AttributeUtilities.CombineClassNames(AdditionalAttributes, Context.FieldClass));
         builder.AddAttribute(4, "type", "radio");

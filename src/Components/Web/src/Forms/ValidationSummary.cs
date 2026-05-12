@@ -67,10 +67,8 @@ public class ValidationSummary : ComponentBase, IDisposable
             CurrentEditContext.GetValidationMessages() :
             CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
 
-        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
-            && serviceObj is IClientValidationService;
-
-        if (hasClientValidation)
+        if (CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
+            && serviceObj is IClientValidationService)
         {
             RenderForClientValidation(builder, validationMessages);
             return;

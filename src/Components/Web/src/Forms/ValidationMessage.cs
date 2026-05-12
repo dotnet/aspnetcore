@@ -71,10 +71,8 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var hasClientValidation = CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
-            && serviceObj is IClientValidationService;
-
-        if (hasClientValidation)
+        if (CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
+            && serviceObj is IClientValidationService)
         {
             RenderForClientValidation(builder);
             return;
