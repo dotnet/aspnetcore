@@ -42,4 +42,5 @@ internal sealed class CallHandlerDescriptorInfo
     public Dictionary<string, RouteParameter> RouteParameterDescriptors { get; }
     public JsonTranscodingRouteAdapter RouteAdapter { get; }
     public ConcurrentDictionary<string, List<FieldDescriptor>> PathDescriptorsCache { get; }
+    public HashSet<string> RouteParameterJsonPaths { get; }
 }
