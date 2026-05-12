@@ -8,7 +8,7 @@
 
 <PageTitle>Personal Data</PageTitle>
 
-<StatusMessage />
+<StatusMessage Message="@message" />
 <h3>Personal Data</h3>
 
 <div class="row">
@@ -28,15 +28,23 @@
 </div>
 
 @code {
+    private string? message;
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
-        var user  = await UserManager.GetUserAsync(HttpContext.User);
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
+
+        var user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
         }
     }
 }

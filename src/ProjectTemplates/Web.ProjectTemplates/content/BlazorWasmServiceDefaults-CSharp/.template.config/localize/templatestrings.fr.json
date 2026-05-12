@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Paramètres par défaut du service Blazor WebAssembly",
+  "description": "Modèle de projet pour créer une bibliothèque de valeurs par défaut de service pour les applications Blazor WebAssembly. Inclut OpenTelemetry, la découverte de services et la prise en charge de la résilience pour l’intégration Aspire.",
+  "symbols/Framework/description": "Infrastructure cible du projet.",
+  "symbols/hosted/description": "Configurez pour un scénario Blazor Web hébergé où la configuration provient du serveur via un commentaire DOM. Lorsque la valeur est false (par défaut), configurez pour un scénario autonome avec un point de terminaison de configuration et un initialiseur JS.",
+  "symbols/skipRestore/description": "Si spécifié, ignore la restauration automatique du projet lors de la création.",
+  "postActions/restore/description": "Restaurer les packages NuGet requis par ce projet.",
+  "postActions/restore/manualInstructions/default/text": "Exécuter 'dotnet restore'"
+}

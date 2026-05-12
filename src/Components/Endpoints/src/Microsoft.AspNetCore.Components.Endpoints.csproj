@@ -37,6 +37,8 @@
     <Compile Include="$(SharedSourceRoot)ChunkingCookieManager\**\*.cs" LinkBase="Internal" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentsActivityLinkStore.cs" LinkBase="Shared" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertyGetter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\Reflection\PropertySetter.cs" />
 
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
 

@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <!-- Use xUnit v3 instead of the Arcade SDK's auto-included xUnit v2 -->
+    <UsingToolXUnit>false</UsingToolXUnit>
+    <!-- Disable InternalTesting assembly attribute generation (uses xUnit v2 attributes) -->
+    <GenerateLoggingTestingAssemblyAttributes>false</GenerateLoggingTestingAssemblyAttributes>
+    <!-- xunit.v3 requires xunit.analyzers >= 1.27.0 but the repo pins 1.15.0 -->
+    <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
+    <!-- CA1310: String comparisons in test assertions don't need StringComparison -->
+    <NoWarn>$(NoWarn);NU1605;NU1903;CA1310</NoWarn>
+  </PropertyGroup>
+
+  <!-- Remove auto-added test infra references from CSharp.Common.props that conflict with xUnit v3 -->
+  <ItemGroup>
+    <Reference Remove="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Remove="Moq" />
+    <Compile Remove="$(SharedSourceRoot)test\SuccessfulTests.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="xunit.v3" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Testing" />
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+    <ProjectReference Include="..\gen\Microsoft.AspNetCore.Components.Testing.Generators.csproj" />
+    <ProjectReference Include="..\tasks\Microsoft.AspNetCore.Components.Testing.Tasks.csproj" />
+  </ItemGroup>
+
+  <!--
+    xUnit v3 projects are self-executing test runners (OutputType=Exe).
+    Arcade's RunTests target is not available because UsingToolXUnit=false
+    prevents importing XUnit.targets. Define a minimal RunTests target
+    so the build -test infrastructure can invoke tests.
+  -->
+  <Target Name="RunTests">
+    <Exec Command="dotnet exec &quot;$(TargetPath)&quot; $(TestRunnerAdditionalArguments)" />
+  </Target>
+
+</Project>

@@ -174,6 +174,10 @@ public class BrowserFixture : IAsyncLifetime
         opts.SetLoggingPreference(LogType.Browser, LogLevel.All);
         opts.SetLoggingPreference(LogType.Driver, LogLevel.All);
 
+        // Enable performance logging to capture network request/response details (status codes, MIME types).
+        // This data is extracted on assertion failure in WaitAssert to diagnose issues like empty MIME types.
+        opts.SetLoggingPreference("performance", LogLevel.All);
+
         // On Windows/Linux, we don't need to set opts.BinaryLocation
         // But for Travis Mac builds we do
         var binaryLocation = Environment.GetEnvironmentVariable("TEST_CHROME_BINARY");
