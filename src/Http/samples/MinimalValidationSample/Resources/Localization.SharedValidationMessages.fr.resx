@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Customer.Name" xml:space="preserve"><value>Nom du client</value></data>
+  <data name="Customer.Email" xml:space="preserve"><value>Adresse e-mail</value></data>
+  <data name="Customer.Age" xml:space="preserve"><value>Âge du client</value></data>
+  <data name="Order.Id" xml:space="preserve"><value>Numéro de commande</value></data>
+  <data name="Order.ProductName" xml:space="preserve"><value>Nom du produit</value></data>
+  <data name="Order.Quantity" xml:space="preserve"><value>Quantité</value></data>
+  <data name="Address.Street" xml:space="preserve"><value>Rue</value></data>
+  <data name="Address.City" xml:space="preserve"><value>Ville</value></data>
+  <data name="Address.Zip" xml:space="preserve"><value>Code postal</value></data>
+  <data name="Param.CustomerId" xml:space="preserve"><value>Identifiant client</value></data>
+  <data name="Param.ProductId" xml:space="preserve"><value>Identifiant produit</value></data>
+  <data name="Param.ProductName" xml:space="preserve"><value>Nom du produit</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>Le champ {0} est obligatoire.</value></data>
+  <data name="Validation.Range" xml:space="preserve"><value>Le champ {0} doit être compris entre {1} et {2}.</value></data>
+  <data name="Validation.Email" xml:space="preserve"><value>Le champ {0} doit être une adresse e-mail valide.</value></data>
+  <data name="Validation.StringLength" xml:space="preserve"><value>Le champ {0} doit comporter au plus {1} caractères.</value></data>
+  <data name="Validation.EvenNumber" xml:space="preserve"><value>Le champ {0} doit être un nombre pair.</value></data>
+  <data name="Validation.OrderConsistency" xml:space="preserve"><value>La quantité de la commande doit être supérieure à zéro.</value></data>
+</root>

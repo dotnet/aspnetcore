@@ -4,6 +4,15 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
+    <!--
+      Suppress the SDK's strongly-typed-resource source generator. We treat the resx
+      files as pure data accessed via IStringLocalizer<SharedValidationMessages>; the
+      generator would emit invalid C# for our dotted resource keys (e.g. "Customer.Name")
+      and culture-suffixed file names (e.g. ".fr.resx").
+    -->
+    <GenerateResxSource>false</GenerateResxSource>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.Extensions.Validation.Generated</InterceptorsNamespaces>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,6 +49,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <Reference Include="Microsoft.AspNetCore.Http.Results" />
     <Reference Include="Microsoft.AspNetCore.HttpOverrides" />
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <Reference Include="Microsoft.AspNetCore.Localization" />
@@ -81,7 +91,15 @@
     <Reference Include="Microsoft.Extensions.Features" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.Extensions.Validation" />
+    <Reference Include="Microsoft.Extensions.Validation.Localization" />
     <Reference Include="Microsoft.Net.Http.Headers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)/src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj"
+     OutputItemType="Analyzer"
+     ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

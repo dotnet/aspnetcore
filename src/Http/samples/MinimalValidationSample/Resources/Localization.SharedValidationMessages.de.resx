@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Customer.Name" xml:space="preserve"><value>Kundenname</value></data>
+  <data name="Customer.Email" xml:space="preserve"><value>E-Mail-Adresse</value></data>
+  <data name="Customer.Age" xml:space="preserve"><value>Kundenalter</value></data>
+  <data name="Order.Id" xml:space="preserve"><value>Bestellnummer</value></data>
+  <data name="Order.ProductName" xml:space="preserve"><value>Produktname</value></data>
+  <data name="Order.Quantity" xml:space="preserve"><value>Menge</value></data>
+  <data name="Address.Street" xml:space="preserve"><value>Straße</value></data>
+  <data name="Address.City" xml:space="preserve"><value>Stadt</value></data>
+  <data name="Address.Zip" xml:space="preserve"><value>Postleitzahl</value></data>
+  <data name="Param.CustomerId" xml:space="preserve"><value>Kunden-ID</value></data>
+  <data name="Param.ProductId" xml:space="preserve"><value>Produkt-ID</value></data>
+  <data name="Param.ProductName" xml:space="preserve"><value>Produktname</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>Das Feld {0} ist erforderlich.</value></data>
+  <data name="Validation.Range" xml:space="preserve"><value>Das Feld {0} muss zwischen {1} und {2} liegen.</value></data>
+  <data name="Validation.Email" xml:space="preserve"><value>Das Feld {0} muss eine gültige E-Mail-Adresse sein.</value></data>
+  <data name="Validation.StringLength" xml:space="preserve"><value>Das Feld {0} darf höchstens {1} Zeichen lang sein.</value></data>
+  <data name="Validation.EvenNumber" xml:space="preserve"><value>Das Feld {0} muss eine gerade Zahl sein.</value></data>
+  <data name="Validation.OrderConsistency" xml:space="preserve"><value>Die Bestellmenge muss größer als null sein.</value></data>
+</root>

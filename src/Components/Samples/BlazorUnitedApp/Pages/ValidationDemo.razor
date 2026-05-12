@@ -1,0 +1,90 @@
+@page "/validation-demo"
+@using System.Globalization
+@using BlazorUnitedApp.Localization
+@using BlazorUnitedApp.Models
+@using Microsoft.AspNetCore.Http.Extensions
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<SharedValidationMessages> L
+@inject NavigationManager Navigation
+
+<PageTitle>@L["Page.Title"]</PageTitle>
+
+<h1>@L["Page.Title"]</h1>
+<p>@L["Page.Intro"]</p>
+
+<p>
+    <strong>@L["Page.CultureLabel"]</strong> @CultureInfo.CurrentUICulture.Name
+</p>
+<form action="/_culture" method="post" class="mb-3">
+    <input type="hidden" name="redirectUri" value="@CurrentRelativeUri" />
+    <button class="btn btn-link p-0" name="culture" value="en" type="submit">English</button> |
+    <button class="btn btn-link p-0" name="culture" value="fr" type="submit">Français</button> |
+    <button class="btn btn-link p-0" name="culture" value="de" type="submit">Deutsch</button>
+</form>
+
+<EditForm Model="@Form" FormName="registration" method="post" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-2">
+        <label class="form-label">@L["Registration.FullName"]</label>
+        <InputText class="form-control" @bind-Value="Form!.FullName" />
+        <ValidationMessage For="@(() => Form.FullName)" />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">@L["Registration.Email"]</label>
+        <InputText class="form-control" @bind-Value="Form.Email" />
+        <ValidationMessage For="@(() => Form.Email)" />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">@L["Registration.Age"]</label>
+        <InputNumber class="form-control" @bind-Value="Form.Age" />
+        <ValidationMessage For="@(() => Form.Age)" />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">@L["Registration.Country"]</label>
+        <InputText class="form-control" @bind-Value="Form.Country" />
+        <ValidationMessage For="@(() => Form.Country)" />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">@L["Registration.Password"]</label>
+        <InputText type="password" class="form-control" @bind-Value="Form.Password" />
+        <ValidationMessage For="@(() => Form.Password)" />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">@L["Registration.ConfirmPassword"]</label>
+        <InputText type="password" class="form-control" @bind-Value="Form.ConfirmPassword" />
+        <ValidationMessage For="@(() => Form.ConfirmPassword)" />
+    </div>
+
+    <ValidationSummary />
+
+    <button type="submit" class="btn btn-primary">@L["Page.SubmitButton"]</button>
+</EditForm>
+
+@if (Submitted)
+{
+    <div class="alert alert-success mt-3" role="alert">@L["Page.SuccessMessage"]</div>
+}
+
+@code {
+    [SupplyParameterFromForm]
+    private RegistrationModel? Form { get; set; }
+
+    private bool Submitted;
+
+    private string CurrentRelativeUri =>
+        "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+
+    protected override void OnInitialized()
+    {
+        Form ??= new RegistrationModel();
+    }
+
+    private void HandleValidSubmit()
+    {
+        // Reached only when the validation pipeline (driven by <DataAnnotationsValidator />
+        // + the source-generated ValidatableType metadata + AddValidationLocalization)
+        // produces zero errors for the submitted Form.
+        Submitted = true;
+    }
+}

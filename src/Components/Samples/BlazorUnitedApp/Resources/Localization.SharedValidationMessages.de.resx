@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Registration.FullName" xml:space="preserve"><value>Vollständiger Name</value></data>
+  <data name="Registration.Email" xml:space="preserve"><value>E-Mail-Adresse</value></data>
+  <data name="Registration.Age" xml:space="preserve"><value>Alter</value></data>
+  <data name="Registration.Country" xml:space="preserve"><value>Ländercode</value></data>
+  <data name="Registration.Password" xml:space="preserve"><value>Passwort</value></data>
+  <data name="Registration.ConfirmPassword" xml:space="preserve"><value>Passwort bestätigen</value></data>
+  <data name="Validation.Required" xml:space="preserve"><value>Das Feld {0} ist erforderlich.</value></data>
+  <data name="Validation.Range" xml:space="preserve"><value>Das Feld {0} muss zwischen {1} und {2} liegen.</value></data>
+  <data name="Validation.Email" xml:space="preserve"><value>Das Feld {0} muss eine gültige E-Mail-Adresse sein.</value></data>
+  <data name="Validation.StringLengthRange" xml:space="preserve"><value>Das Feld {0} muss zwischen {2} und {1} Zeichen lang sein.</value></data>
+  <data name="Validation.RegExp" xml:space="preserve"><value>Das Feld {0} muss dem Muster {1} entsprechen.</value></data>
+  <data name="Validation.Compare" xml:space="preserve"><value>Das Feld {0} muss gleich {1} sein.</value></data>
+  <data name="Validation.PasswordPolicy" xml:space="preserve"><value>Das Feld {0} muss eine Ziffer und ein nicht-alphanumerisches Zeichen enthalten.</value></data>
+  <data name="Validation.RegistrationConsent" xml:space="preserve"><value>Die Kombination aus Alter und Land erfordert die Zustimmung der Eltern.</value></data>
+  <data name="Validation.RegistrationNameVsEmail" xml:space="preserve"><value>Der vollständige Name und der lokale Teil der E-Mail-Adresse müssen unterschiedlich sein.</value></data>
+  <data name="Page.Title" xml:space="preserve"><value>Demo zur Lokalisierung der Validierung</value></data>
+  <data name="Page.Intro" xml:space="preserve"><value>Wechseln Sie die aktive Kultur, um zu sehen, wie dasselbe Formular Validierungsfehler in der ausgewählten Sprache meldet. Feldbeschriftungen und Fehlermeldungsvorlagen werden beide über die AddValidationLocalization&lt;SharedValidationMessages&gt;()-Pipeline lokalisiert.</value></data>
+  <data name="Page.SubmitButton" xml:space="preserve"><value>Validieren</value></data>
+  <data name="Page.SuccessMessage" xml:space="preserve"><value>Alle Felder sind gültig.</value></data>
+  <data name="Page.CultureLabel" xml:space="preserve"><value>Aktive Kultur:</value></data>
+</root>
+

@@ -1,114 +1,237 @@
-### Valid customer ID request
-GET http://localhost:5021/customers/42
-Accept: application/json
+@host = http://localhost:5253
 
-### Invalid customer ID request (ID must be >= 1)
-GET http://localhost:5021/customers/0
-Accept: application/json
+# ============================================================================
+# Microsoft.Extensions.Validation localization demo
+# ============================================================================
+#
+# Run the sample with:
+#   $env:ASPNETCORE_URLS = "http://localhost:5253"
+#   dotnet run --no-launch-profile
+#
+# Each request is sent in three languages by setting ?culture= on the URL.
+# Accept-Language header works equivalently. The validation localizer reads
+# CultureInfo.CurrentUICulture, which RequestLocalizationMiddleware sets per
+# request from either the query string or the header (default provider chain).
+#
+# Languages exercised: en (fallback), fr, de.
+#
+# Each scenario is repeated three times (en/fr/de) so you can step through and
+# see the response shape switch language. The .NET Core HTTP client extension
+# numbers the requests sequentially; use the request indicator gutter to send
+# them individually.
+# ============================================================================
 
-### Valid customer POST request
-POST http://localhost:5021/customers
+
+### Landing page (instructions in plain text)
+GET {{host}}/
+
+
+# ============================================================================
+# Scenario 1 — Parameter validation
+# Demonstrates: parameter-level [Range] + [Display(Name="key")] localization.
+# Endpoint:     GET /customers/{id} where {id} must be in [1, int.MaxValue].
+# Resource keys: Param.CustomerId, Validation.Range
+# ============================================================================
+
+### 1.en — Parameter range error (English)
+GET {{host}}/customers/0?culture=en
+
+### 1.fr — Parameter range error (French)
+GET {{host}}/customers/0?culture=fr
+
+### 1.de — Parameter range error (German)
+GET {{host}}/customers/0?culture=de
+
+### 1.success — Valid request (no errors)
+GET {{host}}/customers/42?culture=en
+
+
+# ============================================================================
+# Scenario 2 — Property validation on a complex type
+# Demonstrates: [Required] / [EmailAddress] / [Range] / [StringLength] across
+#               root and nested types, all with [Display(Name="key")].
+# Endpoint:     POST /customers
+# Resource keys: Customer.*, Address.*, Validation.Required, Validation.Email,
+#                Validation.Range, Validation.StringLength
+# ============================================================================
+
+### 2.en — All-invalid payload (English)
+POST {{host}}/customers?culture=en
 Content-Type: application/json
 
 {
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "age": 30,
-  "homeAddress": {
-    "street": "123 Main St",
-    "city": "Anytown",
-    "zipCode": "12345"
-  }
-}
-
-### Invalid customer POST request (missing required fields)
-POST http://localhost:5021/customers
-Content-Type: application/json
-
-{
-  "age": 15
-}
-
-### Invalid customer POST request (invalid email format)
-POST http://localhost:5021/customers
-Content-Type: application/json
-
-{
-  "name": "John Doe",
+  "name": "",
   "email": "not-an-email",
-  "age": 30
-}
-
-### Invalid customer POST request (age out of range)
-POST http://localhost:5021/customers
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "age": 15
-}
-
-### Invalid customer POST request (invalid zipCode length)
-POST http://localhost:5021/customers
-Content-Type: application/json
-
-{
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "age": 30,
+  "age": 5,
   "homeAddress": {
-    "street": "123 Main St",
-    "city": "Anytown",
-    "zipCode": "1234567"
+    "street": "",
+    "city": "",
+    "zipCode": "toolongzip"
   }
 }
 
-### Valid order POST request
-POST http://localhost:5021/orders
+### 2.fr — All-invalid payload (French)
+POST {{host}}/customers?culture=fr
 Content-Type: application/json
 
 {
-  "orderId": 12345,
-  "productName": "Sample Product",
-  "quantity": 5
+  "name": "",
+  "email": "not-an-email",
+  "age": 5,
+  "homeAddress": {
+    "street": "",
+    "city": "",
+    "zipCode": "toolongzip"
+  }
 }
 
-### Invalid order POST request (missing required field)
-POST http://localhost:5021/orders
+### 2.de — All-invalid payload (German)
+POST {{host}}/customers?culture=de
 Content-Type: application/json
 
 {
-  "orderId": 12345,
-  "quantity": 5
+  "name": "",
+  "email": "not-an-email",
+  "age": 5,
+  "homeAddress": {
+    "street": "",
+    "city": "",
+    "zipCode": "toolongzip"
+  }
 }
 
-### Invalid order POST request (IValidatableObject validation failure)
-POST http://localhost:5021/orders
+### 2.success — Valid customer
+POST {{host}}/customers?culture=en
 Content-Type: application/json
 
 {
-  "orderId": 12345,
-  "productName": "Sample Product",
+  "name": "Anna Schmidt",
+  "email": "anna@example.com",
+  "age": 30,
+  "homeAddress": {
+    "street": "Hauptstr 1",
+    "city": "Berlin",
+    "zipCode": "10115"
+  }
+}
+
+
+# ============================================================================
+# Scenario 3a — Property validation on Order (blocks IValidatableObject)
+# Demonstrates: when property-level validation produces errors, the pipeline
+#               returns early and IValidatableObject.Validate() is NOT called.
+# Endpoint:     POST /orders
+# ============================================================================
+
+### 3a.en — Property errors stop the pipeline
+POST {{host}}/orders?culture=en
+Content-Type: application/json
+
+{
+  "orderId": 0,
+  "productName": "",
   "quantity": 0
 }
 
-### Invalid order POST request (negative orderId)
-POST http://localhost:5021/orders
+### 3a.fr — same, French
+POST {{host}}/orders?culture=fr
 Content-Type: application/json
 
 {
-  "orderId": -1,
-  "productName": "Sample Product",
-  "quantity": 5
+  "orderId": 0,
+  "productName": "",
+  "quantity": 0
 }
 
-### Valid product POST request (validation disabled)
-# This endpoint has DisableValidation() applied, so even invalid data should be accepted
-POST http://localhost:5021/products?productId=2&name=TestProduct
+### 3a.de — same, German
+POST {{host}}/orders?culture=de
 Content-Type: application/json
 
-### Invalid product POST request (validation disabled)
-# This has an odd productId and is missing name, but should still work because validation is disabled
-POST http://localhost:5021/products?productId=3
+{
+  "orderId": 0,
+  "productName": "",
+  "quantity": 0
+}
+
+
+# ============================================================================
+# Scenario 3b — IValidatableObject path (cross-property validation)
+# Demonstrates: properties pass; IValidatableObject.Validate() runs and
+#               localizes manually via IStringLocalizer<T> resolved from
+#               ValidationContext.GetService(). The validation pipeline does
+#               NOT auto-localize IValidatableObject results.
+# Endpoint:     POST /orders, quantity <= 0 with otherwise-valid props.
+# Resource key: Validation.OrderConsistency
+# ============================================================================
+
+### 3b.en — IValidatableObject error
+POST {{host}}/orders?culture=en
 Content-Type: application/json
+
+{
+  "orderId": 1,
+  "productName": "Widget",
+  "quantity": -5
+}
+
+### 3b.fr — IValidatableObject error (French)
+POST {{host}}/orders?culture=fr
+Content-Type: application/json
+
+{
+  "orderId": 1,
+  "productName": "Widget",
+  "quantity": -5
+}
+
+### 3b.de — IValidatableObject error (German)
+POST {{host}}/orders?culture=de
+Content-Type: application/json
+
+{
+  "orderId": 1,
+  "productName": "Widget",
+  "quantity": -5
+}
+
+
+# ============================================================================
+# Scenario 4 — Custom validation attribute on parameters
+# Demonstrates: custom [EvenNumber] attribute participates in localization
+#               via the standard ErrorMessage-as-key pipeline. No formatter
+#               registration needed because the template only uses {0}.
+# Endpoint:     POST /products?productId=<int>&name=<string>
+# Resource keys: Param.ProductId, Param.ProductName, Validation.EvenNumber,
+#                Validation.Required
+# ============================================================================
+
+### 4.en — Odd productId + missing name
+POST {{host}}/products?productId=3&name=&culture=en
+
+### 4.fr — Odd productId + missing name (French)
+POST {{host}}/products?productId=3&name=&culture=fr
+
+### 4.de — Odd productId + missing name (German)
+POST {{host}}/products?productId=3&name=&culture=de
+
+### 4.success — Valid product
+POST {{host}}/products?productId=2&name=Widget&culture=en
+
+
+# ============================================================================
+# Bonus — Accept-Language header drives the culture instead of ?culture=
+# RequestLocalizationMiddleware honours both providers; the query string
+# wins if both are present.
+# ============================================================================
+
+### Accept-Language: fr (no query string)
+GET {{host}}/customers/0
+Accept-Language: fr
+
+### Accept-Language: de (no query string)
+GET {{host}}/customers/0
+Accept-Language: de
+
+### Accept-Language vs query string — query string wins
+GET {{host}}/customers/0?culture=fr
+Accept-Language: de
