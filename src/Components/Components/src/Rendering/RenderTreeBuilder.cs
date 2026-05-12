@@ -777,6 +777,29 @@ public sealed class RenderTreeBuilder : IDisposable
     public ArrayRange<RenderTreeFrame> GetFrames() =>
         _entries.ToRange();
 
+    /// <summary>
+    /// Replaces the attribute value of an existing attribute frame at the specified index.
+    /// </summary>
+    public void SetAttributeValue(int frameIndex, object? value)
+    {
+        var frames = _entries.Buffer;
+        var count = _entries.Count;
+
+        if ((uint)frameIndex >= (uint)count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(frameIndex));
+        }
+
+        ref var frame = ref frames[frameIndex];
+        if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
+        {
+            throw new InvalidOperationException(
+                $"The frame at index {frameIndex} is of type '{frame.FrameTypeField}', not '{RenderTreeFrameType.Attribute}'.");
+        }
+
+        frame.AttributeValueField = value;
+    }
+
     internal void AssertTreeIsValid(IComponent component)
     {
         if (_openElementIndices.Count > 0)

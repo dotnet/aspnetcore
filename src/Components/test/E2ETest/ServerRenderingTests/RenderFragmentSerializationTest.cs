@@ -80,24 +80,22 @@ public class RenderFragmentSerializationTest : ServerTestBase<BasicTestAppServer
         Browser.Equal("42", () => Browser.FindElement(By.Id("with-attributes")).GetAttribute("data-value"));
     }
 
-    // Nested RenderFragment serialization is not yet supported in the current implementation.
-    // This test will be re-enabled once nested RF capture is added.
-    // [Theory]
-    // [InlineData("server")]
-    // [InlineData("wasm")]
-    // public void RenderFragmentCrossesBoundary_NestedRenderFragment(string mode)
-    // {
-    //     Navigate($"{ServerPathBase}/render-fragment-interactive?test=5&mode={mode}");
-    //
-    //     Browser.Equal("Nested RenderFragment content", () => Browser.FindElement(By.Id("nested-child")).Text);
-    //     Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-test5")).Text);
-    //
-    //     Browser.Click(By.Id("increment-test5"));
-    //     Browser.Equal("1", () => Browser.FindElement(By.Id("count-test5")).Text);
-    //
-    //     Browser.Click(By.Id("increment-test5-inner"));
-    //     Browser.Equal("1", () => Browser.FindElement(By.Id("count-test5-inner")).Text);
-    // }
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void RenderFragmentCrossesBoundary_NestedRenderFragment(string mode)
+    {
+        Navigate($"{ServerPathBase}/render-fragment-interactive?test=5&mode={mode}");
+
+        Browser.Equal("Nested RenderFragment content", () => Browser.FindElement(By.Id("nested-child")).Text);
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-test5")).Text);
+
+        Browser.Click(By.Id("increment-test5"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-test5")).Text);
+
+        Browser.Click(By.Id("increment-test5-inner"));
+        Browser.Equal("1", () => Browser.FindElement(By.Id("count-test5-inner")).Text);
+    }
 
     [Theory]
     [InlineData("server")]

@@ -19,7 +19,7 @@ public class RenderFragmentSerializerTest
         using var builder = new RenderTreeBuilder();
         fragment(builder);
         var frames = builder.GetFrames();
-        return RenderFragmentSerializer.SerializeFrames(frames.Array.AsSpan(0, frames.Count), _logger);
+        return RenderFragmentSerializer.SerializeFrames(frames.Array.AsSpan(0, frames.Count), new RenderFragmentCaptureContext(), _logger);
     }
 
     [Fact]
@@ -249,26 +249,6 @@ public class RenderFragmentSerializerTest
         Assert.Equal("sibling", spanText.Content);
     }
 
-    // Nested RenderFragment serialization is not yet supported in the current implementation.
-    // This test verifies that a NotSupportedException is thrown when encountered.
-    [Fact]
-    public void Serialize_NestedRenderFragment_ThrowsNotSupported()
-    {
-        RenderFragment inner = builder =>
-        {
-            builder.AddContent(0, "nested content");
-        };
-
-        RenderFragment fragment = builder =>
-        {
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ChildContent", inner);
-            builder.CloseComponent();
-        };
-
-        Assert.Throws<NotSupportedException>(() => SerializeFragment(fragment));
-    }
-
     [Fact]
     public void Serialize_BooleanAttribute_PreservesValue()
     {
@@ -353,23 +333,50 @@ public class RenderFragmentSerializerTest
         Assert.Equal("content", frames.Array[2].TextContent);
     }
 
-    // Nested RenderFragment deserialization is not yet supported in the current implementation.
-    // [Fact]
-    // public void Deserialize_NestedRenderFragment_ProducesRenderFragmentAttribute()
-    // {
-    //     var nodes = new List<RenderTreeNode>
-    //     {
-    //         new()
-    //         {
-    //             Type = "component",
-    //             ComponentType = $"{typeof(TestComponent).FullName}, {typeof(TestComponent).Assembly.GetName().Name}",
-    //             ComponentParameters = new()
-    //             {
-    //                 // TODO: need a way to represent nested RenderFragment in the tree model
-    //             }
-    //         }
-    //     };
-    // }
+    [Fact]
+    public void Deserialize_NestedRenderFragmentFromModel_ProducesRenderFragmentParameter()
+    {
+        var nodes = new List<RenderTreeNode>
+        {
+            new()
+            {
+                Type = "component",
+                ComponentType = typeof(TestComponent).AssemblyQualifiedName,
+                ComponentParameters = new()
+                {
+                    new()
+                    {
+                        Name = "ChildContent",
+                        Value = new SerializedRenderFragment
+                        {
+                            Nodes = new()
+                            {
+                                new() { Type = "text", Content = "hello from nested" }
+                            }
+                        },
+                        ValueType = RenderFragmentSerializer.SerializedRenderFragmentValueType,
+                    }
+                }
+            }
+        };
+
+        var fragment = RenderFragmentSerializer.Deserialize(nodes);
+
+        var builder = new RenderTreeBuilder();
+        fragment(builder);
+        var frames = builder.GetFrames();
+
+        Assert.Equal(RenderTreeFrameType.Component, frames.Array[0].FrameType);
+        Assert.Equal(RenderTreeFrameType.Attribute, frames.Array[1].FrameType);
+        Assert.Equal("ChildContent", frames.Array[1].AttributeName);
+        var childContent = Assert.IsType<RenderFragment>(frames.Array[1].AttributeValue);
+
+        var innerBuilder = new RenderTreeBuilder();
+        childContent(innerBuilder);
+        var innerFrames = innerBuilder.GetFrames();
+        Assert.Equal(RenderTreeFrameType.Text, innerFrames.Array[0].FrameType);
+        Assert.Equal("hello from nested", innerFrames.Array[0].TextContent);
+    }
 
     [Fact]
     public void Roundtrip_ComplexFragment_PreservesStructure()
@@ -642,27 +649,6 @@ public class RenderFragmentSerializerTest
         var frames = builder2.GetFrames();
         Assert.Equal(200, frames.Count);
     }
-
-    // Max depth / recursive nested RenderFragment serialization is not supported in the current implementation.
-    // The old Serialize(RenderFragment, ILogger, depth) API has been replaced with SerializeFrames(span).
-    // Nested RenderFragment attributes now throw NotSupportedException (see Serialize_NestedRenderFragment_ThrowsNotSupported).
-    // [Fact]
-    // public void Serialize_ExceedingMaxDepth_Throws()
-    // {
-    //     static RenderFragment CreateDeep(int depth) => builder =>
-    //     {
-    //         builder.OpenComponent<TestComponent>(0);
-    //         if (depth < 55)
-    //         {
-    //             builder.AddAttribute(1, "ChildContent", CreateDeep(depth + 1));
-    //         }
-    //         builder.CloseComponent();
-    //     };
-    //
-    //     var ex = Assert.Throws<InvalidOperationException>(() =>
-    //         RenderFragmentSerializer.Serialize(CreateDeep(0), _logger));
-    //     Assert.Contains("50", ex.Message);
-    // }
 
     private class TestComponent : IComponent
     {
