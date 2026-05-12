@@ -262,8 +262,13 @@ public readonly struct HostString : IEquatable<HostString>
                 // .example.com
                 var allowedRoot = pattern.Subsegment(1);
 
-                var hostRoot = host.Subsegment(host.Length - allowedRoot.Length);
-                if (hostRoot.Equals(allowedRoot, StringComparison.OrdinalIgnoreCase))
+                var hostRootStart = host.Length - allowedRoot.Length;
+                var hostRoot = host.Subsegment(hostRootStart);
+                if (hostRoot.Equals(allowedRoot, StringComparison.OrdinalIgnoreCase)
+                    // The wildcard '*' must not match a value ending in '.', otherwise
+                    // the boundary with the leading '.' of allowedRoot would yield consecutive
+                    // dots (e.g., "..example.com" should not match "*.example.com").
+                    && host[hostRootStart - 1] != '.')
                 {
                     return true;
                 }
