@@ -20,22 +20,17 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The literal display name for the parameter (sourced from
-    /// <see cref="DisplayAttribute.Name"/> when no <see cref="DisplayAttribute.ResourceType"/> is set,
-    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>).</param>
-    /// <param name="displayResourceAccessor">An accessor that resolves the localized display name
-    /// from a static resource property when the parameter is decorated with
-    /// <c>[Display(Name = ..., ResourceType = ...)]</c>; <see langword="null"/> otherwise.</param>
+    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// display name for the parameter at validation time. When <see langword="null"/>, the
+    /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
         string name,
-        string? displayName,
-        Func<string?>? displayResourceAccessor = null)
+        DisplayNameInfo? displayNameInfo = null)
     {
         ParameterType = parameterType;
         Name = name;
-        DisplayName = displayName;
-        DisplayResourceAccessor = displayResourceAccessor;
+        DisplayNameInfo = displayNameInfo;
     }
 
     /// <summary>
@@ -49,21 +44,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the literal display name for the parameter.
+    /// Gets the strategy that resolves the display name for the parameter at validation time,
+    /// or <see langword="null"/> when no display name information was supplied.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="DisplayAttribute.ResourceType"/> is set, the resolved display name is
-    /// produced by invoking <see cref="DisplayResourceAccessor"/> instead.
-    /// </remarks>
-    internal string? DisplayName { get; }
-
-    /// <summary>
-    /// Gets the accessor that resolves the localized display name from a static resource property
-    /// (e.g. <c>Resources.MyParam</c>) when the parameter is decorated with
-    /// <c>[Display(Name = ..., ResourceType = ...)]</c>. Returns <see langword="null"/> for
-    /// parameters without resource-based display names.
-    /// </summary>
-    internal Func<string?>? DisplayResourceAccessor { get; }
+    internal DisplayNameInfo? DisplayNameInfo { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -85,13 +69,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         }
 
         var localizer = context.ValidationOptions.Localizer;
-        var displayName = LocalizationHelper.ResolveDisplayName(
-            memberName: Name,
-            DisplayName,
-            DisplayResourceAccessor,
-            declaringType: null,
-            localizer
-        );
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
@@ -104,14 +82,12 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                var errorMessage = localizer.ResolveAttributeErrorMessage(
                     memberName: Name,
                     displayName,
                     declaringType: null,
                     attribute: _requiredAttribute,
-                    result,
-                    localizer
-                );
+                    result);
 
                 if (errorMessage is not null)
                 {
@@ -132,14 +108,12 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
                 if (result is not null && result != ValidationResult.Success)
                 {
-                    var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                    var errorMessage = localizer.ResolveAttributeErrorMessage(
                         memberName: Name,
                         displayName,
                         declaringType: null,
                         attribute,
-                        result,
-                        localizer
-                    );
+                        result);
 
                     if (errorMessage is not null)
                     {

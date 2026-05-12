@@ -2,6 +2,9 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string! displayName) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
+abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? declaringType) -> string?
+Microsoft.Extensions.Validation.DisplayNameInfo
+Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DeclaringType.get -> System.Type?
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DeclaringType.init -> void
@@ -23,8 +26,8 @@ Microsoft.Extensions.Validation.ErrorMessageLocalizationContext.MemberName.init 
 Microsoft.Extensions.Validation.IValidationLocalizer
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveDisplayName(in Microsoft.Extensions.Validation.DisplayNameLocalizationContext context) -> string?
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveErrorMessage(in Microsoft.Extensions.Validation.ErrorMessageLocalizationContext context) -> string?
-Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string? displayName, System.Func<string?>? displayResourceAccessor = null) -> void
-Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, string? displayName, System.Func<string?>? displayResourceAccessor = null) -> void
-Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members, string? displayName = null, System.Func<string?>? displayResourceAccessor = null) -> void
+Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
+Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
+Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void

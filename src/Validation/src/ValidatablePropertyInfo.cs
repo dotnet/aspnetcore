@@ -20,25 +20,20 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
     /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
     /// <param name="name">The property name.</param>
-    /// <param name="displayName">The literal display name for the property (sourced from
-    /// <see cref="DisplayAttribute.Name"/> when no <see cref="DisplayAttribute.ResourceType"/> is set,
-    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>).</param>
-    /// <param name="displayResourceAccessor">An accessor that resolves the localized display name
-    /// from a static resource property when the property is decorated with
-    /// <c>[Display(Name = ..., ResourceType = ...)]</c>; <see langword="null"/> otherwise.</param>
+    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// display name for the property at validation time. When <see langword="null"/>, the
+    /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatablePropertyInfo(
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
         Type propertyType,
         string name,
-        string? displayName,
-        Func<string?>? displayResourceAccessor = null)
+        DisplayNameInfo? displayNameInfo = null)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
-        DisplayName = displayName;
-        DisplayResourceAccessor = displayResourceAccessor;
+        DisplayNameInfo = displayNameInfo;
     }
 
     /// <summary>
@@ -58,23 +53,10 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the literal display name for the property, sourced from
-    /// <see cref="DisplayAttribute.Name"/> (when no <see cref="DisplayAttribute.ResourceType"/> is set)
-    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>.
+    /// Gets the strategy that resolves the display name for the property at validation time,
+    /// or <see langword="null"/> when no display name information was supplied.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="DisplayAttribute.ResourceType"/> is set, the resolved display name is
-    /// produced by invoking <see cref="DisplayResourceAccessor"/> instead.
-    /// </remarks>
-    internal string? DisplayName { get; }
-
-    /// <summary>
-    /// Gets the accessor that resolves the localized display name from a static resource property
-    /// (e.g. <c>Resources.MyProperty</c>) when the property is decorated with
-    /// <c>[Display(Name = ..., ResourceType = ...)]</c>. Returns <see langword="null"/> for
-    /// properties without resource-based display names.
-    /// </summary>
-    internal Func<string?>? DisplayResourceAccessor { get; }
+    internal DisplayNameInfo? DisplayNameInfo { get; }
 
     /// <summary>
     /// Gets the validation attributes for this property.
@@ -101,13 +83,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         var localizer = context.ValidationOptions.Localizer;
-        var displayName = LocalizationHelper.ResolveDisplayName(
-            memberName: Name,
-            DisplayName,
-            DisplayResourceAccessor,
-            DeclaringType,
-            localizer
-        );
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
@@ -119,14 +95,12 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                var errorMessage = localizer.ResolveAttributeErrorMessage(
                     memberName: Name,
                     displayName,
                     declaringType: DeclaringType,
                     attribute: _requiredAttribute,
-                    result,
-                    localizer
-                );
+                    result);
 
                 if (errorMessage is not null)
                 {
@@ -207,14 +181,12 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result is not null && result != ValidationResult.Success)
                     {
-                        var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                        var errorMessage = localizer.ResolveAttributeErrorMessage(
                             memberName: Name,
                             displayName,
                             declaringType: DeclaringType,
                             attribute,
-                            result,
-                            localizer
-                        );
+                            result);
 
                         if (errorMessage is not null)
                         {
