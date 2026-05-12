@@ -117,7 +117,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       // If the WebAssembly runtime starts downloading because an Auto component was added to
       // the page, we limit the maximum number of parallel WebAssembly resource downloads to 1
       // so that the performance of any Blazor Server circuit is minimally impacted.
-      this.startLoadingWebAssemblyIfNotStarted(/* maxParallelDownloadsOverride */ 1);
+      this.startLoadingWebAssemblyIfNotStarted(/* justDownload */ true);
     }
 
     const ssrComponentId = this._nextSsrComponentId++;
@@ -132,19 +132,15 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.circuitMayHaveNoRootComponents();
   }
 
-  private async startLoadingWebAssemblyIfNotStarted(maxParallelDownloadsOverride?: number) {
+  private async startLoadingWebAssemblyIfNotStarted(justDownload?: boolean) {
     if (hasStartedLoadingWebAssemblyPlatform()) {
       return;
     }
 
     setWaitForRootComponents();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions);
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions, justDownload);
     const bootConfig = await waitForBootConfigLoaded();
-
-    if (maxParallelDownloadsOverride !== undefined) {
-      bootConfig.maxParallelDownloads = maxParallelDownloadsOverride;
-    }
 
     if (!areWebAssemblyResourcesLikelyCached(bootConfig)) {
       // Since WebAssembly resources aren't likely cached,

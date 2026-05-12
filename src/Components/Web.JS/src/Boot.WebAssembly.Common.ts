@@ -197,7 +197,7 @@ export function waitForBootConfigLoaded(): Promise<MonoConfig> {
   return bootConfigPromise;
 }
 
-export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblyServerOptions | undefined): Promise<void> {
+export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblyServerOptions | undefined, justDownload?: boolean): Promise<void> {
   platformLoadPromise ??= (async () => {
     await initializersPromise;
     const finalOptions = options ?? {};
@@ -207,6 +207,9 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
     const existingConfig = options?.configureRuntime;
     finalOptions.configureRuntime = (config) => {
       existingConfig?.(config);
+      if (justDownload) {
+        config.withConfig({ maxParallelDownloads: 1 });
+      }
       if (serverOptions?.environmentVariables) {
         config.withEnvironmentVariables(serverOptions.environmentVariables);
       }
@@ -214,7 +217,7 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
         config.withEnvironmentVariable('__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS', 'true');
       }
     };
-    await monoPlatform.load(finalOptions, resolveBootConfigPromise);
+    await monoPlatform.load(finalOptions, resolveBootConfigPromise, justDownload);
     loadedWebAssemblyPlatform = true;
   })();
   return platformLoadPromise;

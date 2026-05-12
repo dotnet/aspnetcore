@@ -29,8 +29,9 @@ export function getInitializer() {
 }
 
 export const monoPlatform: Platform = {
-  load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void) {
-    return createRuntimeInstance(options, onConfigLoaded);
+  load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
+    options.configureRuntime
+    return createRuntimeInstance(options, onConfigLoaded, justDownload);
   },
 
   start: function start() {
@@ -181,7 +182,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfi
   return dotnetModuleConfig;
 }
 
-async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void> {
+async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
   const { dotnet } = await importDotnetJs(options);
   const moduleConfig = prepareRuntimeConfig(options, onConfigLoaded);
 
@@ -203,8 +204,11 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
   if (options.configureRuntime) {
     options.configureRuntime(dotnet);
   }
-
-  runtime = await dotnet.create();
+  if (justDownload) {
+    await dotnet.download();
+  } else {
+    runtime = await dotnet.create();
+  }
 }
 
 async function configureRuntimeInstance(): Promise<PlatformApi> {
