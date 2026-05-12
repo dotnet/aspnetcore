@@ -62,6 +62,44 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task SupportsFormMappingOptionsInMetadata_PropagatesMaxCollectionSizeToReader()
+    {
+        // Arrange
+        static void TestAction([FromForm] Dictionary<string, string> args) { }
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(new List<object>()
+            {
+                new FormMappingOptionsMetadata(maxCollectionSize: 2)
+            }),
+            ThrowOnBadRequest = true
+        };
+        var metadataResult = new RequestDelegateMetadataResult { EndpointMetadata = new List<object>() };
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            {
+                "[name1]", "value1"
+            },
+            {
+                "[name2]", "value2"
+            },
+            {
+                "[name3]", "value3"
+            }
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction, options, metadataResult);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await requestDelegate(httpContext));
+
+        // Assert
+        Assert.Equal("The number of elements in the dictionary exceeded the maximum number of '2' elements allowed.", exception.Message);
+    }
+
+    [Fact]
     public async Task SupportsFormMappingOptionsInMetadataFormFormWithAttributeName()
     {
         // Arrange
