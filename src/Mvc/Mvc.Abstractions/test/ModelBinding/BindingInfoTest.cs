@@ -326,4 +326,31 @@ public class BindingInfoTest
         // Act and Assert
         Assert.Throws<NotSupportedException>(() => BindingInfo.GetBindingInfo(attributes, modelMetadata));
     }
+
+    [Fact]
+    public void GetBindingInfo_WithDerivedFromKeyedServicesAttribute()
+    {
+        // Arrange
+        var key = new object();
+        var attributes = new object[]
+        {
+                new CustomFromKeyedServicesAttribute(key),
+        };
+        var modelType = typeof(Guid);
+        var provider = new TestModelMetadataProvider();
+        var modelMetadata = provider.GetMetadataForType(modelType);
+
+        // Act
+        var bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);
+
+        // Assert
+        Assert.NotNull(bindingInfo);
+        Assert.Same(BindingSource.Services, bindingInfo.BindingSource);
+        Assert.Same(key, bindingInfo.ServiceKey);
+    }
+
+    private class CustomFromKeyedServicesAttribute : FromKeyedServicesAttribute
+    {
+        public CustomFromKeyedServicesAttribute(object key) : base(key) { }
+    }
 }

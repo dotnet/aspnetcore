@@ -52,7 +52,7 @@ public static class OpenApiEndpointRouteBuilderExtensions
                     var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.Request, context.RequestAborted);
                     var documentOptions = options.Get(lowercasedDocumentName);
 
-                    using var textWriter = new Utf8BufferTextWriter();
+                    using var textWriter = new Utf8BufferTextWriter(System.Globalization.CultureInfo.InvariantCulture);
                     textWriter.SetWriter(context.Response.BodyWriter);
 
                     string contentType;

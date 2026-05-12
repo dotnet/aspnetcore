@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components;
 
-internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderComponentApplicationStore
+internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderComponentApplicationStore, IClearableStore
 {
     private IDataProtector _protector = default!; // Assigned in all constructor paths
 
@@ -39,4 +39,14 @@ internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderCom
     public override bool SupportsRenderMode(IComponentRenderMode renderMode) =>
         renderMode is null ||
         renderMode is InteractiveServerRenderMode || renderMode is InteractiveAutoRenderMode;
+
+    public void Clear()
+    {
+        ExistingState.Clear();
+    }
+}
+
+internal interface IClearableStore : IPersistentComponentStateStore
+{
+    void Clear();
 }

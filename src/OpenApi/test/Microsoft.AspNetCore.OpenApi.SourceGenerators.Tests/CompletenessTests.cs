@@ -37,6 +37,7 @@ app.MapPost("/inherit-all-but-remarks", (InheritAllButRemarks remarks) => { });
 app.MapPost("/generic-class", (GenericClass<string> generic) => { });
 app.MapPost("/generic-parent", (GenericParent parent) => { });
 app.MapPost("/params-and-param-refs", (ParamsAndParamRefs refs) => { });
+app.MapPost("/xml-property-test", (XmlPropertyTestClass test) => { });
 
 
 app.Run();
@@ -471,6 +472,37 @@ public class DisposableType : IDisposable
         // No-op
     }
 }
+
+/// <summary>
+/// This class tests different XML comment scenarios for properties.
+/// </summary>
+public class XmlPropertyTestClass
+{
+    /// <summary>
+    /// A property with only summary tag.
+    /// </summary>
+    public string SummaryOnly { get; set; }
+
+    /// <value>
+    /// A property with only value tag.
+    /// </value>
+    public string ValueOnly { get; set; }
+
+    /// <summary>
+    /// A property with both summary and value.
+    /// </summary>
+    /// <value>Additional value information.</value>
+    public string BothSummaryAndValue { get; set; }
+
+    /// <returns>This should be ignored for properties.</returns>
+    public string ReturnsOnly { get; set; }
+
+    /// <summary>
+    /// A property with summary and returns.
+    /// </summary>
+    /// <returns>This should be ignored for properties.</returns>
+    public string SummaryAndReturns { get; set; }
+}
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
@@ -479,6 +511,7 @@ public class DisposableType : IDisposable
             var path = document.Paths["/example-class"].Operations[HttpMethod.Post];
             var exampleClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("Every class and member should have a one sentence\nsummary describing its purpose.", exampleClass.Description, ignoreLineEndingDifferences: true);
+            // Label property has only <value> tag -> uses value directly
             Assert.Equal("The `Label` property represents a label\nfor this instance.", exampleClass.Properties["label"].Description, ignoreLineEndingDifferences: true);
 
             path = document.Paths["/person"].Operations[HttpMethod.Post];
@@ -523,6 +556,26 @@ public class DisposableType : IDisposable
             path = document.Paths["/params-and-param-refs"].Operations[HttpMethod.Post];
             var paramsAndParamRefs = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This shows examples of typeparamref and typeparam tags", paramsAndParamRefs.Description);
+
+            // Test new XML property documentation behavior
+            path = document.Paths["/xml-property-test"].Operations[HttpMethod.Post];
+            var xmlPropertyTest = path.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("This class tests different XML comment scenarios for properties.", xmlPropertyTest.Description);
+
+            // Property with only <summary> -> uses summary directly
+            Assert.Equal("A property with only summary tag.", xmlPropertyTest.Properties["summaryOnly"].Description);
+
+            // Property with only <value> -> uses value directly
+            Assert.Equal("A property with only value tag.", xmlPropertyTest.Properties["valueOnly"].Description);
+
+            // Property with both <summary> and <value> -> combines with newline separator
+            Assert.Equal($"A property with both summary and value.\nAdditional value information.", xmlPropertyTest.Properties["bothSummaryAndValue"].Description);
+
+            // Property with only <returns> -> should be null (ignored)
+            Assert.Null(xmlPropertyTest.Properties["returnsOnly"].Description);
+
+            // Property with <summary> and <returns> -> uses summary only, ignores returns
+            Assert.Equal("A property with summary and returns.", xmlPropertyTest.Properties["summaryAndReturns"].Description);
         });
     }
 }

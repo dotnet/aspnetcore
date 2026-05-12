@@ -147,7 +147,7 @@ internal sealed partial class RequestQueue
 
         var result = PInvoke.HttpSetRequestQueueProperty(Handle,
             HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
-            &length, (uint)Marshal.SizeOf<long>());
+            new ReadOnlySpan<byte>(&length, sizeof(long)));
 
         if (result != 0)
         {
@@ -161,9 +161,10 @@ internal sealed partial class RequestQueue
         Debug.Assert(Created);
         CheckDisposed();
 
+        var verbosityLong = (long)verbosity;
         var result = PInvoke.HttpSetRequestQueueProperty(Handle,
             HTTP_SERVER_PROPERTY.HttpServer503VerbosityProperty,
-            &verbosity, (uint)Marshal.SizeOf<long>());
+            new ReadOnlySpan<byte>(&verbosityLong, sizeof(long)));
 
         if (result != 0)
         {
@@ -180,10 +181,23 @@ internal sealed partial class RequestQueue
 
         _disposed = true;
 
+        // Close the request queue handle first to cancel any pending IO operations.
+        // This must happen before disposing BoundHandle, as pending operations need
+        // to be cancelled and cleaned up using the BoundHandle.
         PInvoke.HttpCloseRequestQueue(Handle);
 
         BoundHandle.Dispose();
-        Handle.Dispose();
+        Handle.SetHandleAsInvalid();
+    }
+
+    /// <summary>
+    /// Shuts down the request queue to cancel any pending IO operations,
+    /// but does not close the handle or dispose the BoundHandle. This allows pending operations
+    /// to be properly cleaned up before disposing the BoundHandle.
+    /// </summary>
+    internal void StopProcessingRequests()
+    {
+        PInvoke.HttpShutdownRequestQueue(Handle);
     }
 
     private void CheckDisposed()

@@ -31,6 +31,7 @@ internal partial class WebAssemblyRenderer
     public sealed class WebRootComponentManager(Renderer renderer)
     {
         private readonly Dictionary<int, WebRootComponent> _webRootComponents = new();
+        private Task _currentUpdateTask = Task.CompletedTask;
 
         public async Task AddRootComponentAsync(
             int ssrComponentId,
@@ -52,7 +53,7 @@ internal partial class WebAssemblyRenderer
 
             var component = WebRootComponent.Create(renderer, componentType, ssrComponentId, key, parameters);
             _webRootComponents.Add(ssrComponentId, component);
-
+            await _currentUpdateTask;
             await component.RenderAsync(renderer);
         }
 
@@ -63,7 +64,7 @@ internal partial class WebAssemblyRenderer
             WebRootComponentParameters newParameters)
         {
             var component = GetRequiredWebRootComponent(ssrComponentId);
-            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters);
+            return component.UpdateAsync(renderer, newComponentType, newKey, newParameters, _currentUpdateTask);
         }
 
         public void RemoveRootComponent(int ssrComponentId)
@@ -97,7 +98,7 @@ internal partial class WebAssemblyRenderer
         {
             foreach (var (_, candidate) in _webRootComponents)
             {
-                var(id, key, _, _) = candidate;
+                var (id, key, _, _) = candidate;
                 if (id == componentId)
                 {
                     return key;
@@ -105,6 +106,11 @@ internal partial class WebAssemblyRenderer
             }
 
             return default;
+        }
+
+        internal void SetCurrentUpdateTask(Task postStateTask)
+        {
+            _currentUpdateTask = postStateTask;
         }
 
         private sealed class WebRootComponent
@@ -165,7 +171,8 @@ internal partial class WebAssemblyRenderer
                 Renderer renderer,
                 [DynamicallyAccessedMembers(Component)] Type newComponentType,
                 ComponentMarkerKey? newKey,
-                WebRootComponentParameters newParameters)
+                WebRootComponentParameters newParameters,
+                Task currentUpdateTask)
             {
                 if (_componentType != newComponentType)
                 {
@@ -189,7 +196,7 @@ internal partial class WebAssemblyRenderer
                     // We can supply new parameters if the key has a @key value, because that means the client
                     // opted in to dynamic parameter updates.
                     _latestParameters = newParameters;
-                    return RenderAsync(renderer);
+                    return RenderAsync(renderer, currentUpdateTask);
                 }
                 else
                 {
@@ -207,13 +214,21 @@ internal partial class WebAssemblyRenderer
                         renderer.RemoveRootComponent(_interactiveComponentId);
                         _interactiveComponentId = renderer.AddRootComponent(_componentType, _ssrComponentIdString);
                         _latestParameters = newParameters;
-                        return RenderAsync(renderer);
+                        return RenderAsync(renderer, currentUpdateTask);
                     }
                 }
             }
 
             public Task RenderAsync(Renderer renderer)
-                => renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+            {
+                return renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+            }
+
+            public async Task RenderAsync(Renderer renderer, Task updateTask)
+            {
+                await updateTask;
+                await renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
+            }
 
             public void Remove(Renderer renderer)
             {

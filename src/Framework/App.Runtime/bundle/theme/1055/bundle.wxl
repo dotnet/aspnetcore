@@ -1,55 +1,78 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[BundleNameFull] Kurulumu</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">[WixBundleVersion] Sürümü</String>
-  <String Id="ConfirmCancelMessage">İptal etmek istediğinizden emin misiniz?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">Önceki sürüm</String>
-  <String Id="HelpHeader">Kurulum Yardımı</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]dizin[\]] - yükler, onarır, kaldırır ya da
-   dizindeki paketin tam bir yerel kopyasını oluşturur. Varsayılan install değeridir.
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] Kurulumu"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="[WixBundleVersion] Sürümü"/>
+  <String Id="ConfirmCancelMessage" Value="İptal etmek istediğinizden emin misiniz?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Önceki sürüm"/>
+  <String Id="HelpHeader" Value="Kurulum Yardımı"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - yükler, onarır, kaldırır veya
+   paketin tam bir yerel kopyasını dizinde oluşturur. Yükleme varsayılandır.
 
-/passive | /quiet -  en az düzeyde istemsiz UI gösterir ya da hiç UI göstermez ve
-   istem yoktur. Varsayılan olarak UI ve tüm istemler görüntülenir.
+/passive | /quiet - komut istemleri olmadan minimal kullanıcı arayüzü görüntüler veya kullanıcı arayüzü görüntülemez ve
+   istem olmadan görüntüler. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir.
 
-/norestart   - yeniden başlama denemelerini engeller. Varsayılan olarak UI yeniden başlatılmadan önce sorar.
-/log log.txt - belirli bir günlük dosyası tutar. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur.</String>
-  <String Id="HelpCloseButton">&amp;Kapat</String>
-  <String Id="InstallAcceptCheckbox">Lisans &amp;hüküm ve koşullarını kabul ediyorum</String>
-  <String Id="InstallInstallButton">&amp;Yükle</String>
-  <String Id="InstallCloseButton">&amp;Kapat</String>
-  <String Id="ProgressHeader">Kurulum İlerleme Durumu</String>
-  <String Id="ProgressLabel">İşleniyor:</String>
-  <String Id="OverallProgressPackageText">Başlatılıyor...</String>
-  <String Id="ProgressCancelButton">&amp;İptal</String>
-  <String Id="ModifyHeader">Kurulumu değiştir</String>
-  <String Id="ModifyRepairButton">&amp;Onar</String>
-  <String Id="ModifyUninstallButton">K&amp;aldır</String>
-  <String Id="ModifyCloseButton">&amp;Kapat</String>
-  <String Id="SuccessRepairHeader">Onarım Başarıyla Tamamlandı</String>
-  <String Id="SuccessUninstallHeader">Kaldırma Başarıyla Tamamlandı</String>
-  <String Id="SuccessInstallHeader">Yükleme Başarıyla Tamamlandı</String>
-  <String Id="SuccessHeader">Kurulum Başarılı</String>
-  <String Id="SuccessLaunchButton">&amp;Başlat</String>
-  <String Id="SuccessRestartText">Yazılımı kullanabilmeniz için bilgisayarınızı yeniden başlatmanız gerekiyor.</String>
-  <String Id="SuccessRestartButton">Yeniden &amp;Başlat</String>
-  <String Id="SuccessCloseButton">&amp;Kapat</String>
-  <String Id="FailureHeader">Kurulum Başarısız</String>
-  <String Id="FailureInstallHeader">Kurulum Başarısız</String>
-  <String Id="FailureUninstallHeader">Kaldırma Başarısız</String>
-  <String Id="FailureRepairHeader">Onarım Başarısız</String>
-  <String Id="FailureHyperlinkLogText">Bir ya da daha fazla sorun nedeniyle kurulum başarısız oldu. Lütfen bu sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href="#"&gt;günlük dosyasına&lt;/a&gt; bakın.</String>
-  <String Id="FailureRestartText">Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor.</String>
-  <String Id="FailureRestartButton">Yeniden &amp;Başlat</String>
-  <String Id="FailureCloseButton">&amp;Kapat</String>
-  <String Id="FilesInUseHeader">Kullanımda Olan Dosyalar</String>
-  <String Id="FilesInUseLabel">Şu uygulamalar güncelleştirilmesi gereken dosyaları kullanıyor:</String>
-  <String Id="FilesInUseCloseRadioButton">&amp;Uygulamaları kapatın ve yeniden başlatmayı deneyin.</String>
-  <String Id="FilesInUseDontCloseRadioButton">&amp;Uygulamaları kapatmayın. Sistemi yeniden başlatmanız gerekir.</String>
-  <String Id="FilesInUseOkButton">&amp;Tamam</String>
-  <String Id="FilesInUseCancelButton">&amp;İptal</String>
+/norestart   - yeniden başlatma girişimlerini durdur. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce soracaktır.
+/log log.txt - belirli bir dosyaya kaydeder. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur."/>
+  <String Id="HelpCloseButton" Value="&amp;Kapat"/>
+  <String Id="InstallAcceptCheckbox" Value="Lisans hüküm ve koşullarını &amp;kabul ediyorum"/>
+  <String Id="InstallInstallButton" Value="&amp;Yükle"/>
+  <String Id="InstallCloseButton" Value="&amp;Kapat"/>
+  <String Id="ProgressHeader" Value="Kurulum İlerleme Durumu"/>
+  <String Id="ProgressLabel" Value="İşleniyor:"/>
+  <String Id="OverallProgressPackageText" Value="Başlatılıyor..."/>
+  <String Id="ProgressCancelButton" Value="İ&amp;ptal"/>
+  <String Id="ModifyHeader" Value="Kurulumu Değiştir"/>
+  <String Id="ModifyRepairButton" Value="&amp;Onar"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Kaldır"/>
+  <String Id="ModifyCloseButton" Value="&amp;Kapat"/>
+  <String Id="SuccessCacheHeader" Value="Önbellek Başarıyla Tamamlandı"/>
+  <String Id="SuccessModifyHeader" Value="Değiştirme Başarıyla Tamamlandı"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Kaldırma Başarıyla Tamamlandı"/>
+  <String Id="SuccessLayoutHeader" Value="Düzen Başarıyla Tamamlandı"/>
+  <String Id="SuccessRepairHeader" Value="Onarım Başarıyla Tamamlandı"/>
+  <String Id="SuccessUninstallHeader" Value="Kaldırma Başarıyla Tamamlandı"/>
+  <String Id="SuccessInstallHeader" Value="Yükleme Başarıyla Tamamlandı"/>
+  <String Id="SuccessHeader" Value="Kurulum Başarılı"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Başlatma"/>
+  <String Id="SuccessRestartText" Value="Yazılımı kullanabilmek için bilgisayarınızı yeniden başlatmanız gerekiyor."/>
+  <String Id="SuccessUninstallRestartText" Value="Yazılımın kaldırılmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor."/>
+  <String Id="SuccessRestartButton" Value="&amp;Yeniden Başlat"/>
+  <String Id="SuccessCloseButton" Value="&amp;Kapat"/>
+  <String Id="FailureHeader" Value="Kurulum Başarısız"/>
+  <String Id="FailureCacheHeader" Value="Önbellek Başarısız"/>
+  <String Id="FailureLayoutHeader" Value="Düzen Başarısız"/>
+  <String Id="FailureInstallHeader" Value="Kurulum Başarısız"/>
+  <String Id="FailureUninstallHeader" Value="Kaldırılamadı"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Kaldırılamadı"/>
+  <String Id="FailureRepairHeader" Value="Onarım Başarısız"/>
+  <String Id="FailureModifyHeader" Value="Değiştirme Başarısız"/>
+  <String Id="FailureHyperlinkLogText" Value="Bir veya daha fazla sorun kurulumun başarısız olmasına neden oldu. Lütfen sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href=&quot;#&quot;&gt;günlük dosyasına&lt;/a&gt; bakın."/>
+  <String Id="FailureRestartText" Value="Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor."/>
+  <String Id="FailureRestartButton" Value="&amp;Yeniden Başlat"/>
+  <String Id="FailureCloseButton" Value="&amp;Kapat"/>
+  <String Id="FilesInUseHeader" Value="Kullanımda Olan Dosyalar"/>
+  <String Id="FilesInUseLabel" Value="Şu uygulamalar güncelleştirilmesi gereken dosyaları kullanıyor:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Uygulamaları kapatın ve yeniden başlatmayı deneyin."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Uygulamaları kapatmayın. Yeniden başlatma gerekiyor."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="&amp;Uygulamaları kapatın."/>
+  <String Id="FilesInUseOkButton" Value="&amp;Tamam"/>
+  <String Id="FilesInUseCancelButton" Value="İ&amp;ptal"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Yeniden Dene"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Yoksay"/>
+  <String Id="FilesInUseExitButton" Value="Çı&amp;k"/>
+  <String Id="FilesInUseTitle" Value="Kullanımda Olan Dosyalar"/>
+  <String Id="LicenseAssent" Value="Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:"/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Gizlilik Bildirimi&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET için Lisans Bilgileri&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetri toplama ve geri çevirme&lt;/A&gt;"/>
 
-  <String Id="Welcome">[WixBundleName] Kurulumu'na Hoş Geldiniz.</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;lisans koşulları&lt;/a&gt; ve &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;gizlilik bildirimi&lt;/a&gt;.</String>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;lisans koşulları&lt;/a&gt; ve &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;gizlilik bildirimi&lt;/a&gt;."/>
 </WixLocalization>

@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -629,6 +630,32 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void ResponseProducesMetadataWithIResultImplementor()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(CustomIResultImplementor), StatusCodes.Status200OK)] () => new CustomIResultImplementor { Content = "Hello, World!" });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.Type);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.ModelMetadata?.ModelType);
+
+        var okResponseFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", okResponseFormat.MediaType);
+    }
+
+    public class CustomIResultImplementor : IResult
+    {
+        public required string Content { get; set; }
+
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return httpContext.Response.WriteAsJsonAsync(this);
+        }
+    }
+
+    [Fact]
     public void AddsFromRouteParameterAsPath()
     {
         static void AssertPathParameter(ApiDescription apiDescription)
@@ -795,7 +822,9 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
@@ -1918,4 +1947,8 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     private class GenericClass<TType> { public required TType Value { get; set; } }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }

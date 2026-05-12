@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 internal sealed class BrowserFileFromFormFile(IFormFile formFile) : IBrowserFile
 {
-    public string Name => formFile.Name;
+    public string Name => formFile.FileName;
 
     public DateTimeOffset LastModified => DateTimeOffset.Parse(formFile.Headers.LastModified.ToString(), CultureInfo.InvariantCulture);
 

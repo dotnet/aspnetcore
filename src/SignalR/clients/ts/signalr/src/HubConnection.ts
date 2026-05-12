@@ -721,10 +721,19 @@ export class HubConnection {
             // Set the timeout timer
             this._timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
 
+            // Immediately fire Keep-Alive ping if nextPing is overdue to avoid dependency on JS timers
+            let nextPing = this._nextKeepAlive - new Date().getTime();
+            if (nextPing < 0) {
+                if (this._connectionState === HubConnectionState.Connected) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this._trySendPingMessage();
+                }
+                return;
+            }
+
             // Set keepAlive timer if there isn't one
             if (this._pingServerHandle === undefined)
             {
-                let nextPing = this._nextKeepAlive - new Date().getTime();
                 if (nextPing < 0) {
                     nextPing = 0;
                 }
@@ -732,13 +741,7 @@ export class HubConnection {
                 // The timer needs to be set from a networking callback to avoid Chrome timer throttling from causing timers to run once a minute
                 this._pingServerHandle = setTimeout(async () => {
                     if (this._connectionState === HubConnectionState.Connected) {
-                        try {
-                            await this._sendMessage(this._cachedPingMessage);
-                        } catch {
-                            // We don't care about the error. It should be seen elsewhere in the client.
-                            // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
-                            this._cleanupPingTimer();
-                        }
+                        await this._trySendPingMessage();
                     }
                 }, nextPing);
             }
@@ -1148,5 +1151,15 @@ export class HubConnection {
 
     private _createCloseMessage(): CloseMessage {
         return { type: MessageType.Close };
+    }
+
+    private async _trySendPingMessage(): Promise<void> {
+        try {
+            await this._sendMessage(this._cachedPingMessage);
+        } catch {
+            // We don't care about the error. It should be seen elsewhere in the client.
+            // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
+            this._cleanupPingTimer();
+        }
     }
 }

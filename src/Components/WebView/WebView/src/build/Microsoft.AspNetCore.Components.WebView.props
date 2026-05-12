@@ -9,8 +9,11 @@
       _AddBlazorWebViewAssets;
     </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
+  <PropertyGroup>
+    <_AddBlazorWebViewAssetsDependsOn Condition="'$(JSModulesEnabled)' == 'true'">GenerateJSModuleManifestBuildStaticWebAssets</_AddBlazorWebViewAssetsDependsOn>
+  </PropertyGroup>
 
-  <Target Name="_AddBlazorWebViewAssets" DependsOnTargets="GenerateJSModuleManifestBuildStaticWebAssets">
+  <Target Name="_AddBlazorWebViewAssets" DependsOnTargets="$(_AddBlazorWebViewAssetsDependsOn)">
     <PropertyGroup>
       <_WebViewAssetsBasePath Condition="'$(_WebViewAssetsBasePath)' == ''">$(MSBuildThisFileDirectory)..\staticwebassets\</_WebViewAssetsBasePath>
       <_BlazorWebViewJsPath>$(_WebViewAssetsBasePath)blazor.webview.js</_BlazorWebViewJsPath>

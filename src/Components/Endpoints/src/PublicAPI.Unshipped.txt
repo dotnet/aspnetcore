@@ -1,5 +1,24 @@
 #nullable enable
-Microsoft.AspNetCore.Components.ResourcePreloader
-Microsoft.AspNetCore.Components.ResourcePreloader.ResourcePreloader() -> void
-Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions
-static Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions.RegisterPersistentService<TPersistentService>(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
+Microsoft.AspNetCore.Components.Endpoints.BasePath
+Microsoft.AspNetCore.Components.Endpoints.BasePath.BasePath() -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.set -> void
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.Cookie = 0 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType.SessionStorage = 1 -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
+Microsoft.AspNetCore.Components.ITempData
+Microsoft.AspNetCore.Components.ITempData.Get(string! key) -> object?
+Microsoft.AspNetCore.Components.ITempData.Keep() -> void
+Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
+Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
+Microsoft.AspNetCore.Components.ConfigureBrowser
+Microsoft.AspNetCore.Components.ConfigureBrowser.ConfigureBrowser() -> void
+Microsoft.AspNetCore.Components.ConfigureBrowser.Configuration.get -> Microsoft.AspNetCore.Components.BrowserConfiguration!
+Microsoft.AspNetCore.Components.ConfigureBrowser.Configuration.set -> void
+Microsoft.AspNetCore.Components.ConfigureBrowser.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
+Microsoft.AspNetCore.Components.ConfigureBrowser.HttpContext.set -> void
+Microsoft.AspNetCore.Http.BrowserConfigurationHttpContextExtensions
+static Microsoft.AspNetCore.Http.BrowserConfigurationHttpContextExtensions.GetBrowserConfiguration(this Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Components.BrowserConfiguration!
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.WithBrowserConfiguration(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.BrowserConfiguration!>! configure) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!

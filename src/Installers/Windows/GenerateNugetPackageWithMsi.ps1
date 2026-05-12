@@ -4,7 +4,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$Name,
     [Parameter(Mandatory=$true)][string]$MsiPath,
-    [Parameter(Mandatory=$false)][string]$CabPath,
     [Parameter(Mandatory=$true)][string]$NuspecFile,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
     [Parameter(Mandatory=$true)][string]$Architecture,
@@ -14,25 +13,15 @@ param(
     [Parameter(Mandatory=$true)][string]$MinorVersion,
     [Parameter(Mandatory=$true)][string]$PackageIcon,
     [Parameter(Mandatory=$true)][string]$PackageIconFullPath,
-    [Parameter(Mandatory=$true)][string]$PackageLicenseExpression
+    [Parameter(Mandatory=$true)][string]$PackageLicenseExpression,
+    [Parameter(Mandatory=$true)][string]$DotNetPath
 )
 
-$NuGetDir = Join-Path $RepoRoot "artifacts\Tools\nuget\$Name\$Architecture"
-$NuGetExe = Join-Path $NuGetDir "nuget.exe"
+$NuspecProperties = "ASPNETCORE_RUNTIME_MSI=$MsiPath;ARCH=$Architecture;MAJOR=$MajorVersion;MINOR=$MinorVersion;PackageIcon=$PackageIcon;PackageIconFullPath=$PackageIconFullPath;PackageLicenseExpression=$PackageLicenseExpression"
 
-if (-not (Test-Path $NuGetDir)) {
-    New-Item -ItemType Directory -Force -Path $NuGetDir | Out-Null
-}
+& "$DotNetPath" pack "$NuspecFile" `
+    --property "$NuspecProperties" `
+    --version $PackageVersion `
+    -o "$OutputDirectory"
 
-if (-not (Test-Path $NuGetExe)) {
-    Write-Output "Downloading nuget.exe to $NuGetExe"
-    wget https://dist.nuget.org/win-x86-commandline/v5.6.0/nuget.exe -OutFile $NuGetExe
-}
-
-& $NuGetExe pack $NuspecFile `
-    -Version $PackageVersion `
-    -OutputDirectory $OutputDirectory `
-    -NoDefaultExcludes `
-    -NoPackageAnalysis `
-    -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;PackageIcon=$PackageIcon`;PackageIconFullPath=$PackageIconFullPath`;PackageLicenseExpression=$PackageLicenseExpression`;
 Exit $LastExitCode

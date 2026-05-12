@@ -1,55 +1,78 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">Instalační program pro [BundleNameFull]</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">Verze [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">Opravdu chcete akci zrušit?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">Předchozí verze</String>
-  <String Id="HelpHeader">Nápověda nastavení</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]adresář[\]] – Nainstaluje, opraví, odinstaluje nebo
-   vytvoří úplnou místní kopii svazku v adresáři. Výchozí možností je instalace.
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="Instalace [WixBundleName]"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="Verze [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="Opravdu chcete akci zrušit?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Předchozí verze"/>
+  <String Id="HelpHeader" Value="Nápověda k nastavení"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]adresář[\]]– nainstaluje, opraví, odinstaluje nebo
+   vytvoří úplnou místní kopii sady v adresáři. Výchozí možností je instalace.
 
-/passive | /quiet –  Zobrazí minimální uživatelské rozhraní bez výzev nebo nezobrazí žádné uživatelské rozhraní a
-   žádné výzvy. Výchozí možností je zobrazení uživatelského rozhraní a všech výzev.
+/passive | /quiet – zobrazí minimální uživatelské rozhraní bez jakýchkoli výzev nebo nezobrazí žádné uživatelské rozhraní ani
+   žádné výzvy. Ve výchozím nastavení se zobrazí uživatelské rozhraní a všechny výzvy.
 
-/norestart   – potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní před restartováním zobrazí výzvu.
-/log log.txt – Uloží protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%.</String>
-  <String Id="HelpCloseButton">&amp;Zavřít</String>
-  <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami</String>
-  <String Id="InstallInstallButton">&amp;Instalovat</String>
-  <String Id="InstallCloseButton">&amp;Zavřít</String>
-  <String Id="ProgressHeader">Průběh instalace</String>
-  <String Id="ProgressLabel">Probíhá zpracování:</String>
-  <String Id="OverallProgressPackageText">Inicializace...</String>
-  <String Id="ProgressCancelButton">&amp;Storno</String>
-  <String Id="ModifyHeader">Změnit instalaci</String>
-  <String Id="ModifyRepairButton">Op&amp;ravit</String>
-  <String Id="ModifyUninstallButton">O&amp;dinstalovat</String>
-  <String Id="ModifyCloseButton">&amp;Zavřít</String>
-  <String Id="SuccessRepairHeader">Oprava byla úspěšně dokončena</String>
-  <String Id="SuccessUninstallHeader">Odinstalace se úspěšně dokončila</String>
-  <String Id="SuccessInstallHeader">Instalace se úspěšně dokončila</String>
-  <String Id="SuccessHeader">Instalace byla úspěšná.</String>
-  <String Id="SuccessLaunchButton">&amp;Spustit</String>
-  <String Id="SuccessRestartText">Před použitím tohoto softwaru musíte restartovat počítač.</String>
-  <String Id="SuccessRestartButton">&amp;Restartovat</String>
-  <String Id="SuccessCloseButton">&amp;Zavřít</String>
-  <String Id="FailureHeader">Instalace se nepovedla</String>
-  <String Id="FailureInstallHeader">Instalace se nepovedla</String>
-  <String Id="FailureUninstallHeader">Odinstalace se nepovedla</String>
-  <String Id="FailureRepairHeader">Oprava se nepovedla</String>
-  <String Id="FailureHyperlinkLogText">Jeden nebo více problémů způsobilo selhání instalace. Opravte tyto problémy a znovu spusťte instalaci. Pro více informací se podívejte do &lt;a href="#"&gt;souboru protokolu&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Pro dokončení vrácení změn tohoto softwaru je potřeba restartovat počítač.</String>
-  <String Id="FailureRestartButton">&amp;Restartovat</String>
-  <String Id="FailureCloseButton">&amp;Zavřít</String>
-  <String Id="FilesInUseHeader">Soubory jsou používány</String>
-  <String Id="FilesInUseLabel">Následující aplikace používají soubory, které je potřeba aktualizovat:</String>
-  <String Id="FilesInUseCloseRadioButton">Zavřete &amp;aplikace a zkuste je restartovat.</String>
-  <String Id="FilesInUseDontCloseRadioButton">A&amp;plikace nezavírejte. Bude potřeba provést restart.</String>
-  <String Id="FilesInUseOkButton">&amp;OK</String>
-  <String Id="FilesInUseCancelButton">&amp;Zrušit</String>
+/norestart – potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní zobrazí před restartováním výzvu.
+/log log.txt – zapíše protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Zavřít"/>
+  <String Id="InstallAcceptCheckbox" Value="&amp;Souhlasím s licenčními podmínkami a ujednáními"/>
+  <String Id="InstallInstallButton" Value="Na&amp;instalovat"/>
+  <String Id="InstallCloseButton" Value="&amp;Zavřít"/>
+  <String Id="ProgressHeader" Value="Průběh instalace"/>
+  <String Id="ProgressLabel" Value="Zpracování:"/>
+  <String Id="OverallProgressPackageText" Value="Probíhá inicializace..."/>
+  <String Id="ProgressCancelButton" Value="&amp;Zrušit"/>
+  <String Id="ModifyHeader" Value="Upravit nastavení"/>
+  <String Id="ModifyRepairButton" Value="&amp;Opravit"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Odinstalovat"/>
+  <String Id="ModifyCloseButton" Value="&amp;Zavřít"/>
+  <String Id="SuccessCacheHeader" Value="Úspěšné dokončení mezipaměti"/>
+  <String Id="SuccessModifyHeader" Value="Úprava byla úspěšně dokončena."/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Odinstalace se úspěšně dokončila."/>
+  <String Id="SuccessLayoutHeader" Value="Rozložení se úspěšně dokončilo."/>
+  <String Id="SuccessRepairHeader" Value="Oprava byla úspěšně dokončena."/>
+  <String Id="SuccessUninstallHeader" Value="Odinstalace se úspěšně dokončila."/>
+  <String Id="SuccessInstallHeader" Value="Instalace se úspěšně dokončila"/>
+  <String Id="SuccessHeader" Value="Instalace byla úspěšná"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Spustit"/>
+  <String Id="SuccessRestartText" Value="Před použitím tohoto softwaru musíte restartovat počítač."/>
+  <String Id="SuccessUninstallRestartText" Value="Odebrání softwaru dokončíte restartováním počítače."/>
+  <String Id="SuccessRestartButton" Value="&amp;Restartovat"/>
+  <String Id="SuccessCloseButton" Value="&amp;Zavřít"/>
+  <String Id="FailureHeader" Value="Instalace selhala."/>
+  <String Id="FailureCacheHeader" Value="Mezipaměť selhala."/>
+  <String Id="FailureLayoutHeader" Value="Rozložení selhalo."/>
+  <String Id="FailureInstallHeader" Value="Instalace selhala."/>
+  <String Id="FailureUninstallHeader" Value="Odinstalace selhala."/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Odinstalace selhala."/>
+  <String Id="FailureRepairHeader" Value="Oprava selhala."/>
+  <String Id="FailureModifyHeader" Value="Úprava selhala."/>
+  <String Id="FailureHyperlinkLogText" Value="Nejméně jeden problém způsobil, že instalace selhala. Opravte prosím tyto problémy a zkuste instalaci zopakovat. Další informace najdete v &lt;a href=&quot;#&quot;&gt;souboru protokolu&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="Pro dokončení vrácení změn tohoto softwaru je potřeba restartovat počítač."/>
+  <String Id="FailureRestartButton" Value="&amp;Restartovat"/>
+  <String Id="FailureCloseButton" Value="&amp;Zavřít"/>
+  <String Id="FilesInUseHeader" Value="Soubory jsou používány"/>
+  <String Id="FilesInUseLabel" Value="Následující aplikace používají soubory, které je potřeba aktualizovat:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Zavřít aplikace a pokusit se je znovu spustit"/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Nezavírat aplikace Bude nutné restartovat počítač."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="&amp;Zavřít aplikace"/>
+  <String Id="FilesInUseOkButton" Value="&amp;OK"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Zrušit"/>
+  <String Id="FilesInUseRetryButton" Value="Opakov&amp;at"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Přeskočit"/>
+  <String Id="FilesInUseExitButton" Value="&amp;Ukončit"/>
+  <String Id="FilesInUseTitle" Value="Soubory jsou používány."/>
+  <String Id="LicenseAssent" Value="Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami:"/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Prohlášení o zásadách ochrany osobních údajů&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informace o licencování pro .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Shromažďování telemetrie a výslovný nesouhlas&lt;/A&gt;"/>
 
-  <String Id="Welcome">Vítá vás instalační program produktu [WixBundleName]</String>
-  <String Id="EulaPrivacy">[WixBundleName] – &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;licenční podmínky&lt;/a&gt; a &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;</String>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] – &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;licenční podmínky&lt;/a&gt; a &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;prohlášení o zásadách ochrany osobních údajů&lt;/a&gt;"/>
 </WixLocalization>

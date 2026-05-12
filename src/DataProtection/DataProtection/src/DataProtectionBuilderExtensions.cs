@@ -312,7 +312,7 @@ public static class DataProtectionBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
     /// <param name="protectToLocalMachine">'true' if the key should be decryptable by any
-    /// use on the local machine, 'false' if the key should only be decryptable by the current
+    /// user on the local machine, 'false' if the key should only be decryptable by the current
     /// Windows user account.</param>
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     /// <remarks>

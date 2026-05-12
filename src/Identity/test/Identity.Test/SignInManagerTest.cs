@@ -39,8 +39,8 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -68,12 +68,12 @@ public class SignInManagerTest
         manager.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "password"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "locked_out"),
             ]));
         Assert.Empty(signInUserPrincipal.GetMeasurementSnapshot());
@@ -84,7 +84,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var checkPasswordSignIn = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.CheckPasswordCounterName);
+        using var checkPasswordSignIn = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -348,8 +348,8 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         const string loginProvider = "login";
@@ -392,31 +392,31 @@ public class SignInManagerTest
         if (bypass)
         {
             Assert.Collection(authenticate.GetMeasurementSnapshot(),
-                m => MetricsHelpers.AssertContainsTags(m.Tags,
+                m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "external"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
                 ]));
             Assert.Collection(signInUserPrincipal.GetMeasurementSnapshot(),
                 m => MetricsHelpers.AssertContainsTags(m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 ]));
         }
         else
         {
             Assert.Collection(authenticate.GetMeasurementSnapshot(),
-                m => MetricsHelpers.AssertContainsTags(m.Tags,
+                m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "external"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "requires_two_factor"),
                 ]));
             Assert.Empty(signInUserPrincipal.GetMeasurementSnapshot());
@@ -428,8 +428,8 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
@@ -469,21 +469,183 @@ public class SignInManagerTest
         auth.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "passkey"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
             ]));
         Assert.Collection(signInUserPrincipal.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
             ]));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanRequireConfirmedEmailForPasskeySignIn(bool confirmed)
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
+        var assertionResult = PasskeyAssertionResult.Success(passkey, user);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeRequestOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                AssertionState = "<some-assertion-state>",
+                RequestOptionsJson = "<some-options-json>",
+            }));
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
+            .Returns(Task.FromResult(assertionResult));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        manager.Setup(m => m.IsEmailConfirmedAsync(user)).ReturnsAsync(confirmed).Verifiable();
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        if (confirmed)
+        {
+            manager
+                .Setup(m => m.AddOrUpdatePasskeyAsync(user, passkey))
+                .Returns(Task.FromResult(IdentityResult.Success))
+                .Verifiable();
+            SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
+        }
+        SetupPasskeyAuth(context, auth);
+
+        var identityOptions = new IdentityOptions();
+        identityOptions.SignIn.RequireConfirmedEmail = true;
+        var logger = new TestLogger<SignInManager<PocoUser>>();
+        var helper = SetupSignInManager(manager.Object, context, logger, identityOptions);
+
+        // Act
+        await helper.MakePasskeyRequestOptionsAsync(user);
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+
+        // Assert
+        Assert.Equal(confirmed, signInResult.Succeeded);
+        Assert.NotEqual(confirmed, signInResult.IsNotAllowed);
+
+        var message = $"User cannot sign in without a confirmed email.";
+        if (!confirmed)
+        {
+            Assert.Contains(message, logger.LogMessages);
+        }
+        else
+        {
+            Assert.DoesNotContain(message, logger.LogMessages);
+        }
+
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanRequireConfirmedPhoneNumberForPasskeySignIn(bool confirmed)
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
+        var assertionResult = PasskeyAssertionResult.Success(passkey, user);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeRequestOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                AssertionState = "<some-assertion-state>",
+                RequestOptionsJson = "<some-options-json>",
+            }));
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
+            .Returns(Task.FromResult(assertionResult));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        manager.Setup(m => m.IsPhoneNumberConfirmedAsync(user)).ReturnsAsync(confirmed).Verifiable();
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        if (confirmed)
+        {
+            manager
+                .Setup(m => m.AddOrUpdatePasskeyAsync(user, passkey))
+                .Returns(Task.FromResult(IdentityResult.Success))
+                .Verifiable();
+            SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
+        }
+        SetupPasskeyAuth(context, auth);
+
+        var identityOptions = new IdentityOptions();
+        identityOptions.SignIn.RequireConfirmedPhoneNumber = true;
+        var logger = new TestLogger<SignInManager<PocoUser>>();
+        var helper = SetupSignInManager(manager.Object, context, logger, identityOptions);
+
+        // Act
+        await helper.MakePasskeyRequestOptionsAsync(user);
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+
+        // Assert
+        Assert.Equal(confirmed, signInResult.Succeeded);
+        Assert.NotEqual(confirmed, signInResult.IsNotAllowed);
+
+        var message = $"User cannot sign in without a confirmed phone number.";
+        if (!confirmed)
+        {
+            Assert.Contains(message, logger.LogMessages);
+        }
+        else
+        {
+            Assert.DoesNotContain(message, logger.LogMessages);
+        }
+
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Fact]
+    public async Task PasskeySignInReturnsLockedOutWhenLockedOut()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
+        var assertionResult = PasskeyAssertionResult.Success(passkey, user);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.MakeRequestOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                AssertionState = "<some-assertion-state>",
+                RequestOptionsJson = "<some-options-json>",
+            }));
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
+            .Returns(Task.FromResult(assertionResult));
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        manager.Setup(m => m.SupportsUserLockout).Returns(true).Verifiable();
+        manager.Setup(m => m.IsLockedOutAsync(user)).ReturnsAsync(true).Verifiable();
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        SetupPasskeyAuth(context, auth);
+
+        var logger = new TestLogger<SignInManager<PocoUser>>();
+        var helper = SetupSignInManager(manager.Object, context, logger);
+
+        // Act
+        await helper.MakePasskeyRequestOptionsAsync(user);
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+
+        // Assert
+        Assert.False(signInResult.Succeeded);
+        Assert.True(signInResult.IsLockedOut);
+        Assert.Contains($"User is currently locked out.", logger.LogMessages);
+        manager.Verify();
+        auth.Verify();
     }
 
     private static void SetupPasskeyAuth(HttpContext context, Mock<IAuthenticationService> auth)
@@ -778,7 +940,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -800,7 +962,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException"),
             ]));
     }
@@ -814,7 +976,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
 
         var user = new PocoUser { UserName = "Foo" };
         var context = new DefaultHttpContext();
@@ -855,11 +1017,11 @@ public class SignInManagerTest
         signInManager.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", isPersistent),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", isPersistent),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
             ]));
     }
@@ -868,8 +1030,8 @@ public class SignInManagerTest
     public async Task ResignInNoOpsAndLogsErrorIfNotAuthenticated()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var context = new DefaultHttpContext();
@@ -892,10 +1054,10 @@ public class SignInManagerTest
             Times.Never());
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "failure"),
             ]));
         Assert.Empty(signInUserPrincipal.GetMeasurementSnapshot());
@@ -1044,7 +1206,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var rememberTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.RememberTwoFactorCounterName);
+        using var rememberTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.RememberedTwoFactorCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -1069,7 +1231,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.TwoFactorRememberMe"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.TwoFactorRememberMe"),
             ]));
     }
 
@@ -1078,7 +1240,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var forgetTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.ForgetTwoFactorCounterName);
+        using var forgetTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.ForgottenTwoFactorCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -1101,7 +1263,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.TwoFactorRememberMe"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.TwoFactorRememberMe"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException"),
             ]));
     }
@@ -1152,7 +1314,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutUserPrincipalCounterName);
+        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutsCounterName);
 
         var manager = MockHelpers.TestUserManager<PocoUser>(meterFactory: testMeterFactory);
         var context = new DefaultHttpContext();
@@ -1172,7 +1334,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
             ]));
     }
 
@@ -1181,7 +1343,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutUserPrincipalCounterName);
+        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutsCounterName);
 
         var manager = MockHelpers.TestUserManager<PocoUser>(meterFactory: testMeterFactory);
         var context = new DefaultHttpContext();
@@ -1197,7 +1359,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException"),
             ]));
     }
@@ -1207,7 +1369,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -1230,11 +1392,11 @@ public class SignInManagerTest
         context.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "failure"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "password"),
             ]));

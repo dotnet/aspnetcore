@@ -762,4 +762,74 @@ public static class NavigationManagerExtensions
 
         return true;
     }
+
+    /// <summary>
+    /// Returns a URI constructed from <see cref="NavigationManager.Uri"/> with a hash
+    /// added, updated, or removed.
+    /// </summary>
+    /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+    /// <param name="hash">The hash string. If empty, the hash will be removed from the URI.</param>
+    /// <returns>The URI with the specified hash.</returns>
+    /// <remarks>
+    /// <para>
+    /// If <paramref name="hash"/> does not start with <c>#</c>, then <c>#</c> will be prepended.
+    /// </para>
+    /// <para>
+    /// This method is useful when the document's <c>baseURI</c> differs from its location,
+    /// such as when a <c>&lt;base&gt;</c> element is used, since relative hash URLs are resolved
+    /// relative to the <c>baseURI</c>.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// @inject NavigationManager Nav
+    /// &lt;a href="@Nav.GetUriWithHash("section1")"&gt;Go to section 1&lt;/a&gt;
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static string GetUriWithHash(this NavigationManager navigationManager, string hash)
+    {
+        ArgumentNullException.ThrowIfNull(navigationManager);
+        ArgumentNullException.ThrowIfNull(hash);
+
+        var uri = navigationManager.Uri;
+        var existingHashIndex = uri.IndexOf('#');
+
+        // Determine the length of the URI without the existing hash
+        var uriWithoutHashLength = existingHashIndex < 0 ? uri.Length : existingHashIndex;
+
+        if (hash.Length == 0)
+        {
+            // If removing hash and there wasn't one, return original URI
+            if (existingHashIndex < 0)
+            {
+                return uri;
+            }
+
+            // Return just the URI part without hash
+            return uri.Substring(0, uriWithoutHashLength);
+        }
+
+        var hashStartsWithSymbol = hash[0] == '#';
+
+        // Calculate the total length needed
+        var totalLength = uriWithoutHashLength + (hashStartsWithSymbol ? hash.Length : hash.Length + 1);
+
+        return string.Create(totalLength, (uri, hash, uriWithoutHashLength, hashStartsWithSymbol), static (chars, state) =>
+        {
+            var (uriValue, hashValue, uriLength, startsWithSymbol) = state;
+
+            // Copy URI without hash
+            uriValue.AsSpan(0, uriLength).CopyTo(chars);
+            var position = uriLength;
+
+            // Add '#' if hash doesn't start with one
+            if (!startsWithSymbol)
+            {
+                chars[position++] = '#';
+            }
+
+            // Copy hash
+            hashValue.AsSpan().CopyTo(chars[position..]);
+        });
+    }
 }

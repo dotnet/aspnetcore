@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     if (!serviceProviderIsService.IsService(type))
                     {
                         options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
-                        options.EndpointBuilder.Metadata.Add(ApiEndpointMetadata.Instance);
+                        options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
                         break;
                     }
                 }
@@ -335,17 +335,17 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-    file sealed class ApiEndpointMetadata : IApiEndpointMetadata
+    file sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
     {
-        public static readonly ApiEndpointMetadata Instance = new();
+        public static readonly DisableCookieRedirectMetadata Instance = new();
 
-        private ApiEndpointMetadata()
+        private DisableCookieRedirectMetadata()
         {
         }
 
-        public static void AddApiEndpointMetadataIfMissing(EndpointBuilder builder)
+        public static void AddMetadataIfMissing(EndpointBuilder builder)
         {
-            if (!builder.Metadata.Any(m => m is IApiEndpointMetadata))
+            if (!builder.Metadata.Any(m => m is IDisableCookieRedirectMetadata))
             {
                 builder.Metadata.Add(Instance);
             }

@@ -137,6 +137,6 @@ public sealed partial class JsonHttpResult<TValue> : IResult, IEndpointMetadataP
 
     static void IEndpointMetadataProvider.PopulateMetadata(MethodInfo method, EndpointBuilder builder)
     {
-        builder.Metadata.Add(ApiEndpointMetadata.Instance);
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

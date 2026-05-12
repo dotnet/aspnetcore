@@ -36,6 +36,16 @@ public interface IFormFile
     /// <summary>
     /// Gets the file name from the Content-Disposition header.
     /// </summary>
+    /// <remarks>
+    /// Do not use the <see cref="FileName"/> property of <see cref="IFormFile"/> other than for display and logging.
+    /// When displaying or logging, HTML encode the file name. A cyberattacker can provide a malicious filename, including full paths or relative paths.
+    /// <para>
+    /// You can use the following code to remove the path from the file name:
+    /// </para>
+    /// <code>
+    /// string untrustedFileName = Path.GetFileName(formFile.FileName);
+    /// </code>
+    /// </remarks>
     string FileName { get; }
 
     /// <summary>

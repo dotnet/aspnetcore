@@ -87,8 +87,20 @@ internal sealed class Response
         get { return _reasonPhrase; }
         set
         {
-            // TODO: Validate user input for illegal chars, length limit, etc.?
             CheckResponseStarted();
+
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
     }
@@ -235,6 +247,12 @@ internal sealed class Response
         {
             throw new InvalidOperationException("Headers already sent.");
         }
+    }
+
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(Resources.FormatException_InvalidReasonPhraseCharacter(
+            string.Format(CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
     }
 
     [MemberNotNull(nameof(_nativeStream))]

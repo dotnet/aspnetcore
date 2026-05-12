@@ -44,7 +44,6 @@ public class NoContentResultTests
     {
         // Arrange
         NoContent MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
@@ -56,7 +55,7 @@ public class NoContentResultTests
         Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
 
         // Assert ApiEndpointMetadata is added
-        Assert.Contains(builder.Metadata, m => m is IApiEndpointMetadata);
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]

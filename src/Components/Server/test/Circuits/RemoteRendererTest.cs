@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -9,6 +8,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -21,10 +21,6 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering;
 
 public class RemoteRendererTest
 {
-    // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
-    // failures.
-    private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
-
     private const int MaxInteractiveServerRootComponentCount = 3;
 
     private readonly IDataProtectionProvider _ephemeralDataProtectionProvider = new EphemeralDataProtectionProvider();
@@ -129,7 +125,6 @@ public class RemoteRendererTest
     public async Task ProcessBufferedRenderBatches_WritesRenders()
     {
         // Arrange
-        var @event = new ManualResetEventSlim();
         var serviceProvider = CreateServiceProvider();
         var renderIds = new List<long>();
 
@@ -159,15 +154,19 @@ public class RemoteRendererTest
         component.TriggerRender();
         _ = renderer.OnRenderCompletedAsync(2, null);
 
-        @event.Reset();
         firstBatchTCS.SetResult();
 
-        // Waiting is required here because the continuations of SetResult will not execute synchronously.
-        @event.Wait(Timeout);
-
-        circuitClient.SetDisconnected();
-        component.TriggerRender();
-        component.TriggerRender();
+        // After SetResult, async continuations are queued on the renderer's
+        // dispatcher. Run the remaining setup on the dispatcher so that:
+        // 1) All prior queued work drains before our callback executes, and
+        // 2) TriggerRender runs with CheckAccess() == true, bypassing the
+        //    internal task queue and executing the render synchronously.
+        await renderer.Dispatcher.InvokeAsync(() =>
+        {
+            circuitClient.SetDisconnected();
+            component.TriggerRender();
+            component.TriggerRender();
+        });
 
         // Act
         circuitClient.Transfer(client.Object, "new-connection");
@@ -767,7 +766,13 @@ public class RemoteRendererTest
         public void TriggerRender()
         {
             var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
-            Assert.True(task.IsCompletedSuccessfully);
+
+            // Log the task state for debugging purposes.
+            var status = task.Status;
+            var innerException = task.Exception?.InnerException;
+            var message = $"Render task should succeed synchronously.\nStatus: '{status}'\nInner exception: '{innerException}'";
+
+            Assert.True(task.IsCompletedSuccessfully, message);
         }
     }
 

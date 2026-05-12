@@ -46,7 +46,6 @@
     <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
     <BuildDebPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64'">true</BuildRpmPackage>
-    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
     <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>
   </PropertyGroup>
 
@@ -137,9 +136,10 @@
   </Target>
 
   <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
+    <!-- Set _PublishingToLayout=true to differentiate global properties for this nested MSBuild call and avoid an intermittent circular dependency involving GetFilesToPublish. -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="PublishToDisk"
-             Properties="OutputPath=$(SharedFrameworkLayoutRoot)" />
+             Properties="OutputPath=$(SharedFrameworkLayoutRoot);_PublishingToLayout=true" />
   </Target>
 
   <Target Name="ReturnProductVersion" Returns="$(Version)" />

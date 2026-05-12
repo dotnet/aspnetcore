@@ -1,0 +1,29 @@
+<style>
+    html, body { overflow-y: scroll }
+</style>
+
+<div style="overflow-x: auto; overflow-y: hidden;">
+    <table id="horizontal-overflow-table" style="width: 100%; table-layout: auto;">
+        <thead style="position: sticky; top: 0; background-color: silver">
+            <tr>
+                <th>Item</th>
+                @for (var i = 0; i < 20; i++)
+                {
+                    <th style="text-wrap: nowrap">Another column</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            <Virtualize Items="@fixedItems" ItemSize="30" SpacerElement="tr">
+                <tr @key="context" style="height: 30px;" id="horizontal-overflow-row-@context">
+                    <td>Item @context</td>
+                    <td>Another value</td>
+                </tr>
+            </Virtualize>
+        </tbody>
+    </table>
+</div>
+
+@code {
+    List<int> fixedItems = Enumerable.Range(0, 1000).ToList();
+}

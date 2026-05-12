@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 public class ApiDescriptionExtensionsTests
 {
@@ -31,6 +32,30 @@ public class ApiDescriptionExtensionsTests
         Assert.Equal(expectedItemPath, itemPath);
     }
 
+    [Theory]
+    [InlineData("/~health", "~health", "/~health")]
+    [InlineData("/~api/todos", "~api/todos", "/~api/todos")]
+    [InlineData("/~api/todos/{id}", "~api/todos/{id}", "/~api/todos/{id}")]
+    [InlineData("~/health", "health", "/health")]
+    [InlineData("~/api/todos", "api/todos", "/api/todos")]
+    [InlineData("~/api/todos/{id}", "api/todos/{id}", "/api/todos/{id}")]
+    public void MapRelativePathToItemPath_WithRoutePattern_HandlesRoutesThatStartWithTilde(string rawPattern, string relativePath, string expectedItemPath)
+    {
+        // Arrange
+        var routePattern = RoutePatternFactory.Parse(rawPattern);
+        var apiDescription = new ApiDescription
+        {
+            RelativePath = relativePath,
+            RoutePattern = routePattern
+        };
+
+        // Act
+        var itemPath = apiDescription.MapRelativePathToItemPath();
+
+        // Assert
+        Assert.Equal(expectedItemPath, itemPath);
+    }
+
     public static class HttpMethodTestData
     {
         public static IEnumerable<object[]> TestCases => new List<object[]>
@@ -43,6 +68,7 @@ public class ApiDescriptionExtensionsTests
             new object[] { "HEAD", HttpMethod.Head },
             new object[] { "OPTIONS", HttpMethod.Options },
             new object[] { "TRACE", HttpMethod.Trace },
+            new object[] { "QUERY", HttpMethod.Query },
             new object[] { "gEt", HttpMethod.Get }, // Test case-insensitivity
         };
     }
@@ -64,19 +90,19 @@ public class ApiDescriptionExtensionsTests
         Assert.Equal(expectedHttpMethod, result);
     }
 
-    [Theory]
-    [InlineData("UNKNOWN")]
-    [InlineData("unknown")]
-    public void GetHttpMethod_ThrowsForUnknownHttpMethod(string methodName)
+    [Fact]
+    public void GetHttpMethod_ReturnsNullForUnsupportedMethod()
     {
-        // Arrange
+        // Arrange - Test that unsupported HTTP methods return null
         var apiDescription = new ApiDescription
         {
-            HttpMethod = methodName
+            HttpMethod = "UNSUPPORTED"
         };
 
-        // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.GetHttpMethod());
-        Assert.Equal($"Unsupported HTTP method: {methodName}", exception.Message);
+        // Act
+        var result = apiDescription.GetHttpMethod();
+
+        // Assert
+        Assert.Null(result);
     }
 }

@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <_BlazorGatewayDll Condition="'$(_BlazorGatewayDll)' == ''">$(MSBuildThisFileDirectory)../tools/blazor-gateway.dll</_BlazorGatewayDll>
+    <!-- Prevents the runtime SDK (Microsoft.NET.Sdk.WebAssembly.Browser.targets) from overriding
+         RunCommand/RunArguments with WasmAppHost when _UseBlazorDevServer is false. -->
+    <_WebAssemblyUserRunParameters>true</_WebAssemblyUserRunParameters>
+  </PropertyGroup>
+
+  <Target Name="_BlazorGatewayComputeRunArguments" AfterTargets="ComputeRunArguments" DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    <PropertyGroup>
+      <RunCommand>dotnet</RunCommand>
+      <_GatewayStaticWebAssetsManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(StaticWebAssetDevelopmentManifestPath)'))</_GatewayStaticWebAssetsManifest>
+      <_GatewayEndpointsManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(StaticWebAssetEndpointsBuildManifestPath)'))</_GatewayEndpointsManifest>
+      <RunArguments>&quot;$(_BlazorGatewayDll)&quot; --environment Development --staticWebAssets &quot;$(_GatewayStaticWebAssetsManifest)&quot; --ClientApps:app:EndpointsManifest &quot;$(_GatewayEndpointsManifest)&quot; --ClientApps:app:PathPrefix &quot;&quot;</RunArguments>
+    </PropertyGroup>
+  </Target>
+</Project>

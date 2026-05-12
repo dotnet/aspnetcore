@@ -11,11 +11,11 @@
         Enterprise
 .PARAMETER Channel
     Selects which channel of Visual Studio to install. Must be one of these values:
-        Release (the default)
-        Preview
+        Release/Stable (the default)
+        Preview/Insiders
 .PARAMETER Version
     Selects which version of Visual Studio to install. Must be one of these values:
-        2022
+        2026
 .PARAMETER InstallPath
     The location on disk where Visual Studio should be installed or updated. Default path is location of latest
     existing installation of the specified edition, if any. If that VS edition is not currently installed, default
@@ -28,17 +28,17 @@
     https://visualstudio.com
     https://github.com/dotnet/aspnetcore/blob/main/docs/BuildFromSource.md
 .EXAMPLE
-    To install VS 2022 Community, run this command in PowerShell:
+    To install VS 2026 Community, run this command in PowerShell:
 
         .\InstallVisualStudio.ps1
 #>
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
     [string]$Edition = 'Community',
-    [ValidateSet('Release', 'Preview', 'IntPreview', 'Dogfood')]
+    [ValidateSet('Release', 'Stable', 'Preview', 'Insiders', 'IntPreview', 'Dogfood')]
     [string]$Channel = 'Release',
-    [ValidateSet('2022')]
-    [string]$Version = '2022',
+    [ValidateSet('2026')]
+    [string]$Version = '2026',
     [string]$InstallPath,
     [switch]$Passive,
     [switch]$Quiet
@@ -64,23 +64,29 @@ mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 $bootstrapper = "$intermedateDir\vsinstaller.exe"
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
-if ("$Version" -eq "2022") {
-    $vsversion = 17;
+$vsversion = 18;
+
+# Normalize channel names (Stable=Release, Insiders=Preview, Dogfood=IntPreview)
+switch ($Channel) {
+    'Stable' { $Channel = 'Release' }
+    'Insiders' { $Channel = 'Preview' }
+    'Dogfood' { $Channel = 'IntPreview' }
 }
-$channelUri = "https://aka.ms/vs/$vsversion/release"
+
 $responseFileName = "vs.$vsversion"
 if ("$Edition" -eq "BuildTools") {
     $responseFileName += ".buildtools"
 }
-if ("$Channel" -eq "Dogfood") {
-    $Channel = "IntPreview"
-}
+
 if ("$Channel" -eq "Preview") {
     $responseFileName += ".preview"
-    $channelUri = "https://aka.ms/vs/$vsversion/pre"
+    $channelUri = "https://aka.ms/vs/$vsversion/insiders"
 } elseif ("$Channel" -eq "IntPreview") {
     $responseFileName += ".intpreview"
     $channelUri = "https://aka.ms/vs/$vsversion/intpreview"
+} else {
+    # Release channel
+    $channelUri = "https://aka.ms/vs/$vsversion/stable"
 }
 
 $responseFile = "$PSScriptRoot\$responseFileName.json"
@@ -107,11 +113,9 @@ if (-not $InstallPath) {
 }
 
 if (-not $InstallPath) {
-    if ($vsversion -eq "17") {
-        $pathPrefix = "${env:ProgramFiles}";
-    }
+    $pathPrefix = "${env:ProgramFiles}";
     if ("$Channel" -eq "Preview") {
-        $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Pre"
+        $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Insiders"
     } elseif ("$Channel" -eq "IntPreview") {
         $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_IntPre"
     } else {

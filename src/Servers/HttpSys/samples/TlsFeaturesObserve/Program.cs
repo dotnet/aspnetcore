@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -30,6 +31,7 @@ app.Use(async (context, next) =>
 {
     var connectionFeature = context.Features.GetRequiredFeature<IHttpConnectionFeature>();
     var httpSysPropFeature = context.Features.GetRequiredFeature<IHttpSysRequestPropertyFeature>();
+    var tlsHandshakeFeature = context.Features.GetRequiredFeature<ITlsHandshakeFeature>();
 
     // first time invocation to find out required size
     var success = httpSysPropFeature.TryGetTlsClientHello(Array.Empty<byte>(), out var bytesReturned);
@@ -41,7 +43,14 @@ app.Use(async (context, next) =>
     success = httpSysPropFeature.TryGetTlsClientHello(bytes, out _);
     Debug.Assert(success);
 
-    await context.Response.WriteAsync($"[Response] connectionId={connectionFeature.ConnectionId}; tlsClientHello.length={bytesReturned}; tlsclienthello start={string.Join(' ', bytes.AsSpan(0, 30).ToArray())}");
+    await context.Response.WriteAsync(
+        $"""
+            connectionId            = {connectionFeature.ConnectionId};
+            negotiated cipher suite = {tlsHandshakeFeature.NegotiatedCipherSuite}; 
+            tlsClientHello.length   = {bytesReturned};
+            tlsclienthello start    = {string.Join(' ', bytes.AsSpan(0, 30).ToArray())}
+        """);
+        
     await next(context);
 });
 

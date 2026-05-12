@@ -28,7 +28,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Serilog.Extensions.Logging" />
     <Reference Include="Serilog.Sinks.File" />
-    <Reference Include="System.ValueTuple" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+    <Reference Include="System.ValueTuple" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
 
     <!--
       This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.

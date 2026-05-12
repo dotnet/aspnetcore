@@ -85,8 +85,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
-            GetContextBaseUri(httpContext.Request), 
-            GetFullUri(httpContext.Request), 
+            GetContextBaseUri(httpContext.Request),
+            GetFullUri(httpContext.Request),
             uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
@@ -122,11 +122,16 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             antiforgery.SetRequestContext(httpContext);
         }
 
+        if (httpContext.RequestServices.GetService<TempDataCascadingValueSupplier>() is {} tempDataSupplier)
+        {
+            tempDataSupplier.SetRequestContext(httpContext);
+        }
+
         // It's important that this is initialized since a component might try to restore state during prerendering
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
-        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore(), RestoreContext.InitialValue);
 
         if (componentType != null)
         {
@@ -168,11 +173,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {
-        if (_isReExecuted)
-        {
-            return;
-        }
-
         var streamRendering = componentState is null
             ? false
             : ((EndpointComponentState)componentState).StreamRendering;

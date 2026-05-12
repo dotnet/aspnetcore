@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
+
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -153,7 +155,7 @@ public class WebHostFunctionalTests : LoggedTest
         var applicationName = "CreateDefaultBuilderApp";
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
         {
-            TargetFramework = "net10.0",
+            TargetFramework = "net11.0",
             HostingModel = HostingModel.InProcess
         };
 
@@ -208,7 +210,7 @@ public class WebHostFunctionalTests : LoggedTest
     {
         var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitectures.Current)
         {
-            TargetFramework = "net10.0",
+            TargetFramework = "net11.0",
         };
 
         if (setTestEnvVars)

@@ -586,6 +586,68 @@ public class ValidatableTypeInfoTests
             });
     }
 
+    // The expected order of validation is:
+    // 1. Attributes on properties
+    // 2. Attributes on the type
+    // 3. IValidatableObject implementation
+    // If any of these steps report an error, the later steps are skipped.
+    [Fact]
+    public async Task Validate_IValidatableObject_WithPropertyErrors_ShortCircuitsProperly()
+    {
+        var testTypeInfo = new TestValidatableTypeInfo(
+            typeof(PropertyAndTypeLevelErrorObject),
+            [
+                CreatePropertyInfo(typeof(PropertyAndTypeLevelErrorObject), typeof(int), "Value", "Value",
+                    [new RangeAttribute(0, int.MaxValue) {  ErrorMessage = "Property attribute error" }])
+            ],
+            [
+                new CustomValidationAttribute()
+            ]);
+
+        // First case: 
+        var testTypeInstance = new PropertyAndTypeLevelErrorObject { Value = 15 };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(PropertyAndTypeLevelErrorObject), testTypeInfo }
+            }),
+            ValidationContext = new ValidationContext(testTypeInstance)
+        };
+
+        await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        var interfaceError = Assert.Single(context.ValidationErrors);
+        Assert.Equal(string.Empty, interfaceError.Key);
+        Assert.Equal("IValidatableObject error", interfaceError.Value.Single());
+
+        // Second case: 
+        testTypeInstance.Value = 5;
+        context.ValidationErrors = [];
+        context.ValidationContext = new ValidationContext(testTypeInstance);
+
+        await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        var classAttributeError = Assert.Single(context.ValidationErrors);
+        Assert.Equal(string.Empty, classAttributeError.Key);
+        Assert.Equal("Class attribute error", classAttributeError.Value.Single());
+
+        // Third case: 
+        testTypeInstance.Value = -5;
+        context.ValidationErrors = [];
+        context.ValidationContext = new ValidationContext(testTypeInstance);
+
+        await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        var propertyAttributeError = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Value", propertyAttributeError.Key);
+        Assert.Equal("Property attribute error", propertyAttributeError.Value.Single());
+    }
+
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
     private class GlobalErrorObject : IValidatableObject
     {
@@ -615,6 +677,36 @@ public class ValidatableTypeInfoTests
                     "FirstName and LastName are required.",
                     [nameof(FirstName), nameof(LastName)]);
             }
+        }
+    }
+
+    [CustomValidation]
+    private class PropertyAndTypeLevelErrorObject : IValidatableObject
+    {
+        [Range(0, int.MaxValue, ErrorMessage = "Property attribute error")]
+        public int Value { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Value < 20)
+            {
+                yield return new ValidationResult($"IValidatableObject error");
+            }
+        }
+    }
+
+    private class CustomValidationAttribute : ValidationAttribute
+    {
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            if (value is PropertyAndTypeLevelErrorObject instance)
+            {
+                if (instance.Value < 10)
+                {
+                    return new ValidationResult($"Class attribute error");
+                }
+            }
+            return ValidationResult.Success;
         }
     }
 
@@ -779,16 +871,6 @@ public class ValidatableTypeInfoTests
         }
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-    }
-
-    private class TestValidatableTypeInfo : ValidatableTypeInfo
-    {
-        public TestValidatableTypeInfo(
-            Type type,
-            ValidatablePropertyInfo[] members)
-            : base(type, members)
-        {
-        }
     }
 
     private class TestValidationOptions : ValidationOptions

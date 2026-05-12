@@ -213,6 +213,62 @@ public class NavigationManagerTest
         Assert.StartsWith("Cannot have empty query parameter names.", exception.Message);
     }
 
+    [Theory]
+    [InlineData("scheme://host/", "section1", "scheme://host/#section1")]
+    [InlineData("scheme://host/", "#section1", "scheme://host/#section1")]
+    [InlineData("scheme://host/path", "section1", "scheme://host/path#section1")]
+    [InlineData("scheme://host/path/", "section1", "scheme://host/path/#section1")]
+    [InlineData("scheme://host/path?query=value", "section1", "scheme://host/path?query=value#section1")]
+    [InlineData("scheme://host/path?query=value#oldHash", "section1", "scheme://host/path?query=value#section1")]
+    [InlineData("scheme://host/path#oldHash", "newHash", "scheme://host/path#newHash")]
+    [InlineData("scheme://host/path#old", "#new", "scheme://host/path#new")]
+    // Tests with non-root base paths (e.g., when using <base href="/subdir/">)
+    [InlineData("scheme://host/subdir/page", "section1", "scheme://host/subdir/page#section1")]
+    [InlineData("scheme://host/subdir/page", "#section1", "scheme://host/subdir/page#section1")]
+    [InlineData("scheme://host/subdir/page#old", "section1", "scheme://host/subdir/page#section1")]
+    [InlineData("scheme://host/app/subdir/page?query=value", "section1", "scheme://host/app/subdir/page?query=value#section1")]
+    public void GetUriWithHash_AddsOrReplacesHash(string baseUri, string hash, string expectedUri)
+    {
+        var navigationManager = new TestNavigationManager(baseUri);
+        var actualUri = navigationManager.GetUriWithHash(hash);
+
+        Assert.Equal(expectedUri, actualUri);
+    }
+
+    [Theory]
+    [InlineData("scheme://host/", "scheme://host/")]
+    [InlineData("scheme://host/path", "scheme://host/path")]
+    [InlineData("scheme://host/path#hash", "scheme://host/path")]
+    [InlineData("scheme://host/path?query=value#hash", "scheme://host/path?query=value")]
+    // Tests with non-root base paths (e.g., when using <base href="/subdir/">)
+    [InlineData("scheme://host/subdir/page#hash", "scheme://host/subdir/page")]
+    [InlineData("scheme://host/app/subdir/page?query=value#hash", "scheme://host/app/subdir/page?query=value")]
+    public void GetUriWithHash_RemovesHashWhenHashIsEmpty(string baseUri, string expectedUri)
+    {
+        var navigationManager = new TestNavigationManager(baseUri);
+
+        var actualUriWithEmpty = navigationManager.GetUriWithHash(string.Empty);
+        Assert.Equal(expectedUri, actualUriWithEmpty);
+    }
+
+    [Fact]
+    public void GetUriWithHash_ThrowsWhenNavigationManagerIsNull()
+    {
+        NavigationManager navigationManager = null;
+
+        var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithHash("hash"));
+        Assert.Equal("navigationManager", exception.ParamName);
+    }
+
+    [Fact]
+    public void GetUriWithHash_ThrowsWhenHashIsNull()
+    {
+        var navigationManager = new TestNavigationManager("scheme://host/");
+
+        var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithHash(null));
+        Assert.Equal("hash", exception.ParamName);
+    }
+
     [Fact]
     public void LocationChangingHandlers_CanContinueTheNavigationSynchronously_WhenOneHandlerIsRegistered()
     {
@@ -886,7 +942,173 @@ public class NavigationManagerTest
         // Assert
         Assert.True(notFoundTriggered, "The OnNotFound event was not triggered as expected.");
     }
- 
+
+    [Fact]
+    public void NavigateTo_WithRelativeToCurrentUri_ResolvesRelativeToCurrentPath()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder1/folder2/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("sibling.html", new NavigationOptions { RelativeToCurrentUri = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder1/folder2/sibling.html", testNavManager.Navigations[0].uri);
+        Assert.True(testNavManager.Navigations[0].options.RelativeToCurrentUri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithRelativeToCurrentUri_HandlesQueryAndFragmentInCurrentUri()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder1/page.html?query=value#hash";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("other.html", new NavigationOptions { RelativeToCurrentUri = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder1/other.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithRelativeToCurrentUriFalse_DoesNotResolve()
+    {
+        var baseUri = "scheme://host/base/";
+        var currentUri = "scheme://host/base/folder1/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("relative.html", new NavigationOptions { RelativeToCurrentUri = false });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("relative.html", testNavManager.Navigations[0].uri);
+        Assert.False(testNavManager.Navigations[0].options.RelativeToCurrentUri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithRelativeToCurrentUri_AtRootLevel()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("other.html", new NavigationOptions { RelativeToCurrentUri = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/other.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithRelativeToCurrentUri_NestedPaths()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/a/b/c/d/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("sibling.html", new NavigationOptions { RelativeToCurrentUri = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/a/b/c/d/sibling.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithRelativeToCurrentUri_WithQueryStringPreservesPath()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html?param=value";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("other.html?new=param", new NavigationOptions { RelativeToCurrentUri = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder/other.html?new=param", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_WithRelativeToCurrentUri_CurrentUriEndsWithSlash()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("sibling.html", new NavigationOptions { RelativeToCurrentUri = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder/sibling.html", testNavManager.Navigations[0].uri);
+    }
+
+    [Theory]
+    [InlineData("scheme://host/folder/page.html", "sibling.html", "scheme://host/folder/sibling.html")]
+    [InlineData("scheme://host/folder/page.html", "#section", "scheme://host/folder/page.html#section")]
+    [InlineData("scheme://host/folder/page.html", "?param=value", "scheme://host/folder/page.html?param=value")]
+    [InlineData("scheme://host/folder/page.html?existing=query", "?new=value", "scheme://host/folder/page.html?new=value")]
+    [InlineData("scheme://host/folder/page.html#existing", "#new", "scheme://host/folder/page.html#new")]
+    [InlineData("scheme://host/folder/", "sibling.html", "scheme://host/folder/sibling.html")]
+    [InlineData("http://a/b/c/d", "g:h", "http://a/b/c/g:h")]
+    // RFC 3986 Section 5.4 Reference Resolution Examples
+    [InlineData("http://a/b/c/d;p?q", "g", "http://a/b/c/g")]
+    [InlineData("http://a/b/c/d;p?q", "./g", "http://a/b/c/./g")]
+    [InlineData("http://a/b/c/d;p?q", "g/", "http://a/b/c/g/")]
+    [InlineData("http://a/b/c/d;p?q", "?y", "http://a/b/c/d;p?y")]
+    [InlineData("http://a/b/c/d;p?q", "g?y", "http://a/b/c/g?y")]
+    [InlineData("http://a/b/c/d;p?q", "#s", "http://a/b/c/d;p?q#s")]
+    [InlineData("http://a/b/c/d;p?q", "g#s", "http://a/b/c/g#s")]
+    [InlineData("http://a/b/c/d;p?q", "g?y#s", "http://a/b/c/g?y#s")]
+    [InlineData("http://a/b/c/d;p?q", ";x", "http://a/b/c/;x")]
+    [InlineData("http://a/b/c/d;p?q", "g;x", "http://a/b/c/g;x")]
+    [InlineData("http://a/b/c/d;p?q", "g;x?y#s", "http://a/b/c/g;x?y#s")]
+    [InlineData("http://a/b/c/d;p?q", ".", "http://a/b/c/.")]
+    [InlineData("http://a/b/c/d;p?q", "./", "http://a/b/c/./")]
+    [InlineData("http://a/b/c/d;p?q", "..", "http://a/b/c/..")]
+    [InlineData("http://a/b/c/d;p?q", "../", "http://a/b/c/../")]
+    [InlineData("http://a/b/c/d;p?q", "../g", "http://a/b/c/../g")]
+    [InlineData("http://a/b/c/d;p?q", "../..", "http://a/b/c/../..")]
+    [InlineData("http://a/b/c/d;p?q", "../../", "http://a/b/c/../../")]
+    [InlineData("http://a/b/c/d;p?q", "../../g", "http://a/b/c/../../g")]
+    public void NavigateTo_WithRelativeToCurrentUri_ResolvesCorrectly(string currentUri, string relativeUri, string expectedUri)
+    {
+        var baseUri = new Uri(currentUri).GetLeftPart(UriPartial.Authority) + "/";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo(relativeUri, new NavigationOptions { RelativeToCurrentUri = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal(expectedUri, testNavManager.Navigations[0].uri);
+    }
+
+    // These are absolute URIs and should throw
+    [Theory]
+    [InlineData("/g")]
+    [InlineData("//g")]
+    [InlineData("https://evil.com/malware")]
+    [InlineData("http://example.com/page")]
+    [InlineData("ftp://files.example.com/file.txt")]
+    [InlineData("/absolute-path")]
+    [InlineData("/folder/page.html")]
+    [InlineData("//cdn.example.com/script.js")]
+    [InlineData("scheme://host/other-page")]
+    public void NavigateTo_WithRelativeToCurrentUri_ThrowsForAbsoluteUri(string absoluteUri)
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        var ex = Assert.Throws<ArgumentException>(() =>
+            testNavManager.NavigateTo(absoluteUri, new NavigationOptions { RelativeToCurrentUri = true }));
+
+        Assert.Contains("is not a relative URI", ex.Message);
+        Assert.Contains("RelativeToCurrentUri", ex.Message);
+    }
+
+    [Fact]
+    public void ResolveRelativeToCurrentPath_ThrowsForNullUri()
+    {
+        var baseUri = "scheme://host/";
+        var testNavManager = new TestNavigationManager(baseUri, "scheme://host/page.html");
+
+        Assert.Throws<NullReferenceException>(() =>
+            testNavManager.ResolveRelativeToCurrentPath(null!));
+    }
+
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
@@ -913,6 +1135,21 @@ public class NavigationManagerTest
 
         protected override void SetNavigationLockState(bool value)
         {
+        }
+    }
+
+    private class TestNavigationManagerWithNavigationTracking : TestNavigationManager
+    {
+        public List<(string uri, NavigationOptions options)> Navigations { get; } = new();
+
+        public TestNavigationManagerWithNavigationTracking(string baseUri = null, string uri = null)
+            : base(baseUri, uri)
+        {
+        }
+
+        protected override void NavigateToCore(string uri, NavigationOptions options)
+        {
+            Navigations.Add((uri, options));
         }
     }
 

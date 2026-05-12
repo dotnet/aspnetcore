@@ -11,7 +11,7 @@ using Moq;
 public partial class OpenApiDocumentServiceTests
 {
     [Theory]
-    [InlineData("Development", "localhost:5001", "", "http", "http://localhost:5001/")]
+    [InlineData("Development", "localhost:5001", "", "http", "http://localhost:5001")]
     [InlineData("Development", "example.com", "/api", "https", "https://example.com/api")]
     [InlineData("Staging", "localhost:5002", "/v1", "http", "http://localhost:5002/v1")]
     [InlineData("Staging", "api.example.com", "/base/path", "https", "https://api.example.com/base/path")]
@@ -144,5 +144,40 @@ public partial class OpenApiDocumentServiceTests
 
         // Assert
         Assert.Empty(servers);
+    }
+
+    [Fact]
+    public void GetOpenApiServers_RemovesTrailingSlashWhenPathBaseIsEmpty()
+    {
+        // Arrange
+        var hostEnvironment = new HostingEnvironment
+        {
+            ApplicationName = "TestApplication",
+            EnvironmentName = "Development"
+        };
+        var docService = new OpenApiDocumentService(
+            "v1",
+            new Mock<IApiDescriptionGroupCollectionProvider>().Object,
+            hostEnvironment,
+            GetMockOptionsMonitor(),
+            new Mock<IKeyedServiceProvider>().Object,
+            new OpenApiTestServer(["http://localhost:5000"]));
+        var httpContext = new DefaultHttpContext()
+        {
+            Request =
+            {
+                Host = new HostString("example.com"),
+                PathBase = "",
+                Scheme = "https"
+            }
+        };
+
+        // Act
+        var servers = docService.GetOpenApiServers(httpContext.Request);
+
+        // Assert
+        Assert.Single(servers);
+        Assert.Equal("https://example.com", servers[0].Url);
+        Assert.DoesNotContain("https://example.com/", servers.Select(s => s.Url));
     }
 }

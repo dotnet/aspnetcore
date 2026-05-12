@@ -38,6 +38,24 @@
                     <ValidationMessage For="@(() => order.CustomerDetails.Email)" />
                 </div>
 
+                <h5>Payment Address</h5>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="mb-3 col-sm-8">
+                                <label for="paymentStreet" class="form-label">Street</label>
+                                <InputText id="paymentStreet" @bind-Value="order.CustomerDetails.PaymentAddress.Street" class="form-control" />
+                                <ValidationMessage For="@(() => order.CustomerDetails.PaymentAddress.Street)" />
+                            </div>
+                            <div class="mb-3 col-sm">
+                                <label for="paymentZipCode" class="form-label">Zip Code</label>
+                                <InputText id="paymentZipCode" @bind-Value="order.CustomerDetails.PaymentAddress.ZipCode" class="form-control" />
+                                <ValidationMessage For="@(() => order.CustomerDetails.PaymentAddress.ZipCode)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <h5>Shipping Address</h5>
                 <div class="card mb-3">
                     <div class="card-body">

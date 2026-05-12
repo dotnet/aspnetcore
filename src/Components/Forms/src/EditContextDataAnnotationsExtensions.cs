@@ -21,27 +21,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public static partial class EditContextDataAnnotationsExtensions
 {
     /// <summary>
-    /// Adds DataAnnotations validation support to the <see cref="EditContext"/>.
-    /// </summary>
-    /// <param name="editContext">The <see cref="EditContext"/>.</param>
-    [Obsolete("Use " + nameof(EnableDataAnnotationsValidation) + " instead.")]
-    public static EditContext AddDataAnnotationsValidation(this EditContext editContext)
-    {
-        EnableDataAnnotationsValidation(editContext);
-        return editContext;
-    }
-
-    /// <summary>
-    /// Enables DataAnnotations validation support for the <see cref="EditContext"/>.
-    /// </summary>
-    /// <param name="editContext">The <see cref="EditContext"/>.</param>
-    /// <returns>A disposable object whose disposal will remove DataAnnotations validation support from the <see cref="EditContext"/>.</returns>
-    [Obsolete("This API is obsolete and may be removed in future versions. Use the overload that accepts an IServiceProvider instead.")]
-    public static IDisposable EnableDataAnnotationsValidation(this EditContext editContext)
-    {
-        return new DataAnnotationsEventSubscriptions(editContext, null!);
-    }
-    /// <summary>
     /// Enables DataAnnotations validation support for the <see cref="EditContext"/>.
     /// </summary>
     /// <param name="editContext">The <see cref="EditContext"/>.</param>

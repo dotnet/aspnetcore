@@ -55,4 +55,11 @@
     </ItemGroup>
   </Target>
 
+  <!-- Exclude JavaScript configuration files from being packaged as Content -->
+  <ItemGroup>
+    <Content Remove="js\babel.config.json" />
+    <Content Remove="js\package.json" />
+    <Content Remove="js\tsconfig.json" />
+  </ItemGroup>
+
 </Project>

@@ -46,7 +46,6 @@ public class OkResultTests
     {
         // Arrange
         static Ok MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
@@ -57,7 +56,7 @@ public class OkResultTests
         Assert.Equal(StatusCodes.Status200OK, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
 
-        Assert.Contains(builder.Metadata, m => m is IApiEndpointMetadata);
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]

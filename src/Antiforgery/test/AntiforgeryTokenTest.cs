@@ -116,7 +116,7 @@ public class AntiforgeryTokenTest
         var token = new AntiforgeryToken();
 
         // Act
-        token.SecurityToken = null;
+        token.SecurityToken = null!;
         var securityToken = token.SecurityToken;
 
         // Assert

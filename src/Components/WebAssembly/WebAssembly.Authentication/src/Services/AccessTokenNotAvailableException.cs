@@ -41,9 +41,7 @@ public class AccessTokenNotAvailableException : Exception
         }
         else
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            _navigation.NavigateTo(_tokenResult.RedirectUrl!);
-#pragma warning restore CS0618 // Type or member is obsolete
+            _navigation.NavigateTo(_tokenResult.InteractiveRequestUrl!);
         }
     }
 

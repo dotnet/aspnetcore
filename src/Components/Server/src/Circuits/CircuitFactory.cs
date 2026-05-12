@@ -76,7 +76,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             // when the first set of components is provided via an UpdateRootComponents call.
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
             appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-            await appLifetime.RestoreStateAsync(store);
+            await appLifetime.RestoreStateAsync(store, RestoreContext.InitialValue);
         }
 
         var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
@@ -93,6 +93,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             resourceCollection);
 
         circuitActivitySource.Init(new Infrastructure.Server.ComponentsActivityLinkStore(renderer));
+        renderer.GetOrCreateWebRootComponentManager();
 
         // In Blazor Server we have already restored the app state, so we can get the handlers from DI.
         // In Blazor Web the state is provided in the first call to UpdateRootComponents, so we need to

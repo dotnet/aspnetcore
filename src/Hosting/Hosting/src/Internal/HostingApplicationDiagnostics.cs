@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -34,6 +35,9 @@ internal sealed class HostingApplicationDiagnostics
     private readonly HostingMetrics _metrics;
     private readonly ILogger _logger;
 
+    // Internal for testing purposes only
+    internal bool SuppressActivityOpenTelemetryData { get; set; }
+
     public HostingApplicationDiagnostics(
         ILogger logger,
         DiagnosticListener diagnosticListener,
@@ -48,6 +52,19 @@ internal sealed class HostingApplicationDiagnostics
         _propagator = propagator;
         _eventSource = eventSource;
         _metrics = metrics;
+
+        SuppressActivityOpenTelemetryData = GetSuppressActivityOpenTelemetryData();
+    }
+
+    private static bool GetSuppressActivityOpenTelemetryData()
+    {
+        // Default to false if the switch isn't set.
+        if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData", out var enabled))
+        {
+            return false;
+        }
+
+        return enabled;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -88,9 +105,9 @@ internal sealed class HostingApplicationDiagnostics
         var diagnosticListenerActivityCreationEnabled = (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext));
         var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-        if (loggingEnabled || diagnosticListenerActivityCreationEnabled || _activitySource.HasListeners())
+        if (ActivityCreator.IsActivityCreated(_activitySource, loggingEnabled || diagnosticListenerActivityCreationEnabled))
         {
-            context.Activity = StartActivity(httpContext, loggingEnabled, diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
+            context.Activity = StartActivity(httpContext, loggingEnabled || diagnosticListenerActivityCreationEnabled, out var hasDiagnosticListener);
             context.HasDiagnosticListener = hasDiagnosticListener;
 
             if (context.Activity != null)
@@ -217,7 +234,7 @@ internal sealed class HostingApplicationDiagnostics
         // can capture the activity as a metric exemplar.
         if (activity is not null)
         {
-            StopActivity(httpContext, activity, context.HasDiagnosticListener);
+            StopActivity(httpContext, activity, exception, context.HasDiagnosticListener);
         }
 
         if (context.EventLogEnabled)
@@ -385,9 +402,17 @@ internal sealed class HostingApplicationDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
+    private Activity? StartActivity(HttpContext httpContext, bool diagnosticsOrLoggingEnabled, out bool hasDiagnosticListener)
     {
+        // StartActivity is only called if an Activity is already verified to be created.
+        Debug.Assert(ActivityCreator.IsActivityCreated(_activitySource, diagnosticsOrLoggingEnabled),
+            "Activity should only be created if diagnostics or logging is enabled.");
+
         hasDiagnosticListener = false;
+
+        var initializeTags = !SuppressActivityOpenTelemetryData
+            ? CreateInitializeActivityTags(httpContext)
+            : (TagList?)null;
 
         var headers = httpContext.Request.Headers;
         var activity = ActivityCreator.CreateFromRemote(
@@ -402,12 +427,19 @@ internal sealed class HostingApplicationDiagnostics
             },
             ActivityName,
             ActivityKind.Server,
-            tags: null,
+            tags: initializeTags,
             links: null,
-            loggingEnabled || diagnosticListenerActivityCreationEnabled);
+            diagnosticsOrLoggingEnabled);
         if (activity is null)
         {
             return null;
+        }
+
+        if (!SuppressActivityOpenTelemetryData)
+        {
+            // Set the initial display name to just the HTTP method.
+            // It will be updated to include the route if one is matched.
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method);
         }
 
         _diagnosticListener.OnActivityImport(activity, httpContext);
@@ -425,9 +457,57 @@ internal sealed class HostingApplicationDiagnostics
         return activity;
     }
 
-    [MethodImpl(MethodImplOptions.NoInlining)]
-    private void StopActivity(HttpContext httpContext, Activity activity, bool hasDiagnosticListener)
+    private static TagList CreateInitializeActivityTags(HttpContext httpContext)
     {
+        // The tags here are set when the activity is created. They can be used in sampling decisions.
+        // Most values in semantic conventions that are present at creation are specified:
+        // https://github.com/open-telemetry/semantic-conventions/blob/27735ccca3746d7bb7fa061dfb73d93bcbae2b6e/docs/http/http-spans.md#L581-L592
+        // Missing values recommended by the spec are:
+        // - url.query (need configuration around redaction to do properly)
+        // - http.request.header.<key>
+        //
+        // Note that these tags are added even if Activity.IsAllDataRequested is false, as they may be used in sampling decisions.
+
+        var request = httpContext.Request;
+        var creationTags = new TagList();
+
+        if (request.Host.HasValue)
+        {
+            creationTags.Add(HostingTelemetryHelpers.AttributeServerAddress, request.Host.Host);
+
+            if (HostingTelemetryHelpers.TryGetServerPort(request.Host, request.Scheme, out var port))
+            {
+                creationTags.Add(HostingTelemetryHelpers.AttributeServerPort, port);
+            }
+        }
+
+        HostingTelemetryHelpers.SetActivityHttpMethodTags(ref creationTags, request.Method);
+
+        if (request.Headers.TryGetValue(HeaderNames.UserAgent, out var values))
+        {
+            var userAgent = values.Count > 0 ? values[0] : null;
+            if (!string.IsNullOrEmpty(userAgent))
+            {
+                creationTags.Add(HostingTelemetryHelpers.AttributeUserAgentOriginal, userAgent);
+            }
+        }
+
+        creationTags.Add(HostingTelemetryHelpers.AttributeUrlScheme, request.Scheme);
+
+        var path = (request.PathBase.HasValue || request.Path.HasValue) ? (request.PathBase + request.Path).ToString() : "/";
+        creationTags.Add(HostingTelemetryHelpers.AttributeUrlPath, path);
+
+        return creationTags;
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private void StopActivity(HttpContext httpContext, Activity activity, Exception? exception, bool hasDiagnosticListener)
+    {
+        if (!SuppressActivityOpenTelemetryData && activity.IsAllDataRequested)
+        {
+            SetActivityEndTags(httpContext, activity, exception);
+        }
+
         if (hasDiagnosticListener)
         {
             StopActivity(activity, httpContext);
@@ -435,6 +515,38 @@ internal sealed class HostingApplicationDiagnostics
         else
         {
             activity.Stop();
+        }
+    }
+
+    private static void SetActivityEndTags(HttpContext httpContext, Activity activity, Exception? exception)
+    {
+        var response = httpContext.Response;
+
+        activity.SetTag(HostingTelemetryHelpers.AttributeHttpResponseStatusCode, HostingTelemetryHelpers.GetBoxedStatusCode(response.StatusCode));
+
+        if (HostingTelemetryHelpers.TryGetHttpVersion(httpContext.Request.Protocol, out var httpVersion))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeNetworkProtocolVersion, httpVersion);
+        }
+
+        var endpoint = HttpExtensions.GetOriginalEndpoint(httpContext);
+        var route = endpoint?.Metadata.GetMetadata<IRouteDiagnosticsMetadata>()?.Route;
+        if (route is not null)
+        {
+            var resolvedRoute = RouteDiagnosticsHelpers.ResolveHttpRoute(route);
+            activity.SetTag(HostingTelemetryHelpers.AttributeHttpRoute, resolvedRoute);
+            activity.DisplayName = HostingTelemetryHelpers.GetActivityDisplayName(httpContext.Request.Method, resolvedRoute);
+        }
+
+        if (exception != null)
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, exception.GetType().FullName);
+            activity.SetStatus(ActivityStatusCode.Error, exception.Message);
+        }
+        else if (HostingTelemetryHelpers.IsErrorStatusCode(response.StatusCode))
+        {
+            activity.SetTag(HostingTelemetryHelpers.AttributeErrorType, response.StatusCode.ToString(CultureInfo.InvariantCulture));
+            activity.SetStatus(ActivityStatusCode.Error);
         }
     }
 

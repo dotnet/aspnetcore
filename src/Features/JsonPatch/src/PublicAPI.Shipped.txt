@@ -12,15 +12,15 @@
 ~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.Copy(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.LogErrorAction.get -> System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError>
 ~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.Move(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.ObjectAdapter(Newtonsoft.Json.Serialization.IContractResolver contractResolver, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction) -> void
 ~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.ObjectAdapter(Newtonsoft.Json.Serialization.IContractResolver contractResolver, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction, Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory adapterFactory) -> void
+~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.ObjectAdapter(Newtonsoft.Json.Serialization.IContractResolver contractResolver, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction) -> void
 ~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.Remove(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.Replace(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.Adapters.ObjectAdapter.Test(Microsoft.AspNetCore.JsonPatch.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.AffectedObject.get -> object
 ~Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.FailedOperation.get -> Microsoft.AspNetCore.JsonPatch.Operations.Operation
-~Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.JsonPatchException(Microsoft.AspNetCore.JsonPatch.JsonPatchError jsonPatchError) -> void
 ~Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.JsonPatchException(Microsoft.AspNetCore.JsonPatch.JsonPatchError jsonPatchError, System.Exception innerException) -> void
+~Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.JsonPatchException(Microsoft.AspNetCore.JsonPatch.JsonPatchError jsonPatchError) -> void
 ~Microsoft.AspNetCore.JsonPatch.Exceptions.JsonPatchException.JsonPatchException(string message, System.Exception innerException) -> void
 ~Microsoft.AspNetCore.JsonPatch.Helpers.GetValueResult.GetValueResult(object propertyValue, bool hasError) -> void
 ~Microsoft.AspNetCore.JsonPatch.Helpers.GetValueResult.PropertyValue.get -> object
@@ -35,17 +35,17 @@
 ~Microsoft.AspNetCore.JsonPatch.Internal.IAdapter.TryReplace(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.Internal.IAdapter.TryTest(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, object value, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.Internal.IAdapter.TryTraverse(object target, string segment, Newtonsoft.Json.Serialization.IContractResolver contractResolver, out object nextTarget, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor.ObjectVisitor(Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath path, Newtonsoft.Json.Serialization.IContractResolver contractResolver) -> void
 ~Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor.ObjectVisitor(Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath path, Newtonsoft.Json.Serialization.IContractResolver contractResolver, Microsoft.AspNetCore.JsonPatch.Adapters.IAdapterFactory adapterFactory) -> void
+~Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor.ObjectVisitor(Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath path, Newtonsoft.Json.Serialization.IContractResolver contractResolver) -> void
 ~Microsoft.AspNetCore.JsonPatch.Internal.ObjectVisitor.TryVisit(ref object target, out Microsoft.AspNetCore.JsonPatch.Internal.IAdapter adapter, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath.LastSegment.get -> string
 ~Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath.ParsedPath(string path) -> void
 ~Microsoft.AspNetCore.JsonPatch.Internal.ParsedPath.Segments.get -> System.Collections.Generic.IReadOnlyList<string>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.Add(string path, object value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ApplyTo(object objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ApplyTo(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) -> void
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ApplyTo(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction) -> void
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ApplyTo(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) -> void
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ApplyTo(object objectToApplyTo, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction) -> void
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ApplyTo(object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ContractResolver.get -> Newtonsoft.Json.Serialization.IContractResolver
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.ContractResolver.set -> void
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.Copy(string from, string path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument
@@ -56,37 +56,37 @@
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.Replace(string path, object value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.Test(string path, object value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value, int position) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ApplyTo(TModel objectToApplyTo) -> void
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ApplyTo(TModel objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) -> void
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ApplyTo(TModel objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction) -> void
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ApplyTo(TModel objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) -> void
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ApplyTo(TModel objectToApplyTo, System.Action<Microsoft.AspNetCore.JsonPatch.JsonPatchError> logErrorAction) -> void
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ApplyTo(TModel objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ContractResolver.get -> Newtonsoft.Json.Serialization.IContractResolver
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.ContractResolver.set -> void
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, int positionTo) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, int positionTo) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Copy<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.JsonPatchDocument(System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>> operations, Newtonsoft.Json.Serialization.IContractResolver contractResolver) -> void
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, int positionTo) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> from, int positionFrom, System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, int positionTo) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Move<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> from, System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Operations.get -> System.Collections.Generic.List<Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>>
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Remove<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Remove<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, int position) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Remove<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Remove<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Replace<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Replace<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value, int position) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Replace<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Replace<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
-~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Test<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Test<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value, int position) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
+~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Test<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.Test<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchError.AffectedObject.get -> object
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchError.ErrorMessage.get -> string
@@ -98,14 +98,14 @@
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchProperty.Property.get -> Newtonsoft.Json.Serialization.JsonProperty
 ~Microsoft.AspNetCore.JsonPatch.JsonPatchProperty.Property.set -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation.Apply(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) -> void
-~Microsoft.AspNetCore.JsonPatch.Operations.Operation.Operation(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation.Operation(string op, string path, string from, object value) -> void
+~Microsoft.AspNetCore.JsonPatch.Operations.Operation.Operation(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation.value.get -> object
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation.value.set -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Apply(TModel objectToApplyTo, Microsoft.AspNetCore.JsonPatch.Adapters.IObjectAdapter adapter) -> void
-~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Operation(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Operation(string op, string path, string from, object value) -> void
+~Microsoft.AspNetCore.JsonPatch.Operations.Operation<TModel>.Operation(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.from.get -> string
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.from.set -> void
 ~Microsoft.AspNetCore.JsonPatch.Operations.OperationBase.op.get -> string

@@ -28,6 +28,14 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
         }
 
+        // Skip method parameter if it or its type are annotated with SkipValidationAttribute.
+        if (parameterInfo.GetCustomAttribute<SkipValidationAttribute>() != null ||
+            parameterInfo.ParameterType.GetCustomAttribute<SkipValidationAttribute>() != null)
+        {
+            validatableInfo = null;
+            return false;
+        }
+
         var validationAttributes = parameterInfo
             .GetCustomAttributes<ValidationAttribute>()
             .ToArray();
@@ -35,7 +43,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         // If there are no validation attributes and this type is not a complex type
         // we don't need to validate it. Complex types without attributes are still
         // validatable because we want to run the validations on the properties.
-        if (validationAttributes.Length == 0 && !IsClass(parameterInfo.ParameterType))
+        if (validationAttributes.Length == 0 && !IsComplexType(parameterInfo.ParameterType))
         {
             validatableInfo = null;
             return false;
@@ -72,7 +80,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
     }
 
-    private static bool IsClass(Type type)
+    private static bool IsComplexType(Type type)
     {
         // Skip primitives, enums, common built-in types, and types that are specially
         // handled by RDF/RDG that don't need validation if they don't have attributes
@@ -97,9 +105,11 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         // Check if the underlying type in a nullable is valid
         if (Nullable.GetUnderlyingType(type) is { } nullableType)
         {
-            return IsClass(nullableType);
+            return IsComplexType(nullableType);
         }
 
-        return type.IsClass;
+        // Complex types include both reference types (classes) and value types (structs, record structs)
+        // that aren't in the exclusion list above
+        return type.IsClass || type.IsValueType;
     }
 }

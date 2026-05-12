@@ -66,6 +66,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private bool IsAbortedRead => (_completionState & StreamCompletionFlags.AbortedRead) == StreamCompletionFlags.AbortedRead;
     public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
 
+    public bool CanReuse => !_connectionAborted && HasResponseCompleted;
+
     public bool ReceivedEmptyRequestBody
     {
         get
@@ -86,6 +88,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public long StreamId => _streamIdFeature.StreamId;
     public long StreamTimeoutTimestamp { get; set; }
     public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
+    public bool IsReceivingTrailerHeaders { get; private set; }
     public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
     public bool IsRequestStream => true;
     public BaseConnectionContext ConnectionContext => _context.ConnectionContext;
@@ -113,6 +116,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
+        IsReceivingTrailerHeaders = false;
         StreamTimeoutTimestamp = 0;
 
         if (_frameWriter == null)
@@ -821,10 +825,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (endHeaders)
             {
                 QPackDecoder.Reset();
+                IsReceivingTrailerHeaders = false;
             }
             else
             {
-                // Headers frame isn't complete, return to read more of the frame
+                // Headers frame isn't complete, start trailer header timeout and return to read more of the frame.
+                IsReceivingTrailerHeaders = true;
                 return;
             }
         }
@@ -957,7 +963,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     protected override void OnReset()
     {
         _keepAlive = true;
-        _connectionAborted = false;
         _userTrailers = null;
         _isWebTransportSessionAccepted = false;
         _isMethodConnect = false;

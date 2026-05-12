@@ -233,6 +233,14 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.ClickAsync("text=Add a new passkey");
 
                 await page.WaitForSelectorAsync("text=Enter a name for your passkey");
+
+                // First check that we can't register a passkey with a long name.
+                var longName = new string('a', count: 201);
+                await page.FillAsync("[name=\"Input.Name\"]", longName);
+                await page.ClickAsync("text=Continue");
+                await page.WaitForSelectorAsync("text=Passkey names must be no longer than 200 characters.");
+
+                // Now register a passkey with a valid name
                 await page.FillAsync("[name=\"Input.Name\"]", "My passkey");
                 await page.ClickAsync("text=Continue");
 

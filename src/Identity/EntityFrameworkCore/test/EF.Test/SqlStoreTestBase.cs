@@ -37,6 +37,7 @@ public abstract class SqlStoreTestBase<TUser, TRole, TKey> : IdentitySpecificati
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = false;
             options.User.AllowedUserNameCharacters = null;
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
         })
         .AddRoles<TRole>()
         .AddDefaultTokenProviders()

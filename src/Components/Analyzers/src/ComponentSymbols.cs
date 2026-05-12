@@ -47,9 +47,17 @@ internal sealed class ComponentSymbols
 
         var parameterCaptureUnmatchedValuesRuntimeType = dictionary.Construct(@string, @object);
 
+        // Try to get optional symbols for SupplyParameterFromForm and PersistentState analyzers
+        var supplyParameterFromFormAttribute = compilation.GetTypeByMetadataName(ComponentsApi.SupplyParameterFromFormAttribute.MetadataName);
+        var persistentStateAttribute = compilation.GetTypeByMetadataName(ComponentsApi.PersistentStateAttribute.MetadataName);
+        var componentBaseType = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
+
         symbols = new ComponentSymbols(
             parameterAttribute,
             cascadingParameterAttribute,
+            supplyParameterFromFormAttribute,
+            persistentStateAttribute,
+            componentBaseType,
             parameterCaptureUnmatchedValuesRuntimeType,
             icomponentType);
         return true;
@@ -58,11 +66,17 @@ internal sealed class ComponentSymbols
     private ComponentSymbols(
         INamedTypeSymbol parameterAttribute,
         INamedTypeSymbol cascadingParameterAttribute,
+        INamedTypeSymbol supplyParameterFromFormAttribute,
+        INamedTypeSymbol persistentStateAttribute,
+        INamedTypeSymbol componentBaseType,
         INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType,
         INamedTypeSymbol icomponentType)
     {
         ParameterAttribute = parameterAttribute;
         CascadingParameterAttribute = cascadingParameterAttribute;
+        SupplyParameterFromFormAttribute = supplyParameterFromFormAttribute; // Can be null
+        PersistentStateAttribute = persistentStateAttribute; // Can be null
+        ComponentBaseType = componentBaseType; // Can be null
         ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
         IComponentType = icomponentType;
     }
@@ -73,6 +87,12 @@ internal sealed class ComponentSymbols
     public INamedTypeSymbol ParameterCaptureUnmatchedValuesRuntimeType { get; }
 
     public INamedTypeSymbol CascadingParameterAttribute { get; }
+
+    public INamedTypeSymbol SupplyParameterFromFormAttribute { get; } // Can be null if not available
+
+    public INamedTypeSymbol PersistentStateAttribute { get; } // Can be null if not available
+
+    public INamedTypeSymbol ComponentBaseType { get; } // Can be null if not available
 
     public INamedTypeSymbol IComponentType { get; }
 }

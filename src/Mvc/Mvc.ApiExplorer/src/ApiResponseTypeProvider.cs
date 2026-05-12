@@ -231,9 +231,10 @@ internal sealed class ApiResponseTypeProvider
 
         foreach (var metadata in responseMetadata)
         {
-            // `IResult` metadata inserted for awaitable types should
-            // not be considered for response metadata.
-            if (typeof(IResult).IsAssignableFrom(metadata.Type))
+            // Skip IResult types that implement IEndpointMetadataProvider (built-in framework types like TypedResults)
+            // since they handle their own metadata population. Custom IResult implementations that don't implement
+            // IEndpointMetadataProvider should be included in response metadata for API documentation.
+            if (typeof(IResult).IsAssignableFrom(metadata.Type) && typeof(IEndpointMetadataProvider).IsAssignableFrom(metadata.Type))
             {
                 continue;
             }

@@ -42,7 +42,6 @@ public class CachedResponseBodyTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61053")]
     public async Task Copy_SingleSegment()
     {
         var segments = new List<byte[]>
@@ -66,7 +65,6 @@ public class CachedResponseBodyTests
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60904")]
     public async Task Copy_MultipleSegments()
     {
         var segments = new List<byte[]>

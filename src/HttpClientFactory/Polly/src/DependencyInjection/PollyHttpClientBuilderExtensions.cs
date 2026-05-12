@@ -11,13 +11,13 @@ using Polly.Registry;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extensions methods for configuring <see cref="PolicyHttpMessageHandler"/> message handlers as part of
+/// Provides extensions methods for configuring <see cref="PolicyHttpMessageHandler"/> message handlers as part of
 /// and <see cref="HttpClient"/> message handler pipeline.
 /// </summary>
 public static class PollyHttpClientBuilderExtensions
 {
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with the provided
+    /// Adds a <see cref="PolicyHttpMessageHandler"/> that will surround request execution with the provided
     /// <see cref="IAsyncPolicy{HttpResponseMessage}"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -45,7 +45,7 @@ public static class PollyHttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with a policy returned
+    /// Adds a <see cref="PolicyHttpMessageHandler"/> that will surround request execution with a policy returned
     /// by the <paramref name="policySelector"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -77,7 +77,7 @@ public static class PollyHttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with a policy returned
+    /// Adds a <see cref="PolicyHttpMessageHandler"/> that will surround request execution with a policy returned
     /// by the <paramref name="policySelector"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -112,7 +112,7 @@ public static class PollyHttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with a policy returned
+    /// Adds a <see cref="PolicyHttpMessageHandler"/> that will surround request execution with a policy returned
     /// by the <see cref="IReadOnlyPolicyRegistry{String}"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -149,7 +149,7 @@ public static class PollyHttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with a policy returned
+    /// Adds a <see cref="PolicyHttpMessageHandler"/> that will surround request execution with a policy returned
     /// by the <see cref="IReadOnlyPolicyRegistry{String}"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
@@ -185,7 +185,7 @@ public static class PollyHttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with a <see cref="Policy"/>
+    /// Adds a <see cref="PolicyHttpMessageHandler"/> that will surround request execution with a <see cref="Policy"/>
     /// created by executing the provided configuration delegate. The policy builder will be preconfigured to trigger
     /// application of the policy for requests that fail with conditions that indicate a transient failure.
     /// </summary>
@@ -207,8 +207,8 @@ public static class PollyHttpClientBuilderExtensions
     /// </para>
     /// <para>
     /// The policy created by <paramref name="configurePolicy"/> will be cached indefinitely per named client. Policies
-    /// are generally designed to act as singletons, and can be shared when appropriate. To share a policy across multiple
-    /// named clients, first create the policy and then pass it to multiple calls to 
+    /// are generally designed to act as singletons and can be shared when appropriate. To share a policy across multiple
+    /// named clients, first create the policy and then pass it to multiple calls to
     /// <see cref="AddPolicyHandler(IHttpClientBuilder, IAsyncPolicy{HttpResponseMessage})"/> as desired.
     /// </para>
     /// </remarks>
@@ -236,8 +236,8 @@ public static class PollyHttpClientBuilderExtensions
     }
 
     /// <summary>
-    /// Adds a <see cref="PolicyHttpMessageHandler"/> which will surround request execution with a policy returned
-    /// by executing provided key selection logic <paramref name="keySelector"/> and <paramref name="policyFactory"/>
+    /// Adds a <see cref="PolicyHttpMessageHandler"/> that will surround request execution with a policy returned
+    /// by executing provided key selection logic <paramref name="keySelector"/> and <paramref name="policyFactory"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IHttpClientBuilder"/>.</param>
     /// <param name="policyFactory">Selects an <see cref="IAsyncPolicy{HttpResponseMessage}"/> to apply to the current request based on key selection.</param>

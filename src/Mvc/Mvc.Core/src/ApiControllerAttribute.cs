@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.Mvc;
 /// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-public class ApiControllerAttribute : ControllerAttribute, IApiBehaviorMetadata, IApiEndpointMetadata
+public class ApiControllerAttribute : ControllerAttribute, IApiBehaviorMetadata, IDisableCookieRedirectMetadata
 {
 }

@@ -39,6 +39,7 @@
   <ItemGroup>
     <!-- We need the actual templates in the output directory for tests to verify file encodings. -->
     <Content Include="..\..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
+    <Content Include="..\..\McpServer.ProjectTemplates\**" LinkBase="Assets\McpServer.ProjectTemplates" />
     <Content Include="..\..\Web.ItemTemplates\**" LinkBase="Assets\Web.ItemTemplates" />
     <Content Include="..\..\Web.Client.ItemTemplates\**" LinkBase="Assets\Web.Client.ItemTemplates" />
   </ItemGroup>
@@ -48,6 +49,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="AngleSharp" />
     <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
       Private="false"
@@ -65,6 +68,10 @@
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="../../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="../../McpServer.ProjectTemplates/Microsoft.McpServer.ProjectTemplates.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

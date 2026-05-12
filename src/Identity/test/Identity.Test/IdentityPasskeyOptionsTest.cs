@@ -12,9 +12,9 @@ public class IdentityPasskeyOptionsTest
 
         Assert.Equal(TimeSpan.FromMinutes(5), options.AuthenticatorTimeout);
         Assert.Equal(32, options.ChallengeSize);
+        Assert.Equal("preferred", options.ResidentKeyRequirement);
+        Assert.Equal("required", options.UserVerificationRequirement);
         Assert.Null(options.ServerDomain);
-        Assert.Null(options.UserVerificationRequirement);
-        Assert.Null(options.ResidentKeyRequirement);
         Assert.Null(options.AttestationConveyancePreference);
         Assert.Null(options.AuthenticatorAttachment);
         Assert.Null(options.IsAllowedAlgorithm);

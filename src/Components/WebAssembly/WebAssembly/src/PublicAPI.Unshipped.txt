@@ -1,8 +1,3 @@
 #nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.UseServiceProviderOptions(Microsoft.Extensions.DependencyInjection.ServiceProviderOptions! options) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder!
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilderExtensions
-static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilderExtensions.UseDefaultServiceProvider(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment!, Microsoft.Extensions.DependencyInjection.ServiceProviderOptions!>! configure) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder!
-static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilderExtensions.UseDefaultServiceProvider(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder! builder, System.Action<Microsoft.Extensions.DependencyInjection.ServiceProviderOptions!>! configure) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder!
-*REMOVED*Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload
-*REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes, int[]? updatedTypes) -> void
-*REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.GetApplyUpdateCapabilities() -> string!
+*REMOVED*~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string uri, bool isInterceptedLink) -> void
+*REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string! uri, bool isInterceptedLink) -> void

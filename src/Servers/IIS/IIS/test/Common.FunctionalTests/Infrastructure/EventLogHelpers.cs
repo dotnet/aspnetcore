@@ -161,18 +161,18 @@ public class EventLogHelpers
 
     public static string OutOfProcessStarted(IISDeploymentResult deploymentResult)
     {
-        return $"Application '/LM/W3SVC/1/ROOT' started process '\\d+' successfully and process '\\d+' is listening on port '\\d+'.";
+        return $"Application '/LM/W3SVC/\\d+/ROOT' started process '\\d+' successfully and process '\\d+' is listening on port '\\d+'.";
     }
 
     public static string InProcessFailedToStart(IISDeploymentResult deploymentResult, string reason)
     {
         if (DeployerSelector.HasNewHandler)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load coreclr. Exception message:\r\n{reason}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load coreclr. Exception message:\r\n{reason}";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load clr and managed application. {reason}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load clr and managed application. {reason}";
         }
     }
 
@@ -184,7 +184,7 @@ public class EventLogHelpers
         }
         else
         {
-            return "Application '/LM/W3SVC/1/ROOT' with physical root '.*?' shut down process with Id '.*?' listening on port '.*?'";
+            return "Application '/LM/W3SVC/\\d+/ROOT' with physical root '.*?' shut down process with Id '.*?' listening on port '.*?'";
         }
     }
 
@@ -200,29 +200,29 @@ public class EventLogHelpers
 
     public static string InProcessThreadException(IISDeploymentResult deploymentResult, string reason)
     {
-        return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed exception{reason}";
+        return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed exception{reason}";
     }
 
     public static string InProcessThreadExit(IISDeploymentResult deploymentResult, string code)
     {
         if (DeployerSelector.HasNewHandler)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Please check the stderr logs for more information.";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Please check the stderr logs for more information.";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'.";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'.";
         }
     }
     public static string InProcessThreadExitStdOut(IISDeploymentResult deploymentResult, string code, string output)
     {
         if (DeployerSelector.HasNewHandler)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. First 30KB characters of captured stdout and stderr logs:\r\n{output}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. First 30KB characters of captured stdout and stderr logs:\r\n{output}";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'. Last 4KB characters of captured stdout and stderr logs:\r\n{output}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'. Last 4KB characters of captured stdout and stderr logs:\r\n{output}";
         }
     }
 
@@ -247,13 +247,13 @@ public class EventLogHelpers
     {
         if (DeployerSelector.HasNewShim)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
                 $"commandline '(.*)' with multiple retries. " +
                 $"Failed to bind to port '(.*)'. First 30KB characters of captured stdout and stderr logs from multiple retries:\r\n{output}";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
                 $"commandline '(.*)' with multiple retries. " +
                 $"The last try of listening port is '(.*)'. See previous warnings for details.";
         }

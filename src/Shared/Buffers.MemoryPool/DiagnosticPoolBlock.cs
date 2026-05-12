@@ -139,7 +139,7 @@ internal sealed class DiagnosticPoolBlock : MemoryManager<byte>
                     MemoryPoolThrowHelper.ThrowInvalidOperationException_BlockIsBackedByDisposedSlab(this);
                 }
 
-                if (byteOffset < 0 || byteOffset > _memory.Length)
+                if ((uint)byteOffset >= (uint)_memory.Length)
                 {
                     MemoryPoolThrowHelper.ThrowArgumentOutOfRangeException(_memory.Length, byteOffset);
                 }

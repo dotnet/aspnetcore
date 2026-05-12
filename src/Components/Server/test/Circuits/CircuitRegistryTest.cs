@@ -348,7 +348,12 @@ public class CircuitRegistryTest
 
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), serviceProvider.CreateAsyncScope());
         registry.Register(circuitHost);
-        circuitHost.AttachPersistedState(new PersistedCircuitState());
+        var state = new ResumedPersistedCircuitState
+        {
+            ApplicationState = new Dictionary<string, byte[]>(),
+            RootComponentDescriptors = new Dictionary<int, WebRootComponentDescriptor>(),
+        };
+        circuitHost.AttachPersistedState(state);
         var client = Mock.Of<ISingleClientProxy>();
         var newId = "new-connection";
 
@@ -558,6 +563,28 @@ public class CircuitRegistryTest
         // Assert
         Assert.True(registry.ConnectedCircuits.TryGetValue(circuitHost.CircuitId, out var connectedCircuit));
         Assert.Same(circuitHost, connectedCircuit);
+        Assert.False(persistenceProvider.PersistCalled);
+    }
+
+    [Fact]
+    public async Task PauseWithStaleConnectionId_AfterReconnect_DoesNotPause()
+    {
+        var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+        var (registry, persistenceProvider) = CreateRegistryWithProvider(circuitIdFactory);
+        var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
+        registry.Register(circuitHost);
+        var originalConnectionId = circuitHost.Client.ConnectionId;
+
+        // Client reconnects on connection B
+        await registry.ConnectAsync(circuitHost.CircuitId, Mock.Of<ISingleClientProxy>(), "connection-B", default);
+
+        // Stale pause from connection A arrives
+        await registry.PauseCircuitAsync(circuitHost, originalConnectionId);
+
+        // Circuit remains connected on connection B
+        Assert.True(registry.ConnectedCircuits.TryGetValue(circuitHost.CircuitId, out var connected));
+        Assert.Same(circuitHost, connected);
+        Assert.Equal("connection-B", circuitHost.Client.ConnectionId);
         Assert.False(persistenceProvider.PersistCalled);
     }
 

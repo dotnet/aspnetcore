@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Sample.Transformers;
 
@@ -23,11 +24,13 @@ builder.Services.AddOpenApi("v1", options =>
     options.AddHeader("X-Version", "1.0");
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
-builder.Services.AddOpenApi("v2", options => {
+builder.Services.AddOpenApi("v2", options =>
+{
     options.AddSchemaTransformer<AddExternalDocsTransformer>();
     options.AddOperationTransformer<AddExternalDocsTransformer>();
     options.AddDocumentTransformer(new AddContactTransformer());
-    options.AddDocumentTransformer((document, context, token) => {
+    options.AddDocumentTransformer((document, context, token) =>
+    {
         document.Info.License = new OpenApiLicense { Name = "MIT" };
         return Task.CompletedTask;
     });
@@ -37,6 +40,15 @@ builder.Services.AddOpenApi("responses");
 builder.Services.AddOpenApi("forms");
 builder.Services.AddOpenApi("schemas-by-ref");
 builder.Services.AddOpenApi("xml");
+builder.Services.AddOpenApi("localized", options =>
+{
+    options.ShouldInclude = _ => true;
+    options.AddDocumentTransformer((document, context, token) =>
+    {
+        document.Info.Description = $"This is a localized OpenAPI document for {CultureInfo.CurrentUICulture.NativeName}.";
+        return Task.CompletedTask;
+    });
+});
 
 var app = builder.Build();
 

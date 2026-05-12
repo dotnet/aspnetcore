@@ -215,7 +215,7 @@ public static class Endpoints
             todo = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The identifier of the todo.", todo.Properties["id"].Description);
             Assert.Equal("The name of the todo.", todo.Properties["name"].Description);
-            Assert.Equal("Another description of the todo.", todo.Properties["description"].Description);
+            Assert.Equal($"A description of the todo.\nAnother description of the todo.", todo.Properties["description"].Description);
 
             path = document.Paths["/type-with-examples"].Operations[HttpMethod.Post];
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;

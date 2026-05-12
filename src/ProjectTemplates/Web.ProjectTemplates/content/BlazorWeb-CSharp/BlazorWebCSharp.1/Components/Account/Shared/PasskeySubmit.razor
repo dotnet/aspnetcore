@@ -35,6 +35,6 @@
 
     protected override void OnInitialized()
     {
-        tokens = Services.GetRequiredService<IAntiforgery>()?.GetTokens(HttpContext);
+        tokens = Services.GetService<IAntiforgery>()?.GetTokens(HttpContext);
     }
 }

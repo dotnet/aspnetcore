@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -49,6 +50,49 @@ public class RazorComponentEndpointInvokerTest
 
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoker_HandlesHeadRequestAsync()
+    {
+        // Arrange
+        var services = new ServiceCollection().AddRazorComponents()
+                        .Services.AddAntiforgery()
+                        .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
+                        .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment())
+                        .BuildServiceProvider();
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(
+                services,
+                NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(new RouteEndpoint(
+            ctx => Task.CompletedTask,
+            RoutePatternFactory.Parse("/"),
+            0,
+            new EndpointMetadataCollection(
+                new ComponentTypeMetadata(typeof(SimpleComponent)),
+                new RootComponentMetadata(typeof(SimpleComponent)),
+                new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>())),
+            "test"));
+        context.Request.Method = "HEAD";
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("localhost");
+        context.Request.Path = "/";
+        context.Response.Body = new MemoryStream();
+        context.RequestServices = services;
+
+        // Act
+        await invoker.Render(context);
+
+        // Assert
+        // HEAD requests should execute the full request like GET, returning 200 OK with headers.
+        // The HTTP server (Kestrel) handles suppressing the response body for HEAD requests.
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
     }
 
     private class TestWebHostEnvironment : IWebHostEnvironment

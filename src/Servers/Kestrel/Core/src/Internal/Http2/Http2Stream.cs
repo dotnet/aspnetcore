@@ -129,7 +129,6 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
     protected override void OnReset()
     {
         _keepAlive = true;
-        _connectionAborted = false;
         _userTrailers = null;
 
         // Reset Http2 Features

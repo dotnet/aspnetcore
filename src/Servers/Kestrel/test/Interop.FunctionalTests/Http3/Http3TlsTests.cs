@@ -345,39 +345,43 @@ public class Http3TlsTests : LoggedTest
     [InlineData(false, false, false)]
     public async Task UseKestrelCore_CodeBased(bool useQuic, bool useHttps, bool useHttpsEnablesHttpsConfiguration)
     {
-        var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore()
-                .ConfigureKestrel(serverOptions =>
-                {
-                    serverOptions.ListenAnyIP(0, listenOptions =>
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrelCore()
+                    .ConfigureKestrel(serverOptions =>
                     {
-                        listenOptions.Protocols = HttpProtocols.Http3;
-                        if (useHttps)
+                        serverOptions.ListenAnyIP(0, listenOptions =>
                         {
-                            if (useHttpsEnablesHttpsConfiguration)
+                            listenOptions.Protocols = HttpProtocols.Http3;
+                            if (useHttps)
                             {
-                                listenOptions.UseHttps(httpsOptions =>
+                                if (useHttpsEnablesHttpsConfiguration)
                                 {
-                                    httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
-                                });
-                            }
-                            else
-                            {
-                                // Specifically choose an overload that doesn't enable https configuration
-                                listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                                    listenOptions.UseHttps(httpsOptions =>
+                                    {
+                                        httpsOptions.ServerCertificate = TestResources.GetTestCertificate();
+                                    });
+                                }
+                                else
                                 {
-                                    ServerCertificate = TestResources.GetTestCertificate()
-                                });
+                                    // Specifically choose an overload that doesn't enable https configuration
+                                    listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                                    {
+                                        ServerCertificate = TestResources.GetTestCertificate()
+                                    });
+                                }
                             }
-                        }
-                    });
-                })
-                .Configure(app => { });
+                        });
+                    })
+                    .Configure(app => { });
 
-        if (useQuic)
-        {
-            hostBuilder.UseQuic();
-        }
+                if (useQuic)
+                {
+                    webHostBuilder.UseQuic();
+                }
+            });
 
         var host = hostBuilder.Build();
 
@@ -400,25 +404,29 @@ public class Http3TlsTests : LoggedTest
     [InlineData(false)]
     public void UseKestrelCore_ConfigurationBased(bool useQuic)
     {
-        var hostBuilder = new WebHostBuilder()
-                .UseKestrelCore()
-                .ConfigureKestrel(serverOptions =>
-                {
-                    var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrelCore()
+                    .ConfigureKestrel(serverOptions =>
                     {
-                        new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
-                        new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http3"),
-                        new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx")),
-                        new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
-                    }).Build();
-                    serverOptions.Configure(config);
-                })
-                .Configure(app => { });
+                        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+                        {
+                            new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
+                            new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http3"),
+                            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx")),
+                            new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
+                        }).Build();
+                        serverOptions.Configure(config);
+                    })
+                    .Configure(app => { });
 
-        if (useQuic)
-        {
-            hostBuilder.UseQuic();
-        }
+                if (useQuic)
+                {
+                    webHostBuilder.UseQuic();
+                }
+            });
 
         var host = hostBuilder.Build();
 
