@@ -277,9 +277,7 @@ internal partial class EndpointHtmlRenderer
 
         if (componentState.Component is SSRRenderModeBoundary boundary)
         {
-            var userComponentId = GetCurrentRenderTreeFrames(componentId).Array[0].ComponentId;
-            var userComponentFrames = GetCurrentRenderTreeFrames(userComponentId);
-            var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key, userComponentFrames);
+            var marker = boundary.ToMarker(_httpContext, sequenceAndKey.Sequence, sequenceAndKey.Key);
             endMarkerOrNull = marker.ToEndMarker();
 
             if (!_httpContext.Response.HasStarted && marker.Type is ComponentMarker.ServerMarkerType or ComponentMarker.AutoMarkerType)
