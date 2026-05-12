@@ -21,22 +21,18 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
-    /// <param name="displayName">The literal display name for the type (sourced from
-    /// <see cref="DisplayAttribute.Name"/> when no <see cref="DisplayAttribute.ResourceType"/> is set,
-    /// or from <see cref="System.ComponentModel.DisplayNameAttribute.DisplayName"/>).</param>
-    /// <param name="displayResourceAccessor">An accessor that resolves the localized display name
-    /// from a static resource property when the type is decorated with
-    /// <c>[Display(Name = ..., ResourceType = ...)]</c>; <see langword="null"/> otherwise.</param>
+    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// display name for the type at validation time. When <see langword="null"/>, the validation
+    /// pipeline uses <see cref="System.Reflection.MemberInfo.Name"/> of <paramref name="type"/>
+    /// as the display name.</param>
     protected ValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
         IReadOnlyList<ValidatablePropertyInfo> members,
-        string? displayName = null,
-        Func<string?>? displayResourceAccessor = null)
+        DisplayNameInfo? displayNameInfo = null)
     {
         Type = type;
         Members = members;
-        DisplayName = displayName;
-        DisplayResourceAccessor = displayResourceAccessor;
+        DisplayNameInfo = displayNameInfo;
         _membersCount = members.Count;
         _superTypes = type.GetAllImplementedTypes();
     }
@@ -58,21 +54,10 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
     /// <summary>
-    /// Gets the literal display name for the type.
+    /// Gets the strategy that resolves the display name for the type at validation time,
+    /// or <see langword="null"/> when no display name information was supplied.
     /// </summary>
-    /// <remarks>
-    /// When <see cref="DisplayAttribute.ResourceType"/> is set, the resolved display name is
-    /// produced by invoking <see cref="DisplayResourceAccessor"/> instead.
-    /// </remarks>
-    internal string? DisplayName { get; }
-
-    /// <summary>
-    /// Gets the accessor that resolves the localized display name from a static resource property
-    /// (e.g. <c>Resources.MyType</c>) when the type is decorated with
-    /// <c>[Display(Name = ..., ResourceType = ...)]</c>. Returns <see langword="null"/> for
-    /// types without resource-based display names.
-    /// </summary>
-    internal Func<string?>? DisplayResourceAccessor { get; }
+    internal DisplayNameInfo? DisplayNameInfo { get; }
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
@@ -113,13 +98,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 return;
             }
 
-            var displayName = LocalizationHelper.ResolveDisplayName(
-                memberName: Type.Name,
-                DisplayName,
-                DisplayResourceAccessor,
-                Type,
-                localizer: context.ValidationOptions.Localizer
-            );
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
             // Validate type-level attributes
             ValidateTypeAttributes(value, context, displayName);
@@ -161,6 +140,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
+        var localizer = context.ValidationOptions.Localizer;
 
         var originalDisplayName = context.ValidationContext.DisplayName;
         var originalMemberName = context.ValidationContext.MemberName;
@@ -177,14 +157,12 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 foreach (var memberName in result.MemberNames)
                 {
                     // Create a validation error for each member name that is provided
-                    var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                    var errorMessage = localizer.ResolveAttributeErrorMessage(
                         memberName,
                         displayName,
                         declaringType: Type,
                         attribute,
-                        result,
-                        localizer: context.ValidationOptions.Localizer
-                    );
+                        result);
 
                     if (errorMessage is not null)
                     {
@@ -196,14 +174,12 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 if (!result.MemberNames.Any())
                 {
                     // If no member names are specified, then treat this as a top-level error
-                    var errorMessage = LocalizationHelper.ResolveAttributeErrorMessage(
+                    var errorMessage = localizer.ResolveAttributeErrorMessage(
                         memberName: Type.Name,
                         displayName,
                         declaringType: Type,
                         attribute,
-                        result,
-                        localizer: context.ValidationOptions.Localizer
-                    );
+                        result);
 
                     if (errorMessage is not null)
                     {

@@ -50,56 +50,82 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             return false;
         }
 
-        var (displayName, displayResourceAccessor) = ResolveDisplayInfo(parameterInfo);
+        var displayNameInfo = ResolveDisplayInfo(parameterInfo);
 
         validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
-            displayName: displayName,
-            displayResourceAccessor: displayResourceAccessor,
+            displayNameInfo: displayNameInfo,
             validationAttributes: validationAttributes
         );
         return true;
     }
 
-    private static (string? DisplayName, Func<string?>? DisplayResourceAccessor) ResolveDisplayInfo(ParameterInfo parameterInfo)
+    private static DisplayNameInfo? ResolveDisplayInfo(ParameterInfo parameterInfo)
     {
         var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
         if (displayAttribute is { ResourceType: not null, Name: not null })
         {
-            // ResourceType path: capture displayAttribute.GetName as a method group. The
-            // DisplayAttribute instance is retained for the lifetime of the resolver, mirroring
-            // the source-generator's static accessor design (one closure per parameter).
-            return (DisplayName: null, DisplayResourceAccessor: displayAttribute.GetName);
+            // Resource-based display name from [Display(ResourceType = ..., Name = ...)] is the
+            // canonical localized source; the IValidationLocalizer is intentionally bypassed.
+            // The DisplayAttribute instance is retained for the lifetime of the resolver, mirroring
+            // the source-generator's static accessor design.
+            return new ParameterReflectionDisplayName(displayAttribute);
         }
 
         if (displayAttribute?.Name is not null)
         {
             // Literal name from [Display(Name = "...")].
-            return (DisplayName: displayAttribute.Name, DisplayResourceAccessor: null);
+            return new LiteralDisplayName(displayAttribute.Name);
         }
 
         var displayNameAttribute = parameterInfo.GetCustomAttribute<DisplayNameAttribute>();
         if (displayNameAttribute is not null)
         {
             // Literal name from [DisplayName("...")].
-            return (DisplayName: displayNameAttribute.DisplayName, DisplayResourceAccessor: null);
+            return new LiteralDisplayName(displayNameAttribute.DisplayName);
         }
 
-        return (DisplayName: null, DisplayResourceAccessor: null);
+        return null;
     }
 
     internal sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
-        string? displayName,
-        Func<string?>? displayResourceAccessor,
+        DisplayNameInfo? displayNameInfo,
         ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName, displayResourceAccessor)
+            ValidatableParameterInfo(parameterType, name, displayNameInfo)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
+    }
+
+    private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
+    {
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+        {
+            var localizer = context.ValidationOptions.Localizer;
+            if (localizer is null)
+            {
+                return literal;
+            }
+
+            // The literal acts as both the lookup key for the localizer AND the fallback display
+            // name when the localizer can't translate.
+            return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
+            {
+                DeclaringType = declaringType,
+                DisplayName = literal,
+                MemberName = memberName,
+            }) ?? literal;
+        }
+    }
+
+    private sealed class ParameterReflectionDisplayName(DisplayAttribute attribute) : DisplayNameInfo
+    {
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+            => attribute.GetName();
     }
 
     private static bool IsComplexType(Type type)

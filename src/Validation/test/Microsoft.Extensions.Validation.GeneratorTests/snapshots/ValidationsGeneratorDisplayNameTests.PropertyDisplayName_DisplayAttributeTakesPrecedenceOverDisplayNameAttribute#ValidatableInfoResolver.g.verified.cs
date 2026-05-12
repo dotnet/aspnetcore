@@ -33,8 +33,7 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string? displayName,
-            global::System.Func<string?>? displayResourceAccessor = null) : base(containingType, propertyType, name, displayName, displayResourceAccessor)
+            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
         {
             ContainingType = containingType;
             Name = name;
@@ -55,8 +54,7 @@ namespace Microsoft.Extensions.Validation.Generated
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
             ValidatablePropertyInfo[] members,
-            string? displayName = null,
-            global::System.Func<string?>? displayResourceAccessor = null) : base(type, members, displayName, displayResourceAccessor)
+            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
         {
             Type = type;
         }
@@ -83,12 +81,10 @@ namespace Microsoft.Extensions.Validation.Generated
                             containingType: typeof(global::BothDisplayAttrsType),
                             propertyType: typeof(int),
                             name: "Value",
-                            displayName: "Display Attr Name",
-                            displayResourceAccessor: null
+                            displayNameInfo: new LiteralDisplayName("Display Attr Name")
                         ),
                     ],
-                    displayName: null,
-                    displayResourceAccessor: null
+                    displayNameInfo: null
                 );
                 return true;
             }
@@ -191,6 +187,69 @@ namespace Microsoft.Extensions.Validation.Generated
                 return global::System.Linq.Enumerable.ToArray(typeAttributes);
             });
         }
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed class LiteralDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    {
+        private readonly string _literal;
+
+        public LiteralDisplayName(string literal)
+        {
+            _literal = literal;
+        }
+
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+        {
+            var localizer = context.ValidationOptions.Localizer;
+            if (localizer is null)
+            {
+                return _literal;
+            }
+            return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
+            {
+                DeclaringType = declaringType,
+                DisplayName = _literal,
+                MemberName = memberName,
+            }) ?? _literal;
+        }
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed class PropertyResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    {
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+        private readonly global::System.Type _containingType;
+        private readonly string _propertyName;
+
+        public PropertyResourceDisplayName(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName)
+        {
+            _containingType = containingType;
+            _propertyName = propertyName;
+        }
+
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+            => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    {
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+        private readonly global::System.Type _type;
+
+        public TypeResourceDisplayName(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+            global::System.Type type)
+        {
+            _type = type;
+        }
+
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+            => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]

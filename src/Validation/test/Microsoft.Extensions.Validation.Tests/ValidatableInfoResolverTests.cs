@@ -27,7 +27,7 @@ public class ValidatableInfoResolverTests
 
         // Create the object that will be returned by resolver2
         // Note: `null!` is required due to Moq's constraints.
-        var mockTypeInfo = new Mock<ValidatableTypeInfo>(typeof(ValidatableType), Array.Empty<ValidatablePropertyInfo>(), null!, null!).Object;
+        var mockTypeInfo = new Mock<ValidatableTypeInfo>(typeof(ValidatableType), Array.Empty<ValidatablePropertyInfo>(), null!).Object;
 
         // Setup resolver1 to return false (doesn't handle this type)
         resolver1

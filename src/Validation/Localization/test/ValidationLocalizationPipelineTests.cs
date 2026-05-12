@@ -363,16 +363,39 @@ public class ValidationLocalizationPipelineTests
         protected override ValidationAttribute[] GetValidationAttributes() => _attributes;
     }
 
-    private sealed class TestValidatablePropertyInfo(
-        Type declaringType,
-        Type propertyType,
-        string name,
-        ValidationAttribute[] validationAttributes,
-        string? displayName = null,
-        Func<string?>? displayResourceAccessor = null)
-        : ValidatablePropertyInfo(declaringType, propertyType, name, displayName, displayResourceAccessor)
+    private sealed class TestValidatablePropertyInfo : ValidatablePropertyInfo
     {
-        protected override ValidationAttribute[] GetValidationAttributes() => validationAttributes;
+        private readonly ValidationAttribute[] _validationAttributes;
+
+        public TestValidatablePropertyInfo(
+            Type declaringType,
+            Type propertyType,
+            string name,
+            ValidationAttribute[] validationAttributes,
+            string? displayName = null,
+            Func<string?>? displayResourceAccessor = null)
+            : base(declaringType, propertyType, name, BuildDisplayNameInfo(displayName, displayResourceAccessor))
+        {
+            _validationAttributes = validationAttributes;
+        }
+
+        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        private static DisplayNameInfo? BuildDisplayNameInfo(string? displayName, Func<string?>? displayResourceAccessor)
+        {
+            // Resource-attribute path takes precedence (matches the SG-emitted PropertyResourceDisplayName).
+            if (displayResourceAccessor is not null)
+            {
+                return new TestResourceDisplayName(displayResourceAccessor);
+            }
+
+            if (displayName is not null)
+            {
+                return new TestLiteralDisplayName(displayName);
+            }
+
+            return null;
+        }
     }
 
     private sealed class TestValidatableParameterInfo(
@@ -380,9 +403,35 @@ public class ValidationLocalizationPipelineTests
         string name,
         string? displayName,
         ValidationAttribute[] validationAttributes)
-        : ValidatableParameterInfo(parameterType, name, displayName)
+        : ValidatableParameterInfo(parameterType, name, displayName is null ? null : new TestLiteralDisplayName(displayName))
     {
         protected override ValidationAttribute[] GetValidationAttributes() => validationAttributes;
+    }
+
+    private sealed class TestLiteralDisplayName(string literal) : DisplayNameInfo
+    {
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+        {
+            var localizer = context.ValidationOptions.Localizer;
+            if (localizer is null)
+            {
+                return literal;
+            }
+
+            // Literal acts as both lookup key and fallback display name when the localizer doesn't translate.
+            return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
+            {
+                DeclaringType = declaringType,
+                DisplayName = literal,
+                MemberName = memberName,
+            }) ?? literal;
+        }
+    }
+
+    private sealed class TestResourceDisplayName(Func<string?> accessor) : DisplayNameInfo
+    {
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+            => accessor();
     }
 
     private sealed class ConstantLocalizer(string message) : IValidationLocalizer

@@ -723,9 +723,7 @@ public class ValidatableTypeInfoTests
             name,
             displayName,
             validationAttributes);
-    }
-
-    // Test model classes
+    }    // Test model classes
     private class Person
     {
         public string? Name { get; set; }
@@ -865,7 +863,7 @@ public class ValidatableTypeInfoTests
             string name,
             string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name, new TestLiteralDisplayName(displayName))
         {
             _validationAttributes = validationAttributes;
         }

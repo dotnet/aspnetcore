@@ -93,7 +93,7 @@ public class ValidationLocalizationIntegrationTests
     }
 
     [Fact]
-    public async Task Property_LocalizerReturnsNull_FallsBackToDefaults()
+    public async Task Property_LocalizerReturnsNull_FallsBackToLiteral()
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -111,10 +111,11 @@ public class ValidationLocalizationIntegrationTests
 
         await typeInfo.ValidateAsync(model, context, default);
 
-        // DisplayName falls back to MemberName (Name) when localizer returns null
-        // ErrorMessage falls back to attribute's default formatted with that DisplayName
+        // When the localizer can't translate the literal, the LiteralDisplayName strategy
+        // returns the literal as the fallback display name (it acts as both lookup key and
+        // default value). The error message uses that literal.
         Assert.NotNull(context.ValidationErrors);
-        Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
+        Assert.Equal("The Customer Name field is required.", context.ValidationErrors["Name"].Single());
     }
 
     // --- ErrorMessageResourceType bypass ---
@@ -135,7 +136,8 @@ public class ValidationLocalizationIntegrationTests
         var model = new SimpleModel { Name = null };
         var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel),
         [
-            new TestValidatablePropertyInfo(typeof(SimpleModel), typeof(string), "Name", [requiredAttr])
+            new TestValidatablePropertyInfo(typeof(SimpleModel), typeof(string), "Name", [requiredAttr],
+                displayName: "Customer Name")
         ]);
         var context = CreateContext(model, localizer);
 
@@ -150,10 +152,10 @@ public class ValidationLocalizationIntegrationTests
         Assert.Equal(TestResources.RequiredError, context.ValidationErrors["Name"].Single());
     }
 
-    // --- displayResourceAccessor takes precedence over IStringLocalizer path ---
+    // --- Resource-attribute strategy bypasses the IStringLocalizer path ---
 
     [Fact]
-    public async Task Property_DisplayResourceAccessor_TakesPrecedence()
+    public async Task Property_ResourceDisplayName_BypassesLocalizer()
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -170,15 +172,15 @@ public class ValidationLocalizationIntegrationTests
 
         await typeInfo.ValidateAsync(model, context, default);
 
-        // The accessor wins; the localizer's ResolveDisplayName is NOT called.
+        // The strategy wins; the localizer's ResolveDisplayName is NOT called.
         Assert.Empty(localizer.DisplayNameCalls);
-        // ResolveErrorMessage IS called, with the accessor's result as the display name.
+        // ResolveErrorMessage IS called, with the strategy's result as the display name.
         var errorCall = Assert.Single(localizer.ErrorMessageCalls);
         Assert.Equal("Resource-Resolved Name", errorCall.DisplayName);
     }
 
     [Fact]
-    public async Task Property_DisplayResourceAccessor_ReturnsNull_FallsBackToMemberName()
+    public async Task Property_ResourceDisplayName_ReturnsNull_FallsBackToMemberName()
     {
         var localizer = new RecordingValidationLocalizer();
         var model = new SimpleModel { Name = null };
@@ -198,13 +200,13 @@ public class ValidationLocalizationIntegrationTests
     }
 
     [Fact]
-    public async Task Property_DisplayResourceAccessor_Throws_PropagatesException()
+    public async Task Property_ResourceDisplayName_Throws_PropagatesException()
     {
         // Pins the failure mode for misconfigured [Display(ResourceType=T, Name=X)] where X is not
         // a public static string property on T. The runtime accessor (DisplayAttribute.GetName)
-        // throws InvalidOperationException with a clear BCL message; LocalizationHelper does not
-        // suppress it. Documented as user-error behaviour: the misconfiguration is surfaced loudly
-        // rather than masked by the MemberName fallback.
+        // throws InvalidOperationException with a clear BCL message; the validation pipeline does
+        // not suppress it. Documented as user-error behaviour: the misconfiguration is surfaced
+        // loudly rather than masked by the MemberName fallback.
         var thrown = new InvalidOperationException("Cannot retrieve property 'Name' because localization failed.");
         var model = new SimpleModel { Name = null };
         var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel),
@@ -332,16 +334,39 @@ public class ValidationLocalizationIntegrationTests
         }
     }
 
-    private sealed class TestValidatablePropertyInfo(
-        Type declaringType,
-        Type propertyType,
-        string name,
-        ValidationAttribute[] validationAttributes,
-        string? displayName = null,
-        Func<string?>? displayResourceAccessor = null)
-        : ValidatablePropertyInfo(declaringType, propertyType, name, displayName, displayResourceAccessor)
+    private sealed class TestValidatablePropertyInfo : ValidatablePropertyInfo
     {
-        protected override ValidationAttribute[] GetValidationAttributes() => validationAttributes;
+        private readonly ValidationAttribute[] _validationAttributes;
+
+        public TestValidatablePropertyInfo(
+            Type declaringType,
+            Type propertyType,
+            string name,
+            ValidationAttribute[] validationAttributes,
+            string? displayName = null,
+            Func<string?>? displayResourceAccessor = null)
+            : base(declaringType, propertyType, name, BuildDisplayNameInfo(displayName, displayResourceAccessor))
+        {
+            _validationAttributes = validationAttributes;
+        }
+
+        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        private static DisplayNameInfo? BuildDisplayNameInfo(string? displayName, Func<string?>? displayResourceAccessor)
+        {
+            // Resource-attribute path takes precedence (matches FormatPropertyDisplayNameInfo in the SG).
+            if (displayResourceAccessor is not null)
+            {
+                return new TestResourceDisplayName(displayResourceAccessor);
+            }
+
+            if (displayName is not null)
+            {
+                return new TestLiteralDisplayName(displayName);
+            }
+
+            return null;
+        }
     }
 
     private sealed class TestValidatableParameterInfo(
@@ -349,7 +374,7 @@ public class ValidationLocalizationIntegrationTests
         string name,
         string? displayName,
         ValidationAttribute[] validationAttributes)
-        : ValidatableParameterInfo(parameterType, name, displayName)
+        : ValidatableParameterInfo(parameterType, name, displayName is null ? null : new TestLiteralDisplayName(displayName))
     {
         protected override ValidationAttribute[] GetValidationAttributes() => validationAttributes;
     }
