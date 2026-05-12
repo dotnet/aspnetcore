@@ -10,8 +10,10 @@ internal static class QuickGridFeatureFlags
     private const string EnableUrlBasedNavigationSwitchName =
         "Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting";
 
+#pragma warning disable IDE0044
     private static bool s_enableUrlBasedQuickGridNavigationAndSorting =
         !AppContext.TryGetSwitch(EnableUrlBasedNavigationSwitchName, out var isEnabled) || isEnabled;
+#pragma warning restore IDE0044
 
     [FeatureSwitchDefinition(EnableUrlBasedNavigationSwitchName)]
     internal static bool EnableUrlBasedQuickGridNavigationAndSorting => s_enableUrlBasedQuickGridNavigationAndSorting;
