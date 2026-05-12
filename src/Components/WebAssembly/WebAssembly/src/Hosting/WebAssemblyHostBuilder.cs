@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -85,12 +84,6 @@ public sealed class WebAssemblyHostBuilder
         Services = new ServiceCollection();
         Logging = new LoggingBuilder(Services);
 
-        var assembly = Assembly.GetEntryAssembly();
-        if (assembly != null)
-        {
-            InitializeRoutingAppContextSwitch(assembly);
-        }
-
         InitializeWebAssemblyRenderer();
 
         // Retrieve required attributes from JSRuntimeInvoker
@@ -115,22 +108,6 @@ public sealed class WebAssemblyHostBuilder
 
             return Services.BuildServiceProvider(options);
         };
-    }
-
-    private static void InitializeRoutingAppContextSwitch(Assembly assembly)
-    {
-        var assemblyMetadataAttributes = assembly.GetCustomAttributes<AssemblyMetadataAttribute>();
-        foreach (var ama in assemblyMetadataAttributes)
-        {
-            if (string.Equals(ama.Key, "Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport", StringComparison.Ordinal))
-            {
-                if (ama.Value != null && string.Equals((string?)ama.Value, "true", StringComparison.OrdinalIgnoreCase))
-                {
-                    AppContext.SetSwitch("Microsoft.AspNetCore.Components.Routing.RegexConstraintSupport", true);
-                }
-                return;
-            }
-        }
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Root components are expected to be defined in assemblies that do not get trimmed.")]

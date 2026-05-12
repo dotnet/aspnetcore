@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Sdk Name="Microsoft.NET.Sdk.StaticWebAssets" />
+
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side single-page applications (SPAs) with Blazor running under WebAssembly.</Description>
@@ -13,6 +15,8 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
   <ItemGroup>
@@ -60,9 +64,10 @@
     <BlazorWebAssemblyJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSFile>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" LinkBase="build\$(DefaultNetCoreTargetFramework)\" />
-    <Content Include="targets\*.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
+  <!-- Include blazor.webassembly.js as if it were under wwwroot/_framework/ so the SWA pipeline discovers it.
+       Condition on BuildNodeJS since the file won't exist during No-NodeJS CI builds. -->
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
+    <Content Include="$(BlazorWebAssemblyJSFile)" Link="wwwroot\_framework\blazor.webassembly.js" />
   </ItemGroup>
 
   <ItemGroup>
