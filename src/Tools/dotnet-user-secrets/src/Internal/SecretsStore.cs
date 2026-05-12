@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 
@@ -20,6 +20,11 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 /// </summary>
 public class SecretsStore
 {
+    internal static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true
+    };
+
     private readonly string _secretsFilePath;
     private readonly IDictionary<string, string> _secrets;
 
@@ -70,14 +75,7 @@ public class SecretsStore
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
 
-        var contents = new JObject();
-        if (_secrets != null)
-        {
-            foreach (var secret in _secrets.AsEnumerable())
-            {
-                contents[secret.Key] = secret.Value;
-            }
-        }
+        var contents = JsonSerializer.Serialize(_secrets, SerializerOptions);
 
         // Create a temp file with the correct Unix file mode before moving it to the expected _filePath.
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -86,7 +84,7 @@ public class SecretsStore
             File.Move(tempFilename, _secretsFilePath, overwrite: true);
         }
 
-        File.WriteAllText(_secretsFilePath, contents.ToString(), Encoding.UTF8);
+        File.WriteAllText(_secretsFilePath, contents, Encoding.UTF8);
     }
 
     protected virtual IDictionary<string, string> Load(string userSecretsId)

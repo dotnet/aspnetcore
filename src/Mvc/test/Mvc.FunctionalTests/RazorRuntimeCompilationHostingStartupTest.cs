@@ -49,6 +49,7 @@ public class RazorRuntimeCompilationHostingStartupTest : LoggedTest
     public HttpClient Client { get; private set; }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorViews_CanBeServedAndUpdatedViaRuntimeCompilation()
     {
         // Arrange
@@ -86,6 +87,7 @@ public class RazorRuntimeCompilationHostingStartupTest : LoggedTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/56553")]
     public async Task RazorPages_CanBeServedAndUpdatedViaRuntimeCompilation()
     {
         // Arrange

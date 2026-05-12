@@ -289,8 +289,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         var outputSize = KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
 
         byte[]? rentedBuffer = null;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
@@ -472,8 +472,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
 
         byte[]? rentedBuffer = null;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
