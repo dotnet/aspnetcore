@@ -162,7 +162,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             var jsComponentInterop = new JSComponentInterop(_rootComponents.JSComponents);
             var collectionProvider = Services.GetRequiredService<ResourceCollectionProvider>();
             var collection = await collectionProvider.GetResourceCollection();
-            var useOopRenderer = true;
             _renderer = new WebAssemblyRenderer(Services, collection, loggerFactory, jsComponentInterop, true);
 
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);

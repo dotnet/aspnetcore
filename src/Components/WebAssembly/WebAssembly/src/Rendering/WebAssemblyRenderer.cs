@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -163,9 +162,9 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private void CallBaseProcessPendingRender() => base.ProcessPendingRender();
 
     /// <inheritdoc />
-    protected override unsafe Task UpdateDisplayAsync(in RenderBatch batch)
+    protected override Task UpdateDisplayAsync(in RenderBatch batch)
     {
-            UpdateDisplayOutOfProcess(in batch);
+        UpdateDisplayOutOfProcess(in batch);
         if (WebAssemblyCallQueue.HasUnstartedWork)
         {
             // Because further incoming calls from JS to .NET are already queued (e.g., event notifications),
@@ -246,9 +245,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         [LoggerMessage(100, LogLevel.Critical, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
         public static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
     }
-
-    [JSImport("Blazor._internal.renderBatch", "blazor-internal")]
-    private static unsafe partial void RenderBatch(int id, void* batch);
 
     [JSImport("Blazor._internal.renderBatchOOP", "blazor-internal")]
     private static partial void RenderBatchOOP(int rendererId, byte[] batchData);
