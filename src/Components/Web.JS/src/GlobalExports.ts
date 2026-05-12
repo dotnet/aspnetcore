@@ -73,6 +73,7 @@ export interface IBlazor {
       getParameterValues: (id) => any;
     };
     renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void;
+    renderBatchOOP?: (browserRendererId: number, batchData: Uint8Array) => void;
     getConfig?: (fileName: string) => Uint8Array | undefined;
     getApplicationEnvironment?: () => string;
     getApplicationCulture?: () => string;
