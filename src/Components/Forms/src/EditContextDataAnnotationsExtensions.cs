@@ -79,6 +79,14 @@ public static partial class EditContextDataAnnotationsExtensions
         private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
         {
             var fieldIdentifier = eventArgs.FieldIdentifier;
+
+            // Prefer the Microsoft.Extensions.Validation pipeline so per-field validation runs
+            // through the same path as full-form validation and benefits from IValidationLocalizer.
+            if (TryValidateFieldThroughValidatableInfo(fieldIdentifier))
+            {
+                return;
+            }
+
             if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
             {
                 var propertyValue = propertyInfo.GetValue(fieldIdentifier.Model);
@@ -87,8 +95,6 @@ public static partial class EditContextDataAnnotationsExtensions
                     MemberName = propertyInfo.Name
                 };
                 var results = new List<ValidationResult>();
-
-                // TODO: Add path for per-field validation via ValidatablePropertyInfo to support localization
 
                 Validator.TryValidateProperty(propertyValue, validationContext, results);
                 _messages.Clear(fieldIdentifier);
@@ -102,6 +108,59 @@ public static partial class EditContextDataAnnotationsExtensions
                 _editContext.NotifyValidationStateChanged();
             }
         }
+
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private bool TryValidateFieldThroughValidatableInfo(in FieldIdentifier fieldIdentifier)
+        {
+            // Only route through M.E.V when the form-level validation is also routed there,
+            // so per-field and full-form validation produce consistent error messages
+            // (including localized ones) for the same model.
+            if (_validatorTypeInfo is null || _validationOptions is null)
+            {
+                return false;
+            }
+
+            var fieldModel = fieldIdentifier.Model;
+            var fieldName = fieldIdentifier.FieldName;
+            var fieldModelType = fieldModel.GetType();
+
+            if (!_validationOptions.TryGetValidatablePropertyInfo(fieldModelType, fieldName, out var validatableProperty))
+            {
+                // The model was registered for type-level validation but this specific property
+                // does not have generated metadata (e.g. it's not annotated with any ValidationAttribute
+                // and is not a complex type). Fall back to the BCL path so legacy attributes still apply.
+                return false;
+            }
+
+            var validationContext = new ValidationContext(fieldModel, _serviceProvider, items: null);
+            var validateContext = new ValidateContext
+            {
+                ValidationOptions = _validationOptions,
+                ValidationContext = validationContext,
+            };
+
+            var validationTask = validatableProperty.ValidateAsync(fieldModel, validateContext, CancellationToken.None);
+            if (!validationTask.IsCompleted)
+            {
+                throw new InvalidOperationException("Async validation is not supported");
+            }
+
+            _messages.Clear(fieldIdentifier);
+            if (validateContext.ValidationErrors is { Count: > 0 } errors)
+            {
+                foreach (var (_, messages) in errors)
+                {
+                    _messages.Add(fieldIdentifier, messages);
+                }
+            }
+
+            // We have to notify even if there were no messages before and are still no messages now,
+            // because the "state" that changed might be the completion of some async validation task.
+            _editContext.NotifyValidationStateChanged();
+            return true;
+        }
+#pragma warning restore ASP0029
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
