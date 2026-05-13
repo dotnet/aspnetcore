@@ -1116,6 +1116,10 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // ValidationSummary with CssClass appends the custom class to "validation-errors"
         Browser.Equal("validation-errors custom-summary-css-class",
             () => appElement.FindElement(By.ClassName("all-errors-custom-class")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
+
+        // Both AdditionalAttributes["class"] and CssClass are combined: splatted class + validation-errors + CssClass
+        Browser.Equal("extra validation-errors custom",
+            () => appElement.FindElement(By.ClassName("all-errors-combined")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
     }
 
 }
