@@ -279,7 +279,7 @@ internal sealed class ApiResponseTypeProvider
                             // Same scope, same key: merge content types
                             if (results.TryGetValue(key, out var existingEntry))
                             {
-                                MergeApiResponseFormats(existingEntry, apiResponseType);
+                                MergeApiResponse(existingEntry, apiResponseType);
                             }
                             else
                             {
@@ -355,7 +355,7 @@ internal sealed class ApiResponseTypeProvider
                     // Same (statusCode, type): merge content types.
                     // Example: .Produces<Product>(200, "json").Produces<Product>(200, "xml")
                     //   → (200, Product) with [json, xml]
-                    MergeApiResponseFormats(existingEntry, apiResponseType);
+                    MergeApiResponse(existingEntry, apiResponseType);
                 }
                 else
                 {
@@ -486,7 +486,7 @@ internal sealed class ApiResponseTypeProvider
         return declaredReturnType;
     }
 
-    private static void MergeApiResponseFormats(ApiResponseType existing, ApiResponseType newEntry)
+    private static void MergeApiResponse(ApiResponseType existing, ApiResponseType newEntry)
     {
         foreach (var format in newEntry.ApiResponseFormats)
         {
@@ -496,11 +496,14 @@ internal sealed class ApiResponseTypeProvider
             }
         }
 
-        // Keep the first non-null Description encountered. Callers iterate in descending scope
-        // order, so this preserves the highest-scope description for the (StatusCode, Type) pair.
-        if (existing.Description is null && newEntry.Description is not null)
+        // It may be ugly, but it is better to have all descriptions saved in metadata
+        // than silently dropping random descriptions.
+        // New line is "\n\n" as per https://spec.openapis.org/oas/v3.1.0#rich-text-formatting
+        if (newEntry.Description is not null)
         {
-            existing.Description = newEntry.Description;
+            existing.Description = string.IsNullOrEmpty(existing.Description)
+                ? newEntry.Description
+                : existing.Description + "\n\n" + newEntry.Description;
         }
     }
 
