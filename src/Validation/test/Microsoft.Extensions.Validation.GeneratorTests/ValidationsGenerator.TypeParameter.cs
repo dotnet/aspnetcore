@@ -7,6 +7,120 @@ namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
+    // Repro for the silent-skip half of issue dotnet/aspnetcore#65418. When the
+    // route-handler delegate parameter resolves to an open ITypeParameterSymbol —
+    // as happens inside the body of a generic endpoint extension method like
+    // MapValidated<T>(this IEndpointRouteBuilder, string) — TryExtractValidatableType
+    // on main hits the DeclaredAccessibility check (NotApplicable for type parameters)
+    // and silently returns false. The concrete constraint type is therefore never
+    // discovered and no typeof(...) check is emitted for it, even though it carries
+    // [Required] / [Range] attributes. With the fix the generator walks the type
+    // parameter's ConstraintTypes and discovers the concrete validatable type.
+    //
+    // The snapshot is the bug witness: on main the resolver body is empty (no
+    // typeof(global::UserRequest) check); with the fix the resolver contains the
+    // type and its members.
+    [Fact]
+    public async Task CanValidateOpenTypeParameterReachableThroughConstraint()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapValidated<UserRequest>("/users");
+
+app.Run();
+
+public class UserRequest
+{
+    [Required]
+    public string Name { get; set; } = "default";
+
+    [Range(1, 120)]
+    public int Age { get; set; } = 25;
+}
+
+public static class GenericEndpointExtensions
+{
+    public static RouteHandlerBuilder MapValidated<T>(this IEndpointRouteBuilder endpoints, string pattern)
+        where T : UserRequest
+        => endpoints.MapPost(pattern, (T req) => Results.Ok());
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/users", async (endpoint, serviceProvider) =>
+        {
+            await InvalidNameProducesError(endpoint);
+            await InvalidAgeProducesError(endpoint);
+            await ValidInputProducesNoErrors(endpoint);
+
+            async Task InvalidNameProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "Name": "",
+                    "Age": 30
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("Name", kvp.Key);
+                    Assert.Equal("The Name field is required.", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidAgeProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "Name": "Alice",
+                    "Age": 0
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("Age", kvp.Key);
+                    Assert.Equal("The field Age must be between 1 and 120.", kvp.Value.Single());
+                });
+            }
+
+            async Task ValidInputProducesNoErrors(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "Name": "Alice",
+                    "Age": 30
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+                await endpoint.RequestDelegate(context);
+
+                Assert.Equal(200, context.Response.StatusCode);
+            }
+        });
+    }
+
     [Fact]
     public async Task CanValidateTypesWithGenericBaseClass()
     {
