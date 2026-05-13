@@ -89,7 +89,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             var foundValidatable = false;
             foreach (var constraintType in typeParam.ConstraintTypes)
             {
-                foundValidatable |= TryExtractValidatableType(constraintType, wellKnownTypes, ref validatableTypes, ref visitedTypes);
+                foundValidatable |= TryExtractValidatableType(constraintType, wellKnownTypes, validatableTypes, visitedTypes);
             }
             return foundValidatable;
         }
