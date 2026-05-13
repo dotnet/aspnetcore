@@ -10,8 +10,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -786,6 +786,50 @@ public class RequestResponseTests
             await connection.Receive(
                 "HTTP/1.1 200 OK",
                 "");
+        }
+    }
+
+    [ConditionalFact]
+    public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+    {
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                await connection.Send(
+                    "POST /ReadAndWriteEcho HTTP/1.1",
+                    "Host: localhost",
+                    "Transfer-Encoding: chunked",
+                    "Connection: keep-alive",
+                    "Content-Length: 25",
+                    "",
+                    "5", "Hello",
+                    "6", " World",
+                    "0",
+                    "",
+                    "");
+            }
+
+            var recv = await connection.Receive(4096);
+            var recvString = Encoding.UTF8.GetString(recv.Span);
+
+            Assert.Matches(@"HTTP/1\.1 200 OK
+Server: Microsoft-IIS/10\.0
+Date: .+
+Connection: close
+
+Hello World
+
+$",
+            recvString);
+
+            // Double check that there is no second response since we're using
+            // Assert.Matches which only checks for a first match
+            Assert.Equal(0, recvString.LastIndexOf("HTTP/1", StringComparison.InvariantCultureIgnoreCase));
+
+            // Verify the connection is closed
+            recv = await connection.Receive(100);
+            Assert.Equal(0, recv.Length);
         }
     }
 
