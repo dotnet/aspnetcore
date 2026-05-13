@@ -82,7 +82,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var localizer = context.ValidationOptions.Localizer;
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
@@ -95,7 +94,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = localizer.ResolveAttributeErrorMessage(
+                var errorMessage = context.ResolveAttributeErrorMessage(
                     memberName: Name,
                     displayName,
                     declaringType: DeclaringType,
@@ -181,7 +180,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result is not null && result != ValidationResult.Success)
                     {
-                        var errorMessage = localizer.ResolveAttributeErrorMessage(
+                        var errorMessage = context.ResolveAttributeErrorMessage(
                             memberName: Name,
                             displayName,
                             declaringType: DeclaringType,

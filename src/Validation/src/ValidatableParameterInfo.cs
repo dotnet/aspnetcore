@@ -68,7 +68,6 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        var localizer = context.ValidationOptions.Localizer;
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
@@ -82,7 +81,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = localizer.ResolveAttributeErrorMessage(
+                var errorMessage = context.ResolveAttributeErrorMessage(
                     memberName: Name,
                     displayName,
                     declaringType: null,
@@ -108,7 +107,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
                 if (result is not null && result != ValidationResult.Success)
                 {
-                    var errorMessage = localizer.ResolveAttributeErrorMessage(
+                    var errorMessage = context.ResolveAttributeErrorMessage(
                         memberName: Name,
                         displayName,
                         declaringType: null,

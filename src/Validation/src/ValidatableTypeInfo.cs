@@ -59,6 +59,60 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
+    /// <summary>
+    /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
+    /// <paramref name="memberName"/>, including members inherited from base types or implemented
+    /// interfaces.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Members declared directly on <see cref="Type"/> take precedence over members inherited
+    /// from super-types, matching the order in which <see cref="ValidateAsync(object?, ValidateContext, CancellationToken)"/>
+    /// visits members.
+    /// </para>
+    /// <para>
+    /// Inherited members are resolved by looking up each super-type via
+    /// <paramref name="options"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
+    /// are not registered with a resolver are silently skipped.
+    /// </para>
+    /// </remarks>
+    /// <param name="memberName">The CLR name of the member to find.</param>
+    /// <param name="options">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
+    /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
+    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
+    internal ValidatablePropertyInfo? FindMember(string memberName, ValidationOptions options)
+    {
+        if (FindLocalMember(memberName) is { } localMember)
+        {
+            return localMember;
+        }
+
+        foreach (var superType in _superTypes)
+        {
+            if (options.TryGetValidatableTypeInfo(superType, out var superInfo)
+                && superInfo is ValidatableTypeInfo superTypeInfo
+                && superTypeInfo.FindLocalMember(memberName) is { } inheritedMember)
+            {
+                return inheritedMember;
+            }
+        }
+
+        return null;
+    }
+
+    private ValidatablePropertyInfo? FindLocalMember(string memberName)
+    {
+        for (var i = 0; i < _membersCount; i++)
+        {
+            if (string.Equals(Members[i].Name, memberName, StringComparison.Ordinal))
+            {
+                return Members[i];
+            }
+        }
+
+        return null;
+    }
+
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
@@ -140,7 +194,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
-        var localizer = context.ValidationOptions.Localizer;
 
         var originalDisplayName = context.ValidationContext.DisplayName;
         var originalMemberName = context.ValidationContext.MemberName;
@@ -157,7 +210,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 foreach (var memberName in result.MemberNames)
                 {
                     // Create a validation error for each member name that is provided
-                    var errorMessage = localizer.ResolveAttributeErrorMessage(
+                    var errorMessage = context.ResolveAttributeErrorMessage(
                         memberName,
                         displayName,
                         declaringType: Type,
@@ -174,7 +227,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 if (!result.MemberNames.Any())
                 {
                     // If no member names are specified, then treat this as a top-level error
-                    var errorMessage = localizer.ResolveAttributeErrorMessage(
+                    var errorMessage = context.ResolveAttributeErrorMessage(
                         memberName: Type.Name,
                         displayName,
                         declaringType: Type,

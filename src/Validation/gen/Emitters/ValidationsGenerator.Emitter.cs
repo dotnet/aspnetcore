@@ -218,8 +218,6 @@ namespace Microsoft.Extensions.Validation.Generated
             {
                 return _literal;
             }
-            // The literal acts as both the lookup key for the localizer AND the fallback display
-            // name when the localizer can't translate.
             return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
             {
                 DeclaringType = declaringType,
