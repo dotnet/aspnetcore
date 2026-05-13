@@ -809,23 +809,45 @@ public class RequestResponseTests
                     "");
             }
 
-            var recv = await connection.Receive(4096);
-            var recvString = Encoding.UTF8.GetString(recv.Span);
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+            var headers = await connection.ReceiveHeaders();
 
-            // The response should start with a 200 OK status line and contain the Server
-            // header, a Connection: close header (since the server MUST close the connection
-            // after a CL+TE request), and the echoed body "Hello World".
-            Assert.StartsWith("HTTP/1.1 200 OK\r\n", recvString);
-            Assert.Contains("Server: Microsoft-IIS/10.0\r\n", recvString);
-            Assert.Contains("Connection: close\r\n", recvString);
-            Assert.Contains("Hello World", recvString);
+            // RFC 9112 §6.1: the server MUST close the connection after responding
+            // to a request that contained both Content-Length and Transfer-Encoding.
+            Assert.Contains("Connection: close", headers);
+            Assert.Contains("Server: Microsoft-IIS/10.0", headers);
 
-            // Verify the second request was not processed: there must be only a single HTTP response in the buffer.
-            Assert.Equal(0, recvString.LastIndexOf("HTTP/1", StringComparison.InvariantCultureIgnoreCase));
+            // Read the echoed body. Because the response carries Connection: close,
+            // IIS may frame the body as Content-Length, Transfer-Encoding: chunked,
+            // or simply by closing the connection (RFC 9112 §6.3 rule 7). Handle
+            // all three.
+            string body;
+            if (headers.Contains("Transfer-Encoding: chunked"))
+            {
+                body = Encoding.ASCII.GetString((await connection.ReceiveChunk()).Span);
+                await connection.Receive("0", "", "");
+            }
+            else
+            {
+                var contentLengthHeader = headers.SingleOrDefault(h => h.StartsWith("Content-Length: ", StringComparison.Ordinal));
+                if (contentLengthHeader is not null)
+                {
+                    var contentLength = int.Parse(contentLengthHeader.Substring("Content-Length: ".Length), CultureInfo.InvariantCulture);
+                    body = Encoding.ASCII.GetString((await connection.Receive(contentLength)).Span);
+                }
+                else
+                {
+                    body = Encoding.ASCII.GetString((await connection.Receive(4096)).Span);
+                }
+            }
 
-            // Verify the connection is closed
-            recv = await connection.Receive(100);
-            Assert.Equal(0, recv.Length);
+            Assert.Contains("Hello World", body);
+
+            // Verify the second request was not processed and that the server closed
+            // the connection (no extra bytes are sent).
+            await connection.WaitForConnectionClose();
         }
     }
 
