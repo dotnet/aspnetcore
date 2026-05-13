@@ -31,11 +31,11 @@ internal static class ISymbolExtensions
 
             foreach (var arg in displayAttr.NamedArguments)
             {
-                if (string.Equals(arg.Key, "Name", StringComparison.Ordinal))
+                if (string.Equals(arg.Key, "Name", StringComparison.Ordinal) && arg.Value.Kind == TypedConstantKind.Primitive)
                 {
                     name = arg.Value.Value as string;
                 }
-                else if (string.Equals(arg.Key, "ResourceType", StringComparison.Ordinal))
+                else if (string.Equals(arg.Key, "ResourceType", StringComparison.Ordinal) && arg.Value.Kind == TypedConstantKind.Type)
                 {
                     hasResourceType = arg.Value.Value is INamedTypeSymbol;
                 }

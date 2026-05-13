@@ -46,13 +46,6 @@ public interface IValidationLocalizer
     /// Implementations should return <see langword="null"/> when no localized message is available;
     /// the validation pipeline falls back to the attribute's default error message.
     /// </para>
-    /// <para>
-    /// Callers (the validation pipeline helpers) bypass this method entirely when
-    /// <see cref="System.ComponentModel.DataAnnotations.ValidationAttribute.ErrorMessageResourceType"/>
-    /// is set on the attribute, since DataAnnotations performs its own resource-based localization
-    /// in that case. Implementations therefore do not need to handle the
-    /// <c>ErrorMessageResourceType</c> case explicitly.
-    /// </para>
     /// </remarks>
     /// <param name="context">Information about the validation attribute and the member it applied to.</param>
     /// <returns>The fully-formatted localized error message, or <see langword="null"/> to use the

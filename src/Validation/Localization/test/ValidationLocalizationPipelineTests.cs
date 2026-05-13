@@ -279,6 +279,44 @@ public class ValidationLocalizationPipelineTests
         Assert.Equal("FROM-OVERRIDE-2", context.ValidationErrors!["Name"].Single());
     }
 
+    [Fact]
+    public async Task FullPipeline_InheritedProperty_LocalizerProviderReceivesDeclaringBaseType()
+    {
+        // ValidatablePropertyInfo carries a fixed DeclaringType (set by the source generator to
+        // where the property is declared). When validating a Derived instance through a property
+        // whose ValidatablePropertyInfo was emitted with declaringType: typeof(BaseInheritedModel),
+        // LocalizerProvider must receive typeof(BaseInheritedModel), not typeof(DerivedInheritedModel).
+        var seenTypes = new List<Type?>();
+        var translations = new Dictionary<Type, Dictionary<string, string>>
+        {
+            [typeof(BaseInheritedModel)] = new() { ["RequiredKey"] = "{0} is required (from base resource)." },
+        };
+        var context = SetupPipelinePerType(translations, options =>
+        {
+            options.LocalizerProvider = (type, factory) =>
+            {
+                seenTypes.Add(type);
+                return factory.Create(type ?? typeof(object));
+            };
+        });
+
+        // Note declaringType is the BASE type even though the runtime instance is the derived type.
+        // This mirrors what the source generator emits for inherited properties.
+        var typeInfo = new TestValidatableTypeInfo(typeof(DerivedInheritedModel),
+        [
+            new TestValidatablePropertyInfo(typeof(BaseInheritedModel), typeof(string), "Name",
+                [new RequiredAttribute { ErrorMessage = "RequiredKey" }])
+        ]);
+        var model = new DerivedInheritedModel { Name = null };
+
+        await typeInfo.ValidateAsync(model, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal("Name is required (from base resource).", context.ValidationErrors["Name"].Single());
+        Assert.Contains(typeof(BaseInheritedModel), seenTypes);
+        Assert.DoesNotContain(typeof(DerivedInheritedModel), seenTypes);
+    }
+
     // --- Helpers ---
 
     private static ValidateContext SetupPipeline(
@@ -336,6 +374,15 @@ public class ValidationLocalizationPipelineTests
     }
 
     private sealed class SharedValidationMessages { }
+
+    private class BaseInheritedModel
+    {
+        public string? Name { get; set; }
+    }
+
+    private sealed class DerivedInheritedModel : BaseInheritedModel
+    {
+    }
 
     internal static class IntegrationResources
     {

@@ -290,7 +290,7 @@ namespace Microsoft.Extensions.Validation.Generated
                 {
                     var parameter = global::System.Linq.Enumerable.FirstOrDefault(
                         constructor.GetParameters(),
-                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.Ordinal));
 
                     if (parameter != null)
                     {

@@ -148,7 +148,7 @@ public class DefaultValidationLocalizerTests
     }
 
     [Fact]
-    public void ResolveErrorMessage_ExplicitErrorMessageWinsOverKeyProvider()
+    public void ResolveErrorMessage_KeyProviderWinsOverExplicitErrorMessage()
     {
         var translations = new Dictionary<string, string>
         {
@@ -157,6 +157,26 @@ public class DefaultValidationLocalizerTests
         };
         var localizer = CreateLocalizer(translations, options =>
             options.ErrorMessageKeyProvider = ctx => $"{ctx.Attribute.GetType().Name}_Default");
+
+        var result = localizer.ResolveErrorMessage(new()
+        {
+            MemberName = "Name",
+            DisplayName = "Name",
+            Attribute = new RequiredAttribute { ErrorMessage = "ExplicitKey" },
+        });
+
+        Assert.Equal("Convention: Name", result);
+    }
+
+    [Fact]
+    public void ResolveErrorMessage_KeyProviderReturnsNullWithErrorMessage_FallsBackToErrorMessage()
+    {
+        var translations = new Dictionary<string, string>
+        {
+            ["ExplicitKey"] = "Explicit: {0}",
+        };
+        var localizer = CreateLocalizer(translations,
+            options => options.ErrorMessageKeyProvider = _ => null);
 
         var result = localizer.ResolveErrorMessage(new()
         {
@@ -212,14 +232,14 @@ public class DefaultValidationLocalizerTests
     [Fact]
     public void LocalizerProvider_InvokedWithDeclaringType()
     {
-        var seenTypes = new List<Type>();
+        var seenTypes = new List<Type?>();
         var translations = new Dictionary<string, string> { ["Key"] = "Value" };
         var localizer = CreateLocalizer(translations, options =>
         {
             options.LocalizerProvider = (type, factory) =>
             {
                 seenTypes.Add(type);
-                return factory.Create(type);
+                return factory.Create(type ?? typeof(object));
             };
         });
 
@@ -235,16 +255,17 @@ public class DefaultValidationLocalizerTests
     }
 
     [Fact]
-    public void LocalizerProvider_NullDeclaringType_FallsBackToObject()
+    public void LocalizerProvider_NullDeclaringType_PassesNullToProvider()
     {
-        // For parameter validation (DeclaringType is null), the provider receives typeof(object).
-        var seenTypes = new List<Type>();
+        // For parameter validation (DeclaringType is null), the provider receives null directly
+        // so it can apply its own per-context fallback (e.g., a shared resource).
+        var seenTypes = new List<Type?>();
         var localizer = CreateLocalizer(translations: [], options =>
         {
             options.LocalizerProvider = (type, factory) =>
             {
                 seenTypes.Add(type);
-                return factory.Create(type);
+                return factory.Create(type ?? typeof(object));
             };
         });
 
@@ -256,7 +277,26 @@ public class DefaultValidationLocalizerTests
         });
 
         Assert.Single(seenTypes);
-        Assert.Equal(typeof(object), seenTypes[0]);
+        Assert.Null(seenTypes[0]);
+    }
+
+    [Fact]
+    public void NoProvider_NullDeclaringType_FallsBackToObjectResource()
+    {
+        // When no LocalizerProvider is configured and DeclaringType is null (parameter validation),
+        // the default behavior resolves the localizer against typeof(object) as a defensive fallback.
+        // The "object" resource source rarely contains useful translations, so the lookup typically
+        // misses and ResolveDisplayName returns the literal display name.
+        var localizer = CreateLocalizer(translations: []);
+
+        var result = localizer.ResolveDisplayName(new()
+        {
+            MemberName = "param",
+            DisplayName = "Customer Name",
+            DeclaringType = null,
+        });
+
+        Assert.Equal("Customer Name", result);
     }
 
     [Fact]

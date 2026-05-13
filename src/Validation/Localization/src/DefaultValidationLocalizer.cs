@@ -38,11 +38,17 @@ internal sealed class DefaultValidationLocalizer : IValidationLocalizer
     /// <inheritdoc/>
     public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
     {
-        var lookupKey = !string.IsNullOrEmpty(context.Attribute.ErrorMessage)
-            ? context.Attribute.ErrorMessage
-            : _options.ErrorMessageKeyProvider?.Invoke(context);
+        // ErrorMessageKeyProvider, when configured, has precedence over Attribute.ErrorMessage.
+        // The provider receives the full context (including Attribute.ErrorMessage) and may
+        // return a derived key, or return null/empty to defer to using Attribute.ErrorMessage
+        // as the key.
+        var lookupKey = _options.ErrorMessageKeyProvider?.Invoke(context);
+        if (string.IsNullOrEmpty(lookupKey))
+        {
+            lookupKey = context.Attribute.ErrorMessage;
+        }
 
-        if (lookupKey is null)
+        if (string.IsNullOrEmpty(lookupKey))
         {
             return null;
         }
@@ -64,16 +70,20 @@ internal sealed class DefaultValidationLocalizer : IValidationLocalizer
 
     private IStringLocalizer GetStringLocalizer(Type? type)
     {
-        var resourceSource = type ?? typeof(object);
-
-        if (_options.LocalizerProvider is null)
+        if (_options.LocalizerProvider is { } provider)
         {
-            return _localizerFactory.Create(resourceSource);
+            return provider(type, _localizerFactory)
+                ?? throw new InvalidOperationException(
+                    $"The {nameof(ValidationLocalizationOptions)}.{nameof(ValidationLocalizationOptions.LocalizerProvider)} " +
+                    $"delegate returned null for type '{type?.FullName ?? "<null>"}'. " +
+                    $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.");
         }
 
-        return _options.LocalizerProvider(resourceSource, _localizerFactory)
-            ?? throw new InvalidOperationException(
-                $"The {nameof(ValidationLocalizationOptions)}.{nameof(ValidationLocalizationOptions.LocalizerProvider)} delegate returned null for type '{resourceSource.FullName}'. " +
-                $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.");
+        // No provider configured: fall back to per-type lookup. typeof(object) is the only sensible
+        // default at the IStringLocalizerFactory.Create boundary when the pipeline has no declaring
+        // type (e.g., top-level Minimal API parameters); applications that need a useful localizer
+        // for those scenarios should configure LocalizerProvider explicitly or use
+        // AddValidationLocalization<TResource>().
+        return _localizerFactory.Create(type ?? typeof(object));
     }
 }

@@ -16,16 +16,18 @@ public class ValidationLocalizationOptions
     /// <summary>
     /// Gets or sets the delegate that controls which <see cref="IStringLocalizer"/> is used
     /// for a given declaring type. The declaring type is the type that contains the property
-    /// being validated.
+    /// being validated, or <see langword="null"/> when the validation pipeline has no declaring
+    /// type to attribute the message to (e.g., top-level Minimal API parameters).
     /// </summary>
     /// <remarks>
     /// <para>
     /// When <see langword="null"/> (the default), <see cref="IStringLocalizerFactory.Create(Type)"/>
     /// is called with the declaring type, which follows the standard resource file naming convention
     /// (e.g., <c>Resources/Models.Customer.fr.resx</c> for type <c>Models.Customer</c>).
-    /// </para>
-    /// <para>
-    /// Set this to use a shared resource file for all validation messages:
+    /// For declaring-type-less invocations, the no-provider fallback uses <c>typeof(object)</c>.
+    /// In that case the resolved resource source is rarely useful, which is why configuring
+    /// this delegate (or using <c>AddValidationLocalization&lt;TResource&gt;()</c>)
+    /// is recommended for Minimal API parameter validation.
     /// </para>
     /// <example>
     /// <code>
@@ -50,35 +52,42 @@ public class ValidationLocalizationOptions
     /// <see cref="IValidationLocalizer.ResolveDisplayName"/> and
     /// <see cref="IValidationLocalizer.ResolveErrorMessage"/>, so the underlying
     /// <see cref="IStringLocalizerFactory"/> is responsible for caching localizer instances if
-    /// instance creation is expensive. The default factory registered by
+    /// instance creation is expensive. However, the default factory registered by
     /// <c>AddLocalization()</c> (<c>ResourceManagerStringLocalizerFactory</c>) caches its
-    /// results internally, so the default code path is cheap. If your delegate itself does
+    /// results internally. If your delegate itself does
     /// meaningful work beyond calling the factory, capture the result in a closure to amortize
     /// that cost across calls.
     /// </para>
-    /// <para>
-    /// <b>Minimal API parameter validation note:</b> for top-level method parameters there is no
-    /// declaring type, so the validation pipeline passes <c>typeof(object)</c> as the declaring type
-    /// argument. With the default per-type lookup, this resolves to the <c>object</c> resource source
-    /// (typically not what the user wants). To localize Minimal API parameter messages, configure a
-    /// shared-resource <see cref="LocalizerProvider"/> that ignores the type argument:
-    /// <c>options.LocalizerProvider = (_, factory) =&gt; factory.Create(typeof(SharedValidationMessages));</c>
-    /// </para>
     /// </remarks>
-    public Func<Type, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
+    public Func<Type?, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
 
     /// <summary>
     /// Gets or sets the delegate that determines the localization lookup key for a
-    /// validation attribute's error message. When <see langword="null"/> (the default),
-    /// only attributes with <see cref="ValidationAttribute.ErrorMessage"/> set are localized
-    /// (using the <see cref="ValidationAttribute.ErrorMessage"/> value as the key).
+    /// validation attribute's error message. When configured, the delegate is invoked for
+    /// every attribute and takes precedence over <see cref="ValidationAttribute.ErrorMessage"/>.
+    /// Returning <see langword="null"/> or an empty string defers to using
+    /// <see cref="ValidationAttribute.ErrorMessage"/> directly as the lookup key.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// When configured, this delegate is called as a fallback for attributes without an
-    /// explicit <see cref="ValidationAttribute.ErrorMessage"/>, enabling convention-based
-    /// key selection.
+    /// When <see langword="null"/> (the default), only attributes with
+    /// <see cref="ValidationAttribute.ErrorMessage"/> set are localized (using the
+    /// <see cref="ValidationAttribute.ErrorMessage"/> value as the key); attributes without
+    /// an explicit <see cref="ValidationAttribute.ErrorMessage"/> are not localized at all.
     /// </para>
+    /// <para>
+    /// When configured, the delegate can:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item>Provide a fallback key for attributes without an explicit
+    ///   <see cref="ValidationAttribute.ErrorMessage"/> (convention-based key selection).</item>
+    ///   <item>Transform an existing <see cref="ValidationAttribute.ErrorMessage"/> into a
+    ///   different lookup key by reading
+    ///   <see cref="ErrorMessageLocalizationContext.Attribute"/>'s
+    ///   <see cref="ValidationAttribute.ErrorMessage"/> from the context.</item>
+    ///   <item>Return <see langword="null"/> or an empty string to defer to the default
+    ///   behavior of using <see cref="ValidationAttribute.ErrorMessage"/> as the key.</item>
+    /// </list>
     /// <example>
     /// <code>
     /// options.ErrorMessageKeyProvider = context =&gt;

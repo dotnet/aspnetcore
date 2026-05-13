@@ -58,6 +58,10 @@ public sealed class ValidationAttributeFormatterRegistry
     /// </summary>
     public ValidationAttributeFormatterRegistry()
     {
+        // Built-in formatters are only required for attributes whose default error-message
+        // template uses placeholders beyond {0} (the display name). Single-placeholder attributes
+        // such as RequiredAttribute or EmailAddressAttribute need no formatter - the localization pipeline's default
+        // string.Format(culture, template, displayName) substitutes {0} on its own.
         AddFormatter<RangeAttribute>(a => new RangeAttributeFormatter(a));
         AddFormatter<MinLengthAttribute>(a => new MinLengthAttributeFormatter(a));
         AddFormatter<MaxLengthAttribute>(a => new MaxLengthAttributeFormatter(a));
