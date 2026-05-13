@@ -143,7 +143,6 @@ internal sealed class ProjectIdResolver
             AppContext.BaseDirectory,
         ];
 
-#pragma warning disable IL3000 // 'System.Reflection.Assembly.Location.get' always returns an empty string for assemblies embedded in a single-file app.
         var assemblyLocation = typeof(ProjectIdResolver).Assembly.Location;
         if (!string.IsNullOrEmpty(assemblyLocation))
         {
@@ -152,7 +151,6 @@ internal sealed class ProjectIdResolver
             searchPaths.Insert(1, Path.Combine(Path.GetDirectoryName(assemblyDir), "assets"));
             searchPaths.Add(assemblyDir);
         }
-#pragma warning restore IL3000
 
         var targetPath = searchPaths.Select(p => Path.Combine(p, "SecretManager.targets")).FirstOrDefault(File.Exists);
         if (targetPath == null)
