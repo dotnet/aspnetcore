@@ -451,8 +451,10 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                             if (ctsRegistered)
                             {
                                 connection.ActiveRequestCancellationSources.TryRemove(hubMethodInvocationMessage.InvocationId!, out _);
-                                cts!.Dispose();
                             }
+                            // Always dispose the CTS if one was created (covers SendAsync with a CancellationToken
+                            // synthetic arg, which has no InvocationId and was therefore not added to the dictionary).
+                            cts?.Dispose();
 
                             // Stream response handles cleanup in StreamResultsAsync
                             // And normal invocations handle cleanup below in the finally
