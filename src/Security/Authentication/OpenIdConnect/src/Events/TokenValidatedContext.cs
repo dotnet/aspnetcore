@@ -14,9 +14,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 public class TokenValidatedContext : RemoteAuthenticationContext<OpenIdConnectOptions>
 {
     /// <summary>
-    /// Creates a <see cref="TokenValidatedContext"/>
+    /// Creates a <see cref="TokenValidatedContext"/>.
     /// </summary>
-    /// <inheritdoc />
+    /// <param name="context">The HTTP request context.</param>
+    /// <param name="scheme">The authentication scheme.</param>
+    /// <param name="options">The OpenID Connect authentication options.</param>
+    /// <param name="principal">The authenticated user principal.</param>
+    /// <param name="properties">The authentication properties for the request.</param>
     public TokenValidatedContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, ClaimsPrincipal principal, AuthenticationProperties properties)
         : base(context, scheme, options, properties)
         => Principal = principal;

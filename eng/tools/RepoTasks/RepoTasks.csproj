@@ -12,6 +12,10 @@
     <TargetLatestDotNetRuntime>false</TargetLatestDotNetRuntime>
     <!-- No need to track public APIs of these MSBuild tasks. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <!-- Suppress NuGet vulnerability audit warnings for transitive dependencies in this build-time tool.
+         Uses NoWarn instead of WarningsNotAsErrors because NuGet restore promotes audit warnings to errors
+         via its own mechanism that WarningsNotAsErrors does not override. -->
+    <NoWarn>$(NoWarn);NU1901;NU1902;NU1903;NU1904</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
