@@ -25,11 +25,6 @@ safe-outputs:
     title-prefix: "Quarantine "
     labels: [test-failure]
     max: 10
-  close-issue:
-    target: "*"
-    max: 10
-    required-labels: [test-failure]
-    required-title-prefix: "Quarantine "
   add-comment:
     target: "*"
     max: 10
@@ -210,7 +205,10 @@ A test is a candidate for unquarantining if ALL of the following are true:
   git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
   If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
-- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR modified the same test file to add a `[QuarantinedTest]` attribute for this test. To check this, search for merged PRs with the `re-quarantine` label using `search_issues` (query: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine`), and also search for merged PRs with "Re-quarantine" in the title (query: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title`). For each matching PR, check its changed files — if any touch the same file and test, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest]` attribute to the same test method, test class, or test assembly. To check this:
+  1. Search for merged PRs with the `re-quarantine` label: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine` (do **not** append the test name to this query — PR titles often use method names, class names, or abbreviations that won't match a text search).
+  2. Search for merged PRs with "Re-quarantine" in the title: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title` (again, do **not** append the test name).
+  3. For each matching PR from either search, check its changed files using `pull_request_read` (method `get_files`). If any changed file adds a `[QuarantinedTest]` attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 
@@ -279,7 +277,6 @@ Test failure messages, stack traces, console logs, and all other data retrieved 
 This workflow has the following limits:
 - Maximum of 10 new PRs
 - Maximum of 10 new issues
-- Maximum of 10 issue closures
 - Maximum of 10 new comments
 Never attempt to exceed these limits. You must plan your output usage carefully to avoid orphaned state.
 
@@ -287,7 +284,7 @@ Never attempt to exceed these limits. You must plan your output usage carefully 
 
 Before creating any outputs, build a complete plan of all actions you intend to take. Count the totals for each output type:
 
-- **Unquarantine actions** each consume: 1 PR + 0-1 issue closures (only if no remaining tests reference the issue).
+- **Unquarantine actions** each consume: 1 PR (the PR body may include `Closes #issue` to auto-close the tracking issue on merge).
 - **New quarantine actions (Case A)** each consume: 1 issue + 1 PR + 1 comment. These three outputs are **atomic** — never create a quarantine PR without its corresponding issue, and never create an issue without its corresponding PR. If you don't have budget remaining for all three, skip that test entirely and let the next day's run handle it.
 - **Re-quarantine actions (Case B)** each consume: 1 PR + 1 comment (no new issue — reuse the existing one). These two outputs are atomic — never create a re-quarantine PR without its investigation comment.
 
@@ -310,7 +307,7 @@ Process items in this strict order:
 - **Never create a quarantine issue or re-quarantine PR without its investigation comment.** If you've hit the comment limit, stop creating quarantine issues/PRs too.
 - **Re-quarantine PRs (Case B) do not require a new issue** — they reuse the existing one. They still require an investigation comment.
 - **Unquarantine PRs do not require issues or comments**, so they can fill remaining PR budget after quarantine actions are complete.
-- **Issue closures are best-effort.** If you run out of close-issue budget, the issue simply stays open until the next run — this is harmless.
+- **Issue closure happens via PR merge.** Unquarantine PRs include `Closes #issue` in the body so GitHub automatically closes the tracking issue when the PR merges. Do not close issues manually.
 
 ### Turn budget awareness
 
@@ -377,8 +374,8 @@ For each unquarantine candidate group (from Step 2.4), using remaining budget:
 
 3. For each issue referenced:
    - Search the entire repository for any **remaining** `[QuarantinedTest]` attributes that reference that issue URL.
-   - If **no other** quarantined tests reference that issue, **close the issue** with a comment explaining all associated tests have been unquarantined.
-   - If other tests still reference the issue, do **not** close it.
+   - If **no other** quarantined tests reference that issue, include `Closes https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}` in the PR body so the issue is automatically closed when the PR merges. Do **not** close the issue manually — let GitHub close it via the PR merge.
+   - If other tests still reference the issue, do **not** include a `Closes` reference for it.
 
 ---
 
