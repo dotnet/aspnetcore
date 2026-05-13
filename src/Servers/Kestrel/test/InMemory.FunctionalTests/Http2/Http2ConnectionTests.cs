@@ -3170,6 +3170,27 @@ public class Http2ConnectionTests : Http2TestBase
             expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
+    [Theory]
+    [InlineData("transfer-encoding", "chunked")]
+    [InlineData("keep-alive", "timeout=5, max=1000")]
+    [InlineData("proxy-connection", "keep-alive")]
+    [InlineData("upgrade", "websocket")]
+    public Task HEADERS_Received_HeaderBlockContainsConnectionSpecificHeader_ConnectionError(string headerName, string headerValue)
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(headerName, headerValue)
+        };
+
+        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
+            headers,
+            CoreStrings.HttpErrorConnectionSpecificHeaderField,
+            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
+    }
+
     [Fact]
     public async Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsTrailers_NoError()
     {
