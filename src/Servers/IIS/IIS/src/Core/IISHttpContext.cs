@@ -407,7 +407,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             if (RequestHeaders.TryGetValue(HeaderNames.ContentLength, out var contentLength))
             {
                 // if user already passed X-Content-Length, we won't overwrite it
-                _ = RequestHeaders.TryAdd("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
+                _ = RequestHeaders.TryAdd("X-Content-Length", contentLength);
                 RequestHeaders.ContentLength = null;
 
                 if (!AllowKeepAliveAfterCLTE)
