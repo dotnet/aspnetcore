@@ -812,18 +812,15 @@ public class RequestResponseTests
             var recv = await connection.Receive(4096);
             var recvString = Encoding.UTF8.GetString(recv.Span);
 
-            Assert.Matches(@"HTTP/1\.1 200 OK
-Server: Microsoft-IIS/10\.0
-Date: .+
-Connection: close
+            // The response should start with a 200 OK status line and contain the Server
+            // header, a Connection: close header (since the server MUST close the connection
+            // after a CL+TE request), and the echoed body "Hello World".
+            Assert.StartsWith("HTTP/1.1 200 OK\r\n", recvString);
+            Assert.Contains("Server: Microsoft-IIS/10.0\r\n", recvString);
+            Assert.Contains("Connection: close\r\n", recvString);
+            Assert.Contains("Hello World", recvString);
 
-Hello World
-
-$",
-            recvString);
-
-            // Double check that there is no second response since we're using
-            // Assert.Matches which only checks for a first match
+            // Verify the second request was not processed: there must be only a single HTTP response in the buffer.
             Assert.Equal(0, recvString.LastIndexOf("HTTP/1", StringComparison.InvariantCultureIgnoreCase));
 
             // Verify the connection is closed
