@@ -90,8 +90,13 @@ internal abstract class HttpHeaderParser<T>
                 }
                 else
                 {
-                    // Skip the invalid values and keep trying.
-                    index++;
+                    // Skip the invalid value by advancing to the next value separator. Advancing
+                    // one character at a time can be O(N^2) overall when the per-element parser
+                    // is not guaranteed to fail in O(1) (e.g. EntityTagHeaderValue scanning for a
+                    // closing quote in a malformed quoted-string). BaseHeaderParser-derived
+                    // parsers skip leading separators and whitespace on the next iteration.
+                    var nextSeparator = value.IndexOf(',', index + 1);
+                    index = nextSeparator < 0 ? value.Length : nextSeparator;
                 }
             }
         }
@@ -144,8 +149,10 @@ internal abstract class HttpHeaderParser<T>
                 }
                 else
                 {
-                    // Skip the invalid values and keep trying.
-                    index++;
+                    // Skip the invalid value by advancing to the next value separator. See the
+                    // matching comment in TryParseValues for the rationale.
+                    var nextSeparator = value.IndexOf(',', index + 1);
+                    index = nextSeparator < 0 ? value.Length : nextSeparator;
                 }
             }
         }

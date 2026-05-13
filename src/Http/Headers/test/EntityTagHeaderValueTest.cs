@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Primitives;
+
 namespace Microsoft.Net.Http.Headers;
 
 public class EntityTagHeaderValueTest
@@ -488,6 +490,37 @@ public class EntityTagHeaderValueTest
                 "W/\"tag\"",
             };
         Assert.False(EntityTagHeaderValue.TryParseStrictList(inputs, out var results));
+    }
+
+    [Theory]
+    [InlineData("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 1)]
+    [InlineData("xxxx,yyyy,zzzz", 3)]
+    [InlineData("\"valid\",garbage,\"alsovalid\"", 3)]
+    [InlineData("\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\", 1)]
+    [InlineData("\"\\\"\\\"\\\"\\\"\\,\"\\\"\\\"\\\"\\\"\\", 2)]
+    public void TryParseValues_RecoveryIsBoundedByCommaSeparatedSegments(string input, int expectedParseAttempts)
+    {
+        var parser = new CountingEntityTagParser(supportsMultipleValues: true);
+
+        parser.PublicTryParseValues(new[] { input }, out _);
+
+        Assert.Equal(expectedParseAttempts, parser.GetParsedValueLengthCallCount);
+    }
+
+    private sealed class CountingEntityTagParser : BaseHeaderParser<EntityTagHeaderValue>
+    {
+        public CountingEntityTagParser(bool supportsMultipleValues) : base(supportsMultipleValues) { }
+
+        public int GetParsedValueLengthCallCount { get; private set; }
+
+        protected override int GetParsedValueLength(StringSegment value, int startIndex, out EntityTagHeaderValue? parsedValue)
+        {
+            GetParsedValueLengthCallCount++;
+            return EntityTagHeaderValue.GetEntityTagLength(value, startIndex, out parsedValue);
+        }
+
+        public bool PublicTryParseValues(IList<string>? values, out IList<EntityTagHeaderValue>? parsedValues)
+            => TryParseValues(values, out parsedValues);
     }
 
     private void CheckValidParse(string? input, EntityTagHeaderValue expectedResult)
