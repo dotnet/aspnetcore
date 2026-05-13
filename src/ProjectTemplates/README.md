@@ -10,6 +10,7 @@ The following contains a description of each sub-directory in the `ProjectTempla
 - `Web.Client.ItemTemplates`: Contains the Web Client-Side File templates, includes things like less, scss, and typescript
 - `Web.ItemTemplates`: Contains the Web File templates, includes things like: protobuf, razor component, razor page, view import and start pages
 - `Web.ProjectTemplates`: Contains the ASP.NET Core Web Template pack, including Blazor Server, WASM, Empty, Grpc, Razor Class Library, RazorPages, MVC, WebApi.
+- `McpServer.ProjectTemplates`: Contains the standalone MCP Server Template pack.
 - `migrations`: Contains migration related scripts.
 - `scripts`: Contains a collection of scripts that help running tests locally that avoid having to install the templates to the machine.
 - `test`: Contains the template tests.

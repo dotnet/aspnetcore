@@ -32,12 +32,26 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             // Perform the encryption operation using the current default encryptor.
             var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
             var defaultKeyId = currentKeyRing.DefaultKeyId;
-            var defaultEncryptor = (ISpanAuthenticatedEncryptor)currentKeyRing.DefaultAuthenticatedEncryptor!;
+            var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
             CryptoUtil.Assert(defaultEncryptor != null, "DefaultAuthenticatedEncryptor != null");
 
             if (_logger.IsDebugLevelEnabled())
             {
                 _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
+            }
+
+            if (defaultEncryptor is not ISpanAuthenticatedEncryptor spanEncryptor)
+            {
+                // This should never happen, since the IDataProtector should have
+                // checked the key ring provider to see if the span-based encryptor
+                // could be used.
+                // If we get here, it means the key ring provider is returning a different encryptor
+                // which would be very odd. But we'll check just in case and fall back to the old behavior if this happens.
+                var result = Protect(plaintext.ToArray());
+                var span = destination.GetSpan(result.Length);
+                result.CopyTo(span);
+                destination.Advance(result.Length);
+                return;
             }
 
             // We'll need to apply the default key id to the template if it hasn't already been applied.
@@ -61,7 +75,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             destination.Advance(preBufferSize);
 
             // Step 2: Perform encryption into the destination writer
-            defaultEncryptor.Encrypt(plaintext, aad, ref destination);
+            spanEncryptor.Encrypt(plaintext, aad, ref destination);
 
             // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
             // And we're done!
@@ -153,7 +167,21 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
 
             // At this point, actualCiphertext := { encryptorSpecificPayload },
             // so all that's left is to invoke the decryption routine directly.
-            var spanEncryptor = (ISpanAuthenticatedEncryptor)requestedEncryptor;
+
+            if (requestedEncryptor is not ISpanAuthenticatedEncryptor spanEncryptor)
+            {
+                // This should never happen, since the IDataProtector should have
+                // checked the key ring provider to see if the span-based encryptor
+                // could be used.
+                // If we get here, it means the key ring provider is returning a different encryptor
+                // which would be very odd. But we'll check just in case and fall back to the old behavior if this happens.
+                var result = requestedEncryptor.Decrypt(actualCiphertext.ToArray(), aad.ToArray());
+                var span = destination.GetSpan(result.Length);
+                result.CopyTo(span);
+                destination.Advance(result.Length);
+                return;
+            }
+
             spanEncryptor.Decrypt(actualCiphertext, aad, ref destination);
 
             // At this point, destination contains the decrypted plaintext
