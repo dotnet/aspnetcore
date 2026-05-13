@@ -545,21 +545,22 @@ public class EndpointMetadataApiDescriptionProviderTest
 
     /// <summary>
     /// Description policy for the (StatusCode, Type) pair when multiple ProducesResponseType
-    /// attributes match: the first non-null Description wins. With descending-scope iteration,
-    /// this means the highest-scope description sticks.
+    /// attributes match: descriptions are merged
     /// </summary>
     [Fact]
-    public void AddsResponseDescription_FirstNonNullWinsForMerge_LastWinsForFallback()
+    public void AddsResponseDescription_ConcatenatesOnMerge_LastWinsForFallback()
     {
         const string expectedCreatedDescription = "A new item was created";
-        const string expectedBadRequestDescription = "Validation failed for the request";
+        const string firstBadRequestDescription = "Validation failed for the request";
+        const string secondBadRequestDescription = "Last description for bad request";
+        var expectedBadRequestDescription = firstBadRequestDescription + "\n\n" + secondBadRequestDescription;
 
         var apiDescription = GetApiDescription(
     [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "First description")]
         [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "Second description")]
         [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = "Last description for bad request")]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = firstBadRequestDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = secondBadRequestDescription)]
         () => TypedResults.Created("https://example.com", new TimeSpan()));
 
         Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
@@ -580,8 +581,8 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
 
-        // For status 400 (no endpoint claim), both attribute entries are merged and the FIRST
-        // non-null Description wins per MergeApiResponseFormats.
+        // For status 400 (no endpoint claim), both attribute entries are merged and their
+        // descriptions are concatenated with a Markdown paragraph break per MergeApiResponse.
         Assert.Equal(400, badRequestResponseType.StatusCode);
         Assert.Equal(typeof(void), badRequestResponseType.Type);
         Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
