@@ -74,9 +74,9 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
             return false;
         }
 
-        var query = GetQueryString(navigationManager.Uri);
+        var query = QueryParameterValueSupplier.GetQueryString(navigationManager.Uri);
 
-        if (!query.Span.SequenceEqual(GetQueryString(_lastUri).Span))
+        if (!query.Span.SequenceEqual(QueryParameterValueSupplier.GetQueryString(_lastUri).Span))
         {
            _queryChanged = true;
            _queryParameterValueSupplier.ReadParametersFromQuery(query);
@@ -84,20 +84,6 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
 
         _lastUri = navigationManager.Uri;
         return true;
-
-        static ReadOnlyMemory<char> GetQueryString(string? url)
-        {
-            var queryStartPos = url?.IndexOf('?') ?? -1;
-
-            if (queryStartPos < 0)
-            {
-                return default;
-            }
-
-            Debug.Assert(url is not null);
-            var queryEndPos = url.IndexOf('#', queryStartPos);
-            return url.AsMemory(queryStartPos..(queryEndPos < 0 ? url.Length : queryEndPos));
-        }
     }
 
     private void SubscribeToLocationChanges()

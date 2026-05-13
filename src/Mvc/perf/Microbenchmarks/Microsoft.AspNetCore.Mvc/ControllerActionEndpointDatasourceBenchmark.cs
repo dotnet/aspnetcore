@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -30,11 +32,11 @@ public class ControllerActionEndpointDataSourceBenchmark
     public void Setup()
     {
         _conventionalActionProvider = new MockActionDescriptorCollectionProvider(
-            Enumerable.Range(0, ActionCount).Select(i => CreateConventionalRoutedAction(i)).ToList()
+            Enumerable.Range(0, ActionCount).Select(i => CreateConventionalRoutedAction(i)).ToList<ActionDescriptor>()
             );
 
         _attributeActionProvider = new MockActionDescriptorCollectionProvider(
-            Enumerable.Range(0, ActionCount).Select(i => CreateAttributeRoutedAction(i)).ToList()
+            Enumerable.Range(0, ActionCount).Select(i => CreateAttributeRoutedAction(i)).ToList<ActionDescriptor>()
             );
 
         _routes = new List<(string routeName, string pattern)>
@@ -66,7 +68,7 @@ public class ControllerActionEndpointDataSourceBenchmark
         AssertHasEndpoints(endpoints);
     }
 
-    private ActionDescriptor CreateAttributeRoutedAction(int id)
+    private ControllerActionDescriptor CreateAttributeRoutedAction(int id)
     {
         var routeValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -78,10 +80,14 @@ public class ControllerActionEndpointDataSourceBenchmark
             .Replace(ControllerReplacementToken, routeValues["Controller"])
             .Replace(ActionReplacementToken, routeValues["Action"]);
 
-        return new ActionDescriptor
+        return new ControllerActionDescriptor
         {
             RouteValues = routeValues,
             DisplayName = "Action " + id,
+            ControllerName = "Controller" + id,
+            ActionName = "Index",
+            ControllerTypeInfo = typeof(object).GetTypeInfo(),
+            MethodInfo = typeof(object).GetMethod(nameof(object.ToString)),
             AttributeRouteInfo = new AttributeRouteInfo()
             {
                 Template = template,
@@ -89,16 +95,20 @@ public class ControllerActionEndpointDataSourceBenchmark
         };
     }
 
-    private ActionDescriptor CreateConventionalRoutedAction(int id)
+    private ControllerActionDescriptor CreateConventionalRoutedAction(int id)
     {
-        return new ActionDescriptor
+        return new ControllerActionDescriptor
         {
             RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 ["Controller"] = "Controller" + id,
                 ["Action"] = "Index"
             },
-            DisplayName = "Action " + id
+            DisplayName = "Action " + id,
+            ControllerName = "Controller" + id,
+            ActionName = "Index",
+            ControllerTypeInfo = typeof(object).GetTypeInfo(),
+            MethodInfo = typeof(object).GetMethod(nameof(object.ToString)),
         };
     }
 
@@ -124,6 +134,11 @@ public class ControllerActionEndpointDataSourceBenchmark
     private sealed class MockRoutePatternTransformer : RoutePatternTransformer
     {
         public override RoutePattern SubstituteRequiredValues(RoutePattern original, object requiredValues)
+        {
+            return original;
+        }
+
+        public override RoutePattern SubstituteRequiredValues(RoutePattern original, RouteValueDictionary requiredValues)
         {
             return original;
         }

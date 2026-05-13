@@ -1,10 +1,10 @@
-{
-  "author": "Microsoft",
-  "name": "Blazor WebAssembly Service Defaults",
-  "description": "A project template for creating a service defaults library for Blazor WebAssembly applications. Includes OpenTelemetry, service discovery, and resilience support for Aspire integration.",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/hosted/description": "Configure for a hosted Blazor Web scenario where configuration flows from the server via a DOM comment. When false (default), configures for a standalone scenario with a configuration endpoint and JS initializer.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
+﻿{
+  "author": "Майкрософт",
+  "name": "Параметры по умолчанию служб Blazor WebAssembly",
+  "description": "Шаблон проекта для создания библиотеки параметров по умолчанию служб для приложений Blazor WebAssembly. Включает поддержку OpenTelemetry, обнаружения служб и устойчивости для интеграции Aspire.",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/hosted/description": "Настройка для размещенного сценария Blazor Web, при котором конфигурация передается с сервера через комментарий DOM. Если присвоено значение false (по умолчанию), настраивается изолированный сценарий с конечной точкой конфигурации и инициализатором JS.",
+  "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
+  "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
 }

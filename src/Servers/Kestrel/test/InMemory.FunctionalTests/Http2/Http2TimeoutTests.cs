@@ -997,4 +997,138 @@ public class Http2TimeoutTests : Http2TestBase
         _mockTimeoutHandler.VerifyNoOtherCalls();
         _mockConnectionContext.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task HEADERS_TrailerWithoutEndHeaders_WithinRequestHeadersTimeout_AbortsConnection()
+    {
+        // Verifies that fragmented trailer HEADERS (without END_HEADERS) arm RequestHeadersTimeout,
+        // preventing connection indefinitely waiting for the final CONTINUATION.
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        await InitializeConnectionAsync(async context =>
+        {
+            var buffer = new byte[1024];
+            // Read all request body data to keep the stream alive
+            while (await context.Request.Body.ReadAsync(buffer) > 0) { }
+        });
+
+        // Start a POST stream with headers complete
+        await StartStreamAsync(1, _postRequestHeaders, endStream: false);
+
+        // Send body data
+        await SendDataAsync(1, _helloBytes, endStream: false);
+
+        // Send trailer HEADERS with END_STREAM but NOT END_HEADERS (fragmented trailers)
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
+
+        // Advance time past RequestHeadersTimeout
+        AdvanceTime(limits.RequestHeadersTimeout + Heartbeat.Interval);
+
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+        // Send an empty CONTINUATION without END_HEADERS to trigger the tick
+        await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
+
+        AdvanceTime(TimeSpan.FromTicks(1));
+
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
+
+        await WaitForConnectionErrorAsync<Microsoft.AspNetCore.Http.BadHttpRequestException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: int.MaxValue,
+            Http2ErrorCode.INTERNAL_ERROR,
+            CoreStrings.BadRequest_RequestHeadersTimeout);
+        AssertConnectionEndReason(ConnectionEndReason.RequestHeadersTimeout);
+
+        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
+
+        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockConnectionContext.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task HEADERS_TrailerWithContinuationEndHeaders_CancelsRequestHeadersTimeout()
+    {
+        // Verifies that when fragmented trailers complete normally (CONTINUATION with END_HEADERS),
+        // the RequestHeadersTimeout is cancelled and the stream completes successfully.
+        await InitializeConnectionAsync(_readTrailersApplication);
+
+        // Start a request stream
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, _browserRequestHeaders);
+
+        // Send body data
+        await SendDataAsync(1, _helloBytes, endStream: false);
+
+        // Send trailer HEADERS with END_STREAM but NOT END_HEADERS (fragmented)
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
+
+        // Verify timeout was armed for the trailer header block
+        _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<TimeSpan>(), TimeoutReason.RequestHeaders), Times.Once);
+
+        // Complete the trailer block with CONTINUATION + END_HEADERS
+        await SendContinuationAsync(1, Http2ContinuationFrameFlags.END_HEADERS, _requestTrailers);
+
+        // Verify timeout was cancelled
+        _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.AtLeastOnce);
+
+        // The stream should complete normally
+        await ExpectAsync(Http2FrameType.HEADERS,
+            withLength: 36,
+            withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+            withStreamId: 1);
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
+    [Fact]
+    public async Task HEADERS_TrailerWithEmptyCONTINUATIONs_WithinRequestHeadersTimeout_AbortsConnection()
+    {
+        // Verifies that sending trailer HEADERS without END_HEADERS followed by
+        // empty CONTINUATION frames (also without END_HEADERS) still triggers the timeout.
+        var limits = _serviceContext.ServerOptions.Limits;
+
+        await InitializeConnectionAsync(async context =>
+        {
+            var buffer = new byte[1024];
+            while (await context.Request.Body.ReadAsync(buffer) > 0) { }
+        });
+
+        // Start a POST stream
+        await StartStreamAsync(1, _postRequestHeaders, endStream: false);
+
+        // Send body data
+        await SendDataAsync(1, _helloBytes, endStream: false);
+
+        // Send trailer HEADERS with END_STREAM but NOT END_HEADERS
+        await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
+
+        // Send empty continuation without END_HEADERS
+        await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
+
+        // Not yet timed out
+        AdvanceTime(limits.RequestHeadersTimeout + Heartbeat.Interval);
+
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+        // Send another empty continuation to trigger the next tick
+        await SendEmptyContinuationFrameAsync(1, Http2ContinuationFrameFlags.NONE);
+
+        AdvanceTime(TimeSpan.FromTicks(1));
+
+        _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.RequestHeaders), Times.Once);
+
+        await WaitForConnectionErrorAsync<Microsoft.AspNetCore.Http.BadHttpRequestException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: int.MaxValue,
+            Http2ErrorCode.INTERNAL_ERROR,
+            CoreStrings.BadRequest_RequestHeadersTimeout);
+        AssertConnectionEndReason(ConnectionEndReason.RequestHeadersTimeout);
+
+        _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+             e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
+
+        _mockTimeoutHandler.VerifyNoOtherCalls();
+        _mockConnectionContext.VerifyNoOtherCalls();
+    }
 }
