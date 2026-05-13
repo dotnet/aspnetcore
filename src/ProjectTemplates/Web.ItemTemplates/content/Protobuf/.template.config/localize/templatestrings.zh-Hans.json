@@ -1,4 +1,4 @@
-﻿{
+{
   "author": "Microsoft",
   "name": "协议缓冲区文件",
   "description": "一个协议缓冲区文件，它用于描述 gRPC 的消息和服务。",
