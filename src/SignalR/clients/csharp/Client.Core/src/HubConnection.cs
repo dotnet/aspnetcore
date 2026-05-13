@@ -722,11 +722,12 @@ public partial class HubConnection : IAsyncDisposable
 
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationToken.Register(state =>
+                var registration = cancellationToken.Register(static state =>
                 {
                     var (irqLocal, tasks) = ((InvocationRequest, Task[]?))state!;
-                    _ = CancelInvocationAsync(irqLocal, tasks);
+                    _ = irqLocal.HubConnection.CancelInvocationAsync(irqLocal, tasks);
                 }, (irq, streamTasks));
+                irq.AttachCancelInvocationRegistration(registration);
             }
         }
         finally
@@ -1072,11 +1073,12 @@ public partial class HubConnection : IAsyncDisposable
 
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationToken.Register(state =>
+                var registration = cancellationToken.Register(static state =>
                 {
                     var (irqLocal, tasks) = ((InvocationRequest, Task[]?))state!;
-                    _ = CancelInvocationAsync(irqLocal, tasks);
+                    _ = irqLocal.HubConnection.CancelInvocationAsync(irqLocal, tasks);
                 }, (irq, streamTasks));
+                irq.AttachCancelInvocationRegistration(registration);
             }
         }
         finally
