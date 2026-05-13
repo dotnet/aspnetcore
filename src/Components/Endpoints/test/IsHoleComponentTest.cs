@@ -15,51 +15,45 @@ public class IsHoleComponentTest
     private static readonly CacheBoundaryVaryBy VaryByUser = CacheBoundaryVaryBy.User;
 
     [Fact]
-    public void EditForm_IsHole()
+    public void EditForm_Throws_InsideCacheBoundary()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(EditForm), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(EditForm), DefaultVaryBy));
     }
 
     [Fact]
-    public void ValidationSummary_IsHole()
+    public void ValidationSummary_Throws_InsideCacheBoundary()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ValidationSummary), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(ValidationSummary), DefaultVaryBy));
     }
 
     [Fact]
-    public void ValidationMessage_IsHole()
+    public void ValidationMessage_Throws_InsideCacheBoundary()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ValidationMessage<string>), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(ValidationMessage<string>), DefaultVaryBy));
     }
 
     [Fact]
-    public void InputText_IsHole()
+    public void InputText_Throws_InsideCacheBoundary()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(InputText), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(InputText), DefaultVaryBy));
     }
 
     [Fact]
-    public void InputNumber_IsHole()
+    public void InputNumber_Throws_InsideCacheBoundary()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(InputNumber<int>), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(InputNumber<int>), DefaultVaryBy));
     }
 
     [Fact]
-    public void InputCheckbox_IsHole()
+    public void InputCheckbox_Throws_InsideCacheBoundary()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(InputCheckbox), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(InputCheckbox), DefaultVaryBy));
     }
 
     [Fact]
     public void AntiforgeryToken_IsHole()
     {
         Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(AntiforgeryToken), DefaultVaryBy));
-    }
-
-    [Fact]
-    public void NotCacheBoundary_IsHole()
-    {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(NotCacheBoundary), DefaultVaryBy));
     }
 
     [Fact]
@@ -75,21 +69,21 @@ public class IsHoleComponentTest
     }
 
     [Fact]
-    public void SectionOutlet_IsHole()
+    public void SectionOutlet_IsNotHole()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(SectionOutlet), DefaultVaryBy));
+        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(SectionOutlet), DefaultVaryBy));
     }
 
     [Fact]
-    public void SectionContent_IsHole()
+    public void SectionContent_IsNotHole()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(SectionContent), DefaultVaryBy));
+        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(SectionContent), DefaultVaryBy));
     }
 
     [Fact]
-    public void AuthorizeView_IsHole_WhenNotVaryByUser()
+    public void AuthorizeView_Throws_WhenNotVaryByUser()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(AuthorizeView), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(AuthorizeView), DefaultVaryBy));
     }
 
     [Fact]
@@ -99,9 +93,9 @@ public class IsHoleComponentTest
     }
 
     [Fact]
-    public void AuthorizeViewSubclass_IsHole_WhenNotVaryByUser()
+    public void AuthorizeViewSubclass_Throws_WhenNotVaryByUser()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(CustomAuthorizeView), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(CustomAuthorizeView), DefaultVaryBy));
     }
 
     [Fact]
@@ -123,9 +117,9 @@ public class IsHoleComponentTest
     }
 
     [Fact]
-    public void CustomInputBaseDescendant_IsHole()
+    public void CustomInputBaseDescendant_Throws_InsideCacheBoundary()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(CustomInput), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(CustomInput), DefaultVaryBy));
     }
 
     private class PlainComponent : ComponentBase
@@ -136,4 +130,34 @@ public class IsHoleComponentTest
     private class CustomAuthorizeView : AuthorizeView { }
 
     private class CustomInput : InputText { }
+
+    [Fact]
+    public void CacheBoundaryPolicy_IsHole()
+    {
+        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedComponent), DefaultVaryBy));
+    }
+
+    [Fact]
+    public void CacheBoundaryPolicy_WithVaryBy_IsHole_WhenNotVaryByUser()
+    {
+        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedWithVaryByUser), DefaultVaryBy));
+    }
+
+    [Fact]
+    public void CacheBoundaryPolicy_WithVaryBy_IsNotHole_WhenVaryByUser()
+    {
+        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedWithVaryByUser), VaryByUser));
+    }
+
+    [CacheBoundaryPolicy]
+    private class ExcludedComponent : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder) { }
+    }
+
+    [CacheBoundaryPolicy(VaryBy = CacheBoundaryVaryBy.User)]
+    private class ExcludedWithVaryByUser : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder) { }
+    }
 }

@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Specifies how a component interacts with an enclosing CacheBoundary.
-/// When <see cref="Excluded"/> is <see langword="true"/>, the component's subtree becomes
-/// a "hole" in the cached output and is re-rendered on every request.
+/// When present, the component's subtree becomes a "hole" in the cached output
+/// and is re-rendered on every request.
 /// Optionally, set <see cref="VaryBy"/> to lift the exclusion when the cache boundary
 /// varies by the specified dimensions.
 /// </summary>
@@ -14,10 +14,13 @@ namespace Microsoft.AspNetCore.Components;
 public sealed class CacheBoundaryPolicyAttribute : Attribute
 {
     /// <summary>
-    /// Gets or sets a value indicating whether the component should be excluded
-    /// from cached output. Defaults to <see langword="false"/>.
+    /// Gets or sets a value indicating whether encountering this component inside
+    /// a cache boundary should throw an <see cref="InvalidOperationException"/>.
+    /// Use this for components whose parameters (delegates, expressions, or complex objects)
+    /// cannot be serialized and therefore cannot function correctly inside cached output.
+    /// Defaults to <see langword="false"/>.
     /// </summary>
-    public bool Excluded { get; set; }
+    public bool Throw { get; set; }
 
     /// <summary>
     /// Gets or sets the vary-by dimensions that, when active on the enclosing

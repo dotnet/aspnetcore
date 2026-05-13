@@ -6,9 +6,9 @@
 <div id="test-1">
     <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
         <p class="cached">@Guid.NewGuid()</p>
-        <NotCacheBoundary>
+        <ExcludedContent>
             <p class="not-cache-component">@Guid.NewGuid()</p>
-        </NotCacheBoundary>
+        </ExcludedContent>
     </CacheBoundary>
     <p class="not-cached">@Guid.NewGuid()</p>
 </div>
@@ -16,23 +16,23 @@
 <div id="test-2">
     <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" Enabled="false">
         <p class="cached">@Guid.NewGuid()</p>
-        <NotCacheBoundary>
+        <ExcludedContent>
             <p class="not-cache-component">@Guid.NewGuid()</p>
-        </NotCacheBoundary>
+        </ExcludedContent>
     </CacheBoundary>
     <p class="not-cached">@Guid.NewGuid()</p>
 </div>
 
 <div id="test-3">
-    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
-        <EditForm Model="this" FormName="editFormTest" method="post">
+    <EditForm Model="this" FormName="editFormTest" method="post">
+        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
             <input id="message-input" type="text" name="Message" />
             <button id="submit" type="submit">Submit</button>
-        </EditForm>
-        <NotCacheBoundary>
+        </CacheBoundary>
+        <ExcludedContent>
             <p id="message">@Message</p>
-        </NotCacheBoundary>
-    </CacheBoundary>
+        </ExcludedContent>
+    </EditForm>
 </div>
 
 <div id="test-4">
@@ -60,9 +60,9 @@
         @foreach (var item in HoleDriftState.Items)
         {
             <p class="loop-label" data-item="@item">label-@item</p>
-            <NotCacheBoundary>
+            <ExcludedContent>
                 <p class="loop-widget" data-item="@item">widget-@item</p>
-            </NotCacheBoundary>
+            </ExcludedContent>
         }
     </CacheBoundary>
 </div>

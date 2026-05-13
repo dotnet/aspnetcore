@@ -375,11 +375,32 @@ internal partial class EndpointHtmlRenderer
     {
         if (!_cachedCacheExclusions.TryGetValue(componentType, out var attr))
         {
-            attr = componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
+            attr = ResolveCachePolicy(componentType);
             _cachedCacheExclusions.TryAdd(componentType, attr);
         }
 
-        return attr is { Excluded: true } && (attr.VaryBy == CacheBoundaryVaryBy.None || (attr.VaryBy & varyBy) != attr.VaryBy);
+        if (attr is null)
+        {
+            return false;
+        }
+
+        var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
+
+        if (attr.Throw && !varyByMatches)
+        {
+            throw new InvalidOperationException(
+                $"Component '{componentType.FullName}' cannot be used directly inside a CacheBoundary " +
+                $"because its parameters (delegates, expressions, or complex objects) cannot be serialized. " +
+                $"Either move this component outside the CacheBoundary, or place it inside a component " +
+                $"marked with [CacheBoundaryPolicy] so it is re-rendered on every request.");
+        }
+
+        return attr.Throw ? false : !varyByMatches;
+    }
+
+    private static CacheBoundaryPolicyAttribute? ResolveCachePolicy(Type componentType)
+    {
+        return componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
     }
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)

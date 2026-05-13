@@ -6,7 +6,6 @@ namespace Microsoft.AspNetCore.Components.Sections;
 /// <summary>
 /// Provides content to <see cref="SectionOutlet"/> components with matching <see cref="SectionId"/>s.
 /// </summary>
-[CacheBoundaryPolicy(Excluded = true)]
 public sealed class SectionContent : IComponent, IDisposable
 {
     private object? _registeredIdentifier;

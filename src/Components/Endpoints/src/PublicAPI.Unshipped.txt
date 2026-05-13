@@ -33,10 +33,7 @@ Microsoft.AspNetCore.Components.CacheBoundary.VaryByRoute.get -> string?
 Microsoft.AspNetCore.Components.CacheBoundary.VaryByRoute.set -> void
 Microsoft.AspNetCore.Components.CacheBoundary.VaryByUser.get -> bool?
 Microsoft.AspNetCore.Components.CacheBoundary.VaryByUser.set -> void
-Microsoft.AspNetCore.Components.NotCacheBoundary
-Microsoft.AspNetCore.Components.NotCacheBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Microsoft.AspNetCore.Components.NotCacheBoundary.ChildContent.set -> void
-Microsoft.AspNetCore.Components.NotCacheBoundary.NotCacheBoundary() -> void
+
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.get -> Microsoft.AspNetCore.Http.CookieBuilder!
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataCookie.set -> void
 Microsoft.AspNetCore.Components.Endpoints.RazorComponentsServiceOptions.TempDataProviderType.get -> Microsoft.AspNetCore.Components.Endpoints.TempDataProviderType
