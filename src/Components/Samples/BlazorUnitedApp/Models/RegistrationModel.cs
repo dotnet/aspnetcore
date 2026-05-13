@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using BlazorUnitedApp.Localization;
+using BlazorUnitedApp.Resources;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Validation;
 
@@ -56,9 +57,9 @@ public sealed class StrongPasswordAttribute : ValidationAttribute
 [ParentalConsentRequired(ErrorMessage = "Validation.RegistrationConsent")]
 public class RegistrationModel : IValidatableObject
 {
-    [Required(ErrorMessage = "Validation.Required")]
+    [Required(ErrorMessageResourceName = "ValidationRequired", ErrorMessageResourceType = typeof(StaticLocalization))]
     [StringLength(60, MinimumLength = 2, ErrorMessage = "Validation.StringLengthRange")]
-    [Display(Name = "Registration.FullName")]
+    [Display(Name = "RegistrationFullName", ResourceType = typeof(StaticLocalization))]
     public string FullName { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Validation.Required")]
