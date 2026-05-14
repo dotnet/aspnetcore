@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Components.Forms;
+namespace Microsoft.AspNetCore.Components;
 
 internal class CultureStateProvider
 {
@@ -13,23 +13,18 @@ internal class CultureStateProvider
     [PersistentState]
     public string? CurrentUICultureName { get; set; }
 
-    /// <summary>
-    /// Captures the current thread culture for persistence.
-    /// Called from server-side during prerendering.
-    /// </summary>
     public void CaptureCurrentCulture()
     {
         CurrentCultureName = CultureInfo.CurrentCulture.Name;
         CurrentUICultureName = CultureInfo.CurrentUICulture.Name;
     }
 
-    /// <summary>
-    /// Applies the stored culture to the current thread.
-    /// Called on WebAssembly side after hydration.
-    /// </summary>
     public void ApplyStoredCulture()
     {
-        if (!string.IsNullOrEmpty(CurrentCultureName))
+        var currentCultureName = CultureInfo.CurrentCulture.Name;
+        var currentUICultureName = CultureInfo.CurrentUICulture.Name;
+
+        if (!string.IsNullOrEmpty(CurrentCultureName) && currentCultureName != CurrentCultureName)
         {
             try
             {
@@ -39,12 +34,11 @@ internal class CultureStateProvider
             }
             catch (CultureNotFoundException)
             {
-                // The server may have culture data that isn't available on the client
-                // (e.g., invariant globalization or a sharded ICU subset).
+
             }
         }
 
-        if (!string.IsNullOrEmpty(CurrentUICultureName))
+        if (!string.IsNullOrEmpty(CurrentUICultureName) && currentUICultureName != CurrentUICultureName)
         {
             try
             {
@@ -54,8 +48,7 @@ internal class CultureStateProvider
             }
             catch (CultureNotFoundException)
             {
-                // The server may have culture data that isn't available on the client
-                // (e.g., invariant globalization or a sharded ICU subset).
+
             }
         }
     }

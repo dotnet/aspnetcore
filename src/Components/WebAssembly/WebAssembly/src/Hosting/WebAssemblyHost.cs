@@ -144,10 +144,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
 
-        // Start hosted services
-        _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
-        await _hostedServiceExecutor.StartAsync(cancellationToken);
-
         cultureProvider ??= WebAssemblyCultureProvider.Instance!;
         cultureProvider.ThrowIfCultureChangeIsUnsupported();
 
@@ -160,6 +156,11 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         // such as local storage, url etc as part of their Program.Main(Async).
         // This is the earliest opportunity to fetch satellite assemblies for this selection.
         await cultureProvider.LoadCurrentCultureResourcesAsync();
+
+        // Start hosted services after culture is fully applied,
+        // so services that depend on culture see the correct values.
+        _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
+        await _hostedServiceExecutor.StartAsync(cancellationToken);
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))
