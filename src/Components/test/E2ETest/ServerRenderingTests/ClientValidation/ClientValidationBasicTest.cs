@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientVa
 // attributes via DataAnnotationsValidator/InputBase lives in a separate PR; these
 // tests exercise the JS library's behaviour against markup that matches what the
 // .NET side will emit once both PRs land.
-public class ClientValidationBasicTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class ClientValidationBasicTest : ClientValidationTestBase
 {
     public ClientValidationBasicTest(
         BrowserFixture browserFixture,
@@ -30,11 +30,7 @@ public class ClientValidationBasicTest : ServerTestBase<BasicTestAppServerSiteFi
     protected override void InitializeAsyncCore()
     {
         base.InitializeAsyncCore();
-        Navigate("subdir/forms/client-validation/basic-validation");
-        // Wait for Blazor to finish starting; the JS validation library initializes
-        // during Blazor.start() and adds [novalidate] to tracked forms.
-        Browser.Exists(By.Id("blazor-started"));
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        NavigateToClientValidationPage("basic-validation");
         // Reset client-side state captured across test runs.
         ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.removeItem('lastValidation');");
     }

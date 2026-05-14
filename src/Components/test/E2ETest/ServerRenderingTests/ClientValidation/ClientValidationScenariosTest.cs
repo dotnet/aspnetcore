@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientVa
 
 // E2E coverage for advanced JS validation scenarios: trigger overrides, skipped
 // elements, multi-form independence, dynamic content, and untracked forms.
-public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class ClientValidationScenariosTest : ClientValidationTestBase
 {
     public ClientValidationScenariosTest(
         BrowserFixture browserFixture,
@@ -23,18 +23,10 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     {
     }
 
-    private void NavigateToPage(string page)
-    {
-        Navigate($"subdir/forms/client-validation/{page}");
-        Browser.Exists(By.Id("blazor-started"));
-        Browser.Exists(By.Id("page-title"));
-    }
-
     [Fact]
     public void DataValeventSubmit_NoValidationOnChangeOrInput()
     {
-        NavigateToPage("timing");
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        NavigateToClientValidationPage("timing");
 
         var field = Browser.Exists(By.Id("submit-only"));
         field.Click();
@@ -53,8 +45,7 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void DataValeventInput_ValidatesEagerlyOnPristineForm()
     {
-        NavigateToPage("timing");
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        NavigateToClientValidationPage("timing");
 
         var field = Browser.Exists(By.Id("input-eager"));
         // Type a character to trigger 'input' event, then clear it via backspace
@@ -69,8 +60,7 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void HiddenDisabledAndDisplayNoneFieldsAreSkipped()
     {
-        NavigateToPage("formnovalidate");
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        NavigateToClientValidationPage("formnovalidate");
 
         // Fill only Name; the form has 3 other "required" fields that are hidden,
         // disabled, or display:none and should all be skipped during validation.
@@ -83,16 +73,13 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void FormnovalidateButtonBypassesValidation()
     {
-        NavigateToPage("formnovalidate");
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        NavigateToClientValidationPage("formnovalidate");
 
         // Click the formnovalidate button without filling anything; validation
         // is bypassed entirely (no validationcomplete event dispatched, no errors).
         Browser.Exists(By.Id("btn-draft")).Click();
 
-        // The page may have navigated; if still on this page, no error appears.
-        // If navigation happened (302 → same page), event-log is empty after reload.
-        // Either way: no error message text in the Name field's slot.
+        // No error message text in the Name field's slot.
         Browser.Equal("",
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Name']")).Text);
     }
@@ -100,19 +87,19 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void UntrackedFormHasNoNovalidateAttribute()
     {
-        NavigateToPage("no-validation");
-        Browser.Exists(By.Id("blazor-started"));
+        // The 'no-validation' page intentionally has no [data-val=true] elements,
+        // so the JS library leaves the form alone and never adds [novalidate].
+        // Skip the submit interceptor too, so the page's "untracked forms post
+        // normally" behaviour is not masked from any future assertions.
+        NavigateToClientValidationPage("no-validation", expectTrackedForm: false, interceptSubmit: false);
 
-        // The JS library only adds [novalidate] to forms that contain
-        // data-val="true" elements. This form has none → no novalidate.
-        var form = Browser.Exists(By.Id("plain-form"));
         Browser.True(() => Browser.Exists(By.Id("plain-form")).GetAttribute("novalidate") is null);
     }
 
     [Fact]
     public void SubmittingOneFormDoesNotValidateOtherForm()
     {
-        NavigateToPage("multiple-forms");
+        NavigateToClientValidationPage("multiple-forms");
         Browser.Exists(By.CssSelector("#form-a[novalidate]"));
         Browser.Exists(By.CssSelector("#form-b[novalidate]"));
 
@@ -127,7 +114,7 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void EachFormHasIndependentSummary()
     {
-        NavigateToPage("multiple-forms");
+        NavigateToClientValidationPage("multiple-forms");
 
         Browser.Exists(By.Id("submit-a")).Click();
 
@@ -140,7 +127,7 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void DynamicallyAddedFieldsValidatedAfterScanRules()
     {
-        NavigateToPage("dynamic-content");
+        NavigateToClientValidationPage("dynamic-content");
 
         Browser.Exists(By.Id("add-field")).Click();
         Browser.Exists(By.Id("dyn"));
@@ -154,7 +141,7 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void RemovedFieldsCleanedUpOnReScan()
     {
-        NavigateToPage("dynamic-content");
+        NavigateToClientValidationPage("dynamic-content");
 
         Browser.Exists(By.Id("add-field")).Click();
         Browser.Exists(By.Id("dyn"));
@@ -171,8 +158,7 @@ public class ClientValidationScenariosTest : ServerTestBase<BasicTestAppServerSi
     [Fact]
     public void FirstInvalidFieldFocusedOnSubmit()
     {
-        NavigateToPage("basic-validation");
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        NavigateToClientValidationPage("basic-validation");
 
         Browser.Exists(By.Id("submit")).Click();
 

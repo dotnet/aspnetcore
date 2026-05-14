@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientVa
 // registration, radio groups, and server-rendered message cleanup.
 // Per-validator exhaustive coverage lives in the Jest unit tests on
 // CoreValidators.test.ts; the tests here verify the integration path.
-public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class ClientValidationAttributesTest : ClientValidationTestBase
 {
     public ClientValidationAttributesTest(
         BrowserFixture browserFixture,
@@ -25,18 +25,10 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     {
     }
 
-    private void NavigateToPage(string page)
-    {
-        Navigate($"subdir/forms/client-validation/{page}");
-        Browser.Exists(By.Id("blazor-started"));
-        Browser.Exists(By.Id("page-title"));
-        Browser.Exists(By.CssSelector("form[novalidate]"));
-    }
-
     [Fact]
     public void RangeRejectsOutOfRangeValue()
     {
-        NavigateToPage("all-validators");
+        NavigateToClientValidationPage("all-validators");
 
         Browser.Exists(By.Id("age")).SendKeys("999");
         Browser.Exists(By.Id("submit")).Click();
@@ -48,7 +40,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void RegexRejectsNonMatchingValue()
     {
-        NavigateToPage("all-validators");
+        NavigateToClientValidationPage("all-validators");
 
         Browser.Exists(By.Id("zipcode")).SendKeys("not-a-zip");
         Browser.Exists(By.Id("submit")).Click();
@@ -60,7 +52,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void EmailRejectsInvalidEmail()
     {
-        NavigateToPage("all-validators");
+        NavigateToClientValidationPage("all-validators");
 
         Browser.Exists(By.Id("email")).SendKeys("not-an-email");
         Browser.Exists(By.Id("submit")).Click();
@@ -72,7 +64,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void EqualToRejectsMismatchedPasswords()
     {
-        NavigateToPage("all-validators");
+        NavigateToClientValidationPage("all-validators");
 
         Browser.Exists(By.Id("password")).SendKeys("secret123");
         Browser.Exists(By.Id("confirm")).SendKeys("differentValue");
@@ -85,7 +77,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void EqualToAcceptsMatchingPasswords()
     {
-        NavigateToPage("all-validators");
+        NavigateToClientValidationPage("all-validators");
 
         Browser.Exists(By.Id("password")).SendKeys("secret123");
         Browser.Exists(By.Id("confirm")).SendKeys("secret123");
@@ -100,7 +92,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void FileExtensionsRejectsDisallowedExtension()
     {
-        NavigateToPage("all-validators");
+        NavigateToClientValidationPage("all-validators");
 
         Browser.Exists(By.Id("avatar")).SendKeys("malware.exe");
         Browser.Exists(By.Id("submit")).Click();
@@ -112,7 +104,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void RequiredRadioGroup_ShowsErrorWhenNoneSelected()
     {
-        NavigateToPage("radio-group");
+        NavigateToClientValidationPage("radio-group");
 
         Browser.Exists(By.Id("submit")).Click();
 
@@ -123,7 +115,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void RequiredRadioGroup_ClearsErrorWhenOneSelected()
     {
-        NavigateToPage("radio-group");
+        NavigateToClientValidationPage("radio-group");
 
         Browser.Exists(By.Id("submit")).Click();
         Browser.Equal("Please select a color.",
@@ -139,8 +131,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void CustomValidatorRejectsInvalidInput()
     {
-        Navigate("subdir/forms/client-validation/custom-validator");
-        Browser.Exists(By.Id("blazor-started"));
+        NavigateToClientValidationPage("custom-validator");
         Browser.Exists(By.Id("custom-validator-ready"));
 
         Browser.Exists(By.Id("code")).SendKeys("XYZ-123");
@@ -153,8 +144,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void CustomValidatorAcceptsValidInput()
     {
-        Navigate("subdir/forms/client-validation/custom-validator");
-        Browser.Exists(By.Id("blazor-started"));
+        NavigateToClientValidationPage("custom-validator");
         Browser.Exists(By.Id("custom-validator-ready"));
 
         Browser.Exists(By.Id("code")).SendKeys("ABC-123");
@@ -167,9 +157,7 @@ public class ClientValidationAttributesTest : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void JsRemovesSiblingServerErrorsWhenFieldBecomesValid()
     {
-        Navigate("subdir/forms/client-validation/server-rendered-messages");
-        Browser.Exists(By.Id("blazor-started"));
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        NavigateToClientValidationPage("server-rendered-messages");
 
         // Initially: the Name field has a primary message + one extra sibling
         // (server-rendered). Both are present in the DOM.
