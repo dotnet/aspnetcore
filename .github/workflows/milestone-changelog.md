@@ -308,7 +308,7 @@ jobs:
           rm -rf "$WIKI_TMP"
 
           echo "has_work=$HAS_WORK" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: steps.fetch.outputs.has_work == 'true'
         with:
           name: changelog-data
@@ -447,7 +447,7 @@ safe-outputs:
 timeout-minutes: 30
 
 steps:
-  - uses: actions/download-artifact@v4
+  - uses: actions/download-artifact@v8.0.1
     with:
       name: changelog-data
       path: /tmp/gh-aw/
