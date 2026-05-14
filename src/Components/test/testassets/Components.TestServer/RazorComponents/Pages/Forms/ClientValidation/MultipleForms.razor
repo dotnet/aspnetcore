@@ -1,34 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <title>Multiple Forms</title>
-  <style>
+@page "/forms/client-validation/multiple-forms"
+
+<h2 id="page-title">Multiple independent forms</h2>
+
+<style>
     .field-validation-error { color: red; }
     .field-validation-valid { display: none; }
     .validation-summary-errors { color: red; }
     .validation-summary-valid { display: none; }
-  </style>
-</head>
-<body>
-  <form id="form-a" method="post">
+</style>
+
+<form id="form-a" method="post">
     <div data-valmsg-summary="true" class="validation-summary-valid"><ul></ul></div>
     <input id="name-a" name="Name" type="text"
            data-val="true"
            data-val-required="Name A is required." />
     <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
-    <button type="submit">Submit A</button>
-  </form>
+    <button type="submit" id="submit-a">Submit A</button>
+</form>
 
-  <form id="form-b" method="post">
+<form id="form-b" method="post">
     <div data-valmsg-summary="true" class="validation-summary-valid"><ul></ul></div>
     <input id="name-b" name="Name" type="text"
            data-val="true"
            data-val-required="Name B is required." />
     <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
-    <button type="submit">Submit B</button>
-  </form>
-
-  <script src="/dist/aspnet-core-validation.js"></script>
-</body>
-</html>
+    <button type="submit" id="submit-b">Submit B</button>
+</form>
