@@ -1,18 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
+import { ValidationContext, ValidationResult, Validator, pass, fail } from '../ValidationTypes';
 
 // Validates that the value matches a regular expression pattern (full match).
 // The pattern is anchored with ^(?:...)$ to match .NET's exact-match semantics.
+// Throws if the mandatory `pattern` parameter is missing.
 export const regexValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
-  if (!value) {
-    return true;
+  if (!params.pattern) {
+    throw new Error('regex validator requires a non-empty "pattern" parameter (data-val-regex-pattern).');
   }
 
-  if (!params.pattern) {
-    return true;
+  if (!value) {
+    return pass();
   }
 
   // Anchor the pattern for full-match semantics, matching .NET's RegularExpressionAttribute
@@ -21,8 +22,8 @@ export const regexValidator: Validator = (context: ValidationContext): Validatio
   const anchored = `^(?:${params.pattern})$`;
 
   try {
-    return new RegExp(anchored).test(value);
+    return new RegExp(anchored).test(value) ? pass() : fail();
   } catch {
-    return true;
+    return pass();
   }
 };

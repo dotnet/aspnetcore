@@ -170,8 +170,14 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 }
 
 function initFormValidationIfNeeded(formValidation?: ValidationOptions): void {
-  if (!Blazor.formValidation && document.querySelector('[data-val="true"]')) {
-    Blazor.formValidation = createValidationService(formValidation);
+  if (Blazor.formValidation) {
+    return;
+  }
+  for (const form of Array.from(document.forms)) {
+    if (form.querySelector('[data-val="true"]')) {
+      Blazor.formValidation = createValidationService(formValidation);
+      return;
+    }
   }
 }
 

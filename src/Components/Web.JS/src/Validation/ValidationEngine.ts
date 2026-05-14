@@ -206,7 +206,7 @@ export class ValidationEngine {
 
       context.params = rule.params;
       const result = validator(context);
-      const errorMessage = resolveErrorMessage(result as ValidationResult, rule);
+      const errorMessage = resolveErrorMessage(result, rule);
 
       if (errorMessage) {
         return errorMessage;
@@ -256,15 +256,11 @@ function getElementValue(element: ValidatableElement): string {
 }
 
 function resolveErrorMessage(result: ValidationResult, rule: ValidationRule): string {
-  if (result === false) {
-    return rule.errorMessage;
+  if (result.success) {
+    return '';
   }
 
-  if (typeof result === 'string') {
-    return result;
-  }
-
-  return '';
+  return result.message ?? rule.errorMessage;
 }
 
 function initializeMessageElementsAria(element: ValidatableElement): void {

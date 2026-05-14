@@ -13,11 +13,20 @@ export type ValidationContext = {
 
 /**
  * The result of a validator function.
- * - `true` means valid.
- * - `false` means invalid (the rule's default error message is used).
- * - A `string` means invalid with a custom error message.
+ * - `success: true` means the field is valid.
+ * - `success: false` means invalid; if `message` is provided it overrides the rule's
+ *   default error message, otherwise the rule's own message (from `data-val-{rule}=...`)
+ *   is used.
  */
-export type ValidationResult = boolean | string;
+export type ValidationResult = { success: boolean; message?: string };
+
+/** Convenience helpers for constructing {@link ValidationResult} values. */
+export function pass(): ValidationResult {
+  return { success: true };
+}
+export function fail(message?: string): ValidationResult {
+  return message === undefined ? { success: false } : { success: false, message };
+}
 
 /** A function that validates a field value and returns a result. */
 export type Validator = (context: ValidationContext) => ValidationResult;

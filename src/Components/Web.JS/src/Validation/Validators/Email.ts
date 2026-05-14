@@ -1,20 +1,24 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
+import { ValidationContext, ValidationResult, Validator, pass, fail } from '../ValidationTypes';
 
-// WHATWG email pattern.
-// Source: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
-const emailPattern = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-
-// Validates email format using the WHATWG HTML5 email pattern.
-// Stricter than .NET's EmailAddressAttribute (which only checks for a single '@').
-// The client won't let through anything the server would reject.
+// Validates email format with the same semantics as .NET's EmailAddressAttribute:
+// no CR/LF, and exactly one '@' that is neither the first nor the last character.
+// Matching the server-side rule guarantees the client never rejects a value the
+// server would accept (and vice versa).
+// Source: https://github.com/dotnet/runtime/blob/main/src/libraries/System.ComponentModel.Annotations/src/System/ComponentModel/DataAnnotations/EmailAddressAttribute.cs
 export const emailValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
-    return true;
+    return pass();
   }
 
-  return emailPattern.test(value);
+  if (value.includes('\r') || value.includes('\n')) {
+    return fail();
+  }
+
+  const firstAt = value.indexOf('@');
+  const lastAt = value.lastIndexOf('@');
+  return (firstAt > 0 && firstAt === lastAt && firstAt !== value.length - 1) ? pass() : fail();
 };

@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
+import { ValidationContext, ValidationResult, Validator, pass, fail } from '../ValidationTypes';
 
 // URL pattern based on Diego Perini's regex.
 // Allows http, https, ftp, and protocol-relative URLs.
@@ -15,8 +15,8 @@ const urlPattern = /^(?:(?:(?:https?|ftp):)?\/\/)(?:(?:[^\]\[?\/<~#`!@$^&*()+=}|
 export const urlValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
-    return true;
+    return pass();
   }
 
-  return urlPattern.test(value);
+  return urlPattern.test(value) ? pass() : fail();
 };

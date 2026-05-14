@@ -1,6 +1,6 @@
 import { expect, test, describe, beforeAll } from '@jest/globals';
 import { registerCoreValidators } from '../../src/Validation/CoreValidators';
-import { ValidatorRegistry, ValidationContext, Validator } from '../../src/Validation/ValidationTypes';
+import { ValidatorRegistry, ValidationContext, ValidationResult, Validator } from '../../src/Validation/ValidationTypes';
 
 // jsdom does not provide CSS.escape; polyfill for radio group tests
 beforeAll(() => {
@@ -9,7 +9,15 @@ beforeAll(() => {
   }
 });
 
-function getValidator(name: string): Validator {
+// Returns a function that yields the boolean success of the named validator.
+// Existing tests assert against this boolean; tests that need to inspect the
+// full ValidationResult shape (e.g., custom message) call `getValidatorRaw`.
+function getValidator(name: string): (ctx: ValidationContext) => boolean {
+  const v = getValidatorRaw(name);
+  return (ctx: ValidationContext) => v(ctx).success;
+}
+
+function getValidatorRaw(name: string): Validator {
   const registry = new ValidatorRegistry();
   registerCoreValidators(registry);
   const v = registry.get(name);
@@ -50,6 +58,32 @@ describe('registerCoreValidators', () => {
     registerCoreValidators(registry);
     expect(registry.get('required')).toBeDefined();
     expect(registry.get('length')).toBeDefined();
+  });
+});
+
+// ValidationResult is a structured object so custom validators can supply a
+// per-call error message that overrides the rule's default. The built-in
+// validators just produce { success: true } / { success: false } and rely on
+// the rule's own message.
+describe('ValidationResult shape', () => {
+  test('built-in validators return a ValidationResult object', () => {
+    const required = getValidatorRaw('required');
+    const result = required({ value: '', element: document.createElement('input') as any, params: {} });
+    expect(result).toEqual({ success: false });
+  });
+
+  test('built-in validators return success: true on pass', () => {
+    const required = getValidatorRaw('required');
+    const result = required({ value: 'x', element: document.createElement('input') as any, params: {} });
+    expect(result).toEqual({ success: true });
+  });
+
+  test('custom validators can supply a per-call message via the result', () => {
+    const registry = new ValidatorRegistry();
+    registerCoreValidators(registry);
+    registry.set('custom', () => ({ success: false, message: 'override' }));
+    const result = registry.get('custom')!({ value: '', element: document.createElement('input') as any, params: {} });
+    expect(result).toEqual({ success: false, message: 'override' });
   });
 });
 
@@ -253,8 +287,8 @@ describe('lengthValidator', () => {
     });
   });
 
-  test('accepts any value when no constraints are specified', () => {
-    expect(length(makeContext({ value: 'anything', params: {} }))).toBe(true);
+  test('throws when no constraints are specified', () => {
+    expect(() => length(makeContext({ value: 'anything', params: {} }))).toThrow(/min.*max/);
   });
 });
 
@@ -359,8 +393,8 @@ describe('rangeValidator', () => {
       expect(range(makeContext({ value: '150', params: { max: '100' } }))).toBe(false);
     });
 
-    test('accepts any numeric value when both are absent', () => {
-      expect(range(makeContext({ value: '999999', params: {} }))).toBe(true);
+    test('throws when both bounds are absent', () => {
+      expect(() => range(makeContext({ value: '999999', params: {} }))).toThrow(/min.*max/);
     });
   });
 });
@@ -444,12 +478,12 @@ describe('regexValidator', () => {
     });
   });
 
-  test('accepts any value when pattern param is missing', () => {
-    expect(regex(makeContext({ value: 'anything', params: {} }))).toBe(true);
+  test('throws when pattern param is missing', () => {
+    expect(() => regex(makeContext({ value: 'anything', params: {} }))).toThrow(/pattern/);
   });
 });
 
-// Validates email format using the WHATWG HTML5 pattern.
+// Validates email format with the same semantics as .NET's EmailAddressAttribute.
 // Empty values pass (emptiness is [Required]'s concern).
 describe('emailValidator', () => {
   const email = getValidator('email');
@@ -496,6 +530,17 @@ describe('emailValidator', () => {
     test('accepts single-char local part', () => {
       expect(email(makeContext({ value: 'a@example.com' }))).toBe(true);
     });
+
+    // Matches .NET's EmailAddressAttribute, which only requires a single '@'
+    // not at the start or end. Whitespace inside the value is allowed.
+    test('accepts value with internal whitespace (matches .NET)', () => {
+      expect(email(makeContext({ value: 'user @example.com' }))).toBe(true);
+    });
+
+    // The server accepts addresses without a TLD; the client must too.
+    test('accepts value without TLD (matches .NET)', () => {
+      expect(email(makeContext({ value: 'a@b' }))).toBe(true);
+    });
   });
 
   describe('invalid emails', () => {
@@ -515,12 +560,20 @@ describe('emailValidator', () => {
       expect(email(makeContext({ value: 'user@@example.com' }))).toBe(false);
     });
 
-    test('rejects spaces', () => {
-      expect(email(makeContext({ value: 'user @example.com' }))).toBe(false);
+    test('rejects two separated @', () => {
+      expect(email(makeContext({ value: 'a@b@c' }))).toBe(false);
     });
 
     test('rejects plain text', () => {
       expect(email(makeContext({ value: 'not-an-email' }))).toBe(false);
+    });
+
+    test('rejects value containing CR', () => {
+      expect(email(makeContext({ value: 'user\r@example.com' }))).toBe(false);
+    });
+
+    test('rejects value containing LF', () => {
+      expect(email(makeContext({ value: 'user@example.com\n' }))).toBe(false);
     });
   });
 });
@@ -826,9 +879,9 @@ describe('equaltoValidator', () => {
       expect(equalto(ctx)).toBe(true);
     });
 
-    test('passes when other param is missing', () => {
+    test('throws when other param is missing', () => {
       const ctx = makeFormContext('Password', 'secret', 'Confirm', 'different', {});
-      expect(equalto(ctx)).toBe(true);
+      expect(() => equalto(ctx)).toThrow(/other/);
     });
   });
 });
@@ -883,8 +936,8 @@ describe('fileextensionsValidator', () => {
     });
   });
 
-  test('accepts any file when extensions param is missing', () => {
-    expect(fileext(makeContext({ value: 'anything.xyz', params: {} }))).toBe(true);
+  test('throws when extensions param is missing', () => {
+    expect(() => fileext(makeContext({ value: 'anything.xyz', params: {} }))).toThrow(/extensions/);
   });
 });
 

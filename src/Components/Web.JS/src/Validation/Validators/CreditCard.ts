@@ -1,14 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ValidationContext, ValidationResult, Validator } from '../ValidationTypes';
+import { ValidationContext, ValidationResult, Validator, pass, fail } from '../ValidationTypes';
 
 // Validates credit card numbers using the Luhn algorithm (same as .NET CreditCardAttribute).
 // Strips dashes and spaces before validation. Requires 13-19 digits.
 export const creditCardValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value } = context;
   if (!value) {
-    return true;
+    return pass();
   }
 
   // Strip dashes and spaces
@@ -16,12 +16,12 @@ export const creditCardValidator: Validator = (context: ValidationContext): Vali
 
   // Only digits allowed after stripping
   if (!/^\d+$/.test(stripped)) {
-    return false;
+    return fail();
   }
 
   // Valid card numbers are 13-19 digits
   if (stripped.length < 13 || stripped.length > 19) {
-    return false;
+    return fail();
   }
 
   // Luhn algorithm
@@ -36,5 +36,5 @@ export const creditCardValidator: Validator = (context: ValidationContext): Vali
     }
   }
 
-  return (checksum % 10) === 0;
+  return (checksum % 10) === 0 ? pass() : fail();
 };
