@@ -29,13 +29,4 @@ else
 
 <button id="start-blazor" onclick="start()">Start Blazor</button>
 
-@code {
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            StateHasChanged();
-        }
-        base.OnAfterRender(firstRender);
-    }
-}
+
