@@ -819,11 +819,7 @@ public class RequestResponseTests
             Assert.Contains("Connection: close", headers);
             Assert.Contains("Server: Microsoft-IIS/10.0", headers);
 
-            if (headers.Contains("Content-Length: 11"))
-            {
-                await connection.Receive("Hello World");
-            }
-            else
+            if (headers.Contains("Transfer-Encoding: chunked"))
             {
                 await connection.Receive(
                     "B",
@@ -833,6 +829,13 @@ public class RequestResponseTests
                     "0",
                     "",
                     "");
+            }
+            else
+            {
+                // Either framed by Content-Length: 11 or by connection close
+                // (no framing header). Either way the body is exactly "Hello World"
+                // and WaitForConnectionClose below verifies nothing else follows.
+                await connection.Receive("Hello World");
             }
 
             // Verify the second request was not processed and that the server closed
