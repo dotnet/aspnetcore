@@ -556,12 +556,12 @@ public class EndpointMetadataApiDescriptionProviderTest
         var expectedBadRequestDescription = firstBadRequestDescription + "\n\n" + secondBadRequestDescription;
 
         var apiDescription = GetApiDescription(
-    [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "First description")]
-        [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "Second description")]
-        [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = firstBadRequestDescription)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = secondBadRequestDescription)]
-        () => TypedResults.Created("https://example.com", new TimeSpan()));
+            [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "First description")]
+            [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "Second description")]
+            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest, Description = firstBadRequestDescription)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest, Description = secondBadRequestDescription)]
+            () => TypedResults.Created("https://example.com", new TimeSpan()));
 
         Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
 
