@@ -99,20 +99,17 @@ internal sealed class DefaultClientValidationService : IClientValidationService
                 break;
 
             case RangeAttribute ra:
-                // RangeAttribute lazily converts Minimum/Maximum from strings to the target type.
-                // Calling IsValid triggers this conversion so we can read the typed values.
-                // Wrap in try-catch to handle non-numeric operand types (e.g., DateTime ranges)
-                // which would throw when validating an integer value.
-                try
+                // Only emit client-side range attributes for numeric operand types.
+                // The JS validator's range check is numeric (uses Number()), so non-numeric
+                // ranges like RangeAttribute(typeof(DateTime), ...) have no client equivalent
+                // and would emit unparseable values. Server-side validation still applies.
+                if (!IsNumericRangeOperand(ra.OperandType))
                 {
-                    // TODO: Add support for DateTime ranges?
-                    ra.IsValid(null);
-                }
-                catch (InvalidOperationException)
-                {
-                    // Non-numeric range type - can't emit client-side attributes
                     break;
                 }
+                // RangeAttribute lazily converts Minimum/Maximum from strings to OperandType.
+                // Calling IsValid triggers SetupConversion(); same trick MVC's RangeAttributeAdapter uses.
+                ra.IsValid(3);
                 htmlAttributes.TryAdd("data-val-range", errorMessage);
                 htmlAttributes.TryAdd("data-val-range-min", Convert.ToString(ra.Minimum, CultureInfo.InvariantCulture)!);
                 htmlAttributes.TryAdd("data-val-range-max", Convert.ToString(ra.Maximum, CultureInfo.InvariantCulture)!);
@@ -184,6 +181,24 @@ internal sealed class DefaultClientValidationService : IClientValidationService
             htmlAttributes.TryAdd($"data-val-{rule.Name}-{paramName}", paramValue);
         }
     }
+
+    /// <summary>
+    /// Returns true if the type is one the JS range validator can compare numerically.
+    /// Excludes <see cref="DateTime"/> and other non-numeric operand types that
+    /// <see cref="RangeAttribute"/> supports server-side but the client cannot.
+    /// </summary>
+    private static bool IsNumericRangeOperand(Type operandType)
+        => operandType == typeof(int)
+        || operandType == typeof(long)
+        || operandType == typeof(short)
+        || operandType == typeof(byte)
+        || operandType == typeof(uint)
+        || operandType == typeof(ulong)
+        || operandType == typeof(ushort)
+        || operandType == typeof(sbyte)
+        || operandType == typeof(double)
+        || operandType == typeof(float)
+        || operandType == typeof(decimal);
 
     private static string? GetDisplayName(PropertyInfo property)
     {

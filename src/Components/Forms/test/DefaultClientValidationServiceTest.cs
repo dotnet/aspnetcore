@@ -312,6 +312,16 @@ public class DefaultClientValidationServiceTest
     }
 
     [Fact]
+    public void Range_DateTimeOperand_DoesNotEmitDataValRange()
+    {
+        // Non-numeric range types (e.g., DateTime) have no client-side equivalent in the JS validator,
+        // so we skip emitting data-val-range-* for them. Server-side validation still applies.
+        var attrs = GetAttributes<DateTimeRangeModel>(nameof(DateTimeRangeModel.Date));
+
+        Assert.Null(attrs);
+    }
+
+    [Fact]
     public void PropertyWithNoDisplayAttribute_UsesPropertyNameInErrorMessage()
     {
         var attrs = GetAttributes<RequiredModel>(nameof(RequiredModel.Name));
@@ -333,6 +343,7 @@ public class DefaultClientValidationServiceTest
     private class DisplayNameAttrModel { [Required][System.ComponentModel.DisplayName("Full Name")] public string Name { get; set; } = ""; }
     private class StringLengthMaxOnlyModel { [StringLength(50)] public string Name { get; set; } = ""; }
     private class DoubleRangeModel { [Range(0.5, 99.9)] public double Score { get; set; } }
+    private class DateTimeRangeModel { [Range(typeof(DateTime), "2020-01-01", "2030-12-31")] public DateTime Date { get; set; } }
     private class BaseModel { [Required] public string BaseProp { get; set; } = ""; }
     private class DerivedModel : BaseModel { }
 }
