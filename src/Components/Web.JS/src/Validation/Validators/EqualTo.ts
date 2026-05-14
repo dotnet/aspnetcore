@@ -10,7 +10,7 @@ import { ValidationContext, ValidationResult, Validator, pass, fail } from '../V
 export const equalToValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, element, params } = context;
   if (!params.other) {
-    throw new Error('equalto validator requires a non-empty "other" parameter (data-val-equalto-other).');
+    throw new Error('EqualTo validator requires a non-empty "other" parameter.');
   }
 
   if (!value) {
@@ -27,9 +27,7 @@ export const equalToValidator: Validator = (context: ValidationContext): Validat
     return pass();
   }
 
-  const otherElement = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
-    `[name="${CSS.escape(otherFieldName)}"]`
-  );
+  const otherElement = form.querySelector<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(`[name="${CSS.escape(otherFieldName)}"]`);
 
   if (!otherElement) {
     return pass();

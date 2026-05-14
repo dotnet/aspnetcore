@@ -1,20 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// Standalone bundle entry point. Creates the validation service on DOMContentLoaded
-// and exposes it as window.__aspnetValidation for custom validator registration.
+// ES module facade for the client-side validation library. Importing this module
+// has no side effects - the consumer is responsible for calling
+// `createValidationService()` to instantiate the service.
 
-import { createValidationService } from './ValidationService';
-
-function initialize(): void {
-  const service = createValidationService();
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).__aspnetValidation = service;
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initialize);
-} else {
-  initialize();
-}
+export { createValidationService } from './ValidationService';
+export type {
+  ValidationService,
+  ValidationOptions,
+  ValidationContext,
+  ValidationResult,
+  Validator,
+  ValidatableElement,
+} from './ValidationTypes';

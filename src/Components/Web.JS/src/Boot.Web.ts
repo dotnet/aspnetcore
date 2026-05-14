@@ -29,8 +29,7 @@ import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { createValidationService } from './Validation/ValidationService';
-import type { ValidationOptions } from './Validation/ValidationTypes';
+import { createValidationService, ValidationOptions } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;

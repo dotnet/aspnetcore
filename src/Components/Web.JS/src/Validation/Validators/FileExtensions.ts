@@ -9,7 +9,7 @@ import { ValidationContext, ValidationResult, Validator, pass, fail } from '../V
 export const fileExtensionsValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (!params.extensions) {
-    throw new Error('fileextensions validator requires a non-empty "extensions" parameter (data-val-fileextensions-extensions).');
+    throw new Error('FileExtensions validator requires a non-empty "extensions" parameter.');
   }
 
   if (!value) {

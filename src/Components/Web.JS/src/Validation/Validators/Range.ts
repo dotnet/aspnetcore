@@ -9,7 +9,7 @@ import { ValidationContext, ValidationResult, Validator, pass, fail } from '../V
 export const rangeValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (params.min === undefined && params.max === undefined) {
-    throw new Error('range validator requires at least one of "min" or "max" parameters (data-val-range-min, data-val-range-max).');
+    throw new Error('Range validator requires at least one of "min" or "max" parameters.');
   }
 
   if (!value) {

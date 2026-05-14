@@ -578,7 +578,7 @@ describe('emailValidator', () => {
   });
 });
 
-// Validates URL format using Diego Perini's regex.
+// Validates URL format with the same semantics as .NET's UrlAttribute.
 // Empty values pass (emptiness is [Required]'s concern).
 describe('urlValidator', () => {
   const url = getValidator('url');
@@ -626,8 +626,23 @@ describe('urlValidator', () => {
       expect(url(makeContext({ value: 'https://www.example.com' }))).toBe(true);
     });
 
-    test('accepts protocol-relative URL', () => {
-      expect(url(makeContext({ value: '//example.com' }))).toBe(true);
+    // .NET UrlAttribute uses case-insensitive prefix matching.
+    test('accepts URL with uppercase scheme (matches .NET)', () => {
+      expect(url(makeContext({ value: 'HTTPS://example.com' }))).toBe(true);
+    });
+
+    test('accepts URL with mixed-case scheme (matches .NET)', () => {
+      expect(url(makeContext({ value: 'Http://example.com' }))).toBe(true);
+    });
+
+    // .NET only checks the scheme prefix, so localhost/private hosts pass.
+    test('accepts http://localhost (matches .NET)', () => {
+      expect(url(makeContext({ value: 'http://localhost' }))).toBe(true);
+    });
+
+    // .NET accepts whatever follows the scheme, including embedded whitespace.
+    test('accepts URL with embedded whitespace (matches .NET)', () => {
+      expect(url(makeContext({ value: 'https://exam ple.com' }))).toBe(true);
     });
   });
 
@@ -644,8 +659,25 @@ describe('urlValidator', () => {
       expect(url(makeContext({ value: 'hello' }))).toBe(false);
     });
 
-    test('rejects spaces in URL', () => {
-      expect(url(makeContext({ value: 'https://exam ple.com' }))).toBe(false);
+    // .NET UrlAttribute requires http/https/ftp - protocol-relative URLs are not accepted.
+    test('rejects protocol-relative URL (matches .NET)', () => {
+      expect(url(makeContext({ value: '//example.com' }))).toBe(false);
+    });
+
+    test('rejects unsupported scheme', () => {
+      expect(url(makeContext({ value: 'gopher://example.com' }))).toBe(false);
+    });
+
+    test('rejects mailto scheme', () => {
+      expect(url(makeContext({ value: 'mailto:user@example.com' }))).toBe(false);
+    });
+
+    test('rejects scheme without ://', () => {
+      expect(url(makeContext({ value: 'http:example.com' }))).toBe(false);
+    });
+
+    test('rejects leading whitespace before scheme', () => {
+      expect(url(makeContext({ value: ' http://example.com' }))).toBe(false);
     });
   });
 });

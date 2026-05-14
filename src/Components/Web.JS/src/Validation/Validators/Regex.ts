@@ -9,7 +9,7 @@ import { ValidationContext, ValidationResult, Validator, pass, fail } from '../V
 export const regexValidator: Validator = (context: ValidationContext): ValidationResult => {
   const { value, params } = context;
   if (!params.pattern) {
-    throw new Error('regex validator requires a non-empty "pattern" parameter (data-val-regex-pattern).');
+    throw new Error('regex validator requires a non-empty "pattern" parameter.');
   }
 
   if (!value) {
