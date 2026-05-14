@@ -6,8 +6,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 
 internal class CultureStateProvider
 {
-    protected string? _currentCultureName;
-    protected string? _currentUICultureName;
 
     [PersistentState]
     public string? CurrentCultureName { get; set; }
@@ -33,14 +31,32 @@ internal class CultureStateProvider
     {
         if (!string.IsNullOrEmpty(CurrentCultureName))
         {
-            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(CurrentCultureName);
-            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(CurrentCultureName);
+            try
+            {
+                var culture = CultureInfo.GetCultureInfo(CurrentCultureName);
+                CultureInfo.CurrentCulture = culture;
+                CultureInfo.DefaultThreadCurrentCulture = culture;
+            }
+            catch (CultureNotFoundException)
+            {
+                // The server may have culture data that isn't available on the client
+                // (e.g., invariant globalization or a sharded ICU subset).
+            }
         }
 
         if (!string.IsNullOrEmpty(CurrentUICultureName))
         {
-            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(CurrentUICultureName);
-            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo(CurrentUICultureName);
+            try
+            {
+                var uiCulture = CultureInfo.GetCultureInfo(CurrentUICultureName);
+                CultureInfo.CurrentUICulture = uiCulture;
+                CultureInfo.DefaultThreadCurrentUICulture = uiCulture;
+            }
+            catch (CultureNotFoundException)
+            {
+                // The server may have culture data that isn't available on the client
+                // (e.g., invariant globalization or a sharded ICU subset).
+            }
         }
     }
 }

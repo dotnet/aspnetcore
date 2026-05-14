@@ -42,8 +42,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
             ?.SetValue(null, enableUrlNavigation);
-        
-        services.AddControllers();
+
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        {
+            services.AddControllers();
+        }
         services.AddValidation();
 
         var razorComponentsBuilder = services.AddRazorComponents(options =>
@@ -167,14 +170,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     {
         WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
 
-        app.UseRequestLocalization(options =>
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {
-            options.AddSupportedCultures("en-US", "fr-FR");
-            options.AddSupportedUICultures("en-US", "fr-FR");
-            options.RequestCultureProviders.Clear();
-            options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
-            options.SetDefaultCulture("en-US");
-        });
+            app.UseRequestLocalization(options =>
+            {
+                options.AddSupportedCultures("en-US", "fr-FR");
+                options.AddSupportedUICultures("en-US", "fr-FR");
+                options.RequestCultureProviders.Clear();
+                options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+                options.SetDefaultCulture("en-US");
+            });
+        }
+        else
+        {
+            app.UseRequestLocalization(options =>
+            {
+                options.RequestCultureProviders.Clear();
+                options.SetDefaultCulture("en-US");
+            });
+        }
 
         if (!env.IsDevelopment())
         {
@@ -200,8 +214,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     {
         _ = app.UseEndpoints(endpoints =>
         {
-            endpoints.MapControllers();
-            
+            if (Configuration.GetValue<bool>("EnableCultureTesting"))
+            {
+                endpoints.MapControllers();
+            }
+
             var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
             if (File.Exists(contentRootStaticAssetsPath))
             {

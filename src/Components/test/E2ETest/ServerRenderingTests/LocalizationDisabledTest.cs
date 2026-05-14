@@ -12,9 +12,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
-public class LocalizationTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class LocalizationDisabledTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
-    public LocalizationTest(
+    public LocalizationDisabledTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
@@ -25,12 +25,11 @@ public class LocalizationTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
     protected override void InitializeAsyncCore()
     {
         _serverFixture.AdditionalArguments.Add("EnableCultureTesting=true");
-        _serverFixture.AdditionalArguments.Add("EnforceServerCultureOnClient=true");
         base.InitializeAsyncCore();
     }
 
     [Fact]
-    public void CanPersistCultureFromServer()
+    public void DoesNotPersistCultureFromServerWhenDisabled()
     {
         Navigate($"{ServerPathBase}/Culture/SetCulture?culture=fr-FR&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/persist-culture-state")}");
         Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
@@ -42,7 +41,7 @@ public class LocalizationTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         Browser.Exists(By.Id("start-blazor")).Click();
 
         Browser.Equal("Interactive", () => Browser.FindElement(By.Id("interactive")).Text);
-        Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
-        Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
+        Browser.Equal("en-US", () => Browser.FindElement(By.Id("culture-set")).Text);
+        Browser.Equal("en-US", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
     }
 }
