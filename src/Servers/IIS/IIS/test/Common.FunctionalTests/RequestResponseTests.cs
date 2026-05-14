@@ -819,31 +819,21 @@ public class RequestResponseTests
             Assert.Contains("Connection: close", headers);
             Assert.Contains("Server: Microsoft-IIS/10.0", headers);
 
-            // Read the echoed body. Because the response carries Connection: close,
-            // IIS may frame the body as Content-Length, Transfer-Encoding: chunked,
-            // or simply by closing the connection (RFC 9112 §6.3 rule 7). Handle
-            // all three.
-            string body;
-            if (headers.Contains("Transfer-Encoding: chunked"))
+            if (headers.Contains("Content-Length: 11"))
             {
-                body = Encoding.ASCII.GetString((await connection.ReceiveChunk()).Span);
-                await connection.Receive("0", "", "");
+                await connection.Receive("Hello World");
             }
             else
             {
-                var contentLengthHeader = headers.SingleOrDefault(h => h.StartsWith("Content-Length: ", StringComparison.Ordinal));
-                if (contentLengthHeader is not null)
-                {
-                    var contentLength = int.Parse(contentLengthHeader.Substring("Content-Length: ".Length), CultureInfo.InvariantCulture);
-                    body = Encoding.ASCII.GetString((await connection.Receive(contentLength)).Span);
-                }
-                else
-                {
-                    body = Encoding.ASCII.GetString((await connection.Receive(4096)).Span);
-                }
+                await connection.Receive(
+                    "B",
+                    "Hello World",
+                    "");
+                await connection.Receive(
+                    "0",
+                    "",
+                    "");
             }
-
-            Assert.Contains("Hello World", body);
 
             // Verify the second request was not processed and that the server closed
             // the connection (no extra bytes are sent).
