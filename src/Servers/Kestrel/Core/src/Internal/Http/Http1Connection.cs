@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
@@ -667,7 +668,35 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             }
 
             _absoluteRequestTarget = _parsedAbsoluteRequestTarget = uri;
-            Path = _parsedPath = uri.LocalPath;
+
+            // Use PathDecoder.DecodePath (same as origin-form and HTTP/2/3) instead of
+            // uri.LocalPath, which decodes %2F to '/' breaking path canonicalization.
+            const int MaxPathBufferStackAllocSize = 256;
+
+            var absolutePath = uri.AbsolutePath;
+            byte[]? rentedBuffer = null;
+            Span<byte> pathBuffer = absolutePath.Length <= MaxPathBufferStackAllocSize
+                ? (stackalloc byte[MaxPathBufferStackAllocSize])
+                : (rentedBuffer = ArrayPool<byte>.Shared.Rent(absolutePath.Length));
+            var pathBufferSliced = pathBuffer[..absolutePath.Length];
+
+            try
+            {
+                Encoding.ASCII.GetBytes(absolutePath, pathBufferSliced);
+                Path = _parsedPath = PathDecoder.DecodePath(pathBufferSliced, targetPath.IsEncoded, absolutePath, queryLength: 0);
+            }
+            catch (InvalidOperationException)
+            {
+                ThrowRequestTargetRejected(target);
+            }
+            finally
+            {
+                if (rentedBuffer is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(rentedBuffer);
+                }
+            }
+
             // don't use uri.Query because we need the unescaped version
             previousValue = _parsedQueryString;
             if (disableStringReuse ||

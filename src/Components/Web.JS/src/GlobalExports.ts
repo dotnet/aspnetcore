@@ -92,26 +92,7 @@ export interface IBlazor {
       EndInvokeJS: (argsJson: string) => void;
       BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
       ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
-      UpdateRootComponents: (operationsJson: string, appState: string) => Promise<void>;
-
-      // Event dispatch fast paths (bypass JSON serialization + DotNetDispatcher)
-      DispatchMouseEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, detail: number, screenX: number, screenY: number, clientX: number, clientY: number, offsetX: number, offsetY: number, pageX: number, pageY: number, movementX: number, movementY: number, button: number, buttons: number, ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, type: string) => void;
-      DispatchDragEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, detail: number, screenX: number, screenY: number, clientX: number, clientY: number, offsetX: number, offsetY: number, pageX: number, pageY: number, movementX: number, movementY: number, button: number, buttons: number, ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, type: string, dropEffect: string | null, effectAllowed: string | null, files: string[] | null, itemKinds: string[] | null, itemTypes: string[] | null, types: string[] | null) => void;
-      DispatchKeyboardEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, key: string, code: string, location: number, repeat: boolean, ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, type: string, isComposing: boolean) => void;
-      DispatchChangeEventString: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, value: string) => void;
-      DispatchChangeEventBool: (eventHandlerId: number, fieldComponentId: number, fieldValueBool: boolean, value: boolean) => void;
-      DispatchChangeEventStringArray: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, value: (string | null)[]) => void;
-      DispatchFocusEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, type: string | null) => void;
-      DispatchClipboardEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, type: string) => void;
-      DispatchPointerEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, detail: number, screenX: number, screenY: number, clientX: number, clientY: number, offsetX: number, offsetY: number, pageX: number, pageY: number, movementX: number, movementY: number, button: number, buttons: number, ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, type: string, pointerId: number, width: number, height: number, pressure: number, tiltX: number, tiltY: number, pointerType: string, isPrimary: boolean) => void;
-      DispatchWheelEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, detail: number, screenX: number, screenY: number, clientX: number, clientY: number, offsetX: number, offsetY: number, pageX: number, pageY: number, movementX: number, movementY: number, button: number, buttons: number, ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, type: string, deltaX: number, deltaY: number, deltaZ: number, deltaMode: number) => void;
-      DispatchTouchEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, detail: number, touchesFlat: number[] | null, targetTouchesFlat: number[] | null, changedTouchesFlat: number[] | null, ctrlKey: boolean, shiftKey: boolean, altKey: boolean, metaKey: boolean, type: string) => void;
-      DispatchProgressEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, lengthComputable: boolean, loaded: number, total: number, type: string) => void;
-      DispatchErrorEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, message: string | null, filename: string | null, lineno: number, colno: number, type: string | null) => void;
-      DispatchEmptyEvent: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean) => void;
-      DispatchEventJson: (eventHandlerId: number, fieldComponentId: number, fieldValueString: string | null, fieldValueBool: boolean, eventName: string, eventArgsJson: string) => void;
-      DispatchLocationChanged: (uri: string, state: string | null, isInterceptedLink: boolean) => Promise<void>;
-      DispatchLocationChanging: (uri: string, state: string | null, isInterceptedLink: boolean) => Promise<boolean>;
+      UpdateRootComponentsCore: (operationsJson: string, appState: string) => void;
     }
 
     // APIs invoked by hot reload

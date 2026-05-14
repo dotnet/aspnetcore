@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Blazor WebAssembly サービスの既定値",
+  "description": "Blazor WebAssembly アプリケーション用のサービスの既定のライブラリを作成するためのプロジェクト テンプレートです。OpenTelemetry、サービス検出、Aspire 統合の回復性のサポートが含まれます。",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
+  "symbols/hosted/description": "DOM コメントを使用してサーバーから構成がフローする、ホストされた Blazor Web シナリオ用に構成します。false (既定値) の場合、構成エンドポイントと JS 初期化子を使用してスタンドアロン シナリオ用に構成します。",
+  "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
+  "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
+  "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
+}

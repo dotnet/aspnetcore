@@ -1,0 +1,69 @@
+@using System.Diagnostics.CodeAnalysis
+
+<h2>Metrics Trimming Check</h2>
+<p>
+    Metrics type found:
+    <span id="metrics-found">@ComponentsMetricsFound</span>
+</p>
+<p>
+    Activity source type found:
+    <span id="activity-source-found">@ComponentsActivitySourceFound</span>
+</p>
+<p>
+    Is supported:
+    <span id="is-supported">@IsSupported</span>
+</p>
+<p>
+    FailEventSync method found:
+    <span id="fail-event-sync-found">@FailEventSyncFound</span>
+</p>
+<p>
+    StartHandleEventActivity method found:
+    <span id="start-handle-event-activity-found">@StartHandleEventActivityFound</span>
+</p>
+
+@code {
+#nullable enable
+    string ComponentsMetricsFound { get; set; } = "unknown";
+    string ComponentsActivitySourceFound { get; set; } = "unknown";
+    string IsSupported { get; set; } = "unknown";
+    string FailEventSyncFound { get; set; } = "unknown";
+    string StartHandleEventActivityFound { get; set; } = "unknown";
+
+    protected override void OnInitialized()
+    {
+        var metricsType = GetComponentsMetricsType();
+        var activitySourceType = GetComponentsActivitySourceType();
+        ComponentsMetricsFound = metricsType is not null ? "true" : "false";
+        ComponentsActivitySourceFound = activitySourceType is not null ? "true" : "false";
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported);
+        IsSupported = isSupported ? "true" : "false";
+
+        if (metricsType is not null)
+        {
+            var method = metricsType.GetMethod("FailEventSync", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            FailEventSyncFound = method is not null ? "true" : "false";
+        }
+
+        if (activitySourceType is not null)
+        {
+            var method = activitySourceType.GetMethod("StartHandleEventActivity", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            StartHandleEventActivityFound = method is not null ? "true" : "false";
+        }
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057:UnrecognizedReflectionPattern",
+        Justification = "Returning null when the type is trimmed is the expected and desired behavior.")]
+    private static Type? GetComponentsMetricsType()
+    {
+        return Type.GetType("Microsoft.AspNetCore.Components.ComponentsMetrics, Microsoft.AspNetCore.Components");
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2057:UnrecognizedReflectionPattern",
+        Justification = "Returning null when the type is trimmed is the expected and desired behavior.")]
+    private static Type? GetComponentsActivitySourceType()
+    {
+        return Type.GetType("Microsoft.AspNetCore.Components.ComponentsActivitySource, Microsoft.AspNetCore.Components");
+    }
+#nullable restore
+}

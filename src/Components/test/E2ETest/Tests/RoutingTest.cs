@@ -970,7 +970,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
     public virtual void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
     {
         SetUrlViaPushState("/");
@@ -1591,7 +1590,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void CanNavigateToQueryStringPageWithNoQuery()
+    public virtual void CanNavigateToQueryStringPageWithNoQuery()
     {
         SetUrlViaPushState("/");
 

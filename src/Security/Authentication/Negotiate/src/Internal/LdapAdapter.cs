@@ -41,7 +41,7 @@ internal static partial class LdapAdapter
         var distinguishedName = settings.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
         var retrievedClaims = new List<string>();
 
-        var filter = $"(&(objectClass=user)(sAMAccountName={userAccountName}))"; // This is using ldap search query language, it is looking on the server for someUser
+        var filter = $"(&(objectClass=user)(sAMAccountName={EscapeLdapFilterValue(userAccountName)}))"; // This is using ldap search query language, it is looking on the server for someUser
         var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree);
 
         Debug.Assert(settings.LdapConnection != null);
@@ -102,7 +102,7 @@ internal static partial class LdapAdapter
     {
         retrievedClaims.Add(groupCN);
 
-        var filter = $"(&(objectClass=group)(sAMAccountName={groupCN}))"; // This is using ldap search query language, it is looking on the server for someUser
+        var filter = $"(&(objectClass=group)(sAMAccountName={EscapeLdapFilterValue(groupCN)}))"; // This is using ldap search query language, it is looking on the server for someUser
         var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree);
         var searchResponse = (SearchResponse)connection.SendRequest(searchRequest);
 
@@ -136,5 +136,41 @@ internal static partial class LdapAdapter
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Escapes special characters in a value used in an LDAP search filter per RFC 4515
+    /// https://datatracker.ietf.org/doc/html/rfc4515#section-3
+    /// </summary>
+    // internal for testing
+    internal static string EscapeLdapFilterValue(string value)
+    {
+        var sb = new StringBuilder(value.Length);
+        foreach (var c in value)
+        {
+            switch (c)
+            {
+                case '\\':
+                    sb.Append(@"\5c");
+                    break;
+                case '*':
+                    sb.Append(@"\2a");
+                    break;
+                case '(':
+                    sb.Append(@"\28");
+                    break;
+                case ')':
+                    sb.Append(@"\29");
+                    break;
+                case '\0':
+                    sb.Append(@"\00");
+                    break;
+                default:
+                    sb.Append(c);
+                    break;
+            }
+        }
+
+        return sb.ToString();
     }
 }

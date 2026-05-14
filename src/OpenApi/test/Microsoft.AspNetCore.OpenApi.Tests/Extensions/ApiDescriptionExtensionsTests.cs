@@ -68,6 +68,7 @@ public class ApiDescriptionExtensionsTests
             new object[] { "HEAD", HttpMethod.Head },
             new object[] { "OPTIONS", HttpMethod.Options },
             new object[] { "TRACE", HttpMethod.Trace },
+            new object[] { "QUERY", HttpMethod.Query },
             new object[] { "gEt", HttpMethod.Get }, // Test case-insensitivity
         };
     }
@@ -87,5 +88,21 @@ public class ApiDescriptionExtensionsTests
 
         // Assert
         Assert.Equal(expectedHttpMethod, result);
+    }
+
+    [Fact]
+    public void GetHttpMethod_ReturnsNullForUnsupportedMethod()
+    {
+        // Arrange - Test that unsupported HTTP methods return null
+        var apiDescription = new ApiDescription
+        {
+            HttpMethod = "UNSUPPORTED"
+        };
+
+        // Act
+        var result = apiDescription.GetHttpMethod();
+
+        // Assert
+        Assert.Null(result);
     }
 }
