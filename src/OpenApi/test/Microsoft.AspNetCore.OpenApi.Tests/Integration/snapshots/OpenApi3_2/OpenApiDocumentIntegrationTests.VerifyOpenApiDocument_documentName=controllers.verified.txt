@@ -252,6 +252,25 @@
           }
         }
       }
+    },
+    "/dup-description": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "Use it!\n\nReturns a Todo",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

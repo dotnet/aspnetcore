@@ -73,6 +73,13 @@ public class TestController : ControllerBase
     public IActionResult GetAnyOf()
         => Ok(new MvcTodo("Title", "Description", true));
 
+    [HttpGet]
+    [Route("/dup-description")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, "application/json", Description = "Use it!")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, Description = "Returns a Todo")]
+    public IActionResult GetDuplicateDescription()
+        => Ok(new MvcTodo("Title", "Description", true));
+
     public class HttpQuery() : HttpMethodAttribute(["QUERY"]);
 
     public class HttpFoo() : HttpMethodAttribute(["FOO"]);
