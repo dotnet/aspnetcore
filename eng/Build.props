@@ -45,14 +45,14 @@
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
+                      $(RepoRoot)src\ProjectTemplates\McpServer.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
-                      $(RepoRoot)src\Mvc\perf\**\*.csproj;
-                      $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
+                      $(RepoRoot)src\Mvc\perf\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
 

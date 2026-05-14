@@ -21,7 +21,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private ElementReference _spacerAfter;
 
-    private int _itemsBefore;
+    internal int _itemsBefore;
 
     private int _visibleItemCapacity;
 
@@ -47,6 +47,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private IEnumerable<TItem>? _loadedItems;
 
+    private TItem? _previousFirstLoadedItem;
+
+    private bool _itemComparerExplicitlySet;
+
     private CancellationTokenSource? _refreshCts;
 
     private bool _skipNextDistributionRefresh;
@@ -68,6 +72,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     internal int _measuredItemCount;
 
     internal bool _pendingScrollToBottom;
+
+    private VirtualizeAnchorMode _lastRenderedAnchorMode;
+
+    // When true, OnAfterRenderAsync tells JS to restore the anchor snapshot
+    // so the viewport stays stable after a prepend or append.
+    private bool _pendingAnchorRestore;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -146,6 +156,44 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public int MaxItemCount { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
+    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Beginning"/>.
+    /// </summary>
+    [Parameter]
+    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Beginning;
+
+    /// <summary>
+    /// Gets or sets a comparer used to detect whether items were prepended or appended
+    /// when using <see cref="ItemsProvider"/>. The comparer determines if the first loaded
+    /// item changed between provider calls, which indicates items were inserted above.
+    ///
+    /// Defaults to <see cref="EqualityComparer{T}.Default"/>. For records and types implementing
+    /// <see cref="IEquatable{T}"/>, the default works automatically (value equality). For classes
+    /// without value-equality semantics, provide a comparer that compares by a unique identifier
+    /// (e.g., <c>Id</c>); otherwise reference-equality fallback would produce false-positive
+    /// prepend detection when the provider returns fresh instances.
+    ///
+    /// Prepend detection only runs when this parameter is explicitly assigned by the consumer.
+    /// The <c>BL0011</c> analyzer warns when <see cref="ItemsProvider"/> is used without an
+    /// explicit <see cref="ItemComparer"/> assignment.
+    ///
+    /// For in-memory <see cref="Items"/>, this parameter is not needed because the component
+    /// can detect prepends using object identity.
+    /// </summary>
+    [Parameter]
+    public IEqualityComparer<TItem> ItemComparer
+    {
+        get => _itemComparer;
+        set
+        {
+            _itemComparer = value;
+            _itemComparerExplicitlySet = true;
+        }
+    }
+
+    private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
 
     /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
@@ -227,7 +275,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (firstRender)
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
-            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter);
+            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
+            _lastRenderedAnchorMode = AnchorMode;
         }
 
         if (_pendingScrollToBottom && _jsInterop is not null)
@@ -239,6 +288,22 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // After render the set of items could change. Tell JS to refresh ResizeObserver.
         if (!firstRender && _jsInterop is not null)
         {
+            if (_lastRenderedAnchorMode != AnchorMode)
+            {
+                _lastRenderedAnchorMode = AnchorMode;
+                await _jsInterop.SetAnchorModeAsync((int)AnchorMode);
+            }
+
+            // If a mutation captured an anchor snapshot before render,
+            // restore it now to keep the same row at the same viewport offset.
+            var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom;
+            _pendingAnchorRestore = false;
+
+            if (shouldRestore)
+            {
+                await _jsInterop.RestoreAnchorAsync();
+            }
+
             await _jsInterop.RefreshObserversAsync();
         }
     }
@@ -290,10 +355,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
             builder.OpenRegion(5);
 
+            var isFirstRenderedItem = true;
             foreach (var item in itemsToShow)
             {
                 _itemTemplate(item)(builder);
                 _lastRenderedItemCount++;
+
+                if (isFirstRenderedItem && _itemComparerExplicitlySet && _itemsProvider != DefaultItemsProvider)
+                {
+                    _previousFirstLoadedItem = item;
+                    isFirstRenderedItem = false;
+                }
             }
 
             renderIndex += _lastRenderedItemCount;
@@ -361,6 +433,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
+        if (_pendingAnchorRestore)
+        {
+            return;
+        }
+
         ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity, out var unusedItemCapacity);
@@ -376,6 +453,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
+        if (_pendingAnchorRestore)
+        {
+            return;
+        }
+
         var hadNewMeasurements = ProcessMeasurements(spacerSeparation);
 
         CalculateItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity, out var unusedItemCapacity);
@@ -388,11 +470,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             itemsBefore++;
         }
 
-        // When we're at the very bottom and new measurements arrived,
-        // scroll to bottom so the viewport stays pinned while items converge.
+        // Track whether the viewport is at the bottom of the list.
+        // In End mode, keep scrolling to bottom while measurements converge.
         if (itemsAfter == 0 && hadNewMeasurements)
         {
-            _pendingScrollToBottom = true;
+            if ((AnchorMode & VirtualizeAnchorMode.End) != 0)
+            {
+                _pendingScrollToBottom = true;
+                _pendingAnchorRestore = false;
+            }
         }
 
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
@@ -515,9 +601,67 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             // Only apply result if the task was not canceled.
             if (!cancellationToken.IsCancellationRequested)
             {
+                var previousItemCount = _itemCount;
+                var countDelta = result.TotalItemCount - previousItemCount;
+                var itemsAdded = countDelta > 0 && previousItemCount > 0;
+                var isDefaultProvider = _itemsProvider == DefaultItemsProvider;
+
+                if (itemsAdded && isDefaultProvider && _previousFirstLoadedItem != null)
+                {
+                    var newFirstItem = Items!.ElementAtOrDefault(_itemsBefore);
+                    // Use EqualityComparer<TItem>.Default so this works for value-type TItem;
+                    // ReferenceEquals would always return false due to boxing.
+                    if (newFirstItem != null && !EqualityComparer<TItem>.Default.Equals(_previousFirstLoadedItem, newFirstItem))
+                    {
+                        result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
+                    }
+                    else if (ShouldAnchorForAppend(countDelta, previousItemCount))
+                    {
+                        _pendingAnchorRestore = true;
+                    }
+                    else if (ShouldScrollToBottomForAppend(countDelta, previousItemCount))
+                    {
+                        _pendingScrollToBottom = true;
+                    }
+                }
+                else if (itemsAdded && !isDefaultProvider && _itemComparerExplicitlySet && _previousFirstLoadedItem != null)
+                {
+                    using var enumerator = result.Items.GetEnumerator();
+                    if (enumerator.MoveNext())
+                    {
+                        var itemsShifted = !ItemComparer.Equals(_previousFirstLoadedItem, enumerator.Current);
+
+                        if (itemsShifted)
+                        {
+                            result = await AdjustForPrependAsync(countDelta, result.TotalItemCount, cancellationToken);
+                        }
+                        else if (ShouldAnchorForAppend(countDelta, previousItemCount))
+                        {
+                            _pendingAnchorRestore = true;
+                        }
+                        else if (ShouldScrollToBottomForAppend(countDelta, previousItemCount))
+                        {
+                            _pendingScrollToBottom = true;
+                        }
+                    }
+                }
+
                 _itemCount = result.TotalItemCount;
                 _loadedItems = result.Items;
-                _loadedItemsStartIndex = request.StartIndex;
+                _loadedItemsStartIndex = _itemsBefore;
+
+                // For DefaultItemsProvider, capture the first loaded item so we can detect
+                // prepends via EqualityComparer<TItem>.Default (works for both reference and
+                // value types — see comment on the comparison above).
+                // For custom providers, _previousFirstLoadedItem is set during BuildRenderTree
+                // (using the actual rendered item for ItemComparer).
+                if (_itemsProvider == DefaultItemsProvider)
+                {
+                    _previousFirstLoadedItem = Items != null && _itemsBefore < Items.Count
+                        ? Items.ElementAtOrDefault(_itemsBefore)
+                        : default;
+                }
+
                 _loading = false;
                 _skipNextDistributionRefresh = request.Count > 0;
 
@@ -557,6 +701,29 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;");
         builder.CloseElement();
     };
+
+    private async ValueTask<ItemsProviderResult<TItem>> AdjustForPrependAsync(
+        int countDelta, int newTotalCount, CancellationToken cancellationToken)
+    {
+        _itemsBefore = Math.Min(_itemsBefore + countDelta, Math.Max(0, newTotalCount - _visibleItemCapacity));
+        _pendingAnchorRestore = true;
+
+        var adjustedRequest = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+        return await _itemsProvider(adjustedRequest);
+    }
+
+    // Items appended at the bottom while viewport is near the end.
+    // In non-End modes, restore the anchor so the viewport doesn't
+    // chase the new items via spacer redistribution.
+    private bool ShouldAnchorForAppend(int countDelta, int previousItemCount)
+        => countDelta > 0
+            && (AnchorMode & VirtualizeAnchorMode.End) == 0
+            && _itemsBefore + _visibleItemCapacity >= previousItemCount;
+
+    private bool ShouldScrollToBottomForAppend(int countDelta, int previousItemCount)
+        => countDelta > 0
+            && (AnchorMode & VirtualizeAnchorMode.End) != 0
+            && previousItemCount <= _visibleItemCapacity;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

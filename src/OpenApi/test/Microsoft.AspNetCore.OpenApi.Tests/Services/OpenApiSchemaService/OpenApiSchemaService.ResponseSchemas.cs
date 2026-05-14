@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
@@ -1049,6 +1050,75 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/octet-stream", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.String, schema.Type);
+            Assert.Equal("binary", schema.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileStreamResultTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/filestreamresult", () => { return new FileStreamResult(new MemoryStream(), MediaTypeNames.Application.Octet); })
+            .Produces<FileStreamResult>(contentType: MediaTypeNames.Application.Octet);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/filestreamresult"].Operations[HttpMethod.Post];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/octet-stream", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.String, schema.Type);
+            Assert.Equal("binary", schema.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileContentHttpResultTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/filecontenthttpresult", () => { return TypedResults.File([], MediaTypeNames.Image.Png); })
+            .Produces<FileContentHttpResult>(contentType: MediaTypeNames.Image.Png);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/filecontenthttpresult"].Operations[HttpMethod.Post];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("image/png", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.String, schema.Type);
+            Assert.Equal("binary", schema.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileStreamHttpResultTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/filestreamhttpresult", () => { return TypedResults.File(new MemoryStream(), MediaTypeNames.Application.Pdf); })
+            .Produces<FileStreamHttpResult>(contentType: MediaTypeNames.Application.Pdf);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/filestreamhttpresult"].Operations[HttpMethod.Post];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/pdf", out var mediaType));
             var schema = mediaType.Schema;
             Assert.Equal(JsonSchemaType.String, schema.Type);
             Assert.Equal("binary", schema.Format);

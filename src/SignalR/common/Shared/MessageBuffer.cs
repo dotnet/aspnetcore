@@ -33,6 +33,7 @@ internal sealed class MessageBuffer : IDisposable
 
 #if NET8_0_OR_GREATER
     private readonly PeriodicTimer _timer;
+    private readonly TimeProvider _timeProvider;
 #else
     private readonly TimerAwaitable _timer = new(AckRate, AckRate);
 #endif
@@ -68,8 +69,8 @@ internal sealed class MessageBuffer : IDisposable
     public MessageBuffer(ConnectionContext connection, IHubProtocol protocol, long bufferLimit, ILogger logger, TimeProvider timeProvider)
     {
 #if NET8_0_OR_GREATER
-        timeProvider ??= TimeProvider.System;
-        _timer = new(AckRate, timeProvider);
+        _timeProvider = timeProvider;
+        _timer = new(AckRate, _timeProvider);
 #endif
 
         _buffer = new LinkedBuffer();
@@ -132,14 +133,17 @@ internal sealed class MessageBuffer : IDisposable
 
     private async ValueTask<FlushResult> WriteAsyncCore(Type hubMessageType, ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
     {
-        // If backpressure is being observed a cancelable token is needed to make sure we can break out of waiting when the connection is closed
-        Debug.Assert(cancellationToken.CanBeCanceled);
-
         // TODO: Add backpressure based on message count
         if (_bufferedByteCount > _bufferLimit)
         {
+#if NET
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5), _timeProvider);
+#else
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+#endif
+            using var _ = CancellationTokenUtils.CreateLinkedToken(cts.Token, cancellationToken, out var linkedToken);
             // primitive backpressure if buffer is full
-            while (await _waitForAck.Reader.WaitToReadAsync(cancellationToken).ConfigureAwait(false))
+            while (await _waitForAck.Reader.WaitToReadAsync(linkedToken).ConfigureAwait(false))
             {
                 if (_waitForAck.Reader.TryRead(out var count) && count < _bufferLimit)
                 {
