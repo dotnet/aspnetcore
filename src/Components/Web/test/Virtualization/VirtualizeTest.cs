@@ -985,13 +985,13 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
-        // Spacer elements use data-blazor-spacer-style instead of inline style attributes
-        // for CSP compliance. A MutationObserver on the JS side applies them via CSSOM.
+        // Spacer elements use data-blazor-style alongside the inline style attribute.
+        // A MutationObserver on the JS side reads data-blazor-style and applies via CSSOM.
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
         var dataStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
-                     && f.AttributeName == "data-blazor-spacer-style")
+                     && f.AttributeName == "data-blazor-style")
             .ToList();
 
         // Both spacerBefore and spacerAfter should have the data attribute
@@ -1029,19 +1029,14 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
-        // Spacer elements must NOT have inline style attributes (CSP compliance).
-        // Styles are applied via MutationObserver + CSSOM on the JS side.
+        // Spacers must NOT have inline style attributes — only data-blazor-style.
+        // JS applies styles via CSSOM which is not blocked by CSP.
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
-        var styleAttributes = referenceFrames
+        var spacerStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
-                     && f.AttributeName == "style")
-            .ToList();
-
-        // No spacer should have a "style" attribute — only "data-blazor-spacer-style"
-        // The only style attribute in the output may come from the placeholder items, not spacers.
-        var spacerStyleAttributes = styleAttributes
-            .Where(f => ((string)f.AttributeValue).Contains("flex-shrink: 0"))
+                     && f.AttributeName == "style"
+                     && ((string)f.AttributeValue).Contains("flex-shrink: 0"))
             .ToList();
 
         Assert.Empty(spacerStyleAttributes);

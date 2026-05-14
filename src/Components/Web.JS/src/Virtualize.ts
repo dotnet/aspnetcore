@@ -70,6 +70,28 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     spacerAfter.style.display = 'table-row';
   }
 
+  // Applies the style from a data attribute value using individual CSSOM setProperty calls
+  // (CSP-compliant). Unlike cssText assignment, setProperty() does not wipe other
+  // properties such as overflowAnchor or display that were set above.
+  function applyStyleViaCssom(el: HTMLElement, styleValue: string): void {
+    if (!styleValue) {
+      return;
+    }
+    for (const declaration of styleValue.split(';')) {
+      const colon = declaration.indexOf(':');
+      if (colon < 0) continue;
+      const prop = declaration.substring(0, colon).trim();
+      const value = declaration.substring(colon + 1).trim();
+      if (prop && value) {
+        el.style.setProperty(prop, value);
+      }
+    }
+  }
+
+  // Apply initial spacer styles via CSSOM so they work even under strict CSP.
+  applyStyleViaCssom(spacerBefore, spacerBefore.getAttribute('data-blazor-style') || '');
+  applyStyleViaCssom(spacerAfter, spacerAfter.getAttribute('data-blazor-style') || '');
+
   if (useNativeAnchoring) {
     // Prevent spacers from being used as scroll anchors — only rendered items should anchor.
     spacerBefore.style.overflowAnchor = 'none';
@@ -79,46 +101,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement.style.overflowAnchor = 'none';
   }
 
-  // Apply spacer styles from data attributes via CSSOM (CSP-compliant).
-  function applySpacerStylesFromAttributes(el: HTMLElement): void {
-    const style = el.getAttribute('data-blazor-spacer-style');
-    if (style) {
-      el.style.cssText = style;
-    }
-  }
-
-  // Apply initial styles from data attributes already present in the DOM.
-  applySpacerStylesFromAttributes(spacerBefore);
-  applySpacerStylesFromAttributes(spacerAfter);
-  for (const el of Array.from(spacerBefore.parentElement!.querySelectorAll<HTMLElement>('[data-blazor-spacer-style]'))) {
-    applySpacerStylesFromAttributes(el);
-  }
-
   const mutationObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      if (mutation.type === 'attributes') {
-        applySpacerStylesFromAttributes(mutation.target as HTMLElement);
-      } else if (mutation.type === 'childList') {
-        for (const node of Array.from(mutation.addedNodes)) {
-          if (node instanceof HTMLElement) {
-            if (node.hasAttribute('data-blazor-spacer-style')) {
-              applySpacerStylesFromAttributes(node);
-            }
-            for (const child of Array.from(node.querySelectorAll<HTMLElement>('[data-blazor-spacer-style]'))) {
-              applySpacerStylesFromAttributes(child);
-            }
-          }
-        }
-      }
+      const el = mutation.target as HTMLElement;
+      applyStyleViaCssom(el, el.getAttribute('data-blazor-style') || '');
     }
   });
-  mutationObserver.observe(spacerBefore.parentElement!, {
-    subtree: true,
-    childList: true,
-    attributes: true,
-    attributeFilter: ['data-blazor-spacer-style'],
-  });
-
+  mutationObserver.observe(spacerBefore, { attributes: true, attributeFilter: ['data-blazor-style'] });
+  mutationObserver.observe(spacerAfter, { attributes: true, attributeFilter: ['data-blazor-style'] });
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
@@ -234,6 +224,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (useNativeAnchoring) {
       spacerBefore.style.overflowAnchor = 'none';
       spacerAfter.style.overflowAnchor = 'none';
+    }
+
+    // Apply CSSOM styles to any placeholder elements between spacers that use data-blazor-style.
+    for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
+      const htmlEl = el as HTMLElement;
+      if (htmlEl.hasAttribute('data-blazor-style')) {
+        applyStyleViaCssom(htmlEl, htmlEl.getAttribute('data-blazor-style') || '');
+      }
     }
 
     // Ensure spacers are always observed (idempotent).

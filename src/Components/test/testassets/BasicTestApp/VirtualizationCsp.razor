@@ -1,0 +1,15 @@
+@*
+    Test component for CSP compliance of Virtualize.
+    Verifies that spacer elements receive their styles via CSSOM (data-blazor-style)
+    rather than inline style attributes.
+*@
+
+<div id="csp-container" style="background-color: #eee; height: 500px; overflow-y: auto">
+    <Virtualize Items="@fixedItems" ItemSize="50" OverscanCount="3">
+        <div @key="context" class="csp-item" style="height: 50px;">Item @context</div>
+    </Virtualize>
+</div>
+
+@code {
+    private List<int> fixedItems = Enumerable.Range(0, 1000).ToList();
+}

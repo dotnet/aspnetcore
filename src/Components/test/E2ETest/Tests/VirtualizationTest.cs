@@ -3941,4 +3941,42 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         return (Dictionary<string, object>)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(script);
     }
+
+    [Fact]
+    public void SpacersUseCssomInsteadOfInlineStyleAttribute()
+    {
+        Browser.MountTestComponent<VirtualizationCsp>();
+        var container = Browser.Exists(By.Id("csp-container"));
+
+        // Wait until items have been rendered.
+        Browser.True(() => container.FindElements(By.CssSelector(".csp-item")).Count > 0);
+
+        // Get spacer elements (first and last div children of the container).
+        var spacers = container.FindElements(By.CssSelector(":scope > div"));
+        var topSpacer = spacers[0];
+
+        // The spacer should NOT have a "style" HTML attribute rendered by the server.
+        // Instead, styles are applied via CSSOM from the data-blazor-style attribute.
+        var dataBlazorStyle = topSpacer.GetDomAttribute("data-blazor-style");
+        Assert.NotNull(dataBlazorStyle);
+        Assert.Contains("height:", dataBlazorStyle);
+        Assert.Contains("flex-shrink: 0", dataBlazorStyle);
+
+        // The style attribute should be present (set by CSSOM setProperty),
+        // proving JS applied the styles programmatically.
+        var computedStyle = topSpacer.GetDomAttribute("style");
+        Assert.Contains("height:", computedStyle);
+        Assert.Contains("flex-shrink: 0", computedStyle);
+
+        // Scroll down and verify spacer style updates via CSSOM.
+        Browser.ExecuteJavaScript(
+            "document.getElementById('csp-container').scrollTop = 5000;");
+
+        // After scrolling, top spacer's data-blazor-style should have a non-zero height.
+        Browser.True(() =>
+        {
+            var style = topSpacer.GetDomAttribute("data-blazor-style");
+            return style != null && !style.Contains("height: 0px");
+        });
+    }
 }

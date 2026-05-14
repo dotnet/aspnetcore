@@ -25,15 +25,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/virtualize-csp"))
-    {
-        context.Response.Headers["Content-Security-Policy"] = "style-src 'self';";
-    }
-    await next();
-});
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 
