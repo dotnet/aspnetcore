@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Infrastructure;
 
@@ -24,22 +23,25 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
     public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder)
-        => AddInteractiveWebAssemblyComponents(builder, persistCultureFromServer: true);
+        => AddInteractiveWebAssemblyComponents(builder, configure: null);
 
     /// <summary>
     /// Adds services to support rendering interactive WebAssembly components.
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
-    /// <param name="persistCultureFromServer">If set to <c>true</c>, the culture from the server is persisted and restored on the client.</param>
+    /// <param name="configure">A callback to configure <see cref="WebAssemblyComponentsOptions"/>.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder, bool persistCultureFromServer)
+    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder, Action<WebAssemblyComponentsOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+
+        var options = new WebAssemblyComponentsOptions();
+        configure?.Invoke(options);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
         builder.Services.TryAddScoped<LazyAssemblyLoader>();
 
-        if (persistCultureFromServer)
+        if (options.UseCultureFromServer)
         {
             builder.Services.TryAddScoped(_ =>
             {

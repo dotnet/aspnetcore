@@ -95,7 +95,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         else
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(persistCultureFromServer: false);
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(options =>
+            {
+                options.UseCultureFromServer = false;
+            });
         }
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
@@ -173,8 +176,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.UseRequestLocalization(options =>
             {
-                options.AddSupportedCultures("en-US", "fr-FR");
-                options.AddSupportedUICultures("en-US", "fr-FR");
+                options.AddSupportedCultures("en-US", "fr-FR", "es-ES");
+                options.AddSupportedUICultures("en-US", "fr-FR", "es-ES");
                 options.RequestCultureProviders.Clear();
                 options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
                 options.SetDefaultCulture("en-US");
