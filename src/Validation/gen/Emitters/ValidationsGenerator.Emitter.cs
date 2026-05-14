@@ -218,7 +218,7 @@ namespace Microsoft.Extensions.Validation.Generated
         var sb = new StringBuilder(firstAttribute);
         for (var i = 1; i < addValidations.Length; i++)
         {
-            sb.AppendLine().Append("    ").Append(addValidations[i].GetInterceptsLocationAttributeSyntax());
+            sb.AppendLine().Append("        ").Append(addValidations[i].GetInterceptsLocationAttributeSyntax());
         }
 
         return sb.ToString();
