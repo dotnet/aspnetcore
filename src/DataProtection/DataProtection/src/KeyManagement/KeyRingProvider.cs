@@ -360,7 +360,42 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             existingTask = _cacheableKeyRingTask;
             if (existingTask is null)
             {
-                // If there's no existing task, make one now
+                // The forceRefresh path skipped reading _cacheableKeyRing above; read it now
+                // (without disturbing existingCacheableKeyRing, which controls the stale-ring
+                // early-return below and must stay null for forceRefresh callers) so we can
+                // tell a true cold start from a stale-cache refresh.
+                var cachedSnapshot = existingCacheableKeyRing ?? Volatile.Read(ref _cacheableKeyRing);
+
+                if (cachedSnapshot is null)
+                {
+                    // Cold start: run the refresh inline on this thread. Scheduling the work
+                    // onto TaskScheduler.Default would risk thread-pool starvation - if all
+                    // available pool threads are blocked waiting on the result, the queued
+                    // work item can't be picked up and the app hangs until the runtime
+                    // injects more threads. See https://github.com/dotnet/aspnetcore/issues/66380.
+                    //
+                    // Other concurrent callers are parked on _cacheableKeyRingLockObj while we
+                    // run; once we publish _cacheableKeyRing and release the lock, they wake up,
+                    // re-check the cache (or read it via the forceRefresh fallback below), and
+                    // return the freshly populated ring.
+                    // This matches the pre-$54675 behavior (https://github.com/dotnet/aspnetcore/pull/54675).
+                    CacheableKeyRing newCacheableKeyRing;
+                    try
+                    {
+                        newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.ErrorOccurredWhileReadingKeyRing(ex);
+                        throw;
+                    }
+
+                    Volatile.Write(ref _cacheableKeyRing, newCacheableKeyRing);
+                    return newCacheableKeyRing.KeyRing;
+                }
+
+                // Stale ring exists: dispatch the refresh asynchronously and let every other
+                // caller return the stale ring without waiting. This is the perf win from #54675.
                 // PERF: Closing over utcNow substantially slows down the fast case (valid cache) in micro-benchmarks
                 // (closing over `this` for CacheableKeyRingProvider doesn't seem impactful)
                 existingTask = Task.Factory.StartNew(
