@@ -128,7 +128,9 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
-Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if it meets **either** of the following cases:
+**IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
+
+A test is a candidate for quarantining if it meets **either** of the following cases:
 
 **Case A – New quarantine**
 
