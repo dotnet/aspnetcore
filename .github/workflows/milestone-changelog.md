@@ -42,7 +42,7 @@ env:
   MILESTONE_START: "2026-04-29"
   MILESTONE: "11.0-preview5"
   PREVIOUS_MILESTONE: "11.0-preview4"
-  RELEASE_NOTES_URL: "https://learn.microsoft.com/aspnet/core/release-notes/aspnetcore-11.0"
+  RELEASE_NOTES_URL: "https://learn.microsoft.com/aspnet/core/release-notes/aspnetcore-11"
   BATCH_SIZE: "20"
 
 on:
@@ -461,7 +461,7 @@ Each run appends newly merged changes to the existing content while preserving
 previous entries. A companion feedback issue collects editorial comments.
 
 > **Note:** `${PRODUCT}`, `${REPO}`, `${DOCS_REPO}`, `${MILESTONE_START}`, `${MILESTONE}`, `${PREVIOUS_MILESTONE}`, `${RELEASE_NOTES_URL}`, and `${BATCH_SIZE}` refer to values set in the workflow's
-> `env` block (currently **`Aspire`**, **`microsoft/aspire`**, **`microsoft/aspire.dev`**, **`2026-05-08`**, **`13.4`**, **`13.3`**, **`https://aka.ms/aspire/update-latest`**, and **`20`**). All file names,
+> `env` block (currently **`ASP.NET Core`**, **`dotnet/aspnetcore`**, **`dotnet/AspNetCore.Docs`**, **`2026-04-29`**, **`11.0-preview5`**, **`11.0-preview4`**, **`https://learn.microsoft.com/aspnet/core/release-notes/aspnetcore-11`**, and **`20`**). All file names,
 > titles, and references below derive from those values.
 
 ## Important: available tools
