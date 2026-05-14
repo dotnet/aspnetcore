@@ -2,10 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.OpenApi.Extensions;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -36,12 +39,13 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 // See OpenApiServiceCollectionExtensions.cs for more info.
                 var lowercasedDocumentName = documentName.ToLowerInvariant();
 
+                var documentNames = context.RequestServices.GetRequiredService<IDocumentProvider>().GetDocumentNames();
+
                 // It would be ideal to use the `HttpResponseStreamWriter` to
                 // asynchronously write to the response stream here but Microsoft.OpenApi
                 // does not yet support async APIs on their writers.
                 // See https://github.com/microsoft/OpenAPI.NET/issues/421 for more info.
-                var documentService = context.RequestServices.GetKeyedService<OpenApiDocumentService>(lowercasedDocumentName);
-                if (documentService is null)
+                if (!documentNames.Contains(lowercasedDocumentName))
                 {
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
                     context.Response.ContentType = "text/plain;charset=utf-8";
@@ -49,6 +53,8 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 }
                 else
                 {
+                    var documentService = context.RequestServices.GetRequiredKeyedService<OpenApiDocumentService>(lowercasedDocumentName);
+
                     var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.Request, context.RequestAborted);
                     var documentOptions = options.Get(lowercasedDocumentName);
 

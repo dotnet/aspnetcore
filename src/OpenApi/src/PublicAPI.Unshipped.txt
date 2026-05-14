@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.OpenApi.Extensions.IOpenApiDocumentNamesOverrideProvider
+Microsoft.AspNetCore.OpenApi.Extensions.IOpenApiDocumentNamesOverrideProvider.DocumentNames.get -> System.Collections.Generic.IEnumerable<string!>!

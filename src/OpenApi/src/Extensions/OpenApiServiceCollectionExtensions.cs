@@ -109,9 +109,10 @@ public static class OpenApiServiceCollectionExtensions
     private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string documentName)
     {
         services.AddEndpointsApiExplorer();
-        services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
-        services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
-        services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(documentName);
+        services.AddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
+        services.AddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
+        services.AddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);
+        services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
 
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();

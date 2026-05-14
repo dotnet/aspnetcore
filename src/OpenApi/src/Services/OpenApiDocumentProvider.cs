@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.AspNetCore.OpenApi.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Linq;
@@ -59,6 +60,11 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
     /// </summary>
     public IEnumerable<string> GetDocumentNames()
     {
+        if (serviceProvider.GetService<IOpenApiDocumentNamesOverrideProvider>() is { } documentNamesOverride)
+        {
+            return documentNamesOverride.DocumentNames;
+        }
+
         // Keyed services lack an API to resolve all registered keys.
         // We use the service provider to resolve an internal type.
         // This type tracks registered document names.
