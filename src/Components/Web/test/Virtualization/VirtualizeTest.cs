@@ -963,4 +963,87 @@ public class VirtualizeTest
             $"In-memory append on value-type TItem must not trigger prepend detection (shift by countDelta). " +
             $"Before: {itemsBeforeAfterInit}, After: {renderedVirtualize._itemsBefore}, Shift: {shift}");
     }
+
+    [Fact]
+    public async Task Virtualize_SpacersRenderDataAttributesForCspCompliance()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        // Spacer elements use data-blazor-spacer-style instead of inline style attributes
+        // for CSP compliance. A MutationObserver on the JS side applies them via CSSOM.
+        var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
+
+        var dataStyleAttributes = referenceFrames
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute
+                     && f.AttributeName == "data-blazor-spacer-style")
+            .ToList();
+
+        // Both spacerBefore and spacerAfter should have the data attribute
+        Assert.Equal(2, dataStyleAttributes.Count);
+
+        // spacerBefore style: _itemsBefore is 0 initially, so height = 0px
+        var beforeStyle = (string)dataStyleAttributes[0].AttributeValue;
+        Assert.Contains("height: 0px", beforeStyle);
+        Assert.Contains("flex-shrink: 0", beforeStyle);
+
+        // spacerAfter style: should contain a height value
+        var afterStyle = (string)dataStyleAttributes[1].AttributeValue;
+        Assert.Contains("height:", afterStyle);
+        Assert.Contains("flex-shrink: 0", afterStyle);
+    }
+
+    [Fact]
+    public async Task Virtualize_SpacersDoNotRenderInlineStyleAttributes()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        // Spacer elements must NOT have inline style attributes (CSP compliance).
+        // Styles are applied via MutationObserver + CSSOM on the JS side.
+        var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
+
+        var styleAttributes = referenceFrames
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute
+                     && f.AttributeName == "style")
+            .ToList();
+
+        // No spacer should have a "style" attribute — only "data-blazor-spacer-style"
+        // The only style attribute in the output may come from the placeholder items, not spacers.
+        var spacerStyleAttributes = styleAttributes
+            .Where(f => ((string)f.AttributeValue).Contains("flex-shrink: 0"))
+            .ToList();
+
+        Assert.Empty(spacerStyleAttributes);
+    }
 }

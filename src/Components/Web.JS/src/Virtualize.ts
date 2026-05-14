@@ -79,6 +79,47 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement.style.overflowAnchor = 'none';
   }
 
+  // Apply spacer styles from data attributes via CSSOM (CSP-compliant).
+  function applySpacerStylesFromAttributes(el: HTMLElement): void {
+    const style = el.getAttribute('data-blazor-spacer-style');
+    if (style) {
+      el.style.cssText = style;
+    }
+  }
+
+  // Apply initial styles from data attributes already present in the DOM.
+  applySpacerStylesFromAttributes(spacerBefore);
+  applySpacerStylesFromAttributes(spacerAfter);
+  for (const el of Array.from(spacerBefore.parentElement!.querySelectorAll<HTMLElement>('[data-blazor-spacer-style]'))) {
+    applySpacerStylesFromAttributes(el);
+  }
+
+  const mutationObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.type === 'attributes') {
+        applySpacerStylesFromAttributes(mutation.target as HTMLElement);
+      } else if (mutation.type === 'childList') {
+        for (const node of Array.from(mutation.addedNodes)) {
+          if (node instanceof HTMLElement) {
+            if (node.hasAttribute('data-blazor-spacer-style')) {
+              applySpacerStylesFromAttributes(node);
+            }
+            for (const child of Array.from(node.querySelectorAll<HTMLElement>('[data-blazor-spacer-style]'))) {
+              applySpacerStylesFromAttributes(child);
+            }
+          }
+        }
+      }
+    }
+  });
+  mutationObserver.observe(spacerBefore.parentElement!, {
+    subtree: true,
+    childList: true,
+    attributes: true,
+    attributeFilter: ['data-blazor-spacer-style'],
+  });
+
+
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
     rootMargin: `${rootMargin}px`,
@@ -185,7 +226,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(): void {
-    // C# style updates overwrite the entire style attribute. Re-apply what we need.
     if (isTable) {
       spacerBefore.style.display = 'table-row';
       spacerAfter.style.display = 'table-row';
@@ -438,6 +478,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     restoreAnchor: restoreAnchorForShift,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
+      mutationObserver.disconnect();
       stopConvergenceObserving();
       anchoredItems.clear();
       resizeObserver.disconnect();

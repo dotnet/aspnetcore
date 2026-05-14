@@ -320,7 +320,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         builder.OpenElement(0, SpacerElement);
-        builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
+        builder.AddAttribute(1, "data-blazor-spacer-style", GetSpacerStyle(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
         builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
@@ -389,7 +389,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(7, SpacerElement);
         builder.AddAttribute(8, "aria-hidden", "true");
-        builder.AddAttribute(9, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
+        builder.AddAttribute(9, "data-blazor-spacer-style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
         builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
@@ -698,7 +698,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;");
+        builder.AddAttribute(1, "data-blazor-spacer-style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;");
         builder.CloseElement();
     };
 
