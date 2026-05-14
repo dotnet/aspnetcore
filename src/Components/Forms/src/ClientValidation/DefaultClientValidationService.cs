@@ -159,8 +159,7 @@ internal sealed class DefaultClientValidationService : IClientValidationService
                 // Check for custom adapter on the attribute
                 if (validationAttribute is IClientValidationAdapter adapter)
                 {
-                    var rule = adapter.GetClientValidationRule(errorMessage);
-                    if (rule is not null)
+                    foreach (var rule in adapter.GetClientValidationRules(errorMessage))
                     {
                         EmitRule(htmlAttributes, rule);
                     }
@@ -172,13 +171,28 @@ internal sealed class DefaultClientValidationService : IClientValidationService
     /// <summary>
     /// Serializes a <see cref="ClientValidationRule"/> into the flat <c>data-val-*</c> dictionary
     /// used during rendering. Uses <c>TryAdd</c> (first-wins) so existing entries are preserved.
+    /// Non-string parameter values are formatted with invariant culture; <see langword="null"/>
+    /// values are skipped.
     /// </summary>
     private static void EmitRule(Dictionary<string, object> htmlAttributes, ClientValidationRule rule)
     {
         htmlAttributes.TryAdd($"data-val-{rule.Name}", rule.ErrorMessage);
         foreach (var (paramName, paramValue) in rule.Parameters)
         {
-            htmlAttributes.TryAdd($"data-val-{rule.Name}-{paramName}", paramValue);
+            if (paramValue is null)
+            {
+                continue;
+            }
+
+            var formatted = paramValue switch
+            {
+                string s => s,
+                bool b => b ? "true" : "false",
+                IFormattable f => f.ToString(format: null, CultureInfo.InvariantCulture),
+                _ => paramValue.ToString() ?? string.Empty,
+            };
+
+            htmlAttributes.TryAdd($"data-val-{rule.Name}-{paramName}", formatted);
         }
     }
 

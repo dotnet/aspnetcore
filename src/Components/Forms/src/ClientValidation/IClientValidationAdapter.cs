@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 public interface IClientValidationAdapter
 {
     /// <summary>
-    /// Produces a client-side validation rule for this attribute, or <see langword="null"/>
-    /// if the attribute should not emit any client-side rule.
+    /// Produces the client-side validation rules for this attribute.
+    /// Return an empty sequence if the attribute should not emit any client-side rule.
     /// </summary>
     /// <param name="errorMessage">
     /// The pre-formatted (optionally localized) error message.
     /// </param>
-    ClientValidationRule? GetClientValidationRule(string errorMessage);
+    IEnumerable<ClientValidationRule> GetClientValidationRules(string errorMessage);
 }
 

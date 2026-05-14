@@ -221,9 +221,8 @@ public class DefaultClientValidationServiceTest
 
     private class CustomValidationAttribute : ValidationAttribute, IClientValidationAdapter
     {
-        public ClientValidationRule? GetClientValidationRule(string errorMessage)
-            => new ClientValidationRule("custom", errorMessage)
-                .WithParameter("param", "custom-value");
+        public IEnumerable<ClientValidationRule> GetClientValidationRules(string errorMessage)
+            => [new ClientValidationRule("custom", errorMessage).WithParameter("param", "custom-value")];
     }
 
     // Nested model tests

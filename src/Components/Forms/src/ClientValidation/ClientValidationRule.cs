@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 /// </summary>
 public sealed class ClientValidationRule
 {
-    private static readonly IReadOnlyDictionary<string, string> EmptyParameters = ReadOnlyDictionary<string, string>.Empty;
+    private static readonly IReadOnlyDictionary<string, object?> EmptyParameters = ReadOnlyDictionary<string, object?>.Empty;
 
-    private Dictionary<string, string>? _parameters;
+    private Dictionary<string, object?>? _parameters;
 
     /// <summary>
     /// Creates a new rule with the specified name and error message.
@@ -46,18 +46,22 @@ public sealed class ClientValidationRule
     /// <summary>
     /// Gets the parameters associated with this rule, keyed by parameter name.
     /// </summary>
-    public IReadOnlyDictionary<string, string> Parameters => _parameters ?? EmptyParameters;
+    public IReadOnlyDictionary<string, object?> Parameters => _parameters ?? EmptyParameters;
 
     /// <summary>
-    /// Adds or replaces a string parameter on the rule.
+    /// Adds or replaces a parameter on the rule.
     /// </summary>
+    /// <param name="name">The parameter name. Must be non-empty.</param>
+    /// <param name="value">
+    /// The parameter value. Must be JSON-primitive-shaped (string, bool, numeric primitives,
+    /// or <see langword="null"/>).
+    /// </param>
     /// <returns>The same rule, to allow fluent chaining.</returns>
-    public ClientValidationRule WithParameter(string name, string value)
+    public ClientValidationRule WithParameter(string name, object? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(name);
-        ArgumentNullException.ThrowIfNull(value);
 
-        (_parameters ??= new Dictionary<string, string>(StringComparer.Ordinal))[name] = value;
+        (_parameters ??= new Dictionary<string, object?>(StringComparer.Ordinal))[name] = value;
         return this;
     }
 }
