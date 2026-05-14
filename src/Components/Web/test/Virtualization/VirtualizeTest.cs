@@ -985,7 +985,7 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
-        // Spacer elements use data-blazor-style alongside the inline style attribute.
+        // Spacer elements use data-blazor-style instead of inline style attributes.
         // A MutationObserver on the JS side reads data-blazor-style and applies via CSSOM.
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
