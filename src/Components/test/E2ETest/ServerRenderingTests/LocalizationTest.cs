@@ -39,7 +39,7 @@ public class LocalizationTest : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
         Browser.Equal("es-ES", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
 
-        Browser.Exists(By.Id("start-blazor")).Click();
+        Browser.Click(By.Id("start-blazor"));
 
         Browser.Equal("Interactive", () => Browser.FindElement(By.Id("interactive")).Text);
         Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
