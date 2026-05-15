@@ -1,0 +1,40 @@
+@page "/forms/client-validation/radio-group"
+
+<h2 id="page-title">Radio group validation</h2>
+
+<style>
+    .input-validation-error { border-color: red; }
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+</style>
+
+<form id="test-form" method="post">
+    <fieldset>
+        <legend>Color (required)</legend>
+        <label>
+            <input id="color-red" type="radio" name="Color" value="red"
+                   data-val="true"
+                   data-val-required="Please select a color." />
+            Red
+        </label>
+        <label>
+            <input id="color-green" type="radio" name="Color" value="green"
+                   data-val="true"
+                   data-val-required="Please select a color." />
+            Green
+        </label>
+        <label>
+            <input id="color-blue" type="radio" name="Color" value="blue"
+                   data-val="true"
+                   data-val-required="Please select a color." />
+            Blue
+        </label>
+        <div class="validation-message" data-valmsg-for="Color" data-valmsg-replace="true"></div>
+    </fieldset>
+
+    <input id="anchor" name="Anchor" type="text"
+           data-val="true"
+           data-val-required="Required." />
+
+    <button type="submit" id="submit">Submit</button>
+</form>
