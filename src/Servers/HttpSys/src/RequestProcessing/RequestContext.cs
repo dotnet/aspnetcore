@@ -368,6 +368,22 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         throw new HttpSysException((int)statusCode);
     }
 
+    internal ValueTask<HttpSysRequestPropertyResult> TryGetRequestPropertyCoreAsync(
+        HTTP_REQUEST_PROPERTY propertyId,
+        ReadOnlySpan<byte> qualifier,
+        Memory<byte> output,
+        CancellationToken cancellationToken)
+    {
+        if (!HttpApi.HttpGetRequestPropertySupported)
+        {
+            return ValueTask.FromException<HttpSysRequestPropertyResult>(
+                new InvalidOperationException("Windows HTTP Server API does not support HttpQueryRequestProperty."));
+        }
+
+        var asyncContext = new RequestPropertyQueryAsyncContext(this);
+        return asyncContext.StartAsync(propertyId, qualifier, output, cancellationToken);
+    }
+
     internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         if (!HttpApi.HttpGetRequestPropertySupported)

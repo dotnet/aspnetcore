@@ -349,6 +349,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </param>
         /// <returns>True on success; false when <paramref name="output"/> is too small.</returns>
         bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned);
+
+        /// <summary>
+        /// Asynchronously reads an arbitrary HTTP_REQUEST_PROPERTY value from HTTP.SYS via HttpQueryRequestProperty.
+        /// Returns synchronously when the underlying OS call completes synchronously (the common case).
+        /// </summary>
+        ValueTask<HttpSysRequestPropertyResult> TryGetRequestPropertyAsync(
+            int propertyId,
+            ReadOnlySpan<byte> qualifier,
+            Memory<byte> output,
+            CancellationToken cancellationToken = default);
+    }
+
+    /// <summary>
+    /// Result of an asynchronous HttpQueryRequestProperty call.
+    /// </summary>
+    public readonly struct HttpSysRequestPropertyResult
+    {
+        /// <summary>True on success; false if the output buffer was too small.</summary>
+        public bool Succeeded { get; init; }
+
+        /// <summary>Bytes written, or required buffer size when <see cref="Succeeded"/> is false.</summary>
+        public int BytesReturned { get; init; }
     }
 
     /// <summary>

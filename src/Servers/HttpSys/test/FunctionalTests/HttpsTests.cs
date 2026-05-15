@@ -263,6 +263,143 @@ public class HttpsTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetRequestProperty_TlsCipherInfo_RoundTrips()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var feature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(feature);
+
+                // TlsCipherInfo is available on any HTTPS request without per-binding configuration,
+                // unlike TlsClientHello which requires HTTP_SERVICE_CONFIG_SSL_FLAG_ENABLE_CACHE_CLIENT_HELLO.
+                // The buffer is generously sized so the API can write its (fixed-size) struct without
+                // us having to know the exact size up front.
+                var propertyId = (int)HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo;
+
+                var buffer = new byte[4096];
+                Assert.True(feature.TryGetRequestProperty(propertyId, qualifier: default, output: buffer, out var written));
+                Assert.InRange(written, 1, buffer.Length);
+
+                // Buffer too small returns false. Some HTTP_REQUEST_PROPERTY values report the required
+                // size in `bytesReturned`, others do not, so we only assert the false return here.
+                var tooSmall = new byte[1];
+                Assert.False(feature.TryGetRequestProperty(propertyId, qualifier: default, output: tooSmall, out _));
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetRequestPropertyAsync_TlsCipherInfo_CompletesSyncAndMatchesSyncOverload()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var feature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(feature);
+
+                var propertyId = (int)HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo;
+
+                var asyncBuffer = new byte[4096];
+                // Per the Win32 docs "most operations on this API are always synchronous"; we expect
+                // the ValueTask to be already completed when the call returns. If this assertion ever
+                // flakes on a future OS, relax it - correctness only requires the eventual values.
+                var asyncTask = feature.TryGetRequestPropertyAsync(propertyId, qualifier: default, output: asyncBuffer);
+                Assert.True(asyncTask.IsCompletedSuccessfully, "ValueTask should complete synchronously for TlsCipherInfo");
+
+                var asyncResult = await asyncTask;
+                Assert.True(asyncResult.Succeeded);
+                Assert.InRange(asyncResult.BytesReturned, 1, asyncBuffer.Length);
+
+                // Cross-check against the synchronous overload: same property must produce identical bytes.
+                var syncBuffer = new byte[4096];
+                Assert.True(feature.TryGetRequestProperty(propertyId, qualifier: default, output: syncBuffer, out var syncWritten));
+                Assert.Equal(asyncResult.BytesReturned, syncWritten);
+                Assert.Equal(syncBuffer.AsSpan(0, syncWritten).ToArray(), asyncBuffer.AsSpan(0, asyncResult.BytesReturned).ToArray());
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetRequestPropertyAsync_BufferTooSmall_ReturnsFalse()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var feature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(feature);
+
+                var propertyId = (int)HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo;
+
+                var tooSmall = new byte[1];
+                var result = await feature.TryGetRequestPropertyAsync(propertyId, qualifier: default, output: tooSmall);
+                Assert.False(result.Succeeded);
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetRequestPropertyAsync_PreCancelled_ReturnsCanceledTask()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var feature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(feature);
+
+                var propertyId = (int)HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo;
+
+                using var cts = new CancellationTokenSource();
+                cts.Cancel();
+
+                var task = feature.TryGetRequestPropertyAsync(propertyId, qualifier: default, output: default, cancellationToken: cts.Token);
+                Assert.True(task.IsCanceled);
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await task);
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
     public async Task Https_SetsIHttpSysRequestTimingFeature()
     {
         using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
