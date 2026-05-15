@@ -337,6 +337,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// If unsuccessful for other reason throws an exception.
         /// </returns>
         bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned);
+
+        /// <summary>
+        /// Reads an arbitrary HTTP_REQUEST_PROPERTY value from HTTP.SYS using HttpQueryRequestProperty.
+        /// </summary>
+        /// <param name="propertyId">The HTTP_REQUEST_PROPERTY identifier to query.</param>
+        /// <param name="qualifier">Optional property-specific qualifier bytes. Pass an empty span when not required.</param>
+        /// <param name="output">Destination buffer for the property value. Pass an empty span to query the required size.</param>
+        /// <param name="bytesReturned">
+        /// Bytes written to <paramref name="output"/>, or the required buffer size when <paramref name="output"/> is too small.
+        /// </param>
+        /// <returns>True on success; false when <paramref name="output"/> is too small.</returns>
+        bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned);
     }
 
     /// <summary>
