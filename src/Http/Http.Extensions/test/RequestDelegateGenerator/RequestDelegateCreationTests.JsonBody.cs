@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -504,14 +505,22 @@ app.MapPost("/", handler);
 
         await endpoint.RequestDelegate(httpContext);
 
-        var logs = TestSink.Writes.ToArray();
-
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
-        using var streamReader = new StreamReader(httpContext.Response.Body);
-        var result = await streamReader.ReadToEndAsync();
-        Assert.Equal($$"""
-            {"type":"https://tools.ietf.org/html/rfc9110#section-15.5.1","title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'."]},"traceId":"{{httpContext.TraceIdentifier}}"}
-            """, result);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(httpContext.Response.Body, JsonSerializerOptions.Web);
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", responseDetails.Type);
+        Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
+        Assert.Equal(400, responseDetails.Status);
+        Assert.Null(responseDetails.Detail);
+        Assert.Null(responseDetails.Instance);
+
+        Assert.Equal(2, responseDetails.Extensions.Count);
+        Assert.Equal(httpContext.TraceIdentifier, responseDetails.Extensions["traceId"].ToString());
+
+        var errors = ((JsonElement)responseDetails.Extensions["errors"]).EnumerateObject();
+        var error = Assert.Single(errors);
+
+        Assert.Equal("$", error.Name);
+        Assert.Equal("JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'.", ((JsonElement)error.Value).EnumerateArray().Single().ToString());
     }
 
     [Fact]
@@ -531,14 +540,21 @@ app.MapPost("/", handler);
 
         await endpoint.RequestDelegate(httpContext);
 
-        var logs = TestSink.Writes.ToArray();
-
         httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
-        using var streamReader = new StreamReader(httpContext.Response.Body);
-        var result = await streamReader.ReadToEndAsync();
-        Assert.Equal("""
-            {"title":"One or more validation errors occurred.","status":400,"errors":{"$":["JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'."]}}
-            """, result);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(httpContext.Response.Body, JsonSerializerOptions.Web);
+        Assert.Null(responseDetails.Type);
+        Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
+        Assert.Equal(400, responseDetails.Status);
+        Assert.Null(responseDetails.Detail);
+        Assert.Null(responseDetails.Instance);
+
+        var extension = Assert.Single(responseDetails.Extensions);
+        Assert.Equal("errors", extension.Key);
+        var errors = ((JsonElement)extension.Value).EnumerateObject();
+        var error = Assert.Single(errors);
+
+        Assert.Equal("$", error.Name);
+        Assert.Equal("JSON deserialization for type 'Microsoft.AspNetCore.Http.Generators.Tests.ModelWithRequiredProperty' was missing required properties including: 'prop'.", ((JsonElement)error.Value).EnumerateArray().Single().ToString());
     }
 
     private sealed class SimplifiedCustomProblemDetailsWriter : IProblemDetailsWriter
