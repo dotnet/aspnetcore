@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientVa
 // when a server-side IValidationLocalizer is configured. The TestServer registers an inline
 // IValidationLocalizer that returns hardcoded translations based on CurrentUICulture, which is
 // set per-request via the ?culture= query string (see RazorComponentEndpointsStartup).
+[CollectionDefinition(nameof(ClientValidationBasicTest), DisableParallelization = true)]
 public class ClientValidationLocalizationTest : ClientValidationTestBase
 {
     public ClientValidationLocalizationTest(
