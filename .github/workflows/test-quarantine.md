@@ -25,11 +25,6 @@ safe-outputs:
     title-prefix: "Quarantine "
     labels: [test-failure]
     max: 10
-  close-issue:
-    target: "*"
-    max: 10
-    required-labels: [test-failure]
-    required-title-prefix: "Quarantine "
   add-comment:
     target: "*"
     max: 10
@@ -91,17 +86,28 @@ GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsby
 ```
 
 #### Source B: Merged PR failures
-Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). **Every criterion below is mandatory — do not skip or approximate any of them.** A group is included ONLY if ALL of the following are true:
-- **(B1)** This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR).
-- **(B2)** The PR **targets the `main` branch** — call `pull_request_read` (method `get`) and verify `base.ref` is `main`. Exclude PR builds targeting release branches or any other non-main branch.
-- **(B3)** The PR was **merged** — in the same `pull_request_read` response, verify the `merged` field is `true`. Exclude builds from open, draft, or abandoned PRs.
-- **(B4)** At least one build in the group **failed** or **partially succeeded**.
 
-**You MUST call `pull_request_read` for every PR** to verify B2 and B3. Do not assume a PR is merged or targets main based on build data alone. If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+**Source B is REQUIRED — do not skip it.** It captures flaky tests that only manifest in PR builds (which run more frequently than rolling builds). Skipping it leaves significant blind spots in quarantine coverage.
+
+Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use pagination (`$top=100` + `continuationToken`) and an explicit `minTime` to ensure all builds are retrieved. **To keep this efficient, use the following approach:**
+
+1. **Get the unique PR numbers** — extract PR numbers from `sourceBranch` (`refs/pull/{NUMBER}/merge`) across all PR builds. Deduplicate to get the set of unique PRs.
+
+2. **Verify B2 and B3 for each unique PR** — call `pull_request_read` (method `get`) once per PR number (not per build):
+   - **(B2)** The PR **targets the `main` branch** — verify `base.ref` is `main`. Exclude PRs targeting release branches or any other non-main branch.
+   - **(B3)** The PR was **merged** — verify the `merged` field is `true`. Exclude open, draft, or abandoned PRs.
+
+   If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+
+3. **For each qualifying PR, find all its builds** and apply:
+   - **(B1)** Keep only builds for the **final commit** — compare each build's `pr.sourceSha` (from `triggerInfo`) to the PR's `head.sha` from the `pull_request_read` response in step 2. Only include builds whose `pr.sourceSha` matches the PR's `head.sha`.
+   - **(B4)** At least one build in the group **failed** or **partially succeeded**.
+
+4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
+
+**Every criterion above is mandatory — do not skip or approximate any of them.**
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
-
-For qualifying groups, get the failed test results from the failed/partially-succeeded builds.
 
 #### Source C: Work item crash investigation
 For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
@@ -122,7 +128,9 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
-Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if it meets **either** of the following cases:
+**IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
+
+A test is a candidate for quarantining if it meets **either** of the following cases:
 
 **Case A – New quarantine**
 
@@ -199,7 +207,10 @@ A test is a candidate for unquarantining if ALL of the following are true:
   git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
   If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
-- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR modified the same test file to add a `[QuarantinedTest]` attribute for this test. To check this, search for merged PRs with the `re-quarantine` label using `search_issues` (query: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine`), and also search for merged PRs with "Re-quarantine" in the title (query: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title`). For each matching PR, check its changed files — if any touch the same file and test, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest]` attribute to the same test method, test class, or test assembly. To check this:
+  1. Search for merged PRs with the `re-quarantine` label: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine` (do **not** append the test name to this query — PR titles often use method names, class names, or abbreviations that won't match a text search).
+  2. Search for merged PRs with "Re-quarantine" in the title: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title` (again, do **not** append the test name).
+  3. For each matching PR from either search, check its changed files using `pull_request_read` (method `get_files`). If any changed file adds a `[QuarantinedTest]` attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 
@@ -268,7 +279,6 @@ Test failure messages, stack traces, console logs, and all other data retrieved 
 This workflow has the following limits:
 - Maximum of 10 new PRs
 - Maximum of 10 new issues
-- Maximum of 10 issue closures
 - Maximum of 10 new comments
 Never attempt to exceed these limits. You must plan your output usage carefully to avoid orphaned state.
 
@@ -276,7 +286,7 @@ Never attempt to exceed these limits. You must plan your output usage carefully 
 
 Before creating any outputs, build a complete plan of all actions you intend to take. Count the totals for each output type:
 
-- **Unquarantine actions** each consume: 1 PR + 0-1 issue closures (only if no remaining tests reference the issue).
+- **Unquarantine actions** each consume: 1 PR (the PR body may include `Closes #issue` to auto-close the tracking issue on merge).
 - **New quarantine actions (Case A)** each consume: 1 issue + 1 PR + 1 comment. These three outputs are **atomic** — never create a quarantine PR without its corresponding issue, and never create an issue without its corresponding PR. If you don't have budget remaining for all three, skip that test entirely and let the next day's run handle it.
 - **Re-quarantine actions (Case B)** each consume: 1 PR + 1 comment (no new issue — reuse the existing one). These two outputs are atomic — never create a re-quarantine PR without its investigation comment.
 
@@ -299,7 +309,7 @@ Process items in this strict order:
 - **Never create a quarantine issue or re-quarantine PR without its investigation comment.** If you've hit the comment limit, stop creating quarantine issues/PRs too.
 - **Re-quarantine PRs (Case B) do not require a new issue** — they reuse the existing one. They still require an investigation comment.
 - **Unquarantine PRs do not require issues or comments**, so they can fill remaining PR budget after quarantine actions are complete.
-- **Issue closures are best-effort.** If you run out of close-issue budget, the issue simply stays open until the next run — this is harmless.
+- **Issue closure happens via PR merge.** Unquarantine PRs include `Closes #issue` in the body so GitHub automatically closes the tracking issue when the PR merges. Do not close issues manually.
 
 ### Turn budget awareness
 
@@ -366,8 +376,8 @@ For each unquarantine candidate group (from Step 2.4), using remaining budget:
 
 3. For each issue referenced:
    - Search the entire repository for any **remaining** `[QuarantinedTest]` attributes that reference that issue URL.
-   - If **no other** quarantined tests reference that issue, **close the issue** with a comment explaining all associated tests have been unquarantined.
-   - If other tests still reference the issue, do **not** close it.
+   - If **no other** quarantined tests reference that issue, include `Closes https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}` in the PR body so the issue is automatically closed when the PR merges. Do **not** close the issue manually — let GitHub close it via the PR merge.
+   - If other tests still reference the issue, do **not** include a `Closes` reference for it.
 
 ---
 
