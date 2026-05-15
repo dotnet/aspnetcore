@@ -317,8 +317,6 @@ public sealed class EditContext
     /// is cancelled before or during the validation pass.</exception>
     public async Task<bool> ValidateAsync(CancellationToken cancellationToken = default)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
         // Cancel all pending field-level async tasks - form-submit validation supersedes them
         CancelAllPendingValidationTasks();
 
@@ -491,11 +489,15 @@ public sealed class EditContext
 
     /// <summary>
     /// Returns <c>true</c> if the specified field has a pending async validation task.
+    /// A task is "pending" until the framework's observer has settled its outcome and cleared the
+    /// slot (i.e., not only until the task itself completes) so a consumer that waits for
+    /// <see cref="IsValidationPending(in FieldIdentifier)"/> to become <c>false</c> is guaranteed
+    /// to also see the final <see cref="IsValidationFaulted(in FieldIdentifier)"/> value.
     /// </summary>
     /// <param name="fieldIdentifier">Identifies the field to query.</param>
     /// <returns><c>true</c> if async validation is in progress for the field; otherwise <c>false</c>.</returns>
     public bool IsValidationPending(in FieldIdentifier fieldIdentifier)
-        => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.PendingValidationTask is { IsCompleted: false };
+        => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.PendingValidationTask is not null;
 
     /// <summary>
     /// Returns <c>true</c> if the field identified by the <paramref name="accessor"/> expression
@@ -599,32 +601,37 @@ public sealed class EditContext
 
     private async Task ObserveValidationTaskAsync(FieldState state, Task task, CancellationTokenSource cts)
     {
+        var faulted = false;
+
         try
         {
-            await task;
-        }
-        catch (OperationCanceledException)
-        {
-            // Cancellation is silent - field was re-edited or form submitted
-        }
-        catch (Exception)
-        {
-            // Infrastructure fault - mark field as faulted only if this is still the current task
-            if (ReferenceEquals(state.PendingValidationTask, task))
+            try
             {
-                state.IsValidationFaulted = true;
+                await task;
             }
-        }
-        finally
-        {
-            // Only clear slot state if this is still the current task (not replaced by a newer one)
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                // Cancellation initiated by us (field re-edited or form submitted) is silent.
+                // OperationCanceledException from another source (e.g. an HttpClient timeout
+                // inside the validator) falls through to the catch (Exception) block below
+                // so the field is correctly marked as faulted.
+            }
+            catch (Exception)
+            {
+                // Infrastructure fault.
+                faulted = true;
+            }
+
             if (ReferenceEquals(state.PendingValidationTask, task))
             {
+                state.IsValidationFaulted = faulted;
                 state.PendingValidationTask = null;
                 state.PendingValidationCts = null;
                 NotifyValidationStateChanged();
             }
-
+        }
+        finally
+        {
             // Always dispose the CTS we own. Safe whether or not the slot is still current,
             // and only happens after the validator task has observably settled, so the validator
             // can never observe a disposed token.
