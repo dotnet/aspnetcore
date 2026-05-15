@@ -97,11 +97,11 @@ public class FieldCssClassProviderTest
         Assert.Equal("pending", _provider.GetFieldCssClass(editContext, field));
 
         tcs.SetResult();
-        await WaitUntil(() => !editContext.IsValidationPending(field));
+        await tcs.Task;
     }
 
     [Fact]
-    public async Task ReturnsFaulted_WhenLastAsyncValidationFaulted()
+    public void ReturnsFaulted_WhenLastAsyncValidationFaulted()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -109,13 +109,11 @@ public class FieldCssClassProviderTest
         var faultingTask = Task.FromException(new InvalidOperationException("boom"));
         editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
 
-        await WaitUntil(() => editContext.IsValidationFaulted(field));
-
         Assert.Equal("faulted", _provider.GetFieldCssClass(editContext, field));
     }
 
     [Fact]
-    public async Task ReturnsModifiedFaulted_WhenModifiedAndLastAsyncValidationFaulted()
+    public void ReturnsModifiedFaulted_WhenModifiedAndLastAsyncValidationFaulted()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -124,13 +122,11 @@ public class FieldCssClassProviderTest
         var faultingTask = Task.FromException(new InvalidOperationException("boom"));
         editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
 
-        await WaitUntil(() => editContext.IsValidationFaulted(field));
-
         Assert.Equal("modified faulted", _provider.GetFieldCssClass(editContext, field));
     }
 
     [Fact]
-    public async Task FaultedSupersedesInvalidWhenMessagesArePresent()
+    public void FaultedSupersedesInvalidWhenMessagesArePresent()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
@@ -140,23 +136,7 @@ public class FieldCssClassProviderTest
         var faultingTask = Task.FromException(new InvalidOperationException("boom"));
         editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
 
-        await WaitUntil(() => editContext.IsValidationFaulted(field));
-
         Assert.Equal("faulted", _provider.GetFieldCssClass(editContext, field));
-    }
-
-    private static async Task WaitUntil(Func<bool> condition)
-    {
-        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
-        while (!condition())
-        {
-            if (DateTime.UtcNow > deadline)
-            {
-                throw new TimeoutException("Condition not met within timeout.");
-            }
-
-            await Task.Yield();
-        }
     }
 
     private sealed class TestModel

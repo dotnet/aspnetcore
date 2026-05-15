@@ -71,6 +71,37 @@ public class EditContextAsyncTest
     }
 
     [Fact]
+    public async Task FieldValidation_OperationCanceledFromUnrelatedSource_MarksFieldFaulted()
+    {
+        // OperationCanceledException thrown from inside a validator for a reason unrelated to our
+        // cancellation (e.g. an HttpClient timeout or a user CancellationTokenSource on a DB query)
+        // should be treated as an infrastructure fault, not silently swallowed. Only OCEs that
+        // result from our own CTS cancellation are silent.
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        using var validator = new TestAsyncValidator(editContext);
+        validator.Configure(field, new ValidationConfig
+        {
+            ObserveCancellation = false,
+            Custom = async (_, _) =>
+            {
+                // Yield so we go through the ObserveValidationTaskAsync path (rather than
+                // settling synchronously via AddValidationTask's fast path).
+                await Task.Yield();
+                using var unrelated = new CancellationTokenSource();
+                unrelated.Cancel();
+                throw new OperationCanceledException(unrelated.Token);
+            },
+        });
+
+        editContext.NotifyFieldChanged(field);
+        await WaitUntilAsync(() => !editContext.IsValidationPending(field));
+
+        Assert.True(editContext.IsValidationFaulted(field));
+        Assert.Empty(editContext.GetValidationMessages(field));
+    }
+
+    [Fact]
     public async Task FieldValidation_Reedit_CancelsPreviousTask()
     {
         var editContext = new EditContext(new TestModel());
@@ -651,8 +682,12 @@ public class EditContextAsyncTest
     }
 
     [Fact]
-    public async Task ValidateAsync_AlreadyCanceledToken_ThrowsBeforeHandlersOrPendingCancellation()
+    public async Task ValidateAsync_AlreadyCanceledToken_RunsHandlersThenThrows()
     {
+        // Caller-provided already-cancelled token: ValidateAsync still cancels superseded
+        // per-field tasks and invokes the registered handlers before honoring cancellation
+        // at the post-await ThrowIfCancellationRequested. This matches the typical pattern
+        // where "the cancellation is in progress, not 'we never started'".
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
         using var pendingCts = new CancellationTokenSource();
@@ -671,10 +706,10 @@ public class EditContextAsyncTest
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => editContext.ValidateAsync(cts.Token));
 
-        Assert.Equal(0, syncCount);
-        Assert.Equal(0, asyncCount);
-        Assert.False(pendingCts.IsCancellationRequested);
-        Assert.True(editContext.IsValidationPending(field));
+        Assert.Equal(1, syncCount);
+        Assert.Equal(1, asyncCount);
+        Assert.True(pendingCts.IsCancellationRequested);
+        Assert.False(editContext.IsValidationPending(field));
     }
 
     [Fact]
