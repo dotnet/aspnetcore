@@ -20,7 +20,10 @@ public static class OpenApiServiceCollectionExtensions
     /// Adds OpenAPI services related to the given document name to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
-    /// <param name="documentName">The name of the OpenAPI document associated with registered services.</param>
+    /// <param name="documentName">
+    /// The name of the OpenAPI document associated with registered services.
+    /// Passing null will register the core services only without any document-specific services or configuration.
+    /// </param>
     /// <example>
     /// This method is commonly used to add OpenAPI services to the <see cref="WebApplicationBuilder.Services"/>
     /// of a <see cref="WebApplicationBuilder"/>, as shown in the following example:
@@ -29,11 +32,16 @@ public static class OpenApiServiceCollectionExtensions
     /// builder.Services.AddOpenApi("MyWebApi");
     /// </code>
     /// </example>
-    public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
+    public static IServiceCollection AddOpenApi(this IServiceCollection services, string? documentName)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        return services.AddOpenApi(documentName, _ => { });
+        if (documentName is not null)
+        {
+            return services.AddOpenApi(documentName, _ => { });
+        }
+
+        return services.AddOpenApiCore(null);
     }
 
     /// <summary>
@@ -106,18 +114,22 @@ public static class OpenApiServiceCollectionExtensions
     public static IServiceCollection AddOpenApi(this IServiceCollection services)
         => services.AddOpenApi(OpenApiConstants.DefaultDocumentName);
 
-    private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string documentName)
+    private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string? documentName)
     {
         services.AddEndpointsApiExplorer();
-        services.AddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
         services.AddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
         services.AddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);
         services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
 
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
-        // Required to resolve document names for build-time generation
-        services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
+
+        if (documentName is not null)
+        {
+            // Required to resolve document names for build-time generation
+            services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
+        }
+
         // Required to support JSON serializations
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
         return services;

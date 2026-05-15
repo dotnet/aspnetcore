@@ -60,16 +60,18 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
     /// </summary>
     public IEnumerable<string> GetDocumentNames()
     {
-        if (serviceProvider.GetService<IOpenApiDocumentNamesOverrideProvider>() is { } documentNamesOverride)
-        {
-            return documentNamesOverride.DocumentNames;
-        }
-
         // Keyed services lack an API to resolve all registered keys.
         // We use the service provider to resolve an internal type.
         // This type tracks registered document names.
         // See https://github.com/dotnet/runtime/issues/100105 for more info.
         var documentServices = serviceProvider.GetServices<NamedService<OpenApiDocumentService>>();
-        return documentServices.Select(docService => docService.Name);
+        var documentNames = documentServices.Select(docService => docService.Name);
+
+        if (serviceProvider.GetService<IAdditionalOpenApiDocumentNameProvider>() is { } documentNamesOverride)
+        {
+            return documentNames.Concat(documentNamesOverride.DocumentNames);
+        }
+
+        return documentNames;
     }
 }

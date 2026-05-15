@@ -1,3 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.OpenApi.Extensions.IOpenApiDocumentNamesOverrideProvider
-Microsoft.AspNetCore.OpenApi.Extensions.IOpenApiDocumentNamesOverrideProvider.DocumentNames.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.OpenApi.Extensions.IAdditionalOpenApiDocumentNameProvider
+Microsoft.AspNetCore.OpenApi.Extensions.IAdditionalOpenApiDocumentNameProvider.DocumentNames.get -> System.Collections.Generic.IEnumerable<string!>!
+static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string? documentName) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+*REMOVED*static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! documentName) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
