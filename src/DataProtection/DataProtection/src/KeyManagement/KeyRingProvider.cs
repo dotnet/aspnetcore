@@ -378,7 +378,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                     // run; once we publish _cacheableKeyRing and release the lock, they wake up,
                     // re-check the cache (or read it via the forceRefresh fallback below), and
                     // return the freshly populated ring.
-                    // This matches the pre-$54675 behavior (https://github.com/dotnet/aspnetcore/pull/54675).
+                    // This matches the pre-#54675 behavior (https://github.com/dotnet/aspnetcore/pull/54675).
                     CacheableKeyRing newCacheableKeyRing;
                     try
                     {
