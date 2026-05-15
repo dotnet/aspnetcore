@@ -326,12 +326,8 @@ internal static partial class RenderFragmentSerializer
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Attribute and key types are primitive or well-known types preserved by the application.")]
     private static object? ConvertTypedValue(JsonElement json, string typeName)
     {
-        var type = Type.GetType(typeName);
-        if (type is not null)
-        {
-            return json.Deserialize(type);
-        }
-        return json.ToString();
+        var type = Type.GetType(typeName) ?? throw new InvalidOperationException($"Could not resolve serialized attribute type '{typeName}'.");
+        return json.Deserialize(type);
     }
 
     private static bool IsEventCallback(object? value)
