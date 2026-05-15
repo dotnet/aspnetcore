@@ -28,7 +28,7 @@ internal class SSRRenderModeBoundary : IComponent
     private readonly bool _prerender;
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
-    private RenderFragmentCaptureContext? _captureContext;
+    private Dictionary<string, RenderFragmentCapture>? _topLevelCaptures;
     private ComponentMarkerKey? _markerKey;
     private readonly HttpContext _httpContext;
     private readonly ILogger _logger;
@@ -44,7 +44,7 @@ internal class SSRRenderModeBoundary : IComponent
 
         _httpContext = httpContext;
         _componentType = componentType;
-        _logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(RenderFragmentSerializer).FullName!);
+        _logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(RenderFragmentSerializer));
         RenderMode = renderMode;
         _prerender = renderMode switch
         {
@@ -114,7 +114,7 @@ internal class SSRRenderModeBoundary : IComponent
 
         if (_prerender)
         {
-            _captureContext = RenderFragmentSerializer.WrapRenderFragments((Dictionary<string, object?>)_latestParameters);
+            _topLevelCaptures = RenderFragmentSerializer.WrapRenderFragments((Dictionary<string, object?>)_latestParameters);
         }
 
         if (RenderMode is InteractiveWebAssemblyRenderMode)
@@ -226,7 +226,7 @@ internal class SSRRenderModeBoundary : IComponent
         {
             if (value is RenderFragment)
             {
-                if (_captureContext is null || !_captureContext.TopLevelCaptures.TryGetValue(name, out var capture))
+                if (_topLevelCaptures is null || !_topLevelCaptures.TryGetValue(name, out var capture))
                 {
                     throw new InvalidOperationException(
                         $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}' " +
@@ -234,10 +234,9 @@ internal class SSRRenderModeBoundary : IComponent
                         $"RenderFragment serialization across rendermode boundaries requires Prerender=true.");
                 }
 
-                var capturedFrames = capture.GetCapturedFrames();
                 dict[name] = new SerializedRenderFragment
                 {
-                    Nodes = RenderFragmentSerializer.SerializeFrames(capturedFrames, _captureContext, logger)
+                    Nodes = RenderFragmentSerializer.SerializeFrames(capture, logger)
                 };
             }
             else

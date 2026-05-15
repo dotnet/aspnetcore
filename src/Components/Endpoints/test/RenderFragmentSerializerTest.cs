@@ -16,10 +16,10 @@ public class RenderFragmentSerializerTest
 
     private static List<RenderTreeNode> SerializeFragment(RenderFragment fragment)
     {
+        var capture = RenderFragmentCapture.Wrap(fragment);
         using var builder = new RenderTreeBuilder();
-        fragment(builder);
-        var frames = builder.GetFrames();
-        return RenderFragmentSerializer.SerializeFrames(frames.Array.AsSpan(0, frames.Count), new RenderFragmentCaptureContext(), _logger);
+        capture.Invoke(builder);
+        return RenderFragmentSerializer.SerializeFrames(capture, _logger);
     }
 
     [Fact]
