@@ -632,8 +632,19 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
         """,
         AddOpenApiOverloadVariant.AddOpenApiDocumentName => """
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
+        public static IServiceCollection AddOpenApi(this IServiceCollection services, string? documentName)
                 {
+                    if (documentName is null)
+                    {
+                        // TODO: Figure out if this is the way we want to go, or if we want to do something differently.
+                        // The way I can think of is by having some sort of "CommonOpenApiOptions".
+                        // The CommonOpenApiOptions will be a subset of what we have in OpenApiOptions.
+                        // Basically we can just expose all Add*Transformer.
+                        // When dealing with a given document, its local transformers in OpenApiOptions should take precedence over the CommonOpenApiOptions.
+                        // TODO: Create aka.ms link so that the error is shorter.
+                        throw new NotSupportedException("OpenApi XmlCommentGenerator doesn't support null documentName. See https://learn.microsoft.com/aspnet/core/fundamentals/openapi/openapi-comments?view=aspnetcore-10.0#disabling-xml-documentation-support for disabling the generator.");
+                    }
+
                     return services.AddOpenApi(documentName, options =>
                     {
                         options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
