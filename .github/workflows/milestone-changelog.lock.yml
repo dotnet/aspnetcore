@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f9e3c7b365be12337ecff3579f8bf03e3728f86f58e673ac0eae8105678dcefe","compiler_version":"v0.72.0","strict":true,"agent_id":"copilot"}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ff0525b685481744f490a0d362753d8001e4b39d","version":"v0.72.0"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.41","digest":"sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.25.41@sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.41","digest":"sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.41@sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.41","digest":"sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.25.41@sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.6","digest":"sha256:2bb8eef86006a4c5963c55616a9c51c32f27bfdecb023b8aa6f91f6718d9171c","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.6@sha256:2bb8eef86006a4c5963c55616a9c51c32f27bfdecb023b8aa6f91f6718d9171c"},{"image":"ghcr.io/github/github-mcp-server:v1.0.3","digest":"sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959","pinned_image":"ghcr.io/github/github-mcp-server:v1.0.3@sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959"},{"image":"mcr.microsoft.com/dotnet/sdk:10.0","digest":"sha256:dc8430e6024d454edadad1e160e1973be3cabbb7125998ef190d9e5c6adf7dbb","pinned_image":"mcr.microsoft.com/dotnet/sdk:10.0@sha256:dc8430e6024d454edadad1e160e1973be3cabbb7125998ef190d9e5c6adf7dbb"},{"image":"node:lts-alpine","digest":"sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f","pinned_image":"node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f"}]}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"e1152f5fbc2ebcabb695c4435d98e3f65aa66615dd60fb5e339c9b1b22faa743","compiler_version":"v0.72.0","strict":true,"agent_id":"copilot"}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"ff0525b685481744f490a0d362753d8001e4b39d","version":"v0.72.0"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.41","digest":"sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.25.41@sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.41","digest":"sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.41@sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.41","digest":"sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.25.41@sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.6","digest":"sha256:2bb8eef86006a4c5963c55616a9c51c32f27bfdecb023b8aa6f91f6718d9171c","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.6@sha256:2bb8eef86006a4c5963c55616a9c51c32f27bfdecb023b8aa6f91f6718d9171c"},{"image":"ghcr.io/github/github-mcp-server:v1.0.3","digest":"sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959","pinned_image":"ghcr.io/github/github-mcp-server:v1.0.3@sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959"},{"image":"node:lts-alpine","digest":"sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f","pinned_image":"node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
 #  | |_| | __ _  ___ _ __ | |_ _  ___ 
@@ -22,11 +22,24 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary.
+# Generates and maintains a changelog for a configured milestone by
+# analyzing merged pull requests.
+# Creates or updates a wiki page named "<milestone>-Change-log" with a list
+# of new features, improvements, and notable bug fixes. A companion GitHub issue collects
+# editorial feedback (e.g., exclude a change, rename an entry, merge entries).
+#
+# Frontmatter env variables:
+#   - BATCH_SIZE: (main workflow)
+#   - DOCS_REPO: (main workflow)
+#   - MILESTONE: (main workflow)
+#   - MILESTONE_START: (main workflow)
+#   - PREVIOUS_MILESTONE: (main workflow)
+#   - PRODUCT: (main workflow)
+#   - RELEASE_NOTES_URL: (main workflow)
+#   - REPO: (main workflow)
 #
 # Secrets used:
 #   - COPILOT_GITHUB_TOKEN
-#   - GH_AW_CI_TRIGGER_TOKEN
 #   - GH_AW_GITHUB_MCP_SERVER_TOKEN
 #   - GH_AW_GITHUB_TOKEN
 #   - GITHUB_TOKEN
@@ -34,7 +47,6 @@
 # Custom actions used:
 #   - actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 #   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-#   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
 #   - actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -46,14 +58,10 @@
 #   - ghcr.io/github/gh-aw-firewall/squid:0.25.41@sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4
 #   - ghcr.io/github/gh-aw-mcpg:v0.3.6@sha256:2bb8eef86006a4c5963c55616a9c51c32f27bfdecb023b8aa6f91f6718d9171c
 #   - ghcr.io/github/github-mcp-server:v1.0.3@sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959
-#   - mcr.microsoft.com/dotnet/sdk:10.0@sha256:dc8430e6024d454edadad1e160e1973be3cabbb7125998ef190d9e5c6adf7dbb
 #   - node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f
 
-name: "Update CsWin32 Package"
+name: "Milestone Changelog Generator"
 "on":
-  schedule:
-  - cron: "0 0 1 * *"
-    # Friendly format: every 1mo
   workflow_dispatch:
     inputs:
       aw_context:
@@ -67,7 +75,17 @@ permissions: {}
 concurrency:
   group: "gh-aw-${{ github.workflow }}"
 
-run-name: "Update CsWin32 Package"
+run-name: "Milestone Changelog Generator"
+
+env:
+  BATCH_SIZE: "20"
+  DOCS_REPO: dotnet/AspNetCore.Docs
+  MILESTONE: 11.0-preview5
+  MILESTONE_START: "2026-04-29"
+  PREVIOUS_MILESTONE: 11.0-preview4
+  PRODUCT: ASP.NET Core
+  RELEASE_NOTES_URL: https://learn.microsoft.com/aspnet/core/release-notes/aspnetcore-11.0
+  REPO: dotnet/aspnetcore
 
 jobs:
   activation:
@@ -92,8 +110,8 @@ jobs:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
         env:
-          GH_AW_SETUP_WORKFLOW_NAME: "Update CsWin32 Package"
-          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/cswin32-update.lock.yml@${{ github.ref }}
+          GH_AW_SETUP_WORKFLOW_NAME: "Milestone Changelog Generator"
+          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/milestone-changelog.lock.yml@${{ github.ref }}
           GH_AW_INFO_VERSION: "1.0.40"
       - name: Generate agentic run info
         id: generate_aw_info
@@ -104,11 +122,11 @@ jobs:
           GH_AW_INFO_VERSION: "1.0.40"
           GH_AW_INFO_AGENT_VERSION: "1.0.40"
           GH_AW_INFO_CLI_VERSION: "v0.72.0"
-          GH_AW_INFO_WORKFLOW_NAME: "Update CsWin32 Package"
+          GH_AW_INFO_WORKFLOW_NAME: "Milestone Changelog Generator"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
           GH_AW_INFO_STAGED: "false"
-          GH_AW_INFO_ALLOWED_DOMAINS: '["defaults","dotnet","containers","github"]'
+          GH_AW_INFO_ALLOWED_DOMAINS: '["defaults"]'
           GH_AW_INFO_FIREWALL_ENABLED: "true"
           GH_AW_INFO_AWF_VERSION: "v0.25.41"
           GH_AW_INFO_AWMG_VERSION: ""
@@ -151,7 +169,7 @@ jobs:
         id: check-lock-file
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          GH_AW_WORKFLOW_FILE: "cswin32-update.lock.yml"
+          GH_AW_WORKFLOW_FILE: "milestone-changelog.lock.yml"
           GH_AW_CONTEXT_WORKFLOW_REF: "${{ github.workflow_ref }}"
         with:
           script: |
@@ -185,23 +203,20 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_ab49630653a857f0_EOF'
+          cat << 'GH_AW_PROMPT_dc296507c80d73f9_EOF'
           <system>
-          GH_AW_PROMPT_ab49630653a857f0_EOF
+          GH_AW_PROMPT_dc296507c80d73f9_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_ab49630653a857f0_EOF'
+          cat << 'GH_AW_PROMPT_dc296507c80d73f9_EOF'
           <safe-output-tools>
-          Tools: add_comment, create_pull_request, missing_tool, missing_data, noop
-          GH_AW_PROMPT_ab49630653a857f0_EOF
-          cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_create_pull_request.md"
-          cat << 'GH_AW_PROMPT_ab49630653a857f0_EOF'
+          Tools: missing_tool, missing_data, noop, publish
           </safe-output-tools>
-          GH_AW_PROMPT_ab49630653a857f0_EOF
+          GH_AW_PROMPT_dc296507c80d73f9_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/mcp_cli_tools_prompt.md"
-          cat << 'GH_AW_PROMPT_ab49630653a857f0_EOF'
+          cat << 'GH_AW_PROMPT_dc296507c80d73f9_EOF'
           <github-context>
           The following GitHub context information is available for this workflow:
           {{#if __GH_AW_GITHUB_ACTOR__ }}
@@ -230,12 +245,12 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_ab49630653a857f0_EOF
+          GH_AW_PROMPT_dc296507c80d73f9_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_ab49630653a857f0_EOF'
+          cat << 'GH_AW_PROMPT_dc296507c80d73f9_EOF'
           </system>
-          {{#runtime-import .github/workflows/cswin32-update.md}}
-          GH_AW_PROMPT_ab49630653a857f0_EOF
+          {{#runtime-import .github/workflows/milestone-changelog.md}}
+          GH_AW_PROMPT_dc296507c80d73f9_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -311,21 +326,22 @@ jobs:
           retention-days: 1
 
   agent:
-    needs: activation
+    needs:
+      - activation
+      - fetch-data
+    if: github.repository_owner == 'microsoft' && needs.fetch-data.outputs.has-work == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
       GH_AW_ASSETS_BRANCH: ""
       GH_AW_ASSETS_MAX_SIZE_KB: 0
       GH_AW_MCP_LOG_DIR: /tmp/gh-aw/mcp-logs/safeoutputs
-      GH_AW_WORKFLOW_ID_SANITIZED: cswin32update
+      GH_AW_WORKFLOW_ID_SANITIZED: milestonechangelog
     outputs:
       agentic_engine_timeout: ${{ steps.detect-copilot-errors.outputs.agentic_engine_timeout || 'false' }}
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
@@ -347,8 +363,8 @@ jobs:
           job-name: ${{ github.job }}
           trace-id: ${{ needs.activation.outputs.setup-trace-id }}
         env:
-          GH_AW_SETUP_WORKFLOW_NAME: "Update CsWin32 Package"
-          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/cswin32-update.lock.yml@${{ github.ref }}
+          GH_AW_SETUP_WORKFLOW_NAME: "Milestone Changelog Generator"
+          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/milestone-changelog.lock.yml@${{ github.ref }}
           GH_AW_INFO_VERSION: "1.0.40"
       - name: Set runtime paths
         id: set-runtime-paths
@@ -368,6 +384,11 @@ jobs:
         run: bash "${RUNNER_TEMP}/gh-aw/actions/configure_gh_for_ghe.sh"
         env:
           GH_TOKEN: ${{ github.token }}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: changelog-data
+          path: /tmp/gh-aw/
+
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}
@@ -401,16 +422,13 @@ jobs:
           GH_HOST: github.com
       - name: Install AWF binary
         run: bash "${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh" v0.25.41
-      - name: Determine automatic lockdown mode for GitHub MCP Server
-        id: determine-automatic-lockdown
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+      - name: Parse integrity filter lists
+        id: parse-guard-vars
         env:
-          GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
-          GH_AW_GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN }}
-        with:
-          script: |
-            const determineAutomaticLockdown = require('${{ runner.temp }}/gh-aw/actions/determine_automatic_lockdown.cjs');
-            await determineAutomaticLockdown(github, context, core);
+          GH_AW_BLOCKED_USERS_VAR: ${{ vars.GH_AW_GITHUB_BLOCKED_USERS || '' }}
+          GH_AW_TRUSTED_USERS_VAR: ${{ vars.GH_AW_GITHUB_TRUSTED_USERS || '' }}
+          GH_AW_APPROVAL_LABELS_VAR: ${{ vars.GH_AW_GITHUB_APPROVAL_LABELS || '' }}
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/parse_guard_list.sh"
       - name: Download activation artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -428,91 +446,35 @@ jobs:
           GH_AW_SUB_AGENT_EXT: ".agent.md"
         run: bash "${RUNNER_TEMP}/gh-aw/actions/restore_inline_sub_agents.sh"
       - name: Download container images
-        run: bash "${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh" ghcr.io/github/gh-aw-firewall/agent:0.25.41@sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.41@sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0 ghcr.io/github/gh-aw-firewall/squid:0.25.41@sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4 ghcr.io/github/gh-aw-mcpg:v0.3.6@sha256:2bb8eef86006a4c5963c55616a9c51c32f27bfdecb023b8aa6f91f6718d9171c ghcr.io/github/github-mcp-server:v1.0.3@sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959 mcr.microsoft.com/dotnet/sdk:10.0@sha256:dc8430e6024d454edadad1e160e1973be3cabbb7125998ef190d9e5c6adf7dbb node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh" ghcr.io/github/gh-aw-firewall/agent:0.25.41@sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.41@sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0 ghcr.io/github/gh-aw-firewall/squid:0.25.41@sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4 ghcr.io/github/gh-aw-mcpg:v0.3.6@sha256:2bb8eef86006a4c5963c55616a9c51c32f27bfdecb023b8aa6f91f6718d9171c ghcr.io/github/github-mcp-server:v1.0.3@sha256:2ac27ef03461ef2b877031b838a7d1fd7f12b12d4ace7796d8cad91446d55959 node:lts-alpine@sha256:d1b3b4da11eefd5941e7f0b9cf17783fc99d9c6fc34884a665f40a06dbdfc94f
       - name: Generate Safe Outputs Config
         run: |
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_d5ab92f8b6360827_EOF'
-          {"add_comment":{"max":1,"target":"*"},"create_pull_request":{"base_branch":"main","draft":false,"labels":["area-networking"],"max":1,"max_patch_files":100,"max_patch_size":1024,"protect_top_level_dot_folders":true,"protected_files":["package.json","bun.lockb","bunfig.toml","deno.json","deno.jsonc","deno.lock","global.json","NuGet.Config","Directory.Packages.props","mix.exs","mix.lock","go.mod","go.sum","stack.yaml","stack.yaml.lock","pom.xml","build.gradle","build.gradle.kts","settings.gradle","settings.gradle.kts","gradle.properties","package-lock.json","yarn.lock","pnpm-lock.yaml","npm-shrinkwrap.json","requirements.txt","Pipfile","Pipfile.lock","pyproject.toml","setup.py","setup.cfg","Gemfile","Gemfile.lock","uv.lock","CODEOWNERS","DESIGN.md","README.md","CONTRIBUTING.md","CHANGELOG.md","SECURITY.md","CODE_OF_CONDUCT.md","AGENTS.md","CLAUDE.md","GEMINI.md"],"title_prefix":"[package] "},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_d5ab92f8b6360827_EOF
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_0800322a729ef2d3_EOF'
+          {"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"},"publish":{"description":"Publish the wiki page, push state to the memory branch, and ensure the feedback issue exists","output":"Wiki page published and memory branch updated!"},"report_incomplete":{}}
+          GH_AW_SAFE_OUTPUTS_CONFIG_0800322a729ef2d3_EOF
       - name: Generate Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
             {
-              "description_suffixes": {
-                "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: *. Supports reply_to_id for discussion threading.",
-                "create_pull_request": " CONSTRAINTS: Maximum 1 pull request(s) can be created. Title will be prefixed with \"[package] \". Labels [\"area-networking\"] will be automatically added."
-              },
+              "description_suffixes": {},
               "repo_params": {},
-              "dynamic_tools": []
+              "dynamic_tools": [
+                {
+                  "description": "Publish the wiki page, push state to the memory branch, and ensure the feedback issue exists",
+                  "inputSchema": {
+                    "additionalProperties": false,
+                    "properties": {},
+                    "type": "object"
+                  },
+                  "name": "publish"
+                }
+              ]
             }
           GH_AW_VALIDATION_JSON: |
             {
-              "add_comment": {
-                "defaultMax": 1,
-                "fields": {
-                  "body": {
-                    "required": true,
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 65000
-                  },
-                  "item_number": {
-                    "issueOrPRNumber": true
-                  },
-                  "reply_to_id": {
-                    "type": "string",
-                    "maxLength": 256
-                  },
-                  "repo": {
-                    "type": "string",
-                    "maxLength": 256
-                  }
-                }
-              },
-              "create_pull_request": {
-                "defaultMax": 1,
-                "fields": {
-                  "base": {
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 128
-                  },
-                  "body": {
-                    "required": true,
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 65000
-                  },
-                  "branch": {
-                    "required": true,
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 256
-                  },
-                  "draft": {
-                    "type": "boolean"
-                  },
-                  "labels": {
-                    "type": "array",
-                    "itemType": "string",
-                    "itemSanitize": true,
-                    "itemMaxLength": 128
-                  },
-                  "repo": {
-                    "type": "string",
-                    "maxLength": 256
-                  },
-                  "title": {
-                    "required": true,
-                    "type": "string",
-                    "sanitize": true,
-                    "maxLength": 128
-                  }
-                }
-              },
               "missing_data": {
                 "defaultMax": 20,
                 "fields": {
@@ -640,8 +602,6 @@ jobs:
           GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
-          GITHUB_MCP_GUARD_MIN_INTEGRITY: ${{ steps.determine-automatic-lockdown.outputs.min_integrity }}
-          GITHUB_MCP_GUARD_REPOS: ${{ steps.determine-automatic-lockdown.outputs.repos }}
           GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           set -eo pipefail
@@ -667,7 +627,7 @@ jobs:
           
           mkdir -p /home/runner/.copilot
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-          cat << GH_AW_MCP_CONFIG_98f7fdadb23dbbf8_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
+          cat << GH_AW_MCP_CONFIG_0bc7d21a58dbecd5_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
             "mcpServers": {
               "github": {
@@ -677,33 +637,15 @@ jobs:
                   "GITHUB_HOST": "\${GITHUB_SERVER_URL}",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "context,repos,issues,pull_requests"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
                 },
                 "guard-policies": {
                   "allow-only": {
-                    "min-integrity": "$GITHUB_MCP_GUARD_MIN_INTEGRITY",
-                    "repos": "$GITHUB_MCP_GUARD_REPOS"
-                  }
-                }
-              },
-              "nuget": {
-                "type": "stdio",
-                "container": "mcr.microsoft.com/dotnet/sdk:10.0",
-                "entrypoint": "dnx",
-                "entrypointArgs": [
-                  "NuGet.Mcp.Server",
-                  "--source",
-                  "https://api.nuget.org/v3/index.json",
-                  "--yes"
-                ],
-                "tools": [
-                  "get-latest-package-version"
-                ],
-                "guard-policies": {
-                  "write-sink": {
-                    "accept": [
-                      "*"
-                    ]
+                    "approval-labels": ${{ steps.parse-guard-vars.outputs.approval_labels }},
+                    "blocked-users": ${{ steps.parse-guard-vars.outputs.blocked_users }},
+                    "min-integrity": "unapproved",
+                    "repos": "all",
+                    "trusted-users": ${{ steps.parse-guard-vars.outputs.trusted_users }}
                   }
                 }
               },
@@ -729,7 +671,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_98f7fdadb23dbbf8_EOF
+          GH_AW_MCP_CONFIG_0bc7d21a58dbecd5_EOF
       - name: Mount MCP servers as CLIs
         id: mount-mcp-clis
         continue-on-error: true
@@ -755,51 +697,42 @@ jobs:
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
         # --allow-tool github
-        # --allow-tool nuget
-        # --allow-tool nuget(get-latest-package-version)
         # --allow-tool safeoutputs
-        # --allow-tool shell(bash)
         # --allow-tool shell(cat)
-        # --allow-tool shell(chmod)
+        # --allow-tool shell(cd)
+        # --allow-tool shell(cp)
         # --allow-tool shell(date)
-        # --allow-tool shell(dotnet:*)
         # --allow-tool shell(echo)
-        # --allow-tool shell(find)
-        # --allow-tool shell(git add:*)
-        # --allow-tool shell(git branch:*)
-        # --allow-tool shell(git checkout:*)
-        # --allow-tool shell(git commit:*)
-        # --allow-tool shell(git merge:*)
-        # --allow-tool shell(git rm:*)
-        # --allow-tool shell(git status)
-        # --allow-tool shell(git switch:*)
-        # --allow-tool shell(git:*)
+        # --allow-tool shell(gh:*)
         # --allow-tool shell(grep)
         # --allow-tool shell(head)
         # --allow-tool shell(jq)
         # --allow-tool shell(ls)
+        # --allow-tool shell(mkdir)
+        # --allow-tool shell(mv)
         # --allow-tool shell(pwd)
+        # --allow-tool shell(python3)
+        # --allow-tool shell(rm)
         # --allow-tool shell(safeoutputs:*)
-        # --allow-tool shell(sed)
         # --allow-tool shell(sort)
-        # --allow-tool shell(source)
         # --allow-tool shell(tail)
         # --allow-tool shell(uniq)
         # --allow-tool shell(wc)
+        # --allow-tool shell(xargs)
+        # --allow-tool shell(xxd)
         # --allow-tool shell(yq)
-        # --allow-tool web_fetch
         # --allow-tool write
-        timeout-minutes: 90
+        timeout-minutes: 30
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
           GH_AW_NODE_BIN=$(command -v node 2>/dev/null || true)
           export GH_AW_NODE_BIN
           (umask 177 && touch /tmp/gh-aw/agent-stdio.log)
-          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.25.41/awf-config.schema.json","network":{"allowDomains":["*.docker.com","*.docker.io","*.githubusercontent.com","*.vsblob.vsassets.io","api.business.githubcopilot.com","api.enterprise.githubcopilot.com","api.github.com","api.githubcopilot.com","api.individual.githubcopilot.com","api.nuget.org","api.snapcraft.io","archive.ubuntu.com","auth.docker.io","azure.archive.ubuntu.com","azuresearch-usnc.nuget.org","azuresearch-ussc.nuget.org","builds.dotnet.microsoft.com","ci.dot.net","codeload.github.com","crl.geotrust.com","crl.globalsign.com","crl.identrust.com","crl.sectigo.com","crl.thawte.com","crl.usertrust.com","crl.verisign.com","crl3.digicert.com","crl4.digicert.com","crls.ssl.com","dc.services.visualstudio.com","dist.nuget.org","dl.k8s.io","docs.github.com","dot.net","dotnet.microsoft.com","dotnetcli.blob.core.windows.net","gcr.io","ghcr.io","github-cloud.githubusercontent.com","github-cloud.s3.amazonaws.com","github.blog","github.com","github.githubassets.com","host.docker.internal","json-schema.org","json.schemastore.org","keyserver.ubuntu.com","lfs.github.com","mcr.microsoft.com","nuget.org","nuget.pkg.github.com","nugetregistryv2prod.blob.core.windows.net","objects.githubusercontent.com","ocsp.digicert.com","ocsp.geotrust.com","ocsp.globalsign.com","ocsp.identrust.com","ocsp.sectigo.com","ocsp.ssl.com","ocsp.thawte.com","ocsp.usertrust.com","ocsp.verisign.com","oneocsp.microsoft.com","packagecloud.io","packages.cloud.google.com","packages.microsoft.com","pkgs.dev.azure.com","pkgs.k8s.io","ppa.launchpad.net","production.cloudflare.docker.com","quay.io","raw.githubusercontent.com","registry.hub.docker.com","registry.npmjs.org","s.symcb.com","s.symcd.com","security.ubuntu.com","telemetry.enterprise.githubcopilot.com","ts-crl.ws.symantec.com","ts-ocsp.ws.symantec.com","www.googleapis.com","www.microsoft.com"]},"apiProxy":{"enabled":true,"models":{"auto":["large"],"deep-research":["copilot/deep-research*","google/deep-research*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*"],"gpt-4.1":["copilot/gpt-4.1*","openai/gpt-4.1*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"large":["sonnet","gpt-5-pro","gpt-5","gemini-pro"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash"],"opus":["copilot/*opus*","anthropic/*opus*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"small":["mini"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"]}},"container":{"imageTag":"0.25.41,squid=sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4,agent=sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770,api-proxy=sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json" && cp "${RUNNER_TEMP}/gh-aw/awf-config.json" /tmp/gh-aw/awf-config.json
+          printf '%s\n' '{"$schema":"https://github.com/github/gh-aw-firewall/releases/download/v0.25.41/awf-config.schema.json","network":{"allowDomains":["api.business.githubcopilot.com","api.enterprise.githubcopilot.com","api.github.com","api.githubcopilot.com","api.individual.githubcopilot.com","api.snapcraft.io","archive.ubuntu.com","azure.archive.ubuntu.com","crl.geotrust.com","crl.globalsign.com","crl.identrust.com","crl.sectigo.com","crl.thawte.com","crl.usertrust.com","crl.verisign.com","crl3.digicert.com","crl4.digicert.com","crls.ssl.com","github.com","host.docker.internal","json-schema.org","json.schemastore.org","keyserver.ubuntu.com","ocsp.digicert.com","ocsp.geotrust.com","ocsp.globalsign.com","ocsp.identrust.com","ocsp.sectigo.com","ocsp.ssl.com","ocsp.thawte.com","ocsp.usertrust.com","ocsp.verisign.com","packagecloud.io","packages.cloud.google.com","packages.microsoft.com","ppa.launchpad.net","raw.githubusercontent.com","registry.npmjs.org","s.symcb.com","s.symcd.com","security.ubuntu.com","telemetry.enterprise.githubcopilot.com","ts-crl.ws.symantec.com","ts-ocsp.ws.symantec.com","www.googleapis.com"]},"apiProxy":{"enabled":true,"models":{"auto":["large"],"deep-research":["copilot/deep-research*","google/deep-research*"],"gemini-flash":["copilot/gemini-*flash*","google/gemini-*flash*"],"gemini-pro":["copilot/gemini-*pro*","google/gemini-*pro*"],"gpt-4.1":["copilot/gpt-4.1*","openai/gpt-4.1*"],"gpt-5":["copilot/gpt-5*","openai/gpt-5*"],"gpt-5-codex":["copilot/gpt-5*codex*","openai/gpt-5*codex*"],"gpt-5-mini":["copilot/gpt-5*mini*","openai/gpt-5*mini*"],"gpt-5-nano":["copilot/gpt-5*nano*","openai/gpt-5*nano*"],"gpt-5-pro":["copilot/gpt-5*pro*","openai/gpt-5*pro*"],"haiku":["copilot/*haiku*","anthropic/*haiku*"],"large":["sonnet","gpt-5-pro","gpt-5","gemini-pro"],"mini":["haiku","gpt-5-mini","gpt-5-nano","gemini-flash"],"opus":["copilot/*opus*","anthropic/*opus*"],"reasoning":["copilot/o1*","copilot/o3*","copilot/o4*","openai/o1*","openai/o3*","openai/o4*"],"small":["mini"],"sonnet":["copilot/*sonnet*","anthropic/*sonnet*"]}},"container":{"imageTag":"0.25.41,squid=sha256:1260445d25968dbf3ae70143964177a0e5914cf2ce07a6117f7d3caec6c3e3c4,agent=sha256:cb2b565d070116d4b67e355775340528b5a2c3cb18b2c9049638bcc2df681770,api-proxy=sha256:fadd0de387209f69a9a7a1b8722bb5e7fdfb80ba9749a5c60f0e4cd7582a74d0"}}' > "${RUNNER_TEMP}/gh-aw/awf-config.json" && cp "${RUNNER_TEMP}/gh-aw/awf-config.json" /tmp/gh-aw/awf-config.json
           # shellcheck disable=SC1003
           sudo -E awf --config "${RUNNER_TEMP}/gh-aw/awf-config.json" --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env COPILOT_GITHUB_TOKEN --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_API_KEY --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --allow-host-ports 80,443,8080 --skip-pull \
-            -- /bin/bash -c 'export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && export PATH="$(find /opt/hostedtoolcache /home/runner/work/_tool -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || echo node)"; fi; "$GH_AW_NODE_EXEC" ${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs /usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool github --allow-tool nuget --allow-tool '\''nuget(get-latest-package-version)'\'' --allow-tool safeoutputs --allow-tool '\''shell(bash)'\'' --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(chmod)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(dotnet:*)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(find)'\'' --allow-tool '\''shell(git add:*)'\'' --allow-tool '\''shell(git branch:*)'\'' --allow-tool '\''shell(git checkout:*)'\'' --allow-tool '\''shell(git commit:*)'\'' --allow-tool '\''shell(git merge:*)'\'' --allow-tool '\''shell(git rm:*)'\'' --allow-tool '\''shell(git status)'\'' --allow-tool '\''shell(git switch:*)'\'' --allow-tool '\''shell(git:*)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(safeoutputs:*)'\'' --allow-tool '\''shell(sed)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(source)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool web_fetch --allow-tool write --allow-all-paths --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c 'export PATH="${RUNNER_TEMP}/gh-aw/mcp-cli/bin:$PATH" && export PATH="$(find /opt/hostedtoolcache /home/runner/work/_tool -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && GH_AW_NODE_EXEC="${GH_AW_NODE_BIN:-}"; if [ -z "$GH_AW_NODE_EXEC" ] || [ ! -x "$GH_AW_NODE_EXEC" ]; then GH_AW_NODE_EXEC="$(command -v node 2>/dev/null || echo node)"; fi; "$GH_AW_NODE_EXEC" ${RUNNER_TEMP}/gh-aw/actions/copilot_harness.cjs /usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --no-ask-user --allow-tool github --allow-tool safeoutputs --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(cd)'\'' --allow-tool '\''shell(cp)'\'' --allow-tool '\''shell(date)'\'' --allow-tool '\''shell(echo)'\'' --allow-tool '\''shell(gh:*)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(mkdir)'\'' --allow-tool '\''shell(mv)'\'' --allow-tool '\''shell(pwd)'\'' --allow-tool '\''shell(python3)'\'' --allow-tool '\''shell(rm)'\'' --allow-tool '\''shell(safeoutputs:*)'\'' --allow-tool '\''shell(sort)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(uniq)'\'' --allow-tool '\''shell(wc)'\'' --allow-tool '\''shell(xargs)'\'' --allow-tool '\''shell(xxd)'\'' --allow-tool '\''shell(yq)'\'' --allow-tool write --allow-all-paths --add-dir "${GITHUB_WORKSPACE}" --prompt-file /tmp/gh-aw/aw-prompts/prompt.txt' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_API_KEY: dummy-byok-key-for-offline-mode
@@ -886,7 +819,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.vsblob.vsassets.io,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.nuget.org,api.snapcraft.io,archive.ubuntu.com,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,builds.dotnet.microsoft.com,ci.dot.net,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dc.services.visualstudio.com,dist.nuget.org,dl.k8s.io,docs.github.com,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,gcr.io,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,mcr.microsoft.com,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pkgs.dev.azure.com,pkgs.k8s.io,ppa.launchpad.net,production.cloudflare.docker.com,quay.io,raw.githubusercontent.com,registry.hub.docker.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com,www.microsoft.com"
+          GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
@@ -968,6 +901,8 @@ jobs:
             /tmp/gh-aw/sandbox/agent/logs/
             /tmp/gh-aw/redacted-urls.log
             /tmp/gh-aw/mcp-logs/
+            /tmp/gh-aw/proxy-logs/
+            !/tmp/gh-aw/proxy-logs/proxy-tls/
             /tmp/gh-aw/agent_usage.json
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/pre-agent-audit.txt
@@ -988,18 +923,16 @@ jobs:
       - activation
       - agent
       - detection
+      - fetch-data
+      - publish
       - safe_outputs
     if: >
       always() && (needs.agent.result != 'skipped' || needs.activation.outputs.lockdown_check_failed == 'true' ||
       needs.activation.outputs.stale_lock_file_failed == 'true')
     runs-on: ubuntu-slim
-    permissions:
-      contents: write
-      discussions: write
-      issues: write
-      pull-requests: write
+    permissions: {}
     concurrency:
-      group: "gh-aw-conclusion-cswin32-update"
+      group: "gh-aw-conclusion-milestone-changelog"
       cancel-in-progress: false
     outputs:
       incomplete_count: ${{ steps.report_incomplete.outputs.incomplete_count }}
@@ -1015,8 +948,8 @@ jobs:
           job-name: ${{ github.job }}
           trace-id: ${{ needs.activation.outputs.setup-trace-id }}
         env:
-          GH_AW_SETUP_WORKFLOW_NAME: "Update CsWin32 Package"
-          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/cswin32-update.lock.yml@${{ github.ref }}
+          GH_AW_SETUP_WORKFLOW_NAME: "Milestone Changelog Generator"
+          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/milestone-changelog.lock.yml@${{ github.ref }}
           GH_AW_INFO_VERSION: "1.0.40"
       - name: Download agent output artifact
         id: download-agent-output
@@ -1038,7 +971,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package"
+          GH_AW_WORKFLOW_NAME: "Milestone Changelog Generator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_REPORT_AS_ISSUE: "true"
@@ -1054,7 +987,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package"
+          GH_AW_WORKFLOW_NAME: "Milestone Changelog Generator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
           GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
@@ -1071,7 +1004,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_MISSING_TOOL_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package"
+          GH_AW_WORKFLOW_NAME: "Milestone Changelog Generator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1085,7 +1018,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_REPORT_INCOMPLETE_CREATE_ISSUE: "true"
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package"
+          GH_AW_WORKFLOW_NAME: "Milestone Changelog Generator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1099,10 +1032,10 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Update CsWin32 Package"
+          GH_AW_WORKFLOW_NAME: "Milestone Changelog Generator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "cswin32-update"
+          GH_AW_WORKFLOW_ID: "milestone-changelog"
           GH_AW_ACTION_FAILURE_ISSUE_EXPIRES_HOURS: "168"
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
@@ -1112,15 +1045,13 @@ jobs:
           GH_AW_AGENTIC_ENGINE_TIMEOUT: ${{ needs.agent.outputs.agentic_engine_timeout }}
           GH_AW_MODEL_NOT_SUPPORTED_ERROR: ${{ needs.agent.outputs.model_not_supported_error }}
           GH_AW_ENGINE_API_HOSTS: "api.enterprise.githubcopilot.com,api.githubcopilot.com,api.business.githubcopilot.com,api.individual.githubcopilot.com"
-          GH_AW_CODE_PUSH_FAILURE_ERRORS: ${{ needs.safe_outputs.outputs.code_push_failure_errors }}
-          GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
           GH_AW_STALE_LOCK_FILE_FAILED: ${{ needs.activation.outputs.stale_lock_file_failed }}
           GH_AW_GROUP_REPORTS: "false"
           GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
           GH_AW_MISSING_TOOL_REPORT_AS_FAILURE: "true"
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
-          GH_AW_TIMEOUT_MINUTES: "90"
+          GH_AW_TIMEOUT_MINUTES: "30"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1151,8 +1082,8 @@ jobs:
           job-name: ${{ github.job }}
           trace-id: ${{ needs.activation.outputs.setup-trace-id }}
         env:
-          GH_AW_SETUP_WORKFLOW_NAME: "Update CsWin32 Package"
-          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/cswin32-update.lock.yml@${{ github.ref }}
+          GH_AW_SETUP_WORKFLOW_NAME: "Milestone Changelog Generator"
+          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/milestone-changelog.lock.yml@${{ github.ref }}
           GH_AW_INFO_VERSION: "1.0.40"
       - name: Download agent output artifact
         id: download-agent-output
@@ -1218,8 +1149,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          WORKFLOW_NAME: "Update CsWin32 Package"
-          WORKFLOW_DESCRIPTION: "Monthly workflow that checks for a newer Microsoft.Windows.CsWin32 package version, updates it, and removes any workarounds that are no longer necessary."
+          WORKFLOW_NAME: "Milestone Changelog Generator"
+          WORKFLOW_DESCRIPTION: "Generates and maintains a changelog for a configured milestone by\nanalyzing merged pull requests.\nCreates or updates a wiki page named \"<milestone>-Change-log\" with a list\nof new features, improvements, and notable bug fixes. A companion GitHub issue collects\neditorial feedback (e.g., exclude a change, rename an entry, merge entries)."
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1318,6 +1249,407 @@ jobs:
               }
             }
 
+  fetch-data:
+    needs: activation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+    outputs:
+      has-work: ${{ steps.fetch.outputs.has_work }}
+    steps:
+      - name: Configure GH_HOST for enterprise compatibility
+        id: ghes-host-config
+        shell: bash
+        run: |
+          # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
+          # GitHub instance (GHES/GHEC). On github.com this is a harmless no-op.
+          GH_HOST="${GITHUB_SERVER_URL#https://}"
+          GH_HOST="${GH_HOST#http://}"
+          echo "GH_HOST=${GH_HOST}" >> "$GITHUB_ENV"
+      - id: fetch
+        run: |
+          set -euo pipefail
+          REPO="${{ github.repository }}"
+          MILESTONE="${{ env.MILESTONE }}"
+          BATCH_SIZE="${{ env.BATCH_SIZE }}"
+          DATA_DIR="/tmp/gh-aw/pr-data"
+          mkdir -p "$DATA_DIR"
+
+          # 0. Clone the memory branch to read existing state (prs/, changes/,
+          #    feedback-issue.json). The full content is copied to
+          #    $DATA_DIR/memory/$MILESTONE/ so the agent can read it directly.
+          #    This branch contains only changelog state files, so the clone
+          #    is lightweight even without sparse-checkout.
+          MEMORY_REF="memory/milestone-changelog"
+          MEMORY_DIR="$DATA_DIR/memory/$MILESTONE"
+          PROCESSED_NUMBERS="[]"
+          PROCESSED_DOCS_NUMBERS="[]"
+          FEEDBACK_FROM_MEMORY=""
+          MEMORY_TMP=$(mktemp -d)
+          CLONE_ERR=$(mktemp)
+          if git clone --depth 1 --branch "$MEMORY_REF" \
+              "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
+              "$MEMORY_TMP/repo" 2>"$CLONE_ERR"; then
+            SRC_DIR="$MEMORY_TMP/repo/${MILESTONE}"
+            if [ -d "$SRC_DIR" ]; then
+              mkdir -p "$MEMORY_DIR"
+              cp -r "$SRC_DIR/." "$MEMORY_DIR/"
+              echo "Copied memory branch content to $MEMORY_DIR (read)"
+
+              # Seed the write directory with the same content so it starts
+              # as a complete copy. The agent only needs to add/modify files;
+              # the publish job pushes the write directory as the new state.
+              WRITE_DIR="/tmp/gh-aw/agent/memory/$MILESTONE"
+              mkdir -p "$WRITE_DIR"
+              cp -r "$SRC_DIR/." "$WRITE_DIR/"
+              echo "Seeded write directory $WRITE_DIR"
+            fi
+
+            PRS_DIR="$MEMORY_DIR/prs"
+            # Since tracker files only exist for processed PRs, extract all numbers.
+            # Filenames follow the pattern TIMESTAMP-NUMBER.json, so we parse the
+            # PR number from the filename instead of reading every JSON file (which
+            # can fail when the glob expands to hundreds of arguments).
+            if [ -d "$PRS_DIR" ]; then
+              PRS_LISTING=$(ls "$PRS_DIR" 2>/dev/null \
+                | sed -n 's/.*-\([0-9]*\)\.json$/\1/p' \
+                | jq -Rs '[split("\n") | .[] | select(. != "") | tonumber]')
+              if echo "$PRS_LISTING" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+                PROCESSED_NUMBERS="$PRS_LISTING"
+              fi
+              echo "Extracted $(echo "$PROCESSED_NUMBERS" | jq length) processed PR numbers from filenames"
+            fi
+
+            DOCS_PRS_DIR="$MEMORY_DIR/prs-docs"
+            if [ -d "$DOCS_PRS_DIR" ]; then
+              DOCS_PRS_LISTING=$(ls "$DOCS_PRS_DIR" 2>/dev/null \
+                | sed -n 's/.*-\([0-9]*\)\.json$/\1/p' \
+                | jq -Rs '[split("\n") | .[] | select(. != "") | tonumber]')
+              if echo "$DOCS_PRS_LISTING" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+                PROCESSED_DOCS_NUMBERS="$DOCS_PRS_LISTING"
+              fi
+              echo "Extracted $(echo "$PROCESSED_DOCS_NUMBERS" | jq length) processed docs PR numbers from filenames"
+            fi
+
+            # Also grab the feedback issue number from memory
+            FEEDBACK_FILE="$MEMORY_DIR/feedback-issue.json"
+            if [ -f "$FEEDBACK_FILE" ]; then
+              FEEDBACK_FROM_MEMORY=$(jq -r '.number' "$FEEDBACK_FILE")
+            fi
+          else
+            # Log the error unless it's just a missing branch
+            if ! grep -qi 'not found\|could not find' "$CLONE_ERR"; then
+              echo "::warning::Memory branch clone failed: $(cat "$CLONE_ERR")"
+            fi
+          fi
+          rm -f "$CLONE_ERR"
+
+          # 1. Fetch ALL merged PRs in milestone, sorted by merge date ascending
+          gh pr list --repo "$REPO" --state merged --limit 5000 \
+            --search "milestone:$MILESTONE" \
+            --json number,title,body,author,mergedBy,mergedAt,labels,additions,deletions,changedFiles \
+            | jq 'sort_by(.mergedAt)' \
+            > "$DATA_DIR/all-milestone-prs.json"
+
+          TOTAL=$(jq length "$DATA_DIR/all-milestone-prs.json")
+          echo "Total merged PRs in milestone: $TOTAL"
+
+          # 2. Determine the batch of unprocessed PRs
+
+          # Filter all-milestone-prs to only unprocessed, take oldest BATCH_SIZE.
+          # Build a lookup object from processed numbers for O(1) membership checks.
+          jq --argjson processed "$PROCESSED_NUMBERS" \
+             --argjson batch_size "$BATCH_SIZE" \
+             '($processed | map({(tostring): true}) | add // {}) as $set | [.[] | select($set[.number | tostring] | not)] | .[0:$batch_size]' \
+             "$DATA_DIR/all-milestone-prs.json" \
+             > "$DATA_DIR/batch-prs.json"
+
+          BATCH_COUNT=$(jq length "$DATA_DIR/batch-prs.json")
+          PROCESSED_COUNT=$(echo "$PROCESSED_NUMBERS" | jq length)
+          echo "Already processed: $PROCESSED_COUNT"
+          echo "Batch PRs (oldest $BATCH_SIZE unprocessed): $BATCH_COUNT"
+
+          rm -rf "$MEMORY_TMP"
+
+          # 2a. Enrich batch PRs with comments, files, and authorAssociation.
+          #     The per-PR author_association from the REST API is unreliable
+          #     with GITHUB_TOKEN: org members show as CONTRIBUTOR because the
+          #     token lacks org-level read scope. Instead, we check each author
+          #     via the per-user collaborator/permission endpoint (only needs
+          #     metadata-read scope). Authors with write/maintain/admin are
+          #     MEMBER; others are CONTRIBUTOR.
+          if [ "$BATCH_COUNT" -gt 0 ]; then
+            echo "Enriching batch PRs with authorAssociation, comments, and files..."
+            : > "$DATA_DIR/enrichment.jsonl"
+            for NUM in $(jq -r '.[].number' "$DATA_DIR/batch-prs.json"); do
+              VIEW=$(gh pr view "$NUM" --repo "$REPO" --json files,comments 2>/dev/null) \
+                || VIEW='{"files":[],"comments":[]}'
+              # Determine authorAssociation via per-user permission endpoint.
+              # This endpoint only requires metadata-read scope, unlike the
+              # bulk collaborators list which requires push/admin access.
+              AUTHOR=$(jq -r --argjson n "$NUM" '.[] | select(.number == $n) | .author.login' "$DATA_DIR/batch-prs.json")
+              if [ -z "$AUTHOR" ] || [ "$AUTHOR" = "null" ]; then
+                ASSOC="UNKNOWN"
+              else
+                PERM=$(gh api "repos/$REPO/collaborators/$AUTHOR/permission" --jq '.permission' 2>/dev/null) || PERM=""
+                case "$PERM" in
+                  write|maintain|admin) ASSOC="MEMBER" ;;
+                  *) ASSOC="CONTRIBUTOR" ;;
+                esac
+              fi
+              echo "$VIEW" | jq --arg n "$NUM" --arg a "$ASSOC" '{($n): {
+                authorAssociation: $a,
+                comments: [(.comments // [])[] | {author: .author.login, body: .body, createdAt: .createdAt}],
+                files: [(.files // [])[] | {path: .path, additions: .additions, deletions: .deletions, changeType: .changeType}]
+              }}' >> "$DATA_DIR/enrichment.jsonl"
+            done
+            # Merge enrichment lookup into batch-prs.json
+            jq -s 'add // {}' "$DATA_DIR/enrichment.jsonl" \
+              | jq --slurpfile prs "$DATA_DIR/batch-prs.json" '. as $lookup | $prs[0] | map(
+                  ($lookup[(.number | tostring)] // {}) as $e |
+                  . + {authorAssociation: ($e.authorAssociation // "UNKNOWN"), comments: ($e.comments // []), files: ($e.files // [])}
+                )' > "$DATA_DIR/batch-prs-tmp.json" \
+              && mv "$DATA_DIR/batch-prs-tmp.json" "$DATA_DIR/batch-prs.json"
+            rm -f "$DATA_DIR/enrichment.jsonl"
+            echo "Enriched $BATCH_COUNT batch PRs with authorAssociation, comments, and files"
+          fi
+
+          # 2b. Fetch docs PRs from DOCS_REPO merged after milestone start date.
+          #     Cap the date range to the most recently merged PR in the current
+          #     batch so that docs PRs are only evaluated once their corresponding
+          #     product PRs have been processed. When the batch is smaller than
+          #     BATCH_SIZE, all product PRs are caught up and no cap is needed.
+          DOCS_REPO="${{ env.DOCS_REPO }}"
+          MILESTONE_START="${{ env.MILESTONE_START }}"
+          DOCS_MERGED_RANGE="merged:>=${MILESTONE_START}"
+          if [ "$BATCH_COUNT" -ge "$BATCH_SIZE" ]; then
+            BATCH_CUTOFF=$(jq -r '.[-1].mergedAt' "$DATA_DIR/batch-prs.json")
+            DOCS_MERGED_RANGE="merged:${MILESTONE_START}..${BATCH_CUTOFF}"
+            echo "Capping docs PRs to merged on or before $BATCH_CUTOFF (batch is full)"
+          fi
+          gh pr list --repo "$DOCS_REPO" --state merged --limit 5000 \
+            --search "$DOCS_MERGED_RANGE" \
+            --json number,title,body,author,mergedBy,mergedAt,labels,additions,deletions,changedFiles,files \
+            | jq 'sort_by(.mergedAt)' \
+            > "$DATA_DIR/all-docs-prs.json"
+
+          DOCS_TOTAL=$(jq length "$DATA_DIR/all-docs-prs.json")
+          echo "Total docs PRs merged since $MILESTONE_START: $DOCS_TOTAL"
+
+          jq --argjson processed "$PROCESSED_DOCS_NUMBERS" \
+             --argjson batch_size "$BATCH_SIZE" \
+             '($processed | map({(tostring): true}) | add // {}) as $set | [.[] | select($set[.number | tostring] | not)] | .[0:$batch_size]' \
+             "$DATA_DIR/all-docs-prs.json" \
+             > "$DATA_DIR/batch-docs-prs.json"
+
+          DOCS_BATCH_COUNT=$(jq length "$DATA_DIR/batch-docs-prs.json")
+          DOCS_PROCESSED_COUNT=$(echo "$PROCESSED_DOCS_NUMBERS" | jq length)
+          echo "Docs PRs already processed: $DOCS_PROCESSED_COUNT"
+          echo "Docs PRs batch (oldest $BATCH_SIZE unprocessed): $DOCS_BATCH_COUNT"
+
+          # 3. Check if there is work to do (unprocessed PRs, unprocessed docs PRs, or updated feedback)
+          HAS_WORK="false"
+          if [ "$BATCH_COUNT" -gt 0 ]; then
+            echo "Has $BATCH_COUNT unprocessed PRs"
+            HAS_WORK="true"
+          fi
+          if [ "$DOCS_BATCH_COUNT" -gt 0 ]; then
+            echo "Has $DOCS_BATCH_COUNT unprocessed docs PRs"
+            HAS_WORK="true"
+          fi
+
+          # 4. Find the feedback issue number (check memory branch first, fallback to search)
+          FEEDBACK_TITLE="[${MILESTONE}] Changelog feedback"
+          FEEDBACK_NUM="${FEEDBACK_FROM_MEMORY:-}"
+          if [ -n "$FEEDBACK_NUM" ]; then
+            echo "Feedback issue from memory branch: #$FEEDBACK_NUM"
+          fi
+
+          if [ -z "$FEEDBACK_NUM" ]; then
+            FEEDBACK_NUM=$(gh issue list --repo "$REPO" --state open --limit 5 \
+              --search "in:title \"$FEEDBACK_TITLE\"" \
+              --json number,title \
+              --jq '.[] | select(.title == "'"$FEEDBACK_TITLE"'") | .number' \
+              2>/dev/null || true)
+          fi
+
+          if [ -n "$FEEDBACK_NUM" ]; then
+            FEEDBACK_UPDATED_AT=$(gh api "repos/$REPO/issues/$FEEDBACK_NUM" --jq '.updated_at' 2>/dev/null || true)
+            jq -n --argjson num "$FEEDBACK_NUM" --arg updatedAt "${FEEDBACK_UPDATED_AT:-}" \
+              '{number: $num, updatedAt: $updatedAt}' > "$DATA_DIR/feedback-issue.json"
+            echo "Feedback issue: #$FEEDBACK_NUM (updated: $FEEDBACK_UPDATED_AT)"
+
+            # If no unprocessed PRs, check if feedback has new comments since
+            # the last run by comparing the current updatedAt against the value
+            # stored on the memory branch. This avoids re-triggering indefinitely
+            # once feedback is newer than the latest PR merge.
+            if [ "$HAS_WORK" = "false" ] && [ -n "$FEEDBACK_UPDATED_AT" ]; then
+              SAVED_UPDATED_AT=""
+              if [ -f "$MEMORY_DIR/feedback-issue.json" ]; then
+                SAVED_UPDATED_AT=$(jq -r '.updatedAt // empty' "$MEMORY_DIR/feedback-issue.json")
+              fi
+              if [ -z "$SAVED_UPDATED_AT" ] || [[ "$FEEDBACK_UPDATED_AT" > "$SAVED_UPDATED_AT" ]]; then
+                echo "Feedback updated since last run (saved: ${SAVED_UPDATED_AT:-none}, current: $FEEDBACK_UPDATED_AT)"
+                HAS_WORK="true"
+              fi
+            fi
+          else
+            echo "No feedback issue found"
+          fi
+
+          # 5. Fetch existing changelog body from wiki page (avoids storing it in the memory branch)
+          PAGE_NAME="${MILESTONE}-Change-log"
+          WIKI_TMP=$(mktemp -d)
+          if git clone --depth 1 "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git" "$WIKI_TMP/wiki" 2>/dev/null; then
+            if [ -f "$WIKI_TMP/wiki/${PAGE_NAME}.md" ]; then
+              cp "$WIKI_TMP/wiki/${PAGE_NAME}.md" "$DATA_DIR/existing-body.md"
+              BODY_SIZE=$(wc -c < "$DATA_DIR/existing-body.md")
+              echo "Fetched existing wiki page: ${BODY_SIZE} bytes"
+            else
+              echo "No existing wiki page found"
+            fi
+          else
+            echo "Could not clone wiki repo (may not exist yet)"
+          fi
+          rm -rf "$WIKI_TMP"
+
+          echo "has_work=$HAS_WORK" >> "$GITHUB_OUTPUT"
+      - if: steps.fetch.outputs.has_work == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: changelog-data
+          path: /tmp/gh-aw/
+
+  publish:
+    needs:
+      - agent
+      - detection
+    if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'publish')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: Download agent output artifact
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: agent
+          path: ${{ runner.temp }}/gh-aw/safe-jobs/
+      - name: Configure Safe Outputs Job Environment Variables
+        id: setup-safe-job-env
+        run: |
+          find "${RUNNER_TEMP}/gh-aw/safe-jobs/" -type f -print
+          echo "GH_AW_AGENT_OUTPUT=${RUNNER_TEMP}/gh-aw/safe-jobs/agent_output.json" >> "$GITHUB_OUTPUT"
+          echo "GH_TOKEN=${{ github.token }}" >> "$GITHUB_OUTPUT"
+      - name: Publish changelog and update memory branch
+        run: |
+          set -euo pipefail
+
+          OUTPUT_FILE="$GH_AW_AGENT_OUTPUT"
+          if [ -z "$OUTPUT_FILE" ]; then
+            echo "::error::No GH_AW_AGENT_OUTPUT environment variable found"
+            exit 1
+          fi
+
+          ARTIFACT_DIR=$(dirname "$OUTPUT_FILE")
+          BODY_FILE="$ARTIFACT_DIR/agent/new-body.md"
+          if [ ! -f "$BODY_FILE" ]; then
+            echo "::error::Changelog body not found at $BODY_FILE"
+            exit 1
+          fi
+          BODY_SIZE=$(wc -c < "$BODY_FILE")
+          if [ "$BODY_SIZE" -eq 0 ]; then
+            echo "::error::Changelog body file is empty"
+            exit 1
+          fi
+          echo "Changelog body: $BODY_SIZE bytes"
+
+          REPO="${{ github.repository }}"
+          MILESTONE="${{ env.MILESTONE }}"
+          PAGE_NAME="${MILESTONE}-Change-log"
+          FEEDBACK_TITLE="[${MILESTONE}] Changelog feedback"
+          MEMORY_BRANCH="memory/milestone-changelog"
+
+          # ── 1. Publish wiki page ──
+          if ! git clone --depth 1 \
+              "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git" \
+              wiki-repo 2>/dev/null; then
+            # Wiki doesn't exist yet — initialize an empty repo
+            git init wiki-repo
+            git -C wiki-repo remote add origin \
+              "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.wiki.git"
+          fi
+          cp "$BODY_FILE" "wiki-repo/${PAGE_NAME}.md"
+          git -C wiki-repo config user.name "github-actions[bot]"
+          git -C wiki-repo config user.email "github-actions[bot]@users.noreply.github.com"
+          git -C wiki-repo add "${PAGE_NAME}.md"
+
+          if git -C wiki-repo diff --cached --quiet; then
+            echo "No changes to wiki page"
+          else
+            git -C wiki-repo commit -m "Update ${PAGE_NAME}"
+            git -C wiki-repo push
+            echo "Wiki page ${PAGE_NAME} updated"
+          fi
+
+          # ── 2. Push state to memory branch ──
+          MEMORY_DIR="$ARTIFACT_DIR/agent/memory/$MILESTONE"
+          if [ -d "$MEMORY_DIR" ]; then
+            if ! git clone --depth 1 --branch "$MEMORY_BRANCH" \
+                "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
+                memory-repo 2>/dev/null; then
+              echo "Memory branch does not exist yet, creating orphan branch"
+              git init memory-repo
+              git -C memory-repo checkout --orphan "$MEMORY_BRANCH"
+              git -C memory-repo remote add origin \
+                "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+            fi
+            git -C memory-repo config user.name "github-actions[bot]"
+            git -C memory-repo config user.email "github-actions[bot]@users.noreply.github.com"
+
+            # Copy agent memory files into the memory repo
+            mkdir -p "memory-repo/$MILESTONE"
+            cp -r "$MEMORY_DIR/." "memory-repo/$MILESTONE/"
+
+            git -C memory-repo add -A
+            if git -C memory-repo diff --cached --quiet; then
+              echo "No changes to memory branch"
+            else
+              RUN_ID="${GITHUB_RUN_ID:-unknown}"
+              git -C memory-repo commit -m "Update repo memory from workflow run $RUN_ID"
+              git -C memory-repo push origin "HEAD:$MEMORY_BRANCH"
+              echo "Memory branch updated"
+            fi
+          else
+            echo "No memory directory in agent artifact, skipping memory update"
+          fi
+
+          # ── 3. Ensure companion feedback issue exists ──
+          EXISTING=$(gh issue list --repo "$REPO" --state open --limit 5 \
+            --search "in:title \"$FEEDBACK_TITLE\"" \
+            --json number,title \
+            --jq ".[] | select(.title == \"$FEEDBACK_TITLE\") | .number" \
+            2>/dev/null || true)
+
+          if [ -z "$EXISTING" ]; then
+            WIKI_URL="https://github.com/${REPO}/wiki/${PAGE_NAME}"
+            ISSUE_BODY=$(printf 'Post comments on this issue to provide editorial feedback for the [%s wiki page](%s).\n\nExamples: "Exclude PR #1234", "Rename: X → Y", "Merge PRs #1234 and #5678".' "$PAGE_NAME" "$WIKI_URL")
+            gh issue create --repo "$REPO" \
+              --title "$FEEDBACK_TITLE" \
+              --label "changelog" \
+              --body "$ISSUE_BODY"
+            echo "Created feedback issue: $FEEDBACK_TITLE"
+          fi
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-safe-job-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_TOKEN: ${{ steps.setup-safe-job-env.outputs.GH_TOKEN }}
+
   safe_outputs:
     needs:
       - activation
@@ -1325,31 +1657,23 @@ jobs:
       - detection
     if: (!cancelled()) && needs.agent.result != 'skipped' && needs.detection.result == 'success'
     runs-on: ubuntu-slim
-    permissions:
-      contents: write
-      discussions: write
-      issues: write
-      pull-requests: write
+    permissions: {}
     timeout-minutes: 15
     env:
-      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/cswin32-update"
+      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/milestone-changelog"
       GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
       GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
       GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens }}
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: ${{ needs.agent.outputs.model }}
       GH_AW_ENGINE_VERSION: "1.0.40"
-      GH_AW_WORKFLOW_ID: "cswin32-update"
-      GH_AW_WORKFLOW_NAME: "Update CsWin32 Package"
+      GH_AW_WORKFLOW_ID: "milestone-changelog"
+      GH_AW_WORKFLOW_NAME: "Milestone Changelog Generator"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
-      comment_id: ${{ steps.process_safe_outputs.outputs.comment_id }}
-      comment_url: ${{ steps.process_safe_outputs.outputs.comment_url }}
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
-      created_pr_number: ${{ steps.process_safe_outputs.outputs.created_pr_number }}
-      created_pr_url: ${{ steps.process_safe_outputs.outputs.created_pr_url }}
       process_safe_outputs_processed_count: ${{ steps.process_safe_outputs.outputs.processed_count }}
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
@@ -1361,8 +1685,8 @@ jobs:
           job-name: ${{ github.job }}
           trace-id: ${{ needs.activation.outputs.setup-trace-id }}
         env:
-          GH_AW_SETUP_WORKFLOW_NAME: "Update CsWin32 Package"
-          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/cswin32-update.lock.yml@${{ github.ref }}
+          GH_AW_SETUP_WORKFLOW_NAME: "Milestone Changelog Generator"
+          GH_AW_CURRENT_WORKFLOW_REF: ${{ github.repository }}/.github/workflows/milestone-changelog.lock.yml@${{ github.ref }}
           GH_AW_INFO_VERSION: "1.0.40"
       - name: Download agent output artifact
         id: download-agent-output
@@ -1378,57 +1702,6 @@ jobs:
           mkdir -p /tmp/gh-aw/
           find "/tmp/gh-aw/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_OUTPUT"
-      - name: Download patch artifact
-        continue-on-error: true
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: agent
-          path: /tmp/gh-aw/
-      - name: Extract base branch from agent output
-        id: extract-base-branch
-        if: steps.download-agent-output.outcome == 'success'
-        shell: bash
-        run: |
-          if [ -f "/tmp/gh-aw/agent_output.json" ]; then
-            GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-            BASE_BRANCH=$("$GH_AW_NODE" -e "
-              try {
-                const data = JSON.parse(require('fs').readFileSync('/tmp/gh-aw/agent_output.json', 'utf8'));
-                const item = (data.items || []).find(i =>
-                  (i.type === 'create_pull_request' || i.type === 'push_to_pull_request_branch') &&
-                  i.base_branch
-                );
-                if (item) process.stdout.write(item.base_branch);
-              } catch(e) {}
-            " 2>/dev/null || true)
-            # Validate: only allow safe git branch name characters
-            if [[ "$BASE_BRANCH" =~ ^[a-zA-Z0-9/_.-]+$ ]] && [ ${#BASE_BRANCH} -le 255 ]; then
-              printf 'base-branch=%s\n' "$BASE_BRANCH" >> "$GITHUB_OUTPUT"
-              echo "Extracted base branch from safe output: $BASE_BRANCH"
-            fi
-          fi
-      - name: Checkout repository
-        if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request')
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: main
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          persist-credentials: false
-          fetch-depth: 1
-      - name: Configure Git credentials
-        if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request')
-        env:
-          REPO_NAME: ${{ github.repository }}
-          SERVER_URL: ${{ github.server_url }}
-          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git config --global am.keepcr true
-          # Re-authenticate git with GitHub token
-          SERVER_URL_STRIPPED="${SERVER_URL#https://}"
-          git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
-          echo "Git configured with standard GitHub Actions identity"
       - name: Configure GH_HOST for enterprise compatibility
         id: ghes-host-config
         shell: bash
@@ -1443,11 +1716,11 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.vsblob.vsassets.io,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.nuget.org,api.snapcraft.io,archive.ubuntu.com,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,builds.dotnet.microsoft.com,ci.dot.net,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,dc.services.visualstudio.com,dist.nuget.org,dl.k8s.io,docs.github.com,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,gcr.io,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,mcr.microsoft.com,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pkgs.dev.azure.com,pkgs.k8s.io,ppa.launchpad.net,production.cloudflare.docker.com,quay.io,raw.githubusercontent.com,registry.hub.docker.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com,www.microsoft.com"
+          GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"*\"},\"create_pull_request\":{\"base_branch\":\"main\",\"draft\":false,\"labels\":[\"area-networking\"],\"max\":1,\"max_patch_files\":100,\"max_patch_size\":1024,\"protect_top_level_dot_folders\":true,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"DESIGN.md\",\"README.md\",\"CONTRIBUTING.md\",\"CHANGELOG.md\",\"SECURITY.md\",\"CODE_OF_CONDUCT.md\",\"AGENTS.md\",\"CLAUDE.md\",\"GEMINI.md\"],\"title_prefix\":\"[package] \"},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"report_incomplete\":{}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
+          GH_AW_SAFE_OUTPUT_JOBS: "{\"publish\":\"\"}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"report_incomplete\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
