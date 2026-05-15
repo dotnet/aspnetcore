@@ -128,7 +128,9 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
-Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if it meets **either** of the following cases:
+**IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
+
+A test is a candidate for quarantining if it meets **either** of the following cases:
 
 **Case A – New quarantine**
 
@@ -205,7 +207,10 @@ A test is a candidate for unquarantining if ALL of the following are true:
   git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
   If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
-- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR modified the same test file to add a `[QuarantinedTest]` attribute for this test. To check this, search for merged PRs with the `re-quarantine` label using `search_issues` (query: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine`), and also search for merged PRs with "Re-quarantine" in the title (query: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title`). For each matching PR, check its changed files — if any touch the same file and test, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest]` attribute to the same test method, test class, or test assembly. To check this:
+  1. Search for merged PRs with the `re-quarantine` label: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine` (do **not** append the test name to this query — PR titles often use method names, class names, or abbreviations that won't match a text search).
+  2. Search for merged PRs with "Re-quarantine" in the title: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title` (again, do **not** append the test name).
+  3. For each matching PR from either search, check its changed files using `pull_request_read` (method `get_files`). If any changed file adds a `[QuarantinedTest]` attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 

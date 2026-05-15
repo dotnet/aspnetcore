@@ -10,8 +10,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -785,6 +785,62 @@ public class RequestResponseTests
             await connection.Receive(
                 "HTTP/1.1 200 OK",
                 "");
+        }
+    }
+
+    [ConditionalFact]
+    public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+    {
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                await connection.Send(
+                    "POST /ReadAndWriteEcho HTTP/1.1",
+                    "Host: localhost",
+                    "Transfer-Encoding: chunked",
+                    "Connection: keep-alive",
+                    "Content-Length: 25",
+                    "",
+                    "5", "Hello",
+                    "6", " World",
+                    "0",
+                    "",
+                    "");
+            }
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+            var headers = await connection.ReceiveHeaders();
+
+            // RFC 9112 §6.1: the server MUST close the connection after responding
+            // to a request that contained both Content-Length and Transfer-Encoding.
+            Assert.Contains("Connection: close", headers);
+            Assert.Contains("Server: Microsoft-IIS/10.0", headers);
+
+            if (headers.Contains("Transfer-Encoding: chunked"))
+            {
+                await connection.Receive(
+                    "B",
+                    "Hello World",
+                    "");
+                await connection.Receive(
+                    "0",
+                    "",
+                    "");
+            }
+            else
+            {
+                // Either framed by Content-Length: 11 or by connection close
+                // (no framing header). Either way the body is exactly "Hello World"
+                // and WaitForConnectionClose below verifies nothing else follows.
+                await connection.Receive("Hello World");
+            }
+
+            // Verify the second request was not processed and that the server closed
+            // the connection (no extra bytes are sent).
+            await connection.WaitForConnectionClose();
         }
     }
 
