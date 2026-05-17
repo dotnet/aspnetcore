@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public class EditContextValidatableInfoFieldTest
 {
     [Fact]
-    public async Task NotifyFieldChanged_ValidValue_ProducesNoMessages()
+    public Task NotifyFieldChanged_ValidValue_ProducesNoMessages() => RunOnDispatcher(async () =>
     {
         var model = new RootModel { Name = "valid" };
         var (editContext, _) = CreateEditContextWithValidation(model);
@@ -28,10 +28,10 @@ public class EditContextValidatableInfoFieldTest
 
         Assert.False(editContext.IsValidationFaulted());
         Assert.Empty(editContext.GetValidationMessages());
-    }
+    });
 
     [Fact]
-    public async Task NotifyFieldChanged_InvalidValue_AddsMessageToFieldIdentifier()
+    public Task NotifyFieldChanged_InvalidValue_AddsMessageToFieldIdentifier() => RunOnDispatcher(async () =>
     {
         var model = new RootModel { Name = null };
         var (editContext, _) = CreateEditContextWithValidation(model);
@@ -42,10 +42,10 @@ public class EditContextValidatableInfoFieldTest
 
         Assert.Equal(new[] { "Name is required." }, editContext.GetValidationMessages(field));
         Assert.Equal(new[] { "Name is required." }, editContext.GetValidationMessages());
-    }
+    });
 
     [Fact]
-    public async Task NotifyFieldChanged_OnListItemValueProperty_AddsMessageToItemFieldIdentifier()
+    public Task NotifyFieldChanged_OnListItemValueProperty_AddsMessageToItemFieldIdentifier() => RunOnDispatcher(async () =>
     {
         // Mirrors the typical Razor pattern:
         //   @foreach (var item in model.Items) {
@@ -73,10 +73,10 @@ public class EditContextValidatableInfoFieldTest
         // The other (valid) item must remain untouched.
         var item0Field = new FieldIdentifier(item0, nameof(ItemModel.Value));
         Assert.Empty(editContext.GetValidationMessages(item0Field));
-    }
+    });
 
     [Fact]
-    public async Task NotifyFieldChanged_FixingValue_ClearsPreviousMessage()
+    public Task NotifyFieldChanged_FixingValue_ClearsPreviousMessage() => RunOnDispatcher(async () =>
     {
         var item = new ItemModel { Value = 200 };
         var model = new RootModel { Name = "valid", Items = { item } };
@@ -93,7 +93,7 @@ public class EditContextValidatableInfoFieldTest
 
         Assert.Empty(editContext.GetValidationMessages(field));
         Assert.Empty(editContext.GetValidationMessages());
-    }
+    });
 
     [Fact]
     public void NotifyFieldChanged_PropertyNotInValidationOptions_DoesNothing()
@@ -113,7 +113,7 @@ public class EditContextValidatableInfoFieldTest
     }
 
     [Fact]
-    public async Task NotifyFieldChanged_DoesNotValidateSiblingFields()
+    public Task NotifyFieldChanged_DoesNotValidateSiblingFields() => RunOnDispatcher(async () =>
     {
         // Per-field validation must only inspect the single field that changed,
         // even when the same model has other invalid properties.
@@ -131,7 +131,7 @@ public class EditContextValidatableInfoFieldTest
         // The unrelated invalid item value must not have been touched.
         var itemField = new FieldIdentifier(item, nameof(ItemModel.Value));
         Assert.Empty(editContext.GetValidationMessages(itemField));
-    }
+    });
 
     private static (EditContext editContext, IDisposable subscription) CreateEditContextWithValidation(RootModel model)
     {
@@ -175,6 +175,16 @@ public class EditContextValidatableInfoFieldTest
             await Task.Yield();
         }
     }
+
+    // Runs a test body under Blazor's default dispatcher to simulate the renderer threading model:
+    // validator continuations, the framework's ObserveValidationTaskAsync continuation, and the test
+    // body's polling/assertions all serialize through a single logical thread. This matches
+    // EditContext's documented threading model (see EditContext class XML remarks) and removes
+    // incidental cross-thread races that would otherwise occur when raw EditContext is exercised on
+    // the bare thread pool. Uses the public Dispatcher.CreateDefault() — the same factory the
+    // renderer uses in production — consistent with precedent across the Blazor test suite.
+    private static Task RunOnDispatcher(Func<Task> body)
+        => Dispatcher.CreateDefault().InvokeAsync(body);
 
     private sealed class RootModel
     {

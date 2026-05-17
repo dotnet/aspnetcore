@@ -388,6 +388,11 @@ public sealed class EditContext
 
                 // A handler-internal OperationCanceledException leaves its task in the Canceled
                 // state (IsFaulted == false), so it is naturally excluded from this scan.
+                //
+                // TODO (oroztocil): consider symmetry with the field-level fast path in AddValidationTask,
+                // which treats a Canceled task as a fault when our owning CTS was not the source of
+                // cancellation (e.g. an HttpClient timeout via the validator's own token). The
+                // form-level path here silently swallows such Canceled outcomes.
                 for (var i = 0; i < tasks.Length; i++)
                 {
                     if (tasks[i].IsFaulted)
@@ -459,14 +464,19 @@ public sealed class EditContext
             state.PendingValidationTask = null;
             state.PendingValidationCts = null;
 
-            // Settle synchronously without parking the slot. Mirror the slow path: a successful
-            // or cancelled task clears any prior fault flag; a faulted task sets it.
+            // Settle synchronously without parking the slot. Mirror the slow path semantics:
+            //   - Faulted task    => fault flag set, exception observed to suppress UnobservedTaskException.
+            //   - Canceled task by our CTS (caller pre-cancelled or superseded) => no fault.
+            //   - Canceled task NOT by our CTS (validator threw OCE from an unrelated source,
+            //     e.g. HttpClient timeout) => treat as fault, same as the asynchronous path.
+            //   - Successful task => no fault.
             if (task.IsFaulted)
             {
                 _ = task.Exception; // observe to suppress UnobservedTaskException
             }
-            var faultFlagChanged = task.IsFaulted != state.IsValidationFaulted;
-            state.IsValidationFaulted = task.IsFaulted;
+            var faulted = task.IsFaulted || (task.IsCanceled && !cts.IsCancellationRequested);
+            var faultFlagChanged = faulted != state.IsValidationFaulted;
+            state.IsValidationFaulted = faulted;
 
             if (hadPriorPending || faultFlagChanged)
             {

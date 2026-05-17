@@ -22,6 +22,8 @@ internal sealed class FieldState
 
     // Async validation tracking: the currently-tracked async validation task for this field,
     // the CancellationTokenSource that can cancel it, and whether the last task faulted.
+    // EditContext is dispatcher-bound (see remarks on EditContext), so plain reads/writes are
+    // sufficient — the dispatcher serializes access and provides the necessary happens-before.
     internal Task? PendingValidationTask { get; set; }
     internal CancellationTokenSource? PendingValidationCts { get; set; }
     internal bool IsValidationFaulted { get; set; }
