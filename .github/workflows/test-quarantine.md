@@ -312,7 +312,7 @@ A test is a candidate for unquarantining if ALL of the following are true:
 
   For each entry's `quarantine_entries`, determine whether the re-quarantine applies to the candidate test:
   - If `patch_truncated` is `true`, the patch was too large for the API to return. **Fail closed**: treat this as matching any test in that file.
-  - Otherwise, examine `added_lines` (the actual source lines that were added). Check if any line applies the `[QuarantinedTest` attribute to the same test method, class, or assembly as the candidate. For example, if the candidate test is `MyTests.FooTest` and an added line is `[QuarantinedTest("https://github.com/...")]` on method `FooTest`, that's a match.
+  - Otherwise, examine `added_lines` (the actual source lines that were added). Since `[QuarantinedTest]` is an attribute placed above a method or class declaration, the added line alone won't name the target. To identify which method/class it applies to, find the matching `[QuarantinedTest` line in the current source file (by `filename`) and look at the next non-attribute, non-blank line — that will be the method or class declaration (e.g., `public async Task FooTest()` or `public class FooTests`). If the candidate test matches that declaration, it's a match.
 
   If any re-quarantine PR matches the candidate, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
