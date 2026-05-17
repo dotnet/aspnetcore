@@ -2462,29 +2462,21 @@ public class Http3StreamTests : Http3TestBase
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName);
     }
 
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
+    [Theory]
+    [InlineData("transfer-encoding", "chunked")]
+    [InlineData("keep-alive", "timeout=5, max=1000")]
+    [InlineData("proxy-connection", "keep-alive")]
+    [InlineData("upgrade", "websocket")]
+    [InlineData("connection", "keep-alive")]
+    [InlineData("te", "trailers, deflate")]
+    public Task HEADERS_Received_HeaderBlockContainsConnectionSpecificHeader_StreamError(string headerName, string headerValue)
     {
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("connection", "keep-alive")
-        };
-
-        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
-    }
-
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
-    {
-        var headers = new[]
-        {
-            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("te", "trailers, deflate")
+            new KeyValuePair<string, string>(headerName, headerValue)
         };
 
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
