@@ -25,6 +25,9 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
     private readonly IValidationLocalizer? _validationLocalizer;
 
+    [UnconditionalSuppressMessage("Trimming", "IL2066",
+        Justification = "DynamicDependency preserves ValidationOptions's parameterless constructor used by Microsoft.Extensions.Options to materialize IOptions<ValidationOptions>.")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ValidationOptions))]
     public DefaultClientValidationService(IServiceProvider serviceProvider)
     {
         _validationLocalizer = serviceProvider.GetService<IOptions<ValidationOptions>>()?.Value?.Localizer;
