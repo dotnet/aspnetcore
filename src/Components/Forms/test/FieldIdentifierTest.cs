@@ -96,11 +96,9 @@ public class FieldIdentifierTest
         // and yields null Model/FieldName. GetHashCode must not throw in that case,
         // otherwise callers such as EditContext.NotifyFieldChanged surface a confusing
         // "Value cannot be null. (Parameter 'obj')" error.
-        var fieldIdentifier = default(FieldIdentifier);
+        var ex = Record.Exception(() => default(FieldIdentifier).GetHashCode());
 
-        var hashCode = fieldIdentifier.GetHashCode();
-
-        Assert.Equal(default(FieldIdentifier).GetHashCode(), hashCode);
+        Assert.Null(ex);
     }
 
     [Fact]
