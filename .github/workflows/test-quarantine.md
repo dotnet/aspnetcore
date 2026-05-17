@@ -209,24 +209,29 @@ A test is a candidate for unquarantining if ALL of the following are true:
   If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
 - The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest]` attribute to the same test method, test class, or test assembly. To check this:
 
-  **IMPORTANT: Use `curl` or `python3` with the GitHub Search API for this check — do NOT use `search_pull_requests` (MCP: github).** The MCP tool applies an integrity filter that silently removes PRs authored by external contributors, which can cause re-quarantine PRs to be invisible. Using `curl`/`python3` directly bypasses this filter.
+  **IMPORTANT: Use `python3` with the GitHub Search API for this check — do NOT use `search_pull_requests` (MCP: github).** The MCP tool applies an integrity filter that silently removes PRs authored by external contributors, which can cause re-quarantine PRs to be invisible. Using `python3` with `urllib.request` directly bypasses this filter.
 
-  1. Search for merged PRs with the `re-quarantine` label using `curl` or `python3`:
+  Use `python3` with `urllib.request` to query the GitHub Search API. Include the `GITHUB_TOKEN` environment variable for authentication to avoid rate limits. **If any API call fails or returns an error, do NOT proceed with unquarantining — skip all unquarantine actions for this run.** A failed re-quarantine check must be treated as "possibly re-quarantined."
+
+  1. Search for merged PRs with the `re-quarantine` label. Use pagination (`per_page=100` + follow `next` links from the `Link` response header) to retrieve all results:
      ```
-     curl -s "https://api.github.com/search/issues?q=repo:dotnet/aspnetcore+is:pr+is:merged+label:re-quarantine&per_page=100"
+     GET https://api.github.com/search/issues?q=repo:dotnet/aspnetcore+is:pr+is:merged+label:re-quarantine&per_page=100
+     Authorization: Bearer $GITHUB_TOKEN
      ```
      Do **not** append the test name to this query — PR titles often use method names, class names, or abbreviations that won't match a text search.
-  2. Search for merged PRs with "Re-quarantine" in the title:
+  2. Search for merged PRs with "Re-quarantine" in the title (same pagination and auth):
      ```
-     curl -s "https://api.github.com/search/issues?q=repo:dotnet/aspnetcore+is:pr+is:merged+%22Re-quarantine%22+in:title&per_page=100"
+     GET https://api.github.com/search/issues?q=repo:dotnet/aspnetcore+is:pr+is:merged+%22Re-quarantine%22+in:title&per_page=100
+     Authorization: Bearer $GITHUB_TOKEN
      ```
      Again, do **not** append the test name.
   3. Deduplicate results by PR number across both searches.
-  4. For each matching PR, get its changed files using `curl`:
+  4. For each matching PR, get its changed files (same auth, paginate if needed):
      ```
-     curl -s "https://api.github.com/repos/dotnet/aspnetcore/pulls/{PR_NUMBER}/files?per_page=100"
+     GET https://api.github.com/repos/dotnet/aspnetcore/pulls/{PR_NUMBER}/files?per_page=100
+     Authorization: Bearer $GITHUB_TOKEN
      ```
-     The response includes a `patch` field for each file containing the unified diff. Check whether any file's `patch` contains an added line (starting with `+`) that includes `[QuarantinedTest`. If such a line applies the attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+     The response includes a `patch` field for each file containing the unified diff. Check whether any file's `patch` contains an added line (starting with `+`) that includes `[QuarantinedTest]`. If such a line applies the attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 
