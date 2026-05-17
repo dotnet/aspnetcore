@@ -204,7 +204,7 @@ public static partial class EditContextDataAnnotationsExtensions
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private async Task ValidateFieldAsync(
             FieldIdentifier fieldIdentifier,
-            ValidatablePropertyInfo validatableInfo,
+            IValidatableInfo validatableInfo,
             CancellationToken cancellationToken)
         {
             var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null);

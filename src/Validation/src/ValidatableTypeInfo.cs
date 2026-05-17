@@ -48,15 +48,47 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
     /// <summary>
-    /// The super-types (base types and implemented interfaces) of <see cref="Type"/> whose
-    /// inherited members participate in validation.
+    /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
+    /// <paramref name="memberName"/>, including members inherited from base types or implemented
+    /// interfaces.
     /// </summary>
-    internal IReadOnlyList<Type> SuperTypes => _superTypes;
+    /// <remarks>
+    /// <para>
+    /// Members declared directly on <see cref="Type"/> take precedence over members inherited
+    /// from super-types, matching the order in which <see cref="ValidateAsync(object?, ValidateContext, CancellationToken)"/>
+    /// visits members.
+    /// </para>
+    /// <para>
+    /// Inherited members are resolved by looking up each super-type via
+    /// <paramref name="options"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
+    /// are not registered with a resolver are silently skipped.
+    /// </para>
+    /// </remarks>
+    /// <param name="memberName">The CLR name of the member to find.</param>
+    /// <param name="options">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
+    /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
+    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
+    internal ValidatablePropertyInfo? FindMember(string memberName, ValidationOptions options)
+    {
+        if (FindLocalMember(memberName) is { } localMember)
+        {
+            return localMember;
+        }
 
-    /// <summary>
-    /// Searches <see cref="Members"/> for a member with the specified name.
-    /// </summary>
-    internal ValidatablePropertyInfo? FindMember(string memberName)
+        foreach (var superType in _superTypes)
+        {
+            if (options.TryGetValidatableTypeInfo(superType, out var superInfo)
+                && superInfo is ValidatableTypeInfo superTypeInfo
+                && superTypeInfo.FindLocalMember(memberName) is { } inheritedMember)
+            {
+                return inheritedMember;
+            }
+        }
+
+        return null;
+    }
+
+    private ValidatablePropertyInfo? FindLocalMember(string memberName)
     {
         for (var i = 0; i < _membersCount; i++)
         {

@@ -78,41 +78,33 @@ public class ValidationOptions
     }
 
     /// <summary>
-    /// Attempts to get validation information for a property declared on the specified type or any of its super-types.
+    /// Attempts to get validation information for a property declared on the specified type or
+    /// any of its super-types.
     /// </summary>
     /// <param name="type">The type that declares or inherits the property.</param>
-    /// <param name="propertyName">The property name to look up.</param>
-    /// <param name="validatablePropertyInfo">When this method returns, contains the validation information for the property,
-    /// if a property with the specified name was found; otherwise, <see langword="null" />.</param>
-    /// <returns><see langword="true" /> if a validatable property with the specified name was found; otherwise, <see langword="false" />.</returns>
+    /// <param name="propertyName">The CLR property name to look up.</param>
+    /// <param name="validatablePropertyInfo">When this method returns, contains the validation information
+    /// for the property, if a property with the specified name was found; otherwise,
+    /// <see langword="null" />.</param>
+    /// <returns><see langword="true" /> if a validatable property with the specified name was found;
+    /// otherwise, <see langword="false" />.</returns>
     /// <remarks>
-    /// Members declared on <paramref name="type"/> take precedence over members inherited from super-types,
-    /// matching the order in which <see cref="ValidatableTypeInfo.ValidateAsync"/> visits members.
+    /// Members declared directly on <paramref name="type"/> take precedence over members inherited
+    /// from super-types, matching the order in which <see cref="ValidatableTypeInfo.ValidateAsync"/>
+    /// visits members.
     /// </remarks>
     [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-    public bool TryGetValidatablePropertyInfo(Type type, string propertyName, [NotNullWhen(true)] out ValidatablePropertyInfo? validatablePropertyInfo)
+    public bool TryGetValidatablePropertyInfo(Type type, string propertyName, [NotNullWhen(true)] out IValidatableInfo? validatablePropertyInfo)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(propertyName);
 
-        if (TryGetValidatableTypeInfo(type, out var info) && info is ValidatableTypeInfo typeInfo)
+        if (TryGetValidatableTypeInfo(type, out var info)
+            && info is ValidatableTypeInfo typeInfo
+            && typeInfo.FindMember(propertyName, this) is { } property)
         {
-            if (typeInfo.FindMember(propertyName) is { } localProperty)
-            {
-                validatablePropertyInfo = localProperty;
-                return true;
-            }
-
-            foreach (var superType in typeInfo.SuperTypes)
-            {
-                if (TryGetValidatableTypeInfo(superType, out var superInfo)
-                    && superInfo is ValidatableTypeInfo superTypeInfo
-                    && superTypeInfo.FindMember(propertyName) is { } inheritedProperty)
-                {
-                    validatablePropertyInfo = inheritedProperty;
-                    return true;
-                }
-            }
+            validatablePropertyInfo = property;
+            return true;
         }
 
         validatablePropertyInfo = null;
