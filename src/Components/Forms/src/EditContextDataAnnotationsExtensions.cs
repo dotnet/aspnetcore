@@ -67,7 +67,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 : null;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _editContext.OnFieldChanged += OnFieldChanged;
-            _editContext.OnValidationRequested += OnValidationRequested;
+            _editContext.OnValidationRequestedAsync += OnValidationRequestedAsync;
 
             if (MetadataUpdater.IsSupported)
             {
@@ -79,105 +79,42 @@ public static partial class EditContextDataAnnotationsExtensions
         private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
         {
             var fieldIdentifier = eventArgs.FieldIdentifier;
-
-            // Prefer the Microsoft.Extensions.Validation pipeline so per-field validation runs
-            // through the same path as full-form validation and benefits from IValidationLocalizer.
-            if (TryValidateFieldThroughValidatableInfo(fieldIdentifier))
-            {
-                return;
-            }
-
-            if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
-            {
-                var propertyValue = propertyInfo.GetValue(fieldIdentifier.Model);
-                var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null)
-                {
-                    MemberName = propertyInfo.Name
-                };
-                var results = new List<ValidationResult>();
-
-                Validator.TryValidateProperty(propertyValue, validationContext, results);
-                _messages.Clear(fieldIdentifier);
-                foreach (var result in CollectionsMarshal.AsSpan(results))
-                {
-                    _messages.Add(fieldIdentifier, result.ErrorMessage!);
-                }
-
-                // We have to notify even if there were no messages before and are still no messages now,
-                // because the "state" that changed might be the completion of some async validation task
-                _editContext.NotifyValidationStateChanged();
-            }
-        }
+            var modelType = fieldIdentifier.Model.GetType();
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
-        private bool TryValidateFieldThroughValidatableInfo(in FieldIdentifier fieldIdentifier)
-        {
-            // Only route through M.E.V when the form-level validation is also routed there,
-            // so per-field and full-form validation produce consistent error messages
-            // (including localized ones) for the same model.
-            if (_validatorTypeInfo is null || _validationOptions is null)
+            if (_validationOptions is not null &&
+                _validationOptions.TryGetValidatablePropertyInfo(modelType, fieldIdentifier.FieldName, out var validatablePropertyInfo))
             {
-                return false;
+                var cts = new CancellationTokenSource();
+                var task = ValidateFieldAsync(fieldIdentifier, validatablePropertyInfo, cts.Token);
+                _editContext.AddValidationTask(fieldIdentifier, task, cts);
             }
-
-            var fieldModel = fieldIdentifier.Model;
-            var fieldName = fieldIdentifier.FieldName;
-            var fieldModelType = fieldModel.GetType();
-
-            if (!_validationOptions.TryGetValidatablePropertyInfo(fieldModelType, fieldName, out var validatableProperty))
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            else if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
             {
-                // The model was registered for type-level validation but this specific property
-                // does not have generated metadata (e.g. it's not annotated with any ValidationAttribute
-                // and is not a complex type). Fall back to the BCL path so legacy attributes still apply.
-                return false;
+                ValidateField(fieldIdentifier, propertyInfo);
             }
-
-            var validationContext = new ValidationContext(fieldModel, _serviceProvider, items: null);
-            var validateContext = new ValidateContext
-            {
-                ValidationOptions = _validationOptions,
-                ValidationContext = validationContext,
-            };
-
-            var validationTask = validatableProperty.ValidateAsync(fieldModel, validateContext, CancellationToken.None);
-            if (!validationTask.IsCompleted)
-            {
-                throw new InvalidOperationException("Async validation is not supported");
-            }
-
-            _messages.Clear(fieldIdentifier);
-            if (validateContext.ValidationErrors is { Count: > 0 } errors)
-            {
-                foreach (var (_, messages) in errors)
-                {
-                    _messages.Add(fieldIdentifier, messages);
-                }
-            }
-
-            // We have to notify even if there were no messages before and are still no messages now,
-            // because the "state" that changed might be the completion of some async validation task.
-            _editContext.NotifyValidationStateChanged();
-            return true;
         }
-#pragma warning restore ASP0029
+
+        private async Task OnValidationRequestedAsync(object sender, ValidationRequestedEventArgs e)
+        {
+            //
+            if (_validatorTypeInfo is not null)
+            {
+                await ValidateFormAsync(_validatorTypeInfo, e.CancellationToken);
+            }
+            else
+            {
+                ValidateForm();
+            }
+
+            _editContext.NotifyValidationStateChanged();
+        }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
-        private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
+        private void ValidateForm()
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
-
-            if (!TryValidateTypeInfo(validationContext))
-            {
-                ValidateWithDefaultValidator(validationContext);
-            }
-
-            _editContext.NotifyValidationStateChanged();
-        }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
-        private void ValidateWithDefaultValidator(ValidationContext validationContext)
-        {
             var validationResults = new List<ValidationResult>();
             Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, true);
 
@@ -205,34 +142,28 @@ public static partial class EditContextDataAnnotationsExtensions
         }
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        private bool TryValidateTypeInfo(ValidationContext validationContext)
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private async Task ValidateFormAsync(IValidatableInfo validatableInfo, CancellationToken cancellationToken)
         {
-            if (_validatorTypeInfo is null)
-            {
-                return false;
-            }
-
+            var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
             var validateContext = new ValidateContext
             {
                 ValidationOptions = _validationOptions!,
                 ValidationContext = validationContext,
             };
+
+            // Clear stale messages up-front. If the validator throws partway through, the form
+            // shows no per-field messages (form-level fault state is signaled separately via
+            // EditContext.IsValidationFaulted).
+            _messages.Clear();
+
             try
             {
                 validateContext.OnValidationError += AddMapping;
 
-                var validationTask = _validatorTypeInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
-                if (!validationTask.IsCompleted)
-                {
-                    throw new InvalidOperationException("Async validation is not supported");
-                }
+                await validatableInfo.ValidateAsync(_editContext.Model, validateContext, cancellationToken);
 
-                var validationErrors = validateContext.ValidationErrors;
-
-                // Transfer results to the ValidationMessageStore
-                _messages.Clear();
-
-                if (validationErrors is not null && validationErrors.Count > 0)
+                if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
                 {
                     foreach (var (fieldKey, messages) in validationErrors)
                     {
@@ -241,19 +172,75 @@ public static partial class EditContextDataAnnotationsExtensions
                     }
                 }
             }
-            catch (Exception)
-            {
-                throw;
-            }
             finally
             {
                 validateContext.OnValidationError -= AddMapping;
                 _validationPathToFieldIdentifierMapping.Clear();
             }
-
-            return true;
-
         }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private void ValidateField(FieldIdentifier fieldIdentifier, PropertyInfo propertyInfo)
+        {
+            var propertyValue = propertyInfo.GetValue(fieldIdentifier.Model);
+            var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null)
+            {
+                MemberName = propertyInfo.Name
+            };
+            var results = new List<ValidationResult>();
+
+            Validator.TryValidateProperty(propertyValue, validationContext, results);
+            _messages.Clear(fieldIdentifier);
+            foreach (var result in CollectionsMarshal.AsSpan(results))
+            {
+                _messages.Add(fieldIdentifier, result.ErrorMessage!);
+            }
+
+            // We have to notify even if there were no messages before and are still no messages now,
+            // because the "state" that changed might be the completion of some async validation task
+            _editContext.NotifyValidationStateChanged();
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private async Task ValidateFieldAsync(
+            FieldIdentifier fieldIdentifier,
+            IValidatableInfo validatableInfo,
+            CancellationToken cancellationToken)
+        {
+            var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null);
+            var validateContext = new ValidateContext
+            {
+                ValidationOptions = _validationOptions!,
+                ValidationContext = validationContext,
+            };
+
+            // Clear stale messages up-front so the field shows neutral state during validation and
+            // after a throw or cancellation. Any faulted state is signalled separately via EditContext.IsValidationFaulted.
+            _messages.Clear(fieldIdentifier);
+
+            try
+            {
+                await validatableInfo.ValidateAsync(fieldIdentifier.Model, validateContext, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Task was cancelled (user re-edited field or form is submitting). The notification
+                // emitted by the superseding AddValidationTask call already reflects the cleared
+                // messages, so no extra notification is needed here.
+                return;
+            }
+
+            if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
+            {
+                foreach (var (_, messages) in validationErrors)
+                {
+                    _messages.Add(fieldIdentifier, messages);
+                }
+            }
+
+            _editContext.NotifyValidationStateChanged();
+        }
+
         private void AddMapping(ValidationErrorContext context)
         {
             _validationPathToFieldIdentifierMapping[context.Path] =
@@ -264,7 +251,7 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             _messages.Clear();
             _editContext.OnFieldChanged -= OnFieldChanged;
-            _editContext.OnValidationRequested -= OnValidationRequested;
+            _editContext.OnValidationRequestedAsync -= OnValidationRequestedAsync;
             _editContext.NotifyValidationStateChanged();
 
             if (MetadataUpdater.IsSupported)

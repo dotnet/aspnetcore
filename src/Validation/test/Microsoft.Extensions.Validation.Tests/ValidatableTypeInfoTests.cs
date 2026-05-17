@@ -604,7 +604,7 @@ public class ValidatableTypeInfoTests
                 new CustomValidationAttribute()
             ]);
 
-        // First case: 
+        // First case:
         var testTypeInstance = new PropertyAndTypeLevelErrorObject { Value = 15 };
 
         var context = new ValidateContext
@@ -623,7 +623,7 @@ public class ValidatableTypeInfoTests
         Assert.Equal(string.Empty, interfaceError.Key);
         Assert.Equal("IValidatableObject error", interfaceError.Value.Single());
 
-        // Second case: 
+        // Second case:
         testTypeInstance.Value = 5;
         context.ValidationErrors = [];
         context.ValidationContext = new ValidationContext(testTypeInstance);
@@ -635,7 +635,7 @@ public class ValidatableTypeInfoTests
         Assert.Equal(string.Empty, classAttributeError.Key);
         Assert.Equal("Class attribute error", classAttributeError.Value.Single());
 
-        // Third case: 
+        // Third case:
         testTypeInstance.Value = -5;
         context.ValidationErrors = [];
         context.ValidationContext = new ValidationContext(testTypeInstance);
