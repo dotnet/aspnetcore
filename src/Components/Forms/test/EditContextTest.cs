@@ -121,6 +121,16 @@ public class EditContextTest
         // Assert
         Assert.True(didReceiveNotification);
     }
+    [Fact]
+    public void NotifyFieldChanged_ThrowsForInvalidFieldIdentifier()
+    {
+        var editContext = new EditContext(new object());
+    
+        var ex = Assert.Throws<ArgumentException>(() => editContext.NotifyFieldChanged(default));
+    
+        Assert.Equal("fieldIdentifier", ex.ParamName);
+        Assert.StartsWith("The supplied FieldIdentifier is invalid.", ex.Message);
+    }
 
     [Fact]
     public void CanEnumerateValidationMessagesAcrossAllStoresForSingleField()
