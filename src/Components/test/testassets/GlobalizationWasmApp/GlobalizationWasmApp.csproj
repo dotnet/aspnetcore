@@ -21,6 +21,8 @@
     <Reference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>
 
-  <Import Project="$(RepoRoot)src\Components\WebAssembly\testassets\SpaFallback.targets" />
+  <PropertyGroup>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
+  </PropertyGroup>
 
 </Project>
