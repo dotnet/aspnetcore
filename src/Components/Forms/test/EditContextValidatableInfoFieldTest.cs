@@ -137,14 +137,14 @@ public class EditContextValidatableInfoFieldTest
     {
         var rootTypeInfo = new TestValidatableTypeInfo(typeof(RootModel),
         [
-            new TestValidatablePropertyInfo(typeof(RootModel), typeof(string), nameof(RootModel.Name), "Name",
+            new TestValidatablePropertyInfo(typeof(RootModel), typeof(string), nameof(RootModel.Name),
                 [new RequiredAttribute { ErrorMessage = "Name is required." }]),
-            new TestValidatablePropertyInfo(typeof(RootModel), typeof(List<ItemModel>), nameof(RootModel.Items), "Items",
+            new TestValidatablePropertyInfo(typeof(RootModel), typeof(List<ItemModel>), nameof(RootModel.Items),
                 []),
         ]);
         var itemTypeInfo = new TestValidatableTypeInfo(typeof(ItemModel),
         [
-            new TestValidatablePropertyInfo(typeof(ItemModel), typeof(int), nameof(ItemModel.Value), "Value",
+            new TestValidatablePropertyInfo(typeof(ItemModel), typeof(int), nameof(ItemModel.Value),
                 [new RangeAttribute(1, 100) { ErrorMessage = "Value out of range." }]),
         ]);
 
@@ -216,9 +216,8 @@ public class EditContextValidatableInfoFieldTest
             Type declaringType,
             Type propertyType,
             string name,
-            string displayName,
             ValidationAttribute[] attributes)
-            : base(declaringType, propertyType, name, displayName)
+            : base(declaringType, propertyType, name, displayNameInfo: null)
         {
             _attributes = attributes;
         }
