@@ -47,6 +47,28 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
 
+    /// <summary>
+    /// The super-types (base types and implemented interfaces) of <see cref="Type"/> whose
+    /// inherited members participate in validation.
+    /// </summary>
+    internal IReadOnlyList<Type> SuperTypes => _superTypes;
+
+    /// <summary>
+    /// Searches <see cref="Members"/> for a member with the specified name.
+    /// </summary>
+    internal ValidatablePropertyInfo? FindMember(string memberName)
+    {
+        for (var i = 0; i < _membersCount; i++)
+        {
+            if (string.Equals(Members[i].Name, memberName, StringComparison.Ordinal))
+            {
+                return Members[i];
+            }
+        }
+
+        return null;
+    }
+
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {

@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatablePropertyInfo(System.Type! type, string! propertyName, out Microsoft.Extensions.Validation.ValidatablePropertyInfo? validatablePropertyInfo) -> bool
