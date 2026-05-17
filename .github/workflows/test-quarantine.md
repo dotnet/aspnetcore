@@ -226,7 +226,7 @@ A test is a candidate for unquarantining if ALL of the following are true:
      ```
      curl -s "https://api.github.com/repos/dotnet/aspnetcore/pulls/{PR_NUMBER}/files?per_page=100"
      ```
-     If any changed file adds a `[QuarantinedTest]` attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+     The response includes a `patch` field for each file containing the unified diff. Check whether any file's `patch` contains an added line (starting with `+`) that includes `[QuarantinedTest`. If such a line applies the attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 
