@@ -11,7 +11,7 @@
     <WasmApplicationEnvironmentName>Staging</WasmApplicationEnvironmentName>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
+  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>

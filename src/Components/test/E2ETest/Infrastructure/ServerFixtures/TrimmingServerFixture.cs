@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public class TrimmingServerFixture<TStartup> : BasicTestAppServerSiteFixture<TStartup> where TStartup : class
 {
-    public readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
+    public new readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
         .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedOrMultithreadingApps")
+        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
         .Value == "true";
 
     public TrimmingServerFixture()
@@ -43,7 +43,7 @@ public class TrimmingServerFixture<TStartup> : BasicTestAppServerSiteFixture<TSt
 
     private static string GetPublishedContentRoot(Assembly assembly)
     {
-        var contentRoot = Path.Combine(AppContext.BaseDirectory, "trimmed-or-threading", assembly.GetName().Name);
+        var contentRoot = Path.Combine(AppContext.BaseDirectory, "trimmed", assembly.GetName().Name);
 
         if (!Directory.Exists(contentRoot))
         {
