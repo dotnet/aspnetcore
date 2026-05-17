@@ -9,11 +9,14 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -41,10 +44,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
             ?.SetValue(null, enableUrlNavigation);
 
-        services.AddValidation(options =>
-        {
-            options.Localizer = new TestValidationLocalizer();
-        });
+        services.AddSingleton<IStringLocalizerFactory>(
+            new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
+        services.AddValidation();
+        services.AddValidationLocalization();
 
         services.AddRazorComponents(options =>
         {
@@ -168,19 +171,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         UseFakeAuthState(app);
         app.UseAntiforgery();
 
-        // Culture-setting middleware for the localized client validation E2E tests.
-        // Reads ?culture=fr|de|en from the query string and sets CurrentUICulture for
-        // the duration of the request. Inactive when the query string is absent.
-        app.Use((ctx, next) =>
+        app.UseRequestLocalization(new RequestLocalizationOptions
         {
-            if (ctx.Request.Query.TryGetValue("culture", out var culture)
-                && !string.IsNullOrEmpty(culture))
-            {
-                var c = new CultureInfo(culture!);
-                CultureInfo.CurrentCulture = c;
-                CultureInfo.CurrentUICulture = c;
-            }
-            return next();
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
+            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
         });
 
         app.Use((ctx, nxt) =>
@@ -348,64 +343,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 ? "https://microsoft.com"
                 : $"{request.PathBase}/nav/scroll-to-hash#some-content");
             return Task.CompletedTask;
-        }
-    }
-
-    // Inline IValidationLocalizer used for the client-validation localization E2E tests.
-    // Returns hardcoded translations for the keys the LocalizedClientValidation test page uses.
-    // Falls back to null (so the validation pipeline uses the literal/default) for everything else,
-    // preserving existing test behaviour.
-    private sealed class TestValidationLocalizer : Microsoft.Extensions.Validation.IValidationLocalizer
-    {
-        private static readonly Dictionary<string, Dictionary<string, string>> Translations = new(StringComparer.Ordinal)
-        {
-            ["fr"] = new(StringComparer.Ordinal)
-            {
-                ["Email Address"] = "Adresse e-mail",
-                ["Age"] = "Âge",
-                ["RequiredKey"] = "Le champ {0} est requis (fr)",
-                ["RangeKey"] = "Le champ {0} doit être entre {1} et {2} (fr)",
-            },
-            ["de"] = new(StringComparer.Ordinal)
-            {
-                ["Email Address"] = "E-Mail-Adresse",
-                ["Age"] = "Alter",
-                ["RequiredKey"] = "Das Feld {0} ist erforderlich (de)",
-                ["RangeKey"] = "Das Feld {0} muss zwischen {1} und {2} liegen (de)",
-            },
-        };
-
-        public string? ResolveDisplayName(in Microsoft.Extensions.Validation.DisplayNameLocalizationContext context)
-        {
-            if (context.DisplayName is null)
-            {
-                return null;
-            }
-            var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-            return Translations.TryGetValue(lang, out var dict) && dict.TryGetValue(context.DisplayName, out var v) ? v : null;
-        }
-
-        public string? ResolveErrorMessage(in Microsoft.Extensions.Validation.ErrorMessageLocalizationContext context)
-        {
-            var key = context.Attribute.ErrorMessage;
-            if (string.IsNullOrEmpty(key))
-            {
-                return null;
-            }
-            var lang = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-            if (!Translations.TryGetValue(lang, out var dict) || !dict.TryGetValue(key, out var template))
-            {
-                return null;
-            }
-            // Format with attribute-specific arguments. The DefaultValidationLocalizer (in the
-            // M.E.V.Localization package) does this via ValidationAttributeFormatterRegistry; we
-            // inline a minimal version here that covers Required ({0}) and Range ({0}, {1}, {2}).
-            return context.Attribute switch
-            {
-                System.ComponentModel.DataAnnotations.RangeAttribute ra =>
-                    string.Format(CultureInfo.CurrentCulture, template, context.DisplayName, ra.Minimum, ra.Maximum),
-                _ => string.Format(CultureInfo.CurrentCulture, template, context.DisplayName),
-            };
         }
     }
 }

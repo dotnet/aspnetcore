@@ -367,8 +367,6 @@ public class DefaultClientValidationServiceTest
     private class BaseModel { [Required] public string BaseProp { get; set; } = ""; }
     private class DerivedModel : BaseModel { }
 
-    // ---- Localization integration tests ----
-
     [Fact]
     public void Localizer_NotConfigured_ProducesSameOutputAsNoLocalizer()
     {
