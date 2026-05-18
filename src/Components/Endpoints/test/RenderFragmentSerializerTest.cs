@@ -16,7 +16,7 @@ public class RenderFragmentSerializerTest
 
     private static List<RenderTreeNode> SerializeFragment(RenderFragment fragment)
     {
-        var capture = RenderFragmentCapture.Wrap(fragment);
+        var capture = new RenderFragmentCapture(fragment);
         using var builder = new RenderTreeBuilder();
         capture.Invoke(builder);
         return RenderFragmentSerializer.SerializeFrames(capture, _logger);
