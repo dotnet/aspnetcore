@@ -211,6 +211,79 @@ public class RequestHeaderTests : LoggedTest
     }
 
     [ConditionalFact]
+    public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, async httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("chunked", requestHeaders.TransferEncoding);
+
+            Assert.Null(request.ContentLength);
+            Assert.True(request.HasEntityBody);
+
+            Assert.False(requestHeaders.ContainsKey("Content-Length"));
+            Assert.Null(requestHeaders.ContentLength);
+
+            Assert.Single(requestHeaders["X-Content-Length"]);
+            Assert.Equal("1", requestHeaders["X-Content-Length"]);
+
+            await httpContext.Response.WriteAsync("Hello World");
+        }, LoggerFactory))
+        {
+            var uri = new Uri(address);
+            using (Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+            {
+                socket.Connect(uri.Host, uri.Port);
+                // Send 2 requests with both CL and TE header
+                // expect the second to not be processed and the connection to be closed
+                for (var i = 0; i < 2; i++)
+                {
+                    socket.Send(Encoding.ASCII.GetBytes(string.Join("\r\n",
+                    "POST / HTTP/1.1",
+                    $"Host: {uri.Authority}",
+                    "Transfer-Encoding: chunked",
+                    "Connection: keep-alive",
+                    "Content-Length: 1",
+                    "",
+                    "5", "Hello",
+                    "6", " World",
+                    "0",
+                    "",
+                    "")));
+                }
+                byte[] response = new byte[1024 * 5];
+                var sb = new StringBuilder();
+
+                int read = 0;
+                do
+                {
+                    read = await Task.Run(() => socket.Receive(response));
+                    var s = Encoding.ASCII.GetString(response, 0, read);
+                    sb.Append(s);
+                } while (read != 0);
+
+                var resp = sb.ToString();
+
+                Assert.Matches(@"HTTP/1\.1 200 OK
+Transfer-Encoding: chunked
+Server: Microsoft-HTTPAPI/2\.0
+Date: .+
+Connection: close
+
+B
+Hello World
+0
+
+$",
+                resp);
+            }
+        }
+    }
+
+    [ConditionalFact]
     public async Task RequestHeaders_AllKnownHeadersKeys_Received()
     {
         string customHeader = "X-KnownHeader";
