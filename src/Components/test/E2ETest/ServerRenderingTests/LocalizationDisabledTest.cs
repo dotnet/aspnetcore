@@ -31,14 +31,14 @@ public class LocalizationDisabledTest : ServerTestBase<BasicTestAppServerSiteFix
     [Fact]
     public void DoesNotPersistCultureFromServerWhenDisabled()
     {
-        Navigate($"{ServerPathBase}/Culture/SetCulture?culture=fr-FR&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/persist-culture-state")}");
+        Navigate($"{ServerPathBase}/Culture/SetCulture?culture=fr-FR&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/persist-culture-state?suppress-autostart")}");
         Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
 
         Browser.Equal("Prerender", () => Browser.FindElement(By.Id("prerender")).Text);
         Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
         Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
 
-        Browser.Click(By.Id("start-blazor"));
+        Browser.Click(By.Id("call-blazor-start"));
 
         Browser.Equal("Interactive", () => Browser.FindElement(By.Id("interactive")).Text);
         Browser.Equal("en-US", () => Browser.FindElement(By.Id("culture-set")).Text);
