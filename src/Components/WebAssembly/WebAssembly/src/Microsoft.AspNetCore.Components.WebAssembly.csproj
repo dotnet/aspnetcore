@@ -14,8 +14,7 @@
     <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
     <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
 
-    <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>
-    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
@@ -73,8 +72,8 @@
   <!-- Include blazor.webassembly.js as Content under wwwroot/ so the SWA pipeline discovers it.
        ContentRoot points to the JS dist folder so the runtime middleware can serve files directly. -->
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
-    <Content Include="$(_BlazorWasmJSContentRoot)\blazor.webassembly.js" Link="wwwroot\blazor.webassembly.js" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
-    <Content Include="$(_BlazorWasmJSContentRoot)\blazor.webassembly.js.map" Link="wwwroot\blazor.webassembly.js.map" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
+    <Content Include="$(_BlazorWasmJSContentRoot)\_framework\blazor.webassembly.js" Link="wwwroot\_framework\blazor.webassembly.js" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
+    <Content Include="$(_BlazorWasmJSContentRoot)\_framework\blazor.webassembly.js.map" Link="wwwroot\_framework\blazor.webassembly.js.map" ContentRoot="$(_BlazorWasmJSContentRoot)\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -12,7 +12,7 @@
     <IncludeSymbols>false</IncludeSymbols>
     <ImplicitUsings>disable</ImplicitUsings>
 
-    <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
     <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
     <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
 
@@ -31,10 +31,10 @@
   <!-- blazor.webassembly.js is provided by Microsoft.AspNetCore.Components.WebAssembly instead.
        It flows to Blazor Web Apps through the client project P2P reference chain. -->
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
-    <Content Include="$(_BlazorJSContentRoot)\blazor.web.js" Link="wwwroot\blazor.web.js" ContentRoot="$(_BlazorJSContentRoot)\" />
-    <Content Include="$(_BlazorJSContentRoot)\blazor.server.js" Link="wwwroot\blazor.server.js" ContentRoot="$(_BlazorJSContentRoot)\" />
-    <Content Include="$(_BlazorJSContentRoot)\blazor.web.js.map" Link="wwwroot\blazor.web.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
-    <Content Include="$(_BlazorJSContentRoot)\blazor.server.js.map" Link="wwwroot\blazor.server.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js" Link="wwwroot\_framework\blazor.web.js" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js" Link="wwwroot\_framework\blazor.server.js" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js.map" Link="wwwroot\_framework\blazor.web.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js.map" Link="wwwroot\_framework\blazor.server.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,8 +45,8 @@
 
   <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences" Condition="'$(BuildNodeJS)' != 'false'">
     <ItemGroup>
-      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.web.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\blazor.web.js')" />
-      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\blazor.server.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\blazor.server.js')" />
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.web.js')" />
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.server.js')" />
     </ItemGroup>
 
     <Error
