@@ -3,6 +3,102 @@ on:
   schedule:
     - cron: "0 10 * * *"
   workflow_dispatch:
+  steps:
+    - name: Fetch re-quarantine PRs
+      id: requarantine_prs
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Fetch all merged PRs with re-quarantine label or title, bypassing DIFC filtering.
+        # The agent's MCP search tools filter out PRs from external contributors, which
+        # can hide legitimate re-quarantine PRs. This deterministic step runs with full
+        # GitHub token access and writes results to a file the agent can read.
+        python3 << 'SCRIPT'
+        import json, os, urllib.request
+
+        token = os.environ["GH_TOKEN"]
+        headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+
+        def search_prs(query):
+            results = []
+            url = f"https://api.github.com/search/issues?q={query}&per_page=100"
+            while url:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req) as resp:
+                    data = json.loads(resp.read())
+                    results.extend(data.get("items", []))
+                    # Follow pagination
+                    link = resp.headers.get("Link", "")
+                    url = None
+                    for part in link.split(","):
+                        if 'rel="next"' in part:
+                            url = part.split("<")[1].split(">")[0]
+            return results
+
+        def get_changed_files(pr_number):
+            url = f"https://api.github.com/repos/dotnet/aspnetcore/pulls/{pr_number}/files?per_page=100"
+            files = []
+            while url:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req) as resp:
+                    files.extend(json.loads(resp.read()))
+                    link = resp.headers.get("Link", "")
+                    url = None
+                    for part in link.split(","):
+                        if 'rel="next"' in part:
+                            url = part.split("<")[1].split(">")[0]
+            return files
+
+        # Search by label and by title
+        by_label = search_prs("repo:dotnet/aspnetcore+is:pr+is:merged+label:re-quarantine")
+        by_title = search_prs("repo:dotnet/aspnetcore+is:pr+is:merged+%22Re-quarantine%22+in:title")
+
+        # Deduplicate by PR number
+        seen = set()
+        prs = []
+        for pr in by_label + by_title:
+            if pr["number"] not in seen:
+                seen.add(pr["number"])
+                prs.append(pr)
+
+        # For each PR, get changed files and check for QuarantinedTest additions.
+        # Store the added lines containing [QuarantinedTest so the agent can match at
+        # method/class/assembly level, not just file level.
+        requarantine_data = []
+        for pr in prs:
+            files = get_changed_files(pr["number"])
+            quarantine_entries = []
+            for f in files:
+                patch = f.get("patch", "")
+                if not patch and f.get("status") in ("modified", "added"):
+                    # Patch may be omitted for large diffs — fail closed by
+                    # treating the whole file as potentially re-quarantined
+                    quarantine_entries.append({
+                        "filename": f["filename"],
+                        "added_lines": [],
+                        "patch_truncated": True
+                    })
+                    continue
+                added = [line[1:] for line in patch.split("\n")
+                         if line.startswith("+") and "[QuarantinedTest" in line]
+                if added:
+                    quarantine_entries.append({
+                        "filename": f["filename"],
+                        "added_lines": added,
+                        "patch_truncated": False
+                    })
+            requarantine_data.append({
+                "number": pr["number"],
+                "title": pr["title"],
+                "quarantine_entries": quarantine_entries
+            })
+
+        output_path = "/tmp/requarantine-prs.json"
+        with open(output_path, "w") as f:
+            json.dump(requarantine_data, f, indent=2)
+
+        print(f"Found {len(requarantine_data)} re-quarantine PRs, wrote to {output_path}")
+        SCRIPT
 
 description: "Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics"
 
@@ -207,10 +303,20 @@ A test is a candidate for unquarantining if ALL of the following are true:
   git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
   If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
-- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest]` attribute to the same test method, test class, or test assembly. To check this:
-  1. Search for merged PRs with the `re-quarantine` label: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine` (do **not** append the test name to this query — PR titles often use method names, class names, or abbreviations that won't match a text search).
-  2. Search for merged PRs with "Re-quarantine" in the title: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title` (again, do **not** append the test name).
-  3. For each matching PR from either search, check its changed files using `pull_request_read` (method `get_files`). If any changed file adds a `[QuarantinedTest]` attribute to the test method, the test's containing class, or the test's assembly, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest` attribute to the same test method, test class, or test assembly. To check this:
+
+  Read the file `/tmp/requarantine-prs.json` (generated by the pre-activation step). **If the file is missing or cannot be parsed, do NOT unquarantine any tests — fail closed and report the error.** The file contains an array of objects, each with:
+  - `number`: PR number
+  - `title`: PR title
+  - `quarantine_entries`: array of `{filename, added_lines, patch_truncated}` — each entry represents a file where `[QuarantinedTest` was added
+
+  For each entry's `quarantine_entries`, determine whether the re-quarantine applies to the candidate test:
+  - If `patch_truncated` is `true`, the patch was too large for the API to return. **Fail closed**: treat this as matching any test in that file.
+  - Otherwise, examine `added_lines` (the actual source lines that were added). Since `[QuarantinedTest]` is an attribute placed above a method or class declaration, the added line alone won't name the target. To identify which method/class it applies to, find the matching `[QuarantinedTest` line in the current source file (by `filename`) and look at the next non-attribute, non-blank line — that will be the method or class declaration (e.g., `public async Task FooTest()` or `public class FooTests`). If the candidate test matches that declaration, it's a match.
+
+  If any re-quarantine PR matches the candidate, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+
+  **Do NOT use `search_pull_requests` (MCP: github) for this check.** The MCP tool applies an integrity filter that silently removes PRs authored by external contributors, which can hide legitimate re-quarantine PRs. The pre-activation step bypasses this filter.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 

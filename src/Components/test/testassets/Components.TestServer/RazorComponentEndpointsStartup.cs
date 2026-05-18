@@ -9,12 +9,14 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -46,7 +48,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             services.AddControllers();
         }
+        services.AddSingleton<IStringLocalizerFactory>(
+            new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
         services.AddValidation();
+        services.AddValidationLocalization();
 
         var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
@@ -200,6 +205,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
+
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
+            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
+        });
 
         app.Use((ctx, nxt) =>
         {
