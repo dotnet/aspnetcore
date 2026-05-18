@@ -249,6 +249,18 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
     }
 
+    private bool GetIsConfigureHostApplicationBuilderOverridden()
+    {
+        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
+        var declaringType = method!.DeclaringType;
+        if (declaringType!.IsGenericType)
+        {
+            declaringType = declaringType.GetGenericTypeDefinition();
+        }
+
+        return declaringType != typeof(WebApplicationFactory<>);
+    }
+
     /// <summary>
     /// Initializes the instance by configurating the host builder.
     /// </summary>
@@ -259,6 +271,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             return;
         }
+
+        var receivedBuilderConstructed = false;
+        var isOverridden = GetIsConfigureHostApplicationBuilderOverridden();
 
         EnsureDepsFile();
 
@@ -288,14 +303,27 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
             var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
             {
-                { "HostApplicationBuilderConstructed", hostApplicationBuilder => ConfigureHostApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!) }
+                { "HostApplicationBuilderConstructed", hostApplicationBuilder =>
+                    {
+                        receivedBuilderConstructed = true;
+                        ConfigureHostApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
+                    }
+                }
             };
 
             var factory = HostFactoryResolver.ResolveHostFactory(
                 typeof(TEntryPoint).Assembly,
                 stopApplication: false,
                 configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
-                entrypointCompleted: deferredHostBuilder.EntryPointCompleted,
+                entrypointCompleted: ex =>
+                    {
+                        if (isOverridden && !receivedBuilderConstructed)
+                        {
+                            ex = new InvalidOperationException("Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.");
+                        }
+
+                        deferredHostBuilder.EntryPointCompleted(ex);
+                    },
                 arbitraryActions: arbitraryActions);
 
             if (factory is not null)
