@@ -32,10 +32,12 @@
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\StringValuesDictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)PathNormalizer\**\*.cs" LinkBase="RequestProcessing" />
+    <Compile Remove="SourceBuildStubs.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <Compile Remove="**\*.cs" />
+    <Compile Include="SourceBuildStubs.cs" />
   </ItemGroup>
 
   <ItemGroup>

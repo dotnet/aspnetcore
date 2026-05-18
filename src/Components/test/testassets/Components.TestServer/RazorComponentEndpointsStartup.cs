@@ -9,11 +9,14 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -31,7 +34,20 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
+
+        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
+        // switch value once at static initialization and won't see subsequent AppContext changes.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, enableUrlNavigation);
+
+        services.AddSingleton<IStringLocalizerFactory>(
+            new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
         services.AddValidation();
+        services.AddValidationLocalization();
 
         services.AddRazorComponents(options =>
         {
@@ -154,6 +170,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
+
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
+            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
+        });
 
         app.Use((ctx, nxt) =>
         {
