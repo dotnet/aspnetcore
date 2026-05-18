@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -14,7 +17,9 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -929,6 +934,7 @@ public class XmlKeyManagerTests
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66029")]
     public void DeleteKeys()
     {
         var repository = new EphemeralXmlRepository(NullLoggerFactory.Instance);

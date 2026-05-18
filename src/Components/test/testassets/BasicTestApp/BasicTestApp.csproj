@@ -21,6 +21,17 @@
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
 
+  <!--
+    Allow publishing to be skipped when building via Microsoft.AspNetCore.Components.E2ETests.csproj.
+    This avoids a race condition where the build tries to publish this project twice concurrently.
+  -->
+  <PropertyGroup Condition="'$(_SkipReferencedProjectPublishAssets)' == 'true'">
+    <StaticWebAssetsGetPublishAssetsTargets>_SkipGetPublishAssetsForTrimmedBuild</StaticWebAssetsGetPublishAssetsTargets>
+  </PropertyGroup>
+
+  <!-- No-op target used to prevent the Static Web Assets SDK from triggering a redundant ILLink run. -->
+  <Target Name="_SkipGetPublishAssetsForTrimmedBuild" />
+
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.CustomElements" />

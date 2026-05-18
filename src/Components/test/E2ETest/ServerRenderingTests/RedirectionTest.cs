@@ -5,6 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -283,6 +284,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/63708/")]
     public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", false);
