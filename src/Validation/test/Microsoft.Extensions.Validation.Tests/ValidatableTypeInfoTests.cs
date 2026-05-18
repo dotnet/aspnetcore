@@ -430,6 +430,7 @@ public class ValidatableTypeInfoTests
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
+            ValidationErrors = [],
             ValidationContext = new ValidationContext(model)
         };
 
