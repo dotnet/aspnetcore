@@ -59,6 +59,27 @@ public class TestController : ControllerBase
     public ActionResult<MvcTodo> HttpQueryWithBodyMethod([FromBody] MvcTodo todo)
         => Ok(todo);
 
+    [HttpGet]
+    [Route("/multi-content-type")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/plain")]
+    public IActionResult GetMultiContentType()
+        => Ok(new MvcTodo("Title", "Description", true));
+
+    [HttpGet]
+    [Route("/any-of")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(CurrentWeather), StatusCodes.Status200OK, "application/json")]
+    public IActionResult GetAnyOf()
+        => Ok(new MvcTodo("Title", "Description", true));
+
+    [HttpGet]
+    [Route("/dup-description")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, "application/json", Description = "Use it!")]
+    [ProducesResponseType(typeof(MvcTodo), StatusCodes.Status200OK, Description = "Returns a Todo")]
+    public IActionResult GetDuplicateDescription()
+        => Ok(new MvcTodo("Title", "Description", true));
+
     public class HttpQuery() : HttpMethodAttribute(["QUERY"]);
 
     public class HttpFoo() : HttpMethodAttribute(["FOO"]);
