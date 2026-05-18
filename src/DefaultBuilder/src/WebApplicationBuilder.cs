@@ -210,15 +210,16 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
     }
 
+    // TODO: Validate if that's reasonable.
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
+        Justification = "The values being passed into Write are being consumed by the application already.")]
     private static void OnHostApplicationBuilderConstructed(HostApplicationBuilder hostApplicationBuilder)
     {
         using var diagnosticListener = new DiagnosticListener("Microsoft.Extensions.Hosting");
 
         if (diagnosticListener.IsEnabled() && diagnosticListener.IsEnabled(HostApplicationBuilderConstructedEventName))
         {
-#pragma warning disable IL2026 // TODO
             diagnosticListener.Write(HostApplicationBuilderConstructedEventName, hostApplicationBuilder);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
         }
     }
 
