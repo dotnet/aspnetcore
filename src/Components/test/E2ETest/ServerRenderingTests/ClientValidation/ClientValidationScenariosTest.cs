@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientVa
 
 // E2E coverage for advanced JS validation scenarios: trigger overrides, skipped
 // elements, multi-form independence, dynamic content, and untracked forms.
+[CollectionDefinition(nameof(ClientValidationBasicTest), DisableParallelization = true)]
 public class ClientValidationScenariosTest : ClientValidationTestBase
 {
     public ClientValidationScenariosTest(

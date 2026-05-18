@@ -604,7 +604,7 @@ public class ValidatableTypeInfoTests
                 new CustomValidationAttribute()
             ]);
 
-        // First case: 
+        // First case:
         var testTypeInstance = new PropertyAndTypeLevelErrorObject { Value = 15 };
 
         var context = new ValidateContext
@@ -623,7 +623,7 @@ public class ValidatableTypeInfoTests
         Assert.Equal(string.Empty, interfaceError.Key);
         Assert.Equal("IValidatableObject error", interfaceError.Value.Single());
 
-        // Second case: 
+        // Second case:
         testTypeInstance.Value = 5;
         context.ValidationErrors = [];
         context.ValidationContext = new ValidationContext(testTypeInstance);
@@ -635,7 +635,7 @@ public class ValidatableTypeInfoTests
         Assert.Equal(string.Empty, classAttributeError.Key);
         Assert.Equal("Class attribute error", classAttributeError.Value.Single());
 
-        // Third case: 
+        // Third case:
         testTypeInstance.Value = -5;
         context.ValidationErrors = [];
         context.ValidationContext = new ValidationContext(testTypeInstance);
@@ -766,6 +766,63 @@ public class ValidatableTypeInfoTests
         Assert.Null(inheritedProperty);
     }
 
+    [Fact]
+    public void TryGetValidatablePropertyInfo_WalksMultipleInheritanceLevels()
+    {
+        // Three-level chain: BaseEntity (Id) <- IntermediateEntity (CreatedAt) <- DerivedEntity (Name).
+        // A lookup on DerivedEntity must reach members declared at every level of the chain.
+        var idProperty = CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", []);
+        var createdAtProperty = CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", "CreatedAt", []);
+        var nameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(BaseEntity), new TestValidatableTypeInfo(typeof(BaseEntity), [idProperty]) },
+            { typeof(IntermediateEntity), new TestValidatableTypeInfo(typeof(IntermediateEntity), [createdAtProperty]) },
+            { typeof(DerivedEntity), new TestValidatableTypeInfo(typeof(DerivedEntity), [nameProperty]) },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var fromDerived));
+        Assert.Same(nameProperty, fromDerived);
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "CreatedAt", out var fromIntermediate));
+        Assert.Same(createdAtProperty, fromIntermediate);
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var fromBase));
+        Assert.Same(idProperty, fromBase);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ResolvesInterfaceDeclaredProperty()
+    {
+        // Property declared on an interface implemented by the target type. ValidatableTypeInfo's
+        // _superTypes list is populated by GetAllImplementedTypes(), which includes interfaces.
+        var auditedProperty = CreatePropertyInfo(typeof(IAuditable), typeof(DateTime), "CreatedAt", "CreatedAt", []);
+        var auditableTypeInfo = new TestValidatableTypeInfo(typeof(IAuditable), [auditedProperty]);
+        var nameProperty = CreatePropertyInfo(typeof(AuditableThing), typeof(string), "Name", "Name", []);
+        var thingTypeInfo = new TestValidatableTypeInfo(typeof(AuditableThing), [nameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(IAuditable), auditableTypeInfo },
+            { typeof(AuditableThing), thingTypeInfo },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(AuditableThing), "CreatedAt", out var resolved));
+        Assert.Same(auditedProperty, resolved);
+    }
+
+    private interface IAuditable
+    {
+        DateTime CreatedAt { get; }
+    }
+
+    private class AuditableThing : IAuditable
+    {
+        public DateTime CreatedAt { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
     private class GlobalErrorObject : IValidatableObject
     {
@@ -841,9 +898,7 @@ public class ValidatableTypeInfoTests
             name,
             displayName,
             validationAttributes);
-    }
-
-    // Test model classes
+    }    // Test model classes
     private class Person
     {
         public string? Name { get; set; }
@@ -983,7 +1038,7 @@ public class ValidatableTypeInfoTests
             string name,
             string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name, new TestLiteralDisplayName(displayName))
         {
             _validationAttributes = validationAttributes;
         }

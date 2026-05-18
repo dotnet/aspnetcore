@@ -8,44 +8,48 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 
-using CacheKey = (Type ModelType, string FieldName);
-
 /// <summary>
-/// Default implementation that generates <c>data-val-*</c> HTML attributes from
-/// <see cref="ValidationAttribute"/>s found via reflection on model properties.
-/// Registered as a singleton - results are cached per (Type, FieldName) pair.
+/// Generates <c>data-val-*</c> HTML attributes from <see cref="ValidationAttribute"/>s on model properties.
 /// </summary>
 internal sealed class DefaultClientValidationService : IClientValidationService
 {
-    // Cache keyed by model type + field name. Safe for concurrent access since the service
-    // is a singleton shared across requests. The computed dictionaries are immutable after creation.
-    private readonly ConcurrentDictionary<CacheKey, IReadOnlyDictionary<string, object>?> _cache = new();
+    // Stores only culture-independent reflection results. Display name and error message text
+    // are resolved per call so the output respects CultureInfo.CurrentUICulture.
+    private readonly ConcurrentDictionary<(Type ModelType, string FieldName), FieldMetadata> _metadataCache = new();
+
+    private readonly IValidationLocalizer? _validationLocalizer;
+
+    [UnconditionalSuppressMessage("Trimming", "IL2066",
+        Justification = "DynamicDependency preserves ValidationOptions's parameterless constructor used by Microsoft.Extensions.Options to materialize IOptions<ValidationOptions>.")]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ValidationOptions))]
+    public DefaultClientValidationService(IServiceProvider serviceProvider)
+    {
+        _validationLocalizer = serviceProvider.GetService<IOptions<ValidationOptions>>()?.Value?.Localizer;
+    }
 
     public IReadOnlyDictionary<string, object>? GetClientValidationAttributes(FieldIdentifier fieldIdentifier)
     {
-        var cacheKey = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
-        return _cache.GetOrAdd(cacheKey, static key => ComputeAttributes(key.ModelType, key.FieldName));
-    }
+        var modelType = fieldIdentifier.Model.GetType();
+        var cacheKey = (modelType, fieldIdentifier.FieldName);
+        var metadata = _metadataCache.GetOrAdd(cacheKey, static key => BuildMetadata(key.ModelType, key.FieldName));
 
-    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Model types are application code and are preserved by default.")]
-    private static Dictionary<string, object>? ComputeAttributes(Type modelType, string fieldName)
-    {
-        var property = modelType.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
-        if (property is null)
+        if (metadata.ValidationAttributes.Length == 0)
         {
             return null;
         }
 
-        var validationAttributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true);
+        var displayName = ResolveDisplayName(in metadata, fieldIdentifier.FieldName);
         var htmlAttributes = new Dictionary<string, object>();
-        var displayName = GetDisplayName(property) ?? fieldName;
 
-        foreach (var validationAttribute in validationAttributes)
+        foreach (var validationAttribute in metadata.ValidationAttributes)
         {
-            var errorMessage = GetErrorMessage(validationAttribute, displayName);
+            var errorMessage = ResolveErrorMessage(validationAttribute, fieldIdentifier.FieldName, displayName, metadata.DeclaringType);
             AddAttributes(htmlAttributes, validationAttribute, errorMessage);
         }
 
@@ -58,13 +62,8 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         return htmlAttributes;
     }
 
-    /// <summary>
-    /// Maps a <see cref="ValidationAttribute"/> to the corresponding <c>data-val-*</c> HTML attributes.
-    /// Each supported attribute type has a specific mapping; custom attributes can implement
-    /// <see cref="IClientValidationAdapter"/> to provide their own mappings.
-    /// Uses <c>TryAdd</c> (first-wins) so that if multiple attributes emit the same key,
-    /// the first one takes precedence.
-    /// </summary>
+    // Maps each ValidationAttribute to its data-val-* keys. Custom attributes can implement
+    // IClientValidationAdapter for their own mappings. TryAdd is first-wins.
     private static void AddAttributes(
         Dictionary<string, object> htmlAttributes,
         ValidationAttribute validationAttribute,
@@ -99,16 +98,12 @@ internal sealed class DefaultClientValidationService : IClientValidationService
                 break;
 
             case RangeAttribute ra:
-                // Only emit client-side range attributes for numeric operand types.
-                // The JS validator's range check is numeric (uses Number()), so non-numeric
-                // ranges like RangeAttribute(typeof(DateTime), ...) have no client equivalent
-                // and would emit unparseable values. Server-side validation still applies.
+                // The JS range validator is numeric-only (uses Number()); skip non-numeric operands.
                 if (!IsNumericRangeOperand(ra.OperandType))
                 {
                     break;
                 }
-                // RangeAttribute lazily converts Minimum/Maximum from strings to OperandType.
-                // Calling IsValid triggers SetupConversion(); same trick MVC's RangeAttributeAdapter uses.
+                // Triggers RangeAttribute.SetupConversion() to convert string Min/Max to OperandType.
                 ra.IsValid(3);
                 htmlAttributes.TryAdd("data-val-range", errorMessage);
                 htmlAttributes.TryAdd("data-val-range-min", Convert.ToString(ra.Minimum, CultureInfo.InvariantCulture)!);
@@ -122,8 +117,8 @@ internal sealed class DefaultClientValidationService : IClientValidationService
 
             case CompareAttribute ca:
                 htmlAttributes.TryAdd("data-val-equalto", errorMessage);
-                // The "*." prefix is a convention for the JS equalto validator to resolve the
-                // other field relative to the current field's name prefix (e.g., "Model.Password").
+                // "*." prefix tells the JS equalto validator to resolve the other field
+                // relative to the current field's name prefix (e.g., "Model.Password").
                 htmlAttributes.TryAdd("data-val-equalto-other", "*." + ca.OtherProperty);
                 break;
 
@@ -156,7 +151,6 @@ internal sealed class DefaultClientValidationService : IClientValidationService
                 break;
 
             default:
-                // Check for custom adapter on the attribute
                 if (validationAttribute is IClientValidationAdapter adapter)
                 {
                     foreach (var rule in adapter.GetClientValidationRules(errorMessage))
@@ -168,12 +162,8 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         }
     }
 
-    /// <summary>
-    /// Serializes a <see cref="ClientValidationRule"/> into the flat <c>data-val-*</c> dictionary
-    /// used during rendering. Uses <c>TryAdd</c> (first-wins) so existing entries are preserved.
-    /// Non-string parameter values are formatted with invariant culture; <see langword="null"/>
-    /// values are skipped.
-    /// </summary>
+    // Flattens a ClientValidationRule into the data-val-* dictionary. Null parameter values
+    // are skipped; non-string values are formatted with invariant culture.
     private static void EmitRule(Dictionary<string, object> htmlAttributes, ClientValidationRule rule)
     {
         htmlAttributes.TryAdd($"data-val-{rule.Name}", rule.ErrorMessage);
@@ -196,11 +186,8 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         }
     }
 
-    /// <summary>
-    /// Returns true if the type is one the JS range validator can compare numerically.
-    /// Excludes <see cref="DateTime"/> and other non-numeric operand types that
-    /// <see cref="RangeAttribute"/> supports server-side but the client cannot.
-    /// </summary>
+    // RangeAttribute supports non-numeric operand types (e.g., DateTime) that the JS validator
+    // can't compare; only emit data-val-range for numeric ones.
     private static bool IsNumericRangeOperand(Type operandType)
         => operandType == typeof(int)
         || operandType == typeof(long)
@@ -214,30 +201,107 @@ internal sealed class DefaultClientValidationService : IClientValidationService
         || operandType == typeof(float)
         || operandType == typeof(decimal);
 
-    private static string? GetDisplayName(PropertyInfo property)
+    // Mirrors the decision tree used the server-side validation.
+    // Resource attribute bypasses the localizer (resource lookup is the canonical localized source).
+    // Literal acts as both lookup key and fallback for the localizer.
+    private string ResolveDisplayName(in FieldMetadata metadata, string fieldName)
     {
-        // TODO: Integrate localization
-        var displayAttribute = property.GetCustomAttribute<DisplayAttribute>();
-
-        if (displayAttribute is not null)
+        if (metadata.ResourceDisplayAttribute is { } resourceAttribute)
         {
-            return displayAttribute.GetName();
+            return resourceAttribute.GetName() ?? fieldName;
         }
 
-        var displayNameAttribute = property.GetCustomAttribute<DisplayNameAttribute>();
-
-        if (displayNameAttribute is not null)
+        if (metadata.LiteralDisplayName is not { } literal)
         {
-            return displayNameAttribute.DisplayName;
+            return fieldName;
         }
 
-        return null;
+        if (_validationLocalizer is null)
+        {
+            return literal;
+        }
+
+        return _validationLocalizer.ResolveDisplayName(new DisplayNameLocalizationContext
+        {
+            DeclaringType = metadata.DeclaringType,
+            DisplayName = literal,
+            MemberName = fieldName,
+        }) ?? literal;
     }
 
-    private static string GetErrorMessage(ValidationAttribute validationAttribute, string displayName)
+    // Mirrors the decision tree used the server-side validation (see ResolveDisplayName).
+    private string ResolveErrorMessage(
+        ValidationAttribute attribute,
+        string fieldName,
+        string displayName,
+        Type? declaringType)
     {
-        // TODO: Integrate localization
-        return validationAttribute.FormatErrorMessage(displayName);
+        if (_validationLocalizer is null || attribute.ErrorMessageResourceType is not null)
+        {
+            return attribute.FormatErrorMessage(displayName);
+        }
 
+        return _validationLocalizer.ResolveErrorMessage(new ErrorMessageLocalizationContext
+        {
+            MemberName = fieldName,
+            DisplayName = displayName,
+            DeclaringType = declaringType,
+            Attribute = attribute,
+        }) ?? attribute.FormatErrorMessage(displayName);
+    }
+
+    // All fields are culture-independent; localized text is resolved per call. At most one of
+    // ResourceDisplayAttribute and LiteralDisplayName is non-null; both null means the property
+    // has no display attribute.
+    private readonly struct FieldMetadata(
+        ValidationAttribute[] validationAttributes,
+        Type? declaringType,
+        DisplayAttribute? resourceDisplayAttribute,
+        string? literalDisplayName)
+    {
+        // FieldMetadata.Empty is the sentinel for "no validatable property by this name".
+        public static readonly FieldMetadata Empty = new(
+            validationAttributes: [],
+            declaringType: null,
+            resourceDisplayAttribute: null,
+            literalDisplayName: null);
+
+        public ValidationAttribute[] ValidationAttributes { get; } = validationAttributes;
+
+        public Type? DeclaringType { get; } = declaringType;
+
+        // [Display(Name=..., ResourceType=...)]
+        public DisplayAttribute? ResourceDisplayAttribute { get; } = resourceDisplayAttribute;
+
+        // [Display(Name="X")] (no ResourceType) or [DisplayName("X")].
+        public string? LiteralDisplayName { get; } = literalDisplayName;
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Model types are application code and are preserved by default.")]
+    private static FieldMetadata BuildMetadata(Type modelType, string fieldName)
+    {
+        var property = modelType.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+        if (property is null)
+        {
+            return FieldMetadata.Empty;
+        }
+
+        var validationAttributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
+
+        var displayAttribute = property.GetCustomAttribute<DisplayAttribute>(inherit: true);
+        DisplayAttribute? resourceDisplayAttribute = null;
+        string? literalDisplayName = null;
+
+        if (displayAttribute is { ResourceType: not null, Name: not null })
+        {
+            resourceDisplayAttribute = displayAttribute;
+        }
+        else
+        {
+            literalDisplayName = displayAttribute?.Name
+                ?? property.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName;
+        }
+
+        return new FieldMetadata(validationAttributes, property.DeclaringType, resourceDisplayAttribute, literalDisplayName);
     }
 }
