@@ -377,6 +377,33 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
+    public async Task Validate_IgnoresStaticProperties()
+    {
+        var typeInfo = new TestValidatableTypeInfo(
+            typeof(StaticRecursiveModel),
+            [
+                CreatePropertyInfo(typeof(StaticRecursiveModel), typeof(StaticRecursiveModel), "TheAnswer", "TheAnswer",
+                    [])
+            ]);
+
+        var model = new StaticRecursiveModel();
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(StaticRecursiveModel), typeInfo }
+            }),
+            ValidationErrors = [],
+            ValidationContext = new ValidationContext(model)
+        };
+
+        await typeInfo.ValidateAsync(model, context, default);
+
+        Assert.Empty(context.ValidationErrors);
+        Assert.Equal(0, context.CurrentDepth);
+    }
+
+    [Fact]
     public async Task Validate_HandlesCustomValidationAttributes()
     {
         // Arrange
@@ -948,6 +975,11 @@ public class ValidatableTypeInfoTests
     {
         public string? ProductName { get; set; }
         public int Quantity { get; set; }
+    }
+
+    private class StaticRecursiveModel
+    {
+        public static StaticRecursiveModel TheAnswer => new();
     }
 
     private class TreeNode

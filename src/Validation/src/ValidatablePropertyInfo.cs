@@ -68,6 +68,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+        if (property.GetMethod?.IsStatic is true)
+        {
+            return;
+        }
+
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
