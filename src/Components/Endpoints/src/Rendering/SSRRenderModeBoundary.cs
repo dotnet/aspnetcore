@@ -249,10 +249,10 @@ internal class SSRRenderModeBoundary : IComponent
             {
                 if (_topLevelCaptures is null || !_topLevelCaptures.TryGetValue(name, out var capture))
                 {
+                    // If we didn't wrap the RenderFragment in a capture, it means prerendering is disabled.
+                    // If the capture is null, then fragment was conditionally rendered and didn't execute. In either case we can't serialize it.
                     throw new InvalidOperationException(
-                        $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}' " +
-                        $"with rendermode '{RenderMode.GetType().Name}' when prerendering is disabled. " +
-                        $"RenderFragment serialization across rendermode boundaries requires Prerender=true.");
+                        $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}', because the RenderFragment was not executed. It can be due to disabled prerendering or conditional rendering.");
                 }
 
                 dict[name] = new SerializedRenderFragment
