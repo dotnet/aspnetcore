@@ -409,6 +409,36 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
+    public async Task Validate_ThrowsForRecursiveInstanceProperties()
+    {
+        var typeInfo = new TestValidatableTypeInfo(
+            typeof(InstanceRecursiveModel),
+            [
+                CreatePropertyInfo(typeof(InstanceRecursiveModel), typeof(InstanceRecursiveModel), "Next", "Next",
+                    [])
+            ]);
+
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(InstanceRecursiveModel), typeInfo }
+        })
+        {
+            MaxDepth = 2
+        };
+
+        var model = new InstanceRecursiveModel();
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(model)
+        };
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await typeInfo.ValidateAsync(model, context, default));
+        Assert.StartsWith("Maximum validation depth of 2 exceeded at 'Next.Next' in 'InstanceRecursiveModel'.", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Validate_HandlesCustomValidationAttributes()
     {
         // Arrange
@@ -985,6 +1015,11 @@ public class ValidatableTypeInfoTests
     private class StaticRecursiveModel
     {
         public static StaticRecursiveModel TheAnswer => new();
+    }
+
+    private class InstanceRecursiveModel
+    {
+        public InstanceRecursiveModel Next => new();
     }
 
     private class TreeNode
