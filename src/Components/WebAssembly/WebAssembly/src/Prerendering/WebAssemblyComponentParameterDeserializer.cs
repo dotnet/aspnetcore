@@ -50,33 +50,37 @@ internal sealed class WebAssemblyComponentParameterDeserializer
             {
                 throw new InvalidOperationException($"The parameter definition for '{definition.Name}' is incomplete: Type='{definition.TypeName}' Assembly='{definition.Assembly}'.");
             }
-            else
+            else if (definition.TypeName == typeof(SerializedRenderFragment).FullName
+                && definition.Assembly == "Microsoft.AspNetCore.Components.Endpoints")
             {
                 try
                 {
                     var value = (JsonElement)parameterValues[i];
-
-                    if (definition.TypeName == typeof(SerializedRenderFragment).FullName)
-                    {
-                        var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
-                            value.GetRawText(),
-                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
-                        parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes);
-                    }
-                    else
-                    {
-                        var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
-                        if (parameterType is null)
-                        {
-                            throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
-                        }
-
-                        var parameterValue = JsonSerializer.Deserialize(
-                            value.GetRawText(),
-                            parameterType,
-                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
-                        parametersDictionary[definition.Name] = parameterValue;
-                    }
+                    var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
+                        value.GetRawText(),
+                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                    parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes);
+                }
+                catch (Exception e)
+                {
+                    throw new InvalidOperationException($"Could not parse the parameter value for parameter '{definition.Name}' of type '{definition.TypeName}' and assembly '{definition.Assembly}'.", e);
+                }
+            }
+            else
+            {
+                var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
+                if (parameterType is null)
+                {
+                    throw new InvalidOperationException($"The parameter '{definition.Name}' with type '{definition.TypeName}' in assembly '{definition.Assembly}' could not be found.");
+                }
+                try
+                {
+                    var value = (JsonElement)parameterValues[i];
+                    var parameterValue = JsonSerializer.Deserialize(
+                        value.GetRawText(),
+                        parameterType,
+                        WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
+                    parametersDictionary[definition.Name] = parameterValue;
                 }
                 catch (Exception e)
                 {

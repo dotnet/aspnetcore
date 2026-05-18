@@ -100,7 +100,7 @@ internal static partial class RenderFragmentSerializer
                     var subtreeEnd = position + frame.ComponentSubtreeLength;
                     position++;
 
-                    // Collect component parameters (attribute frames)
+                    // Collect component's attribute frames
                     while (position < subtreeEnd && frames[position].FrameType is RenderTreeFrameType.Attribute)
                     {
                         ref readonly var attrFrame = ref frames[position];
@@ -112,8 +112,6 @@ internal static partial class RenderFragmentSerializer
                         position++;
                     }
 
-                    // Skip remaining child frames within the component subtree.
-                    // Components inside fragments are descriptors; their children are rendered on the client.
                     position = subtreeEnd;
                     target.Add(node);
                     break;
@@ -122,7 +120,7 @@ internal static partial class RenderFragmentSerializer
                 {
                     var subtreeEnd = position + frame.RegionSubtreeLength;
                     position++;
-                    // Regions are transparent — inline their children into the parent
+                    // Inline region's children into the parent
                     SerializeChildren(ref position, frames, subtreeEnd, target, currentCapture, logger);
                     break;
                 }
@@ -303,15 +301,12 @@ internal static partial class RenderFragmentSerializer
             {
                 JsonElement je => JsonSerializer.Deserialize<SerializedRenderFragment>(je.GetRawText()),
                 SerializedRenderFragment sf => sf,
-                _ => throw new InvalidOperationException(
-                    $"Unexpected value type '{attr.Value?.GetType()}' for serialized RenderFragment attribute '{attr.Name}'.")
+                _ => throw new InvalidOperationException($"Unexpected value type '{attr.Value?.GetType()}' for serialized RenderFragment attribute '{attr.Name}'.")
             };
             return Deserialize(serialized!.Nodes);
         }
 
-        return attr.Value is JsonElement json
-            ? ConvertTypedValue(json, attr.ValueType!)
-            : attr.Value;
+        return attr.Value is JsonElement json ? ConvertTypedValue(json, attr.ValueType!) : attr.Value;
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Type names are serialized from known component parameter types.")]
@@ -357,122 +352,6 @@ internal static partial class RenderFragmentSerializer
 
         [LoggerMessage(6, LogLevel.Warning, "A generic RenderFragment<T> parameter '{AttributeName}' inside a RenderFragment was skipped during serialization. Only non-generic RenderFragment is supported across render mode boundaries.", EventName = "GenericRenderFragmentSkipped")]
         public static partial void GenericRenderFragmentSkipped(ILogger logger, string? attributeName);
-    }
-
-    internal static Dictionary<string, RenderFragmentCapture>? WrapRenderFragments(Dictionary<string, object?> parameters)
-    {
-        List<string>? fragmentNames = null;
-
-        foreach (var (name, value) in parameters)
-        {
-            if (value is RenderFragment)
-            {
-                fragmentNames ??= new();
-                fragmentNames.Add(name);
-            }
-        }
-
-        if (fragmentNames is null)
-        {
-            return null;
-        }
-
-        var topLevelCaptures = new Dictionary<string, RenderFragmentCapture>(fragmentNames.Count);
-
-        foreach (var name in fragmentNames)
-        {
-            var original = (RenderFragment)parameters[name]!;
-            var capture = RenderFragmentCapture.Wrap(original);
-            topLevelCaptures[name] = capture;
-            parameters[name] = (RenderFragment)capture.Invoke;
-        }
-
-        return topLevelCaptures;
-    }
-}
-
-// Wrapper for one RenderFragment instance. Captures the frames produced by the original
-// fragment, and tracks any nested RenderFragment parameters discovered inside those frames
-// as child captures keyed by their attribute frame index inside the snapshot.
-internal sealed class RenderFragmentCapture
-{
-    private readonly RenderFragment _original;
-    private readonly Dictionary<int, RenderFragmentCapture> _childCaptures = new();
-    private RenderTreeFrame[]? _capturedFrames;
-
-    private RenderFragmentCapture(RenderFragment original)
-    {
-        _original = original;
-    }
-
-    public static RenderFragmentCapture Wrap(RenderFragment original)
-        => new(original);
-
-    public IReadOnlyDictionary<int, RenderFragmentCapture> ChildCaptures => _childCaptures;
-
-    public void Invoke(RenderTreeBuilder builder)
-    {
-        var start = builder.GetFrames().Count;
-        _original(builder);
-        var end = builder.GetFrames().Count;
-
-        // Walk the produced frames and wrap any nested RenderFragment component parameters.
-        // Child captures are keyed by index relative to the snapshot start, so the keys
-        // line up with the positions seen by the serializer when it walks _capturedFrames.
-        WrapNestedFragments(builder, start, end);
-
-        var frames = builder.GetFrames();
-        var count = end - start;
-        _capturedFrames = new RenderTreeFrame[count];
-        Array.Copy(frames.Array, start, _capturedFrames, 0, count);
-    }
-
-    public RenderTreeFrame[] GetCapturedFrames()
-    {
-        if (_capturedFrames is null)
-        {
-            throw new InvalidOperationException("Cannot retrieve captured frames because the RenderFragment was not invoked during rendering.");
-        }
-        return _capturedFrames;
-    }
-
-    private void WrapNestedFragments(RenderTreeBuilder builder, int start, int end)
-    {
-        var frames = builder.GetFrames();
-        for (var i = start; i < end; i++)
-        {
-            ref readonly var frame = ref frames.Array[i];
-            if (frame.FrameType is not RenderTreeFrameType.Component)
-            {
-                continue;
-            }
-
-            var componentSubtreeEnd = i + frame.ComponentSubtreeLength;
-            // Attribute frames are always contiguous immediately after their owning Component
-            // frame (enforced by RenderTreeBuilder.AssertCanAddAttribute), so the first
-            // non-attribute frame ends the parameter block.
-            for (var j = i + 1; j < componentSubtreeEnd && frames.Array[j].FrameType is RenderTreeFrameType.Attribute; j++)
-            {
-                ref readonly var attrFrame = ref frames.Array[j];
-                if (attrFrame.AttributeValue is RenderFragment innerRf)
-                {
-                    var innerCapture = Wrap(innerRf);
-
-                    // Replace the original delegate in the live render buffer with the wrapper.
-                    // This is required so that when the nested component later invokes its
-                    // RenderFragment parameter, control flows through innerCapture.Invoke and
-                    // populates innerCapture._capturedFrames. Looking up the capture by frame
-                    // index in _childCaptures would otherwise find an entry whose frames were
-                    // never recorded.
-                    // We can't mutate frames.Array[j].AttributeValueField directly here because
-                    // that field is internal to Microsoft.AspNetCore.Components and this file is
-                    // linked into Endpoints/Server/WebAssembly, which are outside its
-                    // InternalsVisibleTo set. SetAttributeValue is the public bridge.
-                    builder.SetAttributeValue(j, (RenderFragment)innerCapture.Invoke);
-                    _childCaptures[j - start] = innerCapture;
-                }
-            }
-        }
     }
 }
 
