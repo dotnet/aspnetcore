@@ -390,17 +390,17 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>dc6e7082d768b79e69b16e8fd146a509dfa6130d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.7.0-preview.1.26257.2">
+    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.7.0-preview.1.26261.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
+      <Sha>7a6ae6ea99d373ebe0c50af751f62703d6ebfec2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="10.7.0-preview.1.26257.2">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="10.7.0-preview.1.26261.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
+      <Sha>7a6ae6ea99d373ebe0c50af751f62703d6ebfec2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="10.7.0-preview.1.26257.2">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="10.7.0-preview.1.26261.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>d6451f303b4142f9e6b6706e901dc1e43d12933c</Sha>
+      <Sha>7a6ae6ea99d373ebe0c50af751f62703d6ebfec2</Sha>
     </Dependency>
     <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.26180.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>

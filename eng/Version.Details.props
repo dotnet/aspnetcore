@@ -99,9 +99,9 @@ This file should be imported by eng/Versions.props
     <SystemThreadingChannelsPackageVersion>10.0.9</SystemThreadingChannelsPackageVersion>
     <SystemThreadingRateLimitingPackageVersion>10.0.9</SystemThreadingRateLimitingPackageVersion>
     <!-- dotnet-extensions dependencies -->
-    <MicrosoftExtensionsCachingHybridPackageVersion>10.7.0-preview.1.26257.2</MicrosoftExtensionsCachingHybridPackageVersion>
-    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.7.0-preview.1.26257.2</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
-    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.7.0-preview.1.26257.2</MicrosoftExtensionsTimeProviderTestingPackageVersion>
+    <MicrosoftExtensionsCachingHybridPackageVersion>10.7.0-preview.1.26261.1</MicrosoftExtensionsCachingHybridPackageVersion>
+    <MicrosoftExtensionsDiagnosticsTestingPackageVersion>10.7.0-preview.1.26261.1</MicrosoftExtensionsDiagnosticsTestingPackageVersion>
+    <MicrosoftExtensionsTimeProviderTestingPackageVersion>10.7.0-preview.1.26261.1</MicrosoftExtensionsTimeProviderTestingPackageVersion>
     <!-- dotnet-msbuild dependencies -->
     <MicrosoftBuildPackageVersion>17.12.50</MicrosoftBuildPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>17.12.50</MicrosoftBuildFrameworkPackageVersion>
