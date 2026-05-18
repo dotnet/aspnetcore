@@ -386,13 +386,18 @@ public class ValidatableTypeInfoTests
                     [])
             ]);
 
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(StaticRecursiveModel), typeInfo }
+        })
+        {
+            MaxDepth = 2
+        };
+
         var model = new StaticRecursiveModel();
         var context = new ValidateContext
         {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(StaticRecursiveModel), typeInfo }
-            }),
+            ValidationOptions = validationOptions,
             ValidationErrors = [],
             ValidationContext = new ValidationContext(model)
         };
