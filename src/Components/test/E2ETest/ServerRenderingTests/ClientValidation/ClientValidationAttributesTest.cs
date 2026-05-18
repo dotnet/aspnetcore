@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientVa
 // registration, radio groups, and server-rendered message cleanup.
 // Per-validator exhaustive coverage lives in the Jest unit tests on
 // CoreValidators.test.ts; the tests here verify the integration path.
+[CollectionDefinition(nameof(ClientValidationBasicTest), DisableParallelization = true)]
 public class ClientValidationAttributesTest : ClientValidationTestBase
 {
     public ClientValidationAttributesTest(
