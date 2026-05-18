@@ -59,7 +59,6 @@ safe-outputs:
       - area-signalr
       - area-ui-rendering
       - area-unified-build
-      - feature-request
       - by-design
       - question
       - external
