@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == '' and '$(IdentityDefaultUIFramework)' != ''">$(IdentityDefaultUIFramework)</IdentityUIFrameworkVersion>
     <IdentityUIFrameworkVersion Condition="'$(IdentityUIFrameworkVersion)' == ''">Bootstrap5</IdentityUIFrameworkVersion>
 
     <_IdentityUIGroupValue Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">V4</_IdentityUIGroupValue>
