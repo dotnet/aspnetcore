@@ -114,7 +114,28 @@ internal class SSRRenderModeBoundary : IComponent
 
         if (_prerender)
         {
-            _topLevelCaptures = RenderFragmentSerializer.WrapRenderFragments((Dictionary<string, object?>)_latestParameters);
+            // Replace each top-level RenderFragment parameter with a capture wrapper.
+            var parametersDict = (Dictionary<string, object?>)_latestParameters;
+            List<string>? fragmentNames = null;
+            foreach (var (name, value) in parametersDict)
+            {
+                if (value is RenderFragment)
+                {
+                    fragmentNames ??= new();
+                    fragmentNames.Add(name);
+                }
+            }
+
+            if (fragmentNames is not null)
+            {
+                _topLevelCaptures = new Dictionary<string, RenderFragmentCapture>(fragmentNames.Count);
+                foreach (var name in fragmentNames)
+                {
+                    var capture = new RenderFragmentCapture((RenderFragment)parametersDict[name]!);
+                    _topLevelCaptures[name] = capture;
+                    parametersDict[name] = (RenderFragment)capture.Invoke;
+                }
+            }
         }
 
         if (RenderMode is InteractiveWebAssemblyRenderMode)
