@@ -131,6 +131,4 @@
     <!-- Keep metrics support enabled on the test server (not the trimmed WASM client) -->
     <MetricsSupport>true</MetricsSupport>
   </PropertyGroup>
-
-
 </Project>

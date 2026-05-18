@@ -39,5 +39,4 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
   </ItemGroup>
 
-
 </Project>
