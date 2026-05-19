@@ -91,6 +91,7 @@ public static class RazorComponentsServiceCollectionExtensions
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AntiforgeryStateProvider>(services, RenderMode.InteractiveAuto);
         services.TryAddScoped<HttpContextFormDataProvider>();
         services.TryAddScoped<IFormValueMapper, HttpContextFormValueMapper>();
+        services.AddClientValidation();
 
         if (configure != null)
         {
