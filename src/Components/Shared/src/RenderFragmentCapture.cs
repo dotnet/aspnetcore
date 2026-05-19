@@ -33,6 +33,7 @@ internal sealed class RenderFragmentCapture
         // line up with the positions seen by the serializer when it walks _capturedFrames.
         WrapNestedFragments(builder, start, end);
 
+        // Re-fetch frames after WrapNestedFragments may have mutated attribute values.
         var frames = builder.GetFrames();
         var count = end - start;
         _capturedFrames = new RenderTreeFrame[count];
