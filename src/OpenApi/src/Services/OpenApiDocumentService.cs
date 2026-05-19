@@ -387,22 +387,26 @@ internal sealed class OpenApiDocumentService(
         {
             return new OpenApiResponses
             {
-                ["200"] = await GetResponseAsync(document, description, StatusCodes.Status200OK, _defaultApiResponseType, scopedServiceProvider, schemaTransformers, cancellationToken)
+                ["200"] = await GetResponseAsync(document, description, StatusCodes.Status200OK, [_defaultApiResponseType], scopedServiceProvider, schemaTransformers, cancellationToken)
             };
         }
 
+        // Group response types by their response key so that multiple ApiResponseType entries
+        // sharing the same status code are merged into a single OpenApiResponse. This supports
+        // scenarios where different Produces attributes specify different content-types or
+        // different CLR types for the same HTTP status code.
         var responses = new OpenApiResponses();
-        foreach (var responseType in description.SupportedResponseTypes)
-        {
-            // The "default" response type is a special case in OpenAPI used to describe
-            // the response for all HTTP status codes that are not explicitly defined
-            // for a given operation. This is typically used to describe catch-all scenarios
-            // like error responses.
-            var responseKey = responseType.IsDefaultResponse
+        var groupedResponseTypes = description.SupportedResponseTypes
+            .GroupBy(r => r.IsDefaultResponse
                 ? OpenApiConstants.DefaultOpenApiResponseKey
-                : responseType.StatusCode.ToString(CultureInfo.InvariantCulture);
-            responses.Add(responseKey, await GetResponseAsync(document, description, responseType.StatusCode, responseType, scopedServiceProvider, schemaTransformers, cancellationToken));
+                : r.StatusCode.ToString(CultureInfo.InvariantCulture));
+
+        foreach (var group in groupedResponseTypes)
+        {
+            var statusCode = group.First().StatusCode;
+            responses[group.Key] = await GetResponseAsync(document, description, statusCode, group.ToList(), scopedServiceProvider, schemaTransformers, cancellationToken);
         }
+
         return responses;
     }
 
@@ -410,34 +414,60 @@ internal sealed class OpenApiDocumentService(
         OpenApiDocument document,
         ApiDescription apiDescription,
         int statusCode,
-        ApiResponseType apiResponseType,
+        IReadOnlyList<ApiResponseType> apiResponseTypes,
         IServiceProvider scopedServiceProvider,
         IOpenApiSchemaTransformer[] schemaTransformers,
         CancellationToken cancellationToken)
     {
+        var description = apiResponseTypes.Select(r => r.Description).FirstOrDefault(d => d is not null);
         var response = new OpenApiResponse
         {
-            Description = apiResponseType.Description ?? ReasonPhrases.GetReasonPhrase(statusCode),
+            Description = description ?? ReasonPhrases.GetReasonPhrase(statusCode),
             Content = new Dictionary<string, IOpenApiMediaType>()
         };
 
-        // ApiResponseFormats aggregates information about the supported response content types
-        // from different types of Produces metadata. This is handled by ApiExplorer so looking
-        // up values in ApiResponseFormats should provide us a complete set of the information
-        // encoded in Produces metadata added via attributes or extension methods.
-        var apiResponseFormatContentTypes = apiResponseType.ApiResponseFormats
-            .Select(responseFormat => responseFormat.MediaType);
-        foreach (var contentType in apiResponseFormatContentTypes)
+        // Collect schemas per content-type across all ApiResponseType entries in this group.
+        // When multiple entries contribute different schemas for the same content-type, they
+        // will be merged into an anyOf composite schema.
+        var schemasByContentType = new Dictionary<string, List<IOpenApiSchema>>();
+
+        foreach (var apiResponseType in apiResponseTypes)
         {
-            IOpenApiSchema? schema = null;
-            if (apiResponseType.Type is { } responseType)
+            // ApiResponseFormats aggregates information about the supported response content types
+            // from different types of Produces metadata. This is handled by ApiExplorer so looking
+            // up values in ApiResponseFormats should provide us a complete set of the information
+            // encoded in Produces metadata added via attributes or extension methods.
+            var apiResponseFormatContentTypes = apiResponseType.ApiResponseFormats
+                .Select(responseFormat => responseFormat.MediaType);
+            foreach (var contentType in apiResponseFormatContentTypes)
             {
-                schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
-                schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
-                    ? schema.CreateOneOfNullableWrapper()
-                    : schema;
+                IOpenApiSchema? schema = null;
+                if (apiResponseType.Type is { } responseType)
+                {
+                    schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                    schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
+                        ? schema.CreateOneOfNullableWrapper()
+                        : schema;
+                }
+
+                schema ??= new OpenApiSchema();
+
+                if (!schemasByContentType.TryGetValue(contentType, out var schemas))
+                {
+                    schemas = [];
+                    schemasByContentType[contentType] = schemas;
+                }
+
+                schemas.Add(schema);
             }
-            response.Content[contentType] = new OpenApiMediaType { Schema = schema ?? new OpenApiSchema() };
+        }
+
+        foreach (var (contentType, schemas) in schemasByContentType)
+        {
+            IOpenApiSchema finalSchema = schemas.Count == 1
+                ? schemas[0]
+                : new OpenApiSchema { AnyOf = [.. schemas] };
+            response.Content[contentType] = new OpenApiMediaType { Schema = finalSchema };
         }
 
         // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
