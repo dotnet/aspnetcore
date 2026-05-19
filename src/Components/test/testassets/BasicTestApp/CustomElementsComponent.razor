@@ -1,0 +1,75 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<h3>CustomElementsComponent</h3>
+
+<p id="message"></p>
+
+<button id="add-custom-element" @onclick="AddCustomElement">Add custom element</button>
+<button id="remove-custom-element" @onclick="RemoveCustomElement">Remove custom element</button>
+
+@for (var i = 0; i < _customElements.Count; i++)
+{
+    var customElement = _customElements[i];
+    var clickCount = customElement.ClickCount;
+    <p>
+        <button id="increment-@i" @onclick="customElement.IncrementCount">Increment</button><br />
+        <button id="update-complex-parameters-@i" @onclick="customElement.UpdateComplexParameters">Update complex parameters</button><br />
+        <my-custom-element
+            @ref="@customElement.Reference"
+            id="custom-element-@i"
+            string-param="Custom element @i (Clicked @clickCount times)"
+            bool-param="@((clickCount % 2 == 0).ToString())"
+            int-param="@clickCount"
+            long-param="@clickCount"
+            float-param="@(clickCount + 0.5)"
+            double-param="@(clickCount + 0.5)"
+            decimal-param="@(clickCount + 0.5)"
+            nullable-bool-param="@(clickCount % 2 == 0 ? bool.TrueString : null)"
+            nullable-int-param="@(clickCount % 2 == 0 ? clickCount : null)"
+            nullable-long-param="@(clickCount % 2 == 0 ? clickCount : null)"
+            nullable-float-param="@(clickCount % 2 == 0 ? clickCount + 0.5 : null)"
+            nullable-double-param="@(clickCount % 2 == 0 ? clickCount + 0.5 : null)"
+            nullable-decimal-param="@(clickCount % 2 == 0 ? clickCount + 0.5 : null)" />
+    </p>
+}
+
+@code {
+    private List<CustomElementWrapper> _customElements = new();
+
+    private void AddCustomElement()
+    {
+        _customElements.Add(new(JSRuntime));
+    }
+
+    private void RemoveCustomElement()
+    {
+        if (_customElements.Count != 0)
+        {
+            _customElements.RemoveAt(_customElements.Count - 1);
+        }
+    }
+
+    private class CustomElementWrapper
+    {
+        private readonly IJSRuntime _jsRuntime;
+
+        public ElementReference Reference { get; set; }
+        public int ClickCount { get; private set; }
+
+        public CustomElementWrapper(IJSRuntime jsRuntime)
+        {
+            _jsRuntime = jsRuntime;
+        }
+
+        public void IncrementCount()
+        {
+            ClickCount++;
+        }
+
+        public async Task UpdateComplexParameters()
+        {
+            await _jsRuntime.InvokeVoidAsync("customElementFunctions.updateComplexProperties", Reference, ClickCount);
+        }
+    }
+}

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageTags>aspnetcore;testing</PackageTags>
+    <IsShippingPackage>false</IsShippingPackage>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <IsTestAssetProject>true</IsTestAssetProject>
+    <DefineConstants Condition="'$(IsPlaywrightAvailable)' == 'false'">$(DefineConstants);DISABLE_PLAYWRIGHT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Playwright" Condition="'$(IsPlaywrightAvailable)' == 'true'" />
+    <Reference Include="Microsoft.Playwright" ExcludeAssets="build" Condition="'$(IsPlaywrightAvailable)' != 'true'" />
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+  </ItemGroup>
+
+</Project>

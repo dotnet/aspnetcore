@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Build desktop applications with Blazor and a webview.</Description>
+    <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
+    <IsShippingPackage>true</IsShippingPackage>
+    <DefineConstants>$(DefineConstants);BLAZOR_WEBVIEW</DefineConstants>
+    <NoWarn>$(NoWarn);BL0006</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>annotations</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebView.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx" ExcludeFromManifest="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\TransmitDataStreamToJS.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)StaticWebAssets\**\*.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilderMemoryStream.cs" LinkBase="Shared" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="buildTransitive\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildMultiTargeting\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="build\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+
+  </ItemGroup>
+
+    <!-- This workaround is required when referencing FileProviders.Embedded as a project -->
+  <PropertyGroup>
+    <_FileProviderTaskAssembly>$(ArtifactsDir)bin\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task\$(Configuration)\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask AssemblyFile="$(_FileProviderTaskAssembly)" TaskName="Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.GenerateEmbeddedResourcesManifest" />
+
+  <PropertyGroup>
+    <BlazorWebViewJSFilename>blazor.webview.js</BlazorWebViewJSFilename>
+    <!-- Microsoft.AspNetCore.Components.Web.JS.npmproj always capitalizes the directory name. -->
+    <BlazorWebViewJSFile Condition=" '$(Configuration)' == 'Debug' ">..\..\..\Web.JS\dist\Debug\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+    <BlazorWebViewJSFile Condition=" '$(Configuration)' != 'Debug' ">..\..\..\Web.JS\dist\Release\$(BlazorWebViewJSFilename)</BlazorWebViewJSFile>
+  </PropertyGroup>
+
+  <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Warn if not. -->
+  <Target Name="_CheckBlazorWebViewJSPath" AfterTargets="ResolveProjectReferences" Condition=" !EXISTS('$(BlazorWebViewJSFile)') ">
+    <Warning Text="'$(BlazorWebViewJSFile)' does not exist and won't be included in the build." />
+  </Target>
+
+  <Target Name="_AddEmbeddedBlazorWebView" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" DependsOnTargets="_CheckBlazorWebViewJSPath">
+    <ItemGroup>
+      <Content Include="$(BlazorWebViewJSFile)" Condition="EXISTS('$(BlazorWebViewJSFile)')" Pack="true" PackagePath="staticwebassets/$(BlazorWebViewJSFilename)" />
+      <Content Include="blazor.modules.json" Pack="true" PackagePath="staticwebassets/blazor.modules.json" />
+    </ItemGroup>
+  </Target>
+
+</Project>

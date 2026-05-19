@@ -1,0 +1,113 @@
+<Project>
+  <!-- See https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Signing.md for details. -->
+  <Import Project="Common.props" />
+
+  <PropertyGroup>
+    <!-- Use the dotnet certificate for any remaining defaults (e.g. StrongNameSignInfo) -->
+    <UseDotNetCertificate>true</UseDotNetCertificate>
+  </PropertyGroup>
+
+  <ItemGroup Label="File signing information">
+    <!-- Third-party components which should be signed.  -->
+    <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="AngleSharp.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Mdb.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Pdb.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Composite r2r images show up as fully native images and trigger the 3rd party warning when signing on Mac/Linux
+         even though they don't have readable copyright info. Skip those files in the signing check. -->
+    <ItemsToSkip3rdPartyCheck Include="Microsoft.AspNetCore.App.Runtime.Composite.r2r.dll" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BaseRedistNetCorePath>$(ArtifactsObjDir)RedistSharedFx.Layout\$(Configuration)\</BaseRedistNetCorePath>
+    <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
+  </PropertyGroup>
+
+  <ItemGroup Label="Code sign exclusions">
+    <!-- We don't produce font files. We rebundle some for using the web browser, so they do not need to be signed. -->
+    <FileExtensionSignInfo Update=".otf" CertificateName="None" />
+    <FileExtensionSignInfo Update=".ttf" CertificateName="None" />
+    <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->
+    <FileSignInfo Include="ancm.mof" CertificateName="None" />
+    <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
+    <FileSignInfo Include="apphost.exe" CertificateName="None" />
+    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <FileExtensionSignInfo Update=".js" CertificateName="None" />
+
+    <!--
+      These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime.
+      List all combinations of Windows RID's because CI may build multiple combinations of artitectures on the same machine.
+      This uses globs because some of the file names change on every build of .NET Core, like sos_amd64_$(fileversion).dll.
+
+      Technically, this may not be necessary. SignTool does a good deal of detection to determine
+      whether files are already signed.
+
+      Do not include these with cert "None" when doing post-build signing. In that case, we will recognize that
+    -->
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x64\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x86\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm64\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x64\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x86\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm64\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(RedistNetCorePath)dotnet.exe" CertificateName="None" />
+    <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" Condition="'$(PostBuildSign)' != 'true'" />
+
+    <!-- Symbol packages should get no NuGet signature -->
+    <!-- Requires https://github.com/dotnet/arcade/issues/6192 to be fixed -->
+    <!-- <FileSignInfo Include="@(_SymbolPackages->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" /> -->
+
+    <!--
+      We include the Microsoft.Build.Locator.dll assembly in our global tool 'Microsoft.dotnet-openapi'.
+      It is already signed by that team, so we don't need to sign it.
+    -->
+    <FileSignInfo Include="Microsoft.Build.Locator.dll" CertificateName="None" />
+
+    <!--
+      We include the Microsoft.Data.SqlClient.dll and Microsoft.Identity.Client.dll assembly in our global tool 'dotnet-sql-cache'.
+      It is already signed by that team, so we don't need to sign it.
+    -->
+    <FileSignInfo Include="Microsoft.Data.SqlClient.dll" CertificateName="None" />
+    <FileSignInfo Include="Microsoft.Identity.Client.dll" CertificateName="None" />
+  </ItemGroup>
+
+  <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
+  <ItemGroup>
+    <!-- Prepare for _PublishInstallersAndChecksums target. -->
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.jar" UploadPathSegment="jar/" ChecksumPath="%(FullPath).sha512" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.pom" UploadPathSegment="jar/" ChecksumPath="%(FullPath).sha512" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
+    <!-- All builds produce npm assets - only publish them once -->
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.tgz" UploadPathSegment="npm/"  ChecksumPath="%(FullPath).sha512" Condition="'$(PublishAllBuildsAssetsInThisJob)' == 'true'" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.version" UploadPathSegment="Runtime/" Condition="'$(PublishInstallerBaseVersion)' == 'true'" />
+
+    <!-- The following installers create checksums -->
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.deb" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.rpm" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.tar.gz" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsPackagesDir)**\*.zip" UploadPathSegment="Runtime/" >
+       <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </_InstallersToPublish>
+
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.exe" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.msi" UploadPathSegment="Runtime/" ChecksumPath="%(FullPath).sha512" />
+    <_InstallersToPublish Include="$(ArtifactsDir)installers\$(Configuration)\**\*.zip" UploadPathSegment="Runtime/" >
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </_InstallersToPublish>
+
+    <Artifact Include="@(_InstallersToPublish)" Kind="Blob">
+      <IsShipping>true</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(Identity)').ToLowerInvariant().Contains('wixpack.zip'))">false</IsShipping>
+    </Artifact>
+  </ItemGroup>
+
+</Project>

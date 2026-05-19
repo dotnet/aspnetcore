@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Provides a mechanism for using Blazor components as custom HTML elements.</Description>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InteropWorkingDir>$(MSBuildThisFileDirectory)js\</InteropWorkingDir>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      IncludeCompileJsOutput;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveJSModuleStaticWebAssets;ResolveJsInitializerModuleStaticWebAssets">
+    <ItemGroup>
+      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+      <_JsBuildOutput>
+        <RelativePath>%(_JsBuildOutput.RecursiveDir)%(Filename)%(Extension)</RelativePath>
+      </_JsBuildOutput>
+    </ItemGroup>
+
+    <DefineStaticWebAssets Condition="'@(_JsBuildOutput)' != ''"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
+      BasePath="_content\$(PackageId)"
+      CandidateAssets="@(_JsBuildOutput)"
+      RelativePathFilter="**.js"
+      RelativePathPattern="**"
+    >
+      <Output TaskParameter="Assets" ItemName="_JSBuildStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_JsBuildOutput)' != ''"
+      CandidateAssets="@(_JSBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_JSBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_JSBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_JSBuildStaticWebAssetEndpoint)" />
+      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+      <FileWrites Include="$(_JsBuildOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Exclude JavaScript configuration files from being packaged as Content -->
+  <ItemGroup>
+    <Content Remove="js\babel.config.json" />
+    <Content Remove="js\package.json" />
+    <Content Remove="js\tsconfig.json" />
+  </ItemGroup>
+
+</Project>

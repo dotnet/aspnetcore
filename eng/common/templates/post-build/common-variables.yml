@@ -1,0 +1,8 @@
+variables:
+- template: /eng/common/core-templates/post-build/common-variables.yml
+  parameters:
+    # Specifies whether to use 1ES
+    is1ESPipeline: false
+
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

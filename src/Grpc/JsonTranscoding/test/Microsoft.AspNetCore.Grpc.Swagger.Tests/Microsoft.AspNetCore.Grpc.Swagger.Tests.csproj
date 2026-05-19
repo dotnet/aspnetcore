@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Proto\counter.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\body.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\responsebody.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\parameters.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\xmldoc.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\greeter.proto" GrpcServices="Both" />
+    <Protobuf Include="Proto\messages.proto" GrpcServices="Both" />
+
+    <Reference Include="Microsoft.AspNetCore.Grpc.Swagger" />
+    <Reference Include="Grpc.Tools" PrivateAssets="All" />
+  </ItemGroup>
+</Project>

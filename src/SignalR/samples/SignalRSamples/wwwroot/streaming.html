@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+
+<body>
+    <h1 id="transportName">Unknown Transport</h1>
+
+    <h2>Controls</h2>
+    <div>
+        <button id="connectButton" type="button">Connect</button>
+        <button id="disconnectButton" type="button" disabled>Disconnect</button>
+        <button id="clearButton" type="button">Clear</button>
+    </div>
+
+    <div>
+        <button id="asyncEnumerableButton" name="asyncEnumerable" type="button" disabled>From IAsyncEnumerable</button>
+        <button id="observableButton" name="observable" type="button" disabled>From Observable</button>
+        <button id="channelButton" name="channel" type="button" disabled>From Channel</button>
+    </div>
+
+    <h2>Results</h2>
+    <ul id="resultsList"></ul>
+
+    <ul id="messages"></ul>
+    <script src="lib/signalr/signalr.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let resultsList = document.getElementById('resultsList');
+            let channelButton = document.getElementById('channelButton');
+            let observableButton = document.getElementById('observableButton');
+            let asyncEnumerableButton = document.getElementById('asyncEnumerableButton');
+
+            let connectButton = document.getElementById('connectButton');
+            let disconnectButton = document.getElementById('disconnectButton');
+
+            let transportType = signalR.HttpTransportType[getParameterByName('transport')] || signalR.HttpTransportType.WebSockets;
+
+            let invocationCounter = 0;
+
+            document.getElementById('transportName').innerHTML = signalR.HttpTransportType[transportType];
+            let connection = null;
+
+            click('clearButton', function () {
+                resultsList.innerHTML = '';
+            });
+
+            click('disconnectButton', function () {
+                connection.stop();
+            });
+
+            click('connectButton', function () {
+                connection = new signalR.HubConnectionBuilder()
+                    .configureLogging(signalR.LogLevel.Trace)
+                    .withUrl("/streaming", transportType)
+                    .build();
+
+                connection.onclose(function () {
+                    channelButton.disabled = true;
+                    observableButton.disabled = true;
+                    asyncEnumerableButton.disabled = true;
+                    connectButton.disabled = false;
+                    disconnectButton.disabled = true;
+
+                    addLine('resultsList', 'disconnected', 'green');
+                });
+
+                connection.start()
+                    .then(function () {
+                        channelButton.disabled = false;
+                        observableButton.disabled = false;
+                        asyncEnumerableButton.disabled = false;
+                        connectButton.disabled = true;
+                        disconnectButton.disabled = false;
+                        addLine('resultsList', 'connected', 'green');
+                    });
+            });
+
+            click('asyncEnumerableButton', function () {
+                run('AsyncEnumerableCounter');
+            })
+
+            click('observableButton', function () {
+                run('ObservableCounter');
+            });
+
+            click('channelButton', function () {
+                run('ChannelCounter');
+            });
+
+            function run(method) {
+                let id = invocationCounter;
+                invocationCounter += 1;
+                addLine('resultsList', 'running ' + method + '(' + id + ') ...');
+                connection.stream(method, 10, (Math.random() * 5) * 200).subscribe({
+                    closed: false,
+                    next: function (item) {
+                        addLine('resultsList', method + '(' + id + '): ' + item);
+                    },
+                    error: function (err) {
+                        addLine('resultsList', method + '(' + id + '):' + err, 'red');
+                    },
+                    complete: function () {
+                        addLine('resultsList', method + '(' + id + '): complete', 'green');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Contrôleur MVC",
+  "description": "Contrôleur MVC avec ou sans des actions de lecture/écriture",
+  "symbols/namespace/description": "Espace de noms pour le code généré",
+  "symbols/actions/description": "Créer un contrôleur avec des actions de lecture/écriture",
+  "symbols/actions/displayName": "Ajouter des actions de lecture/écriture",
+  "postActions/openInEditor/description": "Ouvre le contrôleur créé dans l'éditeur"
+}

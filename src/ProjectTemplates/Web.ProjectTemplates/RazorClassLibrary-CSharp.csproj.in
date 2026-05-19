@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AddRazorSupportForMvc Condition="'$(SupportPagesAndViews)' == 'True'">true</AddRazorSupportForMvc>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.RazorClassLibrary1</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(SupportPagesAndViews)' == 'True'">
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SupportPagesAndViews)' == 'False'">
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SupportPagesAndViews)' != 'True'">
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="${MicrosoftAspNetCoreComponentsWebVersion}" />
+  </ItemGroup>
+
+</Project>

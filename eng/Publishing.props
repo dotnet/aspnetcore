@@ -1,0 +1,79 @@
+<Project>
+
+  <PropertyGroup>
+    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
+
+    <!-- Don't sign and publish rid agnostic nuget packages from other builds than windows when not building
+         inside the VMR. Do not remove if post build sign is true, as we avoid the xplat codesign jobs, and need to have
+         the nupkgs pushed. -->
+    <EnableDefaultArtifacts Condition="'$(OS)' != 'Windows_NT' and
+                                       '$(PostBuildSign)' != 'true' and
+                                       '$(DotNetBuild)' != 'true'">false</EnableDefaultArtifacts>
+
+    <!-- This avoids creating VS.*.symbols.nupkg packages that are identical to the original package. -->
+    <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
+  </PropertyGroup>
+
+  <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
+  <ItemGroup>
+    <!-- Include our "loose" PDBs when publishing symbols. -->
+    <FilesToPublishToSymbolServer Include="$(ArtifactsDir)symbols\**\*.pdb" />
+  </ItemGroup>
+
+  <Target Name="GetNonStableProductVersion">
+    <!--
+      This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
+      and npm project. We use Microsoft.AspNetCore.InternalTesting.csproj because it is non-shipping (we need a non-stable
+      version string to use as our publish location) non-packed (won't be shipped in the future).
+    -->
+    <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
+        Properties="ExcludeFromBuild=false"
+        Targets="_GetPackageVersionInfo">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <NonStableProductVersion>%(_ResolvedPackageVersionInfo.PackageVersion)</NonStableProductVersion>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Generate productVersion.txt files containing the product version. -->
+  <Target Name="GenerateProductVersionFiles"
+          BeforeTargets="PublishToAzureDevOpsArtifacts"
+          Condition="'$(PublishInstallerBaseVersion)' == 'true' and '$(DotNetBuildPass)' != '2'">
+    <MSBuild Projects="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.InternalTesting.csproj"
+        Properties="ExcludeFromBuild=false;IsShipping=true"
+        Targets="_GetPackageVersionInfo">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <ProductVersion>%(_ResolvedPackageVersionInfo.PackageVersion)</ProductVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
+      <ProductVersionFile Include="$(ArtifactsShippingPackagesDir)aspnetcore-productVersion.txt" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="%(ProductVersionFile.Identity)"
+                      Lines="$(ProductVersion)"
+                      Overwrite="true"
+                      Encoding="ASCII" />
+
+    <ItemGroup>
+      <Artifact Include="@(ProductVersionFile)" Kind="Blob" UploadPathSegment="Runtime/" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddRelativeBlobPathToBlobArtifacts"
+          BeforeTargets="PublishToAzureDevOpsArtifacts"
+          AfterTargets="GenerateProductVersionFiles;GenerateChecksumsFromArtifacts"
+          DependsOnTargets="GetNonStableProductVersion">
+    <ItemGroup>
+      <Artifact Condition="'%(Artifact.Kind)' == 'Blob' and '%(Artifact.RelativeBlobPath)' == ''"
+                RelativeBlobPath="aspnetcore/%(Artifact.UploadPathSegment)$(NonStableProductVersion)/%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

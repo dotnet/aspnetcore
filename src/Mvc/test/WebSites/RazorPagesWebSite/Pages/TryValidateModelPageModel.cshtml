@@ -1,0 +1,9 @@
+﻿@page "{id:int}"
+@using RazorPagesWebSite.Pages
+@model TryValidateModelPageModel
+
+@Html.ValidationSummary()
+<form action="">
+    @Html.AntiForgeryToken()
+</form>
+Validation: @(Model.Validate ? "success" : "fail!" )

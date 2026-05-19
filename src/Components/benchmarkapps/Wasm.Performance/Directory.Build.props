@@ -1,0 +1,11 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- Makes our docker composition simpler by not redirecting build and publish output to the artifacts dir -->
+    <BaseIntermediateOutputPath />
+    <IntermediateOutputPath />
+    <BaseOutputPath />
+    <OutputPath />
+  </PropertyGroup>
+</Project>

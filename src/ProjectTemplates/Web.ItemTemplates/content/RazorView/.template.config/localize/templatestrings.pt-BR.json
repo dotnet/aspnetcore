@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Exibição do Razor",
+  "description": "Uma Exibição do Razor vazia",
+  "postActions/openInEditor/description": "Abre o modo de exibição criado no editor"
+}

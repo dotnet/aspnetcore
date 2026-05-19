@@ -1,0 +1,22 @@
+﻿@using Microsoft.AspNetCore.Components.Sections
+
+<div>
+    <h2>Text Component</h2>
+
+    <p>TextComponent SectionContent was rendered = @SectionContentExists.ToString()</p>
+
+    @if (SectionContentExists)
+    {
+        <SectionContent SectionId="SectionId">
+            <p id="text">Hello!</p>
+        </SectionContent>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public bool SectionContentExists { get; set; }
+
+    [Parameter]
+    public object SectionId { get; set; }
+}

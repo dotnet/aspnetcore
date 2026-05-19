@@ -1,0 +1,28 @@
+﻿@using TagHelpersWebSite.Controllers
+
+@addTagHelper TagHelpersWebSite.TagHelpers.ATagHelper, TagHelpersWebSite
+@addTagHelper TagHelpersWebSite.TagHelpers.PrettyTagHelper, TagHelpersWebSite
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - My ASP.NET Application</title>
+
+    @RenderSection("css", required: false)
+</head>
+<body>
+    <h1>ASP.NET vNext - @ViewBag.Title</h1>
+    <p>| <a controller="home" action="index">Home</a>
+       | <a controller="home" action="about">About</a> 
+       | <a controller="home" action="help">Help</a> |</p>
+    <div>
+        @RenderBody()
+        <hr />
+        <footer>
+            @RenderSection("footerContent", required: false)
+        </footer>
+    </div>
+</body>
+</html>

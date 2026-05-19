@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Build client-side authentication for single-page applications (SPAs).</Description>
+    <IsShippingPackage>true</IsShippingPackage>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InteropWorkingDir>$(MSBuildThisFileDirectory)Interop\</InteropWorkingDir>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      IncludeCompileInteropOutput;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Update="$(InteropWorkingDir)**" Pack="false" />
+  </ItemGroup>
+
+  <Target Name="IncludeCompileInteropOutput">
+    <ItemGroup>
+      <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_InteropBuildOutput)' != ''"
+      SourceType="Computed"
+      SourceId="$(PackageId)"
+      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
+      BasePath="_content/$(PackageId)"
+      CandidateAssets="@(_InteropBuildOutput)"
+      RelativePathFilter="**.js"
+    >
+      <Output TaskParameter="Assets" ItemName="_InteropBuildStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_InteropBuildOutput)' != ''"
+      CandidateAssets="@(_InteropBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_InteropBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_InteropBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_InteropBuildStaticWebAssetEndpoint)" />
+      <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+      <FileWrites Include="$(_InteropBuildOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Tests" />
+  </ItemGroup>
+</Project>

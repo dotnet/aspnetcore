@@ -1,0 +1,12 @@
+# EditorConfig is awesome:http://EditorConfig.org
+# NOTE: Requires **VS2019 16.3** or later
+
+# New Rule Set
+# Description:
+# MsgPack001 : MsgPack001 Avoid static default for MessagePackSerializerOptions
+# MsgPack002 : MsgPack002 Avoid using a mutable static value for MessagePackSerializerOptions
+
+# Code files
+[*.{cs,vb}]
+dotnet_diagnostic.MsgPack001.severity = error
+dotnet_diagnostic.MsgPack002.severity = error

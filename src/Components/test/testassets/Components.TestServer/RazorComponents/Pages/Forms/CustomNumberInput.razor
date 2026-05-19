@@ -1,0 +1,21 @@
+﻿@using System.Diagnostics.CodeAnalysis;
+@using System.Globalization;
+@inherits Microsoft.AspNetCore.Components.Forms.InputBase<int>
+
+<input name="@NameAttributeValue" @attributes="AdditionalAttributes" type="text" class="@CssClass" @bind="CurrentValueAsString" />
+
+@code {
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        if (BindConverter.TryConvertTo<int>(value, CultureInfo.InvariantCulture, out result))
+        {
+            validationErrorMessage = null;
+            return true;
+        }
+        else
+        {
+            validationErrorMessage = string.Format(CultureInfo.InvariantCulture, "The {0} field must be a number.", DisplayName ?? FieldIdentifier.FieldName);
+            return false;
+        }
+    }
+}

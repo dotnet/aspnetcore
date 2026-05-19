@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\buildTransitive\Microsoft.AspNetCore.Identity.UI.targets"/>
+</Project>

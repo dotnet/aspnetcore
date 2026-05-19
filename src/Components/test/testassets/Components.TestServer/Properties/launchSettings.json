@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "Components.TestServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+
+        // When started manually (not by E2E tests), it's helpful to run each of the child apps
+        // on deterministic port numbers so that you don't have to keep rediscovering it every
+        // time you restart the test server
+        "TESTSERVER_USE_DETERMINISTIC_PORTS": "true"
+      },
+      "applicationUrl": "http://localhost:5000"
+    }
+  }
+}

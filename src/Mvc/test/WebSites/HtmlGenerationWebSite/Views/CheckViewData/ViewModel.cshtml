@@ -1,0 +1,40 @@
+﻿@using HtmlGenerationWebSite.Components
+@using HtmlGenerationWebSite.Models
+@using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
+
+@* Need the model directive in top-level view. Otherwise the controller would have to set the ViewData property. *@
+@* Put another way, Controller lacks the View<TModel>([...,] TModel) overloads that ViewComponent has. *@
+@model ViewModel
+
+@{
+    var metadata = ViewData.ModelMetadata;
+}
+
+<div class="row">
+    <h4>View Model index</h4>
+    <div class="col-md-3">MetadataKind: '@metadata.MetadataKind'</div>
+    <div class="col-md-3">ModelType: '@metadata.ModelType.Name'</div>
+    @if (metadata.MetadataKind == ModelMetadataKind.Property)
+    {
+        <div class="col-md-3">PropertyName: '@metadata.PropertyName'</div>
+    }
+</div>
+
+<div class="row">
+    @Html.DisplayFor(m => m, templateName: "LackModel")
+</div>
+<div class="row">
+    @(await Html.PartialAsync(partialViewName: "DisplayTemplates/LackModel.cshtml"))
+</div>
+<div class="row">
+    @(await Component.InvokeAsync<CheckViewData___LackModel>())
+</div>
+<div class="row">
+    @Html.DisplayFor(m => m.Integer, templateName: "Int32 - LackModel")
+</div>
+<div class="row">
+    @Html.DisplayFor(m => m.NullableLong, templateName: "Int64 - LackModel")
+</div>
+<div class="row">
+    @Html.DisplayFor(m => m.Template, templateName: "LackModel")
+</div>

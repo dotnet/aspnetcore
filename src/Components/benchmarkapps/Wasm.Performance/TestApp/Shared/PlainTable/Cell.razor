@@ -1,0 +1,30 @@
+@using WeatherForecast = Pages.GridRendering.WeatherForecast
+
+<td @onclick="@(() => OnClick.Invoke(1))">
+    @switch (Field)
+    {
+        case "Date":
+            @Item.Date.ToShortDateString()
+            break;
+        case "TemperatureC":
+            @Item.TemperatureC
+            break;
+        case "TemperatureF":
+            @Item.TemperatureF
+            break;
+        case "Summary":
+            @Item.Summary
+            break;
+    }
+</td>
+
+@code {
+    [Parameter]
+    public WeatherForecast Item { get; set; }
+
+    [Parameter]
+    public string Field { get; set; }
+
+    [Parameter]
+    public Func<int, Task> OnClick { get; set; }
+}

@@ -1,0 +1,33 @@
+﻿@page "/forms/named-form-bound-primitive-parameter-validator"
+
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Named form with bound parameter</h2>
+
+<EditForm Enhance FormName="named-form-handler" Model="Model" method="POST" OnValidSubmit="() => _submitted = true">
+    <ValidationSummary />
+
+    <CustomNumberInput @bind-Value="Model.Parameter" />
+    <ValidationMessage For="@(() => Model.Parameter)" />
+
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="pass">Your number is @Model.Parameter!</p>
+}
+@code {
+    bool _submitted = false;
+
+    [SupplyParameterFromForm(FormName = "named-form-handler")] public DataModel Model { get; set; }
+
+    [CascadingParameter] public FormMappingContext Context { get; set; }
+
+    protected override void OnInitialized() => Model ??= new();
+
+    public class DataModel
+    {
+        public int Parameter { get; set; }
+    }
+}

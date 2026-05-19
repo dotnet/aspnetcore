@@ -1,0 +1,30 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageTags>aspnetcore;components</PackageTags>
+
+    <ComponentsSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ComponentsSharedSourceRoot>
+
+    <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.txt</PackageThirdPartyNoticesFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Workaround microsoft/msbuild#3626 -->
+    <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
+  </PropertyGroup>
+
+  <!-- Workaround to add Blazor framework static assets without requiring a package reference -->
+  <PropertyGroup>
+    <UseBlazorFrameworkDebugAssets>true</UseBlazorFrameworkDebugAssets>
+    <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</BlazorFrameworkStaticWebAssetRoot>
+    <BlazorFrameworkStaticWebAssetRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</BlazorFrameworkStaticWebAssetRoot>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRoot)\src\Assets\build\Microsoft.AspNetCore.App.Internal.Assets.targets" />
+
+</Project>

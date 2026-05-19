@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Builds Razor pages for views in a project. For internal use only.</Description>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AssemblyName>dotnet-razorpagegenerator</AssemblyName>
+    <PackageId>RazorPageGenerator</PackageId>
+    <OutputType>Exe</OutputType>
+    <IsShipping>false</IsShipping>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <!-- No need to track public APIs of this tool. -->
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="Microsoft.AspNetCore.Components.WebAssembly.Authentication, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60">
+    <attribute fullname="System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessageAttribute">
+      <argument>ILLink</argument>
+      <argument>IL2091</argument>
+      <property name="Scope">member</property>
+      <property name="Target">F:Microsoft.Extensions.DependencyInjection.WebAssemblyAuthenticationServiceCollectionExtensions.&lt;&gt;c__1`1.&lt;&gt;9__1_0</property>
+    </attribute>
+  </assembly>
+</linker>

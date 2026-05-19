@@ -1,0 +1,1128 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Buffers;
+using System.Diagnostics;
+using System.IO.Pipelines;
+using System.Text;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+
+internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
+{
+    internal static ReadOnlySpan<byte> Http2GoAwayHttp11RequiredBytes => [0, 0, 8, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 13];
+
+    // Pre-allocated static error response fragments for fast-path bad request handling.
+    // Split into prefix (status + Content-Length + Connection) and suffix (final CRLF)
+    // so we can insert the cached Date header value between them without allocating.
+    // Keep in sync with KestrelBadHttpRequestException.GetException().
+    // Header order matches the normal response path: Content-Length, Connection, Date.
+    private static ReadOnlySpan<byte> BadRequestResponsePrefix =>
+        "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> HttpVersionNotSupportedResponsePrefix =>
+        "HTTP/1.1 505 HTTP Version Not Supported\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> RequestTimeoutResponsePrefix =>
+        "HTTP/1.1 408 Request Timeout\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> HeadersTooLargeResponsePrefix =>
+        "HTTP/1.1 431 Request Header Fields Too Large\r\nContent-Length: 0\r\nConnection: close"u8;
+    private static ReadOnlySpan<byte> RequestLineTooLongResponsePrefix =>
+        "HTTP/1.1 414 URI Too Long\r\nContent-Length: 0\r\nConnection: close"u8;
+    // Suffix is just the final CRLF to end headers. Date header is written between prefix and suffix.
+    private static ReadOnlySpan<byte> ErrorResponseSuffix => "\r\n\r\n"u8;
+    private static ReadOnlySpan<byte> ServerHeaderBytes => "\r\nServer: Kestrel"u8;
+
+    private const byte ByteCR = (byte)'\r';
+    private const byte ByteLF = (byte)'\n';
+    private const byte ByteAsterisk = (byte)'*';
+    private const byte ByteForwardSlash = (byte)'/';
+    private const string Asterisk = "*";
+    private const string ForwardSlash = "/";
+
+    private readonly HttpConnectionContext _context;
+    private readonly IHttpParser<Http1ParsingHandler> _parser;
+    private readonly Http1OutputProducer _http1Output;
+    private readonly bool _showErrorDetails;
+
+    private volatile bool _requestTimedOut;
+    private uint _requestCount;
+
+    private HttpRequestTarget _requestTargetForm = HttpRequestTarget.Unknown;
+    private Uri? _absoluteRequestTarget;
+
+    // The _parsed fields cache the Path, QueryString, RawTarget, and/or _absoluteRequestTarget
+    // from the previous request when DisableStringReuse is false.
+    private string? _parsedPath;
+    private string? _parsedQueryString;
+    private string? _parsedRawTarget;
+    private Uri? _parsedAbsoluteRequestTarget;
+
+    private long _remainingRequestHeadersBytesAllowed;
+
+    // Tracks whether a HTTP/2 preface was detected during the first request.
+    private bool _http2PrefaceDetected;
+
+    public Http1Connection(HttpConnectionContext context)
+    {
+        Initialize(context);
+
+        _context = context;
+        _parser = ServiceContext.HttpParser;
+        _showErrorDetails = Log.IsEnabled(LogLevel.Information);
+
+        _http1Output = new Http1OutputProducer(
+            _context.Transport.Output,
+            _context.ConnectionId,
+            _context.ConnectionContext,
+            _context.MemoryPool,
+            _context.ServiceContext.Log,
+            _context.TimeoutControl,
+            minResponseDataRateFeature: this,
+            MetricsContext,
+            outputAborter: this);
+
+        Input = _context.Transport.Input;
+        Output = _http1Output;
+        MemoryPool = _context.MemoryPool;
+    }
+
+    public ConnectionMetricsContext MetricsContext => _context.MetricsContext;
+
+    public PipeReader Input { get; }
+
+    public bool RequestTimedOut => _requestTimedOut;
+
+    public MinDataRate? MinResponseDataRate { get; set; }
+
+    public MemoryPool<byte> MemoryPool { get; }
+
+    protected override void OnRequestProcessingEnded()
+    {
+        if (IsUpgraded)
+        {
+            KestrelEventSource.Log.RequestUpgradedStop(this);
+            ServiceContext.Metrics.RequestUpgradedStop(MetricsContext);
+
+            ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
+        }
+
+        TimeoutControl.StartDrainTimeout(MinResponseDataRate, ServerOptions.Limits.MaxResponseBufferSize);
+
+        // Prevent RequestAborted from firing. Free up unneeded feature references.
+        Reset();
+
+        _http1Output.Dispose();
+    }
+
+    void IRequestProcessor.OnInputOrOutputCompleted()
+    {
+        // Closed gracefully.
+        _http1Output.Abort(ServerOptions.FinOnError ? new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient) : null!, ConnectionEndReason.TransportCompleted);
+        CancelRequestAbortedToken();
+    }
+
+    void IHttpOutputAborter.OnInputOrOutputCompleted()
+    {
+        _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient), ConnectionEndReason.TransportCompleted);
+        CancelRequestAbortedToken();
+    }
+
+    /// <summary>
+    /// Immediately kill the connection and poison the request body stream with an error.
+    /// </summary>
+    public void Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
+    {
+        _http1Output.Abort(abortReason, reason);
+        CancelRequestAbortedToken();
+        PoisonBody(abortReason);
+    }
+
+    protected override void ApplicationAbort()
+    {
+        Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
+        Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication), ConnectionEndReason.AbortedByApp);
+    }
+
+    /// <summary>
+    /// Stops the request processing loop between requests.
+    /// Called on all active connections when the server wants to initiate a shutdown
+    /// and after a keep-alive timeout.
+    /// </summary>
+    public void StopProcessingNextRequest(ConnectionEndReason reason)
+    {
+        DisableKeepAlive(reason);
+        Input.CancelPendingRead();
+    }
+
+    internal override void DisableKeepAlive(ConnectionEndReason reason)
+    {
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, reason);
+        _keepAlive = false;
+    }
+
+    public void SendTimeoutResponse()
+    {
+        _requestTimedOut = true;
+        Input.CancelPendingRead();
+    }
+
+    public void HandleRequestHeadersTimeout()
+    {
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.RequestHeadersTimeout);
+        SendTimeoutResponse();
+    }
+
+    public void HandleReadDataRateTimeout()
+    {
+        Debug.Assert(MinRequestBodyDataRate != null);
+
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.MinRequestBodyDataRate);
+        Log.RequestBodyMinimumDataRateNotSatisfied(ConnectionId, TraceIdentifier, MinRequestBodyDataRate.BytesPerSecond);
+        SendTimeoutResponse();
+    }
+
+    public bool TakeStartLine(ref SequenceReader<byte> reader)
+    {
+        // Make sure the buffer is limited
+        if (reader.Remaining >= ServerOptions.Limits.MaxRequestLineSize)
+        {
+            // Input oversize, cap amount checked
+            return TrimAndTakeStartLine(ref reader);
+        }
+
+        return _parser.ParseRequestLine(new Http1ParsingHandler(this), ref reader);
+
+        bool TrimAndTakeStartLine(ref SequenceReader<byte> reader)
+        {
+            var trimmedBuffer = reader.Sequence.Slice(reader.Position, ServerOptions.Limits.MaxRequestLineSize);
+            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
+
+            if (!_parser.ParseRequestLine(new Http1ParsingHandler(this), ref trimmedReader))
+            {
+                // We read the maximum allowed but didn't complete the start line.
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
+            }
+
+            reader.Advance(trimmedReader.Consumed);
+            return true;
+        }
+    }
+
+    public bool TakeMessageHeaders(ref SequenceReader<byte> reader, bool trailers)
+    {
+        // Make sure the buffer is limited
+        if (reader.Remaining > _remainingRequestHeadersBytesAllowed)
+        {
+            // Input oversize, cap amount checked
+            return TrimAndTakeMessageHeaders(ref reader, trailers);
+        }
+
+        var alreadyConsumed = reader.Consumed;
+
+        try
+        {
+            var result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+            if (result)
+            {
+                TimeoutControl.CancelTimeout();
+            }
+
+            return result;
+        }
+        finally
+        {
+            _remainingRequestHeadersBytesAllowed -= reader.Consumed - alreadyConsumed;
+        }
+
+        bool TrimAndTakeMessageHeaders(ref SequenceReader<byte> reader, bool trailers)
+        {
+            var trimmedBuffer = reader.Sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed);
+            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
+            try
+            {
+                if (!_parser.ParseHeaders(new Http1ParsingHandler(this, trailers), ref trimmedReader))
+                {
+                    // We read the maximum allowed but didn't complete the headers.
+                    KestrelBadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                }
+
+                TimeoutControl.CancelTimeout();
+
+                reader.Advance(trimmedReader.Consumed);
+
+                return true;
+            }
+            finally
+            {
+                _remainingRequestHeadersBytesAllowed -= trimmedReader.Consumed;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Non-throwing version of ParseRequest. Returns HttpParseResult instead of throwing.
+    /// </summary>
+    private HttpParseResult TryParseRequestCore(ref SequenceReader<byte> reader)
+    {
+        switch (_requestProcessingStatus)
+        {
+            case RequestProcessingStatus.RequestPending:
+                // Skip any empty lines (\r or \n) between requests.
+                // Peek first as a minor performance optimization; it's a quick inlined check.
+                if (reader.TryPeek(out byte b) && (b == ByteCR || b == ByteLF))
+                {
+                    reader.AdvancePastAny(ByteCR, ByteLF);
+                }
+
+                if (reader.End)
+                {
+                    return HttpParseResult.Incomplete;
+                }
+
+                TimeoutControl.ResetTimeout(ServerOptions.Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
+                _requestProcessingStatus = RequestProcessingStatus.ParsingRequestLine;
+                goto case RequestProcessingStatus.ParsingRequestLine;
+
+            case RequestProcessingStatus.ParsingRequestLine:
+                var startLineResult = TryTakeStartLineCore(ref reader);
+                if (startLineResult.HasError)
+                {
+                    return startLineResult;
+                }
+                if (startLineResult.IsComplete)
+                {
+                    _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
+                    goto case RequestProcessingStatus.ParsingHeaders;
+                }
+                return HttpParseResult.Incomplete;
+
+            case RequestProcessingStatus.ParsingHeaders:
+                var headersResult = TryTakeMessageHeadersCore(ref reader, trailers: false);
+                if (headersResult.HasError)
+                {
+                    return headersResult;
+                }
+                if (headersResult.IsComplete)
+                {
+                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                    return HttpParseResult.Complete;
+                }
+                return HttpParseResult.Incomplete;
+        }
+
+        return HttpParseResult.Incomplete;
+    }
+
+    private HttpParseResult TryTakeStartLineCore(ref SequenceReader<byte> reader)
+    {
+        if (reader.Remaining >= ServerOptions.Limits.MaxRequestLineSize)
+        {
+            return TryTrimAndTakeStartLineCore(ref reader);
+        }
+
+        return _parser.TryParseRequestLine(new Http1ParsingHandler(this), ref reader);
+
+        HttpParseResult TryTrimAndTakeStartLineCore(ref SequenceReader<byte> reader)
+        {
+            var trimmedBuffer = reader.Sequence.Slice(reader.Position, ServerOptions.Limits.MaxRequestLineSize);
+            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
+
+            var result = _parser.TryParseRequestLine(new Http1ParsingHandler(this), ref trimmedReader);
+            if (result.HasError)
+            {
+                return result;
+            }
+            if (!result.IsComplete)
+            {
+                return HttpParseResult.Error(RequestRejectionReason.RequestLineTooLong);
+            }
+
+            reader.Advance(trimmedReader.Consumed);
+            return HttpParseResult.Complete;
+        }
+    }
+
+    private HttpParseResult TryTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
+    {
+        if (reader.Remaining > _remainingRequestHeadersBytesAllowed)
+        {
+            return TryTrimAndTakeMessageHeadersCore(ref reader, trailers);
+        }
+
+        var alreadyConsumed = reader.Consumed;
+        var result = _parser.TryParseHeaders(new Http1ParsingHandler(this, trailers), ref reader);
+        _remainingRequestHeadersBytesAllowed -= reader.Consumed - alreadyConsumed;
+
+        if (result.IsComplete)
+        {
+            TimeoutControl.CancelTimeout();
+        }
+
+        return result;
+
+        HttpParseResult TryTrimAndTakeMessageHeadersCore(ref SequenceReader<byte> reader, bool trailers)
+        {
+            var trimmedBuffer = reader.Sequence.Slice(reader.Position, _remainingRequestHeadersBytesAllowed);
+            var trimmedReader = new SequenceReader<byte>(trimmedBuffer);
+
+            var result = _parser.TryParseHeaders(new Http1ParsingHandler(this, trailers), ref trimmedReader);
+            _remainingRequestHeadersBytesAllowed -= trimmedReader.Consumed;
+
+            if (result.HasError)
+            {
+                return result;
+            }
+            if (!result.IsComplete)
+            {
+                return HttpParseResult.Error(RequestRejectionReason.HeadersExceedMaxTotalSize);
+            }
+
+            TimeoutControl.CancelTimeout();
+            reader.Advance(trimmedReader.Consumed);
+            return HttpParseResult.Complete;
+        }
+    }
+
+    public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+    {
+        // Null characters are not allowed and should have been checked by HttpParser before calling this method
+        Debug.Assert(startLine.IndexOf((byte)0) == -1);
+
+        var targetStart = targetPath.Offset;
+        // Slice out target
+        var target = startLine[targetStart..];
+        Debug.Assert(target.Length != 0, "Request target must be non-zero length");
+        var method = versionAndMethod.Method;
+        var ch = target[0];
+        if (ch == ByteForwardSlash)
+        {
+            // origin-form.
+            // The most common form of request-target.
+            // https://tools.ietf.org/html/rfc7230#section-5.3.1
+            OnOriginFormTarget(targetPath, target);
+        }
+        else if (ch == ByteAsterisk && target.Length == 1)
+        {
+            OnAsteriskFormTarget(method);
+        }
+        else if (startLine[targetStart..].GetKnownHttpScheme(out _))
+        {
+            OnAbsoluteFormTarget(targetPath, target);
+        }
+        else
+        {
+            // Assume anything else is considered authority form.
+            // FYI: this should be an edge case. This should only happen when
+            // a client mistakenly thinks this server is a proxy server.
+            OnAuthorityFormTarget(method, target);
+        }
+
+        Method = method;
+        if (method == HttpMethod.Custom)
+        {
+            _methodText = startLine[..versionAndMethod.MethodEnd].GetAsciiString();
+        }
+
+        _httpVersion = versionAndMethod.Version;
+
+        Debug.Assert(RawTarget != null, "RawTarget was not set");
+        Debug.Assert(((IHttpRequestFeature)this).Method != null, "Method was not set");
+        Debug.Assert(Path != null, "Path was not set");
+        Debug.Assert(QueryString != null, "QueryString was not set");
+        Debug.Assert(HttpVersion != null, "HttpVersion was not set");
+    }
+
+    // Compare with Http2Stream.TryValidatePseudoHeaders
+    private void OnOriginFormTarget(TargetOffsetPathLength targetPath, Span<byte> target)
+    {
+        Debug.Assert(target[0] == ByteForwardSlash, "Should only be called when path starts with /");
+
+        _requestTargetForm = HttpRequestTarget.OriginForm;
+
+        if (target.Length == 1)
+        {
+            // If target.Length == 1 it can only be a forward slash (e.g. home page)
+            // and we know RawTarget and Path are the same and QueryString is Empty
+            RawTarget = ForwardSlash;
+            Path = ForwardSlash;
+            QueryString = string.Empty;
+            // Clear parsedData as we won't check it if we come via this path again,
+            // an setting to null is fast as it doesn't need to use a GC write barrier.
+            _parsedRawTarget = _parsedPath = _parsedQueryString = null;
+            _parsedAbsoluteRequestTarget = null;
+            return;
+        }
+
+        // Read raw target before mutating memory.
+        var previousValue = _parsedRawTarget;
+        if (ServerOptions.DisableStringReuse ||
+            previousValue == null || previousValue.Length != target.Length ||
+            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
+        {
+            ParseTarget(targetPath, target);
+        }
+        else
+        {
+            // As RawTarget is the same we can reuse the previous parsed values.
+            RawTarget = previousValue;
+            Path = _parsedPath;
+            QueryString = _parsedQueryString;
+        }
+
+        // Clear parsedData for absolute target as we won't check it if we come via this path again,
+        // an setting to null is fast as it doesn't need to use a GC write barrier.
+        _parsedAbsoluteRequestTarget = null;
+    }
+
+    private void ParseTarget(TargetOffsetPathLength targetPath, Span<byte> target)
+    {
+        // URIs are always encoded/escaped to ASCII https://tools.ietf.org/html/rfc3986#page-11
+        // Multibyte Internationalized Resource Identifiers (IRIs) are first converted to utf8;
+        // then encoded/escaped to ASCII  https://www.ietf.org/rfc/rfc3987.txt "Mapping of IRIs to URIs"
+
+        try
+        {
+            // The previous string does not match what the bytes would convert to,
+            // so we will need to generate a new string.
+            RawTarget = _parsedRawTarget = target.GetAsciiString();
+
+            var queryLength = 0;
+            if (target.Length == targetPath.Length)
+            {
+                // No query string
+                if (ReferenceEquals(_parsedQueryString, string.Empty))
+                {
+                    QueryString = _parsedQueryString;
+                }
+                else
+                {
+                    QueryString = string.Empty;
+                    _parsedQueryString = string.Empty;
+                }
+            }
+            else
+            {
+                queryLength = ParseQuery(targetPath, target);
+            }
+
+            var pathLength = targetPath.Length;
+            if (pathLength == 1)
+            {
+                // If path.Length == 1 it can only be a forward slash (e.g. home page)
+                Path = _parsedPath = ForwardSlash;
+            }
+            else
+            {
+                var path = target[..pathLength];
+                Path = _parsedPath = PathDecoder.DecodePath(path, targetPath.IsEncoded, RawTarget, queryLength);
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            ThrowRequestTargetRejected(target);
+        }
+    }
+
+    private int ParseQuery(TargetOffsetPathLength targetPath, Span<byte> target)
+    {
+        var previousValue = _parsedQueryString;
+        var query = target[targetPath.Length..];
+        var queryLength = query.Length;
+        if (ServerOptions.DisableStringReuse ||
+            previousValue == null || previousValue.Length != queryLength ||
+            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+        {
+            // The previous string does not match what the bytes would convert to,
+            // so we will need to generate a new string.
+            QueryString = _parsedQueryString = query.GetAsciiString();
+        }
+        else
+        {
+            // Same as previous
+            QueryString = _parsedQueryString;
+        }
+
+        return queryLength;
+    }
+
+    private void OnAuthorityFormTarget(HttpMethod method, Span<byte> target)
+    {
+        _requestTargetForm = HttpRequestTarget.AuthorityForm;
+
+        // This is not complete validation. It is just a quick scan for invalid characters
+        // but doesn't check that the target fully matches the URI spec.
+        if (HttpCharacters.ContainsInvalidAuthorityChar(target))
+        {
+            ThrowRequestTargetRejected(target);
+        }
+
+        // The authority-form of request-target is only used for CONNECT
+        // requests (https://tools.ietf.org/html/rfc9110#section-9.3.6).
+        if (method != HttpMethod.Connect)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.ConnectMethodRequired);
+        }
+
+        // When making a CONNECT request to establish a tunnel through one or
+        // more proxies, a client MUST send only the target URI's authority
+        // component (excluding any userinfo and its "@" delimiter) as the
+        // request-target.For example,
+        //
+        //  CONNECT www.example.com:80 HTTP/1.1
+        //
+        // Allowed characters in the 'host + port' section of authority.
+        // See https://tools.ietf.org/html/rfc3986#section-3.2
+
+        var previousValue = _parsedRawTarget;
+        if (ServerOptions.DisableStringReuse ||
+            previousValue == null || previousValue.Length != target.Length ||
+            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
+        {
+            // The previous string does not match what the bytes would convert to,
+            // so we will need to generate a new string.
+            RawTarget = _parsedRawTarget = target.GetAsciiString();
+        }
+        else
+        {
+            // Reuse previous value
+            RawTarget = _parsedRawTarget;
+        }
+
+        Path = string.Empty;
+        QueryString = string.Empty;
+        // Clear parsedData for path, queryString and absolute target as we won't check it if we come via this path again,
+        // an setting to null is fast as it doesn't need to use a GC write barrier.
+        _parsedPath = _parsedQueryString = null;
+        _parsedAbsoluteRequestTarget = null;
+    }
+
+    private void OnAsteriskFormTarget(HttpMethod method)
+    {
+        _requestTargetForm = HttpRequestTarget.AsteriskForm;
+
+        // The asterisk-form of request-target is only used for a server-wide
+        // OPTIONS request (https://tools.ietf.org/html/rfc9110#section-9.3.7).
+        if (method != HttpMethod.Options)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.OptionsMethodRequired);
+        }
+
+        RawTarget = Asterisk;
+        Path = string.Empty;
+        QueryString = string.Empty;
+        // Clear parsedData as we won't check it if we come via this path again,
+        // an setting to null is fast as it doesn't need to use a GC write barrier.
+        _parsedRawTarget = _parsedPath = _parsedQueryString = null;
+        _parsedAbsoluteRequestTarget = null;
+    }
+
+    private void OnAbsoluteFormTarget(TargetOffsetPathLength targetPath, Span<byte> target)
+    {
+        Span<byte> query = target[targetPath.Length..];
+        _requestTargetForm = HttpRequestTarget.AbsoluteForm;
+
+        // absolute-form
+        // https://tools.ietf.org/html/rfc7230#section-5.3.2
+
+        // This code should be the edge-case.
+
+        // From the spec:
+        //    a server MUST accept the absolute-form in requests, even though
+        //    HTTP/1.1 clients will only send them in requests to proxies.
+
+        var disableStringReuse = ServerOptions.DisableStringReuse;
+        var previousValue = _parsedRawTarget;
+        if (disableStringReuse ||
+            previousValue == null || previousValue.Length != target.Length ||
+            !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
+        {
+            try
+            {
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                RawTarget = _parsedRawTarget = target.GetAsciiString();
+            }
+            catch (InvalidOperationException)
+            {
+                // GetAsciiStringNonNullCharacters throws an InvalidOperationException if there are
+                // invalid characters in the string. This is hard to understand/diagnose, so let's
+                // catch it and instead throw a more meaningful error. This matches the behavior in
+                // the origin-form case.
+                ThrowRequestTargetRejected(target);
+            }
+
+            // Validation of absolute URIs is slow, but clients
+            // should not be sending this form anyways, so perf optimization
+            // not high priority
+
+            if (!Uri.TryCreate(RawTarget, UriKind.Absolute, out var uri))
+            {
+                ThrowRequestTargetRejected(target);
+            }
+
+            _absoluteRequestTarget = _parsedAbsoluteRequestTarget = uri;
+
+            // Use PathDecoder.DecodePath (same as origin-form and HTTP/2/3) instead of
+            // uri.LocalPath, which decodes %2F to '/' breaking path canonicalization.
+            const int MaxPathBufferStackAllocSize = 256;
+
+            var absolutePath = uri.AbsolutePath;
+            byte[]? rentedBuffer = null;
+            Span<byte> pathBuffer = absolutePath.Length <= MaxPathBufferStackAllocSize
+                ? (stackalloc byte[MaxPathBufferStackAllocSize])
+                : (rentedBuffer = ArrayPool<byte>.Shared.Rent(absolutePath.Length));
+            var pathBufferSliced = pathBuffer[..absolutePath.Length];
+
+            try
+            {
+                Encoding.ASCII.GetBytes(absolutePath, pathBufferSliced);
+                Path = _parsedPath = PathDecoder.DecodePath(pathBufferSliced, targetPath.IsEncoded, absolutePath, queryLength: 0);
+            }
+            catch (InvalidOperationException)
+            {
+                ThrowRequestTargetRejected(target);
+            }
+            finally
+            {
+                if (rentedBuffer is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(rentedBuffer);
+                }
+            }
+
+            // don't use uri.Query because we need the unescaped version
+            previousValue = _parsedQueryString;
+            if (disableStringReuse ||
+                previousValue == null || previousValue.Length != query.Length ||
+                !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
+            {
+                // The previous string does not match what the bytes would convert to,
+                // so we will need to generate a new string.
+                QueryString = _parsedQueryString = query.GetAsciiString();
+            }
+            else
+            {
+                QueryString = _parsedQueryString;
+            }
+        }
+        else
+        {
+            // As RawTarget is the same we can reuse the previous values.
+            RawTarget = _parsedRawTarget;
+            Path = _parsedPath;
+            QueryString = _parsedQueryString;
+            _absoluteRequestTarget = _parsedAbsoluteRequestTarget;
+        }
+    }
+
+    internal void EnsureHostHeaderExists()
+    {
+        // https://tools.ietf.org/html/rfc7230#section-5.4
+        // A server MUST respond with a 400 (Bad Request) status code to any
+        // HTTP/1.1 request message that lacks a Host header field and to any
+        // request message that contains more than one Host header field or a
+        // Host header field with an invalid field-value.
+
+        var hostCount = HttpRequestHeaders.HostCount;
+        var hostText = HttpRequestHeaders.HeaderHost.ToString();
+        if (hostCount <= 0)
+        {
+            if (_httpVersion == Http.HttpVersion.Http10)
+            {
+                return;
+            }
+
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
+        }
+        else if (hostCount > 1)
+        {
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleHostHeaders);
+        }
+        else if (_requestTargetForm != HttpRequestTarget.OriginForm)
+        {
+            // Tail call
+            ValidateNonOriginHostHeader(hostText);
+        }
+        else if (!HttpUtilities.IsHostHeaderValid(hostText))
+        {
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+        }
+    }
+
+    private void ValidateNonOriginHostHeader(string hostText)
+    {
+        if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
+        {
+            if (hostText != RawTarget)
+            {
+                KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+            }
+        }
+        else if (_requestTargetForm == HttpRequestTarget.AbsoluteForm)
+        {
+            // If the target URI includes an authority component, then a
+            // client MUST send a field - value for Host that is identical to that
+            // authority component, excluding any userinfo subcomponent and its "@"
+            // delimiter.
+
+            // Accessing authority always allocates, store it in a local to only allocate once
+            var authority = _absoluteRequestTarget!.Authority;
+
+            // System.Uri doesn't not tell us if the port was in the original string or not.
+            // When IsDefaultPort = true, we will allow Host: with or without the default port
+            if (hostText != authority)
+            {
+                if (!_absoluteRequestTarget.IsDefaultPort
+                    || hostText != $"{authority}:{_absoluteRequestTarget.Port}")
+                {
+                    if (_context.ServiceContext.ServerOptions.AllowHostHeaderOverride)
+                    {
+                        // No need to include the port here, it's either already in the Authority
+                        // or it's the default port
+                        // see: https://datatracker.ietf.org/doc/html/rfc2616/#section-14.23
+                        // A "host" without any trailing port information implies the default
+                        // port for the service requested (e.g., "80" for an HTTP URL).
+                        hostText = authority;
+                        HttpRequestHeaders.HeaderHost = hostText;
+                    }
+                    else
+                    {
+                        KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
+                        KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    }
+                }
+            }
+        }
+
+        if (!HttpUtilities.IsHostHeaderValid(hostText))
+        {
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
+            KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+        }
+    }
+
+    protected override void OnReset()
+    {
+        _requestTimedOut = false;
+        _requestTargetForm = HttpRequestTarget.Unknown;
+        _absoluteRequestTarget = null;
+        _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
+
+        MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
+
+        // Reset Http1 Features
+        _currentIHttpMinRequestBodyDataRateFeature = this;
+        _currentIHttpMinResponseDataRateFeature = this;
+        _currentIPersistentStateFeature = this;
+    }
+
+    protected override void OnRequestProcessingEnding()
+    {
+    }
+
+    protected override string CreateRequestId()
+        => StringUtilities.ConcatAsHexSuffix(ConnectionId, ':', _requestCount);
+
+    protected override MessageBody CreateMessageBody()
+        => Http1MessageBody.For(_httpVersion, HttpRequestHeaders, this);
+
+    protected override void BeginRequestProcessing()
+    {
+        // Reset the features and timeout.
+        Reset();
+        _requestCount++;
+        TimeoutControl.SetTimeout(ServerOptions.Limits.KeepAliveTimeout, TimeoutReason.KeepAlive);
+    }
+
+    protected override bool BeginRead(out ValueTask<ReadResult> awaitable)
+    {
+        awaitable = Input.ReadAsync();
+        return true;
+    }
+
+    protected override bool TryParseRequest(ReadResult result, out bool endConnection)
+    {
+        var reader = new SequenceReader<byte>(result.Buffer);
+        var isConsumed = false;
+
+        // The parser itself doesn't throw, but handler callbacks (OnStartLine, OnHeader)
+        // can still throw BadHttpRequestException for semantic errors (e.g., invalid request target).
+        // We catch those here to ensure metrics are recorded via OnBadRequest.
+        HttpParseResult parseResult;
+        try
+        {
+            parseResult = TryParseRequestCore(ref reader);
+
+            // Handle parse errors without exceptions
+            if (parseResult.HasError)
+            {
+                // Create exception and call HandleBadRequest BEFORE finally runs AdvanceTo,
+                // as that may invalidate the buffer
+                var ex = CreateBadRequestException(parseResult, result.Buffer);
+                HandleBadRequest(result.Buffer, ex);
+                endConnection = true;
+                return true;
+            }
+
+            isConsumed = parseResult.IsComplete;
+        }
+#pragma warning disable CS0618 // Type or member is obsolete
+        catch (BadHttpRequestException ex)
+        {
+            // HandleBadRequest must be called before finally runs AdvanceTo
+            HandleBadRequest(result.Buffer, ex);
+            endConnection = true;
+            return true;
+        }
+#pragma warning restore CS0618 // Type or member is obsolete
+        catch (Exception)
+        {
+            // Record OtherError for unexpected exceptions that escape the parser
+            KestrelMetrics.AddConnectionEndReason(MetricsContext, ConnectionEndReason.OtherError);
+            throw;
+        }
+        finally
+        {
+            Input.AdvanceTo(reader.Position, isConsumed ? reader.Position : result.Buffer.End);
+        }
+
+        if (result.IsCompleted)
+        {
+            switch (_requestProcessingStatus)
+            {
+                case RequestProcessingStatus.RequestPending:
+                    endConnection = true;
+                    return true;
+                case RequestProcessingStatus.ParsingRequestLine:
+                    HandleBadRequest(result.Buffer, RequestRejectionReason.InvalidRequestLine);
+                    endConnection = true;
+                    return true;
+                case RequestProcessingStatus.ParsingHeaders:
+                    HandleBadRequest(result.Buffer, RequestRejectionReason.MalformedRequestInvalidHeaders);
+                    endConnection = true;
+                    return true;
+            }
+        }
+        else if (!_keepAlive && _requestProcessingStatus == RequestProcessingStatus.RequestPending)
+        {
+            // Stop the request processing loop if the server is shutting down or there was a keep-alive timeout
+            // and there is no ongoing request.
+            endConnection = true;
+            return true;
+        }
+        else if (RequestTimedOut)
+        {
+            // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
+            // a 408 response.
+            HandleBadRequest(result.Buffer, RequestRejectionReason.RequestHeadersTimeout);
+            endConnection = true;
+            return true;
+        }
+
+        endConnection = false;
+        if (_requestProcessingStatus == RequestProcessingStatus.AppStarted)
+        {
+            EnsureHostHeaderExists();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    internal static ConnectionEndReason GetConnectionEndReason(Microsoft.AspNetCore.Http.BadHttpRequestException ex)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        var kestrelEx = ex as BadHttpRequestException;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        switch (kestrelEx?.Reason)
+        {
+            case RequestRejectionReason.UnrecognizedHTTPVersion:
+                return ConnectionEndReason.InvalidHttpVersion;
+            case RequestRejectionReason.InvalidRequestLine:
+            case RequestRejectionReason.RequestLineTooLong:
+            case RequestRejectionReason.InvalidRequestTarget:
+                return ConnectionEndReason.InvalidRequestLine;
+            case RequestRejectionReason.InvalidRequestHeadersNoCRLF:
+            case RequestRejectionReason.InvalidRequestHeader:
+            case RequestRejectionReason.InvalidContentLength:
+            case RequestRejectionReason.MultipleContentLengths:
+            case RequestRejectionReason.MalformedRequestInvalidHeaders:
+            case RequestRejectionReason.InvalidCharactersInHeaderName:
+            case RequestRejectionReason.LengthRequiredHttp10:
+            case RequestRejectionReason.OptionsMethodRequired:
+            case RequestRejectionReason.ConnectMethodRequired:
+            case RequestRejectionReason.MissingHostHeader:
+            case RequestRejectionReason.MultipleHostHeaders:
+            case RequestRejectionReason.InvalidHostHeader:
+                return ConnectionEndReason.InvalidRequestHeaders;
+            case RequestRejectionReason.HeadersExceedMaxTotalSize:
+                return ConnectionEndReason.MaxRequestHeadersTotalSizeExceeded;
+            case RequestRejectionReason.TooManyHeaders:
+                return ConnectionEndReason.MaxRequestHeaderCountExceeded;
+            case RequestRejectionReason.TlsOverHttpError:
+                return ConnectionEndReason.TlsNotSupported;
+            case RequestRejectionReason.UnexpectedEndOfRequestContent:
+                return ConnectionEndReason.UnexpectedEndOfRequestContent;
+            default:
+                // In some scenarios the end reason might already be set to a more specific error
+                // and attempting to set the reason again has no impact.
+                return ConnectionEndReason.OtherError;
+        }
+    }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    /// <summary>
+    /// Helper method to handle bad request: records metrics, sets bad request state, and ends the connection.
+    /// </summary>
+    private void HandleBadRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
+    {
+        OnBadRequest(requestData, ex);
+        SetBadRequestState(ex);
+    }
+
+    /// <summary>
+    /// Helper method to handle bad request by rejection reason: creates exception, records metrics, sets bad request state.
+    /// </summary>
+    private void HandleBadRequest(ReadOnlySequence<byte> requestData, RequestRejectionReason reason)
+    {
+        var ex = KestrelBadHttpRequestException.GetException(reason);
+        HandleBadRequest(requestData, ex);
+    }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    /// <summary>
+    /// Creates a BadHttpRequestException with error detail extracted from the buffer.
+    /// </summary>
+    private BadHttpRequestException CreateBadRequestException(HttpParseResult parseResult, ReadOnlySequence<byte> buffer)
+    {
+        // Some error reasons don't use detail
+        if (parseResult.ErrorReason == RequestRejectionReason.InvalidRequestHeadersNoCRLF)
+        {
+            return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason);
+        }
+
+        // Extract error detail from buffer if available, but only when _showErrorDetails is enabled
+        // to avoid leaking internal details in production.
+        if (_showErrorDetails &&
+            parseResult.ErrorLength > 0 &&
+            parseResult.ErrorOffset + parseResult.ErrorLength <= buffer.Length)
+        {
+            var errorSlice = buffer.Slice(parseResult.ErrorOffset, parseResult.ErrorLength);
+            var errorBytes = errorSlice.IsSingleSegment ? errorSlice.FirstSpan : errorSlice.ToArray();
+            var detail = errorBytes.GetAsciiStringEscaped(Constants.MaxExceptionDetailSize);
+            return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason, detail);
+        }
+
+        return KestrelBadHttpRequestException.GetException(parseResult.ErrorReason);
+    }
+#pragma warning restore CS0618 // Type or member is obsolete
+
+#pragma warning disable CS0618 // Type or member is obsolete
+    private void OnBadRequest(ReadOnlySequence<byte> requestData, BadHttpRequestException ex)
+#pragma warning restore CS0618 // Type or member is obsolete
+    {
+        // Some code shared between HTTP versions throws errors. For example, HttpRequestHeaders collection
+        // throws when an invalid content length is set.
+        // Only want to set a reasons for HTTP/1.1 connection, so set end reason by catching the exception here.
+        var reason = GetConnectionEndReason(ex);
+        KestrelMetrics.AddConnectionEndReason(MetricsContext, reason);
+
+        if (ex.Reason == RequestRejectionReason.UnrecognizedHTTPVersion)
+        {
+            DetectHttp2Preface(requestData);
+        }
+    }
+
+    private void DetectHttp2Preface(ReadOnlySequence<byte> requestData)
+    {
+        const int PrefaceLineLength = 16;
+
+        // Only check for HTTP/2 preface on non-TLS connection.
+        // When TLS is used then ALPN is used to negotiate correct version.
+        if (ConnectionFeatures.Get<ITlsHandshakeFeature>() == null)
+        {
+            // If there is an unrecognized HTTP version, it is the first request on the connection, and the request line
+            // bytes matches the HTTP/2 preface request line bytes then log and return a HTTP/2 GOAWAY frame.
+            if (_requestCount == 1
+                && requestData.Length >= PrefaceLineLength)
+            {
+                var clientPrefaceRequestLine = Http2.Http2Connection.ClientPreface.Slice(0, PrefaceLineLength);
+                var currentRequestLine = requestData.Slice(0, PrefaceLineLength).ToSpan();
+                if (currentRequestLine.SequenceEqual(clientPrefaceRequestLine))
+                {
+                    Log.PossibleInvalidHttpVersionDetected(ConnectionId, Http.HttpVersion.Http11, Http.HttpVersion.Http2);
+
+                    // Can't write GOAWAY here. Set flag so TryProduceInvalidRequestResponse writes GOAWAY.
+                    _http2PrefaceDetected = true;
+                }
+            }
+        }
+    }
+
+    protected override Task TryProduceInvalidRequestResponse()
+    {
+        if (_http2PrefaceDetected)
+        {
+            _context.Transport.Output.Write(Http2GoAwayHttp11RequiredBytes);
+            return _context.Transport.Output.FlushAsync().GetAsTask();
+        }
+
+        // Fast path: if the app hasn't started processing yet, use static pre-allocated response
+        // fragments to avoid the overhead of normal response machinery (header formatting, etc.)
+        // Skip fast path for responses that need custom headers (e.g., 405 with AllowedHeader set).
+#pragma warning disable CS0618 // Type or member is obsolete
+        if (_requestProcessingStatus < RequestProcessingStatus.AppStarted && !_connectionAborted
+            && (_requestRejectedException is not BadHttpRequestException kestrelEx
+                || StringValues.IsNullOrEmpty(kestrelEx.AllowedHeader)))
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var output = _context.Transport.Output;
+            output.Write(GetStaticErrorResponsePrefix());
+            output.Write(ServiceContext.DateHeaderValueManager.GetDateHeaderValues().Bytes);
+            if (ServerOptions.AddServerHeader)
+            {
+                output.Write(ServerHeaderBytes);
+            }
+            output.Write(ErrorResponseSuffix);
+            return output.FlushAsync().GetAsTask();
+        }
+
+        return base.TryProduceInvalidRequestResponse();
+    }
+
+    /// <summary>
+    /// Gets the appropriate static error response prefix (status line) based on the rejection exception.
+    /// </summary>
+    private ReadOnlySpan<byte> GetStaticErrorResponsePrefix()
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        var reason = (_requestRejectedException as BadHttpRequestException)?.Reason;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+        return reason switch
+        {
+            RequestRejectionReason.UnrecognizedHTTPVersion => HttpVersionNotSupportedResponsePrefix,
+            RequestRejectionReason.RequestHeadersTimeout => RequestTimeoutResponsePrefix,
+            RequestRejectionReason.RequestBodyTimeout => RequestTimeoutResponsePrefix,
+            RequestRejectionReason.HeadersExceedMaxTotalSize => HeadersTooLargeResponsePrefix,
+            RequestRejectionReason.TooManyHeaders => HeadersTooLargeResponsePrefix,
+            RequestRejectionReason.RequestLineTooLong => RequestLineTooLongResponsePrefix,
+            _ => BadRequestResponsePrefix
+        };
+    }
+
+    void IRequestProcessor.Tick(long timestamp) { }
+}

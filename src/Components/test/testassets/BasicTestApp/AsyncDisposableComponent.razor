@@ -1,0 +1,11 @@
+﻿@implements IAsyncDisposable
+@code{
+    [Parameter] public EventCallback<string> SetMessage { get; set; }
+
+    public async ValueTask DisposeAsync()
+    {
+        await SetMessage.InvokeAsync("Before async disposal");
+        await Task.Yield();
+        await SetMessage.InvokeAsync("After async disposal");
+    }
+}

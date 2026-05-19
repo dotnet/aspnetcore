@@ -1,0 +1,6 @@
+﻿[Child render: @(++renderCount)]
+@code {
+    int renderCount;
+
+    [Parameter] public object SomeParameterToEnsureRerendering { get; set; }
+}

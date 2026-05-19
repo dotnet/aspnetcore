@@ -1,0 +1,13 @@
+﻿<div id="error-boundary-container">
+    <ErrorBoundary @ref="errorBoundary">
+        <ErrorBoundaryCases />
+    </ErrorBoundary>
+</div>
+
+<hr />
+
+<a href @onclick="@(() => errorBoundary.Recover())" @onclick:preventDefault>Recover</a>
+
+@code {
+    ErrorBoundary errorBoundary;
+}

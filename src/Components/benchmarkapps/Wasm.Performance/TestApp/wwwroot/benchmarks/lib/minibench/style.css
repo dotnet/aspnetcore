@@ -1,0 +1,19 @@
+body { padding: 2rem 0; background: #e8e8e8; }
+.run-button::before {
+    content: '▶';
+    font-family: 'Segoe UI Symbol', sans-serif;
+    font-size: 90%;
+    margin-right: 8px;
+}
+.run-button:hover { text-decoration: none; }
+.benchmarks th { width: 40%; }
+.benchmarks td:nth-child(1) { width: 20%; color: #888; }
+.benchmarks td:nth-child(2) { width: 20%; color: #888; }
+.benchmarks td:nth-child(3) { width: 20%; color: #888; }
+.benchmarks b { color: black; font-weight: normal; }
+.benchmark-running { background-color: #fff7a1; }
+.benchmark-waiting { background-color: #f1f1f1; color: #bebebe; }
+.benchmark-error { background-color: #ffa1a1; }
+.benchmark-running .run-button::before, .benchmark-waiting .run-button::before {
+    display: none;
+}

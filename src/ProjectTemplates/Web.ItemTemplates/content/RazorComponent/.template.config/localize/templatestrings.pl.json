@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Składnik Razor",
+  "description": "Składnik interfejsu użytkownika wielokrotnego użytku implementowany przy użyciu składni Razor",
+  "postActions/openInEditor/description": "Otwiera plik Component1.razor w edytorze"
+}

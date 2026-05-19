@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PackageId>Microsoft.AspNetCore.Server.IntegrationTesting.IIS</PackageId>
+    <Description>Provides support for integration testing using IIS based servers.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;iis</PackageTags>
+    <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
+    <IsTestAssetProject>true</IsTestAssetProject>
+    <!-- This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. -->
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+    <!--
+      The assembly 'contentFiles\any\any\x64\aspnetcorev2.dll' is intentionally
+      not inside the 'lib' folder and hence it won't be added as a reference when
+      the package is installed into a project. This suppresses the NuGet warning
+      about this structure
+    -->
+    <NoWarn>$(NoWarn);NU5100</NoWarn>
+    <!-- Ignore platform compatibility analyzer warnings for test and test infrastructure -->
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <Import Project="..\..\build\assets.props" />
+
+  <ItemGroup>
+    <EmbeddedResource Include="Http.SubApp.config" />
+    <EmbeddedResource Include="Http.config" />
+  </ItemGroup>
+
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(UseIisNativeAssets)' == 'true' and '$(SkipTestBuild)' != 'true'">
+    <Error Text="Required dll from ANCM has not been built. To build ANCM, you must use MSBuild.exe."
+          Condition="!Exists('$(AspNetCoreModuleV2ShimDll)') OR !Exists('$(AspNetCoreModuleV2OutOfProcessHandlerDll)')" />
+  </Target>
+
+  <ItemGroup Condition="'$(UseIisNativeAssets)' == 'true' AND '$(TestGroupName)' != 'IISNewHandler.FunctionalTests'">
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x64"/>
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64" />
+
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="Win32" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32" />
+
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="ARM64" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="ARM64" />
+
+    <UpToDateCheckInput Include="$(AspNetCoreModuleV2ShimDll)" />
+    <UpToDateCheckInput Include="$(AspNetCoreModuleV2OutOfProcessHandlerDll)" />
+  </ItemGroup>
+
+  <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(UseIisNativeAssets)' == 'true'">
+    <ItemGroup>
+      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('%(ShimComponents.DllLocation)')" Link="ANCM\%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="'$(UseIisNativeAssets)' == 'true'">
+    <ItemGroup>
+      <Content Include="%(ShimComponents.DllLocation)" PackageCopyToOutput="true" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+
+    <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
+    <Reference Include="Microsoft.Web.Administration" />
+    <Reference Include="System.ServiceProcess.ServiceController" />
+  </ItemGroup>
+
+</Project>

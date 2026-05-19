@@ -1,0 +1,9 @@
+{
+  "solution": {
+    "path": "..\\..\\AspNetCore.slnx",
+    "projects": [
+      "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj",
+      "src\\JSInterop\\Microsoft.JSInterop\\test\\Microsoft.JSInterop.Tests.csproj"
+    ]
+  }
+}

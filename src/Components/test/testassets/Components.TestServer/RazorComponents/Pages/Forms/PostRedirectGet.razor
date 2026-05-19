@@ -1,0 +1,28 @@
+﻿@page "/forms/post-redirect-get"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager Nav
+
+<h3>Post/Redirect/Get</h3>
+
+<form data-enhance method="post" @formname="sync-form" @onsubmit="@DoRedirection">
+    <AntiforgeryToken />
+    <button id="sync-redirect" type="submit">Redirect synchronously</button>
+</form>
+
+<form data-enhance method="post" @formname="async-form" @onsubmit="@DoAsyncRedirection">
+    <AntiforgeryToken />
+    <button id="async-redirect" type="submit">Redirect asynchronously</button>
+</form>
+
+@code {
+    void DoRedirection()
+    {
+        Nav.NavigateTo("nav");
+    }
+
+    async Task DoAsyncRedirection()
+    {
+        await Task.Delay(500);
+        Nav.NavigateTo("nav");
+    }
+}

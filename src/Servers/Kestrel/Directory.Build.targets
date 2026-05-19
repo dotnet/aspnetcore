@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <ItemGroup>
+    <Import Remove="System.Net.Http" />
+  </ItemGroup>
+
+</Project>

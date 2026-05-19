@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "协议缓冲区文件",
+  "description": "一个协议缓冲区文件，它用于描述 gRPC 的消息和服务。",
+  "symbols/namespace/description": "生成的代码的命名空间",
+  "postActions/openInEditor/description": "在编辑器中打开 protobuf.proto"
+}

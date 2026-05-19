@@ -1,0 +1,10 @@
+﻿@attribute [StreamRendering]
+@inject NavigationManager Nav
+Some output
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        Nav.NavigateTo("/somewhere/else");
+    }
+}

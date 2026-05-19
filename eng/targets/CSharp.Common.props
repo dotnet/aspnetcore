@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>preview</LangVersion>
+
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" $(IsTestProject) ">
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
+    <Reference Include="Moq" />
+    <Reference Include="NETStandard.Library" />
+    <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" Visible="false" />
+  </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Testing\src\build\Microsoft.AspNetCore.InternalTesting.props" Condition=" $(IsTestProject) " />
+
+  <ItemDefinitionGroup Condition=" $(IsTestProject) ">
+    <Content>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemDefinitionGroup>
+
+</Project>

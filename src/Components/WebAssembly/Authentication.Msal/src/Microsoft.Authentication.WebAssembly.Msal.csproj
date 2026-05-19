@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Authenticate your Blazor webassembly applications with Azure Active Directory and Azure Active Directory B2C</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Authentication.WebAssembly.Msal.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InteropWorkingDir>$(MSBuildThisFileDirectory)Interop\</InteropWorkingDir>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      IncludeCompileInteropOutput;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Update="$(InteropWorkingDir)**" Pack="false" />
+  </ItemGroup>
+
+  <Target Name="IncludeCompileInteropOutput">
+    <ItemGroup>
+      <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''"
+      SourceType="Computed"
+      SourceId="$(PackageId)"
+      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
+      BasePath="_content/$(PackageId)"
+      CandidateAssets="@(_InteropBuildOutput)"
+      RelativePathFilter="**.js"
+    >
+      <Output TaskParameter="Assets" ItemName="_InteropBuildStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_InteropBuildOutput)' != ''"
+      CandidateAssets="@(_InteropBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_InteropBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_InteropBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_InteropBuildStaticWebAssetEndpoint)" />
+      <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+      <FileWrites Include="$(_InteropBuildOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ILLink.Descriptors.xml">
+      <LogicalName>ILLink.Descriptors.xml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,1 @@
+This file is here to validate that the static web assets file provider respect spaces.

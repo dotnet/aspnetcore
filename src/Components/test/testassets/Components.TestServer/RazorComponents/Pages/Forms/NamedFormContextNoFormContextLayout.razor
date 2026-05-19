@@ -1,0 +1,17 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Named form</h2>
+
+<EditForm Enhance FormName="named-form-handler" EditContext="_editContext" method="POST" OnValidSubmit="() => _submitted = true" >
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <p id="pass">Form submitted!</p>
+}
+
+@code{
+    bool _submitted = false;
+    EditContext _editContext = new EditContext(new object());
+}

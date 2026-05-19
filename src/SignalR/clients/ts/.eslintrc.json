@@ -1,0 +1,103 @@
+{
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "jsdoc"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        // same behavior as before in TSLint
+        "types": {
+          "Object": "Avoid using the `Object` type. Did you mean `object`?",
+          "Function": "Avoid using the `Function` type. Prefer a specific function type, like `() => void`.",
+          "Boolean": "Avoid using the `Boolean` type. Did you mean `boolean`?",
+          "Number": "Avoid using the `Number` type. Did you mean `number`?",
+          "String": "Avoid using the `String` type. Did you mean `string`?",
+          "Symbol": "Avoid using the `Symbol` type. Did you mean `symbol`?"
+        },
+        "extendDefaults": false
+      }
+    ],
+
+    // turn off default in @typescript-eslint that were causing issues (also not on in TSLint)
+    "@typescript-eslint/no-inferrable-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/explicit-module-boundary-types": ["warn", { "allowArgumentsExplicitlyTypedAsAny": true }],
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off", // use the settings from tsconfig for these
+    "no-empty-function": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "no-constant-condition": "off",
+
+    // Existing rules
+    "max-len": ["error", { "code": 300 }],
+    "@typescript-eslint/member-ordering": "off",
+    "@typescript-eslint/interface-name-prefix": "off",
+    "@typescript-eslint/unified-signatures": "off",
+    "max-classes-per-file": "off",
+    "@typescript-eslint/no-floating-promises": "error",
+    "no-empty": "off",
+    "prefer-const": ["error", {
+      "ignoreReadBeforeAssign": false
+    }],
+
+    // rules on by default in TSLint and not on in ESLint
+    "@typescript-eslint/array-type": ["error", { "default": "array" }],
+    "@typescript-eslint/prefer-function-type": "warn",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      { "selector": ["class", "interface"], "format": ["PascalCase"] }, //match class-name in tslint
+      { "selector": "variable", "leadingUnderscore": "allow", "format": ["camelCase", "PascalCase", "UPPER_CASE"] },
+      { "selector": "memberLike", "modifiers": ["private"], "format": ["camelCase"], "leadingUnderscore": "require" }
+    ],
+    "spaced-comment": ["error", "always", {
+      "line": {
+          "markers": ["/"],
+          "exceptions": ["-", "+"]
+      },
+      "block": {
+          "markers": ["!"],
+          "exceptions": ["*"],
+          "balanced": true
+      }
+    }],
+    "guard-for-in": "error",
+    "no-labels": ["error", {"allowLoop": true, "allowSwitch": true}],
+    "new-parens": "error",
+    "@typescript-eslint/consistent-type-assertions": [ "error", { "assertionStyle": "as"} ],
+    "no-caller": "error",
+    "no-new-wrappers": "error",
+    "no-eval": "error",
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": ["error"],
+    "dot-notation": "off",
+    "@typescript-eslint/dot-notation": ["error"],
+    "no-throw-literal": "off",
+    "@typescript-eslint/no-throw-literal": ["error"],
+    "no-trailing-spaces": "error",
+    "no-undef-init": "error",
+    "no-unsafe-finally": "error",
+    "no-unused-expressions": "off",
+    "@typescript-eslint/no-unused-expressions": "error",
+    "no-var": "error",
+    "@typescript-eslint/no-var-requires": "error",
+    "object-shorthand": "error",
+
+    // to achieve the same as one-variable-per-declaration
+    "one-var": ["error", "never"],
+    "one-var-declaration-per-line": ["error", "always"],
+    "@typescript-eslint/prefer-for-of": "error",
+    "radix": "error",
+    "eqeqeq": ["error", "always", {"null": "ignore"}],
+    "use-isnan": "error"
+  }
+}

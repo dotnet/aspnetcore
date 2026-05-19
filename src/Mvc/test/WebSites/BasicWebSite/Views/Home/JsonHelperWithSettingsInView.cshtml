@@ -1,0 +1,14 @@
+﻿@model BasicWebSite.Models.Person
+
+@using Microsoft.AspNetCore.Mvc.NewtonsoftJson
+@using Newtonsoft.Json.Serialization
+@{
+    var settings = JsonSerializerSettingsProvider.CreateSerializerSettings();
+    settings.ContractResolver = new DefaultContractResolver
+    {
+        NamingStrategy = (NamingStrategy)(ViewData["naming"]),
+    };
+}
+<script type="text/javascript">
+    var json = @Json.Serialize(Model, settings);
+</script>

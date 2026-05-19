@@ -1,0 +1,11 @@
+﻿{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "ASP.NET Core Web API",
+    "description": "用于使用 ASP.NET Core 控制器或最小 API 创建 RESTful Web API 的项目模板，可选择支持 OpenAPI 和身份验证。",
+    "parameter.DisableOpenAPI.name": "启用 OpenAPI 支持(_O)",
+    "parameter.DisableOpenAPI.description": "启用 OpenAPI (Swagger)支持",
+    "parameter.UseMinimalAPIs.name": "使用控制器",
+    "parameter.UseMinimalAPIs.description": "使用控制器而不是最小 API。"
+  }
+}

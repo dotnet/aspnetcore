@@ -1,0 +1,9 @@
+﻿@rendermode RenderMode.InteractiveWebAssembly
+
+<strong>WebAssembly counter from RCL</strong>
+<Counter IncrementAmount="IncrementAmount" IdSuffix="wasm-shared" />
+
+@code {
+    [Parameter]
+    public int IncrementAmount { get; set; } = 1;
+}

@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Модуль Microsoft ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Модуль Microsoft ASP.NET Core V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="Среда выполнения IIS ASP.NET Core"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="Добавляет поддержку приложений ASP.NET Core в IIS."/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="Модуль Microsoft ASP.NET Core для IIS Express"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="Модуль Microsoft ASP.NET Core V2 для IIS Express"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 или более поздней версии не установлен."/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Корпорация Майкрософт"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="На этом компьютере установлен несовместимый продукт [CONFLICTING_PRODUCT_NAME]. Невозможно продолжить установку [ProductName]. Чтобы установить этот продукт, удалите [CONFLICTING_PRODUCT_NAME] с помощью раздела установки и удаления программ в панели управления."/>
+  <String Id="AdminRequired" Overridable="yes" Value="Для установки [ProductName] требуются права администратора."/>
+  <String Id="IIS7Only" Overridable="yes" Value="Для использования [ProductName] требуется IIS версии 7.0."/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="Для установки [ProductName] требуется IIS версии 7.0 или более поздней."/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="Для установки [ProductName] требуется IIS версии 7.5 или более поздней."/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="Для установки [ProductName] требуется IIS версии 7 или 7.5."/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="Для установки [ProductName] требуется IIS версии 8.0 или более поздней."/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="На этом компьютере обнаружена бета-версия [ProductName]."/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="На этом компьютере обнаружена более поздняя версия [ProductName]."/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="Невозможно продолжить настройку, так как на этом компьютере уже установлен другой экземпляр [ProductName]. Сначала удалите его, а затем запустите установку снова."/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="Для использования [ProductName] необходимо установить компоненты IIS 7.0 CoreWebEngine и W3SVC."/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="Для использования [ProductName] необходимо установить консоль управления IIS."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="Перед установкой [ProductName] остановите Службу активации Windows (WAS) и службу веб-управления IIS (WMSvc). После установки [ProductName] потребуется снова запустить эти службы."/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="Для установки [ProductName] требуется метабаза IIS."/>
+  <String Id="LaunchCondition_32BIT" Value="Невозможно установить 64-разрядную версию [ProductName] в 32-разрядном выпуске Microsoft Windows."/>
+  <String Id="LaunchCondition_64BIT" Value="Невозможно установить 32-разрядную версию [ProductName] в 64-разрядном выпуске Microsoft Windows."/>
+  <String Id="NetFX2OrGreaterRequired" Value="Для установки [ProductName] требуется Microsoft .NET Framework версии 2.0 или более поздней."/>
+  <String Id="NetFX35OrGreaterRequired" Value="Для установки [ProductName] требуется Microsoft .NET Framework версии 3.5 или более поздней. Чтобы установить Microsoft .NET версии 3.5, используйте &quot;Добавить компоненты&quot; в диспетчере сервера."/>
+  <String Id="NetFX4OrGreaterRequired" Value="Для установки [ProductName] требуется Microsoft .NET Framework версии 4.0 или более поздней."/>
+  <String Id="NetFX20SP1IsRequired" Value="Перед установкой [ProductName] установите Microsoft .NET Framework версии 2.0 с пакетом обновления 1 (или более поздним)."/>
+  <String Id="WindowsUpdateEnabled" Value="Невозможно отключить службу Центра обновления Windows (wuauserv). Она необходима для установки [ProductName]."/>
+  <String Id="GetFromOSforWin7" Value="Оснастка PowerShell входит в состав операционной системы Windows. Установите ее через раздел &quot;Программы и компоненты&quot; или &quot;Диспетчер сервера&quot;."/>
+  <String Id="WebPI3OrGreaterRequired" Value="Для установки [ProductName] требуется установщик веб-платформы Майкрософт версии 3.0 или более поздней."/>
+
+  <String Id="Error30001" Overridable="yes" Value="Настройке не удалось обнаружить общую конфигурацию."/>
+  <String Id="Error30002" Overridable="yes" Value="Общая конфигурация включена для IIS. Установка [ProductName] не поддерживается при использовании общей конфигурации. Отключите общую конфигурацию перед установкой этой функции."/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="Перед установкой [ProductName] остановите службу веб-публикаций (W3SVC). После установки потребуется снова запустить эту службу."/>
+  <String Id="IISPowershellConsole" Value="Консоль управления IIS PowerShell"/>
+  <String Id="IISPowershellSnapin" Value="Оснастка IIS PowerShell"/>
+  <String Id="PowerShellRequired" Value="Для оснастки IIS PowerShell требуется установка PowerShell версии 1.0 или 2.0"/>
+  <String Id="WasAndConfigRequired" Value="Для оснастки IIS PowerShell требуется установка WAS и конфигурации"/>
+  <String Id="TestBogusString" Overridable="yes" Value="Это фиктивная строка."/>
+
+</WixLocalization>

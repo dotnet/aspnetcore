@@ -1,0 +1,48 @@
+﻿@code {
+    [Parameter] public bool ThrowOnParametersSet { get; set; }
+    [Parameter] public bool ThrowOnParametersSetAsync { get; set; }
+    [Parameter] public bool ThrowOnAfterRender { get; set; }
+    [Parameter] public bool ThrowOnAfterRenderAsync { get; set; }
+
+    [CascadingParameter(Name = nameof(ThrowOnCascadingParameterNotification))]
+    public bool ThrowOnCascadingParameterNotification { get; set; }
+
+    [CascadingParameter(Name = nameof(ThrowOnCascadingParameterNotificationAsync))]
+    public bool ThrowOnCascadingParameterNotificationAsync { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ThrowOnParametersSet || ThrowOnCascadingParameterNotification)
+        {
+            throw new InvalidTimeZoneException("Synchronous exception in OnParametersSet");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await Task.Yield();
+
+        if (ThrowOnParametersSetAsync || ThrowOnCascadingParameterNotificationAsync)
+        {
+            throw new InvalidTimeZoneException("Asynchronous exception in OnParametersSetAsync");
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (ThrowOnAfterRender)
+        {
+            throw new InvalidTimeZoneException("Synchronous exception in OnAfterRender");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await Task.Yield();
+
+        if (ThrowOnAfterRenderAsync)
+        {
+            throw new InvalidTimeZoneException("Asynchronous exception in OnAfterRenderAsync");
+        }
+    }
+}

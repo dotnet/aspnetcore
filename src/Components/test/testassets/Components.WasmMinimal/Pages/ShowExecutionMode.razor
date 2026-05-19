@@ -1,0 +1,18 @@
+﻿<p>
+    Actual execution mode:
+    <strong id="execution-mode">@executionMode</strong>
+</p>
+
+@code {
+    string executionMode = "static";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            executionMode = "interactive ";
+            executionMode += OperatingSystem.IsBrowser() ? "webassembly" : "server";
+            StateHasChanged();
+        }
+    }
+}

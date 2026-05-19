@@ -1,0 +1,7 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Файл буфера протокола",
+  "description": "Файл буфера протокола для описания сообщений и служб для gRPC.",
+  "symbols/namespace/description": "пространство имен для созданного кода",
+  "postActions/openInEditor/description": "Открывает protobuf.proto в редакторе"
+}

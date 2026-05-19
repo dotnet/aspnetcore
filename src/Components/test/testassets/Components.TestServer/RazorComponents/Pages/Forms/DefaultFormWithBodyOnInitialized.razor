@@ -1,0 +1,27 @@
+﻿@page "/forms/default-form-with-body-on-initialized"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2>Default form with body on initialized</h2>
+
+<EditForm Enhance EditContext="_editContext" method="POST" FormName="someform">
+    <input id="firstName" name="firstName" />
+    <input id="send" type="submit" value="Send" />
+</EditForm>
+
+@if (_name != null)
+{
+    <p id="pass">Hello @_name!</p>
+}
+
+@code{
+    protected override void OnInitialized()
+    {
+        _name = FirstName;
+    }
+
+    string? _name = null;
+
+    [SupplyParameterFromForm] string? FirstName { get; set; }
+
+    EditContext _editContext = new EditContext(new object());
+}

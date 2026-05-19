@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>exe</OutputType>
+    <Description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</Description>
+    <PackageTags>cache;distributedcache;sqlserver</PackageTags>
+    <PackAsTool>true</PackAsTool>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Data.SqlClient" />
+    <Reference Include="Azure.Identity" />
+    <Reference Include="System.Runtime.Caching" />
+  </ItemGroup>
+
+</Project>

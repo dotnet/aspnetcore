@@ -1,0 +1,25 @@
+﻿@attribute [StreamRendering]
+@if (loaded)
+{
+    <text>Loaded</text>
+    @if (renderCount++ == 0)
+    {
+        // Perform a further synchronous render just to show we deduplicate it in the SSR output
+        StateHasChanged();
+    }
+}
+else
+{
+    <text>Loading...</text>
+}
+@code {
+    [Parameter] public Task WaitFor { get; set; }
+
+    bool loaded;
+    int renderCount = 0;
+    protected override async Task OnInitializedAsync()
+    {
+        await WaitFor;
+        loaded = true;
+    }
+}

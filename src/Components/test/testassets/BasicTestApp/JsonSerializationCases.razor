@@ -1,0 +1,35 @@
+﻿@using System.Text.Json
+@using System.Text.Json.Serialization
+
+<h3 id="json-serialization-cases">JSON serialization cases</h3>
+
+<p>
+    Most aspects of System.Text.Json don't need to be tested here, as that's an external library. However some cases
+    are worth verifying under WebAssembly/linking specifically.
+</p>
+
+<p>Name: <strong id="deserialized-name">@deserializedPerson.Name</strong></p>
+<p>Age: <strong id="deserialized-age">@deserializedPerson.Age</strong></p>
+<p>Mood: <strong id="deserialized-mood">@deserializedPerson.Mood</strong></p>
+
+@code {
+    Person deserializedPerson;
+
+    protected override void OnInitialized()
+    {
+        // Round-trip some data
+        var input = new Person { Name = "Lord Smythe", Age = 68, Mood = EmotionalState.Vexed };
+        var serializedJson = JsonSerializer.Serialize(input);
+        deserializedPerson = JsonSerializer.Deserialize<Person>(serializedJson);
+    }
+
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public EmotionalState Mood { get; set; }
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum EmotionalState { Sombre, Vexed, Irate, Tormented }
+}

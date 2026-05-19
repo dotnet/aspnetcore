@@ -1,0 +1,21 @@
+﻿@using TestContentPackage.Initializers
+<h3>Non streaming request</h3>
+
+@if (Wasm)
+{
+    <div>
+        <WasmComponent />
+    </div>
+}
+@if (Server)
+{
+    <div>
+        <ServerComponent />
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery] public bool Wasm { get; set; }
+
+    [SupplyParameterFromQuery] public bool Server { get; set; }
+}

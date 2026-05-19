@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <TestConsoleAppSourceFiles Include="TestTypedClients.cs">
+      <DisabledFeatureSwitches>Microsoft.AspNetCore.SignalR.Hub.IsCustomAwaitableSupported</DisabledFeatureSwitches>
+    </TestConsoleAppSourceFiles>
+  </ItemGroup>
+
+</Project>

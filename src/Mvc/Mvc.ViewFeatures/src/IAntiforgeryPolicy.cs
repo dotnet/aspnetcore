@@ -1,0 +1,13 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Mvc.Filters;
+
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+/// <summary>
+/// A marker interface for filters which define a policy for antiforgery token validation.
+/// </summary>
+public interface IAntiforgeryPolicy : IFilterMetadata
+{
+}

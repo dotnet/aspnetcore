@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Řadič MVC",
+  "description": "Kontroler MVC s akcemi čtení/zápisu nebo bez nich",
+  "symbols/namespace/description": "Obor názvů pro vygenerovaný kód",
+  "symbols/actions/description": "Vytvoření kontroleru s akcemi čtení/zápisu",
+  "symbols/actions/displayName": "Přidat akce čtení/zápis",
+  "postActions/openInEditor/description": "Otevře vytvořený kontroler v editoru"
+}

@@ -1,0 +1,210 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="RangeConstraint_MinShouldBeLessThanOrEqualToMax" xml:space="preserve">
+    <value>The value for argument '{0}' should be less than or equal to the value for the argument '{1}'.</value>
+  </data>
+  <data name="DefaultInlineConstraintResolver_AmbiguousCtors" xml:space="preserve">
+    <value>The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.</value>
+  </data>
+  <data name="DefaultInlineConstraintResolver_CouldNotFindCtor" xml:space="preserve">
+    <value>Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.</value>
+  </data>
+  <data name="DefaultInlineConstraintResolver_TypeNotConstraint" xml:space="preserve">
+    <value>The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.</value>
+  </data>
+  <data name="RouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' on the route '{2}' must have a string value or be of a type which implements '{3}'.</value>
+  </data>
+  <data name="RouteConstraintBuilder_CouldNotResolveConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.</value>
+  </data>
+  <data name="RoutePatternBuilder_CollectionCannotBeEmpty" xml:space="preserve">
+    <value>The collection cannot be empty.</value>
+  </data>
+  <data name="ConstraintMustBeStringOrConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' must have a string value or be of a type which implements '{2}'.</value>
+  </data>
+  <data name="RoutePattern_InvalidConstraintReference" xml:space="preserve">
+    <value>Invalid constraint '{0}'. A constraint must be of type 'string' or '{1}'.</value>
+  </data>
+  <data name="RoutePattern_InvalidParameterConstraintReference" xml:space="preserve">
+    <value>Invalid constraint '{0}' for parameter '{1}'. A constraint must be of type 'string', '{2}', or '{3}'.</value>
+  </data>
+  <data name="RoutePattern_ConstraintReferenceNotFound" xml:space="preserve">
+    <value>The constraint reference '{0}' could not be resolved to a type. Register the constraint type with '{1}.{2}'.</value>
+  </data>
+  <data name="RoutePattern_InvalidStringConstraintReference" xml:space="preserve">
+    <value>Invalid constraint type '{0}' registered as '{1}'. A constraint  type must either implement '{2}', or inherit from '{3}'.</value>
+  </data>
+  <data name="RegexRouteContraint_NotConfigured" xml:space="preserve">
+    <value>A route parameter uses the regex constraint, which isn't registered. To enable it add the property 'BlazorRoutingEnableRegexConstraint' to your project file inside a `PropertyGroup`.</value>
+  </data>
+  <data name="ArgumentMustBeGreaterThanOrEqualTo" xml:space="preserve">
+    <value>Value must be greater than or equal to {0}.</value>
+  </data>
+  <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
+    <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>
+  </data>
+  <data name="TemplateRoute_CannotHaveConsecutiveParameters" xml:space="preserve">
+    <value>A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by a literal string.</value>
+  </data>
+  <data name="TemplateRoute_CannotHaveConsecutiveSeparators" xml:space="preserve">
+    <value>The route template separator character '/' cannot appear consecutively. It must be separated by either a parameter or a literal value.</value>
+  </data>
+  <data name="TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly" xml:space="preserve">
+    <value>The route parameter '{0}' has both an inline default value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.</value>
+  </data>
+  <data name="TemplateRoute_CatchAllCannotBeOptional" xml:space="preserve">
+    <value>A catch-all parameter cannot be marked optional.</value>
+  </data>
+  <data name="TemplateRoute_CatchAllMustBeLast" xml:space="preserve">
+    <value>A catch-all parameter can only appear as the last segment of the route template.</value>
+  </data>
+  <data name="TemplateRoute_Exception" xml:space="preserve">
+    <value>An error occurred while creating the route with name '{0}' and template '{1}'.</value>
+  </data>
+  <data name="TemplateRoute_InvalidLiteral" xml:space="preserve">
+    <value>The literal section '{0}' is invalid. Literal sections cannot contain the '?' character.</value>
+  </data>
+  <data name="TemplateRoute_InvalidParameterName" xml:space="preserve">
+    <value>The route parameter name '{0}' is invalid. Route parameter names must be non-empty and cannot contain these characters: '{{', '}}', '/'. The '?' character marks a parameter as optional, and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all, and can occur only at the start of the parameter.</value>
+  </data>
+  <data name="TemplateRoute_InvalidRouteTemplate" xml:space="preserve">
+    <value>The route template cannot start with a '~' character unless followed by a '/'.</value>
+  </data>
+  <data name="TemplateRoute_MismatchedParameter" xml:space="preserve">
+    <value>There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character.</value>
+  </data>
+  <data name="TemplateRoute_OptionalCannotHaveDefaultValue" xml:space="preserve">
+    <value>An optional parameter cannot have default value.</value>
+  </data>
+  <data name="TemplateRoute_OptionalParameterCanbBePrecededByPeriod" xml:space="preserve">
+    <value>In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'. Only a period (.) can precede an optional parameter.</value>
+  </data>
+  <data name="TemplateRoute_OptionalParameterHasTobeTheLast" xml:space="preserve">
+    <value>An optional parameter must be at the end of the segment. In the segment '{0}', optional parameter '{1}' is followed by '{2}'.</value>
+  </data>
+  <data name="TemplateRoute_RepeatedParameter" xml:space="preserve">
+    <value>The route parameter name '{0}' appears more than one time in the route template.</value>
+  </data>
+  <data name="TemplateRoute_UnescapedBrace" xml:space="preserve">
+    <value>In a route parameter, '{' and '}' must be escaped with '{{' and '}}'.</value>
+  </data>
+</root>

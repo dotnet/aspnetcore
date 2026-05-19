@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC ViewImports",
+  "description": "MVC 视图导入页",
+  "symbols/namespace/description": "生成的代码的命名空间",
+  "postActions/openInEditor/description": "在编辑器中打开 _ViewImports.cshtml"
+}

@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+        <FocusOnNavigate RouteData="@routeData" Selector="#test-info" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(RouterTestLayout)">
+            <div id="test-info">Oops, that component wasn't found!</div>
+        </LayoutView>
+    </NotFound>
+</Router>

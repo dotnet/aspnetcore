@@ -1,0 +1,9 @@
+# This file configures CodeQL runs and TSA bug autofiling. For more information, see:
+# https://eng.ms/docs/cloud-ai-platform/devdiv/one-engineering-system-1es/1es-docs/codeql/troubleshooting/bugs/generated-library-code
+# (Access restricted to Microsoft employees only.)
+
+path_classifiers:
+  refs:
+    # The test/ directories don't contain shipping implementations of code, so they should
+    # be excluded from analysis. 
+    - src/**/test/*

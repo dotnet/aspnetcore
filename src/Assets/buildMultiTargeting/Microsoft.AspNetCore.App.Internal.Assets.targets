@@ -1,0 +1,3 @@
+<Project>
+  <Import Project="$(MSBuildThisFileDirectory)..\buildTransitive\Microsoft.AspNetCore.App.Internal.Assets.targets"/>
+</Project>

@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Fichier tampon de protocole",
+  "description": "Fichier tampon de protocole pour la description des messages et des services pour gRPC.",
+  "symbols/namespace/description": "espace de noms pour le code généré",
+  "postActions/openInEditor/description": "Ouvre protobuf.proto dans l’éditeur"
+}

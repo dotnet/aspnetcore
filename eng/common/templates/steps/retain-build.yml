@@ -1,0 +1,7 @@
+steps:
+- template: /eng/common/core-templates/steps/retain-build.yml
+  parameters:
+    is1ESPipeline: false
+
+    ${{ each parameter in parameters }}:
+      ${{ parameter.key }}: ${{ parameter.value }}

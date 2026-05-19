@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Komponenta Razor",
+  "description": "Opětovně použitelná komponenta uživatelského rozhraní implementovaná pomocí Razoru",
+  "postActions/openInEditor/description": "Otevře soubor Component1.razor v editoru."
+}

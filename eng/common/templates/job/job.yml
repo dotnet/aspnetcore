@@ -1,0 +1,85 @@
+parameters: 
+  enablePublishBuildArtifacts: false
+  runAsPublic: false
+# CG related params, unused now and can eventually be removed
+  disableComponentGovernance: unused
+# Sbom related params, unused now and can eventually be removed
+  enableSbom: unused
+  PackageVersion: unused
+  BuildDropPath: unused
+
+jobs:
+- template: /eng/common/core-templates/job/job.yml
+  parameters:
+    is1ESPipeline: false
+
+    ${{ each parameter in parameters }}:
+      ${{ if and(ne(parameter.key, 'steps'), ne(parameter.key, 'is1ESPipeline')) }}:
+        ${{ parameter.key }}: ${{ parameter.value }}
+
+    steps:
+    - ${{ each step in parameters.steps }}:
+      - ${{ step }}
+
+    # we don't run CG in public
+    - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      - script: echo "##vso[task.setvariable variable=skipComponentGovernanceDetection]true"
+        displayName: Set skipComponentGovernanceDetection variable
+
+    artifactPublishSteps:
+    - ${{ if ne(parameters.artifacts.publish, '') }}:
+      - ${{ if and(ne(parameters.artifacts.publish.artifacts, 'false'), ne(parameters.artifacts.publish.artifacts, '')) }}:
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: false
+            args:
+              displayName: Publish pipeline artifacts
+              targetPath: '$(Build.ArtifactStagingDirectory)/artifacts'
+              artifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}
+              continueOnError: true
+              condition: succeeded()
+              retryCountOnTaskFailure: 10 # for any files being locked
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: false
+            args:
+              displayName: Publish pipeline artifacts
+              targetPath: '$(Build.ArtifactStagingDirectory)/artifacts'
+              artifactName: ${{ coalesce(parameters.artifacts.publish.artifacts.name , 'Artifacts_$(Agent.Os)_$(_BuildConfig)') }}_Attempt$(System.JobAttempt)
+              continueOnError: true
+              condition: not(succeeded())
+              retryCountOnTaskFailure: 10 # for any files being locked
+      - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
+        - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+          parameters:
+            is1ESPipeline: false
+            args:
+              targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/log'
+              artifactName: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
+              displayName: 'Publish logs'
+              continueOnError: true
+              condition: always()
+              retryCountOnTaskFailure: 10 # for any files being locked
+
+    - ${{ if ne(parameters.enablePublishBuildArtifacts, 'false') }}:
+      - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+        parameters:
+          is1ESPipeline: false
+          args:
+            displayName: Publish Logs
+            targetPath: '$(Build.ArtifactStagingDirectory)/artifacts/log/$(_BuildConfig)'
+            artifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)_Attempt$(System.JobAttempt)' ) }}
+            continueOnError: true
+            condition: always()
+            retryCountOnTaskFailure: 10 # for any files being locked
+
+    - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
+      - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+        parameters:
+          is1ESPipeline: false
+          args:
+            targetPath: '$(System.DefaultWorkingDirectory)\eng\common\BuildConfiguration'
+            artifactName: 'BuildConfiguration'
+            displayName: 'Publish build retry configuration'
+            continueOnError: true
+            retryCountOnTaskFailure: 10 # for any files being locked

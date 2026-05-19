@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <title>ASP.NET Core Extensions</title>
+    <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
+    <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).$(TargetArchitecture)</PackageId>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppRefVersion)</HostingStartupRuntimeFrameworkVersion>
+    <PackageType>AzureSiteExtension</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <NoSemVer20>true</NoSemVer20>
+    <IsShippingPackage>false</IsShippingPackage>
+
+    <!-- No source files -->
+    <NoWarn>$(NoWarn);CS2008</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HostingStartupRuntimeStoreTargets Include="$(DefaultNetCoreTargetFramework)" Runtime="$(TargetRuntimeIdentifier)" />
+
+    <!-- Make sure App.Ref layout is available - not necessary if this is Pass 2 of a VMR build -->
+    <ProjectReference Include="..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj"
+      Private="false"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      Condition="'$(DotNetBuildPass)' != '2'" />
+  </ItemGroup>
+
+  <!-- Cannot assume this project and Microsoft.AspNetCore.AzureAppServices.HostingStartup have the same package version. -->
+  <Target Name="_GetHostingStartupPackageReference" BeforeTargets="GenerateHostingStartupDeps">
+    <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
+    <MSBuild Projects="$(RepoRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj"
+        Targets="_GetPackageVersionInfo">
+      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
+    </MSBuild>
+
+    <ItemGroup>
+      <HostingStartupPackageReference Include="%(_ResolvedPackageVersionInfo.PackageId)" Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_VmrBuild" DependsOnTargets="Restore;Build;Pack" Condition=" '$(DotNetBuildPass)' == '2' " />
+</Project>

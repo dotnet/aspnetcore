@@ -1,0 +1,9 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Stránka Razor",
+  "description": "Stránka Razor s modelem stránky nebo bez něj",
+  "symbols/namespace/description": "obor názvů pro vygenerovaný kód",
+  "symbols/no-pagemodel/description": "vytvoření stránky bez PageModel",
+  "symbols/no-pagemodel/displayName": "Vyloučit PageModel",
+  "postActions/openInEditor/description": "Otevře soubor Index.cshtml v editoru."
+}

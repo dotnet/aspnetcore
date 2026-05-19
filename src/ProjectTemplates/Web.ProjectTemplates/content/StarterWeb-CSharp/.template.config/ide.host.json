@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "order": 410,
+  "icon": "ide/icon.ico",
+  "supportsDocker": true,
+  "symbolInfo": [
+    {
+      "id": "UseProgramMain",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
+    }
+  ],
+  "disableHttpsSymbol": "NoHttps"
+}

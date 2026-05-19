@@ -1,0 +1,54 @@
+﻿@using System.Security.Principal
+@*#if (IndividualB2CAuth)
+@using Microsoft.AspNetCore.Authentication.OpenIdConnect
+@using Microsoft.Extensions.Options
+@using Microsoft.Identity.Web
+
+@inject IOptionsMonitor<MicrosoftIdentityOptions> AzureADB2COptions
+
+@{
+    var options = AzureADB2COptions.Get(OpenIdConnectDefaults.AuthenticationScheme);
+}
+
+    #endif *@
+
+<ul class="navbar-nav">
+@*#if (IndividualB2CAuth)
+@if (User.Identity?.IsAuthenticated == true)
+{
+        @if (!string.IsNullOrEmpty(options.EditProfilePolicyId))
+        {
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="EditProfile">Hello @User.Identity?.Name!</a>
+            </li>
+        }
+        else
+        {
+            <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
+        }
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+        </li>
+}
+else
+{
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
+}
+#else
+@if (User.Identity?.IsAuthenticated == true)
+{
+        <span class="navbar-text text-dark">Hello @User.Identity?.Name!</span>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
+        </li>
+}
+else
+{
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
+}
+#endif *@
+</ul>

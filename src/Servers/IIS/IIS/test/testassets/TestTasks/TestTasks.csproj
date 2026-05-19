@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
+
+    <!--
+      This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. See also
+      the Microsoft.AspNetCore.Server.IntegrationTesting and ...IntegrationTesting.IIS projects.
+    -->
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json" PrivateAssets="All" Publish="true" />
+  </ItemGroup>
+
+</Project>

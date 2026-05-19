@@ -1,0 +1,8 @@
+﻿@Html.RouteLink(
+    linkText: "linktext",
+    routeName:"OrdersApi",
+    protocol: "https",
+    hostName:"www.contoso.com:9000",
+    fragment: "details",
+    routeValues: new { controller = "Orders", id = 10, print = true },
+    htmlAttributes: new { p1 = "p1-value" })

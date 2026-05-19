@@ -1,0 +1,40 @@
+﻿@page "/"
+@using BlazorUnitedApp.Data;
+<PageTitle>Index</PageTitle>
+
+<EditForm Model="Value" method="POST" OnSubmit="DisplayCustomer" FormName="customer">  
+    <div>
+        <label>
+            <span>Name</span>
+            <InputText @bind-Value="Value!.Name" />
+        </label>
+    </div>
+    <AddressEditor @bind-Value="Value.BillingAddress" />
+    <input type="submit" value="Send" />
+</EditForm>
+
+@if (_submitted)
+{
+    <!-- Display customer data -->
+    <h3>Customer</h3>
+    <p>Name: @Value!.Name</p>
+    <p>Street: @Value.BillingAddress.Street</p>
+    <p>City: @Value.BillingAddress.City</p>
+    <p>State: @Value.BillingAddress.State</p>
+    <p>Zip: @Value.BillingAddress.Zip</p>
+}
+
+@code {
+
+    public void DisplayCustomer()
+    {
+        _submitted = true;
+    }
+
+    [SupplyParameterFromForm] Customer? Value { get; set; }
+
+    protected override void OnInitialized() => Value ??= new();
+
+    bool _submitted = false;
+    public void Submit() => _submitted = true;
+}

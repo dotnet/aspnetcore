@@ -1,0 +1,27 @@
+{
+  "RoslynExtensionsOptions": {
+    "enableAnalyzersSupport": true
+  },
+  "FormattingOptions": {
+    "enableEditorConfigSupport": true
+  },
+  "RenameOptions": {
+    "RenameInComments": true,
+    "RenameOverloads": true,
+    "RenameInStrings": true
+  },
+  "msbuild": {
+    "MSBuildSDKsPath": ".\\.dotnet",
+    "EnablePackageAutoRestore": true,
+    "loadProjectsOnDemand": true
+  },
+  "fileOptions": {
+    "systemExcludeSearchPatterns": [
+      "**/node_modules/**/*",
+      "**/bin/**/*",
+      "**/obj/**/*",
+      "**/node_modules/**/*"
+    ],
+    "excludeSearchPatterns": []
+  }
+}

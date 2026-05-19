@@ -1,0 +1,36 @@
+﻿@inherits ErrorBoundary
+@if (CurrentException is null)
+{
+    @ChildContent
+}
+else if (ErrorContent is not null)
+{
+    @ErrorContent(CurrentException)
+}
+else
+{
+    <div style="background-color: yellow; border: 2px dashed black; white-space: pre; font-family: consolas, monospace;">
+        @foreach (var exception in receivedExceptions)
+        {
+            <div class="received-exception" style="background-color: rgba(255,255,255,0.3); margin: 0.5rem; padding: 0.5rem;">
+                @exception.Message
+            </div>
+        }
+    </div>
+}
+
+@code {
+    List<Exception> receivedExceptions = new();
+
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        receivedExceptions.Add(exception);
+        return base.OnErrorAsync(exception);
+    }
+
+    public new void Recover()
+    {
+        receivedExceptions.Clear();
+        base.Recover();
+    }
+}

@@ -1,0 +1,60 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@person" OnValidSubmit="@HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <h2>We only accept cats over 3 years of age, or non-cats over 18 years of age.</h2>
+
+    <p class="cattiness">
+        <label>
+            <InputCheckbox @bind-Value="person.IsACat" /> I am a cat
+        </label>
+    </p>
+
+    <p class="age">
+        Age (years): <InputNumber @bind-Value="person.AgeInYears" placeholder="Enter your age" />
+    </p>
+
+    <button type="submit">Submit</button>
+
+    <p class="model-errors">
+        <ValidationSummary Model="person" class="model-summary-custom-class" />
+    </p>
+
+    <p class="all-errors">
+        <ValidationSummary />
+    </p>
+</EditForm>
+
+<ul>@foreach (var entry in submissionLog) { <li class="submission-log-entry">@entry</li> }</ul>
+
+@code {
+    Person person = new Person();
+
+    class Person : IValidatableObject
+    {
+        [Required]
+        public bool IsACat { get; set; }
+
+        [Range(0, int.MaxValue, ErrorMessage = "Under-zeros should not be filling out forms")]
+        public int AgeInYears { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var minAge = IsACat ? 3 : 18;
+            if (AgeInYears < minAge)
+            {
+                // Supply a model-level error (i.e., not attached to a specific property)
+                yield return new ValidationResult($"Sorry, you're not old enough as a {( IsACat ? "cat" : "non-cat" )}");
+            }
+        }
+    }
+
+    List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
+
+    void HandleValidSubmit()
+    {
+        submissionLog.Add("OnValidSubmit");
+    }
+}

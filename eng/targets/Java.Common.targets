@@ -1,0 +1,77 @@
+<Project DefaultTargets="Build">
+
+  <PropertyGroup>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(ArtifactsDir)\obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
+    <BuildDependsOn>
+      PrepareForBuild;
+      ResolveProjectReferences;
+      _Build;
+    </BuildDependsOn>
+    <JavaBuildArgs Condition="'$(JavaBuildArgs)' == ''">../gradlew $(GradleOptions) compileJava</JavaBuildArgs>
+    <GradleOptions>$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <JavaFiles Include="src\**\*.java" />
+    <JavaFiles Include="*.javaproj" />
+    <JavaFiles Include="build.gradle" />
+
+    <BuildOutputFiles Include="$(BaseIntermediateOutputPath)build-sentinel" />
+  </ItemGroup>
+
+  <Target Name="Restore" />
+
+  <Target Name="PrepareForBuild">
+    <MakeDir Directories="$(IntermediateOutputPath);$(PackageOutputPath)"  />
+  </Target>
+
+  <Target Name="ResolveProjectReferences">
+    <MSBuild Projects="@(ProjectReference)"
+             BuildInParallel="true" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
+
+  <Target Name="GetBuildInputCacheFile">
+    <Hash ItemsToHash="@(JavaFiles)">
+      <Output TaskParameter="HashResult" PropertyName="_JavaFileHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_JavaFileHash)"
+      File="$(BaseIntermediateOutputPath)javafiles.cache"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+  </Target>
+
+  <Target Name="_Build"
+    Condition="'$(IsBuildable)' != 'false'"
+    DependsOnTargets="GetBuildInputCacheFile"
+    Inputs="@(JavaFiles);$(BaseIntermediateOutputPath)javafiles.cache"
+    Outputs="@(BuildOutputFiles)">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
+    <Exec Command="$(JavaBuildArgs)" />
+    <WriteLinesToFile Overwrite="true" File="$(BaseIntermediateOutputPath)build-sentinel" />
+  </Target>
+
+  <PropertyGroup>
+    <PackDependsOn Condition="'$(NoBuild)' != 'true'">
+      Build;
+      $(PackDependsOn);
+    </PackDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />
+    <Message Text="> gradlew $(GradleOptions) publishToMavenLocal" Importance="high" />
+    <Exec Command="../gradlew $(GradleOptions) publishToMavenLocal" />
+    <Message Importance="high" Text="$(PackageId) -> $(PackageOutputPath)%(JavaBuildFiles.Identity)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
+  </Target>
+
+  <Target Name="Test" />
+
+  <Target Name="Publish" />
+
+</Project>

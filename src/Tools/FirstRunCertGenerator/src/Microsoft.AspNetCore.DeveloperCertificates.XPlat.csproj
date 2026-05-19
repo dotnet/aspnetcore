@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Package for the CLI first run experience.</Description>
+    <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+    <PackageTags>aspnet;cli</PackageTags>
+
+    <!-- This package contains API for the .NET CLI to generate the aspnet HTTPs dev cert during CLI first-run initialization. -->
+
+    <IsShippingPackage>false</IsShippingPackage>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests" />
+  </ItemGroup>
+</Project>

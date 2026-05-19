@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "LESS 스타일 시트",
+  "description": "LESS는 CSS로 컴파일되는 언어입니다.",
+  "postActions/openInEditor/description": "편집기에서 styleSheet1.less를 엽니다."
+}

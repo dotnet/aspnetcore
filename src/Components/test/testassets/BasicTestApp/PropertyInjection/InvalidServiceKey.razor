@@ -1,0 +1,9 @@
+﻿<p>
+    Rendered component with invalid service key
+</p>
+
+@code {
+    // A service with a matching type exists, but it has a different key than the one specified here.
+    [Inject(Key = "invalid-key")]
+    public TestKeyedService InvalidKeyedService { get; set; }
+}

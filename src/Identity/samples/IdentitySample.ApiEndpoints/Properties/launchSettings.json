@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "IdentitySample.ApiEndpoints": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:62313;http://localhost:62314"
+    }
+  }
+}

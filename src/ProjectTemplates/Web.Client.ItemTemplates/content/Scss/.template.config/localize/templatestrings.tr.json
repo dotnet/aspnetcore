@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "SCSS Stil Sayfası (SASS)",
+  "description": "SCSS, CSS'de derlenen bir dildir",
+  "postActions/openInEditor/description": "StyleSheet1.scss’i düzenleyicide açar"
+}

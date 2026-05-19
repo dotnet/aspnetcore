@@ -1,0 +1,12 @@
+﻿@model Dictionary<string, List<string>>
+<div>Items: </div>
+<div>
+    @foreach (var item in Model)
+    {
+        <strong>@item.Key</strong><br/>
+        @foreach (var value in Model[item.Key])
+        {
+            <span>@value</span>
+        }
+    }
+</div>

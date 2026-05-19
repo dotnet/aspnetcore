@@ -1,0 +1,29 @@
+<Project>
+  <Import Project="Helix.Common.props" />
+
+  <ItemDefinitionGroup>
+    <HelixContent>
+      <CopyToBuildDirectory>Never</CopyToBuildDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </HelixContent>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <HelixTimeout>00:45:00</HelixTimeout>
+    <HelixTestName>$(MSBuildProjectName)--$(TargetFramework)</HelixTestName>
+    <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">false</LoggingTestingDisableFileLogging>
+    <NodeVersion>20.7.0</NodeVersion>
+
+    <!--
+      Many tests depend on the .dotnet/ layouts but only a few (those that restore or test packages) require
+      packages. This should be sufficient for most test projects even as we switch to new major versions or TFMs.
+    -->
+    <TestDependsOnAspNetPackages>false</TestDependsOnAspNetPackages>
+    <TestDependsOnAspNetAppPackages>false</TestDependsOnAspNetAppPackages>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" Exclude="$(RepoRoot)eng\helix\content\*.in" />
+  </ItemGroup>
+</Project>

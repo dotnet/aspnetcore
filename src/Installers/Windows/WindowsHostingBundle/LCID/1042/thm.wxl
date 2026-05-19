@@ -1,0 +1,87 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] 설치"/>
+  
+  <String Id="Title" Value="[BundleNameShort]"/>
+  
+  <String Id="SubTitle" Value="[BundleNameSub]"/>
+  
+  <String Id="InstallVersion" Value="버전 [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="취소하시겠습니까?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="이전 버전"/>
+  <String Id="HelpHeader" Value="설치 도움말"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - 디렉터리에서 번들의 전체 로컬 복사본을 설치, 복구, 제거하거나 만드세요. 설치가 기본값입니다.
+
+/passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및 프롬프트를 모두 표시하지 않습니다. 기본적으로 UI와 모든 프롬프트가 표시됩니다.
+
+/norestart - 다시 시작 시도를 중지합니다. 기본적으로 UI는 다시 시작하기 전에 메시지를 표시합니다.
+
+/log &lt;LOG_FILE&gt; - 특정 파일에 로그합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다."/>
+  <String Id="HelpCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="라이선스 사용 약관에 동의합니다(&amp;A)."/>
+  <String Id="InstallInstallButton" Value="설치(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="ProgressHeader" Value="설치 진행률"/>
+  <String Id="ProgressLabel" Value="처리하는 중:"/>
+  <String Id="OverallProgressPackageText" Value="초기화하는 중..."/>
+  <String Id="ProgressCancelButton" Value="취소(&amp;C)"/>
+  <String Id="ModifyHeader" Value="설치 수정"/>
+  <String Id="ModifyRepairButton" Value="복구(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="제거(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="캐시가 완료됨"/>
+  <String Id="SuccessModifyHeader" Value="수정 완료됨"/>
+  <String Id="SuccessRepairHeader" Value="복구 완료됨"/>
+  <String Id="SuccessUninstallHeader" Value="제거 완료됨"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="제거 완료됨"/>
+  <String Id="SuccessInstallHeader" Value="설치 완료됨"/>
+  <String Id="SuccessHeader" Value="설치 완료"/>
+  <String Id="SuccessLaunchButton" Value="시작(&amp;L)"/>
+  <String Id="SuccessLayoutHeader" Value="레이아웃 완료됨"/>
+  <String Id="SuccessRestartText" Value="소프트웨어를 사용하려면 먼저 컴퓨터를 다시 시작해야 합니다."/>
+  <String Id="SuccessUninstallRestartText" Value="소프트웨어 제거를 완료하려면 컴퓨터를 다시 시작해야 합니다."/>
+  <String Id="SuccessRestartButton" Value="다시 시작(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="FailureHeader" Value="설치 실패"/>
+  <String Id="FailureCacheHeader" Value="캐시 실패"/>
+  <String Id="FailureLayoutHeader" Value="레이아웃 실패"/>
+  <String Id="FailureModifyHeader" Value="수정 실패"/>
+  <String Id="FailureInstallHeader" Value="설치 실패"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="제거 실패"/>
+  <String Id="FailureUninstallHeader" Value="제거 실패"/>
+  <String Id="FailureRepairHeader" Value="복구 실패"/>
+  <String Id="FailureHyperlinkLogText" Value="하나 이상의 문제로 인해 설치가 실패했습니다. 문제를 해결한 후 설치를 다시 시도하세요. 자세한 내용은 &lt;a href=&quot;#&quot;&gt;로그 파일&lt;/a&gt;을 참조하세요."/>
+  <String Id="FailureRestartText" Value="소프트웨어 롤백을 완료하려면 컴퓨터를 다시 시작해야 합니다."/>
+  <String Id="FailureRestartButton" Value="다시 시작(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="닫기(&amp;C)"/>
+  <String Id="FilesInUseHeader" Value="사용 중인 파일"/>
+  <String Id="FilesInUseLabel" Value="다음의 애플리케이션이 업데이트해야 할 파일을 사용 중입니다."/>
+  <String Id="FilesInUseCloseRadioButton" Value="애플리케이션을 닫고 다시 시작합니다(&amp;A)."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="애플리케이션을 닫습니다(&amp;A)."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="애플리케이션을 닫지 마세요(&amp;D). 다시 부팅해야 합니다."/>
+  <String Id="FilesInUseOkButton" Value="확인(&amp;O)"/>
+  <String Id="FilesInUseCancelButton" Value="취소(&amp;C)"/>
+  <String Id="FilesInUseRetryButton" Value="다시 시도(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="무시(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="끝내기(&amp;X)"/>
+  <String Id="FilesInUseTitle" Value="사용 중인 파일"/>
+  <String Id="LicenseAssent" Value="설치를 클릭하면 다음 사용 약관에 동의하는 것입니다."/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;개인정보처리방침&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET에 대한 라이선싱 정보&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;원격 분석 수집 및 옵트아웃&lt;/A&gt;"/>
+
+  <!-- Custom UI strings -->
+  
+  <String Id="Welcome" Value="[WixBundleName] 설치를 시작합니다."/>
+  
+  <String Id="InstallResetIIS" Value="설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다."/>
+  
+  <String Id="InstallNoIIS" Value="이 컴퓨터에서 IIS를 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다."/>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;사용 조건&lt;/a&gt;과 &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;개인정보 처리방침&lt;/a&gt;."/>
+  
+  <String Id="ModifyResetIIS" Value="설치가 완료된 후 IIS를 다시 시작하세요. &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다."/>
+  
+  <String Id="ModifyNoIIS" Value="이 컴퓨터에서 IIS를 사용하도록 설정되어 있지 않습니다. IIS에서 ASP.NET Core 애플리케이션을 실행하려면 이 설치 관리자를 실행하기 전에 IIS를 설치해야 합니다. &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;여기&lt;/a&gt;에서 자세한 내용을 확인할 수 있습니다."/>
+</WixLocalization>

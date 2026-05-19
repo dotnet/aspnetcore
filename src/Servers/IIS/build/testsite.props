@@ -1,0 +1,84 @@
+<Project>
+  <PropertyGroup>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);win-x64;win-x86</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
+    <Platforms>x64;x86</Platforms>
+    <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
+    <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <Import Project="assets.props" />
+
+  <PropertyGroup Condition="'$(NativePlatform)' == 'x86'">
+    <IISExpressPath>$(MSBuildProgramFiles32)\IIS Express\iisexpress.exe</IISExpressPath>
+    <IISPath>$(SystemRoot)\SysWOW64\inetsrv\w3wp.exe</IISPath>
+    <NativeFolder>Win32</NativeFolder>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NativePlatform)' == 'x64'">
+    <IISExpressPath>$(ProgramW6432)\IIS Express\iisexpress.exe</IISExpressPath>
+    <IISPath>$(SystemRoot)\System32\inetsrv\w3wp.exe</IISPath>
+    <NativeFolder>x64</NativeFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IISExpressArguments>/config:"$(IISExpressAppHostConfig)" /systray:false</IISExpressArguments>
+    <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
+
+    <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
+
+    <DotNetPath>$(DotNetRoot)dotnet.exe</DotNetPath>
+    <DotNetPath Condition="'$(NativePlatform)' != 'x64'">$(DotNetRoot)$(NativePlatform)\dotnet.exe</DotNetPath>
+  </PropertyGroup>
+
+  <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">
+    <!-- This would always override launch settings files in test projects by the default one -->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Deps file injection-->
+  <ItemGroup Condition="('$(InProcessTestSite)' == 'true') AND ('$(ReferenceTestTasks)' != 'false')">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\TestTasks.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
+    <PropertyGroup>
+      <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
+      <InjectDepsApp>dotnet $(InjectDepsAssembly).dll</InjectDepsApp>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    GenerateBuildDependencyFile creates the .deps file used here. BuildDepsJson and CoreBuild are empty targets marking
+    the end of processes using the GenerateBuildDependencyFile target.
+  -->
+  <Target Name="InjectRequestHandler"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(UseIisNativeAssets)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          BeforeTargets="BuildDepsJson;CoreBuild"
+          DependsOnTargets="GenerateBuildDependencyFile;PrepareInjectionApp">
+    <Exec Command="$(InjectDepsApp) &quot;$(ProjectDepsFilePath)&quot; $(RuntimeIdentifier) " />
+  </Target>
+
+  <!--
+    GeneratePublishDependencyFile creates an intermediate .deps file copied soon after into the publish folder.
+    CopyFilesToPublishDirectory is an empty target marking the end of all copies into the publish folder, including the
+    .deps file and native assets. Publish is an empty target marking the end of the entire process.
+    (GenerateSingleFileBundle also uses the intermediate .desp file but only in single-file publish cases ignored here.)
+  -->
+  <Target Name="InjectRequestHandlerOnPublish"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(UseIisNativeAssets)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          BeforeTargets="Publish"
+          DependsOnTargets="GeneratePublishDependencyFile;CopyFilesToPublishDirectory;PrepareInjectionApp">
+    <!-- Use $(PublishDir)$(ProjectDepsFileName) instead of $(PublishDepsFilePath) here until
+         https://github.com/dotnet/arcade/issues/13911 is fixed. This should be equivalent based on
+         https://github.com/dotnet/sdk/blob/b736f2e955a9167eda86cae79208a89a9e42bfe0/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets#L1059
+    -->
+    <Exec Command="$(InjectDepsApp) &quot;$(PublishDir)$(ProjectDepsFileName)&quot; $(RuntimeIdentifier) " />
+  </Target>
+</Project>

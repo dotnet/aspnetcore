@@ -1,0 +1,44 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+@using Components.WasmMinimal.Pages.NotFound
+@using TestContentPackage.NotFound
+@inject NavigationManager NavigationManager
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
+    public string? UseCustomNotFoundPage { get; set; }
+
+    private Type? NotFoundPageType { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (string.Equals(UseCustomNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            NotFoundPageType = typeof(CustomNotFoundPage);
+        }
+        else
+        {
+            NotFoundPageType = null;
+        }
+    }
+}
+
+@if (NotFoundPageType != null)
+{
+    <Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+    </Router>
+}
+else
+{
+    <Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
+    </Router>
+}

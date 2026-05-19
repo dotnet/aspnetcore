@@ -1,0 +1,112 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+
+    <!-- Build number used by ANCM msis -->
+    <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
+    <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
+
+    <!-- Properties used by IIS-Common and IIS-Setup for libs/dlls -->
+    <BUILD_MAJOR>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</BUILD_MAJOR>
+    <BLDVERMAJOR>$(PRODUCT_MAJOR)</BLDVERMAJOR>
+    <BLDVERMINOR>$(PRODUCT_MINOR)</BLDVERMINOR>
+    <BLDNUMMAJOR>$(BUILD_MAJOR)</BLDNUMMAJOR>
+    <BLDNUMMINOR>$(BUILD_MINOR)</BLDNUMMINOR>
+
+    <!-- ANCM msi version is prepended with a 1 due to previous msi versions starting with 8.x.x.0 -->
+    <ANCMFolderVersion>1$(AspNetCoreMajorMinorVersion).$(BUILD_MAJOR)</ANCMFolderVersion>
+    <ANCMMsiVersion>$(ANCMFolderVersion).0</ANCMMsiVersion>
+
+    <!-- The handler version in the M.A.AspNetCoreV2 nuget package. Today, this is hard coded to 2.0.0
+          The actual handler folder version is dependent on the ANCMMsiVersion -->
+    <ANCMOutOfProcessNugetPackageHandlerVersion>2.0.0</ANCMOutOfProcessNugetPackageHandlerVersion>
+
+    <!-- Location of main folders-->
+    <AspNetCoreSetupRoot>$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
+    <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
+    <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>
+    <ANCMBuildDirectory>$(AspNetCoreSetupRoot)build\</ANCMBuildDirectory>
+
+    <!-- Variables used by ANCM wxs projects. -->
+
+    <_ServerIISBasePath>$(RepoRoot)\src\Servers\IIS\</_ServerIISBasePath>
+    <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
+    <DefineConstants>ArtifactsDir=$(ArtifactsDir);ANCMMsiVersion=$(ANCMMsiVersion);ANCMFolderVersion=$(ANCMFolderVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
+    <DefineConstants>
+      AspNetCoreSchemaPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml;
+      AspNetCoreMofPath=$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\ancm.mof;
+      $(DefineConstants)
+    </DefineConstants>
+  </PropertyGroup>
+
+ <ItemGroup Condition="'$(BuildNative)' == 'true' AND ('$(DotNetBuild)' != 'true' OR '$(DotNetBuildPass)' == '2') ">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+      <Name>AspNetCoreV2</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=x64</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Name>AspNetCoreV2Handler</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=x64</SetPlatform>
+    </ProjectReference>
+
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+      <Name>AspNetCoreV2WoW64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=Win32</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Name>AspNetCoreV2HandlerWoW64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=Win32</SetPlatform>
+    </ProjectReference>
+   
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+      <Name>AspNetCoreV2ARM64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=ARM64</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Name>AspNetCoreV2HandlerARM64</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=ARM64</SetPlatform>
+    </ProjectReference>
+  </ItemGroup>
+
+ <ItemGroup Condition="'$(BuildNative)' == 'true' AND '$(DotNetBuild)' == 'true' AND '$(DotNetBuildPass)' != '2' ">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
+      <Name>AspNetCoreV2</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
+    </ProjectReference>
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
+      <Name>AspNetCoreV2Handler</Name>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="CopyANCM" BeforeTargets="_PrepareForBuild" Condition=" '$(BuildNative)' != 'true' ">
+    <ItemGroup>
+      <None Include="%(RunShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Condition="Exists('%(RunShimComponents.DllLocation)')" Link="%(RunShimComponents.Platform)\%(RunShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
+</Project>

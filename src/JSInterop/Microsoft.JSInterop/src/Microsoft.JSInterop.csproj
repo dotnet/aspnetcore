@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Abstractions and features for interop between .NET and JavaScript code.</Description>
+    <PackageTags>javascript;interop</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <DefineConstants>$(DefineConstants);JS_INTEROP</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)JSInterop\JSCallResultTypeHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(RepoRoot)\src\Components\Shared\src\ArrayBuilder.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.JSInterop.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
+  </ItemGroup>
+
+</Project>

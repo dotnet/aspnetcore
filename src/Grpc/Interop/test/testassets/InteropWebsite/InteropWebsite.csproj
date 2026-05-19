@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
+    <Nullable>enable</Nullable>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir)</RestoreAdditionalProjectSources>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\Proto\grpc\testing\test.proto" GrpcServices="Server" Link="Protos\test.proto" />
+    <Protobuf Include="..\Proto\grpc\testing\empty.proto" GrpcServices="None" Link="Protos\empty.proto" />
+    <Protobuf Include="..\Proto\grpc\testing\messages.proto" GrpcServices="None" Link="Protos\messages.proto" />
+
+    <Reference Include="Grpc.AspNetCore" />
+  </ItemGroup>
+</Project>

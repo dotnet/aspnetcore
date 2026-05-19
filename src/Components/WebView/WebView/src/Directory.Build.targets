@@ -1,0 +1,6 @@
+﻿<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+  <!-- Workaround target import for project references to Microsoft.Extensions.FileProviders.Embedded -->
+  <Import
+    Project="$(RepoRoot)src\FileProviders\Embedded\src\build\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.targets" />
+</Project>

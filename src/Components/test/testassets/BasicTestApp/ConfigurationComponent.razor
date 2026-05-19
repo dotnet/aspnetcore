@@ -1,0 +1,25 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Config
+@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment HostEnvironment
+
+<ul>
+    <li id="key1">@Config["key1"]</li>
+    <li id="key2">@Config["key2"]</li>
+    <li id="key3">@Config["key3"]</li>
+</ul>
+
+<div id="environment">@HostEnvironment.Environment</div>
+
+<p>
+    <input id="key1-input" @bind-value=newKey1 @bind-value:event="oninput" />
+    <button id="trigger-change" @onclick="@(() => TriggerChange())">Change key1</button>
+</p>
+
+@code {
+    string newKey1 { get; set; }
+
+    void TriggerChange()
+    {
+        Config["key1"] = newKey1;
+    }
+}
+

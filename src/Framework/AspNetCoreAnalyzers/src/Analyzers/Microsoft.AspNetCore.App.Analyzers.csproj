@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>CSharp Analyzers for ASP.NET Core.</Description>
+    <IsShippingPackage>false</IsShippingPackage>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <Nullable>Enable</Nullable>
+    <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+    <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
+
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.CodeFixes" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)IsExternalInit.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Roslyn\CodeAnalysisExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Roslyn\MvcFacts.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\BoundedCacheWithFactory.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypes.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\WellKnownTypeData.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\SymbolExtensions.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\ParsabilityHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Diagnostics\AnalyzerDebug.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+</Project>

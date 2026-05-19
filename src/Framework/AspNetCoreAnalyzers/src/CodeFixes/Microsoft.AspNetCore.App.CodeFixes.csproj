@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>CSharp CodeFixes for ASP.NET Core.</Description>
+    <IsShippingPackage>false</IsShippingPackage>
+    <!--
+      This project is fed into the targeting pack build, so it needs to be built during
+      source-build. One way to build it is to mark it as an analyzers project. If this project's
+      name ended in '.Analyzers', it would automatically be marked as an analyzers project, but it
+      doesn't in this case. Mark it manually, instead.
+    -->
+    <IsAnalyzersProject>true</IsAnalyzersProject>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <Nullable>Enable</Nullable>
+    <RootNamespace>Microsoft.AspNetCore.Analyzers</RootNamespace>
+    <SuppressNullableAttributesImport>true</SuppressNullableAttributesImport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+    <ProjectReference Include="..\Analyzers\Microsoft.AspNetCore.App.Analyzers.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.App.Analyzers.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)\src\Shared\HashCode.cs" />
+  </ItemGroup>
+
+</Project>

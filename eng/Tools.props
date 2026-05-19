@@ -1,0 +1,13 @@
+<Project>
+  <!-- Update the generated files when we restore projects. -->
+  <Target Name="GenerateDirectoryBuildFiles"
+      AfterTargets="Restore">
+    <!-- Separate invocations and use different properties to ensure second can load the restored package info. -->
+    <MSBuild Projects="$(RepoRoot)eng\tools\GenerateFiles\GenerateFiles.csproj"
+        RemoveProperties="BaseIntermediateOutputPath"
+        Targets="Restore" />
+    <MSBuild Projects="$(RepoRoot)eng\tools\GenerateFiles\GenerateFiles.csproj"
+        RemoveProperties="BaseIntermediateOutputPath;ExcludeRestorePackageImports"
+        Targets="GenerateDirectoryBuildFiles" />
+  </Target>
+</Project>

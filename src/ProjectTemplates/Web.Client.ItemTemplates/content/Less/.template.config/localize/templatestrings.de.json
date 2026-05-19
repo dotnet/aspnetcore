@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "LESS Stylesheet",
+  "description": "LESS ist eine Sprache, die in CSS kompiliert wird",
+  "postActions/openInEditor/description": "Öffnet styleSheet1.less im Editor"
+}

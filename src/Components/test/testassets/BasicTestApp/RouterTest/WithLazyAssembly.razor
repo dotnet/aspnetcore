@@ -1,0 +1,16 @@
+@page "/WithLazyAssembly"
+
+@using System.Linq
+@using System.Reflection
+@using Newtonsoft.Json
+
+<p>Just a webpage that uses a lazy-loaded dependency.</p>
+
+<button @onclick="UsePackage" id="use-package-button">Click Me</button>
+
+@code
+{
+    private void UsePackage() {
+        JsonConvert.DeserializeObject("{ 'type': 'Test' }");
+    }
+}

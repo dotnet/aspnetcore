@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+import "Proto/Issue048192/customannotations.proto";
+
+package custom.http.rule;
+
+service HelloService {
+  rpc Say(SayRequest) returns (SayResponse) {
+    option (google.api.http) = {
+      post: "/say",
+      body: "*"
+    };
+  };
+}
+
+message SayRequest {
+  string name = 1;
+}
+
+message SayResponse {
+  string message = 1;
+}

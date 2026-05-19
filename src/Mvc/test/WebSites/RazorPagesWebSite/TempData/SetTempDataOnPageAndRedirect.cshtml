@@ -1,0 +1,10 @@
+﻿@page
+
+@functions {
+
+    public IActionResult OnGet(string message)
+    {
+        TempData["Message"] = message;
+        return Redirect("~/TempData/ShowMessage");
+    }
+}

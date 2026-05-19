@@ -1,0 +1,6 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Таблица стилей LESS",
+  "description": "LESS – это язык, компилируемый в CSS",
+  "postActions/openInEditor/description": "Открывает styleSheet1.less в редакторе"
+}

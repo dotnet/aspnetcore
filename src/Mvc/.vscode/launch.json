@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "MvcSandbox",
+      "type": "coreclr",
+      "preLaunchTask": "MvcSandbox-build",
+      "request": "launch",
+      "program": "${workspaceFolder}/../../artifacts/bin/MvcSandbox/Debug/${env:TARGET}/MvcSandbox.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+    },
+  ]
+}

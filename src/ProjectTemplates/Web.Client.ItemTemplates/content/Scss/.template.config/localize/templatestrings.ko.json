@@ -1,0 +1,6 @@
+﻿{
+  "author": "Microsoft",
+  "name": "SCSS 스타일시트(SASS)",
+  "description": "SCSS는 CSS로 컴파일되는 언어입니다.",
+  "postActions/openInEditor/description": "편집기에서 styleSheet1.scss를 엽니다."
+}

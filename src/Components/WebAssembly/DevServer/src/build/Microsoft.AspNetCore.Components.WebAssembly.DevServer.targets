@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <_BlazorDevServerDll>$(MSBuildThisFileDirectory)../tools/blazor-devserver.dll</_BlazorDevServerDll>
+    <RunCommand>dotnet</RunCommand>
+    <_RunExtraArguments Condition="'$(WasmEnableThreads)' == 'true'">--apply-cop-headers</_RunExtraArguments>
+    <RunArguments>&quot;$(_BlazorDevServerDll)&quot; --applicationpath &quot;$(TargetPath)&quot; $(_RunExtraArguments)</RunArguments>
+  </PropertyGroup>
+</Project>

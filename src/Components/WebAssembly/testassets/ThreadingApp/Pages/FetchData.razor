@@ -1,0 +1,89 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Http;
+@page "/fetchdata"
+@page "/fetchdata/{StartDate:datetime}"
+@inject HttpClient Http
+
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class='table'>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.DateFormatted</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p>
+        <a href="fetchdata/@startDate.AddDays(-5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-left">
+            ◀ Previous
+        </a>
+        <a href="fetchdata/@startDate.AddDays(5).ToString("yyyy-MM-dd")" class="btn btn-secondary float-right">
+            Next ▶
+        </a>
+    </p>
+}
+
+@code {
+    [Parameter] public DateTime? StartDate { get; set; }
+
+    WeatherForecast[] forecasts;
+    DateTime startDate;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        startDate = StartDate.GetValueOrDefault(DateTime.Now);
+        var url = $"sample-data/weather.json?date={startDate.ToString("yyyy-MM-dd")}";
+        using var req = new HttpRequestMessage(HttpMethod.Get, url);
+        req.SetBrowserResponseStreamingEnabled(true);
+
+        // send the request from the UI thread
+        using var response = await Http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
+
+        await Task.Run(async () =>
+        {
+            // finish the processing in the thread pool
+            forecasts = await response.Content.ReadFromJsonAsync<WeatherForecast[]>();
+            for (var i = 0; i < forecasts.Length; i++)
+            {
+                forecasts[i].DateFormatted = startDate.AddDays(i).ToShortDateString();
+            }
+
+            await InvokeAsync(() =>
+            {
+                // get back to UI thread and render
+                ShouldRender();
+                return Task.CompletedTask;
+            });
+        });
+    }
+
+    class WeatherForecast
+    {
+        public string DateFormatted { get; set; }
+        public int TemperatureC { get; set; }
+        public int TemperatureF { get; set; }
+        public string Summary { get; set; }
+    }
+}

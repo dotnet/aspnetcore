@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MVC ViewImports",
+  "description": "MVC 보기 가져오기 페이지",
+  "symbols/namespace/description": "생성된 코드의 네임스페이스",
+  "postActions/openInEditor/description": "편집기에서 _ViewImports.cshtml을 엽니다."
+}

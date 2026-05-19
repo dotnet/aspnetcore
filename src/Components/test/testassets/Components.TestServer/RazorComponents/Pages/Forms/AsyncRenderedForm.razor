@@ -1,0 +1,20 @@
+﻿@page "/forms/async-rendered-form"
+@using Components.TestServer.RazorComponents
+
+<h2>Async rendered form</h2>
+
+@if (_ready)
+{
+    <ComponentWithFormInside>
+    </ComponentWithFormInside>
+}
+
+@code
+{
+    private bool _ready;
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _ready = true;
+    }
+}

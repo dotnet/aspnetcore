@@ -1,0 +1,43 @@
+{
+  "name": "@microsoft/microsoft.aspnetcore.components.web.js",
+  "private": true,
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "sideEffects": [
+    "GlobalExports.*",
+    "MonoPlatform.*"
+  ],
+  "scripts": {
+    "clean": "rimraf ./dist/Debug ./dist/Release",
+    "prebuild": "npm run clean",
+    "lint": "eslint -c ./src/.eslintrc.js --ext .ts ./src",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:debug": "node --nolazy --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --colors --verbose",
+    "build": "npm run build:debug && npm run build:production",
+    "build:debug": "rollup -c --environment development --forceExit",
+    "build:production": "rollup -c --environment production --forceExit"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.23.6",
+    "@babel/preset-typescript": "^7.23.3",
+    "@microsoft/dotnet-js-interop": "*",
+    "@microsoft/dotnet-runtime": "*",
+    "@microsoft/signalr": "*",
+    "@microsoft/signalr-protocol-msgpack": "*",
+    "@types/jsdom": "^16.2.14",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^8.16.0",
+    "eslint-plugin-header": "^3.1.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-junit": "^16.0.0"
+  },
+  "resolutions": {
+    "tough-cookie": ">=4.1.3"
+  }
+}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Description>Roslyn analyzers for ASP.NET Core Components.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- This analyzer is supported in VS 2019 and must use a compatible Microsoft.CodeAnalysis version -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" IsImplicitlyDefined="true" Version="$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)" />
+    <PackageReference Update="NETStandard.Library" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="build/netstandard2.0/*" Pack="true" PackagePath="build/netstandard2.0" />
+    <None Include="buildTransitive/netstandard2.0/*" Pack="true" PackagePath="buildTransitive/netstandard2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Analyzers.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Additional functionality for Xdt transforms.</Description>
+    <TargetFramework>$(DefaultNetFxTargetFramework)</TargetFramework>
+    <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
+    <IsPackable>false</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+    <!-- Nullable disabled because package only targets .NET Framework. -->
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- We need to reference the same version (or lower maybe) as App Service otherwise the custom transform cannot be loaded -->
+    <PackageReference Include="Microsoft.Web.Xdt" Version="1.4.0" AllowExplicitReference="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
+  </ItemGroup>
+</Project>
