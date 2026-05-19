@@ -12,11 +12,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 
 public class TrimmingServerFixture<TStartup> : BasicTestAppServerSiteFixture<TStartup> where TStartup : class
 {
-    public new readonly bool TestTrimmedApps = typeof(ToggleExecutionModeServerFixture<>).Assembly
-        .GetCustomAttributes<AssemblyMetadataAttribute>()
-        .First(m => m.Key == "Microsoft.AspNetCore.E2ETesting.TestTrimmedApps")
-        .Value == "true";
-
     public TrimmingServerFixture()
     {
         if (TestTrimmedApps)
