@@ -84,6 +84,14 @@ Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.set -> void
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.SupplyParameterFromSessionAttribute() -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>!
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.Beginning = 1 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.End = 2 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.None = 0 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.Name.get -> string?
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.Name.set -> void

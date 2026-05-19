@@ -1,0 +1,223 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Common",
+    "AI",
+    "MCP"
+  ],
+  "name": "MCP Server App",
+  "description": "A project template for creating a Model Context Protocol (MCP) server using C# and the ModelContextProtocol package.",
+  "groupIdentity": "Microsoft.McpServer",
+  "precedence": "11000",
+  "identity": "Microsoft.McpServer.CSharp.11.0",
+  "shortName": "mcpserver",
+  "defaultName": "McpServer",
+  "sourceName": "McpServer-CSharp",
+  "preferNameDirectory": true,
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "guids": [
+    "aaaaaaaa-bbbb-cccc-dddd-eeeeeeffffff"
+  ],
+  "symbols": {
+    "hostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "Transport": {
+      "type": "parameter",
+      "displayName": "The MCP server _transport type to use",
+      "description": "Whether to create a 'local' (stdio transport) or 'remote' (http transport) MCP server",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "local",
+          "description": "A console application will be created to use the stdio transport as a local MCP server"
+        },
+        {
+          "choice": "remote",
+          "description": "An ASP.NET Core web application will be created to use the http transport as a remote MCP server"
+        }
+      ],
+      "defaultValue": "local"
+    },
+    "NativeAot": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "displayName": "Enable _native AOT publish",
+      "description": "Whether to enable the MCP server for publishing as a native AOT application."
+    },
+    "SelfContained": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "displayName": "Enable _self-contained publish",
+      "description": "Whether to enable the MCP server for publishing as a self-contained application."
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net11.0"
+        }
+      ],
+      "replaces": "net11.0",
+      "defaultValue": "net11.0"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "httpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
+    },
+    "httpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 5000,
+        "high": 5300
+      }
+    },
+    "httpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "httpsPort",
+        "fallbackVariableName": "httpsPortGenerated"
+      },
+      "replaces": "9995",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "httpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "httpPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 6000,
+        "high": 6300
+      }
+    },
+    "httpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "httpPort",
+        "fallbackVariableName": "httpPortGenerated"
+      },
+      "replaces": "9996",
+      "onlyIf": [{
+        "after": "localhost:"
+      }]
+    },
+    "IsTransportRemote": {
+      "type": "computed",
+      "value": "(Transport == \"remote\")"
+    },
+    "IsTransportLocal": {
+      "type": "computed",
+      "value": "(!IsTransportRemote)"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "./README.md"
+    },
+    {
+      "path": "./McpServer-CSharp.csproj"
+    }
+  ],
+  "sources": [
+    {
+      "source": "./common",
+      "target": "./"
+    },
+    {
+      "condition": "(IsTransportLocal)",
+      "source": "./local",
+      "target": "./"
+    },
+    {
+      "condition": "(IsTransportRemote)",
+      "source": "./remote",
+      "target": "./"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "restore",
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "args": {
+        "files": ["**/*.csproj"]
+      },
+      "continueOnError": true
+    },
+    {
+      "condition": "(hostIdentifier != \"dotnetcli\" && hostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens README file in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ],
+  "SpecialCustomOperations": {
+    "**/*.md": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#### ---#if" ],
+            "else": [ "#### ---#else" ],
+            "elseif": [ "#### ---#elseif", "#### ---#elif" ],
+            "endif": [ "#### ---#endif" ],
+            "trim": "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
+    },
+    "**/*.http": {
+      "operations": [
+        {
+          "type": "conditional",
+          "configuration": {
+            "if": [ "#if" ],
+            "else": [ "#else" ],
+            "elseif": [ "#elseif", "#elif" ],
+            "endif": [ "#endif" ],
+            "trim": "true",
+            "wholeLine": "true",
+            "evaluator": "C++"
+          }
+        }
+      ]
+    }
+  }
+}

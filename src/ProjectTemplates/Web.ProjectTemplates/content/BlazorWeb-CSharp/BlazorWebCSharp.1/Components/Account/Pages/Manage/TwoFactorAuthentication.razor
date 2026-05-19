@@ -10,7 +10,7 @@
 
 <PageTitle>Two-factor authentication (2FA)</PageTitle>
 
-<StatusMessage />
+<StatusMessage Message="@message" />
 <h3>Two-factor authentication (2FA)</h3>
 @if (canTrack)
 {
@@ -70,6 +70,7 @@ else
 }
 
 @code {
+    private string? message;
     private bool canTrack;
     private bool hasAuthenticator;
     private int recoveryCodesLeft;
@@ -79,12 +80,18 @@ else
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
+    [SupplyParameterFromTempData(Name = IdentityRedirectManager.StatusMessageKey)]
+    private string? IdentityStatusMessage { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
+        message = IdentityStatusMessage;
+        IdentityStatusMessage = null;
+
         var user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
-            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            RedirectManager.RedirectTo("Account/InvalidUser");
             return;
         }
 
@@ -99,8 +106,7 @@ else
     {
         await SignInManager.ForgetTwoFactorClientAsync();
 
-        RedirectManager.RedirectToCurrentPageWithStatus(
-            "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.",
-            HttpContext);
+        IdentityStatusMessage = "The current browser has been forgotten. When you login again from this browser you will be prompted for your 2fa code.";
+        RedirectManager.RedirectToCurrentPage();
     }
 }

@@ -111,6 +111,10 @@ public class ServerVirtualizationTest : VirtualizationTest
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66308")]
     public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
         => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
+    public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+        => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

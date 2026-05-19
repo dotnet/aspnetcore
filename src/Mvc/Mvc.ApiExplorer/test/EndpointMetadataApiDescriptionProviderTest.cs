@@ -1096,7 +1096,6 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void RespectsProducesWithGroupNameExtensionMethod()
     {
         // Arrange
@@ -1145,7 +1144,6 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void HandlesProducesWithProducesProblem()
     {
         // Arrange
@@ -1198,7 +1196,6 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void HandleMultipleProduces()
     {
         // Arrange
@@ -1300,7 +1297,6 @@ public class EndpointMetadataApiDescriptionProviderTest
 #nullable enable
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66033")]
     public void FavorsProducesMetadataOverAttribute()
     {
         // Arrange
