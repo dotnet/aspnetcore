@@ -340,13 +340,27 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             responseType = typeof(void);
         }
 
-        var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(
+        var responseProviderMetadataTypes = ApiResponseTypeProvider.ReadAttributeResponseMetadata(
             responseProviderMetadata, responseType, defaultErrorType, contentTypes, out var errorSetByDefault);
-        var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadResponseMetadata(producesResponseMetadata, responseType);
+        var producesResponseMetadataTypes = ApiResponseTypeProvider.ReadEndpointResponseMetadata(producesResponseMetadata, responseType);
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
-        // over those that are added via attributes.
-        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes.Values);
+        // over those that are added via attributes (IApiResponseMetadataProvider).
+        //
+        // Note: TypedResults (e.g. TypedResults.Ok<Product>()) also add IProducesResponseTypeMetadata
+        // via IEndpointMetadataProvider, so they end up in the same bucket as .Produces<T>() and
+        // coexist for the same status code.
+        //
+        // Example:
+        //   [ProducesResponseType(typeof(string), 200)]             // attribute → IApiResponseMetadataProvider
+        //   app.MapPost("/", () => TypedResults.Ok(new Product()))  // TypedResults → IProducesResponseTypeMetadata (200, Product)
+        //       .Produces<Customer>(200);                           // extension  → IProducesResponseTypeMetadata (200, Customer)
+        //
+        // Result: (200, Product) and (200, Customer) both appear. The attribute (200, string) is
+        //         dropped because status 200 is already claimed by IProducesResponseTypeMetadata entries.
+        var producesStatusCodes = producesResponseMetadataTypes.Values.Select(metadata => metadata.StatusCode).ToHashSet();
+        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(
+            responseProviderMetadataTypes.Values.Where(metadata => !producesStatusCodes.Contains(metadata.StatusCode)));
 
         if (responseMetadataTypes.Any())
         {
@@ -377,7 +391,10 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
                 apiResponseType.Description ??= GetMatchingResponseTypeDescription(responseProviderMetadataTypes.Values, apiResponseType);
 
-                if (!supportedResponseTypes.Any(existingResponseType => existingResponseType.StatusCode == apiResponseType.StatusCode))
+                if (!supportedResponseTypes.Any(existingResponseType =>
+                    existingResponseType.StatusCode == apiResponseType.StatusCode &&
+                    existingResponseType.Type == apiResponseType.Type &&
+                    existingResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType == apiResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType))
                 {
                     supportedResponseTypes.Add(apiResponseType);
                 }
@@ -396,6 +413,23 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             }
 
             supportedResponseTypes.Add(defaultApiResponseType);
+        }
+
+        if (supportedResponseTypes.Count > 1)
+        {
+            // With multiple response types (e.g., different types for the same status code),
+            // we need deterministic ordering so that API documentation is stable across runs.
+            // This matches the ordering used by the controller path in ApiResponseTypeProvider.
+            var sorted = supportedResponseTypes
+                .OrderBy(rt => rt.StatusCode)
+                .ThenBy(rt => rt.Type?.Name)
+                .ThenBy(rt => rt.ApiResponseFormats.FirstOrDefault()?.MediaType)
+                .ToArray();
+            supportedResponseTypes.Clear();
+            foreach (var sortedResponseType in sorted)
+            {
+                supportedResponseTypes.Add(sortedResponseType);
+            }
         }
 
         static string? GetMatchingResponseTypeDescription(IEnumerable<ApiResponseType> responseMetadataTypes, ApiResponseType apiResponseType)

@@ -2204,6 +2204,10 @@ public static partial class RequestDelegateFactory
         var setMaxRecursionDepthExpr = Expression.Assign(
             Expression.Property(formReader, nameof(FormDataReader.MaxRecursionDepth)),
             Expression.Constant(formDataMapperOptions.MaxRecursionDepth));
+        // name_reader.MaxCollectionSize = formDataMapperOptions.MaxCollectionSize;
+        var setMaxCollectionSizeExpr = Expression.Assign(
+            Expression.Property(formReader, nameof(FormDataReader.MaxCollectionSize)),
+            Expression.Constant(formDataMapperOptions.MaxCollectionSize));
         // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         var invokeMapMethodExpr = Expression.Call(
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
@@ -2230,6 +2234,7 @@ public static partial class RequestDelegateFactory
         //   ProcessForm(context.Request.Form, form_dict, form_buffer);
         //   name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
         //   name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        //   name_reader.MaxCollectionSize = formDataMapperOptions.MaxCollectionSize;
         //   name_local = FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         // }
         // catch (FormDataMappingException e)
@@ -2252,6 +2257,7 @@ public static partial class RequestDelegateFactory
                     processFormExpr,
                     initializeReaderExpr,
                     setMaxRecursionDepthExpr,
+                    setMaxCollectionSizeExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
                 conditionalReturnBufferExpr,
                 Expression.Catch(formDataMappingException, Expression.Block(
