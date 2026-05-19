@@ -1,6 +1,0 @@
-﻿{
-  "author": "Microsoft",
-  "name": "MVC ViewStart",
-  "description": "MVC ViewStart ページ",
-  "postActions/openInEditor/description": "エディターで _ViewStart.cshtml を開きます"
-}

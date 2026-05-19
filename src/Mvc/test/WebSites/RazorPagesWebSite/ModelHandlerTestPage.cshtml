@@ -1,9 +1,0 @@
-﻿@page "{handler?}"
-@model RazorPagesWebSite.ModelHandlerTestModel
-
-Method: @Model.MethodName
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
-}
-<a href="~/HelloWorld.cshtml">~/HelloWorld.cshtml</a>

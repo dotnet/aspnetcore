@@ -1,7 +1,0 @@
-<Project>
-    <Import Project="..\..\..\Directory.Build.targets" />
-    <!--
-        This file intentionally left mostly blank to ensure the template projects
-        are independent from the template package build config.
-    -->
-</Project>

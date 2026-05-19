@@ -1,3 +1,0 @@
-#nullable enable
-Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RoutePattern.get -> Microsoft.AspNetCore.Routing.Patterns.RoutePattern?
-Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RoutePattern.set -> void

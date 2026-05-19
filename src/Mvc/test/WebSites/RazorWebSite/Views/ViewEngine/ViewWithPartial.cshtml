@@ -1,7 +1,0 @@
-﻿@using RazorWebSite
-@model Person
-<partial>@await Html.PartialAsync("_Partial", Model.Address)
-</partial>
-<partial2>@await Html.PartialAsync("~/Views/Shared/_Partial.cshtml", Model.Address)
-</partial2>
-@ViewBag.TestKey

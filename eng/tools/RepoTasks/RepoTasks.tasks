@@ -1,9 +1,0 @@
-<Project>
-
-  <PropertyGroup>
-    <_RepoTaskAssembly>$(ArtifactsBinDir)RepoTasks\$(Configuration)\RepoTasks.dll</_RepoTaskAssembly>
-  </PropertyGroup>
-
-  <UsingTask TaskName="RepoTasks.GenerateGuid" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
-  <UsingTask TaskName="RepoTasks.GenerateTestDevCert" AssemblyFile="$(_RepoTaskAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
-</Project>
