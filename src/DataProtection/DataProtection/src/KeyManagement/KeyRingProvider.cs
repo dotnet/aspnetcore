@@ -360,11 +360,10 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
             existingTask = _cacheableKeyRingTask;
             if (existingTask is null)
             {
-                // The forceRefresh path skipped reading _cacheableKeyRing above; read it now
-                // (without disturbing existingCacheableKeyRing, which controls the stale-ring
-                // early-return below and must stay null for forceRefresh callers) so we can
-                // tell a true cold start from a stale-cache refresh.
-                if (existingCacheableKeyRing is null && Volatile.Read(ref _cacheableKeyRing) is null)
+                // The forceRefresh path skipped reading _cacheableKeyRing above; read it now.
+                existingCacheableKeyRing ??= Volatile.Read(ref _cacheableKeyRing);
+
+                if (existingCacheableKeyRing is null)
                 {
                     // Cold start: run the refresh inline on this thread. Scheduling the work
                     // onto TaskScheduler.Default would risk thread-pool starvation - if all
