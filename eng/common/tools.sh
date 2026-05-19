@@ -313,7 +313,7 @@ function with_retries {
 function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
-  local install_script_url="https://builds.dotnet.microsoft.com/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.sh"
+  local install_script_url="https://raw.githubusercontent.com/dotnet/install-scripts/9c8552ae791982d3674fbb4d6ad887e536e7f506/src/dotnet-install.sh"
   local timestamp_file="$root/.dotnet-install.timestamp"
   local should_download=false
 
