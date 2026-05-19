@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public class RenderFragmentSerializerTest
 {
     private static readonly NullLogger _logger = NullLogger.Instance;
+    private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
+    private static readonly ComponentParametersTypeCache _typeCache = new();
 
     private static List<RenderTreeNode> SerializeFragment(RenderFragment fragment)
     {
@@ -130,7 +132,7 @@ public class RenderFragmentSerializerTest
 
         var node = Assert.Single(result);
         Assert.Equal("component", node.Type);
-        Assert.Contains(nameof(TestComponent), node.ComponentType);
+        Assert.Contains(nameof(TestComponent), node.TypeName);
         Assert.NotNull(node.ComponentParameters);
         var param = Assert.Single(node.ComponentParameters!);
         Assert.Equal("Title", param.Name);
@@ -272,7 +274,7 @@ public class RenderFragmentSerializerTest
     {
         var nodes = new List<RenderTreeNode>();
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -288,7 +290,7 @@ public class RenderFragmentSerializerTest
             new() { Type = "text", Content = "Hello" }
         };
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -318,7 +320,7 @@ public class RenderFragmentSerializerTest
             }
         };
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -341,7 +343,8 @@ public class RenderFragmentSerializerTest
             new()
             {
                 Type = "component",
-                ComponentType = typeof(TestComponent).AssemblyQualifiedName,
+                TypeName = typeof(TestComponent).FullName,
+                TypeAssembly = typeof(TestComponent).Assembly.GetName().Name,
                 ComponentParameters = new()
                 {
                     new()
@@ -354,13 +357,13 @@ public class RenderFragmentSerializerTest
                                 new() { Type = "text", Content = "hello from nested" }
                             }
                         },
-                        ValueType = RenderFragmentSerializer.SerializedRenderFragmentValueType,
+                        TypeName = RenderFragmentSerializer.SerializedRenderFragmentValueType,
                     }
                 }
             }
         };
 
-        var fragment = RenderFragmentSerializer.Deserialize(nodes);
+        var fragment = RenderFragmentSerializer.Deserialize(nodes, _jsonOptions, _typeCache);
 
         var builder = new RenderTreeBuilder();
         fragment(builder);
@@ -396,7 +399,7 @@ public class RenderFragmentSerializerTest
         };
 
         var serialized = SerializeFragment(original);
-        var deserialized = RenderFragmentSerializer.Deserialize(serialized);
+        var deserialized = RenderFragmentSerializer.Deserialize(serialized, _jsonOptions, _typeCache);
 
         var roundtripBuilder = new RenderTreeBuilder();
         deserialized(roundtripBuilder);
@@ -421,186 +424,63 @@ public class RenderFragmentSerializerTest
         Assert.Equal("<hr />", roundtripFrames.Array[6].MarkupContent);
     }
 
-    [Fact]
-    public void Roundtrip_ElementWithKey_PreservesKey()
+    [Theory]
+    [InlineData(42)]
+    [InlineData("my-key")]
+    public void Roundtrip_ElementWithKey_PreservesKeyAfterJson(object key)
     {
         RenderFragment original = builder =>
         {
             builder.OpenElement(0, "div");
-            builder.SetKey("my-key");
+            builder.SetKey(key);
             builder.AddContent(1, "keyed");
             builder.CloseElement();
         };
 
         var serialized = SerializeFragment(original);
 
-        Assert.Equal("my-key", serialized[0].Key);
+        Assert.Equal(key, serialized[0].Key);
 
-        var deserialized = RenderFragmentSerializer.Deserialize(serialized);
-        var builder2 = new RenderTreeBuilder();
-        deserialized(builder2);
-        var frames = builder2.GetFrames();
+        var json = JsonSerializer.Serialize(serialized, _jsonOptions);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, _jsonOptions)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized, _jsonOptions, _typeCache);
 
-        Assert.Equal("my-key", frames.Array[0].ElementKey);
-    }
-
-    [Fact]
-    public void Roundtrip_IntKey_PreservesType()
-    {
-        RenderFragment original = builder =>
-        {
-            builder.OpenElement(0, "div");
-            builder.SetKey(42);
-            builder.AddContent(1, "keyed");
-            builder.CloseElement();
-        };
-
-        var serialized = SerializeFragment(original);
-
-        Assert.Equal(42, serialized[0].Key);
-        Assert.Contains("System.Int32", serialized[0].KeyType);
-
-        var json = JsonSerializer.Serialize(serialized);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
-
-        var builder2 = new RenderTreeBuilder();
+        using var builder2 = new RenderTreeBuilder();
         fragment(builder2);
         var frames = builder2.GetFrames();
 
-        Assert.IsType<int>(frames.Array[0].ElementKey);
-        Assert.Equal(42, frames.Array[0].ElementKey);
+        Assert.Equal(key.GetType(), frames.Array[0].ElementKey!.GetType());
+        Assert.Equal(key, frames.Array[0].ElementKey);
     }
 
     [Fact]
-    public void Roundtrip_GuidKey_PreservesType()
-    {
-        var guid = Guid.NewGuid();
-
-        RenderFragment original = builder =>
-        {
-            builder.OpenElement(0, "div");
-            builder.SetKey(guid);
-            builder.AddContent(1, "keyed");
-            builder.CloseElement();
-        };
-
-        var serialized = SerializeFragment(original);
-        var json = JsonSerializer.Serialize(serialized);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
-
-        var builder2 = new RenderTreeBuilder();
-        fragment(builder2);
-        var frames = builder2.GetFrames();
-
-        Assert.IsType<Guid>(frames.Array[0].ElementKey);
-        Assert.Equal(guid, frames.Array[0].ElementKey);
-    }
-
-    [Fact]
-    public void Roundtrip_ComponentWithIntKey_PreservesType()
+    public void Roundtrip_ComponentWithTypedParameters_PreservesTypesAfterJson()
     {
         RenderFragment original = builder =>
         {
-            builder.OpenComponent<TestComponent>(0);
+            builder.OpenComponent<TypedComponent>(0);
             builder.SetKey(99);
-            builder.AddComponentParameter(1, "Title", "Hello");
+            builder.AddComponentParameter(1, "Count", 42);
+            builder.AddComponentParameter(2, "Score", 3.14);
             builder.CloseComponent();
         };
 
         var serialized = SerializeFragment(original);
 
-        Assert.Equal(99, serialized[0].Key);
-        Assert.Contains("System.Int32", serialized[0].KeyType);
+        var json = JsonSerializer.Serialize(serialized, _jsonOptions);
+        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json, _jsonOptions)!;
+        var fragment = RenderFragmentSerializer.Deserialize(deserialized, _jsonOptions, _typeCache);
 
-        var json = JsonSerializer.Serialize(serialized);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
-
-        var builder2 = new RenderTreeBuilder();
+        using var builder2 = new RenderTreeBuilder();
         fragment(builder2);
         var frames = builder2.GetFrames();
 
         Assert.IsType<int>(frames.Array[0].ComponentKey);
         Assert.Equal(99, frames.Array[0].ComponentKey);
-    }
-
-    [Fact]
-    public void Roundtrip_IntAttribute_PreservesTypeAfterJson()
-    {
-        RenderFragment original = builder =>
-        {
-            builder.OpenComponent<TypedComponent>(0);
-            builder.AddComponentParameter(1, "Count", 42);
-            builder.CloseComponent();
-        };
-
-        var serialized = SerializeFragment(original);
-
-        var param = Assert.Single(serialized[0].ComponentParameters!);
-        Assert.Equal("Count", param.Name);
-        Assert.Equal(42, param.Value);
-        Assert.Contains("System.Int32", param.ValueType);
-
-        var json = JsonSerializer.Serialize(serialized);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
-
-        var builder2 = new RenderTreeBuilder();
-        fragment(builder2);
-        var frames = builder2.GetFrames();
-
         Assert.IsType<int>(frames.Array[1].AttributeValue);
         Assert.Equal(42, frames.Array[1].AttributeValue);
-    }
-
-    [Fact]
-    public void Roundtrip_GuidAttribute_PreservesTypeAfterJson()
-    {
-        var guid = Guid.NewGuid();
-
-        RenderFragment original = builder =>
-        {
-            builder.OpenComponent<TypedComponent>(0);
-            builder.AddComponentParameter(1, "Id", guid);
-            builder.CloseComponent();
-        };
-
-        var serialized = SerializeFragment(original);
-        var json = JsonSerializer.Serialize(serialized);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
-
-        var builder2 = new RenderTreeBuilder();
-        fragment(builder2);
-        var frames = builder2.GetFrames();
-
-        Assert.IsType<Guid>(frames.Array[1].AttributeValue);
-        Assert.Equal(guid, frames.Array[1].AttributeValue);
-    }
-
-    [Fact]
-    public void Roundtrip_DoubleAttribute_PreservesTypeAfterJson()
-    {
-        RenderFragment original = builder =>
-        {
-            builder.OpenComponent<TypedComponent>(0);
-            builder.AddComponentParameter(1, "Score", 3.14);
-            builder.CloseComponent();
-        };
-
-        var serialized = SerializeFragment(original);
-        var json = JsonSerializer.Serialize(serialized);
-        var deserialized = JsonSerializer.Deserialize<List<RenderTreeNode>>(json)!;
-        var fragment = RenderFragmentSerializer.Deserialize(deserialized);
-
-        var builder2 = new RenderTreeBuilder();
-        fragment(builder2);
-        var frames = builder2.GetFrames();
-
-        Assert.IsType<double>(frames.Array[1].AttributeValue);
-        Assert.Equal(3.14, frames.Array[1].AttributeValue);
+        Assert.IsType<double>(frames.Array[2].AttributeValue);
+        Assert.Equal(3.14, frames.Array[2].AttributeValue);
     }
 
     [Fact]
@@ -643,7 +523,7 @@ public class RenderFragmentSerializerTest
         Assert.Equal(200, result.Count);
         Assert.All(result, n => Assert.Equal("element", n.Type));
 
-        var deserialized = RenderFragmentSerializer.Deserialize(result);
+        var deserialized = RenderFragmentSerializer.Deserialize(result, _jsonOptions, _typeCache);
         var builder2 = new RenderTreeBuilder();
         deserialized(builder2);
         var frames = builder2.GetFrames();

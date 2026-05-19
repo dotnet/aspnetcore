@@ -14,24 +14,32 @@ internal static partial class RenderFragmentSerializer
 {
     internal const string SerializedRenderFragmentValueType = "#RenderFragment";
 
+    /// Converts the captured render tree frames from a <see cref="RenderFragmentCapture"/> into a
+    /// JSON-serializable tree of <see cref="RenderTreeNode"/> objects. This is the entry point for
+    /// serializing a RenderFragment that was captured in renderer.
     internal static List<RenderTreeNode> SerializeFrames(
         RenderFragmentCapture capture,
-        ILogger logger)
+        ILogger logger,
+        string? ownerComponentType = null)
     {
         var result = new List<RenderTreeNode>();
         var frames = capture.GetCapturedFrames();
         var position = 0;
-        SerializeChildren(ref position, frames, frames.Length, result, capture, logger);
+        SerializeChildren(ref position, frames, frames.Length, result, capture, logger, ownerComponentType);
         return result;
     }
 
+    /// Walks a contiguous range of render tree frames and converts each into a <see cref="RenderTreeNode"/>,
+    /// recursively processing element children, component parameters, and nested RenderFragment captures.
+    /// Non-serializable frames (event handlers, @ref captures, @rendermode, @formname) are skipped with warnings.
     private static void SerializeChildren(
         ref int position,
         ReadOnlySpan<RenderTreeFrame> frames,
         int endExcl,
         List<RenderTreeNode> target,
         RenderFragmentCapture currentCapture,
-        ILogger logger)
+        ILogger logger,
+        string? ownerComponentType)
     {
         while (position < endExcl)
         {
@@ -48,7 +56,8 @@ internal static partial class RenderFragmentSerializer
                     if (frame.ElementKey is not null)
                     {
                         node.Key = frame.ElementKey;
-                        node.KeyType = frame.ElementKey.GetType().AssemblyQualifiedName;
+                        node.KeyTypeName = frame.ElementKey.GetType().FullName;
+                        node.KeyTypeAssembly = frame.ElementKey.GetType().Assembly.GetName().Name;
                     }
 
                     var subtreeEnd = position + frame.ElementSubtreeLength;
@@ -58,7 +67,7 @@ internal static partial class RenderFragmentSerializer
                     while (position < subtreeEnd && frames[position].FrameType is RenderTreeFrameType.Attribute)
                     {
                         ref readonly var attrFrame = ref frames[position];
-                        if (TrySerializeAttribute(attrFrame, position, currentCapture, logger, out var attr))
+                        if (TrySerializeAttribute(attrFrame, position, currentCapture, logger, ownerComponentType, out var attr))
                         {
                             node.Attributes ??= new();
                             node.Attributes.Add(attr);
@@ -70,7 +79,7 @@ internal static partial class RenderFragmentSerializer
                     if (position < subtreeEnd)
                     {
                         node.Children = new();
-                        SerializeChildren(ref position, frames, subtreeEnd, node.Children, currentCapture, logger);
+                        SerializeChildren(ref position, frames, subtreeEnd, node.Children, currentCapture, logger, ownerComponentType);
                     }
 
                     target.Add(node);
@@ -89,12 +98,14 @@ internal static partial class RenderFragmentSerializer
                     var node = new RenderTreeNode
                     {
                         Type = "component",
-                        ComponentType = frame.ComponentType?.AssemblyQualifiedName,
+                        TypeName = frame.ComponentType?.FullName,
+                        TypeAssembly = frame.ComponentType?.Assembly.GetName().Name,
                     };
                     if (frame.ComponentKey is not null)
                     {
                         node.Key = frame.ComponentKey;
-                        node.KeyType = frame.ComponentKey.GetType().AssemblyQualifiedName;
+                        node.KeyTypeName = frame.ComponentKey.GetType().FullName;
+                        node.KeyTypeAssembly = frame.ComponentKey.GetType().Assembly.GetName().Name;
                     }
 
                     var subtreeEnd = position + frame.ComponentSubtreeLength;
@@ -104,7 +115,7 @@ internal static partial class RenderFragmentSerializer
                     while (position < subtreeEnd && frames[position].FrameType is RenderTreeFrameType.Attribute)
                     {
                         ref readonly var attrFrame = ref frames[position];
-                        if (TrySerializeAttribute(attrFrame, position, currentCapture, logger, out var attr))
+                        if (TrySerializeAttribute(attrFrame, position, currentCapture, logger, ownerComponentType, out var attr))
                         {
                             node.ComponentParameters ??= new();
                             node.ComponentParameters.Add(attr);
@@ -121,23 +132,23 @@ internal static partial class RenderFragmentSerializer
                     var subtreeEnd = position + frame.RegionSubtreeLength;
                     position++;
                     // Inline region's children into the parent
-                    SerializeChildren(ref position, frames, subtreeEnd, target, currentCapture, logger);
+                    SerializeChildren(ref position, frames, subtreeEnd, target, currentCapture, logger, ownerComponentType);
                     break;
                 }
                 case RenderTreeFrameType.ElementReferenceCapture:
-                    Log.ElementReferenceCaptureSkipped(logger);
+                    Log.ElementReferenceCaptureSkipped(logger, ownerComponentType);
                     position++;
                     break;
                 case RenderTreeFrameType.ComponentReferenceCapture:
-                    Log.ComponentReferenceCaptureSkipped(logger);
+                    Log.ComponentReferenceCaptureSkipped(logger, ownerComponentType);
                     position++;
                     break;
                 case RenderTreeFrameType.ComponentRenderMode:
-                    Log.ComponentRenderModeSkipped(logger);
+                    Log.ComponentRenderModeSkipped(logger, ownerComponentType);
                     position++;
                     break;
                 case RenderTreeFrameType.NamedEvent:
-                    Log.NamedEventSkipped(logger);
+                    Log.NamedEventSkipped(logger, ownerComponentType);
                     position++;
                     break;
                 case RenderTreeFrameType.Attribute:
@@ -156,6 +167,7 @@ internal static partial class RenderFragmentSerializer
         int frameIndex,
         RenderFragmentCapture currentCapture,
         ILogger logger,
+        string? ownerComponentType,
         [NotNullWhen(true)] out RenderTreeAttribute? result)
     {
         result = null;
@@ -164,7 +176,8 @@ internal static partial class RenderFragmentSerializer
             if (!currentCapture.ChildCaptures.TryGetValue(frameIndex, out var nestedCapture))
             {
                 // If we get here, then it means that wrapping didn't happen, or it was not executed (e.g. SSRRenderBoundary in the case of disabled prerendering).
-                // TODO: throw for now, then add an anotation that will allow for component frames to be executed through builder if this happens.
+                // TODO: https://github.com/dotnet/aspnetcore/issues/66739 - Add an opt-in annotation that tells the
+                // serializer to execute the RenderFragment directly when it wasn't invoked during prerendering.
                 throw new InvalidOperationException(
                     $"Cannot serialize RenderFragment parameter '{frame.AttributeName}' because it was not captured during rendering.");
             }
@@ -172,8 +185,8 @@ internal static partial class RenderFragmentSerializer
             result = new RenderTreeAttribute
             {
                 Name = frame.AttributeName!,
-                Value = new SerializedRenderFragment { Nodes = SerializeFrames(nestedCapture, logger) },
-                ValueType = SerializedRenderFragmentValueType,
+                Value = new SerializedRenderFragment { Nodes = SerializeFrames(nestedCapture, logger, ownerComponentType) },
+                TypeName = SerializedRenderFragmentValueType,
             };
             return true;
         }
@@ -182,17 +195,17 @@ internal static partial class RenderFragmentSerializer
         {
             if (d.GetType().IsGenericType && d.GetType().GetGenericTypeDefinition() == typeof(RenderFragment<>))
             {
-                Log.GenericRenderFragmentSkipped(logger, frame.AttributeName);
+                Log.GenericRenderFragmentSkipped(logger, frame.AttributeName, ownerComponentType);
                 return false;
             }
 
-            Log.EventHandlerSkipped(logger, frame.AttributeName);
+            Log.EventHandlerSkipped(logger, frame.AttributeName, ownerComponentType);
             return false;
         }
 
         if (IsEventCallback(frame.AttributeValue))
         {
-            Log.EventHandlerSkipped(logger, frame.AttributeName);
+            Log.EventHandlerSkipped(logger, frame.AttributeName, ownerComponentType);
             return false;
         }
 
@@ -200,19 +213,19 @@ internal static partial class RenderFragmentSerializer
         {
             Name = frame.AttributeName!,
             Value = frame.AttributeValue,
-            ValueType = frame.AttributeValue?.GetType().AssemblyQualifiedName,
+            TypeName = frame.AttributeValue?.GetType().FullName,
+            TypeAssembly = frame.AttributeValue?.GetType().Assembly.GetName().Name,
         };
         return true;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
-    internal static RenderFragment Deserialize(List<RenderTreeNode> nodes)
+    internal static RenderFragment Deserialize(List<RenderTreeNode> nodes, JsonSerializerOptions jsonOptions, ComponentParametersTypeCache typeCache)
     {
-        return builder => DeserializeNodes(builder, nodes);
+        return builder => DeserializeNodes(builder, nodes, jsonOptions, typeCache);
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
-    private static void DeserializeNodes(RenderTreeBuilder builder, List<RenderTreeNode> nodes)
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
+    private static void DeserializeNodes(RenderTreeBuilder builder, List<RenderTreeNode> nodes, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
         for (var i = 0; i < nodes.Count; i++)
         {
@@ -223,12 +236,12 @@ internal static partial class RenderFragmentSerializer
                     builder.OpenElement(0, node.Tag!);
                     if (node.Key is not null)
                     {
-                        builder.SetKey(node.Key is JsonElement je ? ConvertTypedValue(je, node.KeyType!) : node.Key);
+                        builder.SetKey(node.Key is JsonElement je ? ConvertTypedValue(je, node.KeyTypeAssembly!, node.KeyTypeName!, jsonOptions, typeCache) : node.Key);
                     }
-                    DeserializeAttributes(builder, node.Attributes);
+                    DeserializeAttributes(builder, node.Attributes, jsonOptions, typeCache);
                     if (node.Children is not null)
                     {
-                        DeserializeNodes(builder, node.Children);
+                        DeserializeNodes(builder, node.Children, jsonOptions, typeCache);
                     }
                     builder.CloseElement();
                     break;
@@ -242,17 +255,17 @@ internal static partial class RenderFragmentSerializer
                     break;
 
                 case "component":
-                    var componentType = Type.GetType(node.ComponentType!);
+                    var componentType = typeCache.GetParameterType(node.TypeAssembly!, node.TypeName!);
                     if (componentType is null)
                     {
-                        throw new InvalidOperationException($"Cannot resolve component type '{node.ComponentType}'.");
+                        throw new InvalidOperationException($"Cannot resolve component type '{node.TypeName}' from assembly '{node.TypeAssembly}'.");
                     }
                     builder.OpenComponent(0, componentType);
                     if (node.Key is not null)
                     {
-                        builder.SetKey(node.Key is JsonElement je ? ConvertTypedValue(je, node.KeyType!) : node.Key);
+                        builder.SetKey(node.Key is JsonElement je ? ConvertTypedValue(je, node.KeyTypeAssembly!, node.KeyTypeName!, jsonOptions, typeCache) : node.Key);
                     }
-                    DeserializeComponentParameters(builder, node.ComponentParameters);
+                    DeserializeComponentParameters(builder, node.ComponentParameters, jsonOptions, typeCache);
                     builder.CloseComponent();
                     break;
 
@@ -262,7 +275,7 @@ internal static partial class RenderFragmentSerializer
         }
     }
 
-    private static void DeserializeAttributes(RenderTreeBuilder builder, List<RenderTreeAttribute>? attributes)
+    private static void DeserializeAttributes(RenderTreeBuilder builder, List<RenderTreeAttribute>? attributes, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
         if (attributes is null)
         {
@@ -272,13 +285,13 @@ internal static partial class RenderFragmentSerializer
         foreach (var attr in attributes)
         {
             var value = attr.Value is JsonElement je
-                ? ConvertTypedValue(je, attr.ValueType!)
+                ? ConvertTypedValue(je, attr.TypeAssembly!, attr.TypeName!, jsonOptions, typeCache)
                 : attr.Value;
             builder.AddAttribute(0, attr.Name, value);
         }
     }
 
-    private static void DeserializeComponentParameters(RenderTreeBuilder builder, List<RenderTreeAttribute>? parameters)
+    private static void DeserializeComponentParameters(RenderTreeBuilder builder, List<RenderTreeAttribute>? parameters, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
         if (parameters is null)
         {
@@ -287,34 +300,33 @@ internal static partial class RenderFragmentSerializer
 
         foreach (var param in parameters)
         {
-            var value = DeserializeAttributeValue(param);
+            var value = DeserializeAttributeValue(param, jsonOptions, typeCache);
             builder.AddComponentParameter(0, param.Name, value);
         }
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "SerializedRenderFragment and its members are preserved by existing DynamicDependency attributes.")]
-    private static object? DeserializeAttributeValue(RenderTreeAttribute attr)
+    private static object? DeserializeAttributeValue(RenderTreeAttribute attr, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
-        if (attr.ValueType == SerializedRenderFragmentValueType)
+        if (attr.TypeName == SerializedRenderFragmentValueType)
         {
             var serialized = attr.Value switch
             {
-                JsonElement je => JsonSerializer.Deserialize<SerializedRenderFragment>(je.GetRawText()),
+                JsonElement je => JsonSerializer.Deserialize<SerializedRenderFragment>(je.GetRawText(), jsonOptions),
                 SerializedRenderFragment sf => sf,
                 _ => throw new InvalidOperationException($"Unexpected value type '{attr.Value?.GetType()}' for serialized RenderFragment attribute '{attr.Name}'.")
             };
-            return Deserialize(serialized!.Nodes);
+            return Deserialize(serialized!.Nodes, jsonOptions!, typeCache);
         }
 
-        return attr.Value is JsonElement json ? ConvertTypedValue(json, attr.ValueType!) : attr.Value;
+        return attr.Value is JsonElement json ? ConvertTypedValue(json, attr.TypeAssembly!, attr.TypeName!, jsonOptions, typeCache) : attr.Value;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2057", Justification = "Type names are serialized from known component parameter types.")]
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Attribute and key types are primitive or well-known types preserved by the application.")]
-    private static object? ConvertTypedValue(JsonElement json, string typeName)
+    private static object? ConvertTypedValue(JsonElement json, string assemblyName, string typeName, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
-        var type = Type.GetType(typeName) ?? throw new InvalidOperationException($"Could not resolve serialized attribute type '{typeName}'.");
-        return json.Deserialize(type);
+        var type = typeCache.GetParameterType(assemblyName, typeName) ?? throw new InvalidOperationException($"Could not resolve serialized type '{typeName}' from assembly '{assemblyName}'.");
+        return json.Deserialize(type, jsonOptions);
     }
 
     private static bool IsEventCallback(object? value)
@@ -335,23 +347,23 @@ internal static partial class RenderFragmentSerializer
 
     private static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Warning, "Event handler '{AttributeName}' inside a RenderFragment was skipped during serialization. Delegates cannot cross render mode boundaries.", EventName = "EventHandlerSkipped")]
-        public static partial void EventHandlerSkipped(ILogger logger, string? attributeName);
+        [LoggerMessage(1, LogLevel.Warning, "Event handler '{AttributeName}' inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. Delegates cannot cross render mode boundaries.", EventName = "EventHandlerSkipped")]
+        public static partial void EventHandlerSkipped(ILogger logger, string? attributeName, string? ownerComponentType);
 
-        [LoggerMessage(2, LogLevel.Warning, "An element @ref capture inside a RenderFragment was skipped during serialization. Element references cannot cross render mode boundaries.", EventName = "ElementReferenceCaptureSkipped")]
-        public static partial void ElementReferenceCaptureSkipped(ILogger logger);
+        [LoggerMessage(2, LogLevel.Warning, "An element @ref capture inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. Element references cannot cross render mode boundaries.", EventName = "ElementReferenceCaptureSkipped")]
+        public static partial void ElementReferenceCaptureSkipped(ILogger logger, string? ownerComponentType);
 
-        [LoggerMessage(3, LogLevel.Warning, "A component @ref capture inside a RenderFragment was skipped during serialization. Component references cannot cross render mode boundaries.", EventName = "ComponentReferenceCaptureSkipped")]
-        public static partial void ComponentReferenceCaptureSkipped(ILogger logger);
+        [LoggerMessage(3, LogLevel.Warning, "A component @ref capture inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. Component references cannot cross render mode boundaries.", EventName = "ComponentReferenceCaptureSkipped")]
+        public static partial void ComponentReferenceCaptureSkipped(ILogger logger, string? ownerComponentType);
 
-        [LoggerMessage(4, LogLevel.Warning, "A @rendermode directive inside a RenderFragment was skipped during serialization. The render mode is already determined by the boundary the RenderFragment is crossing.", EventName = "ComponentRenderModeSkipped")]
-        public static partial void ComponentRenderModeSkipped(ILogger logger);
+        [LoggerMessage(4, LogLevel.Warning, "A @rendermode directive inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. The render mode is already determined by the boundary the RenderFragment is crossing.", EventName = "ComponentRenderModeSkipped")]
+        public static partial void ComponentRenderModeSkipped(ILogger logger, string? ownerComponentType);
 
-        [LoggerMessage(5, LogLevel.Warning, "A @formname directive inside a RenderFragment was skipped during serialization. Named events are an SSR-only mechanism and cannot cross render mode boundaries.", EventName = "NamedEventSkipped")]
-        public static partial void NamedEventSkipped(ILogger logger);
+        [LoggerMessage(5, LogLevel.Warning, "A @formname directive inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. Named events are an SSR-only mechanism and cannot cross render mode boundaries.", EventName = "NamedEventSkipped")]
+        public static partial void NamedEventSkipped(ILogger logger, string? ownerComponentType);
 
-        [LoggerMessage(6, LogLevel.Warning, "A generic RenderFragment<T> parameter '{AttributeName}' inside a RenderFragment was skipped during serialization. Only non-generic RenderFragment is supported across render mode boundaries.", EventName = "GenericRenderFragmentSkipped")]
-        public static partial void GenericRenderFragmentSkipped(ILogger logger, string? attributeName);
+        [LoggerMessage(6, LogLevel.Warning, "A generic RenderFragment<T> parameter '{AttributeName}' inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. Only non-generic RenderFragment is supported across render mode boundaries.", EventName = "GenericRenderFragmentSkipped")]
+        public static partial void GenericRenderFragmentSkipped(ILogger logger, string? attributeName, string? ownerComponentType);
     }
 }
 
@@ -374,13 +386,19 @@ internal sealed class RenderTreeNode
     public object? Key { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? KeyType { get; set; }
+    public string? KeyTypeName { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? KeyTypeAssembly { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Content { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ComponentType { get; set; }
+    public string? TypeName { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TypeAssembly { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<RenderTreeAttribute>? ComponentParameters { get; set; }
@@ -397,5 +415,8 @@ internal sealed class RenderTreeAttribute
     public object? Value { get; set; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? ValueType { get; set; }
+    public string? TypeName { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TypeAssembly { get; set; }
 }

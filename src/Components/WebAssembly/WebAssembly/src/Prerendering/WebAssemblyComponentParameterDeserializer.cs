@@ -59,7 +59,7 @@ internal sealed class WebAssemblyComponentParameterDeserializer
                     var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
                         value.GetRawText(),
                         WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
-                    parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes);
+                    parametersDictionary[definition.Name] = RenderFragmentSerializer.Deserialize(serialized!.Nodes, WebAssemblyComponentSerializationSettings.JsonSerializationOptions, _parametersCache);
                 }
                 catch (Exception e)
                 {

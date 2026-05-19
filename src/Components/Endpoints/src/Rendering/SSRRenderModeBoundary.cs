@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -31,7 +32,7 @@ internal class SSRRenderModeBoundary : IComponent
     private Dictionary<string, RenderFragmentCapture>? _topLevelCaptures;
     private ComponentMarkerKey? _markerKey;
     private readonly HttpContext _httpContext;
-    private readonly ILogger _logger;
+    private ILogger? _renderFragmentSerializationLogger;
 
     public IComponentRenderMode RenderMode { get; }
 
@@ -44,7 +45,6 @@ internal class SSRRenderModeBoundary : IComponent
 
         _httpContext = httpContext;
         _componentType = componentType;
-        _logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(RenderFragmentSerializer));
         RenderMode = renderMode;
         _prerender = renderMode switch
         {
@@ -114,24 +114,16 @@ internal class SSRRenderModeBoundary : IComponent
 
         if (_prerender)
         {
-            // Replace each top-level RenderFragment parameter with a capture wrapper.
+            // Replace each top-level RenderFragment parameter with a capture wrapper
+            // so that when the component invokes the fragment during prerendering,
+            // the output frames are captured for later serialization.
             var parametersDict = (Dictionary<string, object?>)_latestParameters;
-            List<string>? fragmentNames = null;
-            foreach (var (name, value) in parametersDict)
+            foreach (var name in parametersDict.Keys.ToArray())
             {
-                if (value is RenderFragment)
+                if (parametersDict[name] is RenderFragment rf)
                 {
-                    fragmentNames ??= new();
-                    fragmentNames.Add(name);
-                }
-            }
-
-            if (fragmentNames is not null)
-            {
-                _topLevelCaptures = new Dictionary<string, RenderFragmentCapture>(fragmentNames.Count);
-                foreach (var name in fragmentNames)
-                {
-                    var capture = new RenderFragmentCapture((RenderFragment)parametersDict[name]!);
+                    var capture = new RenderFragmentCapture(rf);
+                    _topLevelCaptures ??= new();
                     _topLevelCaptures[name] = capture;
                     parametersDict[name] = (RenderFragment)capture.Invoke;
                 }
@@ -182,7 +174,8 @@ internal class SSRRenderModeBoundary : IComponent
                 }
                 else if (value is not RenderFragment)
                 {
-                    // RenderFragment is allowed — will be serialized in ToMarker()
+                    // Non-RenderFragment delegates (event handlers, etc.) can't cross render mode boundaries.
+                    // RenderFragment is allowed and will be serialized in ToMarker().
                     throw new InvalidOperationException($"Cannot pass the parameter '{name}' to component '{_componentType.Name}' with rendermode '{RenderMode.GetType().Name}'. This is because the parameter is of the delegate type '{value.GetType()}', which is arbitrary code and cannot be serialized.");
                 }
             }
@@ -208,9 +201,13 @@ internal class SSRRenderModeBoundary : IComponent
         _markerKey ??= GenerateMarkerKey(sequence, componentKey);
 
         // Build a serialization-safe copy of parameters, replacing RenderFragment delegates with DTOs
+        _renderFragmentSerializationLogger ??= httpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger(typeof(RenderFragmentSerializer));
+
         var serializableParameters = _latestParameters is null
             ? ParameterView.Empty
-            : BuildSerializableParameterView(_latestParameters, _logger);
+            : BuildSerializableParameterView(_latestParameters, _renderFragmentSerializationLogger);
 
         var marker = RenderMode switch
         {
@@ -257,7 +254,7 @@ internal class SSRRenderModeBoundary : IComponent
 
                 dict[name] = new SerializedRenderFragment
                 {
-                    Nodes = RenderFragmentSerializer.SerializeFrames(capture, logger)
+                    Nodes = RenderFragmentSerializer.SerializeFrames(capture, logger, _componentType.Name)
                 };
             }
             else
