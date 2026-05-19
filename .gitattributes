@@ -87,3 +87,13 @@ bootstrap*.css eol=lf
 
 # VerifyTests
 *.verified.txt text eol=lf working-tree-encoding=UTF-8
+
+###############################################################################
+# Patch/diff files must keep LF line endings so `git apply` can parse them
+# correctly on machines where core.autocrlf=true (the Git-for-Windows default).
+# Empty-file-creation entries in these patches have no `--- /dev/null` / `+++ b/...`
+# lines, which makes the parser sensitive to a stray CR before the next
+# `diff --git` header. Forcing LF avoids that.
+###############################################################################
+*.diff eol=lf
+*.patch eol=lf
