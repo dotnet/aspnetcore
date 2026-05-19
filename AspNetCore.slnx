@@ -135,8 +135,6 @@
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Client/HostedInAspNet.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Server/HostedInAspNet.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/StandaloneApp/StandaloneApp.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp.Server/ThreadingApp.Server.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp/ThreadingApp.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Client/Wasm.Prerendered.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Server/Wasm.Prerendered.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/WasmLinkerTest/WasmLinkerTest.csproj" />

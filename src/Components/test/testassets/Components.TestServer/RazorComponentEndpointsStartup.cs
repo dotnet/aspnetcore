@@ -175,7 +175,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
 
         if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {
