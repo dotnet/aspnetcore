@@ -1,0 +1,44 @@
+@page "/forms/client-validation/formnovalidate"
+
+<h2 id="page-title">formnovalidate + skipped fields</h2>
+
+<style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+</style>
+
+<form id="test-form" method="post" data-enhance="false">
+    <input id="name" name="Name" type="text"
+           data-val="true"
+           data-val-required="Name is required." />
+    <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+
+    <input id="hidden-field" name="HiddenField" type="hidden"
+           data-val="true"
+           data-val-required="HiddenField is required." />
+    <span data-valmsg-for="HiddenField" data-valmsg-replace="true"></span>
+
+    <input id="disabled-field" name="DisabledField" type="text" disabled
+           data-val="true"
+           data-val-required="DisabledField is required." />
+    <span data-valmsg-for="DisabledField" data-valmsg-replace="true"></span>
+
+    <div style="display:none">
+        <input id="display-none-field" name="DisplayNoneField" type="text"
+               data-val="true"
+               data-val-required="DisplayNoneField is required." />
+        <span data-valmsg-for="DisplayNoneField" data-valmsg-replace="true"></span>
+    </div>
+
+    <button type="submit" id="btn-submit">Submit</button>
+    <button type="submit" id="btn-draft" formnovalidate>Save as Draft</button>
+</form>
+
+<div id="event-log"></div>
+
+<script suppress-error="BL9992">
+    document.getElementById('test-form').addEventListener('validationcomplete', function (e) {
+        document.getElementById('event-log').textContent =
+            'valid:' + e.detail.valid + ';errors:' + e.detail.errors.size;
+    });
+</script>

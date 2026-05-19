@@ -1198,6 +1198,10 @@
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Validation/Localization/">
+    <Project Path="src/Validation/Localization/src/Microsoft.Extensions.Validation.Localization.csproj" />
+    <Project Path="src/Validation/Localization/test/Microsoft.Extensions.Validation.Localization.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
   </Folder>

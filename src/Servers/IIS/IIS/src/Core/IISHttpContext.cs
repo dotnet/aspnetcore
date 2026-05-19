@@ -30,6 +30,8 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 
 internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
 {
+    private static readonly bool AllowKeepAliveAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.IIS.AllowKeepAliveAfterCLTE", out var value) && value;
+
     private const int MinAllocBufferSize = 2048;
 
     protected readonly NativeSafeHandle _requestNativeHandle;
@@ -42,6 +44,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private int _statusCode;
     private string? _reasonPhrase;
+
     // Used to synchronize callback registration and native method calls
     internal readonly object _contextLock = new object();
 
@@ -387,24 +390,36 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         string transferEncoding = RequestHeaders.TransferEncoding.ToString();
         if (IsChunked(transferEncoding))
         {
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
             // A sender MUST NOT send a Content-Length header field in any message
             // that contains a Transfer-Encoding header field.
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
             // If a message is received with both a Transfer-Encoding and a
             // Content-Length header field, the Transfer-Encoding overrides the
-            // Content-Length.  Such a message might indicate an attempt to
-            // perform request smuggling (Section 9.5) or response splitting
-            // (Section 9.4) and ought to be handled as an error.  A sender MUST
-            // remove the received Content-Length field prior to forwarding such
-            // a message downstream.
+            // Content-Length. Such a message might indicate an attempt to
+            // perform request smuggling (Section 11.2) or response splitting
+            // (Section 11.1) and ought to be handled as an error. An intermediary
+            // that chooses to forward the message MUST first remove the received
+            // Content-Length field and process the Transfer-Encoding
+            // (as described below) prior to forwarding the message downstream.
             // We should remove the Content-Length request header in this case, for compatibility
             // reasons, include X-Content-Length so that the original Content-Length is still available.
-            if (RequestHeaders.ContentLength.HasValue)
+            if (RequestHeaders.TryGetValue(HeaderNames.ContentLength, out var contentLength))
             {
                 // if user already passed X-Content-Length, we won't overwrite it
-                _ = RequestHeaders.TryAdd("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
+                _ = RequestHeaders.TryAdd("X-Content-Length", contentLength);
                 RequestHeaders.ContentLength = null;
+
+                if (!AllowKeepAliveAfterCLTE)
+                {
+                    // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+                    // A server MAY reject a request that contains both Content-Length
+                    // and Transfer-Encoding or process such a request in accordance
+                    // with the Transfer-Encoding alone. Regardless, the server MUST
+                    // close the connection after responding to such a request to
+                    // avoid the potential attacks.
+                    NativeMethods.HttpSetClose(_requestNativeHandle);
+                }
             }
             return true;
         }
