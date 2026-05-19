@@ -1,9 +1,2 @@
 #nullable enable
-Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestPropertyResult
-Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestPropertyResult.BytesReturned.get -> int
-Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestPropertyResult.BytesReturned.init -> void
-Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestPropertyResult.HttpSysRequestPropertyResult() -> void
-Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestPropertyResult.Succeeded.get -> bool
-Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestPropertyResult.Succeeded.init -> void
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature.TryGetRequestProperty(int propertyId, System.ReadOnlySpan<byte> qualifier, System.Span<byte> output, out int bytesReturned) -> bool
-Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature.TryGetRequestPropertyAsync(int propertyId, System.ReadOnlySpan<byte> qualifier, System.Memory<byte> output, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Server.HttpSys.HttpSysRequestPropertyResult>

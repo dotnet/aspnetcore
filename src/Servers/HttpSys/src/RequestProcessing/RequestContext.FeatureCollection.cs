@@ -770,15 +770,6 @@ internal partial class RequestContext :
         return TryGetRequestPropertyCore((HTTP_REQUEST_PROPERTY)propertyId, qualifier, output, out bytesReturned);
     }
 
-    public ValueTask<HttpSysRequestPropertyResult> TryGetRequestPropertyAsync(
-        int propertyId,
-        ReadOnlySpan<byte> qualifier,
-        Memory<byte> output,
-        CancellationToken cancellationToken)
-    {
-        return TryGetRequestPropertyCoreAsync((HTTP_REQUEST_PROPERTY)propertyId, qualifier, output, cancellationToken);
-    }
-
     EndPoint? IConnectionEndPointFeature.LocalEndPoint
     {
         get
