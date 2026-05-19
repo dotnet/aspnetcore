@@ -26,7 +26,7 @@
 <form @onsubmit="SetEmailWithRedirect" @formname="set-email-redirect" method="post">
     <AntiforgeryToken />
     <input id="input-email-redirect" @bind="EmailInput" name="EmailInput" />
-    <button type="submit" id="set-email-redirect">Set Email</button>
+    <button type="submit" id="set-email-redirect">Set Email And Redirect</button>
 </form>
 
 <form @onsubmit="SetTestClassObject" @formname="set-testclass-object" method="post">

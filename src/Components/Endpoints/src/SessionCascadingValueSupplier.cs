@@ -18,6 +18,7 @@ internal partial class SessionCascadingValueSupplier
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
+    private bool _onStartingRegistered;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
@@ -29,7 +30,6 @@ internal partial class SessionCascadingValueSupplier
     internal void SetRequestContext(HttpContext httpContext)
     {
         _httpContext = httpContext;
-        _httpContext.Response.OnStarting(PersistAllValues);
     }
 
     internal CascadingParameterSubscription CreateSubscription(
@@ -37,6 +37,12 @@ internal partial class SessionCascadingValueSupplier
         SupplyParameterFromSessionAttribute attribute,
         CascadingParameterInfo parameterInfo)
     {
+        if (!_onStartingRegistered && _httpContext is not null)
+        {
+            _onStartingRegistered = true;
+            _httpContext.Response.OnStarting(PersistAllValues);
+        }
+
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
         var componentType = componentState.Component.GetType();
         var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
