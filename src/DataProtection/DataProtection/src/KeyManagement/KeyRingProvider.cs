@@ -364,9 +364,7 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                 // (without disturbing existingCacheableKeyRing, which controls the stale-ring
                 // early-return below and must stay null for forceRefresh callers) so we can
                 // tell a true cold start from a stale-cache refresh.
-                var cachedSnapshot = existingCacheableKeyRing ?? Volatile.Read(ref _cacheableKeyRing);
-
-                if (cachedSnapshot is null)
+                if (existingCacheableKeyRing is null && Volatile.Read(ref _cacheableKeyRing) is null)
                 {
                     // Cold start: run the refresh inline on this thread. Scheduling the work
                     // onto TaskScheduler.Default would risk thread-pool starvation - if all
@@ -375,10 +373,11 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                     // injects more threads. See https://github.com/dotnet/aspnetcore/issues/66380.
                     //
                     // Other concurrent callers are parked on _cacheableKeyRingLockObj while we
-                    // run; once we publish _cacheableKeyRing and release the lock, they wake up,
-                    // re-check the cache (or read it via the forceRefresh fallback below), and
-                    // return the freshly populated ring.
-                    // This matches the pre-$54675 behavior (https://github.com/dotnet/aspnetcore/pull/54675).
+                    // run; once we publish _cacheableKeyRing and release the lock, they wake up.
+                    // Non-force-refresh callers can then re-check the cache and return the
+                    // freshly populated ring, while forceRefresh callers observe that a cached
+                    // ring now exists and continue through the stale-cache refresh path below.
+                    // This matches the pre-#54675 behavior (https://github.com/dotnet/aspnetcore/pull/54675).
                     CacheableKeyRing newCacheableKeyRing;
                     try
                     {
@@ -386,6 +385,10 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
                     }
                     catch (Exception ex)
                     {
+                        // Cold-start branch: always a "reading" rather than "refreshing" failure, and
+                        // there's no stale ring to extend via WithTemporaryExtendedLifetime.
+                        // The async refresh path handles both concerns. We leave _cacheableKeyRing
+                        // and _cacheableKeyRingTask null, so the next caller retries from scratch.
                         _logger.ErrorOccurredWhileReadingKeyRing(ex);
                         throw;
                     }
@@ -425,9 +428,8 @@ internal sealed class KeyRingProvider : ICacheableKeyRingProvider, IKeyRingProvi
         }
 
         // Prefer a stale cached key ring to blocking
-        if (existingCacheableKeyRing is not null)
+        if (!forceRefresh && existingCacheableKeyRing is not null)
         {
-            Debug.Assert(!forceRefresh, "Consumed cached key ring even though forceRefresh is true");
             Debug.Assert(!CacheableKeyRing.IsValid(existingCacheableKeyRing, utcNow), "Should have returned a valid cached key ring above");
             return existingCacheableKeyRing.KeyRing;
         }
