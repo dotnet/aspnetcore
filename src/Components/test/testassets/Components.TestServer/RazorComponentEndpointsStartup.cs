@@ -209,8 +209,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         app.UseRequestLocalization(new RequestLocalizationOptions
         {
             DefaultRequestCulture = new RequestCulture("en-US"),
-            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
-            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("fr"), new CultureInfo("de")],
+            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
+            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
         });
 
         app.Use((ctx, nxt) =>
