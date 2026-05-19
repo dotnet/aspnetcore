@@ -218,7 +218,9 @@ export function loadWebAssemblyPlatformIfNotStarted(serverOptions: WebAssemblySe
       }
     };
     await monoPlatform.load(finalOptions, resolveBootConfigPromise, justDownload);
-    loadedWebAssemblyPlatform = true;
+    if (!justDownload) {
+      loadedWebAssemblyPlatform = true;
+    }
   })();
   return platformLoadPromise;
 }

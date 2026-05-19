@@ -142,15 +142,16 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     const justDownload = isAuto && !areAnyWebAssemblyResourcesLikelyCached();
 
     const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions, justDownload);
+    if (justDownload) {
+      // Since WebAssembly resources aren't cached
+      // we fall back to Blazor Server immediately
+      this.onWebAssemblyFailedToLoadQuickly();
+    }
     const bootConfig = await waitForBootConfigLoaded();
 
-    if (!areWebAssemblyResourcesLikelyCached(bootConfig)) {
-      // Since WebAssembly resources aren't likely cached,
-      // they will probably need to be fetched over the network.
-      // Therefore, we can guess that Blazor WebAssembly won't
-      // load quickly, so we fall back to Blazor Server immediately,
-      // allowing "auto" components to become interactive sooner than if
-      // we were to wait for the timeout.
+    if (!justDownload && !areWebAssemblyResourcesLikelyCached(bootConfig)) {
+      // Since correct version of resources aren't cached
+      // we fall back to Blazor Server immediately
       this.onWebAssemblyFailedToLoadQuickly();
     }
 

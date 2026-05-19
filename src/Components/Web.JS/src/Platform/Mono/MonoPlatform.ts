@@ -10,7 +10,7 @@ import { showErrorNotification } from '../../BootErrors';
 import { Platform, System_Array, Pointer, System_Object, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, MonoConfig, ModuleAPI, RuntimeAPI, GlobalizationMode } from '@microsoft/dotnet-runtime';
+import { DotnetModuleConfig, MonoConfig, ModuleAPI, RuntimeAPI, GlobalizationMode, dotnet } from '@microsoft/dotnet-runtime';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
 import { JSInitializer } from '../../JSInitializers/JSInitializers';
 
@@ -30,7 +30,6 @@ export function getInitializer() {
 
 export const monoPlatform: Platform = {
   load: function load(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void, justDownload?: boolean): Promise<void> {
-    options.configureRuntime
     return createRuntimeInstance(options, onConfigLoaded, justDownload);
   },
 
@@ -213,7 +212,10 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
 
 async function configureRuntimeInstance(): Promise<PlatformApi> {
   if (!runtime) {
-    throw new Error('The runtime must be loaded it gets configured.');
+    runtime = await dotnet.create();
+  }
+  if (!runtime) {
+    throw new Error('The runtime must be loaded before it gets configured.');
   }
 
   const { setModuleImports, INTERNAL: mono_internal, getConfig, invokeLibraryInitializers } = runtime;
