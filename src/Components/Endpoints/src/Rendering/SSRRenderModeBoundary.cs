@@ -5,11 +5,13 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -28,8 +30,10 @@ internal class SSRRenderModeBoundary : IComponent
     private readonly bool _prerender;
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
+    private Dictionary<string, RenderFragmentCapture>? _topLevelCaptures;
     private ComponentMarkerKey? _markerKey;
     private readonly HttpContext _httpContext;
+    private ILogger? _renderFragmentSerializationLogger;
 
     public IComponentRenderMode RenderMode { get; }
 
@@ -112,6 +116,24 @@ internal class SSRRenderModeBoundary : IComponent
 
         ValidateParameters(_latestParameters);
 
+        if (_prerender)
+        {
+            // Replace each top-level RenderFragment parameter with a capture wrapper
+            // so that when the component invokes the fragment during prerendering,
+            // the output frames are captured for later serialization.
+            var parametersDict = (Dictionary<string, object?>)_latestParameters;
+            foreach (var name in parametersDict.Keys.ToArray())
+            {
+                if (parametersDict[name] is RenderFragment rf)
+                {
+                    var capture = new RenderFragmentCapture(rf);
+                    _topLevelCaptures ??= new();
+                    _topLevelCaptures[name] = capture;
+                    parametersDict[name] = (RenderFragment)capture.Invoke;
+                }
+            }
+        }
+
         if (RenderMode is InteractiveWebAssemblyRenderMode)
         {
             // Preload WebAssembly assets when using WebAssembly (not Auto) mode
@@ -154,13 +176,10 @@ internal class SSRRenderModeBoundary : IComponent
                 {
                     throw new InvalidOperationException($"Cannot pass RenderFragment<T> parameter '{name}' to component '{_componentType.Name}' with rendermode '{RenderMode.GetType().Name}'. Templated content can't be passed across a rendermode boundary, because it is arbitrary code and cannot be serialized.");
                 }
-                else
+                else if (value is not RenderFragment)
                 {
-                    // TODO: Ideally we *should* support RenderFragment (the non-generic version) by prerendering it
-                    // However it's very nontrivial since it means we have to execute it within the current renderer
-                    // somehow without actually emitting its result directly, wait for quiescence, and then prerender
-                    // the output into a separate buffer so we can serialize it in a special way.
-                    // A prototype implementation is at https://github.com/dotnet/aspnetcore/commit/ed330ff5b143974d9060828a760ad486b1d386ac
+                    // Non-RenderFragment delegates (event handlers, etc.) can't cross render mode boundaries.
+                    // RenderFragment is allowed and will be serialized in ToMarker().
                     throw new InvalidOperationException($"Cannot pass the parameter '{name}' to component '{_componentType.Name}' with rendermode '{RenderMode.GetType().Name}'. This is because the parameter is of the delegate type '{value.GetType()}', which is arbitrary code and cannot be serialized.");
                 }
             }
@@ -185,9 +204,14 @@ internal class SSRRenderModeBoundary : IComponent
         // so we lazily compute the marker key once.
         _markerKey ??= GenerateMarkerKey(sequence, componentKey);
 
-        var parameters = _latestParameters is null
+        // Build a serialization-safe copy of parameters, replacing RenderFragment delegates with DTOs
+        _renderFragmentSerializationLogger ??= httpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger(typeof(RenderFragmentSerializer));
+
+        var serializableParameters = _latestParameters is null
             ? ParameterView.Empty
-            : ParameterView.FromDictionary((IDictionary<string, object?>)_latestParameters);
+            : BuildSerializableParameterView(_latestParameters, _renderFragmentSerializationLogger);
 
         var marker = RenderMode switch
         {
@@ -204,15 +228,46 @@ internal class SSRRenderModeBoundary : IComponent
             var serverComponentSerializer = httpContext.RequestServices.GetRequiredService<ServerComponentSerializer>();
 
             var invocationId = EndpointHtmlRenderer.GetOrCreateInvocationId(httpContext);
-            serverComponentSerializer.SerializeInvocation(ref marker, invocationId, _componentType, parameters);
+            serverComponentSerializer.SerializeInvocation(ref marker, invocationId, _componentType, serializableParameters);
         }
 
         if (RenderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode)
         {
-            WebAssemblyComponentSerializer.SerializeInvocation(ref marker, _componentType, parameters);
+            WebAssemblyComponentSerializer.SerializeInvocation(ref marker, _componentType, serializableParameters);
         }
 
         return marker;
+    }
+
+    private ParameterView BuildSerializableParameterView(
+        IReadOnlyDictionary<string, object?> latestParameters,
+        ILogger logger)
+    {
+        var dict = new Dictionary<string, object?>(latestParameters.Count);
+        foreach (var (name, value) in latestParameters)
+        {
+            if (value is RenderFragment)
+            {
+                if (_topLevelCaptures is null || !_topLevelCaptures.TryGetValue(name, out var capture))
+                {
+                    // If we didn't wrap the RenderFragment in a capture, it means prerendering is disabled.
+                    // If the capture is null, then fragment was conditionally rendered and didn't execute. In either case we can't serialize it.
+                    throw new InvalidOperationException(
+                        $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}', because the RenderFragment was not executed. It can be due to disabled prerendering or conditional rendering.");
+                }
+
+                dict[name] = new SerializedRenderFragment
+                {
+                    Nodes = RenderFragmentSerializer.SerializeFrames(capture, logger, _componentType.Name)
+                };
+            }
+            else
+            {
+                dict[name] = value;
+            }
+        }
+
+        return ParameterView.FromDictionary(dict);
     }
 
     private ComponentMarkerKey GenerateMarkerKey(int sequence, object? componentKey)
