@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var statusCanHaveBody = CanSendResponseBody(RequestContext.Response.StatusCode);
 
             // Determine if the connection will be kept alive or closed.
-            var keepConnectionAlive = true;
+            var keepConnectionAlive = Request.KeepAlive;
             if (requestVersion <= Constants.V1_0 // Http.Sys does not support "Keep-Alive: true" or "Connection: Keep-Alive"
                 || (requestVersion == Constants.V1_1 && requestCloseSet)
                 || responseCloseSet)

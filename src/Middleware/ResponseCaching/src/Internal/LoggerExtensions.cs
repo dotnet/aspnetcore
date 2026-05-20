@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private static Action<ILogger, Exception> _logResponseNotCached;
         private static Action<ILogger, Exception> _logResponseContentLengthMismatchNotCached;
         private static Action<ILogger, TimeSpan, TimeSpan, Exception> _logExpirationInfiniteMaxStaleSatisfied;
+        private static Action<ILogger, Exception> _logRequestContainsInvalidCacheSymbols;
 
         static LoggerExtensions()
         {
@@ -160,6 +161,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 logLevel: LogLevel.Debug,
                 eventId: 29,
                 formatString: "The age of the entry is {Age} and has exceeded the maximum age of {MaxAge} specified by the 'max-age' cache directive. However, the 'max-stale' cache directive was specified without an assigned value and a stale response of any age is accepted.");
+            _logRequestContainsInvalidCacheSymbols = LoggerMessage.Define(
+                logLevel: LogLevel.Debug,
+                eventId: 30,
+                formatString: "The request contains cache key delimiter characters and will not be cached.");
         }
 
         internal static void LogRequestMethodNotCacheable(this ILogger logger, string method)
@@ -305,6 +310,11 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         internal static void LogExpirationInfiniteMaxStaleSatisfied(this ILogger logger, TimeSpan age, TimeSpan maxAge)
         {
             _logExpirationInfiniteMaxStaleSatisfied(logger, age, maxAge, null);
+        }
+
+        internal static void LogRequestContainsInvalidCacheSymbols(this ILogger logger)
+        {
+            _logRequestContainsInvalidCacheSymbols(logger, null);
         }
     }
 }

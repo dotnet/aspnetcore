@@ -865,6 +865,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
         }
 
+        [Fact]
+        public void ContentLengthShouldBeRemovedWhenBothTransferEncodingAndContentLengthRequestHeadersExist()
+        {
+            // Arrange
+            string contentLength = "1024";
+            _http1Connection.RequestHeaders.Add(HeaderNames.ContentLength, contentLength);
+            _http1Connection.RequestHeaders.Add(HeaderNames.TransferEncoding, "chunked");
+
+            // Act
+            Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
+
+            // Assert
+            Assert.True(_http1Connection.RequestHeaders.ContainsKey("X-Content-Length"));
+            Assert.Equal(contentLength, _http1Connection.RequestHeaders["X-Content-Length"]);
+            Assert.True(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.TransferEncoding));
+            Assert.Equal("chunked", _http1Connection.RequestHeaders[HeaderNames.TransferEncoding]);
+            Assert.False(_http1Connection.RequestHeaders.ContainsKey(HeaderNames.ContentLength));
+        }
+
         private static async Task WaitForCondition(TimeSpan timeout, Func<bool> condition)
         {
             const int MaxWaitLoop = 150;

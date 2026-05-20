@@ -50,6 +50,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
 
             var request = context.HttpContext.Request;
+
+            ThrowIfContainsDelimiters(request.PathBase.Value);
+            ThrowIfContainsDelimiters(request.Path.Value);
+
             var builder = _builderPool.Get();
 
             try
@@ -129,6 +133,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
                         for (var j = 0; j < headerValuesArray.Length; j++)
                         {
+                            ThrowIfContainsDelimiters(headerValuesArray[j]);
                             builder.Append(headerValuesArray[j]);
                         }
                     }
@@ -150,6 +155,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
                         for (var i = 0; i < queryArray.Length; i++)
                         {
+                            ThrowIfContainsDelimiters(queryArray[i].Key);
+
                             builder.Append(KeyDelimiter)
                                 .AppendUpperInvariant(queryArray[i].Key)
                                 .Append("=");
@@ -164,6 +171,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                                     builder.Append(KeySubDelimiter);
                                 }
 
+                                ThrowIfContainsDelimiters(queryValueArray[j]);
                                 builder.Append(queryValueArray[j]);
                             }
                         }
@@ -188,6 +196,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                                     builder.Append(KeySubDelimiter);
                                 }
 
+                                ThrowIfContainsDelimiters(queryValueArray[j]);
                                 builder.Append(queryValueArray[j]);
                             }
                         }
@@ -199,6 +208,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             finally
             {
                 _builderPool.Return(builder);
+            }
+        }
+
+        internal static void ThrowIfContainsDelimiters(string value)
+        {
+            if (!string.IsNullOrEmpty(value) && (value.IndexOf(KeyDelimiter) >= 0 || value.IndexOf(KeySubDelimiter) >= 0))
+            {
+                throw new CacheKeyDelimiterException();
             }
         }
 

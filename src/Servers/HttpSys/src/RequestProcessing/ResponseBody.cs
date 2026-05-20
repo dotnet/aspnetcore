@@ -429,6 +429,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
 
+            if (!_requestContext.Request.KeepAlive)
+            {
+                flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+            }
+
             if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
             {
                 flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
@@ -582,7 +587,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             // Make sure all validation is performed before this computes the headers
             var flags = ComputeLeftToWrite(count.Value);
-            uint statusCode;
+            uint statusCode = 0;
             uint bytesSent = 0;
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
             var asyncResult = new ResponseStreamAsyncResult(this, fileStream, offset, count.Value, chunked, cancellationToken);
