@@ -62,11 +62,6 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference);
     }
 
-    public ValueTask ScrollToItemEstimateAsync(int target, float avgItemHeight)
-    {
-        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.scrollToItemEstimate", _selfReference, target, avgItemHeight);
-    }
-
     public ValueTask AlignToItemAsync(int localIndex)
     {
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.alignToItem", _selfReference, localIndex);

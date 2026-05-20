@@ -10,7 +10,6 @@ export const Virtualize = {
   refreshObservers,
   setAnchorMode,
   restoreAnchor,
-  scrollToItemEstimate,
   alignToItem,
 };
 
@@ -440,20 +439,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return el.getBoundingClientRect().top - containerTop;
   }
 
-  // ScrollToItem: Stage 1 (estimated jump) — scrolls to target * avgItemHeight (clamped to scroll range).
-  // Forces instant behavior to bypass any user-set CSS scroll-behavior: smooth (Q12).
-  function scrollToItemEstimate(target: number, avgItemHeight: number): void {
-    if (avgItemHeight <= 0 || !Number.isFinite(avgItemHeight)) {
-      return;
-    }
-    const maxScroll = Math.max(0, scrollElement.scrollHeight - scrollElement.clientHeight);
-    const top = Math.max(0, Math.min(maxScroll, target * avgItemHeight));
-    ignoreAnchorScroll = true;
-    scrollElement.scrollTo({ top, behavior: 'instant' });
-  }
-
-  // ScrollToItem: Stage 2 — measure the target's viewport-relative top via the shared
-  // sibling-walk helper and align it to containerTop.
+  // Measures the target's viewport-relative top and aligns it to containerTop.
   function alignToItemAt(localIndex: number): void {
     const delta = measureLocalChildOffset(localIndex);
     if (Number.isNaN(delta)) {
@@ -484,7 +470,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     setConvergingToBottom: () => { convergingToBottom = true; },
     setAnchorMode: (mode: number) => { anchorMode = mode; },
     restoreAnchor: restoreAnchorForShift,
-    scrollToItemEstimate,
     alignToItem: alignToItemAt,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
@@ -707,12 +692,6 @@ function restoreAnchor(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
   entry?.restoreAnchor?.();
-}
-
-function scrollToItemEstimate(dotNetHelper: DotNet.DotNetObject, target: number, avgItemHeight: number): void {
-  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
-  const entry = observersByDotNetObjectId[id];
-  entry?.scrollToItemEstimate?.(target, avgItemHeight);
 }
 
 function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): void {
