@@ -117,6 +117,7 @@ After attempting the fix, choose **exactly one** action per issue:
 | Condition | Action |
 |---|---|
 | Issue appears **already fixed** (your new test passes without production changes) | Open a PR containing **only the new test** |
+| Issue is a question and not a bug or feature request | Post a concise comment with the answer, referencing documentation if possible. Prefer a concrete answer over leaving only documentation link. |
 | Fix is **small and mechanical** (scoped change, few files touched) | Open a PR with **production fix + test** |
 | Fix is possible but is a **large or architectural change** | Post a **short design-proposal comment** (high-level overview of the idea, keep it concise) |
 | You are **not confident** in any fix | Post a **very short comment** saying you were unable to produce a fix |
