@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Tests;
 
 public class DefaultCrossOriginProtectionTests
 {
-    private readonly DefaultCrossOriginProtection _validator = new();
+    private readonly DefaultCsrfProtection _validator = new();
 
     private static HttpContext CreateContext(
         string method = "POST",

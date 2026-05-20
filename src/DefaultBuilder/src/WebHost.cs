@@ -277,7 +277,7 @@ public static class WebHost
             services.AddTransient<IConfigureOptions<ForwardedHeadersOptions>, ForwardedHeadersOptionsSetup>();
 
             // Cross-origin CSRF protection (Sec-Fetch-* / Origin header validation).
-            services.TryAddSingleton<ICsrfProtection, DefaultCrossOriginProtection>();
+            services.TryAddSingleton<ICsrfProtection, DefaultCsrfProtection>();
 
             // Provide a way for the default host builder to configure routing. This probably means calling AddRouting.
             // A lambda is used here because we don't want to reference AddRouting directly because of trimming.

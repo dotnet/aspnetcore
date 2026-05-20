@@ -47,7 +47,8 @@ internal sealed partial class CsrfProtectionMiddleware
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Debug,
-        Message = "Cross-origin CSRF protection denied request {Method} {Path} from origin '{Origin}'.")]
+        Message = "Cross-origin CSRF protection denied request {Method} {Path} from origin '{Origin}'.",
+        EventName = "CsrfRequestDenied")]
     private static partial void RequestDenied(ILogger logger, string method, PathString path, string origin);
 }
 

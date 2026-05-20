@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Antiforgery;
 
-internal sealed class DefaultCrossOriginProtection : ICsrfProtection
+internal sealed class DefaultCsrfProtection : ICsrfProtection
 {
     // Safe HTTP methods that do not require cross-origin validation (RFC 7231).
     private static readonly HashSet<string> SafeMethods = new(StringComparer.OrdinalIgnoreCase)
