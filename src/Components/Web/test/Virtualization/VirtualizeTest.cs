@@ -981,7 +981,8 @@ public class VirtualizeTest
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(-5); });
-        Assert.NotNull(task);
+        await task;
+        Assert.True(task.IsCompletedSuccessfully);
     }
 
     [Fact]
@@ -996,7 +997,8 @@ public class VirtualizeTest
         Task task = null;
         await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(99_999); });
 
-        Assert.NotNull(task);
+        await task;
+        Assert.True(task.IsCompletedSuccessfully);
     }
 
     [Fact]

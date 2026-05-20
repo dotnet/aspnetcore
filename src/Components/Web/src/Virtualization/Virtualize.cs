@@ -232,7 +232,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// <remarks>
     /// Each call cancels any previously-running <see cref="ScrollToIndexAsync(int, CancellationToken)"/> (last call wins).
     /// Must be called on the renderer's synchronization context; background-thread callers should wrap with
-    /// <see cref="ComponentBase.InvokeAsync(System.Action)"/>.
+    /// <see cref="ComponentBase.InvokeAsync(Func{Task})"/> to await completion.
     /// </remarks>
     /// <param name="itemIndex">The zero-based index of the item to scroll to.</param>
     /// <param name="cancellationToken">A token that lets the caller request cancellation.</param>
@@ -265,7 +265,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             token.ThrowIfCancellationRequested();
             var refetchRequired = MoveWindowToContain(itemIndex);
             await EnsureRenderCommittedAsync(refetchRequired, token);
-            await AlignToTargetAsync(itemIndex);
+            await AlignToTargetAsync(itemIndex, token);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -331,7 +331,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         token.ThrowIfCancellationRequested();
     }
 
-    private async ValueTask AlignToTargetAsync(int itemIndex)
+    private async ValueTask AlignToTargetAsync(int itemIndex, CancellationToken token)
     {
         // Re-clamp in case _itemCount shifted during the fetch.
         var localIndex = ClampToItemRange(itemIndex) - _itemsBefore;
@@ -344,7 +344,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // Pixel-exact one-shot scroll: JS reads getBoundingClientRect() and sets scrollTop.
         if (_jsInterop is not null)
         {
-            await _jsInterop.AlignToItemAsync(localIndex);
+            await _jsInterop.AlignToItemAsync(localIndex, token);
         }
     }
 

@@ -62,9 +62,9 @@ internal sealed class VirtualizeJsInterop : IAsyncDisposable
         return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.restoreAnchor", _selfReference);
     }
 
-    public ValueTask AlignToItemAsync(int localIndex)
+    public ValueTask AlignToItemAsync(int localIndex, CancellationToken cancellationToken = default)
     {
-        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.alignToItem", _selfReference, localIndex);
+        return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.alignToItem", cancellationToken, _selfReference, localIndex);
     }
 
     public async ValueTask DisposeAsync()
