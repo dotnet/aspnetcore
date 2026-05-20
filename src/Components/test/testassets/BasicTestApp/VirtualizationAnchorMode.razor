@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@initialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialIndex="@initialIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -38,7 +38,7 @@
         }
         else
         {
-            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialIndex="@initialIndex" Context="item">
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
@@ -60,10 +60,12 @@
     </label>
     <button id="reload-with-initial-index" @onclick="ReloadWithInitialIndex">Load list with Initial Index</button>
     <button id="unload-list" @onclick="UnloadList">Unload list</button>
+    <span id="manual-initial-index-bound" data-value="@manualInitialIndex" style="margin-left: 8px; color:#888;">bound:@manualInitialIndex</span>
 </div>
 
 <div style="margin-top: 6px;">
     <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
+    <span id="scroll-target-index-bound" data-value="@scrollTargetIndex" style="margin-left: 8px; color:#888;">bound:@scrollTargetIndex</span>
     <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
     <button id="scroll-to-item-rapid" @onclick="ScrollRapid">Scroll Rapid (final=250)</button>
     <button id="scroll-to-item-cancellable" @onclick="ScrollCancellable">Scroll Cancellable</button>
@@ -104,7 +106,7 @@
     private bool useItemsProvider = false;
     private bool useProviderDelay = false;
     private Virtualize<DynamicItem> virtualizeRef;
-    private int? initialItemIndex;
+    private int? initialIndex;
     private int? manualInitialIndex;
     private bool listLoaded = true;
     private int scrollTargetIndex = 200;
@@ -356,7 +358,7 @@
         listLoaded = false;
         StateHasChanged();
         await Task.Yield();
-        initialItemIndex = manualInitialIndex;
+        initialIndex = manualInitialIndex;
         listLoaded = true;
     }
 

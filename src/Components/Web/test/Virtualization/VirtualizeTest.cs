@@ -972,7 +972,7 @@ public class VirtualizeTest
         var ex = Assert.Throws<InvalidOperationException>(
             (Action)(() => { _ = virtualize.ScrollToIndexAsync(0); }));
         Assert.Contains(nameof(Virtualize<int>.ScrollToIndexAsync), ex.Message);
-        Assert.Contains(nameof(Virtualize<int>.InitialItemIndex), ex.Message);
+        Assert.Contains(nameof(Virtualize<int>.InitialIndex), ex.Message);
     }
 
     [Fact]
@@ -1039,7 +1039,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task InitialItemIndex_ParameterRoundTrip()
+    public async Task InitialIndex_ParameterRoundTrip()
     {
         Virtualize<int> renderedVirtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
@@ -1049,7 +1049,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 100).ToList());
-                builder.AddComponentParameter(3, "InitialItemIndex", (int?)42);
+                builder.AddComponentParameter(3, "InitialIndex", (int?)42);
                 builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b =>
                 {
                     b.OpenElement(0, "span");
@@ -1070,11 +1070,11 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
 
         Assert.NotNull(renderedVirtualize);
-        Assert.Equal(42, renderedVirtualize.InitialItemIndex);
+        Assert.Equal(42, renderedVirtualize.InitialIndex);
     }
 
     [Fact]
-    public async Task InitialItemIndex_NullMeansNoInitialScroll()
+    public async Task InitialIndex_NullMeansNoInitialScroll()
     {
         Virtualize<int> renderedVirtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
@@ -1092,7 +1092,7 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
 
         Assert.NotNull(renderedVirtualize);
-        Assert.Null(renderedVirtualize.InitialItemIndex);
+        Assert.Null(renderedVirtualize.InitialIndex);
         // No initial-scroll request was issued; component opens at item 0.
         Assert.Equal(0, renderedVirtualize._itemsBefore);
     }

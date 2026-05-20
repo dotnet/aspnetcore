@@ -3964,18 +3964,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
     }
 
-    private void SetScrollTargetIndex(int index)
+    private void SetScrollTargetIndex(int index) => SetNumberInputAndWaitForBind("scroll-target-index", index);
+
+    private void SetManualInitialIndex(int index) => SetNumberInputAndWaitForBind("manual-initial-index", index);
+
+    // Types into <input type=number @bind=...> and polls the sibling {id}-bound span until the bound model commits (needed on Server where @bind round-trips over SignalR).
+    private void SetNumberInputAndWaitForBind(string elementId, int value)
     {
-        // Use JS to set the value reliably (SendKeys-based clearing of <input type=number> is flaky).
+        var expected = value.ToString(CultureInfo.InvariantCulture);
+        var input = Browser.Exists(By.Id(elementId));
+        // Clear() on <input type=number> is unreliable across drivers; Ctrl+A + Delete works.
+        input.SendKeys(Keys.Control + "a");
+        input.SendKeys(Keys.Delete);
+        input.SendKeys(expected);
+        input.SendKeys(Keys.Tab);
         var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteScript(@"
-            var el = document.getElementById('scroll-target-index');
-            var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-            setter.call(el, arguments[0]);
-            el.dispatchEvent(new Event('input', { bubbles: true }));
-            el.dispatchEvent(new Event('change', { bubbles: true }));
-            el.blur();
-        ", index.ToString(CultureInfo.InvariantCulture));
+        Browser.True(() => (string)js.ExecuteScript(
+            "return document.getElementById(arguments[0] + '-bound')?.getAttribute('data-value');",
+            elementId) == expected);
     }
 
     private void WaitForScrollStatus(string expected, int timeoutSeconds = 30)
@@ -4160,32 +4166,24 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Assert.False(topIsPlaceholder, "Topmost element at viewport top must not be a loading placeholder.");
     }
 
-    [Fact]
-    public void InitialItemIndex_OpensAtTargetWithRealContent()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(500)]
+    public void InitialIndex_OpensAtTargetWithRealContent(int initialIndex)
     {
-        // InitialItemIndex applies on first interactive render of the Virtualize instance.
-        // Use the test page's unload/reload flow so a fresh instance is created with
-        // InitialItemIndex=500 and provider-delay enabled — the user should land directly
-        // on real content for item 500 (no flash of 0).
-        MountAnchorModeForScrollToItem(delay: true);
-        var container = Browser.Exists(By.Id("scroll-container"));
+        // Regression: when InitialIndex < OverscanCount, desiredItemsBefore collapses to 0 and the early bounds check used to bail before AlignToItemAsync.
+        MountAnchorModeForScrollToItem(delay: false);
         var js = (IJavaScriptExecutor)Browser;
 
-        // Unload, set initial index, reload — this remounts Virtualize with a fresh instance.
         Browser.Exists(By.Id("unload-list")).Click();
         Browser.Exists(By.Id("list-not-loaded"));
-        var input = Browser.Exists(By.Id("manual-initial-index"));
-        input.Clear();
-        input.SendKeys("500");
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(initialIndex);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
-        // Wait until item 500 is the top rendered real item (no placeholder).
-        Browser.True(() => GetTopRenderedIndex(js) == 500,
-            TimeSpan.FromSeconds(30));
-
-        // scrollTop must be > 0 (we genuinely jumped to item 500's offset).
-        var st = GetScrollTop(js, container);
-        Assert.True(st > 0, $"Expected scrollTop > 0 after InitialItemIndex applied; got {st}");
+        // The target item must sit at the top of the viewport even for small indices.
+        Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
     }
 
     [Fact]

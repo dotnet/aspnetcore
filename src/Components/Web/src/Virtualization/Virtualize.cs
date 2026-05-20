@@ -55,15 +55,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private CancellationTokenSource? _currentScrollCts;
 
-    private TaskCompletionSource? _scrollCompletion;
-
-    private int? _activeScrollTarget;
-
-    private int _scrollIterationCount;
+    private TaskCompletionSource? _nextRenderTcs;
 
     private bool _initialScrollApplied;
-
-    private const int MaxScrollToItemRetries = 10;
 
     private bool _skipNextDistributionRefresh;
 
@@ -215,7 +209,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// "no initial scroll" — the component opens at item 0 as today.
     /// </summary>
     [Parameter]
-    public int? InitialItemIndex { get; set; }
+    public int? InitialIndex { get; set; }
 
     private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
 
@@ -263,138 +257,94 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         if (_jsInterop is null)
         {
-            // Pre-interactive call: piggyback on the JS-interop guard. Throw a clear message.
+            // Throw synchronously so misuse is reported on the call site, not on the Task.
             throw new InvalidOperationException(
-                $"{nameof(ScrollToIndexAsync)} cannot be called before the {GetType().Name} has been initialized for interactive rendering. " +
-                $"Use the {nameof(InitialItemIndex)} parameter to set the initial scroll position.");
+                $"{nameof(ScrollToIndexAsync)} cannot be called before the {nameof(Virtualize<TItem>)} has been initialized for interactive rendering. " +
+                $"Use the {nameof(InitialIndex)} parameter to set the initial scroll position.");
         }
 
-        // Cancel-and-switch (Q4): swap in a new linked CTS atomically so a concurrent caller
-        // can never observe a half-replaced state.
-        var newCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var oldCts = Interlocked.Exchange(ref _currentScrollCts, newCts);
-        oldCts?.Cancel();
-        oldCts?.Dispose();
-
-        var oldTcs = _scrollCompletion;
-        var newTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        _scrollCompletion = newTcs;
-        oldTcs?.TrySetCanceled(CancellationToken.None);
-
-        var token = newCts.Token;
-
-        // Already cancelled (e.g., the caller's external token was already cancelled).
-        if (token.IsCancellationRequested)
-        {
-            newTcs.TrySetCanceled(token);
-            return newTcs.Task;
-        }
-
-        _ = StartScrollToIndexAsync(itemIndex, newTcs, newCts, token);
-        return newTcs.Task;
+        return ScrollToIndexAsyncCore(itemIndex, cancellationToken);
     }
 
-    private async Task StartScrollToIndexAsync(
-        int itemIndex,
-        TaskCompletionSource tcs,
-        CancellationTokenSource ownedCts,
-        CancellationToken token)
+    private async Task ScrollToIndexAsyncCore(int itemIndex, CancellationToken cancellationToken)
     {
+        // Cancel-and-switch (last call wins); finally block guards cleanup by ref-equality.
+        _currentScrollCts?.Cancel();
+
+        var ourCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        _currentScrollCts = ourCts;
+        var token = ourCts.Token;
+
         try
         {
-            // Q3: silent clamp. For ItemsProvider with unknown count yet, defer until count is known.
+            token.ThrowIfCancellationRequested();
+
+            // Compute the target window. Use a sensible capacity even before the first measurement.
             var clamped = ClampToItemRange(itemIndex);
-
-            // Reset iteration counter for this operation.
-            _scrollIterationCount = 0;
-
-            // Q14: fast-path — target already rendered with a non-placeholder, |delta| < 1px.
-            if (clamped >= _loadedItemsStartIndex
-                && clamped < _loadedItemsStartIndex + _lastRenderedItemCount
-                && _lastRenderedItemCount > 0
-                && _jsInterop is not null)
+            var capacity = _visibleItemCapacity > 0 ? _visibleItemCapacity : OverscanCount * 2 + 1;
+            var desiredItemsBefore = Math.Max(0, clamped - OverscanCount);
+            if (_itemCount > 0 && desiredItemsBefore + capacity > _itemCount)
             {
-                var localIndex = clamped - _itemsBefore;
-                if (localIndex >= 0 && localIndex < _visibleItemCapacity)
-                {
-                    var delta = await _jsInterop.AlignToItemAsync(localIndex);
-                    token.ThrowIfCancellationRequested();
-                    if (!float.IsNaN(delta) && Math.Abs(delta) < 1f)
-                    {
-                        await _jsInterop.EndScrollToItemAsync();
-                        tcs.TrySetResult();
-                        return;
-                    }
-                    // Fell through — let the convergence loop finish the job.
-                }
+                desiredItemsBefore = Math.Max(0, _itemCount - capacity);
             }
 
-            _activeScrollTarget = clamped;
-
-            // Stage 0 (Q11 — option a-lite): redirect through UpdateItemDistribution so that
-            // RefreshDataCoreAsync(renderOnSuccess: true) is triggered automatically. The next
-            // OnAfterRenderAsync will run the Stage 2 alignment loop.
-            var newItemsBefore = Math.Max(0, clamped - OverscanCount);
-            if (newItemsBefore != _itemsBefore)
+            var windowChanged = desiredItemsBefore != _itemsBefore;
+            // Seed capacity when called before any spacer-observer feedback; forces refetch.
+            var needsCapacitySeed = _visibleItemCapacity <= 0;
+            if (needsCapacitySeed)
             {
-                UpdateItemDistribution(newItemsBefore, _visibleItemCapacity, _unusedItemCapacity);
+                _visibleItemCapacity = capacity;
+            }
+            if (windowChanged)
+            {
+                _itemsBefore = desiredItemsBefore;
+                _skipNextDistributionRefresh = false;
+            }
+
+            var alreadyLoadedForWindow = _loadedItems is not null && _loadedItemsStartIndex == _itemsBefore;
+            // Register the render-commit rendezvous BEFORE any render: on WASM, OnAfterRenderAsync fires synchronously inside RefreshDataCoreAsync.
+            var renderCommitTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _nextRenderTcs = renderCommitTcs;
+            using var renderReg = token.Register(static state => ((TaskCompletionSource)state!).TrySetCanceled(), renderCommitTcs);
+
+            if (windowChanged || !alreadyLoadedForWindow || needsCapacitySeed)
+            {
+                await RefreshDataCoreAsync(renderOnSuccess: true);
+                token.ThrowIfCancellationRequested();
             }
             else
             {
-                // Already in the right window — just trigger a render so OnAfterRenderAsync runs the loop.
+                // Window already loaded — request one render so OAR can rendezvous on a committed DOM.
                 StateHasChanged();
             }
 
-            // Stage 1: estimated jump (best-effort visual feedback while data loads).
-            // Use the current average item height; clamped pixel range avoids overshoot.
-            if (_jsInterop is not null)
+            // OAR signals only once the loaded slice matches our window, so one await suffices.
+            await renderCommitTcs.Task;
+            token.ThrowIfCancellationRequested();
+
+            // Re-clamp in case _itemCount shifted during the fetch.
+            clamped = ClampToItemRange(itemIndex);
+            var localIndex = clamped - _itemsBefore;
+            if (localIndex < 0 || localIndex >= _visibleItemCapacity || _lastRenderedItemCount == 0)
             {
-                var avg = GetItemHeight();
-                if (avg > 0)
-                {
-                    await _jsInterop.ScrollToItemEstimateAsync(clamped, avg);
-                    token.ThrowIfCancellationRequested();
-                }
+                // Window doesn't contain the target (e.g., empty provider result) — bail cleanly.
+                return;
             }
 
-            // The rest of the work happens in OnAfterRenderAsync, which observes _activeScrollTarget
-            // and drives Stage 2 until convergence (or cap, or cancel). The TCS is completed there.
-            // Wait on the TCS so this Task surfaces the right outcome.
-            using (token.Register(static state => ((TaskCompletionSource)state!).TrySetCanceled(CancellationToken.None), tcs))
+            // Pixel-exact one-shot scroll: JS reads getBoundingClientRect() and sets scrollTop.
+            if (_jsInterop is not null)
             {
-                await tcs.Task.ConfigureAwait(false);
+                await _jsInterop.AlignToItemAsync(localIndex);
             }
-        }
-        catch (OperationCanceledException)
-        {
-            tcs.TrySetCanceled(token);
-        }
-        catch (Exception ex)
-        {
-            tcs.TrySetException(ex);
         }
         finally
         {
-            // Clear active state if this is still the current operation.
-            if (ReferenceEquals(_currentScrollCts, ownedCts))
+            // Only the current owner clears shared state; orphaned operations leave it alone.
+            if (ReferenceEquals(_currentScrollCts, ourCts))
             {
-                _activeScrollTarget = null;
                 _currentScrollCts = null;
             }
-            ownedCts.Dispose();
-
-            // Restore IO state on the JS side, regardless of outcome.
-            if (_jsInterop is not null)
-            {
-                try
-                {
-                    await _jsInterop.EndScrollToItemAsync();
-                }
-                catch
-                {
-                    // Best-effort cleanup; swallow JS interop errors during teardown.
-                }
-            }
+            ourCts.Dispose();
         }
     }
 
@@ -476,6 +426,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // Wait until the loaded slice matches the window; earlier renders measure stale DOM.
+        var pendingRenderTcs = _nextRenderTcs;
+        if (pendingRenderTcs is not null && _lastRenderedItemCount > 0 && _loadedItemsStartIndex == _itemsBefore)
+        {
+            _nextRenderTcs = null;
+            pendingRenderTcs.TrySetResult();
+        }
+
         if (firstRender)
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
@@ -498,11 +456,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 await _jsInterop.SetAnchorModeAsync((int)AnchorMode);
             }
 
-            // If a mutation captured an anchor snapshot before render,
-            // restore it now to keep the same row at the same viewport offset.
-            // Skip anchor restore while a ScrollToIndexAsync is active — we are intentionally
-            // moving the viewport and don't want anchor restore to fight the scroll.
-            var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom && _activeScrollTarget is null;
+            // If a mutation captured an anchor snapshot, restore it to keep the same row at the
+            // same viewport offset. Skip while a ScrollToIndexAsync is in flight — we are
+            // intentionally moving the viewport.
+            var shouldRestore = _pendingAnchorRestore && !_pendingScrollToBottom && _currentScrollCts is null;
             _pendingAnchorRestore = false;
 
             if (shouldRestore)
@@ -513,122 +470,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             await _jsInterop.RefreshObserversAsync();
         }
 
-        // Apply InitialItemIndex once, when the count is known (Q2).
-        if (!_initialScrollApplied && _jsInterop is not null && InitialItemIndex is int initial && _itemCount > 0)
+        // Apply InitialIndex once, when the count is known.
+        if (!_initialScrollApplied && _jsInterop is not null && InitialIndex is int initial && _itemCount > 0)
         {
             _initialScrollApplied = true;
-            // Fire-and-forget: failures are not fatal for component lifecycle.
-            _ = ScrollToIndexAsync(initial);
+            await ScrollToIndexAsync(initial);
         }
-
-        // Drive Stage 2 of an in-flight ScrollToIndexAsync.
-        if (_activeScrollTarget is int target && _jsInterop is not null && _scrollCompletion is { } tcs)
-        {
-            await DriveScrollIterationAsync(target, tcs);
-        }
-    }
-
-    private async Task DriveScrollIterationAsync(int target, TaskCompletionSource tcs)
-    {
-        // Capture cts at entry — if a new call has superseded us, just bail.
-        var cts = _currentScrollCts;
-        if (cts is null)
-        {
-            return;
-        }
-        var token = cts.Token;
-        if (token.IsCancellationRequested)
-        {
-            return;
-        }
-
-        // Re-clamp on each iteration (Q16): if items were added/removed mid-flight, the literal
-        // index is re-clamped against the current count, but item identity is NOT tracked.
-        var clamped = ClampToItemRange(target);
-        if (clamped != target)
-        {
-            _activeScrollTarget = clamped;
-            target = clamped;
-        }
-
-        // Is target rendered as a real item (not a placeholder)?
-        var targetIsRealItem = target >= _loadedItemsStartIndex
-            && target < _loadedItemsStartIndex + _lastRenderedItemCount;
-
-        var localIndex = target - _itemsBefore;
-        if (!targetIsRealItem || localIndex < 0 || localIndex >= _visibleItemCapacity)
-        {
-            // Target slot is still a placeholder, not loaded yet, or out of the rendered window.
-            // Don't count this against the cap — wait for the data render. Re-iterate on the
-            // next render. If, however, the rendered window doesn't include the target at all
-            // (e.g., distribution still settling), nudge UpdateItemDistribution.
-            if (target < _itemsBefore || target >= _itemsBefore + _visibleItemCapacity)
-            {
-                var newItemsBefore = Math.Max(0, target - OverscanCount);
-                if (newItemsBefore != _itemsBefore)
-                {
-                    UpdateItemDistribution(newItemsBefore, _visibleItemCapacity, _unusedItemCapacity);
-                }
-            }
-            return;
-        }
-
-        if (_scrollIterationCount >= MaxScrollToItemRetries)
-        {
-            // Q6: cap reached. Best-effort align once more, then resolve without throwing.
-            try
-            {
-                _ = await _jsInterop!.AlignToItemAsync(localIndex);
-            }
-            catch
-            {
-                // Swallow during best-effort cap exit.
-            }
-            Debug.WriteLine($"Virtualize.ScrollToIndexAsync: iteration cap ({MaxScrollToItemRetries}) reached for target index {target}; resolving with best-effort alignment.");
-            tcs.TrySetResult();
-            return;
-        }
-
-        _scrollIterationCount++;
-
-        float delta;
-        try
-        {
-            delta = await _jsInterop!.AlignToItemAsync(localIndex);
-        }
-        catch (OperationCanceledException)
-        {
-            tcs.TrySetCanceled(token);
-            return;
-        }
-        catch (Exception ex)
-        {
-            tcs.TrySetException(ex);
-            return;
-        }
-
-        if (token.IsCancellationRequested)
-        {
-            tcs.TrySetCanceled(token);
-            return;
-        }
-
-        if (float.IsNaN(delta))
-        {
-            // Item went missing between renders; trigger another render so we can retry.
-            StateHasChanged();
-            return;
-        }
-
-        if (Math.Abs(delta) <= 1f)
-        {
-            // Q6: converged within 1px. Resolve.
-            tcs.TrySetResult();
-            return;
-        }
-
-        // Force another render so OnAfterRenderAsync runs again with the new scroll position settled.
-        StateHasChanged();
     }
 
     /// <inheritdoc />
@@ -756,7 +603,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (_pendingAnchorRestore)
+        if (_pendingAnchorRestore || _currentScrollCts is not null)
         {
             return;
         }
@@ -776,7 +623,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (_pendingAnchorRestore)
+        if (_pendingAnchorRestore || _currentScrollCts is not null)
         {
             return;
         }
@@ -1053,10 +900,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         _refreshCts?.Cancel();
 
-        var scrollCts = Interlocked.Exchange(ref _currentScrollCts, null);
-        scrollCts?.Cancel();
-        scrollCts?.Dispose();
-        _scrollCompletion?.TrySetCanceled(CancellationToken.None);
+        _currentScrollCts?.Cancel();
+        _nextRenderTcs?.TrySetCanceled(CancellationToken.None);
 
         if (_jsInterop != null)
         {
