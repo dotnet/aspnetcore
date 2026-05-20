@@ -203,10 +203,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// Gets or sets the zero-based index of the item to scroll to on first interactive render.
     /// Applied once when the component first knows its item count and ignored on subsequent re-renders;
     /// to scroll programmatically at any later point, call <see cref="ScrollToIndexAsync(int, CancellationToken)"/>.
-    /// Out-of-range values are clamped. <see langword="null"/> means no initial scroll.
+    /// Out-of-range values are clamped. The default value, <c>0</c>, means no initial scroll.
     /// </summary>
     [Parameter]
-    public int? InitialIndex { get; set; }
+    public int InitialIndex { get; set; }
 
     private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
 
@@ -467,10 +467,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         // Apply InitialIndex once, when the count is known.
-        if (!_initialScrollApplied && _jsInterop is not null && InitialIndex is int initial && _itemCount > 0)
+        if (!_initialScrollApplied && _jsInterop is not null && InitialIndex > 0 && _itemCount > 0)
         {
             _initialScrollApplied = true;
-            await ScrollToIndexAsync(initial);
+            await ScrollToIndexAsync(InitialIndex);
         }
     }
 

@@ -1049,7 +1049,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 100).ToList());
-                builder.AddComponentParameter(3, "InitialIndex", (int?)42);
+                builder.AddComponentParameter(3, "InitialIndex", 42);
                 builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b =>
                 {
                     b.OpenElement(0, "span");
@@ -1074,7 +1074,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task InitialIndex_NullMeansNoInitialScroll()
+    public async Task InitialIndex_DefaultZeroMeansNoInitialScroll()
     {
         Virtualize<int> renderedVirtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
@@ -1092,7 +1092,7 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
 
         Assert.NotNull(renderedVirtualize);
-        Assert.Null(renderedVirtualize.InitialIndex);
+        Assert.Equal(0, renderedVirtualize.InitialIndex);
         // No initial-scroll request was issued; component opens at item 0.
         Assert.Equal(0, renderedVirtualize._itemsBefore);
     }
