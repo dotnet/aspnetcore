@@ -84,7 +84,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             // Add to visitedTypes BEFORE iterating constraints to prevent
             // infinite recursion through circular constraints such as
-            // where T : class, IEnumerable<T> (SEC-001).
+            // where T : class, IEnumerable<T>.
             visitedTypes.Add(typeSymbol);
             var foundValidatable = false;
             foreach (var constraintType in typeParam.ConstraintTypes)
@@ -230,9 +230,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
                         // Skip properties whose type is a type parameter (e.g., TSelf
                         // from CRTP pattern RequestBase<TSelf>). The emitter would
-                        // generate typeof(TSelf) which is not valid C# (CRASH-001).
-                        // Concrete validatable types reachable through constraints are
-                        // already discovered by TryExtractValidatableType above.
+                        // generate typeof(TSelf) which is not valid C#. Concrete
+                        // validatable types reachable through constraints are already
+                        // discovered by TryExtractValidatableType above.
                         if (ContainsTypeParameter(correspondingProperty.Type))
                         {
                             continue;
@@ -307,7 +307,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
             // Skip properties whose type is a type parameter (e.g., TSelf
             // from CRTP pattern RequestBase<TSelf>). The emitter would
-            // generate typeof(TSelf) which is not valid C# (CRASH-001).
+            // generate typeof(TSelf) which is not valid C#.
             if (ContainsTypeParameter(member.Type))
             {
                 continue;
