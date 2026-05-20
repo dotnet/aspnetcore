@@ -17,6 +17,13 @@ timeout-minutes: 240
 
 checkout:
   fetch-depth: 0
+  submodules: 'true'
+
+steps:
+  - name: Restore dependencies
+    env:
+      CI: false
+    run: ./restore.sh
 
 tools:
   bash: ["*"]
