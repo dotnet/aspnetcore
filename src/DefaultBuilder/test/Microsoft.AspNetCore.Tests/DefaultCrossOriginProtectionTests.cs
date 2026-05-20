@@ -247,8 +247,6 @@ public class DefaultCrossOriginProtectionTests
     [Fact]
     public async Task NoSecFetchSite_Ipv6OriginMatchesHost_Allowed()
     {
-        // HostString "[::1]:8080" → request.Host.Host == "::1" (brackets stripped).
-        // Origin header retains brackets. Comparator must strip on the origin side too.
         var context = CreateContext(origin: "https://[::1]:8080", host: "[::1]", port: 8080);
         Assert.Equal(CsrfProtectionResult.Allowed, await _validator.ValidateAsync(context));
     }
