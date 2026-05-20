@@ -4,6 +4,7 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- Point to the locally-built Gateway DLL -->
     <_BlazorGatewayDll>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Components.Gateway\$(Configuration)\$(DefaultNetCoreTargetFramework)\blazor-gateway.dll</_BlazorGatewayDll>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +12,5 @@
   </ItemGroup>
 
   <Import Project="$(RepoRoot)src\Components\Gateway\src\build\Microsoft.AspNetCore.Components.Gateway.targets" />
-  <Import Project="$(MSBuildThisFileDirectory)..\SpaFallback.targets" />
 
 </Project>

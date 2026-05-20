@@ -106,7 +106,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("OK", response.Value.Description);
             var content = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", content.Key);
-            // Todo: Check that this generates a schema using `oneOf`.
+            var schema = content.Value.Schema;
+            Assert.NotNull(schema.AnyOf);
+            Assert.Equal(2, schema.AnyOf.Count);
         });
     }
 
@@ -158,6 +160,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             Assert.Equal("OK", response.Value.Description);
             Assert.Collection(response.Value.Content.OrderBy(c => c.Key),
+                content =>
+                {
+                    Assert.Equal("application/json", content.Key);
+                },
                 content =>
                 {
                     Assert.Equal("application/xml", content.Key);
@@ -437,6 +443,140 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     Assert.Equal("400", response.Key);
                     Assert.Equal("Bad Request", response.Value.Description);
                 });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_MergesMultipleTypesForSameContentTypeAndDifferentContentTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(TodoWithDueDate), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Error), ["text/plain"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+
+            // application/json should have an anyOf schema since two types share the same content-type
+            Assert.True(response.Value.Content.TryGetValue("application/json", out var jsonContent));
+            Assert.NotNull(jsonContent.Schema.AnyOf);
+            Assert.Equal(2, jsonContent.Schema.AnyOf.Count);
+
+            // text/plain should have its own schema without anyOf
+            Assert.True(response.Value.Content.TryGetValue("text/plain", out var textContent));
+            Assert.Null(textContent.Schema.AnyOf);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_SupportsThreeTypesForSameContentTypeWithAnyOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(TodoWithDueDate), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Error), ["application/json"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(3, content.Value.Schema.AnyOf.Count);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_MultipleProducesWithDifferentStatusCodes_ProducesSeparateResponses()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Error), ["text/plain"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status404NotFound, typeof(Error), ["application/json"]));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            Assert.Equal(2, operation.Responses.Count);
+
+            // 200 response should have both content types merged
+            Assert.True(operation.Responses.TryGetValue("200", out var okResponse));
+            Assert.Equal(2, okResponse.Content.Count);
+            Assert.True(okResponse.Content.ContainsKey("application/json"));
+            Assert.True(okResponse.Content.ContainsKey("text/plain"));
+
+            // 404 response is separate
+            Assert.True(operation.Responses.TryGetValue("404", out var notFoundResponse));
+            var notFoundContent = Assert.Single(notFoundResponse.Content);
+            Assert.Equal("application/json", notFoundContent.Key);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_ProducesExtensionMethod_SupportsDifferentTypesForSameStatusCode()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<Todo>(StatusCodes.Status200OK, "application/json")
+            .Produces<Error>(StatusCodes.Status200OK, "text/plain");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+            Assert.True(response.Value.Content.ContainsKey("application/json"));
+            Assert.True(response.Value.Content.ContainsKey("text/plain"));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_ProducesExtensionMethod_SupportsAnyOfForSameContentType()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<Todo>(StatusCodes.Status200OK, "application/json")
+            .Produces<Error>(StatusCodes.Status200OK, "application/json");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(2, content.Value.Schema.AnyOf.Count);
         });
     }
 }

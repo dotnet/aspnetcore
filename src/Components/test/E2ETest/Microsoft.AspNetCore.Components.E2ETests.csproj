@@ -34,8 +34,8 @@
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
 
-    <TestTrimmedOrMultithreadingApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedOrMultithreadingApps>
-    <TestTrimmedOrMultithreadingApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedOrMultithreadingApps>
+    <TestTrimmedApps Condition="'$(ContinuousIntegrationBuild)' == 'true'">true</TestTrimmedApps>
+    <TestTrimmedApps Condition="'$(Configuration)' == 'Release'">true</TestTrimmedApps>
   </PropertyGroup>
 
   <ItemGroup>
@@ -75,32 +75,28 @@
     <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp.Server\ThreadingApp.Server.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TestTrimmedOrMultithreadingApps)' != 'true'">
+  <ItemGroup Condition="'$(TestTrimmedApps)' != 'true'">
     <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
-    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Wasm.Performance.TestApp\" />
+  <ItemGroup Condition="'$(TestTrimmedApps)' == 'true'">
+    <ProjectReference Include="..\..\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Performance.TestApp\" />
 
-    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\BasicTestApp\" />
+    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\BasicTestApp\" />
 
-    <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\GlobalizationWasmApp\;" />
+    <ProjectReference Include="..\testassets\GlobalizationWasmApp\GlobalizationWasmApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\GlobalizationWasmApp\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\StandaloneApp\;" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\StandaloneApp\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Wasm.Prerendered.Server\;" />
+    <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Prerendered.Server\Wasm.Prerendered.Server.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Wasm.Prerendered.Server\;" />
 
-    <ProjectReference Include="..\..\WebAssembly\testassets\ThreadingApp\ThreadingApp.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=false;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\ThreadingApp\;" />
-
-    <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedOrMultithreadingApps=true;_SkipReferencedProjectPublishAssets=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed-or-threading\Components.TestServer\;" />
+    <ProjectReference Include="..\testassets\Components.TestServer\Components.TestServer.csproj" Targets="Build;Publish" Properties="BuildProjectReferences=false;TestTrimmedApps=true;_SkipReferencedProjectPublishAssets=true;PublishDir=$(MSBuildThisFileDirectory)$(OutputPath)trimmed\Components.TestServer\;" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
@@ -121,8 +117,8 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestTrimmedOrMultithreadingApps</_Parameter1>
-      <_Parameter2>$(TestTrimmedOrMultithreadingApps)</_Parameter2>
+      <_Parameter1>Microsoft.AspNetCore.E2ETesting.TestTrimmedApps</_Parameter1>
+      <_Parameter2>$(TestTrimmedApps)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
