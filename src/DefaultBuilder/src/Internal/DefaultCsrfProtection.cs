@@ -31,7 +31,16 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
             return CsrfProtectionResult.Allowed;
         }
 
-        // Step 2: Check trusted origins from the CORS policy that applies to this request
+        // Step 2: Sec-Fetch-Site accept path. The vast majority of legitimate browser
+        // traffic to a same-origin endpoint hits this exit without any DI lookup or string parsing.
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site#same-site
+        var secFetchSite = request.Headers["Sec-Fetch-Site"].ToString();
+        if (secFetchSite is "same-origin" or "none")
+        {
+            return CsrfProtectionResult.Allowed;
+        }
+
+        // Step 3: Check trusted origins from the CORS policy that applies to this request
         // (per-endpoint policy first, falling back to the default policy).
         var origin = request.Headers.Origin.ToString();
         if (!string.IsNullOrEmpty(origin))
@@ -43,20 +52,14 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
             }
         }
 
-        // Step 3: Sec-Fetch-Site header (set by browsers per Fetch Metadata spec).
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Site#same-site
-        var secFetchSite = request.Headers["Sec-Fetch-Site"].ToString();
+        // Step 4: Sec-Fetch-Site deny path. Any value other than "same-origin"/"none"
+        // (e.g. "cross-site", "same-site") is treated as untrusted.
         if (!string.IsNullOrEmpty(secFetchSite))
         {
-            return secFetchSite switch
-            {
-                "same-origin" => CsrfProtectionResult.Allowed,
-                "none" => CsrfProtectionResult.Allowed,
-                _ => CsrfProtectionResult.Denied,
-            };
+            return CsrfProtectionResult.Denied;
         }
 
-        // Step 4: No Sec-Fetch-Site header. Fall back to Origin vs Host comparison.
+        // Step 5: No Sec-Fetch-Site header. Fall back to Origin vs Host comparison.
         if (!string.IsNullOrEmpty(origin))
         {
             return OriginMatchesRequestHost(origin, request)
@@ -64,7 +67,7 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
                 : CsrfProtectionResult.Denied;
         }
 
-        // Step 5: No Sec-Fetch-Site AND no Origin header.
+        // Step 6: No Sec-Fetch-Site AND no Origin header.
         // This is a non-browser client (curl, Postman, server-to-server).
         // Allow the request — CSRF is a browser-based attack vector.
         return CsrfProtectionResult.Allowed;
