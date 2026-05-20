@@ -14,7 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="${MicrosoftAspNetCoreComponentsWebAssemblyVersion}" />
     <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="${MicrosoftExtensionsHttpResilienceVersion}" />
-    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="${MicrosoftExtensionsServiceDiscoveryVersion}" />
+    <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="10.6.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="${OpenTelemetryExporterOpenTelemetryProtocolVersion}" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="${OpenTelemetryExtensionsHostingVersion}" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="${OpenTelemetryInstrumentationHttpVersion}" />
