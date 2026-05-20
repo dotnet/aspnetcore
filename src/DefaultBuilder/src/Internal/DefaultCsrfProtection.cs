@@ -101,9 +101,16 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
         return await provider.GetPolicyAsync(context, policyName);
     }
 
-    // Parses an Origin header value ("scheme://host[:port]") and compares each component
-    // against the request's scheme/host/port without allocating any temporary strings.
-    // Handles IPv6 literals ("[::1]:8080") and treats omitted ports as the scheme's default.
+    /// <summary>
+    /// Compares the Origin header to "scheme://host[:port]" built from the request. 
+    /// </summary>
+    /// <param name="origin">value of Origin header</param>
+    /// <param name="request">request being processed</param>
+    /// <remarks>
+    /// This path only runs for pre-Fetch-Metadata browsers (~2020 and earlier) and
+    /// non-browser clients, so the current allocation cost is negligible.
+    /// </remarks>
+    /// <returns>true if match</returns>
     private static bool OriginMatchesRequestHost(string origin, HttpRequest request)
     {
         var host = request.Host;
@@ -112,102 +119,12 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
             return false;
         }
 
-        // Locate "://"
-        var schemeEnd = origin.IndexOf("://", StringComparison.Ordinal);
-        if (schemeEnd <= 0)
-        {
-            return false;
-        }
-
-        // Compare scheme.
         var scheme = request.Scheme;
-        if (!origin.AsSpan(0, schemeEnd).Equals(scheme, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
+        var hostString = host.Host;
+        var port = host.Port;
 
-        var hostAndPort = origin.AsSpan(schemeEnd + 3);
-        if (hostAndPort.IsEmpty)
-        {
-            return false;
-        }
-
-        ReadOnlySpan<char> originHostSpan;
-        int originPort;
-
-        if (hostAndPort[0] == '[')
-        {
-            // IPv6 literal: "[host]:port" or "[host]". HostString.Host preserves the brackets,
-            // so we keep them in the origin span as well to compare apples to apples.
-            var bracketEnd = hostAndPort.IndexOf(']');
-            if (bracketEnd < 2)
-            {
-                return false;
-            }
-
-            originHostSpan = hostAndPort.Slice(0, bracketEnd + 1);
-
-            if (bracketEnd + 1 == hostAndPort.Length)
-            {
-                originPort = -1;
-            }
-            else if (hostAndPort[bracketEnd + 1] == ':')
-            {
-                if (!int.TryParse(hostAndPort.Slice(bracketEnd + 2), out originPort) || originPort < 0)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // Anything other than ':' or end-of-input after ']' is malformed.
-                return false;
-            }
-        }
-        else
-        {
-            var portColon = hostAndPort.IndexOf(':');
-            if (portColon < 0)
-            {
-                originHostSpan = hostAndPort;
-                originPort = -1;
-            }
-            else
-            {
-                originHostSpan = hostAndPort.Slice(0, portColon);
-                if (!int.TryParse(hostAndPort.Slice(portColon + 1), out originPort) || originPort < 0)
-                {
-                    return false;
-                }
-            }
-        }
-
-        // Compare host (HostString.Host preserves brackets for IPv6 literals — match that here).
-        if (!originHostSpan.Equals(host.Host, StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        // Compare ports, treating an omitted port as the scheme's default.
-        var requestPort = host.Port ?? DefaultPortForScheme(scheme);
-        var normalizedOriginPort = originPort >= 0 ? originPort : DefaultPortForScheme(scheme);
-        return requestPort == normalizedOriginPort;
-    }
-
-    private static int DefaultPortForScheme(string scheme)
-    {
-        if (string.Equals(scheme, "https", StringComparison.OrdinalIgnoreCase))
-        {
-            return 443;
-        }
-
-        if (string.Equals(scheme, "http", StringComparison.OrdinalIgnoreCase))
-        {
-            return 80;
-        }
-
-        // Unknown scheme: no default. Caller compares with the explicit value (if any),
-        // which will only match when both sides agree explicitly.
-        return -1;
+        return port is null
+            ? MemoryExtensions.Equals(origin, $"{scheme}://{hostString}", StringComparison.OrdinalIgnoreCase)
+            : MemoryExtensions.Equals(origin, $"{scheme}://{hostString}:{port.Value}", StringComparison.OrdinalIgnoreCase);
     }
 }
