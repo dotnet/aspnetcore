@@ -71,11 +71,24 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
 
     private static void HighlightSymbol(SemanticModel semanticModel, IMethodSymbol methodSymbol, IList<AspNetCoreHighlightSpan> highlightSpans, ISymbol matchingParameter, CancellationToken cancellationToken)
     {
+        // AspNetCoreDocumentHighlights cannot carry a Document reference, so
+        // every highlight span we emit must belong to the active document
+        // (the tree that owns `semanticModel`). Spans from other syntax trees
+        // would be mis-mapped into the active document and highlight unrelated
+        // text. Skip cross-file declarations entirely - users will not see the
+        // parameter highlighted in the other file, but they will also not see
+        // bogus highlights or crashes (https://github.com/dotnet/aspnetcore/issues/64398).
+
         // Highlight parameter in method signature.
         // e.g. "{id}" in route highlights id in "void Foo(string id) {}"
         foreach (var item in matchingParameter.DeclaringSyntaxReferences)
         {
             var syntaxNode = item.GetSyntax(cancellationToken);
+            if (syntaxNode.SyntaxTree != semanticModel.SyntaxTree)
+            {
+                continue;
+            }
+
             if (syntaxNode is ParameterSyntax parameterSyntax)
             {
                 highlightSpans.Add(new AspNetCoreHighlightSpan(parameterSyntax.Identifier.Span, AspNetCoreHighlightSpanKind.Definition));
@@ -87,9 +100,10 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         foreach (var item in methodSymbol.DeclaringSyntaxReferences)
         {
             var methodSyntax = item.GetSyntax(cancellationToken);
-            var methodSemanticModel = methodSyntax.SyntaxTree == semanticModel.SyntaxTree
-                ? semanticModel
-                : semanticModel.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+            if (methodSyntax.SyntaxTree != semanticModel.SyntaxTree)
+            {
+                continue;
+            }
 
             // Have to call GetSymbolInfo because it's easy to have identifiers with the same name
             // that reference a different API. For example, a type with the same name as parameter.
@@ -99,7 +113,7 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
                 .DescendantNodes()
                 .OfType<IdentifierNameSyntax>()
                 .Where(i => i.Identifier.Text == matchingParameter.Name)
-                .Where(i => methodSemanticModel.GetSymbolInfo(i) is var symbolInfo && SymbolEqualityComparer.Default.Equals(symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault(), matchingParameter));
+                .Where(i => semanticModel.GetSymbolInfo(i) is var symbolInfo && SymbolEqualityComparer.Default.Equals(symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault(), matchingParameter));
 
             foreach (var reference in parameterReferences)
             {
