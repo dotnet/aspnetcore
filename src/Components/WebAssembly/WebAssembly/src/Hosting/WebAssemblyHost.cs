@@ -135,14 +135,6 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _started = true;
 
-        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
-        cultureProvider.ThrowIfCultureChangeIsUnsupported();
-
-        // Application developers might have configured the culture based on some ambient state
-        // such as local storage, url etc as part of their Program.Main(Async).
-        // This is the earliest opportunity to fetch satellite assemblies for this selection.
-        await cultureProvider.LoadCurrentCultureResourcesAsync();
-
         var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
         var store = !string.IsNullOrEmpty(_persistedState) ?
             new PrerenderComponentApplicationStore(_persistedState) :
@@ -151,7 +143,21 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
 
-        // Start hosted services
+        cultureProvider ??= WebAssemblyCultureProvider.Instance!;
+        cultureProvider.ThrowIfCultureChangeIsUnsupported();
+
+        if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
+        {
+            cultureStateProvider.ApplyStoredCulture();
+        }
+
+        // Application developers might have configured the culture based on some ambient state
+        // such as local storage, url etc as part of their Program.Main(Async).
+        // This is the earliest opportunity to fetch satellite assemblies for this selection.
+        await cultureProvider.LoadCurrentCultureResourcesAsync();
+
+        // Start hosted services after culture is fully applied,
+        // so services that depend on culture see the correct values.
         _hostedServiceExecutor = Services.GetRequiredService<HostedServiceExecutor>();
         await _hostedServiceExecutor.StartAsync(cancellationToken);
 

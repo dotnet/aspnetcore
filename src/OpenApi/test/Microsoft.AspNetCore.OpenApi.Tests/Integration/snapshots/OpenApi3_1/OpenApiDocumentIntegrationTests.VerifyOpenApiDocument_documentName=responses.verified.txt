@@ -16,6 +16,37 @@
             "content": {
               "application/json": {
                 "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Todo"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TodoWithDueDate"
+                    }
+                  ]
+                }
+              },
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-add-xml-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
                   "$ref": "#/components/schemas/Todo"
                 }
               },
@@ -41,6 +72,80 @@
               "text/xml": {
                 "schema": {
                   "$ref": "#/components/schemas/Todo"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoWithDueDate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-only-xml-results": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-multi-content-type": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Todo"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoWithDueDate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/responses/200-any-of": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Todo"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TodoWithDueDate"
+                    }
+                  ]
                 }
               }
             }
@@ -181,6 +286,42 @@
           }
         },
         "description": "Represents a to-do item."
+      },
+      "TodoWithDueDate": {
+        "required": [
+          "dueDate",
+          "id",
+          "title",
+          "completed",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "type": "string",
+            "description": "The due date of the to-do item.",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the to-do item.",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the to-do item."
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Indicates whether the to-do item is completed."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time when the to-do item was created.",
+            "format": "date-time"
+          }
+        },
+        "description": "Represents a to-do item with a due date."
       },
       "Triangle": {
         "type": "object",
