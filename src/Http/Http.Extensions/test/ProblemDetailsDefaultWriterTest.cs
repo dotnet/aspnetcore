@@ -670,6 +670,27 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.False(result);
     }
 
+    [Fact]
+    public async Task WriteAsync_Throws_WhenCancellationRequested()
+    {
+        // Arrange
+        var writer = GetWriter();
+        var stream = new MemoryStream();
+        var context = CreateContext(stream);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        context.RequestAborted = cts.Token;
+
+        var problemDetailsContext = new ProblemDetailsContext()
+        {
+            HttpContext = context,
+            ProblemDetails = new ProblemDetails()
+        };
+
+        //Act & Assert
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writer.WriteAsync(problemDetailsContext).AsTask());
+    }
+
     private static HttpContext CreateContext(
         Stream body,
         int statusCode = StatusCodes.Status400BadRequest,

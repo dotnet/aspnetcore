@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -16,11 +16,11 @@
 
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
+  <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' != 'true'">
+  <PropertyGroup Condition="'$(TestTrimmedApps)' != 'true'">
     <!-- Temporarily disabled to test hypothesis that MetadataUpdaterSupport=true (from PR #65903)
          causes intermittent MIME type failures for _framework/dotnet.js in E2E tests.
          See: https://github.com/dotnet/aspnetcore/pull/65903 -->
@@ -64,7 +64,7 @@
   </ItemGroup>
 
   <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/30791 -->
-  <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
+  <Target Name="_FixupPublishBug" AfterTargets="_ProcessPublishFilesForBlazor" BeforeTargets="_BlazorCompressPublishFiles" Condition="'$(TestTrimmedApps)' == 'true'">
     <ItemGroup>
       <ResolvedFileToPublish RelativePath="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('subdir\subdir', 'subdir').Replace('subdir/subdir', 'subdir'))" />
 

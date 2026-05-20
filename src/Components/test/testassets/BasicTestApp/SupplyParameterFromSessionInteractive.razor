@@ -1,0 +1,12 @@
+<h3>SupplyParameterFromSessionInteractive</h3>
+
+<p id="session-value">@SessionValue</p>
+<p id="tempdata-value">@TempDataValue</p>
+
+@code {
+    [SupplyParameterFromSession]
+    public string SessionValue { get; set; } = "(empty)";
+
+    [SupplyParameterFromTempData]
+    public string TempDataValue { get; set; } = "(empty)";
+}
