@@ -390,8 +390,8 @@
     {
         if (virtualizeRef == null) { scrollStatus = "Faulted: no virtualizeRef"; return; }
         scrollStatus = "Rapid scrolling...";
-        // Fire 5 calls back-to-back; each subsequent call cancels the previous.
-        // Only the final target should land in the viewport.
+        // Fire 5 calls back-to-back; each subsequent call supersedes the previous.
+        // Superseded tasks complete normally — only the final target lands in the viewport.
         var tasks = new[]
         {
             virtualizeRef.ScrollToIndexAsync(50),

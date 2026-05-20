@@ -4194,8 +4194,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("scroll-to-item-rapid")).Click();
-        // 5 calls fired back-to-back: prior 4 must be canceled, only the last completes.
-        WaitForScrollStatus("Completed: 250 (canceled=4, completed=1, faulted=0)", timeoutSeconds: 30);
+        // 5 calls fired back-to-back: supersession completes normally, so all 5 tasks finish.
+        WaitForScrollStatus("Completed: 250 (canceled=0, completed=5, faulted=0)", timeoutSeconds: 30);
 
         Browser.True(() => GetTopRenderedIndex(js) == 250,
             $"After rapid-fire scroll, top should be 250 but was {GetTopRenderedIndex(js)}");

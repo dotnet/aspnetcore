@@ -236,8 +236,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </remarks>
     /// <param name="itemIndex">The zero-based index of the item to scroll to.</param>
     /// <param name="cancellationToken">A token that lets the caller request cancellation.</param>
-    /// <returns>A <see cref="Task"/> that completes when the target is aligned, or faults with
-    /// <see cref="OperationCanceledException"/> if cancelled or superseded.</returns>
+    /// <returns>A <see cref="Task"/> that completes when the target is aligned or superseded by another call,
+    /// or faults with <see cref="OperationCanceledException"/> if <paramref name="cancellationToken"/> is cancelled.</returns>
     public Task ScrollToIndexAsync(int itemIndex, CancellationToken cancellationToken = default)
     {
         if (_jsInterop is null)
@@ -266,6 +266,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             var refetchRequired = MoveWindowToContain(itemIndex);
             await EnsureRenderCommittedAsync(refetchRequired, token);
             await AlignToTargetAsync(itemIndex);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Ignore exceptions caused by cancellations.
         }
         finally
         {

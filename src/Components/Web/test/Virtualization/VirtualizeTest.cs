@@ -1014,7 +1014,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task ScrollToIndexAsync_SecondCallCancelsFirstTask()
+    public async Task ScrollToIndexAsync_SecondCallDoesNotFaultFirstTask()
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 1000);
 
@@ -1029,12 +1029,12 @@ public class VirtualizeTest
             return (first, second);
         });
 
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => firstTask);
+        await firstTask;
+        Assert.True(firstTask.IsCompletedSuccessfully);
 
         if (secondTask.IsCompleted)
         {
-            // Either successful convergence or cancellation is acceptable; an unhandled exception is not.
-            Assert.True(secondTask.IsCompletedSuccessfully || secondTask.IsCanceled, secondTask.Exception?.ToString());
+            Assert.True(secondTask.IsCompletedSuccessfully, secondTask.Exception?.ToString());
         }
     }
 
