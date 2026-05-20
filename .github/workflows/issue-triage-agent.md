@@ -25,6 +25,7 @@ description: >
 permissions:
   contents: read
   issues: read
+  pull-requests: read
 
 tools:
   bash: ["cat", "head", "tail", "grep", "wc", "jq"]
@@ -97,6 +98,12 @@ Read the full issue title and body using the GitHub MCP Server tools:
 This workflow does not assess, discuss, or make recommendations about potential security implications of issues. If an issue
 claims to describe a security vulnerability, do not evaluate whether the claim is valid, do not discuss the potential impact,
 and do not include any security analysis in the triage report. Security assessment is handled through separate processes.
+
+## Do Not Classify .NET Version Release Status
+
+Do not describe any .NET version as "preview", "RC", "stable", "released", or "unreleased". Your training data
+may be outdated and you cannot reliably determine the release status of a .NET version. Simply report the version
+the user mentioned (e.g., ".NET 10.0.7") without characterizing whether it is a preview or stable release.
 
 ---
 

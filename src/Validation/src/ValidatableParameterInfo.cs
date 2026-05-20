@@ -20,15 +20,17 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayName">The display name for the parameter.</param>
+    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// display name for the parameter at validation time. When <see langword="null"/>, the
+    /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName)
+        DisplayNameInfo? displayNameInfo = null)
     {
         ParameterType = parameterType;
         Name = name;
-        DisplayName = displayName;
+        DisplayNameInfo = displayNameInfo;
     }
 
     /// <summary>
@@ -42,9 +44,10 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the parameter.
+    /// Gets the strategy that resolves the display name for the parameter at validation time,
+    /// or <see langword="null"/> when no display name information was supplied.
     /// </summary>
-    internal string DisplayName { get; }
+    internal DisplayNameInfo? DisplayNameInfo { get; }
 
     /// <summary>
     /// Gets the validation attributes for this parameter.
@@ -65,7 +68,9 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         var validationAttributes = GetValidationAttributes();
@@ -74,10 +79,21 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                context.AddValidationError(Name, key, [result.ErrorMessage], null);
+                var errorMessage = context.ResolveAttributeErrorMessage(
+                    memberName: Name,
+                    displayName,
+                    declaringType: null,
+                    attribute: _requiredAttribute,
+                    result);
+
+                if (errorMessage is not null)
+                {
+                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                    context.AddValidationError(Name, key, [errorMessage], null);
+                }
+
                 return;
             }
         }
@@ -89,10 +105,20 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             try
             {
                 var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                if (result is not null && result != ValidationResult.Success)
                 {
-                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    context.AddOrExtendValidationErrors(Name, key, [result.ErrorMessage], null);
+                    var errorMessage = context.ResolveAttributeErrorMessage(
+                        memberName: Name,
+                        displayName,
+                        declaringType: null,
+                        attribute,
+                        result);
+
+                    if (errorMessage is not null)
+                    {
+                        var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+                        context.AddOrExtendValidationErrors(Name, key, [errorMessage], null);
+                    }
                 }
             }
             catch (Exception ex)
