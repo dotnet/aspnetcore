@@ -87,6 +87,9 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         foreach (var item in methodSymbol.DeclaringSyntaxReferences)
         {
             var methodSyntax = item.GetSyntax(cancellationToken);
+            var methodSemanticModel = methodSyntax.SyntaxTree == semanticModel.SyntaxTree
+                ? semanticModel
+                : semanticModel.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
 
             // Have to call GetSymbolInfo because it's easy to have identifiers with the same name
             // that reference a different API. For example, a type with the same name as parameter.
@@ -96,7 +99,7 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
                 .DescendantNodes()
                 .OfType<IdentifierNameSyntax>()
                 .Where(i => i.Identifier.Text == matchingParameter.Name)
-                .Where(i => semanticModel.GetSymbolInfo(i) is var symbolInfo && SymbolEqualityComparer.Default.Equals(symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault(), matchingParameter));
+                .Where(i => methodSemanticModel.GetSymbolInfo(i) is var symbolInfo && SymbolEqualityComparer.Default.Equals(symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault(), matchingParameter));
 
             foreach (var reference in parameterReferences)
             {

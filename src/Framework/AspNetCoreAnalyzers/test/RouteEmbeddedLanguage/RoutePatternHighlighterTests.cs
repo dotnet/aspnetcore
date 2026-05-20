@@ -450,6 +450,40 @@ class Program
 ");
     }
 
+    [Fact]
+    public async Task InParameterName_MatchingMethodInPartialClassAcrossFiles_DoesNotThrow()
+    {
+        var mapSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+public static partial class XEndpoints
+{
+    public static void MapXEndpoints(this IEndpointRouteBuilder app)
+    {
+        app.MapPost(""/organizations/{$$[|organizationId|]}/y/{yId}/z/{zId}/w/{wId}/load"", LoadAsync);
+    }
+}
+";
+
+        var handlerSource = @"
+public static partial class XEndpoints
+{
+    public static string LoadAsync(string organizationId, string yId, string zId, string wId)
+    {
+        return organizationId;
+    }
+}
+";
+
+        MarkupTestFile.GetPositionAndSpans(mapSource, out var output, out int cursorPosition, out var spans);
+        var routeSpan = Assert.Single(spans);
+
+        var highlightSpans = await Runner.GetHighlightingAsync(cursorPosition, output, handlerSource);
+
+        Assert.Contains(highlightSpans, h => h.TextSpan == routeSpan);
+    }
+
     private async Task TestHighlightingAsync(string source)
     {
         MarkupTestFile.GetPositionAndSpans(source, out var output, out int cursorPosition, out var spans);
