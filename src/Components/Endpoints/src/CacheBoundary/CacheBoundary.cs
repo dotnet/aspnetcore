@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +18,8 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public sealed class CacheBoundary : ComponentBase
 {
+    private static readonly ComponentParametersTypeCache _parametersTypeCache = new();
+    private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
     /// <summary>
     /// Gets or sets the content to be cached.
     /// </summary>
@@ -115,6 +116,10 @@ public sealed class CacheBoundary : ComponentBase
     internal string? ResolvedCacheKey { get; private set; }
     internal string? CachedData { get; private set; }
 
+    // Set on cache miss when caching is active. Wraps ChildContent so the live render populates frame
+    // captures that the cache can read at hole-emission time (and recurses into nested RenderFragments).
+    internal RenderFragmentCapture? ChildContentCapture { get; private set; }
+
     internal CacheBoundaryVaryBy GetVaryByOptions()
     {
         var result = CacheBoundaryVaryBy.None;
@@ -161,120 +166,34 @@ public sealed class CacheBoundary : ComponentBase
             CachedData = CacheStore.Get(ResolvedCacheKey);
         }
 
-        if (!TryRestoreFromCache(out var cacheJson))
+        if (!TryRestoreFromCache(out var nodes))
         {
             CachedData = null;
-            builder.AddContent(0, ChildContent);
+            if (Enabled && CacheStore is not null && ChildContent is { } childContent)
+            {
+                ChildContentCapture = new RenderFragmentCapture(childContent);
+                builder.AddContent(0, (RenderFragment)ChildContentCapture.Invoke);
+            }
+            else
+            {
+                ChildContentCapture = null;
+                builder.AddContent(0, ChildContent);
+            }
             return;
         }
 
-        using var scratchBuilder = new RenderTreeBuilder();
-        ChildContent?.Invoke(scratchBuilder);
-        var freshFrames = scratchBuilder.GetFrames();
+        ChildContentCapture = null;
 
-        ILogger? logger = null;
-
-        int seq = 0;
-        int freshFrameSearchStart = 0;
-        foreach (var segment in cacheJson!)
-        {
-            switch (segment.Kind)
-            {
-                case CacheSegmentKind.Html:
-                    builder.AddMarkupContent(seq++, segment.Html);
-                    break;
-
-                case CacheSegmentKind.Hole:
-                    if (!TryFindFreshHole(freshFrames, ref freshFrameSearchStart, segment, out var matchedFrameIndex))
-                    {
-                        logger ??= GetLogger();
-                        logger?.LogWarning(
-                            "CacheBoundary: cached hole for component '{ComponentType}' (sequence {Sequence}, key '{Key}') was not found in the current ChildContent. The hole will be skipped.",
-                            segment.ComponentType,
-                            segment.Sequence,
-                            segment.ComponentKey);
-                        break;
-                    }
-
-                    builder.OpenComponent(seq++, segment.ComponentType!);
-                    if (segment.ComponentKey is not null)
-                    {
-                        builder.SetKey(segment.ComponentKey);
-                    }
-
-                    for (var j = matchedFrameIndex + 1; j < freshFrames.Count; j++)
-                    {
-                        ref var attrFrame = ref freshFrames.Array[j];
-                        if (attrFrame.FrameType != RenderTreeFrameType.Attribute)
-                        {
-                            break;
-                        }
-                        builder.AddComponentParameter(seq++, attrFrame.AttributeName, attrFrame.AttributeValue);
-                    }
-
-                    if (segment.RenderModeName is { } renderModeName && segment.ComponentType!.GetCustomAttribute<RenderModeAttribute>(inherit: true) is null)
-                    {
-                        builder.AddComponentRenderMode(renderModeName switch
-                        {
-                            "InteractiveServer" => Web.RenderMode.InteractiveServer,
-                            "InteractiveWebAssembly" => Web.RenderMode.InteractiveWebAssembly,
-                            "InteractiveAuto" => Web.RenderMode.InteractiveAuto,
-                            _ => throw new InvalidOperationException($"Unknown cached render mode: '{renderModeName}'."),
-                        });
-                    }
-                    builder.CloseComponent();
-                    break;
-            }
-        }
-    }
-
-    private static bool TryFindFreshHole(
-        ArrayRange<RenderTreeFrame> freshFrames,
-        ref int searchStart,
-        in CacheSegment segment,
-        out int matchedFrameIndex)
-    {
-        for (var i = searchStart; i < freshFrames.Count; i++)
-        {
-            ref var frame = ref freshFrames.Array[i];
-            if (frame.FrameType != RenderTreeFrameType.Component)
-            {
-                continue;
-            }
-
-            if (frame.ComponentType == segment.ComponentType
-                && frame.Sequence == segment.Sequence
-                && KeysEqual(frame.ComponentKey, segment.ComponentKey))
-            {
-                matchedFrameIndex = i;
-                searchStart = i + 1;
-                return true;
-            }
-        }
-
-        matchedFrameIndex = -1;
-        return false;
-    }
-
-    private static bool KeysEqual(object? a, object? b)
-    {
-        if (ReferenceEquals(a, b))
-        {
-            return true;
-        }
-        if (a is null || b is null)
-        {
-            return false;
-        }
-        return a.Equals(b);
+        // Cache hit: invoke the deserialized RenderFragment straight into the live builder.
+        RenderFragmentSerializer.Deserialize(nodes!, _jsonOptions, _parametersTypeCache)(builder);
     }
 
     private ILogger? GetLogger()
         => HttpContext?.RequestServices.GetService<ILoggerFactory>()?.CreateLogger<CacheBoundary>();
 
-    private bool TryRestoreFromCache(out CacheBoundaryJson? cacheJson)
+    private bool TryRestoreFromCache(out List<RenderTreeNode>? nodes)
     {
-        cacheJson = null;
+        nodes = null;
 
         if (string.IsNullOrEmpty(CachedData))
         {
@@ -283,8 +202,13 @@ public sealed class CacheBoundary : ComponentBase
 
         try
         {
-            cacheJson = CacheBoundaryJson.Deserialize(CachedData);
-            return cacheJson.Count > 0;
+            var payload = JsonSerializer.Deserialize<SerializedRenderFragment>(CachedData, _jsonOptions);
+            if (payload is null || payload.Nodes.Count == 0)
+            {
+                return false;
+            }
+            nodes = payload.Nodes;
+            return true;
         }
         catch (Exception ex)
         {

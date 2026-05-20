@@ -55,26 +55,6 @@
     }
 </div>
 
-<div id="test-6">
-    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
-        @foreach (var item in HoleDriftState.Items)
-        {
-            <p class="loop-label" data-item="@item">label-@item</p>
-            <ExcludedContent>
-                <p class="loop-widget" data-item="@item">widget-@item</p>
-            </ExcludedContent>
-        }
-    </CacheBoundary>
-</div>
-
-<div id="test-7">
-    <p id="test-7-non-cached">@Guid.NewGuid()</p>
-    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
-        <p id="test-7-cached">@Guid.NewGuid()</p>
-        <ServerInteractiveCounter IncrementAmount="1" />
-    </CacheBoundary>
-</div>
-
 @code
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]

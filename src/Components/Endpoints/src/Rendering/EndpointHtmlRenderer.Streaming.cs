@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -286,11 +287,15 @@ internal partial class EndpointHtmlRenderer
 
                 if (_cacheStore is not null)
                 {
-                    var cacheCaptureWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions());
+                    var cacheCaptureWriter = new CacheBoundaryTextWriter(
+                        output,
+                        cacheBoundary.GetVaryByOptions(),
+                        cacheBoundary.ChildContentCapture);
                     cacheCaptureWriter.StartCapture();
                     base.WriteComponentHtml(componentId, cacheCaptureWriter);
-                    var segments = cacheCaptureWriter.StopCapture();
-                    _cacheStore.Set(cacheKey, segments.Serialize(), new CacheStoreOptions
+                    cacheCaptureWriter.StopCapture();
+
+                    _cacheStore.Set(cacheKey, cacheCaptureWriter.GetJson(GetRenderFragmentSerializationLogger()), new CacheStoreOptions
                     {
                         ExpiresAfter = cacheBoundary.ExpiresAfter,
                         ExpiresOn = cacheBoundary.ExpiresOn,
@@ -310,9 +315,9 @@ internal partial class EndpointHtmlRenderer
             pausedCapture = true;
             captureWriter.PauseCapture();
             var (holeComponentType, renderModeName) = componentState.Component is SSRRenderModeBoundary boundary2
-                ? (boundary2.ComponentType, CacheSegment.GetRenderModeName(boundary2.RenderMode))
+                ? (boundary2.ComponentType, RenderFragmentSerializer.GetRenderModeName(boundary2.RenderMode))
                 : (componentState.Component.GetType(), (string?)null);
-            captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, renderModeName, sequenceAndKey.Key);
+            captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, sequenceAndKey.Key, renderModeName);
         }
 
         ComponentEndMarker? endMarkerOrNull = default;
@@ -401,6 +406,15 @@ internal partial class EndpointHtmlRenderer
     private static CacheBoundaryPolicyAttribute? ResolveCachePolicy(Type componentType)
     {
         return componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
+    }
+
+    private ILogger? _renderFragmentSerializerLogger;
+
+    private ILogger GetRenderFragmentSerializationLogger()
+    {
+        return _renderFragmentSerializerLogger ??= _httpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger(typeof(RenderFragmentSerializer).FullName!);
     }
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)

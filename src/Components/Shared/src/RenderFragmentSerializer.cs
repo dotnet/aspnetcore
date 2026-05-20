@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components;
@@ -100,6 +101,7 @@ internal static partial class RenderFragmentSerializer
                         Type = "component",
                         TypeName = frame.ComponentType?.FullName,
                         TypeAssembly = frame.ComponentType?.Assembly.GetName().Name,
+                        Sequence = frame.Sequence,
                     };
                     if (frame.ComponentKey is not null)
                     {
@@ -123,6 +125,17 @@ internal static partial class RenderFragmentSerializer
                         position++;
                     }
 
+                    while (position < subtreeEnd)
+                    {
+                        ref readonly var inner = ref frames[position];
+                        if (inner.FrameType is RenderTreeFrameType.ComponentRenderMode)
+                        {
+                            node.RenderModeName = GetRenderModeName(inner.ComponentRenderMode);
+                            break;
+                        }
+                        position++;
+                    }
+
                     position = subtreeEnd;
                     target.Add(node);
                     break;
@@ -141,10 +154,6 @@ internal static partial class RenderFragmentSerializer
                     break;
                 case RenderTreeFrameType.ComponentReferenceCapture:
                     Log.ComponentReferenceCaptureSkipped(logger, ownerComponentType);
-                    position++;
-                    break;
-                case RenderTreeFrameType.ComponentRenderMode:
-                    Log.ComponentRenderModeSkipped(logger, ownerComponentType);
                     position++;
                     break;
                 case RenderTreeFrameType.NamedEvent:
@@ -224,6 +233,18 @@ internal static partial class RenderFragmentSerializer
         return builder => DeserializeNodes(builder, nodes, jsonOptions, typeCache);
     }
 
+    internal static string? GetRenderModeName(IComponentRenderMode? renderMode)
+    {
+        return renderMode switch
+        {
+            null => null,
+            InteractiveServerRenderMode => "InteractiveServer",
+            InteractiveWebAssemblyRenderMode => "InteractiveWebAssembly",
+            InteractiveAutoRenderMode => "InteractiveAuto",
+            _ => throw new InvalidOperationException($"Unsupported render mode type: '{renderMode.GetType().Name}'."),
+        };
+    }
+
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
     private static void DeserializeNodes(RenderTreeBuilder builder, List<RenderTreeNode> nodes, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
@@ -260,12 +281,22 @@ internal static partial class RenderFragmentSerializer
                     {
                         throw new InvalidOperationException($"Cannot resolve component type '{node.TypeName}' from assembly '{node.TypeAssembly}'.");
                     }
-                    builder.OpenComponent(0, componentType);
+                    builder.OpenComponent(node.Sequence ?? 0, componentType);
                     if (node.Key is not null)
                     {
                         builder.SetKey(node.Key is JsonElement je ? ConvertTypedValue(je, node.KeyTypeAssembly!, node.KeyTypeName!, jsonOptions, typeCache) : node.Key);
                     }
                     DeserializeComponentParameters(builder, node.ComponentParameters, jsonOptions, typeCache);
+                    if (node.RenderModeName is { } renderModeName)
+                    {
+                        builder.AddComponentRenderMode(renderModeName switch
+                        {
+                            "InteractiveServer" => Web.RenderMode.InteractiveServer,
+                            "InteractiveWebAssembly" => Web.RenderMode.InteractiveWebAssembly,
+                            "InteractiveAuto" => Web.RenderMode.InteractiveAuto,
+                            _ => throw new InvalidOperationException($"Unknown render mode name '{renderModeName}'."),
+                        });
+                    }
                     builder.CloseComponent();
                     break;
 
@@ -356,9 +387,6 @@ internal static partial class RenderFragmentSerializer
         [LoggerMessage(3, LogLevel.Warning, "A component @ref capture inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. Component references cannot cross render mode boundaries.", EventName = "ComponentReferenceCaptureSkipped")]
         public static partial void ComponentReferenceCaptureSkipped(ILogger logger, string? ownerComponentType);
 
-        [LoggerMessage(4, LogLevel.Warning, "A @rendermode directive inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. The render mode is already determined by the boundary the RenderFragment is crossing.", EventName = "ComponentRenderModeSkipped")]
-        public static partial void ComponentRenderModeSkipped(ILogger logger, string? ownerComponentType);
-
         [LoggerMessage(5, LogLevel.Warning, "A @formname directive inside a RenderFragment on component '{OwnerComponentType}' was skipped during serialization. Named events are an SSR-only mechanism and cannot cross render mode boundaries.", EventName = "NamedEventSkipped")]
         public static partial void NamedEventSkipped(ILogger logger, string? ownerComponentType);
 
@@ -405,6 +433,12 @@ internal sealed class RenderTreeNode
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<RenderTreeNode>? Children { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public int? Sequence { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RenderModeName { get; set; }
 }
 
 internal sealed class RenderTreeAttribute

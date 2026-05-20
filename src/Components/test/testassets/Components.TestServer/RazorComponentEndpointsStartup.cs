@@ -278,16 +278,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     ?? throw new InvalidOperationException("ICacheBoundaryStore.Clear() method not found.");
                 clearMethod.Invoke(store, null);
                 InnerCachedComponent.ResetRenderCount();
-                HoleDriftState.Reset();
             });
             endpoints.MapGet("cache-component/render-count", () =>
             {
                 return Results.Ok(InnerCachedComponent.RenderCount);
-            });
-            endpoints.MapGet("cache-component/drop-item", () =>
-            {
-                HoleDriftState.DropLast();
-                return Results.Ok();
             });
 
             MapEnhancedNavigationEndpoints(endpoints);

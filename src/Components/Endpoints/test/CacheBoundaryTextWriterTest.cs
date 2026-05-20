@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class CacheBoundaryTextWriterTest
@@ -17,29 +19,6 @@ public class CacheBoundaryTextWriterTest
     }
 
     [Fact]
-    public void Write_WithoutStartCapture_DoesNotCaptureSegments()
-    {
-        var writer = CreateWriter();
-
-        writer.Write("not captured");
-        var segments = writer.StopCapture();
-
-        Assert.Equal(0, segments.Count);
-    }
-
-    [Fact]
-    public void StartCapture_ThenWrite_CapturesHtml()
-    {
-        var writer = CreateWriter();
-
-        writer.StartCapture();
-        writer.Write("captured");
-        var segments = writer.StopCapture();
-
-        Assert.Equal(1, segments.Count);
-    }
-
-    [Fact]
     public void WriteChar_AlwaysForwardsToInner()
     {
         var inner = new StringWriter();
@@ -51,20 +30,44 @@ public class CacheBoundaryTextWriterTest
     }
 
     [Fact]
-    public void WriteChar_DuringCapture_IsCaptured()
+    public void Encoding_MatchesInnerWriter()
+    {
+        var inner = new StringWriter();
+        var writer = CreateWriter(inner);
+
+        Assert.Equal(inner.Encoding, writer.Encoding);
+    }
+
+    [Fact]
+    public void GetJson_WithoutCapture_ReturnsValidJson()
+    {
+        var writer = CreateWriter();
+
+        writer.Write("not captured");
+        writer.StopCapture();
+
+        var json = writer.GetJson(NullLogger.Instance);
+
+        Assert.False(string.IsNullOrEmpty(json));
+        Assert.StartsWith("{", json);
+    }
+
+    [Fact]
+    public void GetJson_OnlyMarkup_IncludesCapturedHtml()
     {
         var writer = CreateWriter();
 
         writer.StartCapture();
-        writer.Write('a');
-        writer.Write('b');
-        var segments = writer.StopCapture();
+        writer.Write("<p>hello</p>");
+        writer.StopCapture();
 
-        Assert.Equal(1, segments.Count);
+        var json = writer.GetJson(NullLogger.Instance);
+
+        Assert.Contains("hello", json);
     }
 
     [Fact]
-    public void PauseCapture_FlushesBufferAsHtmlSegment()
+    public void GetJson_MarkupAroundPause_EmitsTwoMarkupNodes()
     {
         var writer = CreateWriter();
 
@@ -74,58 +77,31 @@ public class CacheBoundaryTextWriterTest
         writer.Write("gap");
         writer.StartCapture();
         writer.Write("second");
-        var segments = writer.StopCapture();
+        writer.StopCapture();
 
-        // "first" flushed by PauseCapture, "second" flushed by StopCapture
-        Assert.Equal(2, segments.Count);
+        var json = writer.GetJson(NullLogger.Instance);
+
+        Assert.Contains("first", json);
+        Assert.Contains("second", json);
+        Assert.DoesNotContain("gap", json);
     }
 
     [Fact]
-    public void PauseCapture_WithEmptyBuffer_DoesNotAddSegment()
+    public void GetJson_HoleWithoutCapture_Throws()
     {
         var writer = CreateWriter();
 
         writer.StartCapture();
         writer.PauseCapture();
-        var segments = writer.StopCapture();
+        writer.CreateHole(typeof(ComponentBase), sequence: 0, componentKey: null, renderModeName: null);
+        writer.StopCapture();
 
-        Assert.Equal(0, segments.Count);
-    }
-
-    [Fact]
-    public void CreateHole_AddsHoleSegment()
-    {
-        var writer = CreateWriter();
-
-        writer.StartCapture();
-        writer.Write("<html>");
-        writer.PauseCapture();
-        writer.CreateHole(typeof(FakeHoleComponent));
-        writer.StartCapture();
-        writer.Write("</html>");
-        var segments = writer.StopCapture();
-
-        // html + hole + html = 3 segments
-        Assert.Equal(3, segments.Count);
-    }
-
-    [Fact]
-    public void Encoding_MatchesInnerWriter()
-    {
-        var inner = new StringWriter();
-        var writer = CreateWriter(inner);
-
-        Assert.Equal(inner.Encoding, writer.Encoding);
+        var ex = Assert.Throws<InvalidOperationException>(() => writer.GetJson(NullLogger.Instance));
+        Assert.Contains("ChildContent capture", ex.Message);
     }
 
     private static CacheBoundaryTextWriter CreateWriter(TextWriter inner = null)
     {
-        return new CacheBoundaryTextWriter(inner ?? new StringWriter(), CacheBoundaryVaryBy.None);
-    }
-
-    private class FakeHoleComponent : IComponent
-    {
-        public void Attach(RenderHandle renderHandle) { }
-        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+        return new CacheBoundaryTextWriter(inner ?? new StringWriter(), CacheBoundaryVaryBy.None, capture: null);
     }
 }

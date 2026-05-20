@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -82,6 +83,49 @@ public class CacheBoundaryRenderTest
         }
 
         Assert.Fail($"Expected to find text frame '{expectedText}' but it was not present.");
+    }
+
+    [Fact]
+    public async Task CacheHit_DoesNotInvokeChildContent()
+    {
+        var httpContext = CreateHttpContext();
+
+        var precomputed = new SerializedRenderFragment
+        {
+            Nodes = [new RenderTreeNode { Type = "markup", Content = "<p>from-cache</p>" }],
+        };
+        var store = new TestCacheStore { ReturnForAnyKey = JsonSerializer.Serialize(precomputed, ServerComponentSerializationSettings.JsonSerializationOptions) };
+
+        var childContentInvocations = 0;
+        var component = new CacheBoundary
+        {
+            ChildContent = builder =>
+            {
+                childContentInvocations++;
+                builder.AddMarkupContent(0, "<p>from-fresh</p>");
+            },
+            CacheStore = store,
+            HttpContext = httpContext,
+        };
+
+        var frames = await RenderComponent(component);
+
+        Assert.Equal(0, childContentInvocations);
+        AssertContainsMarkup(frames, "<p>from-cache</p>");
+    }
+
+    private static void AssertContainsMarkup(ArrayRange<RenderTreeFrame> frames, string expectedMarkup)
+    {
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var frame = ref frames.Array[i];
+            if (frame.FrameType == RenderTreeFrameType.Markup && frame.MarkupContent == expectedMarkup)
+            {
+                return;
+            }
+        }
+
+        Assert.Fail($"Expected to find markup frame '{expectedMarkup}' but it was not present.");
     }
 
     private sealed class TestCacheStore : ICacheBoundaryStore
