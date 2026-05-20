@@ -60,7 +60,7 @@
     These versions should ONLY be updated by automation.
 
     DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
-    Version.Details.xml.
+    Version.Details..
 
     See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
 
@@ -85,7 +85,7 @@
     <MicrosoftExtensionsConfigurationJsonVersion>9.0.16</MicrosoftExtensionsConfigurationJsonVersion>
     <MicrosoftExtensionsConfigurationVersion>9.0.16</MicrosoftExtensionsConfigurationVersion>
     <MicrosoftExtensionsConfigurationUserSecretsVersion>9.0.16</MicrosoftExtensionsConfigurationUserSecretsVersion>
-    <MicrosoftExtensionsConfigurationXmlVersion>9.0.16</MicrosoftExtensionsConfigurationXmlVersion>
+    <MicrosoftExtensionsConfigurationVersion>9.0.16</MicrosoftExtensionsConfigurationVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>9.0.16</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsDependencyInjectionVersion>9.0.16</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsDiagnosticsAbstractionsVersion>9.0.16</MicrosoftExtensionsDiagnosticsAbstractionsVersion>
@@ -124,7 +124,7 @@
     <SystemReflectionMetadataVersion>9.0.16</SystemReflectionMetadataVersion>
     <SystemResourcesExtensionsVersion>9.0.16</SystemResourcesExtensionsVersion>
     <SystemSecurityCryptographyPkcsVersion>9.0.16</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>9.0.16</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityCryptographyVersion>9.0.16</SystemSecurityCryptographyVersion>
     <SystemSecurityPermissionsVersion>9.0.16</SystemSecurityPermissionsVersion>
     <SystemServiceProcessServiceControllerVersion>9.0.16</SystemServiceProcessServiceControllerVersion>
     <SystemTextEncodingsWebVersion>9.0.16</SystemTextEncodingsWebVersion>
@@ -160,7 +160,7 @@
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>4.11.0-3.24554.2</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <MicrosoftSourceBuildIntermediateroslynVersion>4.11.0-3.24554.2</MicrosoftSourceBuildIntermediateroslynVersion>
     <!-- Packages from NuGet/Nuget.client -->
-    <!-- If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline.xml -->
+    <!-- If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline. -->
     <NuGetPackagingVersion>6.2.4</NuGetPackagingVersion>
     <NuGetVersioningVersion>6.2.4</NuGetVersioningVersion>
     <NuGetFrameworksVersion>6.2.4</NuGetFrameworksVersion>
@@ -203,7 +203,7 @@
     <MicrosoftExtensionsDiagnosticAdapterVersion>5.0.0-preview.3.20215.2</MicrosoftExtensionsDiagnosticAdapterVersion>
     <!-- Build tool dependencies -->
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
-    <RepoTasksSystemSecurityCryptographyXmlVersion>8.0.0</RepoTasksSystemSecurityCryptographyXmlVersion>
+    <RepoTasksSystemSecurityCryptographyXmlVersion>8.0.3</RepoTasksSystemSecurityCryptographyXmlVersion>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
