@@ -310,7 +310,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private async Task EnsureRenderCommittedAsync(bool refetchRequired, CancellationToken token)
     {
-        // Register the render-commit rendezvous BEFORE any render: on WASM, OnAfterRenderAsync fires synchronously inside RefreshDataCoreAsync.
+        // Set up the signal BEFORE any render: on WASM, OnAfterRenderAsync runs synchronously inside RefreshDataCoreAsync.
         var renderCommitTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         _nextRenderTcs = renderCommitTcs;
         using var renderReg = token.Register(static state => ((TaskCompletionSource)state!).TrySetCanceled(), renderCommitTcs);
@@ -322,11 +322,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
         else
         {
-            // Window already loaded — request one render so OnAfterRenderAsync can rendezvous on a committed DOM.
+            // Window already loaded — trigger one render so we can wait for the DOM to reflect it.
             StateHasChanged();
         }
 
-        // OnAfterRenderAsync signals only once the loaded slice matches our window, so one await suffices.
+        // OnAfterRenderAsync signals once the rendered slice matches our window, so one await is enough.
         await renderCommitTcs.Task;
         token.ThrowIfCancellationRequested();
     }
@@ -428,7 +428,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         // Wait until the loaded slice matches the window; earlier renders measure stale DOM.
         var pendingRenderTcs = _nextRenderTcs;
-        if (pendingRenderTcs is not null && _lastRenderedItemCount > 0 && _loadedItemsStartIndex == _itemsBefore)
+        if (pendingRenderTcs is not null && _loadedItemsStartIndex == _itemsBefore && (_lastRenderedItemCount > 0 || _itemCount == 0))
         {
             _nextRenderTcs = null;
             pendingRenderTcs.TrySetResult();

@@ -1002,6 +1002,19 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task ScrollToIndexAsync_EmptyListCompletesAsNoOp()
+    {
+        // Regression: render-commit rendezvous used to wait for _lastRenderedItemCount > 0, which never becomes true for an empty list, so the Task hung forever.
+        var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 0);
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(0); });
+
+        await task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.True(task.IsCompletedSuccessfully);
+    }
+
+    [Fact]
     public async Task ScrollToIndexAsync_AlreadyCancelledTokenProducesCancelledTask()
     {
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 100);
