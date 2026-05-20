@@ -22,11 +22,19 @@ internal abstract class HttpHeaderParser<T>
         get { return _supportsMultipleValues; }
     }
 
-    // If a parser supports multiple values, a call to ParseValue/TryParseValue should return a value for 'index'
-    // pointing to the next non-whitespace character after a delimiter. E.g. if called with a start index of 0
-    // for string "value , second_value", then after the call completes, 'index' must point to 's', i.e. the first
-    // non-whitespace after the separator ','.
-    public abstract bool TryParseValue(StringSegment value, ref int index, out T? parsedValue);
+    // If a parser supports multiple values, a call to ParseValue/TryParseValue should set 'parsedLength'
+    // to point past the next non-whitespace character after a delimiter. E.g. if called with a start index
+    // of 0 for string "value , second_value", then after the call completes 'startIndex + parsedLength'
+    // must point to 's', i.e. the first non-whitespace after the separator ','.
+    //
+    // 'parsedLength' is the number of input characters the call consumed and is always set:
+    //   - On success (returns true), 'parsedValue' is non-null and 'parsedLength' is the length of the
+    //     consumed input including any trailing whitespace/separator the parser ate.
+    //   - On failure (returns false), 'parsedValue' is null. 'parsedLength' is the number of input
+    //     characters the parser consumed before giving up (it may be 0 if nothing was recognized at
+    //     'startIndex', or non-zero when the parser recognized the shape of a value but could not
+    //     produce one — e.g. an unterminated quoted-string).
+    public abstract bool TryParseValue(StringSegment value, int startIndex, out int parsedLength, out T? parsedValue);
 
     public T? ParseValue(StringSegment value, ref int index)
     {
@@ -36,11 +44,12 @@ internal abstract class HttpHeaderParser<T>
 
         // If a parser returns 'null', it means there was no value, but that's valid (e.g. "Accept: "). The caller
         // can ignore the value.
-        if (!TryParseValue(value, ref index, out var result))
+        if (!TryParseValue(value, index, out var parsedLength, out var result))
         {
             throw new FormatException(string.Format(CultureInfo.InvariantCulture,
                 "The header contains invalid values at index {0}: '{1}'", index, value.Value ?? "<null>"));
         }
+        index += parsedLength;
         return result;
     }
 
@@ -72,8 +81,10 @@ internal abstract class HttpHeaderParser<T>
 
             while (!string.IsNullOrEmpty(value) && index < value.Length)
             {
-                if (TryParseValue(value, ref index, out var output))
+                if (TryParseValue(value, index, out var parsedLength, out var output))
                 {
+                    index += parsedLength;
+
                     // The entry may not contain an actual value, like " , "
                     if (output != null)
                     {
@@ -90,8 +101,11 @@ internal abstract class HttpHeaderParser<T>
                 }
                 else
                 {
-                    // Skip the invalid values and keep trying.
-                    index++;
+                    // Skip the invalid value. 'parsedLength' is the span of input the parser already
+                    // consumed before failing; jump past it so we don't re-scan the same characters
+                    // (which would be O(N^2) for per-element parsers whose failure path is O(N)).
+                    // Always advance by at least one character to guarantee forward progress.
+                    index += Math.Max(parsedLength, 1);
                 }
             }
         }
@@ -129,8 +143,10 @@ internal abstract class HttpHeaderParser<T>
 
             while (!string.IsNullOrEmpty(value) && index < value.Length)
             {
-                if (TryParseValue(value, ref index, out var output))
+                if (TryParseValue(value, index, out var parsedLength, out var output))
                 {
+                    index += parsedLength;
+
                     // The entry may not contain an actual value, like " , "
                     if (output != null)
                     {
@@ -144,8 +160,8 @@ internal abstract class HttpHeaderParser<T>
                 }
                 else
                 {
-                    // Skip the invalid values and keep trying.
-                    index++;
+                    // See the matching comment in TryParseValues for the rationale.
+                    index += Math.Max(parsedLength, 1);
                 }
             }
         }
