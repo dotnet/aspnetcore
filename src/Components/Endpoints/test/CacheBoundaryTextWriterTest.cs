@@ -100,6 +100,65 @@ public class CacheBoundaryTextWriterTest
         Assert.Contains("ChildContent capture", ex.Message);
     }
 
+    [Fact]
+    public void Write_DuringPausedCapture_ForwardsToInner_ButDoesNotBuffer()
+    {
+        var inner = new StringWriter();
+        var writer = CreateWriter(inner);
+
+        writer.StartCapture();
+        writer.Write("captured");
+        writer.PauseCapture();
+        writer.Write("not-captured");
+        writer.StartCapture();
+        writer.Write("captured-again");
+        writer.StopCapture();
+
+        // Inner writer receives everything
+        Assert.Equal("capturednot-capturedcaptured-again", inner.ToString());
+
+        // JSON only has the captured parts
+        var json = writer.GetJson(NullLogger.Instance);
+        Assert.Contains("captured", json);
+        Assert.Contains("captured-again", json);
+        Assert.DoesNotContain("not-captured", json);
+    }
+
+    [Fact]
+    public void IsCapturing_ReflectsCurrentState()
+    {
+        var writer = CreateWriter();
+
+        Assert.False(writer.IsCapturing);
+
+        writer.StartCapture();
+        Assert.True(writer.IsCapturing);
+
+        writer.PauseCapture();
+        Assert.False(writer.IsCapturing);
+
+        writer.StartCapture();
+        Assert.True(writer.IsCapturing);
+
+        writer.StopCapture();
+        Assert.False(writer.IsCapturing);
+    }
+
+    [Fact]
+    public void GetJson_EmptyCapture_ReturnsValidJsonWithNoMarkup()
+    {
+        var writer = CreateWriter();
+
+        writer.StartCapture();
+        // Write nothing
+        writer.StopCapture();
+
+        var json = writer.GetJson(NullLogger.Instance);
+
+        Assert.False(string.IsNullOrEmpty(json));
+        Assert.StartsWith("{", json);
+    }
+
     private static CacheBoundaryTextWriter CreateWriter(TextWriter inner = null)
     {
         return new CacheBoundaryTextWriter(inner ?? new StringWriter(), CacheBoundaryVaryBy.None, capture: null);

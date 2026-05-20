@@ -114,6 +114,42 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
     }
 
+    [Fact]
+    public void CacheBoundaryVaryByQuery_DifferentQueryValues_ProduceDifferentCachedContent()
+    {
+        Navigate($"{ServerPathBase}/cache-component?q=alpha");
+        var valueForAlpha = Browser.FindElement(By.Id("test-6")).FindElement(By.CssSelector(".vary-cached")).Text;
+
+        Navigate($"{ServerPathBase}/cache-component?q=beta");
+        var valueForBeta = Browser.FindElement(By.Id("test-6")).FindElement(By.CssSelector(".vary-cached")).Text;
+
+        // Different query values should produce different cache entries
+        Assert.NotEqual(valueForAlpha, valueForBeta);
+
+        // Re-navigating with the same query should hit the cache
+        Navigate($"{ServerPathBase}/cache-component?q=alpha");
+        Browser.Equal(valueForAlpha, () => Browser.FindElement(By.Id("test-6")).FindElement(By.CssSelector(".vary-cached")).Text);
+
+        Navigate($"{ServerPathBase}/cache-component?q=beta");
+        Browser.Equal(valueForBeta, () => Browser.FindElement(By.Id("test-6")).FindElement(By.CssSelector(".vary-cached")).Text);
+    }
+
+    [Fact]
+    public void CacheBoundaryVaryBy_DifferentCustomValues_ProduceDifferentCachedContent()
+    {
+        Navigate($"{ServerPathBase}/cache-component?cv=dark");
+        var valueForDark = Browser.FindElement(By.Id("test-7")).FindElement(By.CssSelector(".custom-vary-cached")).Text;
+
+        Navigate($"{ServerPathBase}/cache-component?cv=light");
+        var valueForLight = Browser.FindElement(By.Id("test-7")).FindElement(By.CssSelector(".custom-vary-cached")).Text;
+
+        Assert.NotEqual(valueForDark, valueForLight);
+
+        // Cache hit for same custom value
+        Navigate($"{ServerPathBase}/cache-component?cv=dark");
+        Browser.Equal(valueForDark, () => Browser.FindElement(By.Id("test-7")).FindElement(By.CssSelector(".custom-vary-cached")).Text);
+    }
+
     private int GetRenderCount()
     {
         Navigate($"{ServerPathBase}/cache-component/render-count");

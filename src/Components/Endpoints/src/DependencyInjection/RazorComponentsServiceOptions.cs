@@ -112,14 +112,14 @@ public sealed class RazorComponentsServiceOptions
     /// </summary>
     public long CacheBoundarySizeLimit
     {
-        get => _CacheBoundarySizeLimit;
+        get => _cacheBoundarySizeLimit;
         set
         {
             ArgumentOutOfRangeException.ThrowIfNegative(value);
-            _CacheBoundarySizeLimit = value;
+            _cacheBoundarySizeLimit = value;
         }
     }
 
-    private long _CacheBoundarySizeLimit = 100_000_000;
+    private long _cacheBoundarySizeLimit = 100_000_000;
     internal static readonly TimeSpan DefaultCacheBoundaryExpiration = TimeSpan.FromSeconds(30);
 }

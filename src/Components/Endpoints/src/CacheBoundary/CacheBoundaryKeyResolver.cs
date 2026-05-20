@@ -21,32 +21,32 @@ internal static class CacheBoundaryKeyResolver
         if (cacheBoundary.CacheKey is not null)
         {
             AppendString(hash, "||CacheKey||");
-            AppendString(hash, cacheBoundary.CacheKey);
+            AppendLengthPrefixedString(hash, cacheBoundary.CacheKey);
         }
 
         var request = httpContext.Request;
         if (cacheBoundary.VaryBy is { } varyBy)
         {
             AppendString(hash, "||VaryBy||");
-            AppendString(hash, varyBy);
+            AppendLengthPrefixedString(hash, varyBy);
         }
 
-        if (cacheBoundary.VaryByQuery is not null)
+        if (!string.IsNullOrEmpty(cacheBoundary.VaryByQuery))
         {
             AppendDelimitedValues(hash, "VaryByQuery", cacheBoundary.VaryByQuery, name => (string?)request.Query[name]);
         }
 
-        if (cacheBoundary.VaryByRoute is not null)
+        if (!string.IsNullOrEmpty(cacheBoundary.VaryByRoute))
         {
             AppendDelimitedValues(hash, "VaryByRoute", cacheBoundary.VaryByRoute, name => request.RouteValues[name]?.ToString());
         }
 
-        if (cacheBoundary.VaryByHeader is not null)
+        if (!string.IsNullOrEmpty(cacheBoundary.VaryByHeader))
         {
             AppendDelimitedValues(hash, "VaryByHeader", cacheBoundary.VaryByHeader, name => (string?)request.Headers[name]);
         }
 
-        if (cacheBoundary.VaryByCookie is not null)
+        if (!string.IsNullOrEmpty(cacheBoundary.VaryByCookie))
         {
             AppendDelimitedValues(hash, "VaryByCookie", cacheBoundary.VaryByCookie, name => request.Cookies[name]);
         }
@@ -54,15 +54,14 @@ internal static class CacheBoundaryKeyResolver
         if (cacheBoundary.VaryByUser is true)
         {
             AppendString(hash, "||VaryByUser||");
-            AppendString(hash, httpContext.User.Identity?.Name);
+            AppendLengthPrefixedString(hash, httpContext.User.Identity?.Name ?? "");
         }
 
         if (cacheBoundary.VaryByCulture is true)
         {
             AppendString(hash, "||VaryByCulture||");
-            AppendString(hash, CultureInfo.CurrentCulture.Name);
-            AppendString(hash, "||");
-            AppendString(hash, CultureInfo.CurrentUICulture.Name);
+            AppendLengthPrefixedString(hash, CultureInfo.CurrentCulture.Name);
+            AppendLengthPrefixedString(hash, CultureInfo.CurrentUICulture.Name);
         }
 
         Span<byte> hashOutput = stackalloc byte[SHA256.HashSizeInBytes];
@@ -87,22 +86,36 @@ internal static class CacheBoundaryKeyResolver
 
         for (var i = 0; i < names.Length; i++)
         {
-            if (string.IsNullOrEmpty(valueAccessor(names[i])))
+            var value = valueAccessor(names[i]);
+            if (string.IsNullOrEmpty(value))
             {
                 continue;
             }
             AppendString(hash, "||");
             AppendString(hash, names[i]);
             AppendString(hash, "||");
-            AppendString(hash, valueAccessor(names[i]));
+            AppendLengthPrefixedString(hash, value);
         }
 
         AppendString(hash, ")");
     }
 
+    private static void AppendLengthPrefixedString(IncrementalHash hash, string value)
+    {
+        var byteCount = Encoding.UTF8.GetByteCount(value);
+        Span<byte> lengthPrefix = stackalloc byte[4];
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(lengthPrefix, byteCount);
+        hash.AppendData(lengthPrefix);
+        hash.AppendData(Encoding.UTF8.GetBytes(value));
+    }
+
     private static void AppendString(IncrementalHash hash, string? value)
     {
-        if (!string.IsNullOrEmpty(value))
+        if (string.IsNullOrEmpty(value))
+        {
+            hash.AppendData("\0"u8);
+        }
+        else
         {
             hash.AppendData(Encoding.UTF8.GetBytes(value));
         }

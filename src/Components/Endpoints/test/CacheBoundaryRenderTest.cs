@@ -114,6 +114,68 @@ public class CacheBoundaryRenderTest
         AssertContainsMarkup(frames, "<p>from-cache</p>");
     }
 
+    [Fact]
+    public async Task Disabled_WithStoreAvailable_RendersChildContentFresh()
+    {
+        var httpContext = CreateHttpContext();
+        var store = new TestCacheStore { ReturnForAnyKey = "should-not-be-used" };
+
+        var childContentInvocations = 0;
+        var component = new CacheBoundary
+        {
+            ChildContent = builder =>
+            {
+                childContentInvocations++;
+                builder.AddContent(0, "fresh-content");
+            },
+            Enabled = false,
+            CacheStore = store,
+            HttpContext = httpContext,
+        };
+
+        var frames = await RenderComponent(component);
+
+        Assert.Equal(1, childContentInvocations);
+        AssertContainsText(frames, "fresh-content");
+    }
+
+    [Fact]
+    public async Task CachedEmptyNodes_FallsBackToChildContent()
+    {
+        var httpContext = CreateHttpContext();
+        var emptyPayload = new SerializedRenderFragment { Nodes = [] };
+        var store = new TestCacheStore { ReturnForAnyKey = JsonSerializer.Serialize(emptyPayload, ServerComponentSerializationSettings.JsonSerializationOptions) };
+
+        var component = new CacheBoundary
+        {
+            ChildContent = builder => builder.AddContent(0, "fallback-empty"),
+            CacheStore = store,
+            HttpContext = httpContext,
+        };
+
+        var frames = await RenderComponent(component);
+
+        AssertContainsText(frames, "fallback-empty");
+    }
+
+    [Fact]
+    public async Task NullCachedPayload_FallsBackToChildContent()
+    {
+        var httpContext = CreateHttpContext();
+        var store = new TestCacheStore { ReturnForAnyKey = JsonSerializer.Serialize<SerializedRenderFragment?>(null, ServerComponentSerializationSettings.JsonSerializationOptions) };
+
+        var component = new CacheBoundary
+        {
+            ChildContent = builder => builder.AddContent(0, "fallback-null"),
+            CacheStore = store,
+            HttpContext = httpContext,
+        };
+
+        var frames = await RenderComponent(component);
+
+        AssertContainsText(frames, "fallback-null");
+    }
+
     private static void AssertContainsMarkup(ArrayRange<RenderTreeFrame> frames, string expectedMarkup)
     {
         for (var i = 0; i < frames.Count; i++)

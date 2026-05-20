@@ -124,22 +124,22 @@ public sealed class CacheBoundary : ComponentBase
     {
         var result = CacheBoundaryVaryBy.None;
 
-        if (VaryByQuery is not null)
+        if (!string.IsNullOrEmpty(VaryByQuery))
         {
             result |= CacheBoundaryVaryBy.Query;
         }
 
-        if (VaryByRoute is not null)
+        if (!string.IsNullOrEmpty(VaryByRoute))
         {
             result |= CacheBoundaryVaryBy.Route;
         }
 
-        if (VaryByHeader is not null)
+        if (!string.IsNullOrEmpty(VaryByHeader))
         {
             result |= CacheBoundaryVaryBy.Header;
         }
 
-        if (VaryByCookie is not null)
+        if (!string.IsNullOrEmpty(VaryByCookie))
         {
             result |= CacheBoundaryVaryBy.Cookie;
         }

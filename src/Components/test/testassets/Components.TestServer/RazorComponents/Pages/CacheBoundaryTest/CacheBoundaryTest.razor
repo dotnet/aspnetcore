@@ -1,4 +1,5 @@
 @page "/cache-component"
+@page "/cache-component/vary"
 @using Microsoft.AspNetCore.Components.Forms
 
 <h3>CacheBoundary</h3>
@@ -55,8 +56,23 @@
     }
 </div>
 
+<div id="test-6">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="q">
+        <p class="vary-cached">@Guid.NewGuid()</p>
+    </CacheBoundary>
+</div>
+
+<div id="test-7">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryBy="@CustomVaryBy">
+        <p class="custom-vary-cached">@Guid.NewGuid()</p>
+    </CacheBoundary>
+</div>
+
 @code
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]
     private string Message { get; set; } = "never";
+
+    [SupplyParameterFromQuery(Name = "cv")]
+    private string? CustomVaryBy { get; set; }
 }

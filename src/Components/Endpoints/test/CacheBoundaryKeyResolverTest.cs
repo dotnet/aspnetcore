@@ -226,6 +226,77 @@ public class CacheBoundaryKeyResolverTest
         Assert.NotEqual(key1, key2);
     }
 
+    [Fact]
+    public void ComputeKey_DelimiterInjectionInQueryValue_DoesNotCollide()
+    {
+        // A single query param "a" with value "x||b||y" must not collide
+        // with two query params "a" and "b" with values "x" and "y".
+        var componentSingle = CreateComponent(varyByQuery: "a");
+        var ctxSingle = CreateHttpContext(queryString: "?a=x%7C%7Cb%7C%7Cy");
+
+        var componentMulti = CreateComponent(varyByQuery: "a,b");
+        var ctxMulti = CreateHttpContext(queryString: "?a=x&b=y");
+
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentSingle, ctxSingle);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentMulti, ctxMulti);
+
+        Assert.NotEqual(key1, key2);
+    }
+
+    [Fact]
+    public void ComputeKey_DelimiterInjectionInHeaderValue_DoesNotCollide()
+    {
+        var componentSingle = CreateComponent(varyByHeader: "X-A");
+        var ctxSingle = CreateHttpContext(headers: new Dictionary<string, string> { ["X-A"] = "val||X-B||other" });
+
+        var componentMulti = CreateComponent(varyByHeader: "X-A,X-B");
+        var ctxMulti = CreateHttpContext(headers: new Dictionary<string, string> { ["X-A"] = "val", ["X-B"] = "other" });
+
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentSingle, ctxSingle);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentMulti, ctxMulti);
+
+        Assert.NotEqual(key1, key2);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByUser_AnonymousUser_DiffersFromNoVaryByUser()
+    {
+        var componentWithVaryByUser = CreateComponent(varyByUser: true);
+        var componentWithoutVaryByUser = CreateComponent(varyByUser: false);
+        var ctx = CreateHttpContext(); // anonymous — no user set
+
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentWithVaryByUser, ctx);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentWithoutVaryByUser, ctx);
+
+        Assert.NotEqual(key1, key2);
+    }
+
+    [Fact]
+    public void ComputeKey_EmptyVaryByQuery_SameAsNullVaryByQuery()
+    {
+        var componentEmpty = CreateComponent(varyByQuery: "");
+        var componentNull = CreateComponent(varyByQuery: null);
+        var ctx = CreateHttpContext(queryString: "?page=1");
+
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentEmpty, ctx);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentNull, ctx);
+
+        Assert.Equal(key1, key2);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByQuery_MissingParam_ProducesSameKeyAsNoParam()
+    {
+        var component = CreateComponent(varyByQuery: "missing");
+        var ctx1 = CreateHttpContext(queryString: "?other=1");
+        var ctx2 = CreateHttpContext(queryString: "?another=2");
+
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+
+        Assert.Equal(key1, key2);
+    }
+
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
     private static CacheBoundary CreateComponent(
