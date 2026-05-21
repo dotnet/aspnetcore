@@ -15,13 +15,16 @@
     <!-- ANCM always builds every patch as we don't push temporary nuget packages anymore and that ANCM itself is a global singleton -->
     <IsPackageInThisPatch Condition="'$(IsANCMPackage)' == 'true'">true</IsPackageInThisPatch>
 
-    <!-- We shipped every package other than Razor in 2.3.10 -->
-    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '10'">true</IsPackageInThisPatch>
+    <!-- We shipped every package other than Razor in 2.3.11 -->
+    <IsPackageInThisPatch Condition=" '$(AspNetCorePatchVersion)' == '11'">true</IsPackageInThisPatch>
     
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Razor'))">false</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Mvc.Razor'))">false</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Mvc.Razor.ViewCompilation'))">false</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.Mvc.Analyzers'))">false</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.AzureKeyVault'))">false</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.AzureStorage'))">false</IsPackageInThisPatch>
+    <IsPackageInThisPatch Condition="$(PackageId.StartsWith('Microsoft.AspNetCore.DataProtection.Redis'))">false</IsPackageInThisPatch>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(IsServicingBuild)' == 'true' ">
