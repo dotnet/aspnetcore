@@ -62,8 +62,13 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
-  <!-- We shipped all packages in 2.3.9. This is empty because we did it via Directory.Build.Targets -->
+  <!-- We shipped all packages in 2.3.10. This is empty because we did it via Directory.Build.Targets -->
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.10' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+  <!-- We shipped all packages in 2.3.11. This is empty because we did it via Directory.Build.Targets -->
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.11' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
