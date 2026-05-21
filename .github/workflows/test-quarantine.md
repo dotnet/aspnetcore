@@ -98,15 +98,17 @@ on:
         import sys
         json_str = json.dumps(requarantine_data)
         github_output = os.environ.get("GITHUB_OUTPUT", "")
-        if github_output:
-            with open(github_output, "a") as gh_out:
-                gh_out.write(f"requarantine_data<<REQUARANTINE_EOF\n{json_str}\nREQUARANTINE_EOF\n")
+        if not github_output:
+            print("ERROR: GITHUB_OUTPUT is not set, cannot pass data to agent", file=sys.stderr)
+            sys.exit(1)
+        with open(github_output, "a") as gh_out:
+            gh_out.write(f"requarantine_data<<REQUARANTINE_EOF\n{json_str}\nREQUARANTINE_EOF\n")
 
         print(f"Found {len(requarantine_data)} re-quarantine PRs, wrote to step output")
         SCRIPT
 
 jobs:
-  pre-activation:
+  pre_activation:
     outputs:
       requarantine_data: ${{ steps.requarantine_prs.outputs.requarantine_data }}
 
