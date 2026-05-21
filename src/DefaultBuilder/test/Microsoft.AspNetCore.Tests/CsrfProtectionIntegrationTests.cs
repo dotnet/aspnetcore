@@ -570,6 +570,81 @@ public class CsrfProtectionIntegrationTests
         Assert.False(endpointInvoked, "CSRF middleware should short-circuit before reaching the endpoint.");
     }
 
+    [Fact]
+    public async Task CsrfProtection_AndAntiforgeryMiddleware_FormReadRejectsMissingToken()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAntiforgery();
+        using var app = builder.Build();
+
+        app.UseAntiforgery();
+        IAntiforgeryValidationFeature? capturedFeature = null;
+        app.MapPost("/protected", (HttpContext ctx) =>
+        {
+            capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
+            return "ok";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        // Same-origin POST with no antiforgery token. CSRF middleware allows (Sec-Fetch-Site=same-origin)
+        // but antiforgery middleware must still record the missing token on IAntiforgeryValidationFeature.
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected")
+        {
+            Content = new FormUrlEncodedContent([new KeyValuePair<string, string>("name", "alice")]),
+        };
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(capturedFeature);
+        Assert.False(capturedFeature!.IsValid, "Antiforgery middleware should record the missing token even when CSRF protection allowed the request.");
+    }
+
+    [Fact]
+    public async Task CsrfProtection_AndAntiforgeryMiddleware_ValidTokenSucceeds()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAntiforgery();
+        using var app = builder.Build();
+
+        app.UseAntiforgery();
+        IAntiforgeryValidationFeature? capturedFeature = null;
+        app.MapPost("/protected", (HttpContext ctx) =>
+        {
+            capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
+            return "ok";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        // Generate a valid token pair (cookie + form field) via the configured IAntiforgery service.
+        var antiforgery = app.Services.GetRequiredService<IAntiforgery>();
+        var options = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<AntiforgeryOptions>>().Value;
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext { RequestServices = app.Services });
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected")
+        {
+            Content = new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>(options.FormFieldName, tokens.RequestToken!),
+            }),
+        };
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+        request.Headers.Add("Cookie", $"{options.Cookie.Name}={tokens.CookieToken}");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(capturedFeature);
+        Assert.True(capturedFeature!.IsValid, "Antiforgery middleware should accept the valid token; CSRF protection also allowed the same-origin request.");
+    }
+
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
