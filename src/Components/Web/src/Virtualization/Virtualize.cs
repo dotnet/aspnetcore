@@ -55,6 +55,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private CancellationTokenSource? _currentScrollCts;
 
+    private bool _inFlightScrollHasRendered;
+
     private TaskCompletionSource? _nextRenderTcs;
 
     private bool _initialScrollApplied;
@@ -258,6 +260,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         var ourCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         _currentScrollCts = ourCts;
+        _inFlightScrollHasRendered = false;
         var token = ourCts.Token;
 
         try
@@ -431,6 +434,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (pendingRenderTcs is not null && _loadedItemsStartIndex == _itemsBefore && (_lastRenderedItemCount > 0 || _itemCount == 0))
         {
             _nextRenderTcs = null;
+            _inFlightScrollHasRendered = true;
             pendingRenderTcs.TrySetResult();
         }
 
@@ -604,9 +608,27 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         return false;
     }
 
+    private bool ShouldSuppressSpacerCallback()
+    {
+        if (_currentScrollCts is null)
+        {
+            return false;
+        }
+        if (_inFlightScrollHasRendered)
+        {
+            // IO is triggered by our own render and alignToItem -> suppress.
+            return true;
+        }
+        // real user input wins -> cancel programmatic scroll and the in-flight provider call.
+        _currentScrollCts.Cancel();
+        _currentScrollCts = null;
+        _refreshCts?.Cancel();
+        return false;
+    }
+
     void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (_pendingAnchorRestore || _currentScrollCts is not null)
+        if (_pendingAnchorRestore || ShouldSuppressSpacerCallback())
         {
             return;
         }
@@ -626,7 +648,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
-        if (_pendingAnchorRestore || _currentScrollCts is not null)
+        if (_pendingAnchorRestore || ShouldSuppressSpacerCallback())
         {
             return;
         }

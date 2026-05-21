@@ -93,10 +93,16 @@
     <button id="toggle-delay" @onclick="ToggleDelay">
         Provider Delay: @(useProviderDelay ? "500ms" : "None")
     </button>
+    <button id="toggle-provider-gate" @onclick="ToggleProviderGate">
+        Gate: @(useProviderGate ? "On" : "Off")
+    </button>
+    <button id="release-provider-gate" @onclick="ReleaseProviderGate">Release gate</button>
 </div>
 
 <p id="status">@statusMessage</p>
 <p id="current-mode">@((int)anchorMode)</p>
+<p id="provider-call-index" data-value="@providerCallIndex">@providerCallIndex</p>
+<p id="provider-events" data-value="@string.Join("|", providerEvents)">@string.Join("|", providerEvents)</p>
 
 @code {
     private List<DynamicItem> items = new();
@@ -105,6 +111,10 @@
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
     private bool useProviderDelay = false;
+    private bool useProviderGate = false;
+    private TaskCompletionSource providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int providerCallIndex;
+    private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
     private int initialIndex;
     private int manualInitialIndex;
@@ -317,6 +327,25 @@
         {
             await Task.Delay(500);
         }
+        if (useProviderGate)
+        {
+            var n = Interlocked.Increment(ref providerCallIndex);
+            var gate = providerGate;
+            lock (providerEvents) providerEvents.Add($"p{n}-enter");
+            await InvokeAsync(StateHasChanged);
+            try
+            {
+                await gate.Task.WaitAsync(request.CancellationToken);
+                lock (providerEvents) providerEvents.Add($"p{n}-return");
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (OperationCanceledException)
+            {
+                lock (providerEvents) providerEvents.Add($"p{n}-cancel");
+                await InvokeAsync(StateHasChanged);
+                throw;
+            }
+        }
 
         // Apply pending mutations (simulates fetching updated data from a DB).
         if (_pendingPrepend != null)
@@ -353,6 +382,19 @@
         statusMessage = useProviderDelay ? "Provider delay: 500ms" : "Provider delay: None";
     }
 
+    private void ToggleProviderGate()
+    {
+        useProviderGate = !useProviderGate;
+        statusMessage = useProviderGate ? "Provider gate: On" : "Provider gate: Off";
+    }
+
+    private void ReleaseProviderGate()
+    {
+        var old = providerGate;
+        providerGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        old.TrySetResult();
+    }
+
     private async Task ReloadWithInitialIndex()
     {
         listLoaded = false;
@@ -370,15 +412,18 @@
     private async Task ScrollToTarget()
     {
         if (virtualizeRef == null) { scrollStatus = "Faulted: no virtualizeRef"; return; }
+        lock (providerEvents) providerEvents.Add("scroll-start");
         scrollStatus = $"Scrolling to {scrollTargetIndex}...";
         try
         {
             await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex);
             scrollStatus = $"Completed: {scrollTargetIndex}";
+            lock (providerEvents) providerEvents.Add("scroll-complete");
         }
         catch (OperationCanceledException)
         {
             scrollStatus = $"Canceled: {scrollTargetIndex}";
+            lock (providerEvents) providerEvents.Add("scroll-cancel");
         }
         catch (Exception ex)
         {

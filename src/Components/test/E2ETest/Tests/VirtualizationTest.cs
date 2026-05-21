@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Globalization;
+using System.Linq;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -4218,6 +4220,90 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("scroll-to-item")).Click();
         WaitForScrollStatus("Completed: 120", timeoutSeconds: 30);
         Browser.True(() => GetTopRenderedIndex(js) == 120);
+    }
+
+    [Fact]
+    public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
+    {
+        // While the provider is fetching for ScrollToIndexAsync, a real user scroll must win.
+        MountAnchorModeForScrollToItem();
+        var js = (IJavaScriptExecutor)Browser;
+        var container = Browser.Exists(By.Id("scroll-container"));
+
+        // Arm the gate. The initial load already finished above, so the *next* provider
+        // call will be the first gated one (counter starts at 0 -> becomes 1 on entry).
+        Browser.Exists(By.Id("toggle-provider-gate")).Click();
+
+        // Trigger a scroll to row 800. This fires call #1 through the gate.
+        SetScrollTargetIndex(800);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        Browser.True(() => GetProviderCallIndex(js) >= 1);
+        Browser.True(() => GetProviderEvents(js).Contains("p1-enter"));
+        Browser.True(() => GetProviderEvents(js).Contains("scroll-start"));
+
+        // While call #1 is still blocked, simulate a real user scroll far from row 800.
+        // The scroll event triggers spacer IO -> the fix cancels _currentScrollCts ->
+        // call #1's WaitAsync(ct) throws OCE -> RefreshDataCoreAsync starts call #2 for
+        // the user's window. The caller observes OperationCanceledException.
+        js.ExecuteScript("arguments[0].scrollTop = arguments[1];", container, 5000);
+
+        Browser.True(() => GetProviderEvents(js).Contains("p1-cancel"));
+        Browser.True(() => GetProviderCallIndex(js) >= 2);
+        Browser.True(() => GetProviderEvents(js).Contains("p2-enter"));
+        // Caller's Task completes normally per existing contract (supersession/user-scroll don't fault).
+        WaitForScrollStatus("Completed: 800");
+
+        // Release the gate. A user scroll typically triggers multiple RefreshDataCoreAsync
+        // calls (one per spacer-IO callback), each superseding the previous _refreshCts.
+        // Whichever provider call is waiting on the current gate TCS at release time wakes up.
+        // We just need *some* later call to return so the final user-window items render.
+        Browser.Exists(By.Id("release-provider-gate")).Click();
+        Browser.True(() =>
+        {
+            var parts = GetProviderEvents(js).Split('|');
+            var cancelIdx = Array.IndexOf(parts, "p1-cancel");
+            if (cancelIdx < 0)
+            {
+                return false;
+            }
+            return parts.Skip(cancelIdx + 1)
+                .Any(e => e.StartsWith("p", StringComparison.Ordinal) && e.EndsWith("-return", StringComparison.Ordinal));
+        }, $"Expected some pN-return after p1-cancel. Events: {GetProviderEvents(js)}");
+
+        // Causal-order assertions. The scroll-target fetch (call #1) must never have
+        // returned successfully -- that's the real proof the user scroll won.
+        var log = GetProviderEvents(js);
+        Assert.DoesNotContain("p1-return", log);
+        Assert.True(IndexOf(log, "scroll-start") < IndexOf(log, "p1-enter"),
+            $"scroll-start should precede p1-enter; events={log}");
+        Assert.True(IndexOf(log, "p1-enter") < IndexOf(log, "p1-cancel"),
+            $"p1-enter should precede p1-cancel; events={log}");
+
+        // Final viewport: the user scrolled near the top (~row 100), NOT row 800.
+        Browser.True(() =>
+        {
+            var top = GetTopRenderedIndex(js);
+            return top >= 0 && top < 250;
+        }, $"Top rendered should reflect the user scroll (< 250), but was {GetTopRenderedIndex(js)}");
+    }
+
+    private static long GetProviderCallIndex(IJavaScriptExecutor js)
+    {
+        var raw = (string)js.ExecuteScript(
+            "return document.getElementById('provider-call-index')?.getAttribute('data-value');");
+        return long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0;
+    }
+
+    private static string GetProviderEvents(IJavaScriptExecutor js)
+    {
+        return (string)js.ExecuteScript(
+            "return document.getElementById('provider-events')?.getAttribute('data-value') ?? '';");
+    }
+
+    private static int IndexOf(string log, string token)
+    {
+        var i = log.IndexOf(token, StringComparison.Ordinal);
+        return i < 0 ? int.MaxValue : i;
     }
 
     [Fact]
