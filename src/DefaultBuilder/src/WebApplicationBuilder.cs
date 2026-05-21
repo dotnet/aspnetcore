@@ -26,7 +26,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
     private const string CsrfProtectionMiddlewareSetKey = "__CsrfProtectionMiddlewareSet";
-
     private const string UseRoutingKey = "__UseRouting";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
