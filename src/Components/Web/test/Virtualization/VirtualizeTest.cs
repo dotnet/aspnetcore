@@ -1054,6 +1054,22 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task ScrollToIndexAsync_ProviderThrows_FaultsTaskInsteadOfHanging()
+    {
+        var sentinel = new InvalidOperationException("provider boom");
+        ItemsProviderDelegate<int> throwingProvider = _ => throw sentinel;
+
+        var (virtualize, renderer) = await CreateRenderedVirtualize(
+            itemSize: 50f, totalItems: 100, customProvider: throwingProvider);
+
+        Task task = null;
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(50); });
+
+        var ex = await Assert.ThrowsAnyAsync<Exception>(async () => await task.WaitAsync(TimeSpan.FromSeconds(5)));
+        Assert.Same(sentinel, ex);
+    }
+
+    [Fact]
     public async Task InitialIndex_ParameterRoundTrip()
     {
         Virtualize<int> renderedVirtualize = null;

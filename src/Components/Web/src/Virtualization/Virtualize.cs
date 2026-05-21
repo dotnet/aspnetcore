@@ -877,6 +877,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 // Cache this exception so the renderer can throw it.
                 _refreshException = e;
 
+                // Surface the exception to any waiting ScrollToIndexAsync caller.
+                _nextRenderTcs?.TrySetException(e);
+
                 // Re-render the component to throw the exception.
                 StateHasChanged();
             }
