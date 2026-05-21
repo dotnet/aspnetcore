@@ -437,7 +437,11 @@ export class HttpConnection implements IConnection {
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this._httpClient, redirectAccessToken, this._logger, this._options);
+                // Fall back to the token cached on the http client (populated from
+                // accessTokenFactory during the initial /negotiate) when no redirect
+                // token was returned, so SSE continues to authenticate with the user's
+                // access token in the access_token query string.
+                return new ServerSentEventsTransport(this._httpClient, redirectAccessToken ?? this._httpClient._accessToken, this._logger, this._options);
             case HttpTransportType.LongPolling:
                 return new LongPollingTransport(this._httpClient, this._logger, this._options);
             default:
