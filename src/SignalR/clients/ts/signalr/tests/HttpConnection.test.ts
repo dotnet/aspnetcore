@@ -777,8 +777,11 @@ describe("HttpConnection", () => {
 
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
-                // explicitly do not provide an access token factory to verify we correctly reset state
-                // accessTokenFactory: () => null,
+                // Intentionally omit accessTokenFactory: without the fix, providing
+                // `accessTokenFactory: () => null` would mask the bug because the factory
+                // would overwrite the stale _accessToken on the next negotiate. The bug
+                // surfaces when no factory is set and the only token in play came from a
+                // negotiate redirect on a previous start.
                 httpClient,
                 logger,
                 transport: HttpTransportType.LongPolling,

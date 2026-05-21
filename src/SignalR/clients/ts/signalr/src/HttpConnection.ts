@@ -57,7 +57,6 @@ export class HttpConnection implements IConnection {
     private _stopPromise?: Promise<void>;
     private _stopPromiseResolver: (value?: PromiseLike<void>) => void = () => {};
     private _stopError?: Error;
-    private _accessTokenFactory?: () => string | Promise<string>;
     private _sendQueue?: TransportSendQueue;
 
     public readonly features: any = {};
@@ -223,18 +222,18 @@ export class HttpConnection implements IConnection {
     }
 
     private async _startInternal(transferFormat: TransferFormat): Promise<void> {
-        // Store the original base url and the access token factory since they may change
-        // as part of negotiating
+        // Reset http client auth state for this start attempt. A previous start may have
+        // cached a redirect-scoped access token; that token must not be reused for the
+        // initial /negotiate request against the original (app) server.
         let url = this.baseUrl;
-        this._accessTokenFactory = this._options.accessTokenFactory;
         this._httpClient._accessToken = undefined;
-        this._httpClient._accessTokenFactory = this._accessTokenFactory;
+        this._httpClient._accessTokenFactory = this._options.accessTokenFactory;
 
         try {
             if (this._options.skipNegotiation) {
                 if (this._options.transport === HttpTransportType.WebSockets) {
                     // No need to add a connection ID in this case
-                    this.transport = this._constructTransport(HttpTransportType.WebSockets);
+                    this.transport = this._constructTransport(HttpTransportType.WebSockets, undefined);
                     // We should just call connect directly in this case.
                     // No fallback or negotiate in this case.
                     await this._startTransport(url, transferFormat);
@@ -244,6 +243,10 @@ export class HttpConnection implements IConnection {
             } else {
                 let negotiateResponse: INegotiateResponse | null = null;
                 let redirects = 0;
+                // Tracks an access token returned by a negotiate redirect. It is scoped to the
+                // redirect target (e.g. Azure SignalR Service) and is bound to the transport
+                // created from this start attempt, never leaking back to the original server.
+                let redirectAccessToken: string | undefined;
 
                 do {
                     negotiateResponse = await this._getNegotiationResponse(url);
@@ -265,12 +268,11 @@ export class HttpConnection implements IConnection {
                     }
 
                     if (negotiateResponse.accessToken) {
-                        // Replace the current access token factory with one that uses
-                        // the returned access token
-                        const accessToken = negotiateResponse.accessToken;
-                        this._accessTokenFactory = () => accessToken;
-                        // set the factory to undefined so the AccessTokenHttpClient won't retry with the same token, since we know it won't change until a connection restart
-                        this._httpClient._accessToken = accessToken;
+                        redirectAccessToken = negotiateResponse.accessToken;
+                        // Set the cached token on the http client so the next /negotiate in the
+                        // redirect loop carries it. Clear the factory so AccessTokenHttpClient
+                        // won't retry with the same token - we know it won't change until restart.
+                        this._httpClient._accessToken = redirectAccessToken;
                         this._httpClient._accessTokenFactory = undefined;
                     }
 
@@ -282,7 +284,7 @@ export class HttpConnection implements IConnection {
                     throw new Error("Negotiate redirection limit exceeded.");
                 }
 
-                await this._createTransport(url, this._options.transport, negotiateResponse, transferFormat);
+                await this._createTransport(url, this._options.transport, negotiateResponse, transferFormat, redirectAccessToken);
             }
 
             if (this.transport instanceof LongPollingTransport) {
@@ -362,7 +364,7 @@ export class HttpConnection implements IConnection {
         return url + (url.indexOf("?") === -1 ? "?" : "&") + `id=${connectionToken}`;
     }
 
-    private async _createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat): Promise<void> {
+    private async _createTransport(url: string, requestedTransport: HttpTransportType | ITransport | undefined, negotiateResponse: INegotiateResponse, requestedTransferFormat: TransferFormat, redirectAccessToken: string | undefined): Promise<void> {
         let connectUrl = this._createConnectUrl(url, negotiateResponse.connectionToken);
         if (this._isITransport(requestedTransport)) {
             this._logger.log(LogLevel.Debug, "Connection was provided an instance of ITransport, using that directly.");
@@ -378,7 +380,7 @@ export class HttpConnection implements IConnection {
         let negotiate: INegotiateResponse | undefined = negotiateResponse;
         for (const endpoint of transports) {
             const transportOrError = this._resolveTransportOrError(endpoint, requestedTransport, requestedTransferFormat,
-                negotiate?.useStatefulReconnect === true);
+                negotiate?.useStatefulReconnect === true, redirectAccessToken);
             if (transportOrError instanceof Error) {
                 // Store the error and continue, we don't want to cause a re-negotiate in these cases
                 transportExceptions.push(`${endpoint.transport} failed:`);
@@ -417,19 +419,25 @@ export class HttpConnection implements IConnection {
         return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
 
-    private _constructTransport(transport: HttpTransportType): ITransport {
+    private _constructTransport(transport: HttpTransportType, redirectAccessToken: string | undefined): ITransport {
         switch (transport) {
             case HttpTransportType.WebSockets:
                 if (!this._options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
-                return new WebSocketTransport(this._httpClient, this._accessTokenFactory, this._logger, this._options.logMessageContent!,
+                // If the negotiate redirect returned an access token, use a closure that returns it
+                // (matching the behavior expected by AccessTokenHttpClient). Otherwise, fall through
+                // to the original options factory.
+                const wsAccessTokenFactory = redirectAccessToken !== undefined
+                    ? () => redirectAccessToken
+                    : this._options.accessTokenFactory;
+                return new WebSocketTransport(this._httpClient, wsAccessTokenFactory, this._logger, this._options.logMessageContent!,
                     this._options.WebSocket, this._options.headers || {});
             case HttpTransportType.ServerSentEvents:
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
                 }
-                return new ServerSentEventsTransport(this._httpClient, this._httpClient._accessToken, this._logger, this._options);
+                return new ServerSentEventsTransport(this._httpClient, redirectAccessToken, this._logger, this._options);
             case HttpTransportType.LongPolling:
                 return new LongPollingTransport(this._httpClient, this._logger, this._options);
             default:
@@ -466,7 +474,7 @@ export class HttpConnection implements IConnection {
     }
 
     private _resolveTransportOrError(endpoint: IAvailableTransport, requestedTransport: HttpTransportType | undefined,
-        requestedTransferFormat: TransferFormat, useStatefulReconnect: boolean): ITransport | Error | unknown {
+        requestedTransferFormat: TransferFormat, useStatefulReconnect: boolean, redirectAccessToken: string | undefined): ITransport | Error | unknown {
         const transport = HttpTransportType[endpoint.transport];
         if (transport === null || transport === undefined) {
             this._logger.log(LogLevel.Debug, `Skipping transport '${endpoint.transport}' because it is not supported by this client.`);
@@ -483,7 +491,7 @@ export class HttpConnection implements IConnection {
                         this._logger.log(LogLevel.Debug, `Selecting transport '${HttpTransportType[transport]}'.`);
                         try {
                             this.features.reconnect = transport === HttpTransportType.WebSockets ? useStatefulReconnect : undefined;
-                            return this._constructTransport(transport);
+                            return this._constructTransport(transport, redirectAccessToken);
                         } catch (ex) {
                             return ex;
                         }
