@@ -93,9 +93,14 @@ on:
                 "quarantine_entries": quarantine_entries
             })
 
-        # Write JSON to GITHUB_OUTPUT so it flows through jobs.pre-activation.outputs
+        # Write JSON to GITHUB_OUTPUT so it flows through jobs.pre_activation.outputs
         # into the agent prompt. /tmp/ is NOT shared between pre_activation and agent jobs.
         import sys
+
+        # Filter out PRs with no quarantine_entries — they're irrelevant and
+        # keeping them wastes step output / prompt token budget.
+        requarantine_data = [pr for pr in requarantine_data if pr["quarantine_entries"]]
+
         json_str = json.dumps(requarantine_data)
         github_output = os.environ.get("GITHUB_OUTPUT", "")
         if not github_output:
@@ -322,7 +327,7 @@ A test is a candidate for unquarantining if ALL of the following are true:
   - `title`: PR title
   - `quarantine_entries`: array of `{filename, added_lines, patch_truncated}` — each entry represents a file where `[QuarantinedTest` was added
 
-  **If the data is missing, empty, or cannot be parsed, do NOT unquarantine any tests — fail closed and report the error.**
+  **If the data is missing (empty string or unset) or cannot be parsed as valid JSON, do NOT unquarantine any tests — fail closed and report the error.** An empty array (`[]`) is valid and means no re-quarantine PRs were found — unquarantining may proceed.
 
   For each entry's `quarantine_entries`, determine whether the re-quarantine applies to the candidate test:
   - If `patch_truncated` is `true`, the patch was too large for the API to return. **Fail closed**: treat this as matching any test in that file.
