@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Extensions.DependencyInjection.HealthCheckServiceCollectionExtensions.AddHealthChecks(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckServiceOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
