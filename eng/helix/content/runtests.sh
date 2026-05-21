@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+targetArgument=(--target "$1")
+if [[ "$1" == @* ]]; then
+    targetArgument=(--targets-file "${1#@}")
+fi
+
 helixQueue="$3"
 installPlaywright="$7"
 
@@ -76,8 +81,8 @@ sync
 
 exit_code=0
 
-echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
-dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll --target $1 --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright
+echo "Running tests: dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll ${targetArgument[*]} --runtime $2 --queue $helixQueue --arch $4 --quarantined $5 --helixTimeout $6 --playwright $installPlaywright"
+dotnet $HELIX_CORRELATION_PAYLOAD/HelixTestRunner/HelixTestRunner.dll "${targetArgument[@]}" --runtime "$2" --queue "$helixQueue" --arch "$4" --quarantined "$5" --helixTimeout "$6" --playwright "$installPlaywright"
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

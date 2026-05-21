@@ -48,6 +48,7 @@
       we intentionally do not do that in this project.
     -->
     <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
+    <HelixWorkItemMaxBatchSize Condition="'$(HelixWorkItemMaxBatchSize)' == ''">20</HelixWorkItemMaxBatchSize>
   </PropertyGroup>
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
@@ -178,6 +179,169 @@
     </ItemGroup>
   </Target>
 
+  <UsingTask TaskName="BatchHelixWorkItems" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <WorkItems ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <MaxBatchSize ParameterType="System.Int32" Required="true" />
+      <OutputDirectory ParameterType="System.String" Required="true" />
+      <IsWindowsQueue ParameterType="System.Boolean" Required="true" />
+      <BatchedWorkItems ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+      <UnbatchedWorkItems ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System" />
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.Globalization" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Linq" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var unbatched = new List<Microsoft.Build.Framework.ITaskItem>();
+        var batched = new List<Microsoft.Build.Framework.ITaskItem>();
+        var eligibleGroups = new Dictionary<string, List<Microsoft.Build.Framework.ITaskItem>>(StringComparer.OrdinalIgnoreCase);
+        var batchSize = MaxBatchSize > 0 ? MaxBatchSize : 20;
+        var batchRoot = Path.Combine(OutputDirectory, "batched");
+        Directory.CreateDirectory(batchRoot);
+
+        foreach (var workItem in WorkItems ?? Array.Empty<Microsoft.Build.Framework.ITaskItem>())
+        {
+            var payloadDirectory = workItem.GetMetadata("PayloadDirectory");
+            var preCommands = workItem.GetMetadata("PreCommands");
+            var hasSpecialDependencies = workItem.GetMetadata("HasSpecialDependencies");
+            var tfm = workItem.GetMetadata("TargetFrameworkMoniker");
+            if (string.IsNullOrWhiteSpace(tfm))
+            {
+                var separatorIndex = workItem.ItemSpec.LastIndexOf("--", StringComparison.Ordinal);
+                tfm = separatorIndex >= 0 ? workItem.ItemSpec.Substring(separatorIndex + 2) : string.Empty;
+            }
+
+            var shouldBatch = !string.IsNullOrWhiteSpace(tfm) &&
+                string.IsNullOrWhiteSpace(preCommands) &&
+                !string.Equals(hasSpecialDependencies, "true", StringComparison.OrdinalIgnoreCase) &&
+                Directory.Exists(payloadDirectory);
+
+            if (!shouldBatch)
+            {
+                unbatched.Add(workItem);
+                continue;
+            }
+
+            if (!eligibleGroups.TryGetValue(tfm, out var group))
+            {
+                group = new List<Microsoft.Build.Framework.ITaskItem>();
+                eligibleGroups.Add(tfm, group);
+            }
+
+            group.Add(workItem);
+        }
+
+        static void CopyDirectory(string sourceDirectory, string destinationDirectory)
+        {
+            var source = new DirectoryInfo(sourceDirectory);
+            var sourcePrefix = source.FullName.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            Directory.CreateDirectory(destinationDirectory);
+
+            foreach (var directory in source.GetDirectories("*", SearchOption.AllDirectories))
+            {
+                var relativePath = directory.FullName.Substring(sourcePrefix.Length);
+                Directory.CreateDirectory(Path.Combine(destinationDirectory, relativePath));
+            }
+
+            foreach (var file in source.GetFiles("*", SearchOption.AllDirectories))
+            {
+                var relativePath = file.FullName.Substring(sourcePrefix.Length);
+                var destinationPath = Path.Combine(destinationDirectory, relativePath);
+                var destinationParent = Path.GetDirectoryName(destinationPath);
+                if (!string.IsNullOrEmpty(destinationParent))
+                {
+                    Directory.CreateDirectory(destinationParent);
+                }
+
+                file.CopyTo(destinationPath, overwrite: true);
+            }
+        }
+
+        static TimeSpan ParseTimeout(string timeout)
+        {
+            return TimeSpan.TryParse(timeout, CultureInfo.InvariantCulture, out var parsed)
+                ? parsed
+                : TimeSpan.FromMinutes(45);
+        }
+
+        var batchNumber = 0;
+        foreach (var group in eligibleGroups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            var orderedItems = group.Value.OrderBy(item => item.ItemSpec, StringComparer.OrdinalIgnoreCase).ToList();
+            for (var index = 0; index < orderedItems.Count; index += batchSize)
+            {
+                batchNumber++;
+                var chunk = orderedItems.Skip(index).Take(batchSize).ToList();
+                var batchDirectory = Path.Combine(batchRoot, $"batch_{batchNumber}");
+                if (Directory.Exists(batchDirectory))
+                {
+                    Directory.Delete(batchDirectory, recursive: true);
+                }
+
+                Directory.CreateDirectory(batchDirectory);
+                var firstItem = chunk[0];
+                CopyDirectory(firstItem.GetMetadata("PayloadDirectory"), batchDirectory);
+
+                var targets = new List<string>();
+                var totalTimeout = TimeSpan.Zero;
+                foreach (var workItem in chunk)
+                {
+                    var testAssembly = workItem.GetMetadata("TestAssembly");
+                    var assemblyName = Path.GetFileNameWithoutExtension(testAssembly);
+                    var targetDirectory = Path.Combine(batchDirectory, assemblyName);
+                    CopyDirectory(workItem.GetMetadata("PayloadDirectory"), targetDirectory);
+
+                    var relativeSeparator = IsWindowsQueue ? "\\" : "/";
+                    targets.Add($"{assemblyName}{relativeSeparator}{testAssembly}");
+                    totalTimeout += ParseTimeout(workItem.GetMetadata("Timeout"));
+                }
+
+                var cappedTimeout = totalTimeout > TimeSpan.FromMinutes(45) ? TimeSpan.FromMinutes(45) : totalTimeout;
+                if (cappedTimeout <= TimeSpan.Zero)
+                {
+                    cappedTimeout = TimeSpan.FromMinutes(45);
+                }
+
+                File.WriteAllLines(Path.Combine(batchDirectory, "targets.txt"), targets);
+
+                var batchedWorkItem = new Microsoft.Build.Utilities.TaskItem($"batch_{batchNumber}--{group.Key}");
+                foreach (System.Collections.DictionaryEntry metadataEntry in firstItem.CloneCustomMetadata())
+                {
+                    batchedWorkItem.SetMetadata((string)metadataEntry.Key, (string)metadataEntry.Value);
+                }
+
+                batchedWorkItem.SetMetadata("PayloadDirectory", batchDirectory);
+                batchedWorkItem.SetMetadata("TestAssembly", "targets.txt");
+                batchedWorkItem.SetMetadata("Timeout", cappedTimeout.ToString("c", CultureInfo.InvariantCulture));
+                batchedWorkItem.SetMetadata("HasSpecialDependencies", "false");
+                batchedWorkItem.SetMetadata("TargetFrameworkMoniker", group.Key);
+                batchedWorkItem.SetMetadata(
+                    "Command",
+                    IsWindowsQueue
+                        ? $"call runtests.cmd @targets.txt {firstItem.GetMetadata("RuntimeVersion")} {firstItem.GetMetadata("QueueName")} {firstItem.GetMetadata("TestingArchitecture")} {firstItem.GetMetadata("RunQuarantined")} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} false"
+                        : $"./runtests.sh @targets.txt {firstItem.GetMetadata("RuntimeVersion")} {firstItem.GetMetadata("QueueName")} {firstItem.GetMetadata("TestingArchitecture")} {firstItem.GetMetadata("RunQuarantined")} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} false");
+
+                Log.LogMessage(MessageImportance.High, "Created batched Helix work item {0} with {1} assemblies.", batchedWorkItem.ItemSpec, chunk.Count);
+                batched.Add(batchedWorkItem);
+            }
+        }
+
+        BatchedWorkItems = batched.ToArray();
+        UnbatchedWorkItems = unbatched.ToArray();
+        Log.LogMessage(
+            MessageImportance.High,
+            "Helix work item batching retained {0} unbatched items and created {1} batched items.",
+            UnbatchedWorkItems.Length,
+            BatchedWorkItems.Length);
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
   <!-- In inner (per-queue) builds, Publish the test projects and create work items. -->
   <Target Name="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' ">
     <MSBuild Projects="@(ProjectToBuild)"
@@ -186,6 +350,29 @@
         SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
+  </Target>
+
+  <Target Name="BatchSmallWorkItems" AfterTargets="Gather" BeforeTargets="BeforeTest" Condition=" '$(HelixTargetQueue)' != '' AND '@(HelixWorkItem)' != '' ">
+    <ItemGroup>
+      <_OriginalHelixWorkItem Remove="@(_OriginalHelixWorkItem)" />
+      <_OriginalHelixWorkItem Include="@(HelixWorkItem)" />
+    </ItemGroup>
+
+    <BatchHelixWorkItems WorkItems="@(_OriginalHelixWorkItem)"
+        MaxBatchSize="$(HelixWorkItemMaxBatchSize)"
+        OutputDirectory="$(OutputPath)"
+        IsWindowsQueue="$(IsWindowsHelixQueue)">
+      <Output TaskParameter="BatchedWorkItems" ItemName="_BatchedHelixWorkItem" />
+      <Output TaskParameter="UnbatchedWorkItems" ItemName="_UnbatchedHelixWorkItem" />
+    </BatchHelixWorkItems>
+
+    <ItemGroup>
+      <HelixWorkItem Remove="@(HelixWorkItem)" />
+      <HelixWorkItem Include="@(_UnbatchedHelixWorkItem)" />
+      <HelixWorkItem Include="@(_BatchedHelixWorkItem)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="Helix work item batching updated @(HelixWorkItem->Count()) work items before submission." />
   </Target>
 
   <!--
