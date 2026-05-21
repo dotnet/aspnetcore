@@ -46,6 +46,13 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
         if (!string.IsNullOrEmpty(origin))
         {
             var policy = await ResolveCorsPolicyAsync(context);
+
+            // AllowAnyOrigin is intentionally NOT honored as a CSRF trust signal: it means "any browser
+            // can read this resource", which is a different concern than "any origin can mutate it on the
+            // user's behalf". Treating AllowAnyOrigin as trusted would turn this middleware into a no-op
+            // for cross-origin writes. Users who legitimately need public-read CORS + CSRF-protected writes
+            // should rely on Sec-Fetch-Site (modern browsers) / Origin-vs-Host (legacy) — which still apply
+            // here — or opt the endpoint out via DisableAntiforgery() if it has no cookie-based auth.
             if (policy is not null && !policy.AllowAnyOrigin && policy.IsOriginAllowed(origin))
             {
                 return CsrfProtectionResult.Allowed;
@@ -102,7 +109,7 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
     }
 
     /// <summary>
-    /// Compares the Origin header to "scheme://host[:port]" built from the request. 
+    /// Compares the Origin header to "scheme://host[:port]" built from the request.
     /// </summary>
     /// <param name="origin">value of Origin header</param>
     /// <param name="request">request being processed</param>
@@ -119,12 +126,8 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
             return false;
         }
 
-        var scheme = request.Scheme;
-        var hostString = host.Host;
-        var port = host.Port;
-
-        return port is null
-            ? MemoryExtensions.Equals(origin, $"{scheme}://{hostString}", StringComparison.OrdinalIgnoreCase)
-            : MemoryExtensions.Equals(origin, $"{scheme}://{hostString}:{port.Value}", StringComparison.OrdinalIgnoreCase);
+        // host.Value preserves the raw "host[:port]" form as parsed from the Host header,
+        // matching how browsers serialize the Origin header (default ports stripped on both sides).
+        return MemoryExtensions.Equals(origin, $"{request.Scheme}://{host.Value}", StringComparison.OrdinalIgnoreCase);
     }
 }
