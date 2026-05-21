@@ -471,10 +471,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         // Apply InitialIndex once, when the count is known.
-        if (!_initialScrollApplied && _jsInterop is not null && InitialIndex > 0 && _itemCount > 0)
+        if (!_initialScrollApplied && _jsInterop is not null && _itemCount > 0)
         {
             _initialScrollApplied = true;
-            await ScrollToIndexAsync(InitialIndex);
+            if (InitialIndex > 0)
+            {
+                await ScrollToIndexAsync(InitialIndex);
+            }
         }
     }
 
