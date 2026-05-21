@@ -37,14 +37,14 @@ updates:
   - dependency-type: all
   commit-message:
     include: scope
-    prefix: "[release/2.1] "
+    prefix: "[release/2.3] "
   directory: /
   labels:
   - area-infrastructure
   package-ecosystem: gitsubmodule
   schedule:
     interval: monthly
-  target-branch: release/2.1
+  target-branch: release/2.3
 - allow:
   - dependency-type: all
   commit-message:
@@ -69,4 +69,16 @@ updates:
   schedule:
     interval: monthly
   target-branch: release/9.0
+- allow:
+  - dependency-type: all
+  commit-message:
+    include: scope
+    prefix: "[release/10.0] "
+  directory: /
+  labels:
+  - area-infrastructure
+  package-ecosystem: gitsubmodule
+  schedule:
+    interval: monthly
+  target-branch: release/10.0
 version: 2
