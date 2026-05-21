@@ -35,7 +35,7 @@ public class FormMappingContextTest
 
         var mapper = new ErrorTriggeringFormValueMapper(childErrorKey, parentKey);
 
-        var result = SupplyParameterFromFormValueProvider.GetFormPostValue(mapper, mappingContext, parameterInfo);
+        _ = SupplyParameterFromFormValueProvider.GetFormPostValue(mapper, mappingContext, parameterInfo);
 
         var error = mappingContext.GetErrors(formName, childErrorKey);
         Assert.NotNull(error);
