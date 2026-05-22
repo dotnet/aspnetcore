@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
@@ -18,7 +17,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     internal static void Emit(SourceProductionContext context, (ImmutableArray<InterceptableLocation?> AddValidationLocations, ImmutableArray<ValidatableType> ValidatableTypes) emitInputs)
     {
-        var locations = emitInputs.AddValidationLocations!.Where<InterceptableLocation>(l => l is not null).ToImmutableArray();
+        var locations = emitInputs.AddValidationLocations.OfType<InterceptableLocation>().ToImmutableArray();
         if (locations.IsEmpty)
         {
             // Avoid generating code if no AddValidation call was found.
