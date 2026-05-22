@@ -118,17 +118,15 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     public void CacheBoundaryMultipleHolesOfSameType_PreserveCorrectOrder()
     {
         Navigate($"{ServerPathBase}/cache-component");
-
-        // First render — verify both holes have their correct content
-        Browser.Equal("ALPHA", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
-        Browser.Equal("BRAVO", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
+        Browser.Equal("first", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
+        Browser.Equal("second", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
         var cachedContent = Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text;
 
         // Cache hit — holes with same (TypeName, Sequence) must not be swapped
         Navigate($"{ServerPathBase}/cache-component");
         Browser.Equal(cachedContent, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text);
-        Browser.Equal("ALPHA", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
-        Browser.Equal("BRAVO", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
+        Browser.Equal("first", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
+        Browser.Equal("second", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
     }
 
     private int GetRenderCount()

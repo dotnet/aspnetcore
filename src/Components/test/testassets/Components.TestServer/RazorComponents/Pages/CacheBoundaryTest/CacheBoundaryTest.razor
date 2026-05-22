@@ -1,4 +1,4 @@
-@page "/cache-component"
+﻿@page "/cache-component"
 @page "/cache-component/vary"
 @using Microsoft.AspNetCore.Components.Forms
 
@@ -62,7 +62,7 @@
         @for (var i = 0; i < 2; i++)
         {
             var index = i;
-            var label = index == 0 ? "ALPHA" : "BRAVO";
+            var label = index == 0 ? "first" : "second";
             <ExcludedContent>
                 <p class="hole-@index">@label</p>
             </ExcludedContent>
