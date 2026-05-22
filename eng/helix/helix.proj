@@ -315,6 +315,28 @@
                     batchedWorkItem.SetMetadata((string)metadataEntry.Key, (string)metadataEntry.Value);
                 }
 
+                // Parse runtime/queue/arch/quarantine args from the first item's original Command.
+                // The original command format is:
+                //   [call] runtests.cmd|./runtests.sh <target.dll> <runtime> <queue> <arch> <quarantined> <timeout> <playwright>
+                var originalCommand = firstItem.GetMetadata("Command") ?? "";
+                var commandParts = originalCommand.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                // Find the target DLL position (first arg after runtests.cmd/runtests.sh)
+                var scriptIndex = -1;
+                for (var pi = 0; pi < commandParts.Length; pi++)
+                {
+                    if (commandParts[pi].Contains("runtests."))
+                    {
+                        scriptIndex = pi;
+                        break;
+                    }
+                }
+                // Args after the script are: target, runtime, queue, arch, quarantined, timeout, playwright
+                var runtimeArg = scriptIndex >= 0 && scriptIndex + 2 < commandParts.Length ? commandParts[scriptIndex + 2] : "";
+                var queueArg = scriptIndex >= 0 && scriptIndex + 3 < commandParts.Length ? commandParts[scriptIndex + 3] : "";
+                var archArg = scriptIndex >= 0 && scriptIndex + 4 < commandParts.Length ? commandParts[scriptIndex + 4] : "x64";
+                var quarantinedArg = scriptIndex >= 0 && scriptIndex + 5 < commandParts.Length ? commandParts[scriptIndex + 5] : "false";
+                var playwrightArg = scriptIndex >= 0 && scriptIndex + 7 < commandParts.Length ? commandParts[scriptIndex + 7] : "false";
+
                 batchedWorkItem.SetMetadata("PayloadDirectory", batchDirectory);
                 batchedWorkItem.SetMetadata("TestAssembly", "targets.txt");
                 batchedWorkItem.SetMetadata("Timeout", cappedTimeout.ToString("c", CultureInfo.InvariantCulture));
@@ -323,8 +345,8 @@
                 batchedWorkItem.SetMetadata(
                     "Command",
                     IsWindowsQueue
-                        ? $"call runtests.cmd @targets.txt {firstItem.GetMetadata("RuntimeVersion")} {firstItem.GetMetadata("QueueName")} {firstItem.GetMetadata("TestingArchitecture")} {firstItem.GetMetadata("RunQuarantined")} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} false"
-                        : $"./runtests.sh @targets.txt {firstItem.GetMetadata("RuntimeVersion")} {firstItem.GetMetadata("QueueName")} {firstItem.GetMetadata("TestingArchitecture")} {firstItem.GetMetadata("RunQuarantined")} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} false");
+                        ? $"call runtests.cmd @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}"
+                        : $"./runtests.sh @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}");
 
                 Log.LogMessage(MessageImportance.High, "Created batched Helix work item {0} with {1} assemblies.", batchedWorkItem.ItemSpec, chunk.Count);
                 batched.Add(batchedWorkItem);
