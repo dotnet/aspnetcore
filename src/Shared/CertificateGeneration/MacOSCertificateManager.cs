@@ -8,6 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
@@ -155,18 +156,19 @@ internal sealed class MacOSCertificateManager : CertificateManager
             // We can't guarantee that the temp file is in a directory with sensible permissions, but we're not exporting the private key
             ExportCertificate(certificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pem);
 
+            using SafeFileHandle nullHandle = File.OpenNullHandle();
             var checkTrustProcessStartInfo = new ProcessStartInfo(
                 MacOSVerifyCertificateCommandLine,
                 string.Format(CultureInfo.InvariantCulture, MacOSVerifyCertificateCommandLineArgumentsFormat, tmpFile))
             {
-                RedirectStandardOutput = true,
                 // Do this to avoid showing output to the console when the cert is not trusted. It is trivial to export
                 // the cert and replicate the command to see details.
-                RedirectStandardError = true,
+                StandardOutputHandle = nullHandle,
+                StandardErrorHandle = nullHandle
             };
 
-            var checkTrustProcessOutput = Process.RunAndCaptureText(checkTrustProcessStartInfo);
-            return checkTrustProcessOutput.ExitStatus.ExitCode == 0 ? TrustLevel.Full : TrustLevel.None;
+            var checkTrustProcessOutput = Process.Run(checkTrustProcessStartInfo);
+            return checkTrustProcessOutput.ExitCode == 0 ? TrustLevel.Full : TrustLevel.None;
         }
         finally
         {
