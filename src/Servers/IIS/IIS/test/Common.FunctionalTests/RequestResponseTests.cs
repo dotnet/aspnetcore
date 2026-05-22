@@ -809,26 +809,41 @@ public class RequestResponseTests
                     "");
             }
 
-            var recv = await connection.Receive(4096);
-            var recvString = Encoding.UTF8.GetString(recv.Span);
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
 
-            Assert.Matches(@"HTTP/1\.1 200 OK
-Server: Microsoft-IIS/10\.0
-Date: .+
-Connection: close
+            // The response body can be either content-length framed or chunked
+            // depending on whether the app func completed before the write was issued.
+            var headers = await connection.ReceiveHeaders();
 
-Hello World
+            // RFC 9112 §6.1: the server MUST close the connection after responding
+            // to a request that contained both Content-Length and Transfer-Encoding.
+            Assert.Contains("Connection: close", headers);
+            Assert.Contains("Server: Microsoft-IIS/10.0", headers);
 
-$",
-            recvString);
+            if (headers.Contains("Transfer-Encoding: chunked"))
+            {
+                await connection.Receive(
+                    "B",
+                    "Hello World",
+                    "");
+                await connection.Receive(
+                    "0",
+                    "",
+                    "");
+            }
+            else
+            {
+                // Either framed by Content-Length: 11 or by connection close
+                // (no framing header). Either way the body is exactly "Hello World"
+                // and WaitForConnectionClose below verifies nothing else follows.
+                await connection.Receive("Hello World");
+            }
 
-            // Double check that there is no second response since we're using
-            // Assert.Matches which only checks for a first match
-            Assert.Equal(0, recvString.LastIndexOf("HTTP/1", StringComparison.InvariantCultureIgnoreCase));
-
-            // Verify the connection is closed
-            recv = await connection.Receive(100);
-            Assert.Equal(0, recv.Length);
+            // Verify the second request was not processed and that the server closed
+            // the connection (no extra bytes are sent).
+            await connection.WaitForConnectionClose();
         }
     }
 
