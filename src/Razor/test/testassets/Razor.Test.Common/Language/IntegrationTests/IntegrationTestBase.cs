@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-#if NET46
+#if NET46 || NET462
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
 #else
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     [IntializeTestFile]
     public abstract class IntegrationTestBase
     {
-#if !NET46
+#if !NET46 && !NET462
         private static readonly AsyncLocal<string> _fileName = new AsyncLocal<string>();
 #endif
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         // Used by the test framework to set the 'base' name for test files.
         public static string FileName
         {
-#if NET46
+#if NET46 || NET462
             get
             {
                 var handle = (ObjectHandle)CallContext.LogicalGetData("IntegrationTestBase_FileName");
