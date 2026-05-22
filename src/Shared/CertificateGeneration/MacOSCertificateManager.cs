@@ -285,7 +285,8 @@ internal sealed class MacOSCertificateManager : CertificateManager
             MacOSFindCertificateOnKeychainCommandLine,
             string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateOnKeychainCommandLineArgumentsFormat, subject, keychain))
         {
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
 
         var findCertificateProcessOutput = Process.RunAndCaptureText(findCertificateProcessStartInfo);
