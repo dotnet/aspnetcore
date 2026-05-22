@@ -35,7 +35,14 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
     /// </summary>
-    public HttpParser(bool showErrorDetails) : this(showErrorDetails, AppContext.TryGetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled)
+    /// <remarks>
+    /// Bare LF line terminators are rejected by default. Set the
+    /// <c>Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators</c> AppContext switch
+    /// to <c>false</c> to accept bare LF terminators.
+    /// </remarks>
+    public HttpParser(bool showErrorDetails)
+        : this(showErrorDetails,
+              !AppContext.TryGetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) || disabled)
     {
     }
 
