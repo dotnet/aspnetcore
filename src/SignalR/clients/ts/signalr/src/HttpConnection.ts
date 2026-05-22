@@ -421,18 +421,19 @@ export class HttpConnection implements IConnection {
 
     private _constructTransport(transport: HttpTransportType, redirectAccessToken: string | undefined): ITransport {
         switch (transport) {
-            case HttpTransportType.WebSockets:
+            case HttpTransportType.WebSockets: {
                 if (!this._options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
                 }
                 // If the negotiate redirect returned an access token, use a closure that returns it
                 // (matching the behavior expected by AccessTokenHttpClient). Otherwise, fall through
-                // to the original options factory.
+                // to the original options factory so it can be re-invoked on token refresh.
                 const wsAccessTokenFactory = redirectAccessToken !== undefined
                     ? () => redirectAccessToken
                     : this._options.accessTokenFactory;
                 return new WebSocketTransport(this._httpClient, wsAccessTokenFactory, this._logger, this._options.logMessageContent!,
                     this._options.WebSocket, this._options.headers || {});
+            }
             case HttpTransportType.ServerSentEvents:
                 if (!this._options.EventSource) {
                     throw new Error("'EventSource' is not supported in your environment.");
