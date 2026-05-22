@@ -117,6 +117,7 @@ public class HelixTestRunnerOptions
     public string[] Targets { get; private set; }
     public string TargetsFile { get; private set; }
     public TimeSpan Timeout { get; private set; }
+    public bool IsBatched => Targets?.Length > 1 || !string.IsNullOrWhiteSpace(TargetsFile);
 
     public string AspNetRef { get; private set; }
     public string AspNetRuntime { get; private set; }
