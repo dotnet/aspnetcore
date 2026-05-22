@@ -1000,7 +1000,7 @@ public class HttpParserTests : LoggedTest
     {
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
-            AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators", true);
+            AppContext.SetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, true);
 
             var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
             AssertRejectsBareLineFeedHeader(parser);
@@ -1013,7 +1013,7 @@ public class HttpParserTests : LoggedTest
     {
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
-            AppContext.SetSwitch("Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators", false);
+            AppContext.SetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, false);
 
             var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a:b\n\r\n"));
