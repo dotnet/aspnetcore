@@ -182,7 +182,6 @@ public class ComplexType
     [Fact]
     public async Task CanGenerateWhenAddValidationCalledMultipleTimes()
     {
-        // Arrange - reproduce bug where CS8785 was thrown when AddValidation() was called multiple times
         var source = """
 using System;
 using System.ComponentModel.DataAnnotations;
