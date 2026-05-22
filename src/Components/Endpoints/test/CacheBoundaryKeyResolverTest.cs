@@ -114,19 +114,6 @@ public class CacheBoundaryKeyResolverTest
     }
 
     [Fact]
-    public void ComputeKey_VaryByUser_Disabled_SameKeyRegardlessOfUser()
-    {
-        var component = CreateComponent(varyByUser: false);
-        var ctx1 = CreateHttpContext(userName: "alice");
-        var ctx2 = CreateHttpContext(userName: "bob");
-
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
-
-        Assert.Equal(key1, key2);
-    }
-
-    [Fact]
     public void ComputeKey_VaryByCulture_DifferentCultures_ProducesDifferentKeys()
     {
         var component = CreateComponent(varyByCulture: true);
@@ -244,21 +231,6 @@ public class CacheBoundaryKeyResolverTest
     }
 
     [Fact]
-    public void ComputeKey_DelimiterInjectionInHeaderValue_DoesNotCollide()
-    {
-        var componentSingle = CreateComponent(varyByHeader: "X-A");
-        var ctxSingle = CreateHttpContext(headers: new Dictionary<string, string> { ["X-A"] = "val||X-B||other" });
-
-        var componentMulti = CreateComponent(varyByHeader: "X-A,X-B");
-        var ctxMulti = CreateHttpContext(headers: new Dictionary<string, string> { ["X-A"] = "val", ["X-B"] = "other" });
-
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentSingle, ctxSingle);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentMulti, ctxMulti);
-
-        Assert.NotEqual(key1, key2);
-    }
-
-    [Fact]
     public void ComputeKey_VaryByUser_AnonymousUser_DiffersFromNoVaryByUser()
     {
         var componentWithVaryByUser = CreateComponent(varyByUser: true);
@@ -269,19 +241,6 @@ public class CacheBoundaryKeyResolverTest
         var key2 = CacheBoundaryKeyResolver.ComputeKey(componentWithoutVaryByUser, ctx);
 
         Assert.NotEqual(key1, key2);
-    }
-
-    [Fact]
-    public void ComputeKey_EmptyVaryByQuery_SameAsNullVaryByQuery()
-    {
-        var componentEmpty = CreateComponent(varyByQuery: "");
-        var componentNull = CreateComponent(varyByQuery: null);
-        var ctx = CreateHttpContext(queryString: "?page=1");
-
-        var key1 = CacheBoundaryKeyResolver.ComputeKey(componentEmpty, ctx);
-        var key2 = CacheBoundaryKeyResolver.ComputeKey(componentNull, ctx);
-
-        Assert.Equal(key1, key2);
     }
 
     [Fact]

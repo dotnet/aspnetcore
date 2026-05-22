@@ -71,13 +71,10 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         FlushBuffer();
     }
 
-    /// <summary>
     /// Produces the cache JSON for the captured render.
     /// 1. Serialize the captured ChildContent frames into a component tree.
     /// 2. Index all component nodes by (TypeName, Sequence) for fast lookup.
-    /// 3. Walk entries in render order, emitting markup nodes directly and
-    ///    resolving hole entries against the index.
-    /// </summary>
+    /// 3. Walk entries in render order, emitting markup nodes directly and resolving hole entries against the index.
     public string GetJson(ILogger renderFragmentSerializationLogger)
     {
         Dictionary<(string, int), Queue<RenderTreeNode>>? componentIndex = null;
@@ -137,11 +134,9 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         }
     }
 
-    /// <summary>
     /// Builds a lookup of all component nodes in the serialized tree, keyed by (TypeName, Sequence).
     /// Descends into element children and into serialized RenderFragment parameter values so that
     /// components nested inside wrapper components (e.g., CascadingValue) are reachable.
-    /// </summary>
     private static Dictionary<(string, int), Queue<RenderTreeNode>> IndexComponentNodes(List<RenderTreeNode> nodes)
     {
         var index = new Dictionary<(string, int), Queue<RenderTreeNode>>();
@@ -163,6 +158,8 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
                         queue = new Queue<RenderTreeNode>();
                         index[key] = queue;
                     }
+                    // We use queue here, because in recursive RenderFragments it's possible to have multiple nodes with the same (TypeName, Sequence) key, and they must be dequeued in the order they appear in the render.
+                    // We can be sure that we will have correct node for each hole, because we traverse the tree in render order, and holes are generated in html rendering pipeline in the same render order as well.
                     queue.Enqueue(node);
                 }
 

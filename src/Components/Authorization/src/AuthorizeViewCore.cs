@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Authorization;
 /// A base class for components that display differing content depending on the user's authorization status.
 /// </summary>
 [CacheBoundaryPolicy(Throw = true, VaryBy = CacheBoundaryVaryBy.User)]
-public abstract class AuthorizeViewCore: ComponentBase
+public abstract class AuthorizeViewCore : ComponentBase
 {
     private AuthenticationState? currentAuthenticationState;
     private bool? isAuthorized;

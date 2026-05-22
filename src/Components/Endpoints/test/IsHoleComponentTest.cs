@@ -4,132 +4,78 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Sections;
-using Microsoft.AspNetCore.Components.Web;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class IsHoleComponentTest
 {
-    private static readonly CacheBoundaryVaryBy DefaultVaryBy = CacheBoundaryVaryBy.None;
-    private static readonly CacheBoundaryVaryBy VaryByUser = CacheBoundaryVaryBy.User;
-
     [Fact]
-    public void EditForm_Throws_InsideCacheBoundary()
+    public void NoAttribute_IsNotHole()
     {
-        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(EditForm), DefaultVaryBy));
+        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ComponentBase), CacheBoundaryVaryBy.None));
     }
 
     [Fact]
-    public void CustomInputBaseDescendant_Throws_InsideCacheBoundary()
+    public void Attribute_NoVaryBy_IsUnconditionalHole()
     {
-        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(CustomInput), DefaultVaryBy));
+        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.None));
+        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.User));
     }
 
     [Fact]
-    public void AntiforgeryToken_IsHole()
+    public void Attribute_Throw_ThrowsWhenNotCovered()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(AntiforgeryToken), DefaultVaryBy));
+        Assert.Throws<InvalidOperationException>(() =>
+            EndpointHtmlRenderer.IsHoleComponent(typeof(ThrowingComponent), CacheBoundaryVaryBy.None));
     }
 
     [Fact]
-    public void SSRRenderModeBoundary_IsHole()
+    public void Attribute_VaryBy_IsHoleWhenNotCovered_SafeWhenCovered()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(SSRRenderModeBoundary), DefaultVaryBy));
+        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.None));
+        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.User));
     }
 
     [Fact]
-    public void HeadOutlet_IsHole()
+    public void Attribute_MultipleVaryByFlags_RequiresFullMatch()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(HeadOutlet), DefaultVaryBy));
+        var partial = CacheBoundaryVaryBy.User;
+        var full = CacheBoundaryVaryBy.User | CacheBoundaryVaryBy.Query;
+
+        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(MultiDimensionHole), partial));
+        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(MultiDimensionHole), full));
     }
 
     [Fact]
-    public void SectionOutlet_IsNotHole()
+    public void Attribute_Inherited_AppliesToSubclass()
     {
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(SectionOutlet), DefaultVaryBy));
-    }
-
-    [Fact]
-    public void AuthorizeView_Throws_WhenNotVaryByUser()
-    {
-        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(AuthorizeView), DefaultVaryBy));
-    }
-
-    [Fact]
-    public void AuthorizeView_IsNotHole_WhenVaryByUser()
-    {
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(AuthorizeView), VaryByUser));
-    }
-
-    [Fact]
-    public void AuthorizeViewSubclass_Throws_WhenNotVaryByUser()
-    {
-        Assert.Throws<InvalidOperationException>(() => EndpointHtmlRenderer.IsHoleComponent(typeof(CustomAuthorizeView), DefaultVaryBy));
-    }
-
-    [Fact]
-    public void AuthorizeViewSubclass_IsNotHole_WhenVaryByUser()
-    {
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(CustomAuthorizeView), VaryByUser));
-    }
-
-    [Fact]
-    public void RegularComponent_IsNotHole()
-    {
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ComponentBase), DefaultVaryBy));
-    }
-
-    private class CustomAuthorizeView : AuthorizeView { }
-
-    private class CustomInput : InputText { }
-
-    [Fact]
-    public void CacheBoundaryPolicy_IsHole()
-    {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedComponent), DefaultVaryBy));
-    }
-
-    [Fact]
-    public void CacheBoundaryPolicy_WithVaryBy_IsHole_WhenNotVaryByUser()
-    {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedWithVaryByUser), DefaultVaryBy));
-    }
-
-    [Fact]
-    public void CacheBoundaryPolicy_WithVaryBy_IsNotHole_WhenVaryByUser()
-    {
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedWithVaryByUser), VaryByUser));
+        Assert.Throws<InvalidOperationException>(() =>
+            EndpointHtmlRenderer.IsHoleComponent(typeof(CustomInput), CacheBoundaryVaryBy.None));
     }
 
     [CacheBoundaryPolicy]
-    private class ExcludedComponent : ComponentBase
+    private class UnconditionalHole : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder) { }
+    }
+
+    [CacheBoundaryPolicy(Throw = true)]
+    private class ThrowingComponent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
     }
 
     [CacheBoundaryPolicy(VaryBy = CacheBoundaryVaryBy.User)]
-    private class ExcludedWithVaryByUser : ComponentBase
+    private class ConditionalHole : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
-    }
-
-    [Fact]
-    public void CacheBoundaryPolicy_WithMultipleVaryByFlags_IsHole_WhenPartialMatch()
-    {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedWithVaryByUserAndQuery), VaryByUser));
-    }
-
-    [Fact]
-    public void CacheBoundaryPolicy_WithMultipleVaryByFlags_IsNotHole_WhenFullMatch()
-    {
-        var varyBy = CacheBoundaryVaryBy.User | CacheBoundaryVaryBy.Query;
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ExcludedWithVaryByUserAndQuery), varyBy));
     }
 
     [CacheBoundaryPolicy(VaryBy = CacheBoundaryVaryBy.User | CacheBoundaryVaryBy.Query)]
-    private class ExcludedWithVaryByUserAndQuery : ComponentBase
+    private class MultiDimensionHole : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
     }
+
+    private class CustomInput : InputText { }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// Component that renders an antiforgery token as a hidden field.
 /// </summary>
 [CacheBoundaryPolicy]
-public class AntiforgeryToken: IComponent
+public class AntiforgeryToken : IComponent
 {
     private RenderHandle _handle;
     private bool _hasRendered;

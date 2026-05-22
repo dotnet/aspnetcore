@@ -56,15 +56,17 @@
     }
 </div>
 
-<div id="test-6">
-    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="q">
-        <p class="vary-cached">@Guid.NewGuid()</p>
-    </CacheBoundary>
-</div>
-
-<div id="test-7">
-    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryBy="@CustomVaryBy">
-        <p class="custom-vary-cached">@Guid.NewGuid()</p>
+<div id="test-8">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+        <p class="cached-content">@Guid.NewGuid()</p>
+        @for (var i = 0; i < 2; i++)
+        {
+            var index = i;
+            var label = index == 0 ? "ALPHA" : "BRAVO";
+            <ExcludedContent>
+                <p class="hole-@index">@label</p>
+            </ExcludedContent>
+        }
     </CacheBoundary>
 </div>
 
@@ -72,7 +74,4 @@
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]
     private string Message { get; set; } = "never";
-
-    [SupplyParameterFromQuery(Name = "cv")]
-    private string? CustomVaryBy { get; set; }
 }

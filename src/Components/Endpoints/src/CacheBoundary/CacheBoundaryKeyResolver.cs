@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal static class CacheBoundaryKeyResolver
 {
-    private static readonly char[] _separator = [','];
 
     internal static string ComputeKey(CacheBoundary cacheBoundary, HttpContext httpContext)
     {
@@ -33,22 +32,22 @@ internal static class CacheBoundaryKeyResolver
 
         if (!string.IsNullOrEmpty(cacheBoundary.VaryByQuery))
         {
-            AppendDelimitedValues(hash, "VaryByQuery", cacheBoundary.VaryByQuery, name => (string?)request.Query[name]);
+            AppendDelimitedQueryValues(hash, cacheBoundary.VaryByQuery, request);
         }
 
         if (!string.IsNullOrEmpty(cacheBoundary.VaryByRoute))
         {
-            AppendDelimitedValues(hash, "VaryByRoute", cacheBoundary.VaryByRoute, name => request.RouteValues[name]?.ToString());
+            AppendDelimitedRouteValues(hash, cacheBoundary.VaryByRoute, request);
         }
 
         if (!string.IsNullOrEmpty(cacheBoundary.VaryByHeader))
         {
-            AppendDelimitedValues(hash, "VaryByHeader", cacheBoundary.VaryByHeader, name => (string?)request.Headers[name]);
+            AppendDelimitedHeaderValues(hash, cacheBoundary.VaryByHeader, request);
         }
 
         if (!string.IsNullOrEmpty(cacheBoundary.VaryByCookie))
         {
-            AppendDelimitedValues(hash, "VaryByCookie", cacheBoundary.VaryByCookie, name => request.Cookies[name]);
+            AppendDelimitedCookieValues(hash, cacheBoundary.VaryByCookie, request);
         }
 
         if (cacheBoundary.VaryByUser is true)
@@ -70,29 +69,111 @@ internal static class CacheBoundaryKeyResolver
         return Convert.ToBase64String(hashOutput);
     }
 
-    private static void AppendDelimitedValues(
-        IncrementalHash hash,
-        string collectionName, string separatedValues, Func<string, string?> valueAccessor)
+    private static void AppendDelimitedQueryValues(IncrementalHash hash, string separatedValues, HttpRequest request)
     {
-        var names = separatedValues.Split(_separator, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-        if (names.Length == 0)
-        {
-            return;
-        }
-
         AppendString(hash, "||");
-        AppendString(hash, collectionName);
+        AppendString(hash, "VaryByQuery");
         AppendString(hash, "(");
 
-        for (var i = 0; i < names.Length; i++)
+        foreach (var segment in separatedValues.AsSpan().Split(','))
         {
-            var value = valueAccessor(names[i]);
+            var name = separatedValues.AsSpan()[segment].Trim();
+            if (name.IsEmpty)
+            {
+                continue;
+            }
+            var nameString = name.ToString();
+            var value = (string?)request.Query[nameString];
             if (string.IsNullOrEmpty(value))
             {
                 continue;
             }
             AppendString(hash, "||");
-            AppendString(hash, names[i]);
+            AppendString(hash, nameString);
+            AppendString(hash, "||");
+            AppendLengthPrefixedString(hash, value);
+        }
+
+        AppendString(hash, ")");
+    }
+
+    private static void AppendDelimitedRouteValues(IncrementalHash hash, string separatedValues, HttpRequest request)
+    {
+        AppendString(hash, "||");
+        AppendString(hash, "VaryByRoute");
+        AppendString(hash, "(");
+
+        foreach (var segment in separatedValues.AsSpan().Split(','))
+        {
+            var name = separatedValues.AsSpan()[segment].Trim();
+            if (name.IsEmpty)
+            {
+                continue;
+            }
+            var nameString = name.ToString();
+            var value = request.RouteValues[nameString]?.ToString();
+            if (string.IsNullOrEmpty(value))
+            {
+                continue;
+            }
+            AppendString(hash, "||");
+            AppendString(hash, nameString);
+            AppendString(hash, "||");
+            AppendLengthPrefixedString(hash, value);
+        }
+
+        AppendString(hash, ")");
+    }
+
+    private static void AppendDelimitedHeaderValues(IncrementalHash hash, string separatedValues, HttpRequest request)
+    {
+        AppendString(hash, "||");
+        AppendString(hash, "VaryByHeader");
+        AppendString(hash, "(");
+
+        foreach (var segment in separatedValues.AsSpan().Split(','))
+        {
+            var name = separatedValues.AsSpan()[segment].Trim();
+            if (name.IsEmpty)
+            {
+                continue;
+            }
+            var nameString = name.ToString();
+            var value = (string?)request.Headers[nameString];
+            if (string.IsNullOrEmpty(value))
+            {
+                continue;
+            }
+            AppendString(hash, "||");
+            AppendString(hash, nameString);
+            AppendString(hash, "||");
+            AppendLengthPrefixedString(hash, value);
+        }
+
+        AppendString(hash, ")");
+    }
+
+    private static void AppendDelimitedCookieValues(IncrementalHash hash, string separatedValues, HttpRequest request)
+    {
+        AppendString(hash, "||");
+        AppendString(hash, "VaryByCookie");
+        AppendString(hash, "(");
+
+        foreach (var segment in separatedValues.AsSpan().Split(','))
+        {
+            var name = separatedValues.AsSpan()[segment].Trim();
+            if (name.IsEmpty)
+            {
+                continue;
+            }
+            var nameString = name.ToString();
+            var value = request.Cookies[nameString];
+            if (string.IsNullOrEmpty(value))
+            {
+                continue;
+            }
+            AppendString(hash, "||");
+            AppendString(hash, nameString);
             AppendString(hash, "||");
             AppendLengthPrefixedString(hash, value);
         }
@@ -106,7 +187,7 @@ internal static class CacheBoundaryKeyResolver
         Span<byte> lengthPrefix = stackalloc byte[4];
         System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(lengthPrefix, byteCount);
         hash.AppendData(lengthPrefix);
-        hash.AppendData(Encoding.UTF8.GetBytes(value));
+        AppendString(hash, value);
     }
 
     private static void AppendString(IncrementalHash hash, string? value)
@@ -114,10 +195,22 @@ internal static class CacheBoundaryKeyResolver
         if (string.IsNullOrEmpty(value))
         {
             hash.AppendData("\0"u8);
+            return;
         }
-        else
+
+        var byteCount = Encoding.UTF8.GetByteCount(value);
+        const int stackAllocThreshold = 256;
+        byte[]? rented = null;
+        var buffer = byteCount <= stackAllocThreshold
+            ? stackalloc byte[stackAllocThreshold]
+            : (rented = System.Buffers.ArrayPool<byte>.Shared.Rent(byteCount));
+
+        var written = Encoding.UTF8.GetBytes(value, buffer);
+        hash.AppendData(buffer[..written]);
+
+        if (rented is not null)
         {
-            hash.AppendData(Encoding.UTF8.GetBytes(value));
+            System.Buffers.ArrayPool<byte>.Shared.Return(rented);
         }
     }
 }

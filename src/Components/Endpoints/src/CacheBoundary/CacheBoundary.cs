@@ -20,6 +20,7 @@ public sealed class CacheBoundary : ComponentBase
 {
     private static readonly ComponentParametersTypeCache _parametersTypeCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
+
     /// <summary>
     /// Gets or sets the content to be cached.
     /// </summary>
@@ -106,13 +107,9 @@ public sealed class CacheBoundary : ComponentBase
     public string? VaryBy { get; set; }
 
     [Inject] internal ICacheBoundaryStore? CacheStore { get; set; }
-
     [CascadingParameter] internal HttpContext? HttpContext { get; set; }
-
     internal Func<string>? TreePositionKeyFactory { get; set; }
-
     internal string? TreePositionKey => TreePositionKeyFactory?.Invoke();
-
     internal string? ResolvedCacheKey { get; private set; }
     internal string? CachedData { get; private set; }
 
@@ -184,7 +181,7 @@ public sealed class CacheBoundary : ComponentBase
 
         ChildContentCapture = null;
 
-        // Cache hit: invoke the deserialized RenderFragment straight into the live builder.
+        // Cache hit: invoke the deserialized RenderFragment straight into the live builder
         RenderFragmentSerializer.Deserialize(nodes!, _jsonOptions, _parametersTypeCache)(builder);
     }
 

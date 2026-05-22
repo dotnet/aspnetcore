@@ -287,10 +287,7 @@ internal partial class EndpointHtmlRenderer
 
                 if (_cacheStore is not null)
                 {
-                    var cacheCaptureWriter = new CacheBoundaryTextWriter(
-                        output,
-                        cacheBoundary.GetVaryByOptions(),
-                        cacheBoundary.ChildContentCapture);
+                    var cacheCaptureWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions(), cacheBoundary.ChildContentCapture);
                     cacheCaptureWriter.StartCapture();
                     base.WriteComponentHtml(componentId, cacheCaptureWriter);
                     cacheCaptureWriter.StopCapture();
@@ -380,7 +377,7 @@ internal partial class EndpointHtmlRenderer
     {
         if (!_cachedCacheExclusions.TryGetValue(componentType, out var attr))
         {
-            attr = ResolveCachePolicy(componentType);
+            attr = componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
             _cachedCacheExclusions.TryAdd(componentType, attr);
         }
 
@@ -389,23 +386,22 @@ internal partial class EndpointHtmlRenderer
             return false;
         }
 
+        // This will be false, when we have nothing in the attribute for VaryBy (e.g. AntiforgeryToken), because it is never safe to cach
         var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
 
         if (attr.Throw && !varyByMatches)
         {
             throw new InvalidOperationException(
-                $"Component '{componentType.FullName}' cannot be used directly inside a CacheBoundary " +
+                $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary " +
                 $"because its parameters (delegates, expressions, or complex objects) cannot be serialized. " +
-                $"Either move this component outside the CacheBoundary, or place it inside a component " +
-                $"marked with [CacheBoundaryPolicy] so it is re-rendered on every request.");
+                $"Move this component outside the CacheBoundary, or wrap it in a component " +
+                $"marked with [CacheBoundaryPolicy] so that its subtree is excluded from caching " +
+                $"and re-rendered on every request.");
         }
 
-        return attr.Throw ? false : !varyByMatches;
-    }
-
-    private static CacheBoundaryPolicyAttribute? ResolveCachePolicy(Type componentType)
-    {
-        return componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
+        // If Throw is true we only reach here when varyByMatches is true (safe to cache).
+        // If Throw is false, it's a hole only when VaryBy dimensions aren't covered.
+        return !varyByMatches;
     }
 
     private ILogger? _renderFragmentSerializerLogger;
