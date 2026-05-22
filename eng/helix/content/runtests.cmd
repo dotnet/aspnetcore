@@ -12,7 +12,7 @@ if "!$firstArg:~0,1!"=="@" (
     set "$quarantined=%~5"
     set "$helixTimeout=%~6"
     set "$installPlaywright=%~7"
-    set "$targetArgs=--targets-file \"!$targetsFile!\""
+    set "$targetArgs=--targets-file !$targetsFile!"
 ) else (
     set "$target=%~1"
     set "$aspRuntimeVersion=%~2"
@@ -21,7 +21,7 @@ if "!$firstArg:~0,1!"=="@" (
     set "$quarantined=%~5"
     set "$helixTimeout=%~6"
     set "$installPlaywright=%~7"
-    set "$targetArgs=--target \"!$target!\""
+    set "$targetArgs=--target !$target!"
 )
 
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
