@@ -77,7 +77,7 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
         }
         else if (typeof(TValue) == typeof(bool?))
         {
-            return value is not null && (bool)(object)value ? "true" : "false";
+            return value is not null ? ((bool)(object)value ? "true" : "false") : null;
         }
 
         return base.FormatValueAsString(value);

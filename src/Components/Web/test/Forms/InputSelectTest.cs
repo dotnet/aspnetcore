@@ -169,6 +169,81 @@ public class InputSelectTest
     }
 
     [Fact]
+    public async Task ParsesCurrentValueWhenUsingNotNullableBool()
+    {
+        // Arrange
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<bool, TestInputSelect<bool>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NotNullableBool
+        };
+        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        // Act
+        inputSelectComponent.CurrentValueAsString = "true";
+
+        // Assert
+        Assert.True(inputSelectComponent.CurrentValue);
+
+        // Act
+        inputSelectComponent.CurrentValueAsString = "false";
+
+        // Assert
+        Assert.False(inputSelectComponent.CurrentValue);
+    }
+
+    [Fact]
+    public async Task ParsesCurrentValueWhenUsingNullableBool()
+    {
+        // Arrange
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<bool?, TestInputSelect<bool?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NullableBool
+        };
+        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        // Act
+        inputSelectComponent.CurrentValueAsString = "true";
+
+        // Assert
+        Assert.True(inputSelectComponent.CurrentValue);
+
+        // Act
+        inputSelectComponent.CurrentValueAsString = "false";
+
+        // Assert
+        Assert.False(inputSelectComponent.CurrentValue);
+
+        // Act
+        inputSelectComponent.CurrentValueAsString = "";
+
+        // Assert
+        Assert.Null(inputSelectComponent.CurrentValue);
+    }
+
+    [Fact]
+    public async Task FormatsNullableBoolNullAsEmptyString()
+    {
+        // Arrange
+        var model = new TestModel { NullableBool = null };
+
+        var rootComponent = new TestInputHostComponent<bool?, TestInputSelect<bool?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.NullableBool
+        };
+
+        // Act
+        var component = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        // Assert
+        Assert.Null(component.CurrentValueAsString);
+    }
+
+    [Fact]
     public async Task ValidationErrorUsesDisplayAttributeName()
     {
         // Arrange
