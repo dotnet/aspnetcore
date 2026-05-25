@@ -348,7 +348,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Bytes written to <paramref name="output"/>, or the required buffer size when <paramref name="output"/> is too small.
         /// </param>
         /// <returns>True on success; false when <paramref name="output"/> is too small.</returns>
-        bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned);
+        bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned)
+            => throw new NotSupportedException();
     }
 
     /// <summary>

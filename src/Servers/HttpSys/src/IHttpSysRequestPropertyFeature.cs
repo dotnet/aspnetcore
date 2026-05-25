@@ -66,5 +66,6 @@ public interface IHttpSysRequestPropertyFeature
     /// </returns>
     /// <exception cref="HttpSysException">Any HttpSys error except for ERROR_INSUFFICIENT_BUFFER or ERROR_MORE_DATA.</exception>
     /// <exception cref="InvalidOperationException">If the installed Windows HTTP Server API does not support HttpQueryRequestProperty.</exception>
-    bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned);
+    bool TryGetRequestProperty(int propertyId, ReadOnlySpan<byte> qualifier, Span<byte> output, out int bytesReturned)
+        => throw new NotSupportedException();
 }
