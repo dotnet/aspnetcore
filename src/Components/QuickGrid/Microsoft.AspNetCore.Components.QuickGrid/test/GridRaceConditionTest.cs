@@ -97,6 +97,7 @@ public class GridRaceConditionTest
     [Fact]
     public async Task RefreshDataAsyncDoesNotThrowWhenCalledFromTimerAction()
     {
+        // Arrange
         var moduleLoadCompletion = new TaskCompletionSource();
         moduleLoadCompletion.SetResult();
         var moduleImportStarted = new TaskCompletionSource();
@@ -117,6 +118,7 @@ public class GridRaceConditionTest
         Exception exception = null;
         var refreshCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        // Act
         using var timer = new System.Threading.Timer(_ =>
         {
             _ = Task.Run(async () =>
@@ -137,6 +139,8 @@ public class GridRaceConditionTest
         }, null, 0, Timeout.Infinite);
 
         await refreshCompleted.Task;
+
+        // Assert
         Assert.Null(exception);
     }
 }
