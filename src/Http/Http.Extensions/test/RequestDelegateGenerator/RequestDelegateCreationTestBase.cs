@@ -229,6 +229,19 @@ public abstract class RequestDelegateCreationTestBase : LoggedTest
         return httpContext;
     }
 
+    internal HttpContext CreateHttpContextWithJson(string requestData, IServiceProvider serviceProvider = null)
+    {
+        var httpContext = CreateHttpContext(serviceProvider);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+
+        var requestBodyBytes = Encoding.UTF8.GetBytes(requestData);
+        var stream = new MemoryStream(requestBodyBytes);
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        return httpContext;
+    }
+
     internal static async Task<string> GetResponseBodyAsync(HttpContext httpContext)
     {
         var httpResponse = httpContext.Response;

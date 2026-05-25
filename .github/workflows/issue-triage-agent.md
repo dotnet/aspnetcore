@@ -35,6 +35,9 @@ tools:
 safe-outputs:
   noop:
     report-as-issue: false
+  set-issue-type:
+    allowed: ["Bug", "Feature", "Task", "Epic"]
+    max: 1
   add-labels:
     allowed:
       - area-auth
@@ -56,8 +59,6 @@ safe-outputs:
       - area-signalr
       - area-ui-rendering
       - area-unified-build
-      - bug
-      - feature-request
       - by-design
       - question
       - external
@@ -79,7 +80,7 @@ You are an issue-triage agent for the **dotnet/aspnetcore** repository. Your job
 is to analyze a newly opened issue and perform three tasks:
 
 1. **Area classification** - assign the correct `area-*` label
-2. **Type classification** - assign a type label (bug, feature-request, etc.)
+2. **Type classification** - assign an issue type (not a label) (Bug, Feature, Task, or Epic)
 3. **Duplicate detection** - search for similar existing issues
 
 ## Issue to Triage

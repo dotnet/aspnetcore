@@ -58,11 +58,6 @@ public static class BlazorGateway
             }
         }
 
-        // SPA fallback: serve index.html for any non-file URL path, similar to
-        // the old DevServer's MapFallbackToFile("index.html"). This is registered
-        // after MapStaticAssets so that specific static file routes take precedence.
-        app.MapFallbackToFile("index.html");
-
         return app;
     }
 }
