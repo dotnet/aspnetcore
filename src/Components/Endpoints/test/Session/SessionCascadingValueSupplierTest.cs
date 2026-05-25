@@ -160,17 +160,17 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
-    public async Task SetRequestContext_DoesNotRegisterOnStarting_UntilSubscriptionCreated()
+    public async Task SetRequestContext_DoesNotPersist_UntilExplicitlyCalled()
     {
         _supplier.RegisterValueCallback("key", () => "value");
 
         var httpContext = CreateHttpContextWithSession(out var responseFeature);
         _supplier.SetRequestContext(httpContext);
 
-        // OnStarting has not been registered yet because no subscription was created
-        await responseFeature.FireOnStartingAsync();
-
         Assert.Null(httpContext.Session.GetString("key"));
+
+        await _supplier.PersistAllValues();
+        Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
     }
 
     internal static DefaultHttpContext CreateHttpContextWithSession()

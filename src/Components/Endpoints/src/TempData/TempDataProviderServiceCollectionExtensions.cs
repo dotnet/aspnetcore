@@ -57,12 +57,16 @@ internal static class TempDataProviderServiceCollectionExtensions
         var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
         var tempDataInstance = tempDataService.CreateEmpty(httpContext);
         httpContext.Items[HttpContextItemKey] = tempDataInstance;
-        httpContext.Response.OnStarting(() =>
-        {
-            tempDataService.Save(httpContext, tempDataInstance);
-            return Task.CompletedTask;
-        });
 
         return tempDataInstance;
+    }
+
+    internal static void PersistTempData(HttpContext httpContext)
+    {
+        if (httpContext.Items.TryGetValue(HttpContextItemKey, out var tempDataObj) && tempDataObj is TempData tempData)
+        {
+            var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
+            tempDataService.Save(httpContext, tempData);
+        }
     }
 }
