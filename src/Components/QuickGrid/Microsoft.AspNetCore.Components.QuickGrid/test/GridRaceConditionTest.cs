@@ -85,13 +85,59 @@ public class GridRaceConditionTest
 
         // Assert that init WAS called after disposal
         // The FailingQuickGrid's OnAfterRenderAsync should have called init despite being disposed
-        // The FailingQuickGrid should not have disposed of JsModule 
+        // The FailingQuickGrid should not have disposed of JsModule
         Assert.True(testJsRuntime.InitWasCalledAfterDisposal,
             $"FailingQuickGrid should call init after disposal, demonstrating the race condition bug. " +
             $"InitWasCalledAfterDisposal: {testJsRuntime.InitWasCalledAfterDisposal}, " +
             $"DisposeAsyncWasCalled: {failingGrid.DisposeAsyncWasCalled}, " +
             $"_disposeBool is false: {failingGrid.IsWasDisposedFalse()}");
         Assert.False(testJsRuntime.JsModuleDisposed);
+    }
+
+    [Fact]
+    public async Task RefreshDataAsyncDoesNotThrowWhenCalledFromTimerAction()
+    {
+        var moduleLoadCompletion = new TaskCompletionSource();
+        moduleLoadCompletion.SetResult();
+        var moduleImportStarted = new TaskCompletionSource();
+        var testJsRuntime = new TestJsRuntime(moduleLoadCompletion, moduleImportStarted);
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(testJsRuntime)
+            .AddSingleton<NavigationManager, TestNavigationManager>()
+            .BuildServiceProvider();
+        var renderer = new TestRenderer(serviceProvider);
+
+        var testComponent = new SimpleTestComponent();
+        var componentId = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(componentId);
+
+        await moduleImportStarted.Task;
+        await testComponent.NotFailingGrid.OnAfterRenderCompleted;
+
+        Exception exception = null;
+        var refreshCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        using var timer = new System.Threading.Timer(_ =>
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await testComponent.NotFailingGrid.RefreshDataAsync();
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                }
+                finally
+                {
+                    refreshCompleted.TrySetResult();
+                }
+            });
+        }, null, 0, Timeout.Infinite);
+
+        await refreshCompleted.Task;
+        Assert.Null(exception);
     }
 }
 

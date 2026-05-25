@@ -414,7 +414,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     public async Task RefreshDataAsync()
     {
         await RefreshDataCoreAsync();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     // Same as RefreshDataAsync, except without forcing a re-render. We use this from OnParametersSetAsync
