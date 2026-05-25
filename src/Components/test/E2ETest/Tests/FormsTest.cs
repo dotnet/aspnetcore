@@ -1098,7 +1098,7 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void ValidationSummaryAppliesCssClass()
+    public void ValidationSummaryCombinesAdditionalAttributesClassWithDefault()
     {
         var appElement = Browser.MountTestComponent<ValidationSummaryWithCssClassComponent>();
         var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
@@ -1109,17 +1109,19 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         submitButton.Click();
 
         // Default ValidationSummary renders with only "validation-errors" class.
-        // FindElement is inside the lambda so Browser.Equal retries until the ul is rendered.
         Browser.Equal("validation-errors",
             () => appElement.FindElement(By.ClassName("all-errors")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
 
-        // ValidationSummary with CssClass appends the custom class to "validation-errors"
-        Browser.Equal("validation-errors custom-summary-css-class",
-            () => appElement.FindElement(By.ClassName("all-errors-custom-class")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
+        // ValidationSummary with class="pt-2" via AdditionalAttributes combines both:
+        // splatted class + fixed "validation-errors"
+        Browser.Equal("pt-2 validation-errors",
+            () => appElement.FindElement(By.ClassName("all-errors-with-class")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
 
-        // Both AdditionalAttributes["class"] and CssClass are combined: splatted class + validation-errors + CssClass
-        Browser.Equal("extra validation-errors custom",
-            () => appElement.FindElement(By.ClassName("all-errors-combined")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
+        // Additional non-class attributes (e.g. data-testid) are also splatted
+        Browser.Equal("validation-errors",
+            () => appElement.FindElement(By.ClassName("all-errors-with-attr")).FindElement(By.TagName("ul")).GetDomAttribute("class"));
+        Browser.Equal("my-summary",
+            () => appElement.FindElement(By.ClassName("all-errors-with-attr")).FindElement(By.TagName("ul")).GetDomAttribute("data-testid"));
     }
 
 }
