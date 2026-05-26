@@ -33,8 +33,6 @@ internal sealed partial class HttpSysListener : IDisposable
     // with hash collisions will cause the server to consume excess CPU.  1000 headers limits CPU time to under
     // 0.5 seconds per request.  Respond with a 400 Bad Request.
     private const int UnknownHeaderLimit = 1000;
-    private const uint Win32FacilityHResultBase = 0x80070000u;
-    private const uint Win32ErrorCodeMask = 0x0000FFFF;
 
     internal MemoryPool<byte> MemoryPool { get; }
 
@@ -266,15 +264,9 @@ internal sealed partial class HttpSysListener : IDisposable
             return new PlatformNotSupportedException();
         }
 
-        var hResult = CreateHResultFromWin32Error(httpInitializeStatusCode);
         return new HttpSysException(
             (int)httpInitializeStatusCode,
-            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8} (HRESULT 0x{hResult:X8}).");
-    }
-
-    internal static int CreateHResultFromWin32Error(uint statusCode)
-    {
-        return unchecked((int)(Win32FacilityHResultBase | (statusCode & Win32ErrorCodeMask)));
+            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8}.");
     }
 
     /// <summary>
