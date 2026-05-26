@@ -302,10 +302,15 @@ Explain why in the comment instead.
 
 Classify the issue into one of these types:
 
-| Type label | When to use |
+| Type | When to use |
 |-----------|-------------|
-| `bug` | The report clearly identifies a behavior as a bug and it can be reproduced. Something is broken or behaving unexpectedly compared to its intended design. |
-| `feature-request` | The report asks for a behavior that is not currently implemented. This may be a brand-new feature or an addition/enhancement to an existing feature. |
+| `Bug` | The report clearly identifies a behavior as a bug and it can be reproduced. Something is broken or behaving unexpectedly compared to its intended design. |
+| `Feature` | The report asks for a behavior that is not currently implemented. This may be a brand-new feature or an addition/enhancement to an existing feature. |
+
+## Step 3: Additional Labels
+
+Classify the issue using one of these labels, if applicable:
+
 | `by-design` | The report describes a behavior that doesn't match the reporter's expectations, but the behavior is actually the intended design. |
 | `question` | The report describes expected behavior, asks for clarification on how to use the product, or is a general "How do I...?" question. Mark as answered when a response is provided. |
 | `external` | The report is not related to an area that the aspnetcore team owns directly. The issue should be moved to the appropriate repo or the customer should be asked to file through the appropriate channels (typically VS Feedback). |
@@ -314,11 +319,11 @@ Classify the issue into one of these types:
 | `test-failure` | CI/test infrastructure failure report. |
 | `performance` | Performance regression or optimization request. |
 
-Apply the single best type label. If the issue template already indicates the type
+Apply the single best label (if applicable). If the issue template already indicates the type
 (e.g., filed via the bug report template), trust that signal but verify it matches
 the actual content — reporters sometimes pick the wrong template.
 
-## Step 3: Regression Detection
+## Step 4: Regression Detection
 
 If the issue is classified as a `bug`, check whether it describes a **regression** —
 a behavior that previously worked in an older version but is now broken in a newer one.
@@ -340,7 +345,7 @@ is known and flag that more information may be needed from the author.
 
 If there is no indication of a regression, omit this section from the summary.
 
-## Step 4: Duplicate Detection
+## Step 5: Duplicate Detection
 
 Search for potential duplicates among recent open issues using the GitHub MCP
 Server tools:
@@ -361,7 +366,7 @@ Only flag an issue as a potential duplicate if you have **high confidence** that
 it describes the same problem or feature request. When in doubt, list it as
 "related" rather than "duplicate".
 
-## Step 5: Draft the Triage Comment
+## Step 6: Draft the Triage Comment
 
 Compose a single triage comment summarizing your findings. Use **exactly** this
 structure — no additional sections, no free-form "Notes" or "Observations":
@@ -370,7 +375,7 @@ structure — no additional sections, no free-form "Notes" or "Observations":
 ### Triage Summary
 
 **Area:** `area-xyz` (brief reason)
-**Type:** `bug` | `feature-request` | ... (brief reason)
+**Type:** `Bug` | `Feature` (brief reason)
 
 #### Labels Applied
 - `area-xyz`
@@ -399,7 +404,7 @@ the issue itself does not make, and do **not** add third-party comparisons
 the issue's own framing in the Area/Type parentheticals — echoing the
 reporter's own words is not editorializing.
 
-## Step 6: Apply Labels, Type, and Hand Off the Comment
+## Step 7: Apply Labels, Type, and Hand Off the Comment
 
 You do **not** post the triage comment directly. Posting is handled by the
 `triage-comment-reviewer` worker workflow, which validates the comment
@@ -407,27 +412,28 @@ before it reaches the issue.
 
 Order of operations matters. Do these in this exact order:
 
-1. **Decide the labels and issue type** you will apply, based on Steps 1–4.
+1. **Decide the labels and issue type** you will apply, based on Steps 1–5.
 
-2. **Apply the area and sub-type labels** using the `add-labels` safe output.
-   The `add-labels` allowed list includes the area labels and the sub-type
-   labels (`by-design`, `question`, `external`, `docs`, `api-proposal`,
-   `test-failure`, `performance`). It does **not** include `bug` or
-   `feature-request` — those are issue types, applied in step 3 below.
+2. **Apply the area label** and (if applicable from Step 3) one **additional
+   sub-type label** using the `add-labels` safe output. The `add-labels`
+   allowed list includes the area labels and the sub-type labels
+   (`by-design`, `question`, `external`, `docs`, `api-proposal`,
+   `test-failure`, `performance`). It does **not** include `Bug` or
+   `Feature` — those are issue types, applied via `set-issue-type` in
+   step 3 below.
 
-3. **Apply the issue type** using `set-issue-type` if and only if the type
-   you picked in Step 2 of triage is `bug` (→ `Bug`), `feature-request`
-   (→ `Feature`), or maps to `Task` / `Epic`. Call `set-issue-type` exactly
-   once. If the repository does not have GitHub Issue Types configured the
-   call will fail at the safe-outputs job — that is expected and not your
-   problem to handle.
+3. **Apply the issue type** using `set-issue-type` with one of `Bug`,
+   `Feature`, `Task`, or `Epic` based on your Step 2 classification. Call
+   `set-issue-type` exactly once. If the repository does not have GitHub
+   Issue Types configured the call will fail at the safe-outputs job —
+   that is expected and not your problem to handle.
 
 4. If the issue currently has `needs-area-label` and you assigned an area,
    **remove `needs-area-label`** using `remove-labels`.
 
-5. **Now draft the comment per Step 5**, populating the `#### Labels Applied`
+5. **Now draft the comment per Step 6**, populating the `#### Labels Applied`
    section with the exact labels and type you applied in steps 2–4 (e.g.
-   `area-networking`, `Feature` (issue type)).
+   `area-networking`, `question`, `Feature` (issue type)).
 
 6. **Call the `triage_comment_reviewer` MCP tool exactly once** with:
 
