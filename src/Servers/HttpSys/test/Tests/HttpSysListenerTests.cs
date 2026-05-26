@@ -12,9 +12,10 @@ public class HttpSysListenerTests
     {
         var errorCode = ErrorCodes.ERROR_ACCESS_DENIED;
         var exception = Assert.IsType<HttpSysException>(HttpSysListener.CreateHttpInitializeFailureException(errorCode));
+        var expectedHResult = HttpSysListener.CreateHResultFromWin32Error(errorCode);
 
         Assert.Contains($"status code 0x{errorCode:X8}", exception.Message);
-        Assert.Contains($"HRESULT 0x{exception.HResult:X8}", exception.Message);
+        Assert.Contains($"HRESULT 0x{expectedHResult:X8}", exception.Message);
         Assert.Equal((int)errorCode, exception.NativeErrorCode);
     }
 
