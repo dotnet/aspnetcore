@@ -84,27 +84,58 @@ body for two purposes:
 Read the issue title and body you fetched in Step 1. Decide whether the
 issue is a **vulnerability report**.
 
-**An issue is a vulnerability report if** it explicitly describes one or
-more of:
+**An issue is a vulnerability report if** it explicitly contains one or
+more of these indicators:
 
-- A specific exploit, attack vector, or proof-of-concept ("I can crash the
-  server by sending…", "I bypassed auth by…", "request smuggling works
-  against Kestrel when…").
-- A CVE number, security advisory reference, or coordinated-disclosure
-  language.
-- An explicit security-fix request framed as such ("this is a security
-  issue and needs to be patched", "please treat this as a vulnerability").
+- A **CVE identifier** matching the pattern `CVE-YYYY-NNNNN` (e.g.
+  `CVE-2021-44228`).
+- A **specific exploit, attack vector, or proof-of-concept**: a payload
+  the reporter says triggers a vulnerability ("send `${jndi:ldap://…}`",
+  "I can bypass auth by setting header X to Y", "this allows arbitrary
+  code execution"), step-by-step reproduction of an exploit, or magic
+  strings used to demonstrate one.
+- **Vulnerability-class language**: "vulnerability", "exploit",
+  "remote code execution"/"RCE", "request smuggling", "header
+  injection", "auth bypass", "privilege escalation", "deserialization
+  attack", "SSRF", "XXE", "XSS", "CSRF" *used in the context of
+  describing an attack the issue reports*. (Mere terminology in a
+  feature/hardening request does NOT count — see "NOT a vulnerability
+  report" below.)
+- An **explicit security-fix request framed as such** — "please issue a
+  security advisory", "please ship a patched release", "treat this as a
+  vulnerability", "this needs to go through MSRC", "coordinated
+  disclosure".
+
+**The Step 2a check is independent of whether the vulnerability is
+actually in aspnetcore.** Even if the orchestrator classified the
+issue as `external`, out-of-area, "Not applicable", or marked it as
+mis-filed, a vulnerability report in the issue body **still triggers
+`FAIL`**. The reason is operational: triage commentary on vulnerability
+content is unsafe regardless of repo applicability. We do not want any
+public comment on a thread that reads like a security advisory.
+
+Concrete examples that **must** `FAIL` even if mis-filed:
+- A CVE in Apache Log4j (Java) filed against `dotnet/aspnetcore` →
+  `FAIL`. The orchestrator may correctly label it `external`; the
+  reviewer **still** must `noop`. Do not post even a polite
+  "this isn't aspnetcore" explanation.
+- A coordinated-disclosure request about a Linux kernel bug filed here
+  → `FAIL` + `noop`.
+- An "I found a vulnerability in [framework X]" report → `FAIL` + `noop`.
 
 **An issue is NOT a vulnerability report just because** it:
 
 - Asks for stricter parsing, hardening, RFC-compliance enforcement, or
-  validation improvements without claiming an active vulnerability.
-- Touches a security-adjacent area (auth, cookies, HTTP parsing, antiforgery,
-  data protection). Most issues in those areas are ordinary bugs and
-  feature requests.
-- Mentions security-adjacent terminology (`CR/LF`, `header`, `validation`,
-  `RFC NNNN`, `harden`, `strict`) without an actual exploit claim.
-- Compares behavior to other HTTP infrastructure ("Squid does this") as
+  validation improvements without claiming an active vulnerability or
+  describing an exploit.
+- Touches a security-adjacent area (auth, cookies, HTTP parsing,
+  antiforgery, data protection). Most issues in those areas are
+  ordinary bugs and feature requests.
+- Mentions security-adjacent terminology (`CR/LF`, `header`,
+  `validation`, `RFC NNNN`, `harden`, `strict`, `reject`, `bypass`
+  used colloquially) without describing an actual exploit.
+- Compares behavior to other HTTP infrastructure (`"Squid does this"`,
+  `"HaProxy added this check"`) as a feature-request rationale, as
   long as the reporter is not claiming an exploit.
 
 If the issue **is** a vulnerability report → your verdict is `FAIL`. Skip
@@ -147,13 +178,14 @@ strip the offending content during `REWRITE`. None of these alone is a
    issue is *"valid"*, *"actionable"*, *"worth fixing"*, or assigns blame
    to the reporter. Strip these sentences.
 
-6. **Stray `#### Notes` section** — the orchestrator's prompt forbids a
-   Notes section, but if one appears anyway:
-   - If the Notes content matches any of rules 1–5 above → **strip the
-     entire `#### Notes` section**, including its heading.
-   - If the Notes content is genuinely benign (rare) → keep it, but
-     consider whether it belongs in one of the structured sections; if
-     not, strip it.
+6. **Stray `#### Notes` section** — the orchestrator's prompt explicitly
+   forbids a Notes section. If one appears anyway, **always strip the
+   entire `#### Notes` section, including its heading, regardless of
+   content**. Even if the Notes text looks benign (e.g. a polite
+   explanation of why the issue is out of scope), strip it. The
+   orchestrator was told not to add one, period; this is a
+   prompt-adherence guard. The rest of the comment (structured fields)
+   stays.
 
 7. **Unverifiable duplicate citations** — for each `#NNN` in the
    `#### Potential Duplicates` section, optionally call `get_issue` on the
@@ -170,23 +202,43 @@ Internally decide one of the following. Include your internal verdict in
 your reasoning for log-debuggability, but do **not** put the verdict line
 itself into the posted comment:
 
-- **`FAIL: <one sentence reason>`** — reserved for these cases only:
-  - Step 2a flagged the issue as a vulnerability report.
+- **`FAIL: <one sentence reason>`** — reserved for these cases:
+  - Step 2a flagged the issue as a vulnerability report. (Most common.)
   - The comment is wholly fabricated (every structured field disagrees
     with the issue body — wrong area, hallucinated type, every duplicate
-    citation clearly unrelated). This should be extremely rare.
+    citation clearly unrelated).
+  - You are uncertain whether something in the comment is a violation —
+    when in doubt, `FAIL`. Posting nothing is always safer than posting
+    a problematic comment on a customer-visible thread.
 
 - **`REWRITE: <one sentence summary of what you changed and why>`** —
-  one or more Step 2b matches exist. Apply the strips and post the
-  cleaned comment. Default to `REWRITE` over `FAIL` whenever the
-  structured fields are recoverable. Stripping 60% of a comment is fine
-  as long as Area / Type / Labels Applied remain valid.
+  one or more Step 2b matches exist AND you are confident the strip
+  cleanly resolves them AND the structured fields (Area / Type /
+  Labels Applied) remain coherent after stripping. Apply the strips
+  and post the cleaned comment.
 
 - **`PASS`** — no Step 2b matches; post the comment unchanged.
 
-When in doubt between `REWRITE` and `FAIL`, **prefer `REWRITE`**. The
-duplicate-detection section alone is valuable enough to post; if you can
-keep it by stripping a few sentences elsewhere, do.
+**When in doubt between `REWRITE` and `FAIL`, prefer `FAIL`.** Triage
+is a low-stakes-when-skipped, high-stakes-when-wrong operation: a
+missing triage comment costs at most a few minutes of a maintainer's
+time, but a triage comment that editorializes about a security issue
+or contradicts the reporter is a public-facing mistake. Labels applied
+by the orchestrator stay in place either way, so the issue is still
+discoverable.
+
+Specifically, `FAIL` (don't `REWRITE`) if any of the following are true:
+
+- The Notes-section heuristic in 2b.6 triggered AND you are unsure
+  what the orchestrator's intent was.
+- More than ~30% of the comment is Step 2b content you need to strip
+  (the surviving structured fields may still be coherent, but the
+  comment is now noticeably shorter than the orchestrator intended,
+  and that itself signals the orchestrator drafted poorly).
+- The orchestrator's Area or Type contradicts the issue body and the
+  rest of the comment is built on that incorrect framing.
+- The orchestrator added security framing to an issue you cannot
+  cleanly determine is safe — even if Step 2a didn't trigger.
 
 ## Step 4: Take Action (exactly one)
 
@@ -225,6 +277,8 @@ unchanged. On `FAIL`, dry-run still results in a `noop`.
   have that safe output.
 - Never call `add-comment` more than once.
 - Never call `add-comment` if your verdict is `FAIL`.
-- Be lenient. The `#### Potential Duplicates` section is genuinely
-  useful to maintainers; if you can keep the comment by stripping a few
-  sentences, do — don't `FAIL` to be safe.
+- **Be conservative. When in doubt, `FAIL`.** The `#### Potential
+  Duplicates` section is useful, but not so useful that it's worth
+  posting a problematic comment to preserve it. A skipped comment costs
+  a maintainer a few minutes; a bad comment costs the project's
+  credibility on a public thread.
