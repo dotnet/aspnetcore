@@ -327,7 +327,7 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private async stateExists(url: string) {
-        const stateParam = new URLSearchParams(new URL(url).search).get('state');
+        const stateParam = this.getCallbackParameter(url, 'state');
         if (stateParam && this._userManager.settings.stateStore) {
             return await this._userManager.settings.stateStore.get(stateParam);
         } else {
@@ -336,13 +336,33 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private async loginRequired(url: string) {
-        const errorParameter = new URLSearchParams(new URL(url).search).get('error');
+        const errorParameter = this.getCallbackParameter(url, 'error');
         if (errorParameter && this._userManager.settings.stateStore) {
             const error = await this._userManager.settings.stateStore.get(errorParameter);
             return error === 'login_required';
         } else {
             return false;
         }
+    }
+
+    private getCallbackParameter(urlString: string, parameterName: string) {
+        const url = new URL(urlString);
+        const parameters = this.usesQueryResponseMode()
+            ? new URLSearchParams(url.search)
+            : new URLSearchParams(url.hash.substring(1));
+
+        return parameters.get(parameterName);
+    }
+
+    private usesQueryResponseMode() {
+        const responseMode = this._userManager.settings.response_mode;
+
+        // Match oidc-client's default response_mode selection for code flows.
+        return responseMode === 'query' || (!responseMode && this.hasCodeResponseType());
+    }
+
+    private hasCodeResponseType() {
+        return this._userManager.settings.response_type?.split(/\s+/g).includes('code') === true;
     }
 
     private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
