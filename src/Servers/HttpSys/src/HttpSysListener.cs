@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -261,10 +260,11 @@ internal sealed partial class HttpSysListener : IDisposable
     {
         if (httpInitializeStatusCode == ErrorCodes.ERROR_SUCCESS)
         {
+            // Keep the existing PlatformNotSupportedException behavior when no specific native error is available.
             return new PlatformNotSupportedException();
         }
 
-        var httpInitializeException = new Win32Exception((int)httpInitializeStatusCode);
+        var httpInitializeException = new HttpSysException((int)httpInitializeStatusCode);
         return new PlatformNotSupportedException(
             $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8} (HRESULT 0x{httpInitializeException.HResult:X8}).",
             httpInitializeException);

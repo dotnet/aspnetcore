@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 public class HttpSysListenerTests
 {
     [Fact]
-    public void CreateHttpInitializeFailureException_WithErrorCode_IncludesWin32ExceptionDetails()
+    public void CreateHttpInitializeFailureException_WithErrorCode_IncludesHttpSysExceptionDetails()
     {
         var errorCode = ErrorCodes.ERROR_ACCESS_DENIED;
         var exception = HttpSysListener.CreateHttpInitializeFailureException(errorCode);
@@ -18,8 +18,8 @@ public class HttpSysListenerTests
         Assert.Contains($"status code 0x{errorCode:X8}", exception.Message);
         Assert.Contains($"HRESULT 0x{expectedWin32Exception.HResult:X8}", exception.Message);
 
-        var win32Exception = Assert.IsType<Win32Exception>(exception.InnerException);
-        Assert.Equal((int)errorCode, win32Exception.NativeErrorCode);
+        var httpSysException = Assert.IsType<HttpSysException>(exception.InnerException);
+        Assert.Equal((int)errorCode, httpSysException.NativeErrorCode);
     }
 
     [Fact]
