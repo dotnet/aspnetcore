@@ -35,7 +35,7 @@ public sealed class WebAssemblyHostBuilder
 
     [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
     internal static bool IsMeterSupported { get; } =
-        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : false;
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : true;
 
     internal static bool IsMeterEnabled { get; set; } = IsMeterSupported;
 
@@ -354,7 +354,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<CultureStateProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
-        
+
         // Register metrics and tracing when explicitly enabled (opt-in via feature switch)
         if (IsMeterSupported && IsMeterEnabled)
         {
