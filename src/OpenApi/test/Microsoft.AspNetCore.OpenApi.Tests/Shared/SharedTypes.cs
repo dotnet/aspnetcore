@@ -19,6 +19,8 @@ using Microsoft.AspNetCore.Http;
 /// <param name="CreatedAt">The date and time when the to-do item was created.</param>
 internal record Todo(int Id, string Title, bool Completed, DateTime CreatedAt);
 
+internal record ModelWithStringAndStringLength([property: StringLength(100)] string Value);
+
 /// <summary>
 /// Represents a to-do item with a due date.
 /// </summary>
