@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -52,7 +53,7 @@ internal sealed partial class HttpSysListener : IDisposable
 
         if (!HttpApi.Supported)
         {
-            throw new PlatformNotSupportedException();
+            throw CreateHttpInitializeFailureException(HttpApi.HttpInitializeStatusCode);
         }
 
         MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
@@ -254,6 +255,19 @@ internal sealed partial class HttpSysListener : IDisposable
         Debug.Assert(!_serverSession.Id.IsInvalid, "ServerSessionHandle is invalid in CloseV2Config");
 
         _serverSession.Dispose();
+    }
+
+    internal static PlatformNotSupportedException CreateHttpInitializeFailureException(uint httpInitializeStatusCode)
+    {
+        if (httpInitializeStatusCode == ErrorCodes.ERROR_SUCCESS)
+        {
+            return new PlatformNotSupportedException();
+        }
+
+        var httpInitializeException = new Win32Exception((int)httpInitializeStatusCode);
+        return new PlatformNotSupportedException(
+            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8} (HRESULT 0x{httpInitializeException.HResult:X8}).",
+            httpInitializeException);
     }
 
     /// <summary>
