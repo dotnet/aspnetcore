@@ -35,8 +35,15 @@ description: >
 # invocation. We key off the issue_number input instead, so each issue
 # gets its own slot. Same-issue invocations still serialize, which is
 # the desirable race-prevention behavior we want to keep.
+#
+# NOTE: do NOT use `${{ github.workflow }}` here. In a workflow_call
+# (reusable workflow) context that variable resolves to the CALLER's
+# workflow name, not the worker's. If we used it, the worker's group
+# key would collide with the orchestrator's group key for the same
+# issue, and GitHub Actions would detect a deadlock between parent
+# and child sharing the same slot and cancel the run.
 concurrency:
-  group: gh-aw-${{ github.workflow }}-${{ inputs.issue_number || github.run_id }}
+  group: gh-aw-triage-comment-reviewer-${{ inputs.issue_number || github.run_id }}
   cancel-in-progress: false
 
 permissions:
