@@ -372,6 +372,12 @@ structure — no additional sections, no free-form "Notes" or "Observations":
 **Area:** `area-xyz` (brief reason)
 **Type:** `bug` | `feature-request` | ... (brief reason)
 
+#### Labels Applied
+- `area-xyz`
+- _(list every label you applied via `add-labels` plus the issue type you
+   applied via `set-issue-type`, one per line. If you applied none, write
+   `_None applied_`.)_
+
 #### Regression Info
 - **Previously working version:** .NET x.y / ASP.NET Core x.y
 - **Broken since:** .NET x.y / ASP.NET Core x.y
@@ -385,45 +391,68 @@ structure — no additional sections, no free-form "Notes" or "Observations":
 ```
 
 Do **not** add a `#### Notes` section. Do **not** recommend additional labels
-inside the comment body — labels are applied through safe outputs in Step 6.
-Do **not** include security analysis, hardening rationale, RFC-compliance
-arguments, comparisons with other HTTP infrastructure (e.g. Squid, HaProxy),
-or any commentary on whether the reported behavior is a vulnerability. Stick
-to the four structured fields above.
+inside the comment body beyond the `#### Labels Applied` section (which only
+reports what you already applied — it is not a suggestion list). Do **not**
+construct security analysis, hardening rationale, or RFC-compliance arguments
+the issue itself does not make, and do **not** add third-party comparisons
+(e.g. Squid, HaProxy) as hardening arguments. You **may** factually restate
+the issue's own framing in the Area/Type parentheticals — echoing the
+reporter's own words is not editorializing.
 
-## Step 6: Apply Labels and Hand Off the Comment
+## Step 6: Apply Labels, Type, and Hand Off the Comment
 
 You do **not** post the triage comment directly. Posting is handled by the
 `triage-comment-reviewer` worker workflow, which validates the comment
 before it reaches the issue.
 
-1. Apply the area label and (if applicable) other labels using the
-   `add-labels` safe output. Apply the issue type using `set-issue-type`.
-   If the issue currently has `needs-area-label` and you assigned an area,
-   remove it using `remove-labels`.
+Order of operations matters. Do these in this exact order:
 
-2. Call the `triage_comment_reviewer` MCP tool **exactly once** with these
-   inputs:
+1. **Decide the labels and issue type** you will apply, based on Steps 1–4.
+
+2. **Apply the area and sub-type labels** using the `add-labels` safe output.
+   The `add-labels` allowed list includes the area labels and the sub-type
+   labels (`by-design`, `question`, `external`, `docs`, `api-proposal`,
+   `test-failure`, `performance`). It does **not** include `bug` or
+   `feature-request` — those are issue types, applied in step 3 below.
+
+3. **Apply the issue type** using `set-issue-type` if and only if the type
+   you picked in Step 2 of triage is `bug` (→ `Bug`), `feature-request`
+   (→ `Feature`), or maps to `Task` / `Epic`. Call `set-issue-type` exactly
+   once. If the repository does not have GitHub Issue Types configured the
+   call will fail at the safe-outputs job — that is expected and not your
+   problem to handle.
+
+4. If the issue currently has `needs-area-label` and you assigned an area,
+   **remove `needs-area-label`** using `remove-labels`.
+
+5. **Now draft the comment per Step 5**, populating the `#### Labels Applied`
+   section with the exact labels and type you applied in steps 2–4 (e.g.
+   `area-networking`, `Feature` (issue type)).
+
+6. **Call the `triage_comment_reviewer` MCP tool exactly once** with:
 
    - `issue_number`: the triggering issue number as a string (for
      `issues.opened`, use `${{ github.event.issue.number }}`; for
      `workflow_dispatch`, use `${{ github.event.inputs.issue_number }}`).
    - `proposed_comment`: the **complete** markdown comment you drafted in
-     Step 5, exactly as it should appear on the issue (or as it should
+     step 5, exactly as it should appear on the issue (or as it should
      appear before the reviewer rewrites it).
    - `dry_run`: pass through `${{ github.event.inputs.dry_run }}` if set,
      otherwise `false`.
 
    The reviewer worker will either post the comment as-is, post a sanitized
-   rewrite, or skip posting entirely if the comment is unrecoverable.
+   rewrite, or skip posting entirely if the issue itself is a vulnerability
+   report.
 
 ### Dry Run Mode
 
 If `${{ github.event.inputs.dry_run }}` is `true`, do **not** apply any
-labels (skip `add-labels`, `set-issue-type`, `remove-labels`). Still call
-the `triage_comment_reviewer` MCP tool with `dry_run: true` — the reviewer
-will prefix the posted comment with `### [DRY RUN] Triage Summary` so it's
-clear no labels were applied.
+labels or issue type (skip `add-labels`, `set-issue-type`, `remove-labels`).
+In step 5, populate `#### Labels Applied` with the labels you **would have**
+applied, prefixed with `would apply:` per line. Still call the
+`triage_comment_reviewer` MCP tool with `dry_run: true` — the reviewer will
+prefix the posted comment with `### [DRY RUN] Triage Summary` so it's clear
+no labels were applied.
 
 ### No-op Fallback
 
