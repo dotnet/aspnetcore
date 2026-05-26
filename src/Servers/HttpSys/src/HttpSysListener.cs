@@ -256,7 +256,7 @@ internal sealed partial class HttpSysListener : IDisposable
         _serverSession.Dispose();
     }
 
-    internal static PlatformNotSupportedException CreateHttpInitializeFailureException(uint httpInitializeStatusCode)
+    internal static Exception CreateHttpInitializeFailureException(uint httpInitializeStatusCode)
     {
         if (httpInitializeStatusCode == ErrorCodes.ERROR_SUCCESS)
         {
@@ -264,10 +264,10 @@ internal sealed partial class HttpSysListener : IDisposable
             return new PlatformNotSupportedException();
         }
 
-        var httpInitializeException = new HttpSysException((int)httpInitializeStatusCode);
-        return new PlatformNotSupportedException(
-            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8} (HRESULT 0x{httpInitializeException.HResult:X8}).",
-            httpInitializeException);
+        var hResult = new HttpSysException((int)httpInitializeStatusCode).HResult;
+        return new HttpSysException(
+            (int)httpInitializeStatusCode,
+            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8} (HRESULT 0x{hResult:X8}).");
     }
 
     /// <summary>

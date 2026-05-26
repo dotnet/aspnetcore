@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
@@ -9,17 +8,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 public class HttpSysListenerTests
 {
     [Fact]
-    public void CreateHttpInitializeFailureException_WithErrorCode_IncludesHttpSysExceptionDetails()
+    public void CreateHttpInitializeFailureException_WithErrorCode_ReturnsHttpSysExceptionWithDetails()
     {
         var errorCode = ErrorCodes.ERROR_ACCESS_DENIED;
-        var exception = HttpSysListener.CreateHttpInitializeFailureException(errorCode);
-        var expectedWin32Exception = new Win32Exception((int)errorCode);
+        var exception = Assert.IsType<HttpSysException>(HttpSysListener.CreateHttpInitializeFailureException(errorCode));
 
         Assert.Contains($"status code 0x{errorCode:X8}", exception.Message);
-        Assert.Contains($"HRESULT 0x{expectedWin32Exception.HResult:X8}", exception.Message);
-
-        var httpSysException = Assert.IsType<HttpSysException>(exception.InnerException);
-        Assert.Equal((int)errorCode, httpSysException.NativeErrorCode);
+        Assert.Contains($"HRESULT 0x{exception.HResult:X8}", exception.Message);
+        Assert.Equal((int)errorCode, exception.NativeErrorCode);
     }
 
     [Fact]
@@ -27,6 +23,7 @@ public class HttpSysListenerTests
     {
         var exception = HttpSysListener.CreateHttpInitializeFailureException(ErrorCodes.ERROR_SUCCESS);
 
+        Assert.IsType<PlatformNotSupportedException>(exception);
         Assert.Null(exception.InnerException);
     }
 }
