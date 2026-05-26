@@ -34,6 +34,8 @@ internal static partial class HttpApi
     [LibraryImport(api_ms_win_core_io_LIB, SetLastError = true)]
     internal static partial uint CancelIoEx(SafeHandle handle, SafeNativeOverlapped overlapped);
 
+    internal static readonly uint InitializationHResult;
+
     internal unsafe delegate uint HttpGetRequestPropertyInvoker(SafeHandle requestQueueHandle, ulong requestId, HTTP_REQUEST_PROPERTY propertyId,
         void* qualifier, uint qualifierSize, void* output, uint outputSize, IntPtr bytesReturned, IntPtr overlapped);
 
@@ -77,7 +79,10 @@ internal static partial class HttpApi
     {
         var statusCode = PInvoke.HttpInitialize(Version, HTTP_INITIALIZE.HTTP_INITIALIZE_SERVER | HTTP_INITIALIZE.HTTP_INITIALIZE_CONFIG);
 
-        if (statusCode == ErrorCodes.ERROR_SUCCESS)
+        Supported = statusCode == ErrorCodes.ERROR_SUCCESS;
+        InitializationHResult = statusCode;
+
+        if (Supported)
         {
             Supported = true;
             HttpApiModule = SafeLibraryHandle.Open(HTTPAPI);

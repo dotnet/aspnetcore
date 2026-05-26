@@ -52,7 +52,8 @@ internal sealed partial class HttpSysListener : IDisposable
 
         if (!HttpApi.Supported)
         {
-            throw new PlatformNotSupportedException();
+            throw new PlatformNotSupportedException("HTTP Server API initialization failed.",
+                new Win32Exception((int)HttpApi.InitializationHResult));
         }
 
         MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
