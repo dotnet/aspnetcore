@@ -19,8 +19,9 @@ on:
 
 description: >
   Triage newly opened issues in dotnet/aspnetcore. Classifies the area label,
-  issue type, and searches for potential duplicates. Posts a summary comment
-  and applies labels automatically.
+  issue type, searches for potential duplicates, and applies labels. The
+  drafted triage comment is handed off to the triage-comment-reviewer worker
+  workflow, which validates it before posting.
 
 permissions:
   contents: read
@@ -67,10 +68,11 @@ safe-outputs:
       - test-failure
       - performance
     max: 3
-  add-comment:
-    hide-older-comments: true
   remove-labels:
     allowed: [needs-area-label]
+    max: 1
+  call-workflow:
+    workflows: [triage-comment-reviewer]
     max: 1
 ---
 
@@ -359,9 +361,10 @@ Only flag an issue as a potential duplicate if you have **high confidence** that
 it describes the same problem or feature request. When in doubt, list it as
 "related" rather than "duplicate".
 
-## Step 5: Post Results
+## Step 5: Draft the Triage Comment
 
-Compose a single triage comment summarizing your findings. Structure it as:
+Compose a single triage comment summarizing your findings. Use **exactly** this
+structure — no additional sections, no free-form "Notes" or "Observations":
 
 ```markdown
 ### Triage Summary
@@ -373,27 +376,62 @@ Compose a single triage comment summarizing your findings. Structure it as:
 - **Previously working version:** .NET x.y / ASP.NET Core x.y
 - **Broken since:** .NET x.y / ASP.NET Core x.y
 - Brief description of the behavior change
-- _(Omit this section if not a regression)_
+- _(Omit this entire section if the issue is not a regression)_
 
 #### Potential Duplicates
 - #123 - Title (similarity: high/medium)
 - _None found_
-
-#### Notes
-Any additional observations (e.g., might also relate to another area,
-issue may need more info from the author, etc.)
+- _(Omit this entire section if there are no candidate duplicates)_
 ```
 
-Then apply labels and post the comment using safe outputs.
+Do **not** add a `#### Notes` section. Do **not** recommend additional labels
+inside the comment body — labels are applied through safe outputs in Step 6.
+Do **not** include security analysis, hardening rationale, RFC-compliance
+arguments, comparisons with other HTTP infrastructure (e.g. Squid, HaProxy),
+or any commentary on whether the reported behavior is a vulnerability. Stick
+to the four structured fields above.
+
+## Step 6: Apply Labels and Hand Off the Comment
+
+You do **not** post the triage comment directly. Posting is handled by the
+`triage-comment-reviewer` worker workflow, which validates the comment
+before it reaches the issue.
+
+1. Apply the area label and (if applicable) other labels using the
+   `add-labels` safe output. Apply the issue type using `set-issue-type`.
+   If the issue currently has `needs-area-label` and you assigned an area,
+   remove it using `remove-labels`.
+
+2. Call the `triage_comment_reviewer` MCP tool **exactly once** with these
+   inputs:
+
+   - `issue_number`: the triggering issue number as a string (for
+     `issues.opened`, use `${{ github.event.issue.number }}`; for
+     `workflow_dispatch`, use `${{ github.event.inputs.issue_number }}`).
+   - `proposed_comment`: the **complete** markdown comment you drafted in
+     Step 5, exactly as it should appear on the issue (or as it should
+     appear before the reviewer rewrites it).
+   - `dry_run`: pass through `${{ github.event.inputs.dry_run }}` if set,
+     otherwise `false`.
+
+   The reviewer worker will either post the comment as-is, post a sanitized
+   rewrite, or skip posting entirely if the comment is unrecoverable.
 
 ### Dry Run Mode
 
-If `${{ github.event.inputs.dry_run }}` is `true`, do **not** apply any labels.
-Post the comment with the analysis but prefix the comment title with
-`### [DRY RUN] Triage Summary` so it's clear no labels were applied.
+If `${{ github.event.inputs.dry_run }}` is `true`, do **not** apply any
+labels (skip `add-labels`, `set-issue-type`, `remove-labels`). Still call
+the `triage_comment_reviewer` MCP tool with `dry_run: true` — the reviewer
+will prefix the posted comment with `### [DRY RUN] Triage Summary` so it's
+clear no labels were applied.
 
-If no action is needed (e.g., the issue already has an area label and type label),
-you MUST call the `noop` tool with a message explaining why:
+### No-op Fallback
+
+If no action is needed (e.g., the issue already has an area label and a
+type label, and there are no duplicates worth flagging), you MUST call the
+`noop` tool with a message explaining why, and you MUST NOT call the
+`triage_comment_reviewer` tool:
+
 ```json
 {"noop": {"message": "No action needed: issue already has area and type labels"}}
 ```
