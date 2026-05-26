@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
+using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -32,7 +33,12 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
-    private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
+    private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions)
+    {
+        // See comment about NumberHandling below.
+        NumberHandling = JsonNumberHandling.Strict,
+    });
+
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
         // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
@@ -50,7 +56,15 @@ internal sealed class OpenApiSchemaService(
                     .Any(attr => attr is RequiredAttribute);
                 propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
             }
-        })
+        }),
+        // Overriding what the user provided so that our implementation that uses Utf8JsonReader doesn't
+        // need to care about this option.
+        // This is assumed to be safe as the serialization/deserialization happening via this options
+        // instance isn't supposed to be user visible.
+        // We only use this instance to:
+        // - resolve type info.
+        // - JsonSchemaExporter.GetJsonSchemaAsNode, which we then deserialize back.
+        NumberHandling = JsonNumberHandling.Strict,
     };
 
     private readonly JsonSchemaExporterOptions _configuration = new()
