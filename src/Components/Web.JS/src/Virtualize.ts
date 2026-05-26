@@ -11,6 +11,7 @@ export const Virtualize = {
   setAnchorMode,
   restoreAnchor,
   alignToItem,
+  beginProgrammaticScroll,
 };
 
 const dispatcherObserversByDotNetIdPropname = Symbol();
@@ -109,6 +110,15 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     intersectionObserver.observe(spacerBefore);
     intersectionObserver.unobserve(spacerAfter);
     intersectionObserver.observe(spacerAfter);
+  }
+
+  // Called by C# at the start of a programmatic ScrollToIndex. Suppresses spacer-IO
+  // callbacks (which would otherwise be misinterpreted as a "user scroll") until
+  // either alignToItemAt completes or a real user scroll fires.
+  function beginProgrammaticScrollSuppression(): void {
+    suppressSpacerCallbacks = true;
+    pendingCallbacks.delete(spacerBefore);
+    pendingCallbacks.delete(spacerAfter);
   }
 
   function getObservedHeight(entry: ResizeObserverEntry): number {
@@ -293,6 +303,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
 
+    // Retry a pending programmatic alignment now that items may be in DOM.
+    if (pendingAlignLocalIndex !== null) {
+      const pending = pendingAlignLocalIndex;
+      pendingAlignLocalIndex = null;
+      alignToItemAt(pending);
+      return;
+    }
+
     // Beginning mode at the very top: show new items by converging to top.
     if ((anchorMode & 1) && snapshot.scrollTop < 1) {
       convergingToTop = true;
@@ -420,6 +438,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   let pendingCallbacks: Map<Element, IntersectionObserverEntry> = new Map();
   let callbackTimeout: ReturnType<typeof setTimeout> | null = null;
+  let pendingAlignLocalIndex: number | null = null;
 
   // Walks `localIndex` siblings forward from spacerBefore to find the rendered child,
   // returning its viewport-relative top measured against the scroll container (or 0 for
@@ -443,8 +462,19 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function alignToItemAt(localIndex: number): void {
     const delta = measureLocalChildOffset(localIndex);
     if (Number.isNaN(delta)) {
+      // Items aren't in DOM yet. Retry after the next render commit.
+      pendingAlignLocalIndex = localIndex;
+      ignoreAnchorScroll = true;
+      suppressSpacerCallbacks = true;
+      observersByDotNetObjectId[id].anchorSnapshot = null;
+      if (convergingToTop || convergingToBottom) {
+        convergingToTop = false;
+        convergingToBottom = false;
+        stopConvergenceObserving();
+      }
       return;
     }
+    pendingAlignLocalIndex = null;
     if (Math.abs(delta) > 0.5) {
       ignoreAnchorScroll = true;
       suppressSpacerCallbacks = true;
@@ -471,6 +501,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     setAnchorMode: (mode: number) => { anchorMode = mode; },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
+    beginProgrammaticScroll: beginProgrammaticScrollSuppression,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
       stopConvergenceObserving();
@@ -697,6 +728,11 @@ function restoreAnchor(dotNetHelper: DotNet.DotNetObject): void {
 function alignToItem(dotNetHelper: DotNet.DotNetObject, localIndex: number): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   observersByDotNetObjectId[id]?.alignToItem?.(localIndex);
+}
+
+function beginProgrammaticScroll(dotNetHelper: DotNet.DotNetObject): void {
+  const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
+  observersByDotNetObjectId[id]?.beginProgrammaticScroll?.();
 }
 
 function getObserversMapEntry(dotNetHelper: DotNet.DotNetObject): { observersByDotNetObjectId: {[id: number]: any }, id: number } {

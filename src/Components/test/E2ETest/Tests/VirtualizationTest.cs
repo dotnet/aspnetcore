@@ -4169,13 +4169,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(5)]
-    [InlineData(500)]
-    public void InitialIndex_OpensAtTargetWithRealContent(int initialIndex)
+    [InlineData(1, false, false)]
+    [InlineData(5, false, false)]
+    [InlineData(500, false, false)]
+    [InlineData(1, false, true)]
+    [InlineData(500, false, true)]
+    [InlineData(1, true, false)]
+    [InlineData(500, true, false)]
+    [InlineData(1, true, true)]
+    [InlineData(500, true, true)]
+    public void InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight, bool delay)
     {
-        // Regression: when InitialIndex < OverscanCount, desiredItemsBefore collapses to 0 and the early bounds check used to bail before AlignToItemAsync.
-        MountAnchorModeForScrollToItem(delay: false);
+        MountAnchorModeForScrollToItem(variableHeight: variableHeight, delay: delay);
         var js = (IJavaScriptExecutor)Browser;
 
         Browser.Exists(By.Id("unload-list")).Click();
@@ -4184,8 +4189,25 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         SetManualInitialIndex(initialIndex);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
-        // The target item must sit at the top of the viewport even for small indices.
+        // The target item must sit at the top of the viewport even for small indices and with a delayed provider.
         Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
+    }
+
+    [Theory]
+    [InlineData(120)]
+    [InlineData(300)]
+    public void ScrollToItem_AsyncProvider_VariableHeight_WithDelay_ReachesTarget(int target)
+    {
+        // Combines the two hardest dimensions: variable-height measurement and a delayed ItemsProvider.
+        MountAnchorModeForScrollToItem(variableHeight: true, delay: true);
+        var js = (IJavaScriptExecutor)Browser;
+
+        SetScrollTargetIndex(target);
+        Browser.Exists(By.Id("scroll-to-item")).Click();
+        WaitForScrollStatus($"Completed: {target}", timeoutSeconds: 30);
+
+        Browser.True(() => GetTopRenderedIndex(js) == target,
+            $"Top rendered should be real item {target}; got {GetTopRenderedIndex(js)}");
     }
 
     [Fact]

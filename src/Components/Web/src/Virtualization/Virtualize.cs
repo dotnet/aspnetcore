@@ -263,6 +263,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         _inFlightScrollHasRendered = false;
         var token = ourCts.Token;
 
+        // Suppress JS spacer-IO callbacks until alignToItem completes or a real user scrolls.
+        if (_jsInterop is not null)
+        {
+            try
+            {
+                await _jsInterop.BeginProgrammaticScrollAsync();
+            }
+            catch (OperationCanceledException) { }
+            catch (JSDisconnectedException) { }
+        }
+
         try
         {
             token.ThrowIfCancellationRequested();
@@ -424,6 +435,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         _itemTemplate = ItemContent ?? ChildContent;
         _placeholder = Placeholder ?? DefaultPlaceholder;
         _emptyContent = EmptyContent;
+
+        // Pre-position the window at InitialIndex before the first render so the initial
+        // ItemsProvider fetch targets the right slice and avoids a flash of item 0.
+        if (!_initialScrollApplied && InitialIndex > 0)
+        {
+            var capacity = OverscanCount * 2 + 1;
+            _itemsBefore = Math.Max(0, InitialIndex - OverscanCount);
+            _visibleItemCapacity = capacity;
+        }
     }
 
     /// <inheritdoc />
@@ -474,13 +494,18 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             await _jsInterop.RefreshObserversAsync();
         }
 
-        // Apply InitialIndex once, when the count is known.
-        if (!_initialScrollApplied && _jsInterop is not null && _itemCount > 0)
+        // Apply InitialIndex once: drive the first fetch via ScrollToIndexAsync rather than
+        // letting the spacer-IO callback fire at scrollTop=0 and reset the window to index 0.
+        if (!_initialScrollApplied && _jsInterop is not null)
         {
-            _initialScrollApplied = true;
             if (InitialIndex > 0)
             {
+                _initialScrollApplied = true;
                 await ScrollToIndexAsync(InitialIndex);
+            }
+            else if (_itemCount > 0)
+            {
+                _initialScrollApplied = true;
             }
         }
     }
@@ -610,16 +635,24 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     private bool ShouldSuppressSpacerCallback()
     {
+        // Before the initial ScrollToIndexAsync runs, ignore IO callbacks: at scrollTop=0
+        // they would compute itemsBefore=0 and overwrite the pre-positioned window.
+        if (!_initialScrollApplied && InitialIndex > 0)
+        {
+            return true;
+        }
+
         if (_currentScrollCts is null)
         {
             return false;
         }
         if (_inFlightScrollHasRendered)
         {
-            // IO is triggered by our own render and alignToItem -> suppress.
+            // After our render commits, IO callbacks reflect the alignToItem-driven scrollTop change — suppress them.
             return true;
         }
-        // real user input wins -> cancel programmatic scroll and the in-flight provider call.
+        // Before our render commits, IO callbacks reflect a real user scroll: cancel the
+        // programmatic scroll and the in-flight provider call so the user's window wins.
         _currentScrollCts.Cancel();
         _currentScrollCts = null;
         _refreshCts?.Cancel();
