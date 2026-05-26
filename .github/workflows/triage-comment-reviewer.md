@@ -29,6 +29,16 @@ description: >
   .NET version-status claims, stray Notes section, unrelated duplicate
   citations) and posts the cleaned comment. Has no label permissions.
 
+# Per-issue concurrency so multiple orchestrator runs (each for a
+# different issue) can fan out into multiple worker runs in parallel.
+# gh-aw's default group is workflow-wide, which serializes every worker
+# invocation. We key off the issue_number input instead, so each issue
+# gets its own slot. Same-issue invocations still serialize, which is
+# the desirable race-prevention behavior we want to keep.
+concurrency:
+  group: gh-aw-${{ github.workflow }}-${{ inputs.issue_number || github.run_id }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   issues: read
