@@ -28,7 +28,7 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
         // Step 1: Safe methods are always allowed.
         if (SafeMethods.Contains(request.Method))
         {
-            return CsrfProtectionResult.Allowed;
+            return CsrfProtectionResult.Allowed();
         }
 
         // Step 2: Sec-Fetch-Site accept path. The vast majority of legitimate browser
@@ -37,7 +37,7 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
         var secFetchSite = request.Headers["Sec-Fetch-Site"].ToString();
         if (secFetchSite is "same-origin" or "none")
         {
-            return CsrfProtectionResult.Allowed;
+            return CsrfProtectionResult.Allowed();
         }
 
         // Step 3: Check trusted origins from the CORS policy that applies to this request
@@ -55,7 +55,7 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
             // here — or opt the endpoint out via DisableAntiforgery() if it has no cookie-based auth.
             if (policy is not null && !policy.AllowAnyOrigin && policy.IsOriginAllowed(origin))
             {
-                return CsrfProtectionResult.Allowed;
+                return CsrfProtectionResult.Allowed();
             }
         }
 
@@ -63,21 +63,21 @@ internal sealed class DefaultCsrfProtection : ICsrfProtection
         // (e.g. "cross-site", "same-site") is treated as untrusted.
         if (!string.IsNullOrEmpty(secFetchSite))
         {
-            return CsrfProtectionResult.Denied;
+            return CsrfProtectionResult.Denied();
         }
 
         // Step 5: No Sec-Fetch-Site header. Fall back to Origin vs Host comparison.
         if (!string.IsNullOrEmpty(origin))
         {
             return OriginMatchesRequestHost(origin, request)
-                ? CsrfProtectionResult.Allowed
-                : CsrfProtectionResult.Denied;
+                ? CsrfProtectionResult.Allowed()
+                : CsrfProtectionResult.Denied();
         }
 
         // Step 6: No Sec-Fetch-Site AND no Origin header.
         // This is a non-browser client (curl, Postman, server-to-server).
         // Allow the request — CSRF is a browser-based attack vector.
-        return CsrfProtectionResult.Allowed;
+        return CsrfProtectionResult.Allowed();
     }
 
     private static async ValueTask<CorsPolicy?> ResolveCorsPolicyAsync(HttpContext context)

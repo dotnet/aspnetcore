@@ -6,16 +6,28 @@ namespace Microsoft.AspNetCore.Antiforgery;
 /// <summary>
 /// Represents the result of cross-origin antiforgery request validation.
 /// </summary>
-public enum CsrfProtectionResult
+public sealed class CsrfProtectionResult
 {
-    /// <summary>
-    /// The request is allowed. The request is either same-origin, from a trusted origin,
-    /// uses a safe HTTP method, or originates from a non-browser client.
-    /// </summary>
-    Allowed,
+    private static readonly CsrfProtectionResult _allowed = new(isAllowed: true);
+    private static readonly CsrfProtectionResult _denied = new(isAllowed: false);
+
+    private CsrfProtectionResult(bool isAllowed)
+    {
+        IsAllowed = isAllowed;
+    }
 
     /// <summary>
-    /// The request is denied. The request is cross-origin and not from a trusted origin.
+    /// Gets a value indicating whether the request is allowed.
     /// </summary>
-    Denied,
+    public bool IsAllowed { get; }
+
+    /// <summary>
+    /// Returns a <see cref="CsrfProtectionResult"/> indicating the request is allowed.
+    /// </summary>
+    public static CsrfProtectionResult Allowed() => _allowed;
+
+    /// <summary>
+    /// Returns a <see cref="CsrfProtectionResult"/> indicating the request is denied.
+    /// </summary>
+    public static CsrfProtectionResult Denied() => _denied;
 }

@@ -36,7 +36,7 @@ internal sealed partial class CsrfProtectionMiddleware
             return;
         }
 
-        if (await _csrfProtection.ValidateAsync(context) == CsrfProtectionResult.Denied)
+        if (await _csrfProtection.ValidateAsync(context) is { IsAllowed: false })
         {
             RequestDenied(_logger, context.Request.Method, context.Request.Path, context.Request.Headers.Origin.ToString());
             context.Response.StatusCode = StatusCodes.Status400BadRequest;

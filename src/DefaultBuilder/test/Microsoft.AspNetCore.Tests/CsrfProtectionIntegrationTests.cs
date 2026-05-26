@@ -648,7 +648,7 @@ public class CsrfProtectionIntegrationTests
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
-            => new(CsrfProtectionResult.Allowed);
+            => new(CsrfProtectionResult.Allowed());
     }
 
     private sealed class CountingCsrfProtection : ICsrfProtection
@@ -658,7 +658,7 @@ public class CsrfProtectionIntegrationTests
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
         {
             CallCount++;
-            return new ValueTask<CsrfProtectionResult>(CsrfProtectionResult.Allowed);
+            return new ValueTask<CsrfProtectionResult>(CsrfProtectionResult.Allowed());
         }
     }
 

@@ -17,10 +17,10 @@ public interface ICsrfProtection
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> associated with the current request.</param>
     /// <returns>
-    /// A <see cref="ValueTask{TResult}"/> that resolves to
-    /// <see cref="CsrfProtectionResult.Allowed"/> if the request is same-origin, from a trusted origin,
-    /// uses a safe HTTP method, or originates from a non-browser client; or
-    /// <see cref="CsrfProtectionResult.Denied"/> if the request is cross-origin and not trusted.
+    /// A <see cref="ValueTask{TResult}"/> that resolves to a <see cref="CsrfProtectionResult"/> whose
+    /// <see cref="CsrfProtectionResult.IsAllowed"/> is <see langword="true"/> when the request is
+    /// same-origin, from a trusted origin, uses a safe HTTP method, or originates from a non-browser
+    /// client; otherwise <see langword="false"/>.
     /// </returns>
     ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context);
 }
