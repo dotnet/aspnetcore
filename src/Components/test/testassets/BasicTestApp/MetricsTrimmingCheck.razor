@@ -36,7 +36,7 @@
         var activitySourceType = GetComponentsActivitySourceType();
         ComponentsMetricsFound = metricsType is not null ? "true" : "false";
         ComponentsActivitySourceFound = activitySourceType is not null ? "true" : "false";
-        IsSupported = AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : true;
+        IsSupported = (AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : true) ? "true" : "false";
 
         if (metricsType is not null)
         {
