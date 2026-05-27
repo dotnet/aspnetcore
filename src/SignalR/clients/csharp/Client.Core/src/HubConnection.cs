@@ -91,7 +91,7 @@ public partial class HubConnection : IAsyncDisposable
 
     // Auth refresh fields
     private Timer? _authRefreshTimer;
-    private TimeSpan _refreshBeforeExpiration = TimeSpan.FromMinutes(5);
+    private readonly AuthRefreshOptions _authRefreshOptions;
 
     /// <summary>
     /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -258,6 +258,8 @@ public partial class HubConnection : IAsyncDisposable
         ServerTimeout = options?.Value.ServerTimeout ?? DefaultServerTimeout;
 
         KeepAliveInterval = options?.Value.KeepAliveInterval ?? DefaultKeepAliveInterval;
+
+        _authRefreshOptions = serviceProvider.GetService<IOptions<AuthRefreshOptions>>()?.Value ?? new AuthRefreshOptions();
     }
 
     /// <summary>
@@ -551,11 +553,14 @@ public partial class HubConnection : IAsyncDisposable
         }
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
-        // Schedule automatic auth refresh if the server provided a token lifetime
-        var authRefreshFeature = connection.Features.Get<IAuthRefreshFeature>();
-        if (authRefreshFeature?.InitialTokenLifetimeSeconds is > 0)
+        // Schedule automatic auth refresh if enabled and the server provided a token lifetime
+        if (_authRefreshOptions.EnableAutoRefresh)
         {
-            ScheduleAuthRefresh(authRefreshFeature.InitialTokenLifetimeSeconds.Value);
+            var authRefreshFeature = connection.Features.Get<IAuthRefreshFeature>();
+            if (authRefreshFeature?.InitialTokenLifetimeSeconds is > 0)
+            {
+                ScheduleAuthRefresh(authRefreshFeature.InitialTokenLifetimeSeconds.Value);
+            }
         }
 
         Log.Started(_logger);
@@ -578,20 +583,53 @@ public partial class HubConnection : IAsyncDisposable
 
         var connection = connectionState.Connection;
         var authRefreshFeature = connection.Features.Get<IAuthRefreshFeature>();
-        if (authRefreshFeature != null)
+        if (authRefreshFeature is null)
         {
-            var newTtl = await authRefreshFeature.RefreshAuthAsync(cancellationToken).ConfigureAwait(false);
-
-            // Reschedule the auto-refresh timer if we got a new TTL
-            if (newTtl.HasValue && newTtl.Value > 0)
-            {
-                ScheduleAuthRefresh(newTtl.Value);
-            }
-
-            return newTtl;
+            throw new InvalidOperationException("Auth refresh is only supported with HTTP-based connections.");
         }
 
-        throw new InvalidOperationException("Auth refresh is only supported with HTTP-based connections.");
+        int? newTtl;
+        try
+        {
+            newTtl = await authRefreshFeature.RefreshAuthAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            var failedCallback = _authRefreshOptions.OnRefreshFailed;
+            if (failedCallback is not null)
+            {
+                try
+                {
+                    await failedCallback(new AuthRefreshFailedContext(this, ex)).ConfigureAwait(false);
+                }
+                catch (Exception callbackEx)
+                {
+                    Log.AuthRefreshCallbackFailed(_logger, callbackEx);
+                }
+            }
+            throw;
+        }
+
+        // Reschedule the auto-refresh timer if enabled and we got a new TTL
+        if (_authRefreshOptions.EnableAutoRefresh && newTtl is > 0)
+        {
+            ScheduleAuthRefresh(newTtl.Value);
+        }
+
+        var refreshedCallback = _authRefreshOptions.OnRefreshed;
+        if (refreshedCallback is not null)
+        {
+            try
+            {
+                await refreshedCallback(new AuthRefreshedContext(this, newTtl)).ConfigureAwait(false);
+            }
+            catch (Exception callbackEx)
+            {
+                Log.AuthRefreshCallbackFailed(_logger, callbackEx);
+            }
+        }
+
+        return newTtl;
     }
 
     /// <summary>
@@ -604,17 +642,18 @@ public partial class HubConnection : IAsyncDisposable
         // Cancel any existing timer
         _authRefreshTimer?.Dispose();
 
+        var refreshBefore = _authRefreshOptions.RefreshBeforeExpiration;
         var ttl = TimeSpan.FromSeconds(tokenLifetimeSeconds);
         TimeSpan refreshIn;
 
-        if (ttl <= new TimeSpan(_refreshBeforeExpiration.Ticks * 2))
+        if (ttl <= new TimeSpan(refreshBefore.Ticks * 2))
         {
             // Short-lived token: refresh at half the TTL to avoid spamming
             refreshIn = TimeSpan.FromSeconds(tokenLifetimeSeconds / 2.0);
         }
         else
         {
-            refreshIn = ttl - _refreshBeforeExpiration;
+            refreshIn = ttl - refreshBefore;
         }
 
         // Enforce a minimum interval to prevent spamming the server
@@ -643,16 +682,6 @@ public partial class HubConnection : IAsyncDisposable
         {
             Log.AuthRefreshFailed(_logger, ex);
         }
-    }
-
-    /// <summary>
-    /// Gets or sets the time before token expiration at which the client should refresh.
-    /// Default is 5 minutes.
-    /// </summary>
-    public TimeSpan RefreshBeforeExpiration
-    {
-        get => _refreshBeforeExpiration;
-        set => _refreshBeforeExpiration = value;
     }
 
     private static ValueTask CloseAsync(ConnectionContext connection)

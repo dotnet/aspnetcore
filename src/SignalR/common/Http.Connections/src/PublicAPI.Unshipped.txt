@@ -3,3 +3,5 @@ Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuth
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthRefresh.set -> void
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthRefreshGracePeriod.get -> System.TimeSpan
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthRefreshGracePeriod.set -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshMetadata
+Microsoft.AspNetCore.Http.Connections.AuthRefreshMetadata.AuthRefreshMetadata() -> void

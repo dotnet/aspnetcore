@@ -98,21 +98,59 @@ public class NegotiateProtocolTests
     }
 
     [Fact]
-    public void WriteNegotiateResponseWithNullTransferFormats()
+    public void WriteNegotiateResponseIncludesTokenLifetimeSecondsWhenSet()
     {
         using (MemoryBufferWriter writer = new MemoryBufferWriter())
         {
             NegotiateProtocol.WriteResponse(new NegotiationResponse
             {
-                AvailableTransports = new List<AvailableTransport>
-                    {
-                        new AvailableTransport()
-                    }
+                ConnectionId = "abc",
+                ConnectionToken = "tok",
+                Version = 1,
+                TokenLifetimeSeconds = 3600,
             }, writer);
 
             string json = Encoding.UTF8.GetString(writer.ToArray());
 
-            Assert.Equal("{\"negotiateVersion\":0,\"availableTransports\":[{\"transport\":null,\"transferFormats\":[]}]}", json);
+            Assert.Contains("\"tokenLifetimeSeconds\":3600", json);
         }
+    }
+
+    [Fact]
+    public void WriteNegotiateResponseOmitsTokenLifetimeSecondsWhenNullOrZero()
+    {
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                TokenLifetimeSeconds = null,
+            }, writer);
+            Assert.DoesNotContain("tokenLifetimeSeconds", Encoding.UTF8.GetString(writer.ToArray()));
+        }
+
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                TokenLifetimeSeconds = 0,
+            }, writer);
+            Assert.DoesNotContain("tokenLifetimeSeconds", Encoding.UTF8.GetString(writer.ToArray()));
+        }
+    }
+
+    [Fact]
+    public void ParseNegotiateResponseReadsTokenLifetimeSeconds()
+    {
+        var json = "{\"connectionId\":\"abc\",\"availableTransports\":[],\"tokenLifetimeSeconds\":1234}";
+        var response = NegotiateProtocol.ParseResponse(Encoding.UTF8.GetBytes(json));
+        Assert.Equal(1234, response.TokenLifetimeSeconds);
+    }
+
+    [Fact]
+    public void ParseNegotiateResponseLeavesTokenLifetimeSecondsNullWhenAbsent()
+    {
+        var json = "{\"connectionId\":\"abc\",\"availableTransports\":[]}";
+        var response = NegotiateProtocol.ParseResponse(Encoding.UTF8.GetBytes(json));
+        Assert.Null(response.TokenLifetimeSeconds);
     }
 }

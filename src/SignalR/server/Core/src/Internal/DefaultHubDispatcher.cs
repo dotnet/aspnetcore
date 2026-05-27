@@ -151,6 +151,34 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
+    public override async Task OnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    {
+        await using var scope = _serviceScopeFactory.CreateAsyncScope();
+
+        var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
+        var hub = hubActivator.Create();
+        Activity? activity = null;
+        try
+        {
+            // OnAuthRefreshedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
+            InitializeHub(hub, connection, invokeAllowed: false);
+
+            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthRefreshedAsync), headers: null, _logger);
+
+            await hub.OnAuthRefreshedAsync(previousUser);
+        }
+        catch (Exception ex)
+        {
+            SetActivityError(activity, ex);
+            throw;
+        }
+        finally
+        {
+            activity?.Stop();
+            hubActivator.Release(hub);
+        }
+    }
+
     public override Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
     {
         // Messages are dispatched sequentially and will stop other messages from being processed until they complete.

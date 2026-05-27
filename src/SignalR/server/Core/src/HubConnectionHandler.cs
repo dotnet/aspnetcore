@@ -4,7 +4,9 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -144,6 +146,14 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
 
         // -- the connectionContext has been set up --
 
+        var userUpdateFeature = connection.Features.Get<IConnectionUserUpdateFeature>();
+        Action<ClaimsPrincipal?, ClaimsPrincipal>? userUpdatedHandler = null;
+        if (userUpdateFeature is not null)
+        {
+            userUpdatedHandler = (previous, _) => OnUserUpdated(connectionContext, previous);
+            userUpdateFeature.UserUpdated += userUpdatedHandler;
+        }
+
         try
         {
             await _lifetimeManager.OnConnectedAsync(connectionContext);
@@ -151,10 +161,43 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
         finally
         {
+            if (userUpdateFeature is not null && userUpdatedHandler is not null)
+            {
+                userUpdateFeature.UserUpdated -= userUpdatedHandler;
+            }
+
             connectionContext.Cleanup();
 
             Log.ConnectedEnding(_logger);
             await _lifetimeManager.OnDisconnectedAsync(connectionContext);
+        }
+    }
+
+    private void OnUserUpdated(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    {
+        // Recompute the user identifier; SignalR's user-targeting (Clients.User, HubLifetimeManager _users)
+        // assumes a stable identifier per connection, so a change forces a reconnect.
+        var newUserId = _userIdProvider.GetUserId(connection);
+        if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+        {
+            Log.UserIdentifierChangedOnRefresh(_logger, connection.UserIdentifier, newUserId);
+            connection.Abort();
+            return;
+        }
+
+        // Fire and forget; the dispatcher serializes hub-method invocations and lifetime callbacks via its own scopes.
+        _ = DispatchOnAuthRefreshedAsync(connection, previousUser);
+    }
+
+    private async Task DispatchOnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    {
+        try
+        {
+            await _dispatcher.OnAuthRefreshedAsync(connection, previousUser);
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorDispatchingHubEvent(_logger, nameof(Hub.OnAuthRefreshedAsync), ex);
         }
     }
 

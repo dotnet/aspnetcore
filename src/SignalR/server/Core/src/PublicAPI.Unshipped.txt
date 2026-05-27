@@ -1,1 +1,2 @@
 #nullable enable
+virtual Microsoft.AspNetCore.SignalR.Hub.OnAuthRefreshedAsync(System.Security.Claims.ClaimsPrincipal? previousUser) -> System.Threading.Tasks.Task!

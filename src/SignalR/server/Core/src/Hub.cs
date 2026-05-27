@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.SignalR;
 
@@ -82,6 +83,25 @@ public abstract class Hub : IDisposable
     /// </summary>
     /// <returns>A <see cref="Task"/> that represents the asynchronous disconnect.</returns>
     public virtual Task OnDisconnectedAsync(Exception? exception)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Called when the authenticated user on the connection has been refreshed, for example via the
+    /// SignalR auth-refresh endpoint. The new <see cref="System.Security.Claims.ClaimsPrincipal"/> is
+    /// available on <see cref="HubCallerContext.User"/>.
+    /// </summary>
+    /// <param name="previousUser">
+    /// The principal that was associated with the connection before the refresh. May be <c>null</c>
+    /// if no user was previously set.
+    /// </param>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
+    /// <remarks>
+    /// This method is invoked on a separate hub instance from any concurrent hub method invocation.
+    /// Client-result invocations are not supported from this method.
+    /// </remarks>
+    public virtual Task OnAuthRefreshedAsync(ClaimsPrincipal? previousUser)
     {
         return Task.CompletedTask;
     }
