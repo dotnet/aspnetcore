@@ -185,20 +185,9 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
             return;
         }
 
-        // Fire and forget; the dispatcher serializes hub-method invocations and lifetime callbacks via its own scopes.
-        _ = DispatchOnAuthRefreshedAsync(connection, previousUser);
-    }
-
-    private async Task DispatchOnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
-    {
-        try
-        {
-            await _dispatcher.OnAuthRefreshedAsync(connection, previousUser);
-        }
-        catch (Exception ex)
-        {
-            Log.ErrorDispatchingHubEvent(_logger, nameof(Hub.OnAuthRefreshedAsync), ex);
-        }
+        // Fire and forget; the dispatcher serializes through ActiveInvocationLimit so the work runs
+        // alongside other hub invocations subject to the configured MaximumParallelInvocations.
+        _ = _dispatcher.OnAuthRefreshedAsync(connection, previousUser);
     }
 
     private async Task RunHubAsync(HubConnectionContext connection)

@@ -151,7 +151,18 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
-    public override async Task OnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    public override Task OnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    {
+        // Acquire the per-connection invocation limit so that OnAuthRefreshedAsync interleaves with hub method
+        // invocations the same way other invocations do (respecting MaximumParallelInvocations).
+        return connection.ActiveInvocationLimit.RunAsync(static state =>
+        {
+            var (dispatcher, connection, previousUser) = state;
+            return dispatcher.InvokeOnAuthRefreshedAsync(connection, previousUser);
+        }, (this, connection, previousUser)).AsTask();
+    }
+
+    private async Task<bool> InvokeOnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
@@ -169,14 +180,18 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
         catch (Exception ex)
         {
+            // Must not throw out of a ChannelBasedSemaphore.RunAsync callback.
             SetActivityError(activity, ex);
-            throw;
+            Log.FailedInvokingHubMethod(_logger, nameof(Hub.OnAuthRefreshedAsync), ex);
         }
         finally
         {
             activity?.Stop();
             hubActivator.Release(hub);
         }
+
+        // Release the semaphore so other invocations can proceed.
+        return true;
     }
 
     public override Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
