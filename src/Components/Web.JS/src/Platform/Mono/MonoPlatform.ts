@@ -207,7 +207,7 @@ async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, 
     options.configureRuntime(dotnet);
   }
   if (justDownload) {
-    await dotnet.download();
+    await dotnet.download(true);
   } else {
     runtime = await dotnet.create();
   }
