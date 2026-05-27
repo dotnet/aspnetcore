@@ -397,13 +397,14 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
     {
         var avgHeight = GetItemHeight();
-        return numItemsGapAbove == 0
-            ? GetSpacerStyle(itemsInSpacer)
-            : $"height: {(itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0; transform: translateY({(numItemsGapAbove * avgHeight).ToString(CultureInfo.InvariantCulture)}px);";
+        var transformValue = numItemsGapAbove == 0
+            ? "none"
+            : $"translateY({(numItemsGapAbove * avgHeight).ToString(CultureInfo.InvariantCulture)}px)";
+        return $"--blazor-virtualize-height: {(itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture)}px; --blazor-virtualize-flex-shrink: 0; --blazor-virtualize-transform: {transformValue};";
     }
 
     private string GetSpacerStyle(int itemsInSpacer)
-        => $"height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;";
+        => $"--blazor-virtualize-height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px; --blazor-virtualize-flex-shrink: 0;";
 
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
@@ -697,7 +698,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "data-blazor-style", $"height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; flex-shrink: 0;");
+        builder.AddAttribute(1, "data-blazor-style", $"--blazor-virtualize-height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; --blazor-virtualize-flex-shrink: 0;");
         builder.CloseElement();
     };
 

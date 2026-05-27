@@ -15,6 +15,21 @@ export const Virtualize = {
 const dispatcherObserversByDotNetIdPropname = Symbol();
 const THROTTLE_MS = 50;
 
+// Static stylesheet consumed by data-blazor-style custom properties.
+// The transform fallback handles elements (spacerBefore, placeholders) that never emit it.
+let virtualizeStylesheetInstalled = false;
+function ensureVirtualizeStylesheet(): void {
+  if (virtualizeStylesheetInstalled) {
+    return;
+  }
+  virtualizeStylesheetInstalled = true;
+  const sheet = new CSSStyleSheet();
+  sheet.replaceSync(
+    '[data-blazor-style]{height:var(--blazor-virtualize-height);flex-shrink:var(--blazor-virtualize-flex-shrink);transform:var(--blazor-virtualize-transform,none);}'
+  );
+  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+}
+
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
   // IntersectionObserver observes intersection with the top-level scroll viewport
@@ -51,6 +66,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return;
   }
 
+  ensureVirtualizeStylesheet();
+
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   const scrollElement = scrollContainer || document.documentElement;
   const isTable = isValidTableElement(spacerAfter.parentElement);
@@ -70,9 +87,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     spacerAfter.style.display = 'table-row';
   }
 
-  // Applies the style from a data attribute value using individual CSSOM setProperty calls
-  // (CSP-compliant). Unlike cssText assignment, setProperty() does not wipe other
-  // properties such as overflowAnchor or display that were set above.
+  // Applies declarations from data-blazor-style via CSSOM setProperty (CSP-compliant).
+  // Values are CSS custom properties consumed by the rule from ensureVirtualizeStylesheet.
   function applyStyleViaCssom(el: HTMLElement, styleValue: string): void {
     if (!styleValue) {
       return;

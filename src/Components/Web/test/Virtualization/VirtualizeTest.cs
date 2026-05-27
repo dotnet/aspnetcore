@@ -999,13 +999,14 @@ public class VirtualizeTest
 
         // spacerBefore style: _itemsBefore is 0 initially, so height = 0px
         var beforeStyle = (string)dataStyleAttributes[0].AttributeValue;
-        Assert.Contains("height: 0px", beforeStyle);
-        Assert.Contains("flex-shrink: 0", beforeStyle);
+        Assert.Contains("--blazor-virtualize-height: 0px", beforeStyle);
+        Assert.Contains("--blazor-virtualize-flex-shrink: 0", beforeStyle);
 
-        // spacerAfter style: should contain a height value
+        // spacerAfter style: height + flex-shrink + explicit transform on every render.
         var afterStyle = (string)dataStyleAttributes[1].AttributeValue;
-        Assert.Contains("height:", afterStyle);
-        Assert.Contains("flex-shrink: 0", afterStyle);
+        Assert.Contains("--blazor-virtualize-height:", afterStyle);
+        Assert.Contains("--blazor-virtualize-flex-shrink: 0", afterStyle);
+        Assert.Contains("--blazor-virtualize-transform:", afterStyle);
     }
 
     [Fact]
@@ -1036,7 +1037,7 @@ public class VirtualizeTest
         var spacerStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
                      && f.AttributeName == "style"
-                     && ((string)f.AttributeValue).Contains("flex-shrink: 0"))
+                     && ((string)f.AttributeValue).Contains("--blazor-virtualize-flex-shrink: 0"))
             .ToList();
 
         Assert.Empty(spacerStyleAttributes);

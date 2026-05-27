@@ -39,7 +39,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0; overflow-anchor: none;";
 
         int initialItemCount = 0;
 
@@ -202,7 +202,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void CanUseViewportAsContainer()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0; overflow-anchor: none;";
         var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
@@ -226,7 +226,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0; overflow-anchor: none;";
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
@@ -254,7 +254,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0;";
         var topSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :first-child"));
         var bottomSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :last-child"));
 
@@ -3955,18 +3955,16 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var spacers = container.FindElements(By.CssSelector(":scope > div"));
         var topSpacer = spacers[0];
 
-        // The spacer should NOT have a "style" HTML attribute rendered by the server.
-        // Instead, styles are applied via CSSOM from the data-blazor-style attribute.
+        // data-blazor-style holds custom property assignments consumed by a static rule.
         var dataBlazorStyle = topSpacer.GetDomAttribute("data-blazor-style");
         Assert.NotNull(dataBlazorStyle);
-        Assert.Contains("height:", dataBlazorStyle);
-        Assert.Contains("flex-shrink: 0", dataBlazorStyle);
+        Assert.Contains("--blazor-virtualize-height:", dataBlazorStyle);
+        Assert.Contains("--blazor-virtualize-flex-shrink: 0", dataBlazorStyle);
 
-        // The style attribute should be present (set by CSSOM setProperty),
-        // proving JS applied the styles programmatically.
+        // The inline style attribute reflects the CSSOM setProperty calls.
         var computedStyle = topSpacer.GetDomAttribute("style");
-        Assert.Contains("height:", computedStyle);
-        Assert.Contains("flex-shrink: 0", computedStyle);
+        Assert.Contains("--blazor-virtualize-height:", computedStyle);
+        Assert.Contains("--blazor-virtualize-flex-shrink: 0", computedStyle);
 
         // Scroll down and verify spacer style updates via CSSOM.
         Browser.ExecuteJavaScript(
@@ -3976,7 +3974,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() =>
         {
             var style = topSpacer.GetDomAttribute("data-blazor-style");
-            return style != null && !style.Contains("height: 0px");
+            return style != null && !style.Contains("--blazor-virtualize-height: 0px");
         });
     }
 }
