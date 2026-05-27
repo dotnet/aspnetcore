@@ -469,7 +469,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void UpdateUserRaisesUserUpdatedEventWithPreviousAndCurrentPrincipals()
+    public void UpdateUserRaisesUserUpdatedEventWithNewPrincipal()
     {
         using (StartVerifiableLog())
         {
@@ -480,19 +480,16 @@ public partial class HttpConnectionDispatcherTests
             connection.User = originalUser;
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "new") }, "Test"));
-            ClaimsPrincipal capturedPrevious = null;
             ClaimsPrincipal capturedCurrent = null;
             var feature = connection.Features.Get<IConnectionUserUpdateFeature>();
             Assert.NotNull(feature);
-            feature.UserUpdated += (previous, current) =>
+            feature.UserUpdated += current =>
             {
-                capturedPrevious = previous;
                 capturedCurrent = current;
             };
 
             connection.UpdateUser(newUser, DateTimeOffset.UtcNow.AddMinutes(15));
 
-            Assert.Same(originalUser, capturedPrevious);
             Assert.Same(newUser, capturedCurrent);
         }
     }
@@ -507,7 +504,7 @@ public partial class HttpConnectionDispatcherTests
 
             var feature = connection.Features.Get<IConnectionUserUpdateFeature>();
             Assert.NotNull(feature);
-            feature.UserUpdated += (_, _) => throw new InvalidOperationException("boom");
+            feature.UserUpdated += _ => throw new InvalidOperationException("boom");
 
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
             var expiration = DateTimeOffset.UtcNow.AddMinutes(15);
@@ -531,9 +528,9 @@ public partial class HttpConnectionDispatcherTests
             Assert.NotNull(feature);
 
             var order = new List<int>();
-            feature.UserUpdated += (_, _) => { lock (order) { order.Add(1); } };
-            feature.UserUpdated += (_, _) => { lock (order) { order.Add(2); } };
-            feature.UserUpdated += (_, _) => { lock (order) { order.Add(3); } };
+            feature.UserUpdated += _ => { lock (order) { order.Add(1); } };
+            feature.UserUpdated += _ => { lock (order) { order.Add(2); } };
+            feature.UserUpdated += _ => { lock (order) { order.Add(3); } };
 
             connection.UpdateUser(
                 new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test")),
@@ -555,7 +552,7 @@ public partial class HttpConnectionDispatcherTests
             Assert.NotNull(feature);
 
             var calls = 0;
-            void Handler(ClaimsPrincipal previous, ClaimsPrincipal current) => calls++;
+            void Handler(ClaimsPrincipal current) => calls++;
             feature.UserUpdated += Handler;
 
             connection.UpdateUser(

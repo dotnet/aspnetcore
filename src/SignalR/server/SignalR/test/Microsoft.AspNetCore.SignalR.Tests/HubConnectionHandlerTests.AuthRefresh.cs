@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Protocol;
@@ -69,14 +70,14 @@ public partial class HubConnectionHandlerTests
                 Assert.NotNull(previousUser);
                 var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, previousUser.Identity!.Name!),
+                    new Claim(ClaimTypes.Name, "refreshed"),
                     new Claim("scope", "extra"),
                 }, "Test"));
                 client.Connection.User = refreshedUser;
-                feature.Raise(previousUser, refreshedUser);
+                feature.Raise(refreshedUser);
 
-                var captured = await hubObserver.PreviousUserTask.DefaultTimeout();
-                Assert.Same(previousUser, captured);
+                var captured = await hubObserver.RefreshedTask.DefaultTimeout();
+                Assert.Equal("refreshed", captured);
 
                 client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
@@ -108,18 +109,18 @@ public partial class HubConnectionHandlerTests
                 Assert.NotNull(previousUser);
                 var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "after") }, "Test"));
                 client.Connection.User = refreshedUser;
-                feature.Raise(previousUser, refreshedUser);
+                feature.Raise(refreshedUser);
 
-                Assert.False(hubObserver.PreviousUserTask.IsCompleted);
+                Assert.False(hubObserver.RefreshedTask.IsCompleted);
                 await Task.Delay(50);
-                Assert.False(hubObserver.PreviousUserTask.IsCompleted);
+                Assert.False(hubObserver.RefreshedTask.IsCompleted);
 
                 hubObserver.ReleaseHubMethod.SetResult();
                 var completion = await invokeTask.DefaultTimeout();
                 Assert.Null(completion.Error);
 
-                var captured = await hubObserver.PreviousUserTask.DefaultTimeout();
-                Assert.Same(previousUser, captured);
+                var captured = await hubObserver.RefreshedTask.DefaultTimeout();
+                Assert.Equal("after", captured);
 
                 client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
@@ -153,12 +154,10 @@ public partial class HubConnectionHandlerTests
                     new Claim("role", "admin"),
                 }, "Test"));
                 client.Connection.User = refreshedUser;
-                feature.Raise(previousUser, refreshedUser);
+                feature.Raise(refreshedUser);
 
-                var captured = await hubObserver.PreviousUserTask.DefaultTimeout();
-                Assert.Same(previousUser, captured);
+                await hubObserver.RefreshedTask.DefaultTimeout();
 
-                // Connection still alive — hub method should still work.
                 var seenUser = await client.InvokeAsync(nameof(AuthRefreshHub.GetUserClaim), "role").DefaultTimeout();
                 Assert.Null(seenUser.Error);
                 Assert.Equal("admin", seenUser.Result);
@@ -193,10 +192,10 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.Name, "after"),
                 }, "Test"));
                 client.Connection.User = refreshedUser;
-                feature.Raise(previousUser, refreshedUser);
+                feature.Raise(refreshedUser);
 
                 // Wait until the hub method ran (and threw).
-                await hubObserver.PreviousUserTask.DefaultTimeout();
+                await hubObserver.RefreshedTask.DefaultTimeout();
 
                 // Semaphore must have been released — a subsequent invocation should complete.
                 var nameResult = await client.InvokeAsync(nameof(AuthRefreshHub.GetUserName)).DefaultTimeout();
@@ -210,7 +209,7 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
-    public async Task MultipleRefreshesEachDispatchWithCorrectPreviousUser()
+    public async Task MultipleRefreshesEachDispatchInOrder()
     {
         using (StartVerifiableLog())
         {
@@ -226,60 +225,23 @@ public partial class HubConnectionHandlerTests
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var user0 = client.Connection.User;
-                Assert.NotNull(user0);
                 var user1 = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "u1") }, "Test"));
                 var user2 = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "u2") }, "Test"));
                 var user3 = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "u3") }, "Test"));
 
                 client.Connection.User = user1;
-                feature.Raise(user0, user1);
+                feature.Raise(user1);
                 client.Connection.User = user2;
-                feature.Raise(user1, user2);
+                feature.Raise(user2);
                 client.Connection.User = user3;
-                feature.Raise(user2, user3);
+                feature.Raise(user3);
 
                 await hubObserver.AllRefreshesCompleted(3).DefaultTimeout();
-                var previousUsers = hubObserver.AllPreviousUsers;
-                Assert.Equal(3, previousUsers.Count);
-                Assert.Same(user0, previousUsers[0]);
-                Assert.Same(user1, previousUsers[1]);
-                Assert.Same(user2, previousUsers[2]);
-
-                client.Dispose();
-                await connectionHandlerTask.DefaultTimeout();
-            }
-        }
-    }
-
-    [Fact]
-    public async Task OnAuthRefreshedAsyncSeesNewUserInContextUser()
-    {
-        using (StartVerifiableLog())
-        {
-            var hubObserver = new AuthRefreshObserver { CaptureContextUser = true };
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
-                services => services.AddSingleton(hubObserver), LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthRefreshHub>>();
-
-            using (var client = new TestClient())
-            {
-                var feature = new TestConnectionUserUpdateFeature();
-                client.Connection.Features.Set<IConnectionUserUpdateFeature>(feature);
-
-                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
-
-                var previousUser = client.Connection.User;
-                Assert.NotNull(previousUser);
-                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, "fresh-name"),
-                }, "Test"));
-                client.Connection.User = refreshedUser;
-                feature.Raise(previousUser, refreshedUser);
-
-                await hubObserver.PreviousUserTask.DefaultTimeout();
-                Assert.Equal("fresh-name", hubObserver.CapturedContextUserName);
+                var captured = hubObserver.AllCapturedUserNames;
+                Assert.Equal(3, captured.Count);
+                Assert.Equal("u1", captured[0]);
+                Assert.Equal("u2", captured[1]);
+                Assert.Equal("u3", captured[2]);
 
                 client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
@@ -326,13 +288,12 @@ public partial class HubConnectionHandlerTests
 
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var previousUser = client.Connection.User;
                 var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, "user-2"),
                 }, "Test"));
                 client.Connection.User = refreshedUser;
-                feature.Raise(previousUser, refreshedUser);
+                feature.Raise(refreshedUser);
 
                 // Connection should be aborted by the handler; the dispatch loop completes without the client disposing.
                 await connectionHandlerTask.DefaultTimeout();
@@ -340,26 +301,134 @@ public partial class HubConnectionHandlerTests
         }
     }
 
+    [Fact]
+    public async Task RefreshAddingRequiredClaimAllowsAuthorizedHubMethod()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(hubObserver);
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("scope-policy", policy =>
+                    {
+                        policy.RequireClaim("scope", "admin");
+                        policy.AddAuthenticationSchemes("Default");
+                    });
+                });
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "alice"))
+            {
+                client.Connection.User!.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "alice") }));
+                var feature = new TestConnectionUserUpdateFeature();
+                client.Connection.Features.Set<IConnectionUserUpdateFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                // No "scope" claim yet -> policy denies.
+                var denied = await client.InvokeAsync(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout();
+                Assert.NotNull(denied.Error);
+                Assert.Contains("Failed to invoke", denied.Error);
+
+                // Refresh adds the required claim while preserving NameIdentifier so UserIdentifier doesn't change.
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "alice"),
+                    new Claim("scope", "admin"),
+                }, "Default"));
+                client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+                await hubObserver.RefreshedTask.DefaultTimeout();
+
+                var allowed = await client.InvokeAsync(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout();
+                Assert.Null(allowed.Error);
+                Assert.Equal("ok", allowed.Result);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task RefreshRemovingRequiredClaimBlocksAuthorizedHubMethod()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(hubObserver);
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("scope-policy", policy =>
+                    {
+                        policy.RequireClaim("scope", "admin");
+                        policy.AddAuthenticationSchemes("Default");
+                    });
+                });
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "alice"))
+            {
+                client.Connection.User!.AddIdentity(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "alice"),
+                    new Claim("scope", "admin"),
+                }));
+                var feature = new TestConnectionUserUpdateFeature();
+                client.Connection.Features.Set<IConnectionUserUpdateFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var allowed = await client.InvokeAsync(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout();
+                Assert.Null(allowed.Error);
+                Assert.Equal("ok", allowed.Result);
+
+                // Refresh drops the scope claim but keeps NameIdentifier so the connection isn't aborted.
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "alice"),
+                }, "Default"));
+                client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+                await hubObserver.RefreshedTask.DefaultTimeout();
+
+                var denied = await client.InvokeAsync(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout();
+                Assert.NotNull(denied.Error);
+                Assert.Contains("Failed to invoke", denied.Error);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
     private sealed class TestConnectionUserUpdateFeature : IConnectionUserUpdateFeature
     {
-        public event Action<ClaimsPrincipal?, ClaimsPrincipal>? UserUpdated;
+        public event Action<ClaimsPrincipal>? UserUpdated;
 
-        public void Raise(ClaimsPrincipal? previous, ClaimsPrincipal current)
+        public void Raise(ClaimsPrincipal current)
         {
-            UserUpdated?.Invoke(previous, current);
+            UserUpdated?.Invoke(current);
         }
     }
 
     private sealed class AuthRefreshObserver
     {
-        private readonly TaskCompletionSource<ClaimsPrincipal?> _tcs =
+        private readonly TaskCompletionSource<string?> _tcs =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private readonly List<ClaimsPrincipal?> _allPrevious = new();
+        private readonly List<string?> _allCaptured = new();
         private readonly object _allLock = new();
         private TaskCompletionSource? _allTcs;
         private int _waitedCount;
 
-        public Task<ClaimsPrincipal?> PreviousUserTask => _tcs.Task;
+        public Task<string?> RefreshedTask => _tcs.Task;
 
         public TaskCompletionSource HubMethodStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -369,13 +438,9 @@ public partial class HubConnectionHandlerTests
 
         public bool CaptureAll { get; set; }
 
-        public bool CaptureContextUser { get; set; }
-
-        public string? CapturedContextUserName { get; private set; }
-
-        public IReadOnlyList<ClaimsPrincipal?> AllPreviousUsers
+        public IReadOnlyList<string?> AllCapturedUserNames
         {
-            get { lock (_allLock) { return _allPrevious.ToArray(); } }
+            get { lock (_allLock) { return _allCaptured.ToArray(); } }
         }
 
         public Task AllRefreshesCompleted(int count)
@@ -384,7 +449,7 @@ public partial class HubConnectionHandlerTests
             {
                 _waitedCount = count;
                 _allTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-                if (_allPrevious.Count >= count)
+                if (_allCaptured.Count >= count)
                 {
                     _allTcs.TrySetResult();
                 }
@@ -392,26 +457,21 @@ public partial class HubConnectionHandlerTests
             }
         }
 
-        public void Capture(ClaimsPrincipal? previousUser, string? contextUserName)
+        public void Capture(string? contextUserName)
         {
-            if (CaptureContextUser)
-            {
-                CapturedContextUserName = contextUserName;
-            }
-
             if (CaptureAll)
             {
                 lock (_allLock)
                 {
-                    _allPrevious.Add(previousUser);
-                    if (_allTcs is not null && _allPrevious.Count >= _waitedCount)
+                    _allCaptured.Add(contextUserName);
+                    if (_allTcs is not null && _allCaptured.Count >= _waitedCount)
                     {
                         _allTcs.TrySetResult();
                     }
                 }
             }
 
-            _tcs.TrySetResult(previousUser);
+            _tcs.TrySetResult(contextUserName);
         }
     }
 
@@ -428,15 +488,18 @@ public partial class HubConnectionHandlerTests
 
         public string? GetUserClaim(string type) => Context.User?.FindFirst(type)?.Value;
 
+        [Authorize("scope-policy")]
+        public string ScopeProtected() => "ok";
+
         public async Task BlockUntilSignaled()
         {
             _observer.HubMethodStarted.TrySetResult();
             await _observer.ReleaseHubMethod.Task;
         }
 
-        public override Task OnAuthRefreshedAsync(ClaimsPrincipal? previousUser)
+        public override Task OnAuthRefreshedAsync()
         {
-            _observer.Capture(previousUser, Context.User?.Identity?.Name);
+            _observer.Capture(Context.User?.Identity?.Name);
             if (_observer.ThrowFromOnAuthRefreshed)
             {
                 throw new InvalidOperationException("boom from OnAuthRefreshedAsync");

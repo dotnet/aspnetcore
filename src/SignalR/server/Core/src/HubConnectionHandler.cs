@@ -147,10 +147,10 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         // -- the connectionContext has been set up --
 
         var userUpdateFeature = connection.Features.Get<IConnectionUserUpdateFeature>();
-        Action<ClaimsPrincipal?, ClaimsPrincipal>? userUpdatedHandler = null;
+        Action<ClaimsPrincipal>? userUpdatedHandler = null;
         if (userUpdateFeature is not null)
         {
-            userUpdatedHandler = (previous, _) => OnUserUpdated(connectionContext, previous);
+            userUpdatedHandler = _ => OnUserUpdated(connectionContext);
             userUpdateFeature.UserUpdated += userUpdatedHandler;
         }
 
@@ -173,7 +173,7 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
     }
 
-    private void OnUserUpdated(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    private void OnUserUpdated(HubConnectionContext connection)
     {
         // Recompute the user identifier; SignalR's user-targeting (Clients.User, HubLifetimeManager _users)
         // assumes a stable identifier per connection, so a change forces a reconnect.
@@ -187,7 +187,7 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
 
         // Fire and forget; the dispatcher serializes through ActiveInvocationLimit so the work runs
         // alongside other hub invocations subject to the configured MaximumParallelInvocations.
-        _ = _dispatcher.OnAuthRefreshedAsync(connection, previousUser);
+        _ = _dispatcher.OnAuthRefreshedAsync(connection);
     }
 
     private async Task RunHubAsync(HubConnectionContext connection)
