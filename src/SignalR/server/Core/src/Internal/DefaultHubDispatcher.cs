@@ -151,18 +151,18 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
-    public override Task OnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    public override Task OnAuthRefreshedAsync(HubConnectionContext connection)
     {
         // Acquire the per-connection invocation limit so that OnAuthRefreshedAsync interleaves with hub method
         // invocations the same way other invocations do (respecting MaximumParallelInvocations).
         return connection.ActiveInvocationLimit.RunAsync(static state =>
         {
-            var (dispatcher, connection, previousUser) = state;
-            return dispatcher.InvokeOnAuthRefreshedAsync(connection, previousUser);
-        }, (this, connection, previousUser)).AsTask();
+            var (dispatcher, connection) = state;
+            return dispatcher.InvokeOnAuthRefreshedAsync(connection);
+        }, (this, connection)).AsTask();
     }
 
-    private async Task<bool> InvokeOnAuthRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal? previousUser)
+    private async Task<bool> InvokeOnAuthRefreshedAsync(HubConnectionContext connection)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
@@ -171,12 +171,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         Activity? activity = null;
         try
         {
-            // OnAuthRefreshedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
             InitializeHub(hub, connection, invokeAllowed: false);
 
             activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthRefreshedAsync), headers: null, _logger);
 
-            await hub.OnAuthRefreshedAsync(previousUser);
+            await hub.OnAuthRefreshedAsync();
         }
         catch (Exception ex)
         {

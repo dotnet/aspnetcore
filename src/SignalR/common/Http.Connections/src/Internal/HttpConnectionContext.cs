@@ -256,7 +256,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// </summary>
     internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
     {
-        var previousUser = User;
         User = user;
         AuthenticationExpiration = authenticationExpiration;
 
@@ -267,12 +266,15 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
 
         // Notify subscribers (e.g., the SignalR Hub layer) that the user has been updated.
+        // Intentionally do not surface the previous principal: its underlying resources
+        // (for example a WindowsIdentity's SafeHandle) may be disposed when the refresh
+        // request completes, making later access unsafe.
         var handler = UserUpdated;
         if (handler is not null)
         {
             try
             {
-                handler(previousUser, user);
+                handler(user);
             }
             catch (Exception ex)
             {
@@ -282,7 +284,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     }
 
     /// <inheritdoc />
-    public event Action<ClaimsPrincipal?, ClaimsPrincipal>? UserUpdated;
+    public event Action<ClaimsPrincipal>? UserUpdated;
 
     public async Task DisposeAsync(bool closeGracefully = false)
     {
