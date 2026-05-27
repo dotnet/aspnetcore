@@ -262,13 +262,6 @@
             }
         }
 
-        static TimeSpan ParseTimeout(string timeout)
-        {
-            return TimeSpan.TryParse(timeout, CultureInfo.InvariantCulture, out var parsed)
-                ? parsed
-                : TimeSpan.FromMinutes(45);
-        }
-
         var batchNumber = 0;
         foreach (var group in eligibleGroups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
         {
@@ -288,7 +281,6 @@
                 CopyDirectory(firstItem.GetMetadata("PayloadDirectory"), batchDirectory);
 
                 var targets = new List<string>();
-                var totalTimeout = TimeSpan.Zero;
                 foreach (var workItem in chunk)
                 {
                     var testAssembly = workItem.GetMetadata("TestAssembly");
@@ -298,13 +290,16 @@
 
                     var relativeSeparator = IsWindowsQueue ? "\\" : "/";
                     targets.Add($"{assemblyName}{relativeSeparator}{testAssembly}");
-                    totalTimeout += ParseTimeout(workItem.GetMetadata("Timeout"));
                 }
 
-                var cappedTimeout = totalTimeout > TimeSpan.FromMinutes(45) ? TimeSpan.FromMinutes(45) : totalTimeout;
-                if (cappedTimeout <= TimeSpan.Zero)
+                // Batch timeout: allow 2 minutes per assembly for test execution + 5 minutes
+                // for shared overhead (tool installs, result upload). Individual assembly default
+                // is 45 minutes, but most small assemblies complete in under 30 seconds. The per-assembly
+                // allowance accounts for occasional slower assemblies.
+                var batchTimeout = TimeSpan.FromMinutes(2 * chunk.Count + 5);
+                if (batchTimeout > TimeSpan.FromMinutes(45))
                 {
-                    cappedTimeout = TimeSpan.FromMinutes(45);
+                    batchTimeout = TimeSpan.FromMinutes(45);
                 }
 
                 File.WriteAllLines(Path.Combine(batchDirectory, "targets.txt"), targets);
@@ -339,14 +334,14 @@
 
                 batchedWorkItem.SetMetadata("PayloadDirectory", batchDirectory);
                 batchedWorkItem.SetMetadata("TestAssembly", "targets.txt");
-                batchedWorkItem.SetMetadata("Timeout", cappedTimeout.ToString("c", CultureInfo.InvariantCulture));
+                batchedWorkItem.SetMetadata("Timeout", batchTimeout.ToString("c", CultureInfo.InvariantCulture));
                 batchedWorkItem.SetMetadata("HasSpecialDependencies", "false");
                 batchedWorkItem.SetMetadata("TargetFrameworkMoniker", group.Key);
                 batchedWorkItem.SetMetadata(
                     "Command",
                     IsWindowsQueue
-                        ? $"call runtests.cmd @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}"
-                        : $"./runtests.sh @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {cappedTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}");
+                        ? $"call runtests.cmd @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {batchTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}"
+                        : $"./runtests.sh @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {batchTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}");
 
                 Log.LogMessage(MessageImportance.High, "Created batched Helix work item {0} with {1} assemblies.", batchedWorkItem.ItemSpec, chunk.Count);
                 batched.Add(batchedWorkItem);

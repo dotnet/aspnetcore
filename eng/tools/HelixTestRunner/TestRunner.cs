@@ -61,6 +61,14 @@ public class TestRunner
             ProcessUtil.PrintMessage($"Creating nuget restore directory: {nugetRestore}");
             Directory.CreateDirectory(nugetRestore);
 
+            // Set up xunit.runner.json for each target assembly directory.
+            // For single-target (non-batched) items this runs once in the work item root.
+            // For batched items, each assembly subdirectory needs its own copy.
+            foreach (var workingDirectory in GetTargetWorkingDirectories())
+            {
+                EnsureTargetRunnerConfiguration(workingDirectory);
+            }
+
             DisplayContents(Path.Combine(Options.DotnetRoot, "host", "fxr"));
             DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.NETCore.App"));
             DisplayContents(Path.Combine(Options.DotnetRoot, "shared", "Microsoft.AspNetCore.App"));
@@ -200,7 +208,6 @@ public class TestRunner
             {
                 ProcessUtil.PrintMessage($"Running test discovery for assembly: {target}");
                 var workingDirectory = GetTargetWorkingDirectory(target);
-                EnsureTargetRunnerConfiguration(workingDirectory);
 
                 // Run test discovery so we know if there are tests to run.
                 var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
@@ -255,7 +262,6 @@ public class TestRunner
                 }
 
                 var workingDirectory = GetTargetWorkingDirectory(target);
-                EnsureTargetRunnerConfiguration(workingDirectory);
                 var assemblyName = GetSanitizedAssemblyName(target);
                 var diagLog = Path.Combine(uploadRoot, $"vstest_{assemblyName}.log");
                 var commonTestArgs = $"test \"{Path.GetFileName(target)}\" --diag:\"{diagLog}\" --logger xunit --logger \"console;verbosity=normal\" " +
