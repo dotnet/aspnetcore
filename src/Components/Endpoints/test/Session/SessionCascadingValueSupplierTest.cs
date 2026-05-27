@@ -164,7 +164,7 @@ public class SessionCascadingValueSupplierTest
     {
         _supplier.RegisterValueCallback("key", () => "value");
 
-        var httpContext = CreateHttpContextWithSession(out var responseFeature);
+        var httpContext = CreateHttpContextWithSession();
         _supplier.SetRequestContext(httpContext);
 
         Assert.Null(httpContext.Session.GetString("key"));
