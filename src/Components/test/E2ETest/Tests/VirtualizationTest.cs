@@ -2605,6 +2605,28 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                         }
                     }
 
+                    // If the viewport is all placeholders, the async provider's in-flight fetch
+                    // is being repeatedly cancelled by our fast scroll loop. Pause briefly so
+                    // it can complete — this preserves the flash assertion (prevTopIndex carries
+                    // across the gap) and keeps forward-progress on slow CI agents.
+                    let waited = 0;
+                    while ((items.length === 0 || topIsPlaceholder) && waited < 1500) {
+                        await new Promise(r => setTimeout(r, 100));
+                        waited += 100;
+                        items = container.querySelectorAll('.item[data-index]');
+                        placeholders = container.querySelectorAll('.loading-placeholder');
+                        containerRect = container.getBoundingClientRect();
+                        topIsPlaceholder = false;
+                        topCandidates = container.querySelectorAll('.item[data-index], .loading-placeholder');
+                        for (var k = 0; k < topCandidates.length; k++) {
+                            var rk = topCandidates[k].getBoundingClientRect();
+                            if (rk.bottom > containerRect.top + 2 && rk.top < containerRect.bottom - 2) {
+                                topIsPlaceholder = !topCandidates[k].hasAttribute('data-index');
+                                break;
+                            }
+                        }
+                    }
+
                     for (var j = 0; j < items.length; j++) {
                         var rect = items[j].getBoundingClientRect();
                         if (rect.bottom > containerRect.top + 2 && rect.top < containerRect.bottom - 2) {
