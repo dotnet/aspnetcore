@@ -355,7 +355,7 @@ public sealed class WebAssemblyHostBuilder
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddSupplyValueFromQueryProvider();
 
-        // Register metrics and tracing when explicitly enabled (opt-in via feature switch)
+        // Register metrics and tracing when supported and not disabled by the feature switch.
         if (IsMeterSupported && IsMeterEnabled)
         {
             ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Services);
