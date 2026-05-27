@@ -427,4 +427,152 @@ public class BindConverterTest
             return base.ConvertTo(context, culture, value, destinationType);
         }
     }
+	
+    [Fact]
+    public void FormatValue_Array_Null()
+    {
+        // Arrange
+        string[] value = null;
+        string expected = null;
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_Empty()
+    {
+        // Arrange
+        string[] value = new string[0];
+        string expected = "[]";
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_Values()
+    {
+        // Arrange
+        int[] value = new[] { 1, 2, 3 };
+        string expected = "[\"1\", \"2\", \"3\"]";
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_NullElement()
+    {
+        // Arrange
+        string[] value = new[] { "a", null, "b" };
+        string expected = "[\"a\", \"\", \"b\"]";
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_NullableIntElement()
+    {
+        // Arrange
+        int?[] value = new int?[] { 1, null, 3 };
+        string expected = "[\"1\", \"\", \"3\"]";
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_JsonEncoding()
+    {
+        // Arrange
+        string[] value = new[] { "a\"b", "c\n" };
+        var expected = "[\"" + JsonEncodedText.Encode("a\"b").Value + "\", \"" + JsonEncodedText.Encode("c\n").Value + "\"]";
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_TypeConverterElements()
+    {
+        // Arrange
+        var p = new Person()
+        {
+            Name = "Glenn",
+            Age = 47,
+        };
+        Person[] value = new[] { p };
+        var encoded = JsonEncodedText.Encode(JsonSerializer.Serialize(p)).Value;
+        var expected = "[\"" + encoded + "\"]";
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_NestedArrays()
+    {
+        // Arrange
+        int[][] value = new[] { new[] { 1, 2 }, new[] { 3 } };
+        var inner0 = "[\"1\", \"2\"]";
+        var inner1 = "[\"3\"]";
+        var expected = "[\"" + JsonEncodedText.Encode(inner0).Value + "\", \"" + JsonEncodedText.Encode(inner1).Value + "\"]";
+
+        // Act
+        var actual = BindConverter.FormatValue(value);
+
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void TryConvertTo_Array_NullInput_Fails()
+    {
+        // Arrange
+        object input = null;
+
+        // Act
+        var success = BindConverter.TryConvertTo<int[]>(input, CultureInfo.CurrentCulture, out var actual);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(actual);
+    }
+
+    [Fact]
+    public void TryConvertTo_Array_ElementParseFailure_Fails()
+    {
+        // Arrange
+        object input = new object[] { "1", "invalid", "3" };
+
+        // Act
+        var success = BindConverter.TryConvertTo<int[]>(input, CultureInfo.CurrentCulture, out var actual);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(actual);
+    }
 }
