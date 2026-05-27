@@ -379,12 +379,6 @@ structure — no additional sections, no free-form "Notes" or "Observations":
 **Area:** `area-xyz` (brief reason)
 **Type:** `Bug` | `Feature` (brief reason)
 
-#### Labels Applied
-- `area-xyz`
-- _(list every label you applied via `add-labels` plus the issue type you
-   applied via `set-issue-type`, one per line. If you applied none, write
-   `_None applied_`.)_
-
 #### Regression Info
 - **Previously working version:** .NET x.y / ASP.NET Core x.y
 - **Broken since:** .NET x.y / ASP.NET Core x.y
@@ -393,18 +387,17 @@ structure — no additional sections, no free-form "Notes" or "Observations":
 
 #### Potential Duplicates
 - #123 - Title (similarity: high/medium)
-- _None found_
-- _(Omit this entire section if there are no candidate duplicates)_
+- _(Always include this section. If you found no candidate duplicates, write a single bullet `- _None found_` and omit any per-issue bullets.)_
 ```
 
-Do **not** add a `#### Notes` section. Do **not** recommend additional labels
-inside the comment body beyond the `#### Labels Applied` section (which only
-reports what you already applied — it is not a suggestion list). Do **not**
-construct security analysis, hardening rationale, or RFC-compliance arguments
-the issue itself does not make, and do **not** add third-party comparisons
-(e.g. Squid, HaProxy) as hardening arguments. You **may** factually restate
-the issue's own framing in the Area/Type parentheticals — echoing the
-reporter's own words is not editorializing.
+Do **not** add a `#### Notes` section. Do **not** add a `#### Labels Applied`
+section or otherwise list / recommend labels inside the comment body — the
+applied labels are visible in the issue's label sidebar, which is the source
+of truth. Do **not** construct security analysis, hardening rationale, or
+RFC-compliance arguments the issue itself does not make, and do **not** add
+third-party comparisons (e.g. Squid, HaProxy) as hardening arguments. You
+**may** factually restate the issue's own framing in the Area/Type
+parentheticals — echoing the reporter's own words is not editorializing.
 
 ## Step 7: Apply Labels, Type, and Hand Off the Comment
 
@@ -431,10 +424,9 @@ Order of operations matters. Do these in this exact order:
 4. If the issue currently has `needs-area-label` and you assigned an area,
    **remove `needs-area-label`** using `remove-labels`.
 
-5. **Now draft the comment per Step 6**, populating the `#### Labels Applied`
-   section with the exact labels you applied in step 2 and the issue type
-   you applied in step 3 (e.g. `area-networking`, `question`,
-   `Feature` (issue type)).
+5. **Now draft the comment per Step 6.** The applied labels and issue
+   type are visible in the issue's label sidebar; do not list them inside
+   the comment body.
 
 6. **Call the `triage_comment_reviewer` MCP tool exactly once** with:
 
@@ -455,11 +447,9 @@ Order of operations matters. Do these in this exact order:
 
 If `${{ github.event.inputs.dry_run }}` is `true`, do **not** apply any
 labels or issue type (skip `add-labels`, `set-issue-type`, `remove-labels`).
-In step 5, populate `#### Labels Applied` with the labels you **would have**
-applied, prefixed with `would apply:` per line. Still call the
-`triage_comment_reviewer` MCP tool with `dry_run: true` — the reviewer will
-prefix the posted comment with `### [DRY RUN] Triage Summary` so it's clear
-no labels were applied.
+Still call the `triage_comment_reviewer` MCP tool with `dry_run: true` —
+the reviewer will prefix the posted comment with `### [DRY RUN] Triage
+Summary` so it's clear no labels were applied.
 
 ### No-op Fallback
 

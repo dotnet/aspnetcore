@@ -181,11 +181,11 @@ strip the offending content during `REWRITE`. None of these alone is a
    issue body mentions them — they don't belong in a triage classification.
 
 3. **Label recommendations inside the comment body** — anything of the
-   form *"Recommend also labeling with `security`/`area-xyz`/…"*. The
-   `#### Labels Applied` section is a **report** of labels the orchestrator
-   already applied, not a suggestion list; if you see a sentence
-   recommending additional labels, strip it. The `#### Labels Applied`
-   section itself stays.
+   form *"Recommend also labeling with `security`/`area-xyz`/…"* or any
+   list of applied labels. Labels are visible in the issue's label
+   sidebar (the source of truth) and the orchestrator's prompt forbids
+   restating them in the comment body. If you see a label list or
+   suggestion, strip it.
 
 4. **.NET version-status claims** — words like *"preview"*, *"RC"*,
    *"stable"*, *"released"*, or *"unreleased"* applied to a .NET version.
@@ -208,10 +208,12 @@ strip the offending content during `REWRITE`. None of these alone is a
    `#### Potential Duplicates` section, optionally call `get_issue` on the
    cited number and verify it's plausibly related. If a citation is
    clearly unrelated (different area, different problem) → remove that
-   bullet. If every citation is bad → remove the entire
-   `#### Potential Duplicates` section. Do **not** `FAIL` over duplicate
-   citations — just clean them up. Trust the orchestrator's other
-   regression / area / type findings; do not second-guess them.
+   bullet. If every citation is bad → replace the entire bullet list
+   with a single `- _None found_` bullet (keep the section heading
+   itself; the orchestrator's template always includes this section).
+   Do **not** `FAIL` over duplicate citations — just clean them up.
+   Trust the orchestrator's other regression / area / type findings;
+   do not second-guess them.
 
 ## Step 3: Decision Gate
 
@@ -230,9 +232,9 @@ itself into the posted comment:
 
 - **`REWRITE: <one sentence summary of what you changed and why>`** —
   one or more Step 2b matches exist AND you are confident the strip
-  cleanly resolves them AND the structured fields (Area / Type /
-  Labels Applied) remain coherent after stripping. Apply the strips
-  and post the cleaned comment.
+  cleanly resolves them AND the structured fields (Area / Type) remain
+  coherent after stripping. Apply the strips and post the cleaned
+  comment.
 
 - **`PASS`** — no Step 2b matches; post the comment unchanged.
 
