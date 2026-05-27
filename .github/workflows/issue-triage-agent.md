@@ -36,14 +36,9 @@ tools:
 safe-outputs:
   noop:
     report-as-issue: false
-  # FORK-TEST ONLY: set-issue-type is commented out because GitHub Issue
-  # Types are an org-only feature. Personal-account forks can't configure
-  # them and the call fails, which trips the safe_outputs job and skips
-  # the downstream reviewer worker. Restore this block before merging
-  # back to dotnet/aspnetcore.
-  # set-issue-type:
-  #   allowed: ["Bug", "Feature", "Task", "Epic"]
-  #   max: 1
+  set-issue-type:
+    allowed: ["Bug", "Feature", "Task", "Epic"]
+    max: 1
   add-labels:
     allowed:
       - area-auth

@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"3694c980df91294acbffbeb441941b7fd13f22c9d939be25e4191337a091b027","compiler_version":"v0.76.1","strict":true,"agent_id":"copilot"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"d2f31f8c81eee6f93a7d28dd8946ce62139c9cee75c12bcd7d9fd9c2991e40fa","compiler_version":"v0.76.1","strict":true,"agent_id":"copilot"}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/github-script","sha":"d746ffe35508b1917358783b479e04febd2b8f71","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"46d564922b082d0db93244972e8005ea6904ee5f","version":"v0.76.1"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.55"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.55"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.55"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.19"},{"image":"ghcr.io/github/github-mcp-server:v1.0.4","digest":"sha256:e3816a476a977cfb836e7d221510011436c654d11861db66ecfd826601aba6a4","pinned_image":"ghcr.io/github/github-mcp-server:v1.0.4@sha256:e3816a476a977cfb836e7d221510011436c654d11861db66ecfd826601aba6a4"},{"image":"node:lts-alpine","digest":"sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14","pinned_image":"node:lts-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -215,20 +215,20 @@ jobs:
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_8ca1ac09ba926b46_EOF'
+          cat << 'GH_AW_PROMPT_dfc58eb1e780fccb_EOF'
           <system>
-          GH_AW_PROMPT_8ca1ac09ba926b46_EOF
+          GH_AW_PROMPT_dfc58eb1e780fccb_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_8ca1ac09ba926b46_EOF'
+          cat << 'GH_AW_PROMPT_dfc58eb1e780fccb_EOF'
           <safe-output-tools>
-          Tools: add_labels(max:3), remove_labels, call_workflow, missing_tool, missing_data, noop
+          Tools: add_labels(max:3), remove_labels, set_issue_type, call_workflow, missing_tool, missing_data, noop
           </safe-output-tools>
-          GH_AW_PROMPT_8ca1ac09ba926b46_EOF
+          GH_AW_PROMPT_dfc58eb1e780fccb_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/mcp_cli_tools_prompt.md"
-          cat << 'GH_AW_PROMPT_8ca1ac09ba926b46_EOF'
+          cat << 'GH_AW_PROMPT_dfc58eb1e780fccb_EOF'
           <github-context>
           The following GitHub context information is available for this workflow:
           {{#if github.actor}}
@@ -257,12 +257,12 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_8ca1ac09ba926b46_EOF
+          GH_AW_PROMPT_dfc58eb1e780fccb_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_8ca1ac09ba926b46_EOF'
+          cat << 'GH_AW_PROMPT_dfc58eb1e780fccb_EOF'
           </system>
           {{#runtime-import .github/workflows/issue-triage-agent.md}}
-          GH_AW_PROMPT_8ca1ac09ba926b46_EOF
+          GH_AW_PROMPT_dfc58eb1e780fccb_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
@@ -476,9 +476,9 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_cedfb451df1d9a79_EOF'
-          {"add_labels":{"allowed":["area-auth","area-blazor","area-commandlinetools","area-dataprotection","area-grpc","area-healthchecks","area-hosting","area-identity","area-infrastructure","area-middleware","area-minimal","area-mvc","area-networking","area-perf","area-routing","area-security","area-signalr","area-ui-rendering","area-unified-build","by-design","question","external","docs","api-proposal","test-failure","performance"],"max":3},"call_workflow":{"max":1,"workflow_files":{"triage-comment-reviewer":"./.github/workflows/triage-comment-reviewer.lock.yml"},"workflows":["triage-comment-reviewer"]},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"remove_labels":{"allowed":["needs-area-label"],"max":1},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_cedfb451df1d9a79_EOF
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_c7eb8e9bef9f748f_EOF'
+          {"add_labels":{"allowed":["area-auth","area-blazor","area-commandlinetools","area-dataprotection","area-grpc","area-healthchecks","area-hosting","area-identity","area-infrastructure","area-middleware","area-minimal","area-mvc","area-networking","area-perf","area-routing","area-security","area-signalr","area-ui-rendering","area-unified-build","by-design","question","external","docs","api-proposal","test-failure","performance"],"max":3},"call_workflow":{"max":1,"workflow_files":{"triage-comment-reviewer":"./.github/workflows/triage-comment-reviewer.lock.yml"},"workflows":["triage-comment-reviewer"]},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"remove_labels":{"allowed":["needs-area-label"],"max":1},"report_incomplete":{},"set_issue_type":{"allowed":["Bug","Feature","Task","Epic"],"max":1}}
+          GH_AW_SAFE_OUTPUTS_CONFIG_c7eb8e9bef9f748f_EOF
       - name: Generate Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
@@ -640,6 +640,24 @@ jobs:
                     "maxLength": 1024
                   }
                 }
+              },
+              "set_issue_type": {
+                "defaultMax": 5,
+                "fields": {
+                  "issue_number": {
+                    "issueOrPRNumber": true
+                  },
+                  "issue_type": {
+                    "required": true,
+                    "type": "string",
+                    "sanitize": true,
+                    "maxLength": 128
+                  },
+                  "repo": {
+                    "type": "string",
+                    "maxLength": 256
+                  }
+                }
               }
             }
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
@@ -725,7 +743,7 @@ jobs:
           
           mkdir -p /home/runner/.copilot
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-          cat << GH_AW_MCP_CONFIG_2dbce72de521e911_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
+          cat << GH_AW_MCP_CONFIG_e1b5ac749ef620b8_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
             "mcpServers": {
               "github": {
@@ -769,7 +787,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_2dbce72de521e911_EOF
+          GH_AW_MCP_CONFIG_e1b5ac749ef620b8_EOF
       - name: Mount MCP servers as CLIs
         id: mount-mcp-clis
         continue-on-error: true
@@ -1474,7 +1492,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.googleapis.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_labels\":{\"allowed\":[\"area-auth\",\"area-blazor\",\"area-commandlinetools\",\"area-dataprotection\",\"area-grpc\",\"area-healthchecks\",\"area-hosting\",\"area-identity\",\"area-infrastructure\",\"area-middleware\",\"area-minimal\",\"area-mvc\",\"area-networking\",\"area-perf\",\"area-routing\",\"area-security\",\"area-signalr\",\"area-ui-rendering\",\"area-unified-build\",\"by-design\",\"question\",\"external\",\"docs\",\"api-proposal\",\"test-failure\",\"performance\"],\"max\":3},\"call_workflow\":{\"max\":1,\"workflow_files\":{\"triage-comment-reviewer\":\"./.github/workflows/triage-comment-reviewer.lock.yml\"},\"workflows\":[\"triage-comment-reviewer\"]},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"remove_labels\":{\"allowed\":[\"needs-area-label\"],\"max\":1},\"report_incomplete\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_labels\":{\"allowed\":[\"area-auth\",\"area-blazor\",\"area-commandlinetools\",\"area-dataprotection\",\"area-grpc\",\"area-healthchecks\",\"area-hosting\",\"area-identity\",\"area-infrastructure\",\"area-middleware\",\"area-minimal\",\"area-mvc\",\"area-networking\",\"area-perf\",\"area-routing\",\"area-security\",\"area-signalr\",\"area-ui-rendering\",\"area-unified-build\",\"by-design\",\"question\",\"external\",\"docs\",\"api-proposal\",\"test-failure\",\"performance\"],\"max\":3},\"call_workflow\":{\"max\":1,\"workflow_files\":{\"triage-comment-reviewer\":\"./.github/workflows/triage-comment-reviewer.lock.yml\"},\"workflows\":[\"triage-comment-reviewer\"]},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"remove_labels\":{\"allowed\":[\"needs-area-label\"],\"max\":1},\"report_incomplete\":{},\"set_issue_type\":{\"allowed\":[\"Bug\",\"Feature\",\"Task\",\"Epic\"],\"max\":1}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
