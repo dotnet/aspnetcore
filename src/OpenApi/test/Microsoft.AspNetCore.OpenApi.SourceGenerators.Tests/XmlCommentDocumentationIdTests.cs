@@ -140,18 +140,18 @@ public class Bar
 namespace Sample {
 
     /// <summary>
-    /// Duplicated internal class.
+    /// Internal class of the target assembly which will be included.
     /// </summary>
     internal class Duplicate {
     }
 }
 """;
 
-        var internalDuplicatedSource = """
+        var internalDuplicatedReferencedSource = """
 namespace Sample {
 
     /// <summary>
-    /// Duplicated internal class.
+    /// Duplicated internal class which should not be included in the XML Comments because it's internal and from a referenced assembly.
     /// </summary>
     internal class Duplicate {
     }
@@ -159,8 +159,8 @@ namespace Sample {
 """;
         var references = new Dictionary<string, List<string>>
         {
-            { "InternalDuplicateLibrary1", [internalDuplicatedSource] },
-            { "InternalDuplicateLibrary2", [internalDuplicatedSource] }
+            { "InternalDuplicateLibrary1", [internalDuplicatedReferencedSource] },
+            { "InternalDuplicateLibrary2", [internalDuplicatedReferencedSource] }
         };
 
         var generator = new XmlCommentGenerator();
