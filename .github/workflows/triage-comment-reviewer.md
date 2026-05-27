@@ -29,19 +29,8 @@ description: >
   .NET version-status claims, stray Notes section, unrelated duplicate
   citations) and posts the cleaned comment. Has no label permissions.
 
-# Per-issue concurrency so multiple orchestrator runs (each for a
-# different issue) can fan out into multiple worker runs in parallel.
-# gh-aw's default group is workflow-wide, which serializes every worker
-# invocation. We key off the issue_number input instead, so each issue
-# gets its own slot. Same-issue invocations still serialize, which is
-# the desirable race-prevention behavior we want to keep.
-#
-# NOTE: do NOT use `${{ github.workflow }}` here. In a workflow_call
-# (reusable workflow) context that variable resolves to the CALLER's
-# workflow name, not the worker's. If we used it, the worker's group
-# key would collide with the orchestrator's group key for the same
-# issue, and GitHub Actions would detect a deadlock between parent
-# and child sharing the same slot and cancel the run.
+# Per-issue concurrency. Forward-compatible with the gh-aw fix tracked
+# in https://github.com/github/gh-aw/issues/35161.
 concurrency:
   group: gh-aw-triage-comment-reviewer-${{ inputs.issue_number || github.run_id }}
   cancel-in-progress: false
