@@ -598,6 +598,11 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             var kvp = Assert.Single(response.Value.Content);
             Assert.Equal("application/json", kvp.Key);
+            var schema = Assert.Single(document.Components.Schemas);
+            Assert.Equal(nameof(ModelWithStringAndStringLength), schema.Key);
+            var property = Assert.Single(schema.Value.Properties);
+            Assert.Equal("value", property.Key);
+            Assert.Equal(100, property.Value.MaxLength);
         });
     }
 }

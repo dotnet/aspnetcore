@@ -187,9 +187,9 @@ internal sealed partial class OpenApiJsonSchema
     /// <param name="propertyName">The name of the property the editor is currently consuming.</param>
     /// <param name="schema">The <see cref="OpenApiSchema"/> to write the given values to.</param>
     /// <param name="options">The <see cref="JsonSerializerOptions"/> instance.</param>
-    public static void ReadProperty(ref Utf8JsonReader reader, string propertyName, OpenApiSchema schema, JsonSerializerOptions options)
+    /// <param name="context">The <see cref="OpenApiJsonSchemaContext"/> instance.</param>
+    public static void ReadProperty(ref Utf8JsonReader reader, string propertyName, OpenApiSchema schema, JsonSerializerOptions options, OpenApiJsonSchemaContext context)
     {
-        var context = (options.TypeInfoResolver as OpenApiJsonSchemaContext) ?? new OpenApiJsonSchemaContext(new(options));
         switch (propertyName)
         {
             case OpenApiSchemaKeywords.TypeKeyword:
