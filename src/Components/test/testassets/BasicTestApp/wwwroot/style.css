@@ -39,3 +39,14 @@
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+
+#csp-container {
+    background-color: #eee;
+    height: 500px;
+    overflow-y: auto;
+}
+
+.csp-item {
+    height: 50px;
+}
+
