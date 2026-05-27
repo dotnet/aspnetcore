@@ -645,6 +645,76 @@ public class CsrfProtectionIntegrationTests
         Assert.True(capturedFeature!.IsValid, "Antiforgery middleware should accept the valid token; CSRF protection also allowed the same-origin request.");
     }
 
+    [Theory]
+    [InlineData("same-origin", /* withToken */ true,  HttpStatusCode.OK,         /* endpointInvoked */ true)]   // Legitimate Blazor form post
+    [InlineData("same-origin", /* withToken */ false, HttpStatusCode.OK,         /* endpointInvoked */ true)]   // Endpoint runs but IAntiforgeryValidationFeature reports invalid
+    [InlineData("cross-site",  /* withToken */ true,  HttpStatusCode.BadRequest, /* endpointInvoked */ false)]  // CSRF middleware short-circuits before the form is even read
+    [InlineData("cross-site",  /* withToken */ false, HttpStatusCode.BadRequest, /* endpointInvoked */ false)]
+    public async Task CsrfProtection_BlazorShapedEndpoint_LayersWithAntiforgery(
+        string secFetchSite,
+        bool withToken,
+        HttpStatusCode expectedStatus,
+        bool expectedEndpointInvoked)
+    {
+        // Blazor server-rendered components register every page endpoint with
+        // `RequireAntiforgeryTokenAttribute` metadata (see `RazorComponentEndpointFactory`)
+        // This test simulates that shape without pulling in the Blazor packages.
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddAntiforgery();
+        using var app = builder.Build();
+
+        app.UseAntiforgery();
+
+        var endpointInvoked = false;
+        IAntiforgeryValidationFeature? capturedFeature = null;
+        app.MapPost("/page", (HttpContext ctx) =>
+        {
+            endpointInvoked = true;
+            capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
+            return "ok";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute()); // Same metadata Blazor adds per page
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var antiforgery = app.Services.GetRequiredService<IAntiforgery>();
+        var options = app.Services.GetRequiredService<Microsoft.Extensions.Options.IOptions<AntiforgeryOptions>>().Value;
+        var tokens = antiforgery.GetAndStoreTokens(new DefaultHttpContext { RequestServices = app.Services });
+
+        var formFields = new List<KeyValuePair<string, string>>
+        {
+            new("name", "alice"),
+        };
+        if (withToken)
+        {
+            formFields.Add(new KeyValuePair<string, string>(options.FormFieldName, tokens.RequestToken!));
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/page")
+        {
+            Content = new FormUrlEncodedContent(formFields),
+        };
+        request.Headers.Add("Sec-Fetch-Site", secFetchSite);
+        if (withToken)
+        {
+            request.Headers.Add("Cookie", $"{options.Cookie.Name}={tokens.CookieToken}");
+        }
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(expectedStatus, response.StatusCode);
+        Assert.Equal(expectedEndpointInvoked, endpointInvoked);
+
+        if (expectedEndpointInvoked)
+        {
+            // When the endpoint ran, antiforgery's IsValid state should reflect whether a valid token was supplied.
+            Assert.NotNull(capturedFeature);
+            Assert.Equal(withToken, capturedFeature!.IsValid);
+        }
+    }
+
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)

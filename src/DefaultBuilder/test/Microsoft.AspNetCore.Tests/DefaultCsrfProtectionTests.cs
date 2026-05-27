@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Tests;
 
-public class DefaultCrossOriginProtectionTests
+public class DefaultCsrfProtectionTests
 {
     private readonly DefaultCsrfProtection _validator = new();
 
