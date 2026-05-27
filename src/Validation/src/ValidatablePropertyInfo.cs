@@ -229,7 +229,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
                 {
                     var key = errorPrefix.TrimStart('.');
                     context.AddOrExtendValidationErrors(name, key, [ex.Message], container);

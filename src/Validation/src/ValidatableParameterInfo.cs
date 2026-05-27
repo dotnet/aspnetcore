@@ -189,7 +189,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
             {
                 var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
                 context.AddValidationError(Name, key, [ex.Message], null);
