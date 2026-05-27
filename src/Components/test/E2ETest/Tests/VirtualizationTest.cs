@@ -2579,18 +2579,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                 let prevTopIndex = -1;
                 let flashCount = 0;
                 let maxIndexSeen = -1;
-                let iterationsRun = 0;
-                let placeholderTopTicks = 0; // ticks where top of viewport was a placeholder, not a real item
-                let noItemsTicks = 0;        // ticks where no .item[data-index] existed at all
-                const trace = [];            // per-iteration snapshot: i, st, topIdx, items, placeholders
 
                 for (let i = 0; i < MAX_ITERATIONS; i++) {
                     container.scrollTop += SCROLL_INCREMENT;
                     await new Promise(r => setTimeout(r, SETTLE_MS));
-                    iterationsRun = i + 1;
 
                     var items = container.querySelectorAll('.item[data-index]');
-                    var placeholders = container.querySelectorAll('.loading-placeholder');
                     var containerRect = container.getBoundingClientRect();
                     let topIndex = -1;
                     let topIsPlaceholder = false;
@@ -2614,7 +2608,6 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                         await new Promise(r => setTimeout(r, 100));
                         waited += 100;
                         items = container.querySelectorAll('.item[data-index]');
-                        placeholders = container.querySelectorAll('.loading-placeholder');
                         containerRect = container.getBoundingClientRect();
                         topIsPlaceholder = false;
                         topCandidates = container.querySelectorAll('.item[data-index], .loading-placeholder');
@@ -2641,16 +2634,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
                             flashCount++;
                         }
                         prevTopIndex = topIndex;
-                    } else if (items.length === 0) {
-                        noItemsTicks++;
-                    } else if (topIsPlaceholder) {
-                        placeholderTopTicks++;
                     }
-
-                    trace.push(i + ':st=' + Math.round(container.scrollTop) +
-                               ',top=' + topIndex +
-                               ',items=' + items.length +
-                               ',ph=' + placeholders.length);
 
                     // Stop if we've reached near the end.
                     if (container.scrollHeight - container.scrollTop - container.clientHeight < 2) break;
@@ -2658,16 +2642,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
                 done({
                     flashCount: flashCount,
-                    maxIndexSeen: maxIndexSeen,
-                    iterationsRun: iterationsRun,
-                    finalScrollTop: Math.round(container.scrollTop),
-                    finalScrollHeight: Math.round(container.scrollHeight),
-                    finalClientHeight: Math.round(container.clientHeight),
-                    finalItemsRendered: container.querySelectorAll('.item[data-index]').length,
-                    finalPlaceholdersRendered: container.querySelectorAll('.loading-placeholder').length,
-                    placeholderTopTicks: placeholderTopTicks,
-                    noItemsTicks: noItemsTicks,
-                    trace: trace.join(' | ')
+                    maxIndexSeen: maxIndexSeen
                 });
             })();
         ", container) as Dictionary<string, object>;
@@ -2676,22 +2651,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         var flashCount = Int("flashCount");
         var maxIndexSeen = Int("maxIndexSeen");
 
-        var diag =
-            $"iters={Int("iterationsRun")}, " +
-            $"scrollTop={Int("finalScrollTop")}, " +
-            $"scrollHeight={Int("finalScrollHeight")}, " +
-            $"clientHeight={Int("finalClientHeight")}, " +
-            $"itemsRendered={Int("finalItemsRendered")}, " +
-            $"placeholdersRendered={Int("finalPlaceholdersRendered")}, " +
-            $"placeholderTopTicks={Int("placeholderTopTicks")}, " +
-            $"noItemsTicks={Int("noItemsTicks")}, " +
-            $"trace=[{result["trace"]}]";
-
         Assert.True(flashCount == 0,
             $"Async provider: scrolling should not flash/jump backward. " +
-            $"Detected {flashCount} backward jumps, max index seen: {maxIndexSeen}. {diag}");
+            $"Detected {flashCount} backward jumps, max index seen: {maxIndexSeen}.");
         Assert.True(maxIndexSeen >= 50,
-            $"Should have scrolled through some items but only reached index {maxIndexSeen}. {diag}");
+            $"Should have scrolled through some items but only reached index {maxIndexSeen}.");
     }
 
     [Theory]
