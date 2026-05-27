@@ -1821,6 +1821,10 @@ public static class BindConverter
                 {
                     return null;
                 }
+				if (value.Length == 0)
+                {
+                    return "[]";
+                }
 
                 var builder = new StringBuilder("[\"");
                 builder.Append(JsonEncodedText.Encode(elementFormatter(value[0], culture)?.ToString() ?? string.Empty).Value);
