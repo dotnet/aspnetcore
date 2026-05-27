@@ -180,6 +180,13 @@ export class BrowserRenderer {
           const textNode = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           if (textNode instanceof Text) {
             textNode.textContent = frameReader.textContent(frame);
+            // If this text node is inside a <textarea>, also update the textarea's 'value' property.
+            // Browsers track the displayed value (the 'value' property) separately from the initial
+            // text content (defaultValue/textContent) once the user has edited the field, so updating
+            // textContent alone won't update what the user sees.
+            if (textNode.parentElement instanceof HTMLTextAreaElement) {
+              textNode.parentElement.value = textNode.parentElement.textContent || '';
+            }
           } else {
             throw new Error('Cannot set text content on non-text child');
           }
