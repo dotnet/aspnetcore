@@ -792,6 +792,13 @@ internal sealed partial class HttpConnectionDispatcher
         // Setup the connection state from the http context
         connection.User = connection.HttpContext?.User;
 
+        // Long polling clones the WindowsIdentity on first poll (see CloneUser) so the connection
+        // owns those SafeHandles and must dispose them when replaced or when it ends.
+        if (transportType == HttpTransportType.LongPolling && connection.User?.Identity is WindowsIdentity)
+        {
+            connection.MarkUserOwned();
+        }
+
         UpdateExpiration(connection, context);
 
         // Set the Connection ID on the logging scope so that logs from now on will have the

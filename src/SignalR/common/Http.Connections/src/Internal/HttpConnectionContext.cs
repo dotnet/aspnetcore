@@ -53,6 +53,10 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     private bool _activeSend;
     private TimeSpan _startedSendTime;
     private bool _useStatefulReconnect;
+    // True when this connection owns the WindowsIdentity SafeHandles on User (i.e., User was cloned
+    // from a request whose lifetime is shorter than the connection). When true, identities must be
+    // disposed when replaced or when the connection ends.
+    private bool _ownsUserIdentities;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -256,30 +260,105 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// </summary>
     internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
     {
-        User = user;
+        // The incoming principal comes from the /refresh HTTP request and its WindowsIdentity (if any)
+        // wraps SafeHandles that will be disposed when that request completes. We must clone the
+        // identities so the connection can outlive the refresh request.
+        var (newUser, ownsNew) = CloneIfWindowsIdentity(user);
+
+        var previousUser = User;
+        var previouslyOwned = _ownsUserIdentities;
+
+        User = newUser;
+        _ownsUserIdentities = ownsNew;
         AuthenticationExpiration = authenticationExpiration;
 
         // Also update the HttpContext's user if available
         if (HttpContext is { } httpContext)
         {
-            httpContext.User = user;
+            httpContext.User = newUser;
         }
 
         // Notify subscribers (e.g., the SignalR Hub layer) that the user has been updated.
         // Intentionally do not surface the previous principal: its underlying resources
-        // (for example a WindowsIdentity's SafeHandle) may be disposed when the refresh
-        // request completes, making later access unsafe.
+        // (for example a WindowsIdentity's SafeHandle) may be disposed below, making later access unsafe.
         var handler = UserUpdated;
         if (handler is not null)
         {
             try
             {
-                handler(user);
+                handler(newUser);
             }
             catch (Exception ex)
             {
                 Log.UserUpdatedHandlerFailed(_logger, ex);
             }
+        }
+
+        // After subscribers have observed the swap (synchronously), dispose the previously owned
+        // WindowsIdentity SafeHandles. Subscribers are documented to be quick and synchronous, and
+        // anything they queue should read from connection.User (the new principal) — not capture the
+        // previous one.
+        if (previouslyOwned && previousUser is not null)
+        {
+            DisposeWindowsIdentities(previousUser);
+        }
+    }
+
+    /// <summary>
+    /// Marks the current <see cref="User"/> as owned by this connection, so its WindowsIdentity
+    /// SafeHandles will be disposed when replaced or when the connection ends. Called by the
+    /// long-polling first-poll path after cloning the user out of the original request.
+    /// </summary>
+    internal void MarkUserOwned()
+    {
+        _ownsUserIdentities = true;
+    }
+
+    private static (ClaimsPrincipal Principal, bool Owned) CloneIfWindowsIdentity(ClaimsPrincipal user)
+    {
+        // Mirrors HttpConnectionDispatcher.CloneUser: WindowsIdentity wraps SafeHandles tied to the
+        // originating request, so we clone every identity to give the connection an independent copy.
+        if (user.Identity is not WindowsIdentity windowsIdentity)
+        {
+            return (user, false);
+        }
+
+        ClaimsPrincipal cloned;
+        var skipFirstIdentity = false;
+        if (OperatingSystem.IsWindows() && user is WindowsPrincipal)
+        {
+            // Preserve WindowsPrincipal so overrides like IsInRole keep working.
+            cloned = new WindowsPrincipal((WindowsIdentity)windowsIdentity.Clone());
+            skipFirstIdentity = true;
+        }
+        else
+        {
+            cloned = new ClaimsPrincipal();
+        }
+
+        foreach (var identity in user.Identities)
+        {
+            if (skipFirstIdentity)
+            {
+                skipFirstIdentity = false;
+                continue;
+            }
+            cloned.AddIdentity(identity.Clone());
+        }
+
+        return (cloned, true);
+    }
+
+    private static void DisposeWindowsIdentities(ClaimsPrincipal user)
+    {
+        if (user.Identity is not WindowsIdentity)
+        {
+            return;
+        }
+
+        foreach (var identity in user.Identities)
+        {
+            (identity as IDisposable)?.Dispose();
         }
     }
 
@@ -317,13 +396,11 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
             Cancellation = null;
 
-            // Long Polling clones the windows identity if set
-            if (TransportType == HttpTransportType.LongPolling && User?.Identity is WindowsIdentity)
+            // Dispose WindowsIdentity SafeHandles we own (long-polling first-poll cloned the user,
+            // and /refresh may have replaced it with another clone).
+            if (_ownsUserIdentities && User is not null)
             {
-                foreach (var identity in User.Identities)
-                {
-                    (identity as IDisposable)?.Dispose();
-                }
+                DisposeWindowsIdentities(User);
             }
 
             ServiceScope?.Dispose();

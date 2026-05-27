@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Connections;
@@ -582,6 +583,86 @@ public partial class HttpConnectionDispatcherTests
             connection.UpdateUser(newUser, DateTimeOffset.UtcNow.AddMinutes(15));
 
             Assert.Same(newUser, connection.User);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    public void UpdateUserClonesWindowsIdentityAndDisposesPreviousWhenOwned()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+
+            // Pretend a previous /refresh already gave the connection an owned WindowsIdentity-backed user.
+            var firstWindowsIdentity = WindowsIdentity.GetAnonymous();
+            var firstUser = new WindowsPrincipal(firstWindowsIdentity);
+            connection.UpdateUser(firstUser, DateTimeOffset.UtcNow.AddMinutes(15));
+
+            var ownedFirst = (WindowsIdentity)connection.User.Identity;
+            Assert.NotSame(firstWindowsIdentity, ownedFirst);
+            Assert.False(ownedFirst.AccessToken.IsClosed);
+
+            // Now a second /refresh comes in with a fresh WindowsIdentity.
+            var secondWindowsIdentity = WindowsIdentity.GetAnonymous();
+            var secondUser = new WindowsPrincipal(secondWindowsIdentity);
+            connection.UpdateUser(secondUser, DateTimeOffset.UtcNow.AddMinutes(30));
+
+            // The connection's User must be a clone, not the incoming principal.
+            Assert.NotSame(secondUser, connection.User);
+            Assert.IsType<WindowsPrincipal>(connection.User);
+            var ownedSecond = (WindowsIdentity)connection.User.Identity;
+            Assert.NotSame(secondWindowsIdentity, ownedSecond);
+            Assert.False(ownedSecond.AccessToken.IsClosed);
+
+            // The first owned identity must have been disposed by the swap.
+            Assert.True(ownedFirst.AccessToken.IsClosed);
+
+            // The caller-provided WindowsIdentity must NOT be disposed (caller still owns it).
+            Assert.False(secondWindowsIdentity.AccessToken.IsClosed);
+        }
+    }
+
+    [Fact]
+    public void UpdateUserWithNonWindowsIdentityDoesNotClone()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
+            connection.UpdateUser(newUser, DateTimeOffset.UtcNow.AddMinutes(15));
+
+            // No clone for ordinary ClaimsIdentity.
+            Assert.Same(newUser, connection.User);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    public void DisposeAfterRefreshDisposesClonedWindowsIdentity()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            var windowsIdentity = WindowsIdentity.GetAnonymous();
+            var user = new WindowsPrincipal(windowsIdentity);
+            connection.UpdateUser(user, DateTimeOffset.UtcNow.AddMinutes(15));
+
+            var cloned = (WindowsIdentity)connection.User.Identity;
+            Assert.False(cloned.AccessToken.IsClosed);
+
+            connection.DisposeAsync().Wait();
+
+            // The connection should dispose the clone it owns even though the transport isn't long-polling.
+            Assert.True(cloned.AccessToken.IsClosed);
+            // The caller-supplied identity must not have been touched.
+            Assert.False(windowsIdentity.AccessToken.IsClosed);
         }
     }
 
