@@ -85,6 +85,53 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
+    public async Task OnAuthRefreshedAsyncSerializesWithInFlightHubInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
+                services => services.AddSingleton(hubObserver), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthRefreshHub>>();
+
+            using (var client = new TestClient())
+            {
+                var feature = new TestConnectionUserUpdateFeature();
+                client.Connection.Features.Set<IConnectionUserUpdateFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                // Start a hub method that holds the per-connection invocation semaphore.
+                var invokeTask = client.InvokeAsync(nameof(AuthRefreshHub.BlockUntilSignaled));
+                await hubObserver.HubMethodStarted.Task.DefaultTimeout();
+
+                // Refresh while the hub method is still in flight.
+                var previousUser = client.Connection.User;
+                Assert.NotNull(previousUser);
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "after") }, "Test"));
+                client.Connection.User = refreshedUser;
+                feature.Raise(previousUser, refreshedUser);
+
+                // OnAuthRefreshedAsync must wait for the semaphore — the hub method still holds it.
+                Assert.False(hubObserver.PreviousUserTask.IsCompleted);
+                await Task.Delay(50);
+                Assert.False(hubObserver.PreviousUserTask.IsCompleted);
+
+                // Release the hub method; OnAuthRefreshedAsync should now run.
+                hubObserver.ReleaseHubMethod.SetResult();
+                var completion = await invokeTask.DefaultTimeout();
+                Assert.Null(completion.Error);
+
+                var captured = await hubObserver.PreviousUserTask.DefaultTimeout();
+                Assert.Same(previousUser, captured);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
     public async Task UserIdentifierChangeOnRefreshAbortsConnection()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "UserIdentifierChangedOnRefresh"))
@@ -130,6 +177,10 @@ public partial class HubConnectionHandlerTests
 
         public Task<ClaimsPrincipal?> PreviousUserTask => _tcs.Task;
 
+        public TaskCompletionSource HubMethodStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource ReleaseHubMethod { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
         public void Capture(ClaimsPrincipal? previousUser) => _tcs.TrySetResult(previousUser);
     }
 
@@ -143,6 +194,12 @@ public partial class HubConnectionHandlerTests
         }
 
         public string? GetUserName() => Context.User?.Identity?.Name;
+
+        public async Task BlockUntilSignaled()
+        {
+            _observer.HubMethodStarted.TrySetResult();
+            await _observer.ReleaseHubMethod.Task;
+        }
 
         public override Task OnAuthRefreshedAsync(ClaimsPrincipal? previousUser)
         {
