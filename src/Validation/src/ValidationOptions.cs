@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
@@ -56,6 +57,11 @@ public class ValidationOptions
     /// </para>
     /// </remarks>
     public IValidationLocalizer? Localizer { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether all synchronous <see cref="ValidationAttribute"/> should be executed before any <see cref="AsyncValidationAttribute"/>.
+    /// </summary>
+    public bool ValidateSynchronousBeforeAsynchronous { get; set; } // TODO: Decide the default value + create API proposal.
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

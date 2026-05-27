@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
@@ -103,7 +104,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = await _requiredAttribute.GetValidationResultAsync(propertyValue, context.ValidationContext, cancellationToken);
+            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
@@ -125,7 +126,15 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        if (context.ValidationOptions.ValidateSynchronousBeforeAsynchronous)
+        {
+            await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: true, validateAsync: false);
+            await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: false, validateAsync: true);
+        }
+        else
+        {
+            await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: true, validateAsync: true);
+        }
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -183,11 +192,24 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = originalPrefix;
         }
 
-        async Task ValidateValueAsync(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
+        async Task ValidateValueAsync(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container, bool validateSync, bool validateAsync)
         {
             for (var i = 0; i < validationAttributes.Length; i++)
             {
                 var attribute = validationAttributes[i];
+                var shouldValidate = (validateSync, validateAsync) switch
+                {
+                    (true, true) => true,
+                    (true, false) => attribute is not AsyncValidationAttribute,
+                    (false, true) => attribute is AsyncValidationAttribute,
+                    (false, false) => throw new UnreachableException()
+                };
+
+                if (!shouldValidate)
+                {
+                    continue;
+                }
+
                 try
                 {
                     var result = await attribute.GetValidationResultAsync(val, context.ValidationContext, cancellationToken);

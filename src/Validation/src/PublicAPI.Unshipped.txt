@@ -33,6 +33,8 @@ Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.T
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatablePropertyInfo(System.Type! type, string! propertyName, out Microsoft.Extensions.Validation.IValidatableInfo? validatablePropertyInfo) -> bool
+Microsoft.Extensions.Validation.ValidationOptions.ValidateSynchronousBeforeAsynchronous.get -> bool
+Microsoft.Extensions.Validation.ValidationOptions.ValidateSynchronousBeforeAsynchronous.set -> void
 override abstract System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
 override sealed System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value) -> bool
 override sealed System.ComponentModel.DataAnnotations.AsyncValidationAttribute.RequiresValidationContext.get -> bool

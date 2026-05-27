@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -201,9 +202,46 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = null;
 
+        if (context.ValidationOptions.ValidateSynchronousBeforeAsynchronous)
+        {
+            await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: true, validateAsync: false, cancellationToken);
+            await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: false, validateAsync: true, cancellationToken);
+        }
+        else
+        {
+            await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: true, validateAsync: true, cancellationToken);
+        }
+
+        context.ValidationContext.DisplayName = originalDisplayName;
+        context.ValidationContext.MemberName = originalMemberName;
+    }
+
+    private async Task ValidateCoreAsync(
+        ValidationAttribute[] validationAttributes,
+        object? value,
+        ValidateContext context,
+        string displayName,
+        string errorPrefix,
+        bool validateSync,
+        bool validateAsync,
+        CancellationToken cancellationToken)
+    {
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
+            var shouldValidate = (validateSync, validateAsync) switch
+            {
+                (true, true) => true,
+                (true, false) => attribute is not AsyncValidationAttribute,
+                (false, true) => attribute is AsyncValidationAttribute,
+                (false, false) => throw new UnreachableException()
+            };
+
+            if (!shouldValidate)
+            {
+                continue;
+            }
+
             var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
             if (result is not null && result != ValidationResult.Success)
             {
@@ -241,9 +279,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 }
             }
         }
-
-        context.ValidationContext.DisplayName = originalDisplayName;
-        context.ValidationContext.MemberName = originalMemberName;
     }
 
     private void ValidateValidatableObjectInterface(object? value, ValidateContext context, string displayName)
