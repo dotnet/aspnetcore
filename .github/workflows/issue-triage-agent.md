@@ -36,16 +36,9 @@ tools:
 safe-outputs:
   noop:
     report-as-issue: false
-  # FORK-TEST ONLY: set-issue-type is commented out because GitHub Issue Types
-  # are an organization-only feature. On personal-account forks the call fails
-  # with "No issue types are available for this repository", which trips
-  # gh-aw's safe_outputs job (any single failed safe-output fails the whole
-  # job) and skips the downstream call-triage-comment-reviewer worker.
-  # Restore this block before merging back to dotnet/aspnetcore (which has
-  # Issue Types configured org-wide).
-  # set-issue-type:
-  #   allowed: ["Bug", "Feature", "Task", "Epic"]
-  #   max: 1
+  set-issue-type:
+    allowed: ["Bug", "Feature", "Task", "Epic"]
+    max: 1
   add-labels:
     allowed:
       - area-auth
@@ -433,21 +426,15 @@ Order of operations matters. Do these in this exact order:
 
 3. **Apply the issue type** using `set-issue-type` with one of `Bug`,
    `Feature`, `Task`, or `Epic` based on your Step 2 classification. Call
-   `set-issue-type` exactly once **if** the `set-issue-type` tool is
-   available in your MCP toolset. If the tool is NOT available (e.g. on
-   a personal-account fork that doesn't have GitHub Issue Types
-   configured, where this safe output is intentionally disabled), simply
-   skip this step and move on to step 4 — do NOT report it as a missing
-   tool.
+   `set-issue-type` exactly once.
 
 4. If the issue currently has `needs-area-label` and you assigned an area,
    **remove `needs-area-label`** using `remove-labels`.
 
 5. **Now draft the comment per Step 6**, populating the `#### Labels Applied`
-   section with the exact labels you applied in step 2 and (if applicable)
-   the issue type you applied in step 3 (e.g. `area-networking`, `question`,
-   `Feature` (issue type)). If `set-issue-type` was unavailable (fork-only
-   case), omit the issue type from this section and list only the labels.
+   section with the exact labels you applied in step 2 and the issue type
+   you applied in step 3 (e.g. `area-networking`, `question`,
+   `Feature` (issue type)).
 
 6. **Call the `triage_comment_reviewer` MCP tool exactly once** with:
 
