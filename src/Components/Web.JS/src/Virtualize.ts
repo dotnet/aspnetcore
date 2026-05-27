@@ -88,9 +88,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  // Apply initial spacer styles via CSSOM so they work even under strict CSP.
-  applyStyleViaCssom(spacerBefore, spacerBefore.getAttribute('data-blazor-style') || '');
-  applyStyleViaCssom(spacerAfter, spacerAfter.getAttribute('data-blazor-style') || '');
+  // Apply initial styles via CSSOM so they work even under strict CSP.
+  const styleObserverRoot = spacerBefore.parentElement ?? scrollElement;
+  styleObserverRoot.querySelectorAll('[data-blazor-style]').forEach(el => {
+    applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-style') || '');
+  });
 
   if (useNativeAnchoring) {
     // Prevent spacers from being used as scroll anchors — only rendered items should anchor.
@@ -103,12 +105,31 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   const mutationObserver = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      const el = mutation.target as HTMLElement;
-      applyStyleViaCssom(el, el.getAttribute('data-blazor-style') || '');
+      if (mutation.type === 'attributes') {
+        const el = mutation.target as HTMLElement;
+        applyStyleViaCssom(el, el.getAttribute('data-blazor-style') || '');
+      } else {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType !== Node.ELEMENT_NODE) {
+            return;
+          }
+          const el = node as Element;
+          if (el.hasAttribute('data-blazor-style')) {
+            applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-style') || '');
+          }
+          el.querySelectorAll('[data-blazor-style]').forEach(descendant => {
+            applyStyleViaCssom(descendant as HTMLElement, descendant.getAttribute('data-blazor-style') || '');
+          });
+        });
+      }
     }
   });
-  mutationObserver.observe(spacerBefore, { attributes: true, attributeFilter: ['data-blazor-style'] });
-  mutationObserver.observe(spacerAfter, { attributes: true, attributeFilter: ['data-blazor-style'] });
+  mutationObserver.observe(styleObserverRoot, {
+    attributes: true,
+    attributeFilter: ['data-blazor-style'],
+    childList: true,
+    subtree: true,
+  });
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
@@ -224,14 +245,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     if (useNativeAnchoring) {
       spacerBefore.style.overflowAnchor = 'none';
       spacerAfter.style.overflowAnchor = 'none';
-    }
-
-    // Apply CSSOM styles to any placeholder elements between spacers that use data-blazor-style.
-    for (let el = spacerBefore.nextElementSibling; el && el !== spacerAfter; el = el.nextElementSibling) {
-      const htmlEl = el as HTMLElement;
-      if (htmlEl.hasAttribute('data-blazor-style')) {
-        applyStyleViaCssom(htmlEl, htmlEl.getAttribute('data-blazor-style') || '');
-      }
     }
 
     // Ensure spacers are always observed (idempotent).
