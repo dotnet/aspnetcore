@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
 
             cache.Add(@"T:GenericFoo`1", new XmlComment(@"Should not be duplicated. <see cref=""!:T"" />", null, null, null, null, false, null, null, null));
-            cache.Add(@"T:Sample.Duplicate", new XmlComment(@"Duplicated internal class.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:Sample.Duplicate", new XmlComment(@"Internal class of the target assembly which will be included.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:Bar.FooString", new XmlComment(@"FooString property xml comment.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:Bar.FooInt", new XmlComment(@"FooInt property xml comment.", null, null, null, null, false, null, null, null));
 
