@@ -45,6 +45,7 @@
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.*proj;
+                      $(RepoRoot)src\ProjectTemplates\McpServer.ProjectTemplates\content\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
 
@@ -98,6 +99,10 @@
         <ProjectToBuild Include="$(RepoRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj">
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
+      </ItemGroup>
+      <!-- Disable parallel restore for all pass-2 projects to mitigate https://github.com/dotnet/dotnet/issues/4558 -->
+      <ItemGroup>
+        <ProjectToBuild Update="@(ProjectToBuild)" RestoreInParallel="false" />
       </ItemGroup>
     </When>
     <Otherwise>

@@ -375,7 +375,7 @@ public static partial class RequestDelegateFactory
         }
 
         var responseWritingMethodCall = factoryContext.ParamCheckExpressions.Count > 0 ?
-            CreateParamCheckingResponseWritingMethodCall(returnType, factoryContext) :
+            CreateParamCheckingResponseWritingMethodCall(returnType, factoryContext, filterPipeline is not null) :
             AddResponseWritingToMethodCall(factoryContext.MethodCall, returnType, factoryContext);
 
         if (factoryContext.UsingTempSourceString)
@@ -942,7 +942,7 @@ public static partial class RequestDelegateFactory
 
     // If we're calling TryParse or validating parameter optionality and
     // wasParamCheckFailure indicates it failed, set a 400 StatusCode instead of calling the method.
-    private static Expression CreateParamCheckingResponseWritingMethodCall(Type returnType, RequestDelegateFactoryContext factoryContext)
+    private static Expression CreateParamCheckingResponseWritingMethodCall(Type returnType, RequestDelegateFactoryContext factoryContext, bool filterPipelineBuilt)
     {
         // {
         //     string tempSourceString;
@@ -994,7 +994,7 @@ public static partial class RequestDelegateFactory
 
         // If filters have been registered, we set the `wasParamCheckFailure` property
         // but do not return from the invocation to allow the filters to run.
-        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0)
+        if (filterPipelineBuilt)
         {
             // if (wasParamCheckFailure)
             // {
@@ -2194,6 +2194,10 @@ public static partial class RequestDelegateFactory
         var setMaxRecursionDepthExpr = Expression.Assign(
             Expression.Property(formReader, nameof(FormDataReader.MaxRecursionDepth)),
             Expression.Constant(formDataMapperOptions.MaxRecursionDepth));
+        // name_reader.MaxCollectionSize = formDataMapperOptions.MaxCollectionSize;
+        var setMaxCollectionSizeExpr = Expression.Assign(
+            Expression.Property(formReader, nameof(FormDataReader.MaxCollectionSize)),
+            Expression.Constant(formDataMapperOptions.MaxCollectionSize));
         // FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         var invokeMapMethodExpr = Expression.Call(
             FormDataMapperMapMethod.MakeGenericMethod(parameter.ParameterType),
@@ -2220,6 +2224,7 @@ public static partial class RequestDelegateFactory
         //   ProcessForm(context.Request.Form, form_dict, form_buffer);
         //   name_reader = new FormDataReader(form_dict, CultureInfo.InvariantCulture, form_buffer.AsMemory(0, FormDataMapperOptions.MaxKeyBufferSize));
         //   name_reader.MaxRecursionDepth = formDataMapperOptions.MaxRecursionDepth;
+        //   name_reader.MaxCollectionSize = formDataMapperOptions.MaxCollectionSize;
         //   name_local = FormDataMapper.Map<string>(name_reader, FormDataMapperOptions);
         // }
         // catch (FormDataMappingException e)
@@ -2242,6 +2247,7 @@ public static partial class RequestDelegateFactory
                     processFormExpr,
                     initializeReaderExpr,
                     setMaxRecursionDepthExpr,
+                    setMaxCollectionSizeExpr,
                     Expression.Assign(formArgument, invokeMapMethodExpr)),
                 conditionalReturnBufferExpr,
                 Expression.Catch(formDataMappingException, Expression.Block(

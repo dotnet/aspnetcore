@@ -31,7 +31,6 @@ steps:
       -runtimeSourceFeed https://ci.dot.net/internal 
       -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
       '$(publishing-dnceng-devdiv-code-r-build-re)'
-      '$(MaestroAccessToken)'
       '$(dn-bot-all-orgs-artifact-feeds-rw)'
       '$(akams-client-id)'
       '$(microsoft-symbol-server-pat)'
@@ -51,13 +50,14 @@ steps:
     TargetFolder: '$(Build.ArtifactStagingDirectory)/PostBuildLogs'
   condition: always()
 
-- template: /eng/common/core-templates/steps/publish-build-artifacts.yml
+- template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
   parameters:
     is1ESPipeline: ${{ parameters.is1ESPipeline }}
     args:
       displayName: Publish Logs
-      pathToPublish: '$(Build.ArtifactStagingDirectory)/PostBuildLogs'
-      publishLocation: Container
-      artifactName: PostBuildLogs
+      targetPath: '$(Build.ArtifactStagingDirectory)/PostBuildLogs'
+      artifactName: PostBuildLogs_${{ parameters.StageLabel }}_${{ parameters.JobLabel }}_Attempt$(System.JobAttempt)
       continueOnError: true
       condition: always()
+      retryCountOnTaskFailure: 10 # for any files being locked
+      isProduction: false # logs are non-production artifacts

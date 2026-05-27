@@ -139,8 +139,25 @@ public class TestRunner
                 throwOnError: false,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
+            // Install dotnet-ef with the exact version from the correlation payload to avoid
+            // picking up a mismatched version from the global NuGet cache.
+            var efVersionArg = "";
+            var efPackages = Directory.GetFiles(correlationPayload, "dotnet-ef.*.nupkg");
+            if (efPackages.Length > 0)
+            {
+                // Extract version from filename: dotnet-ef.{version}.nupkg
+                var fileName = Path.GetFileNameWithoutExtension(efPackages[0]);
+                var version = fileName["dotnet-ef.".Length..];
+                efVersionArg = $"--version {version} ";
+                ProcessUtil.PrintMessage($"Found dotnet-ef package in payload: {efPackages[0]}, version: {version}");
+            }
+            else
+            {
+                ProcessUtil.PrintMessage("Warning: No dotnet-ef nupkg found in correlation payload. Tool install may pick an incompatible version.");
+            }
+
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"tool install dotnet-ef --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                $"tool install dotnet-ef {efVersionArg}--tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
                 environmentVariables: EnvironmentVariables,
                 outputDataReceived: ProcessUtil.PrintMessage,
                 errorDataReceived: ProcessUtil.PrintErrorMessage,
