@@ -24,4 +24,7 @@ internal static partial class HubConnectionHandlerLog
 
     [LoggerMessage(6, LogLevel.Debug, "OnConnectedAsync ending.", EventName = "ConnectedEnding")]
     public static partial void ConnectedEnding(ILogger logger);
+
+    [LoggerMessage(7, LogLevel.Warning, "Authentication refresh produced a different user identifier (old: '{PreviousUserIdentifier}', new: '{NewUserIdentifier}'). Aborting the connection because SignalR requires a stable user identifier.", EventName = "UserIdentifierChangedOnRefresh")]
+    public static partial void UserIdentifierChangedOnRefresh(ILogger logger, string? previousUserIdentifier, string? newUserIdentifier);
 }

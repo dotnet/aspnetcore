@@ -24,6 +24,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionItemsFeature,
                                      IConnectionTransportFeature,
                                      IConnectionUserFeature,
+                                     IConnectionUserUpdateFeature,
                                      IConnectionHeartbeatFeature,
                                      ITransferFormatFeature,
                                      IHttpContextFeature,
@@ -87,6 +88,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
         Features.Set<IConnectionUserFeature>(this);
+        Features.Set<IConnectionUserUpdateFeature>(this);
         Features.Set<IConnectionItemsFeature>(this);
         Features.Set<IConnectionIdFeature>(this);
         Features.Set<IConnectionTransportFeature>(this);
@@ -254,6 +256,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// </summary>
     internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
     {
+        var previousUser = User;
         User = user;
         AuthenticationExpiration = authenticationExpiration;
 
@@ -262,7 +265,24 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         {
             httpContext.User = user;
         }
+
+        // Notify subscribers (e.g., the SignalR Hub layer) that the user has been updated.
+        var handler = UserUpdated;
+        if (handler is not null)
+        {
+            try
+            {
+                handler(previousUser, user);
+            }
+            catch (Exception ex)
+            {
+                Log.UserUpdatedHandlerFailed(_logger, ex);
+            }
+        }
     }
+
+    /// <inheritdoc />
+    public event Action<ClaimsPrincipal?, ClaimsPrincipal>? UserUpdated;
 
     public async Task DisposeAsync(bool closeGracefully = false)
     {
@@ -808,5 +828,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
         [LoggerMessage(9, LogLevel.Trace, "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.", EventName = "TransportSendTimeout")]
         public static partial void TransportSendTimeout(ILogger logger, TimeSpan timeout, string transportConnectionId);
+
+        [LoggerMessage(10, LogLevel.Error, "An IConnectionUserUpdateFeature.UserUpdated handler threw an exception.", EventName = "UserUpdatedHandlerFailed")]
+        public static partial void UserUpdatedHandlerFailed(ILogger logger, Exception exception);
     }
 }

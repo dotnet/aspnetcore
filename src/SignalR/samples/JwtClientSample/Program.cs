@@ -29,6 +29,7 @@ class Program
         _tokens[userId] = GetJwtToken(userId);
 
         var i = 6;
+        _ = i;
 
         var hubConnection = new HubConnectionBuilder()
             .WithUrl(ServerUrl + "/broadcast", options =>
@@ -44,9 +45,11 @@ class Program
                     //return new Task<string>(() => "");
                 };
             })
+            .WithAuthRefresh(o =>
+            {
+                o.RefreshBeforeExpiration = TimeSpan.FromSeconds(10);
+            })
             .Build();
-
-        hubConnection.RefreshBeforeExpiration = TimeSpan.FromSeconds(10);
 
         var closedTcs = new TaskCompletionSource();
         hubConnection.Closed += e =>

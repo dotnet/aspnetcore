@@ -143,9 +143,8 @@ internal sealed partial class HttpConnectionDispatcher
 
         if (!options.EnableAuthRefresh)
         {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            context.Response.ContentType = "text/plain";
-            await context.Response.WriteAsync("Auth refresh is not enabled.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound,
+                "refresh_disabled", "Auth refresh is not enabled for this endpoint.");
             return;
         }
 
@@ -153,18 +152,16 @@ internal sealed partial class HttpConnectionDispatcher
         var connectionToken = GetConnectionToken(context);
         if (StringValues.IsNullOrEmpty(connectionToken))
         {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            context.Response.ContentType = "text/plain";
-            await context.Response.WriteAsync("Missing connection token.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest,
+                "missing_connection_token", "The 'id' query string parameter is required.");
             return;
         }
 
         // Look up the connection by connection token (private, not the public connectionId)
         if (!_manager.TryGetConnection(connectionToken.ToString(), out var connection))
         {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            context.Response.ContentType = "text/plain";
-            await context.Response.WriteAsync("No connection found with the specified ID.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound,
+                "connection_not_found", "No active connection with the specified ID.");
             return;
         }
 
@@ -176,9 +173,8 @@ internal sealed partial class HttpConnectionDispatcher
         var authResult = await context.AuthenticateAsync();
         if (!authResult.Succeeded)
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            context.Response.ContentType = "text/plain";
-            await context.Response.WriteAsync("Authentication failed.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status401Unauthorized,
+                "invalid_token", authResult.Failure?.Message ?? "Authentication failed.");
             return;
         }
 
@@ -203,10 +199,36 @@ internal sealed partial class HttpConnectionDispatcher
             using var jsonWriter = new Utf8JsonWriter((IBufferWriter<byte>)writer);
             jsonWriter.WriteStartObject();
             jsonWriter.WriteString(JsonEncodedText.Encode("connectionId"), connection.ConnectionId);
+            jsonWriter.WriteString(JsonEncodedText.Encode("refreshedAt"),
+                DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
             if (tokenLifetimeSeconds.HasValue)
             {
                 jsonWriter.WriteNumber(JsonEncodedText.Encode("tokenLifetimeSeconds"), tokenLifetimeSeconds.Value);
             }
+            jsonWriter.WriteEndObject();
+            jsonWriter.Flush();
+
+            context.Response.ContentLength = writer.Length;
+            await writer.CopyToAsync(context.Response.Body);
+        }
+        finally
+        {
+            writer.Reset();
+        }
+    }
+
+    private static async Task WriteRefreshErrorAsync(HttpContext context, int statusCode, string error, string description)
+    {
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
+
+        var writer = new MemoryBufferWriter();
+        try
+        {
+            using var jsonWriter = new Utf8JsonWriter((IBufferWriter<byte>)writer);
+            jsonWriter.WriteStartObject();
+            jsonWriter.WriteString(JsonEncodedText.Encode("error"), error);
+            jsonWriter.WriteString(JsonEncodedText.Encode("error_description"), description);
             jsonWriter.WriteEndObject();
             jsonWriter.Flush();
 

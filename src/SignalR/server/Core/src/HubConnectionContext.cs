@@ -50,7 +50,6 @@ public partial class HubConnectionContext
     private bool _receivedMessageTimeoutEnabled;
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
-    private ClaimsPrincipal? _user;
     private bool _useStatefulReconnect;
 
     [MemberNotNullWhen(true, nameof(_messageBuffer))]
@@ -130,17 +129,11 @@ public partial class HubConnectionContext
     /// <summary>
     /// Gets the user for this connection.
     /// </summary>
-    public virtual ClaimsPrincipal User
-    {
-        get
-        {
-            if (_user is null)
-            {
-                _user = Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
-            }
-            return _user;
-        }
-    }
+    /// <remarks>
+    /// The principal is read from <see cref="IConnectionUserFeature"/> on each access so that callers see
+    /// the most recent value, including updates from an out-of-band authentication refresh.
+    /// </remarks>
+    public virtual ClaimsPrincipal User => Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
 
     /// <summary>
     /// Gets the collection of features available on this connection.

@@ -349,5 +349,8 @@ public partial class HubConnection
 
         [LoggerMessage(97, LogLevel.Error, "Auth token refresh failed.", EventName = "AuthRefreshFailed")]
         public static partial void AuthRefreshFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(98, LogLevel.Error, "Auth refresh user callback threw an exception.", EventName = "AuthRefreshCallbackFailed")]
+        public static partial void AuthRefreshCallbackFailed(ILogger logger, Exception exception);
     }
 }
