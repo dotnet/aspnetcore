@@ -440,9 +440,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         // ItemsProvider fetch targets the right slice and avoids a flash of item 0.
         if (!_initialScrollApplied && InitialIndex > 0)
         {
-            var capacity = OverscanCount * 2 + 1;
-            _itemsBefore = Math.Max(0, InitialIndex - OverscanCount);
-            _visibleItemCapacity = capacity;
+            MoveWindowToContain(InitialIndex);
         }
     }
 
@@ -825,6 +823,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         try
         {
             var result = await _itemsProvider(request);
+
+            // InitialIndex out-of-range or TotalItemCount shrank between fetches: re-clamp
+            if (!cancellationToken.IsCancellationRequested
+                && result.TotalItemCount > 0
+                && _itemsBefore >= result.TotalItemCount)
+            {
+                _itemCount = result.TotalItemCount;
+                MoveWindowToContain(_itemsBefore);
+                request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
+                result = await _itemsProvider(request);
+            }
 
             // Only apply result if the task was not canceled.
             if (!cancellationToken.IsCancellationRequested)

@@ -4266,6 +4266,31 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void InitialIndex_BeyondCount_ClampsToEnd(bool delay)
+    {
+        MountAnchorModeForScrollToItem(delay: delay);
+        var js = (IJavaScriptExecutor)Browser;
+
+        Browser.Exists(By.Id("unload-list")).Click();
+        Browser.Exists(By.Id("list-not-loaded"));
+        js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
+        SetManualInitialIndex(100000);
+        Browser.Exists(By.Id("reload-with-initial-index")).Click();
+
+        // After clamping, the last item (999) must be rendered and the scroller pinned to the end
+        // (the browser clamps scrollTop to its maximum since 999 cannot be aligned to the top of the viewport).
+        Browser.True(() => (bool)js.ExecuteScript(@"
+            var c = document.getElementById('scroll-container');
+            var last = c.querySelector('.item[data-index=""999""]');
+            if (!last) return false;
+            // Scroller must be pinned at max (within 2px) — proves the clamp targeted the end.
+            return Math.abs((c.scrollTop + c.clientHeight) - c.scrollHeight) <= 2;
+        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialIndex=100000.");
+    }
+
+    [Theory]
     [InlineData(120)]
     [InlineData(300)]
     public void ScrollToItem_AsyncProvider_VariableHeight_WithDelay_ReachesTarget(int target)
