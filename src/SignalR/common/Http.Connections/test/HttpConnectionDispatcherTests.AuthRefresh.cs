@@ -512,11 +512,79 @@ public partial class HttpConnectionDispatcherTests
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
             var expiration = DateTimeOffset.UtcNow.AddMinutes(15);
 
-            // Must not throw even though the handler did.
             connection.UpdateUser(newUser, expiration);
 
             Assert.Same(newUser, connection.User);
             Assert.Equal(expiration, connection.AuthenticationExpiration);
+        }
+    }
+
+    [Fact]
+    public void UpdateUserNotifiesAllSubscribersInOrder()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+
+            var feature = connection.Features.Get<IConnectionUserUpdateFeature>();
+            Assert.NotNull(feature);
+
+            var order = new List<int>();
+            feature.UserUpdated += (_, _) => { lock (order) { order.Add(1); } };
+            feature.UserUpdated += (_, _) => { lock (order) { order.Add(2); } };
+            feature.UserUpdated += (_, _) => { lock (order) { order.Add(3); } };
+
+            connection.UpdateUser(
+                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test")),
+                DateTimeOffset.UtcNow.AddMinutes(15));
+
+            Assert.Equal(new[] { 1, 2, 3 }, order);
+        }
+    }
+
+    [Fact]
+    public void UpdateUserDoesNotInvokeUnsubscribedHandlers()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+
+            var feature = connection.Features.Get<IConnectionUserUpdateFeature>();
+            Assert.NotNull(feature);
+
+            var calls = 0;
+            void Handler(ClaimsPrincipal previous, ClaimsPrincipal current) => calls++;
+            feature.UserUpdated += Handler;
+
+            connection.UpdateUser(
+                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "1") }, "Test")),
+                DateTimeOffset.UtcNow.AddMinutes(15));
+            Assert.Equal(1, calls);
+
+            feature.UserUpdated -= Handler;
+
+            connection.UpdateUser(
+                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "2") }, "Test")),
+                DateTimeOffset.UtcNow.AddMinutes(15));
+            Assert.Equal(1, calls);
+        }
+    }
+
+    [Fact]
+    public void UpdateUserWithNoSubscribersDoesNotThrow()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+
+            // No subscriber attached to IConnectionUserUpdateFeature.UserUpdated.
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
+            connection.UpdateUser(newUser, DateTimeOffset.UtcNow.AddMinutes(15));
+
+            Assert.Same(newUser, connection.User);
         }
     }
 
