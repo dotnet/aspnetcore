@@ -371,7 +371,7 @@ it describes the same problem or feature request. When in doubt, list it as
 ## Step 6: Draft the Triage Comment
 
 Compose a single triage comment summarizing your findings. Use **exactly** this
-structure — no additional sections, no free-form "Notes" or "Observations":
+structure — no additional sections beyond what is listed below:
 
 ```markdown
 ### Triage Summary
@@ -388,16 +388,84 @@ structure — no additional sections, no free-form "Notes" or "Observations":
 #### Potential Duplicates
 - #123 - Title (similarity: high/medium)
 - _(Always include this section. If you found no candidate duplicates, write a single bullet `- _None found_` and omit any per-issue bullets.)_
+
+#### Notes
+- _(Optional, additive-only. See "What belongs in Notes" below. Omit the entire section if you have nothing of this kind to add.)_
 ```
 
-Do **not** add a `#### Notes` section. Do **not** add a `#### Labels Applied`
-section or otherwise list / recommend labels inside the comment body — the
-applied labels are visible in the issue's label sidebar, which is the source
-of truth. Do **not** construct security analysis, hardening rationale, or
-RFC-compliance arguments the issue itself does not make, and do **not** add
-third-party comparisons (e.g. Squid, HaProxy) as hardening arguments. You
-**may** factually restate the issue's own framing in the Area/Type
-parentheticals — echoing the reporter's own words is not editorializing.
+Do **not** add a `#### Labels Applied` section or otherwise list /
+recommend labels inside the comment body — the applied labels are
+visible in the issue's label sidebar, which is the source of truth.
+Do **not** construct security analysis, hardening rationale, or
+RFC-compliance arguments the issue itself does not make, and do **not**
+add third-party comparisons (e.g. Squid, HaProxy) as hardening
+arguments. You **may** factually restate the issue's own framing in
+the Area/Type parentheticals — echoing the reporter's own words is not
+editorializing.
+
+### What belongs in `#### Notes`
+
+Notes is an **additive** section. Everything in it must be (a) new
+information not already stated in the issue body and (b) verifiable,
+not speculative. Acceptable kinds of bullets, in priority order:
+
+1. **Concrete code pointers** for the maintainer — file + symbol where
+   the relevant logic lives, e.g. *"Likely in
+   `src/Http/Routing/src/Matching/DfaMatcherBuilder.cs:Build()`"*. Only
+   include a pointer you can actually justify from the issue
+   description and the repo structure. Do not invent line numbers.
+
+2. **Deterministic regression evidence** — *only if the reporter did
+   NOT already state versions*. If you can verify via `git blame` /
+   commit history / PR references the precise commit or PR that
+   introduced the behavior, name it: *"Behavior introduced by PR
+   #NNNN merged in .NET 10.0.5"*. Do **not** guess (*"may have been
+   introduced in 10.0.4"* is a guess — drop it). If you cannot verify
+   deterministically, omit this bullet.
+
+3. **Reproduction requests** — flag when the reporter omitted critical
+   information needed to act on the issue. Be specific: list exactly
+   what is missing. E.g. *"Missing: runtime version, full stack trace,
+   minimal repro"*. Do not list every theoretically-useful field —
+   only what is actually required to act.
+
+4. **Verified cross-references** — issue is already closed by a
+   maintainer, is a sub-issue of #NNN, is a verified duplicate of an
+   open #NNN. You must verify the cited issue's state via `get_issue`
+   before including it.
+
+### What does NOT belong in `#### Notes`
+
+Hard prohibitions. Each of these is exactly the failure mode the
+reviewer worker is configured to strip — adding them gets the entire
+comment rejected, costing the reporter useful triage:
+
+- **Rephrasing the issue body.** If the reporter said *"X throws Y on
+  Z"*, do not write *"The issue reports that X throws Y on Z"*. That
+  is noise. Notes is for new information only.
+- **Security or hardening framing of any kind.** Do not analyze
+  vulnerability impact, suggest a security label, frame the issue as
+  a "hardening request," or cite RFC compliance as a security
+  argument. Do not compare to other HTTP infrastructure (Squid,
+  HaProxy, NGINX).
+- **Speculation, hypotheses, or "this might be related to…"** If you
+  cannot verify it, omit it. *"The error message suggests X is
+  missing"* is speculation. *"git blame on file:line shows the check
+  was removed in PR #NNNN"* is evidence.
+- **Editorial fluff** — *"This is a reasonable request,"* *"The
+  proposal is well-documented,"* *"The author correctly identifies
+  the root cause."* These are opinions; maintainers do not need an
+  LLM's opinion on issue quality.
+- **.NET version-status claims** — do not call versions "preview,"
+  "RC," "stable," "released," or "unreleased." State the version
+  number and let the maintainer judge release status.
+- **Label suggestions** — applied labels are visible in the issue's
+  label sidebar. Do not list them or suggest additional ones in the
+  comment body.
+
+If after applying these rules you have nothing left to say, **omit the
+`#### Notes` section entirely**. An empty Notes section is worse than
+no Notes section.
 
 ## Step 7: Apply Labels, Type, and Hand Off the Comment
 

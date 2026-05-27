@@ -195,14 +195,28 @@ strip the offending content during `REWRITE`. None of these alone is a
    issue is *"valid"*, *"actionable"*, *"worth fixing"*, or assigns blame
    to the reporter. Strip these sentences.
 
-6. **Stray `#### Notes` section** — the orchestrator's prompt explicitly
-   forbids a Notes section. If one appears anyway, **always strip the
-   entire `#### Notes` section, including its heading, regardless of
-   content**. Even if the Notes text looks benign (e.g. a polite
-   explanation of why the issue is out of scope), strip it. The
-   orchestrator was told not to add one, period; this is a
-   prompt-adherence guard. The rest of the comment (structured fields)
-   stays.
+6. **`#### Notes` section content violations** — the orchestrator IS now
+   allowed to include a `#### Notes` section, but its content is tightly
+   constrained. Inspect every bullet in the Notes section. Strip any
+   bullet that matches one of:
+   - **Rephrases the issue body.** Fetch the issue body in Step 1 and
+     compare. If a Notes bullet just restates a fact already in the
+     reporter's description, strip it. Notes is for additive content
+     only.
+   - **Speculative language** — *"may be related to,"* *"the error
+     suggests,"* *"likely caused by,"* *"appears to be,"* *"this
+     suggests"*. Notes must contain verifiable claims, not guesses.
+     Strip speculation bullets.
+   - **Editorial fluff** — *"reasonable request,"* *"well-documented
+     proposal,"* *"author correctly identifies."* Strip these.
+   - **Anything caught by Step 2b rules 1–5 above** (security framing,
+     third-party comparisons, label suggestions, version-status words,
+     validity editorializing) applies in Notes too — strip per the
+     relevant rule.
+
+   If after stripping bullets the Notes section is empty, **also strip
+   the `#### Notes` heading itself** (leave nothing — an empty section
+   is uglier than no section).
 
 7. **Unverifiable duplicate citations** — for each `#NNN` in the
    `#### Potential Duplicates` section, optionally call `get_issue` on the
