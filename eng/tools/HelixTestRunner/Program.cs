@@ -54,16 +54,6 @@ class Program
                 runner.UploadResults();
                 ProcessUtil.PrintMessage("Test results uploaded");
 
-                // For batched runs, always exit 0 so the Helix SDK reports all test results
-                // to AzDO. Individual test failures are visible through the test results XML.
-                // This avoids losing results from passing assemblies when one assembly fails,
-                // and prevents wasteful retries of entire batches for a single flaky test.
-                if (runner.Options.IsBatched && exitCode != 0)
-                {
-                    ProcessUtil.PrintMessage($"Batched run had test failures (exit code {exitCode}) but exiting 0 to ensure all results are reported.");
-                    exitCode = 0;
-                }
-
                 ProcessUtil.PrintMessage($"Completed Helix job with exit code '{exitCode}'");
                 Environment.Exit(exitCode);
             }
