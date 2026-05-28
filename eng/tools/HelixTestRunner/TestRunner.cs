@@ -275,7 +275,11 @@ public class TestRunner
             if (result.ExitCode != 0)
             {
                 ProcessUtil.PrintMessage($"Failure in {filterDesc} tests. Exit code: {result.ExitCode}.");
-                exitCode = result.ExitCode;
+                // Quarantined test failures are expected and should not fail the work item.
+                if (!Options.Quarantined)
+                {
+                    exitCode = result.ExitCode;
+                }
             }
         }
         catch (Exception e)
