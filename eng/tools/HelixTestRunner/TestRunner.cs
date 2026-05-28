@@ -252,7 +252,7 @@ public class TestRunner
             // (needed for future batching) and has a more predictable argument format.
             // Argument mapping: --filter → --testcasefilter, --blame-crash → --blame:CollectDump
             var commonTestArgs = $"vstest {Options.Target} --diag:\"{diagLog}\" --logger:xunit --logger:\"console;verbosity=normal\" " +
-                                 "--blame:CollectDump";
+                                 "--blame:CollectDump;CollectHangDump;TestTimeout=15min";
 
             var filter = Options.Quarantined
                 ? "Quarantined=true"
