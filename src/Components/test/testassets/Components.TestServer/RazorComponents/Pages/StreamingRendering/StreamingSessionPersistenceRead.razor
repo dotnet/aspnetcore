@@ -1,0 +1,25 @@
+@page "/streaming-session-persistence/read"
+
+<h1>Streaming Session Persistence Read</h1>
+
+<p id="read-session-value">@StreamingSessionPersistenceValue</p>
+<p id="read-tempdata-supply-value">@SupplyFromTempDataValue</p>
+<p id="read-tempdata-message">@_tempDataMessage</p>
+
+@code {
+    private string? _tempDataMessage;
+
+    [SupplyParameterFromSession(Name = "StreamingSessionPersistenceValue")]
+    public string? StreamingSessionPersistenceValue { get; set; }
+
+    [SupplyParameterFromTempData]
+    private string SupplyFromTempDataValue { get; set; } = string.Empty;
+
+    [CascadingParameter]
+    public ITempData? TempData { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _tempDataMessage = TempData?.Get("StreamingTempDataMessage") as string ?? "no-message";
+    }
+}

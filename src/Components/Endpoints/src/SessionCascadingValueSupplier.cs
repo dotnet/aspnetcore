@@ -18,6 +18,7 @@ internal partial class SessionCascadingValueSupplier
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
+    private bool _onStartingRegistered;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
@@ -36,6 +37,12 @@ internal partial class SessionCascadingValueSupplier
         SupplyParameterFromSessionAttribute attribute,
         CascadingParameterInfo parameterInfo)
     {
+        if (!_onStartingRegistered && _httpContext is not null)
+        {
+            _onStartingRegistered = true;
+            _httpContext.Response.OnStarting(() => PersistAllValues());
+        }
+
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
         var componentType = componentState.Component.GetType();
         var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
@@ -65,7 +72,7 @@ internal partial class SessionCascadingValueSupplier
         }
     }
 
-    internal Task PersistAllValues()
+    internal Task PersistAllValues(bool clean = false)
     {
         if (_valueCallbacks.Count == 0)
         {
@@ -89,9 +96,17 @@ internal partial class SessionCascadingValueSupplier
                     var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
                     session.SetString(sessionKey, json);
                 }
-                else
+                else if (clean)
                 {
                     session.Remove(sessionKey);
+                }
+                else
+                {
+                    // Write an empty value so that session.Set() is called even for null
+                    // values. This ensures the session is established (cookie registered)
+                    // when PersistAllValues runs via the OnStarting callback before the
+                    // response starts. The read side treats empty strings as null.
+                    session.SetString(sessionKey, string.Empty);
                 }
             }
             catch (Exception ex)
@@ -99,6 +114,8 @@ internal partial class SessionCascadingValueSupplier
                 Log.SessionPersistFail(_logger, ex);
             }
         }
+
+        _valueCallbacks.Clear();
         return Task.CompletedTask;
     }
 

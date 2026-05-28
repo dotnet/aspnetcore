@@ -177,7 +177,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         // have finished rendering, so that values modified during async rendering are captured.
         if (context.RequestServices.GetService<SessionCascadingValueSupplier>() is { } sessionSupplier)
         {
-            await sessionSupplier.PersistAllValues();
+            await sessionSupplier.PersistAllValues(clean: true);
         }
         TempDataProviderServiceCollectionExtensions.PersistTempData(context);
 
