@@ -246,52 +246,36 @@ public class TestRunner
             var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
             var cts = new CancellationTokenSource(testProcessTimeout);
             var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "vstest.log");
-            var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger xunit --logger \"console;verbosity=normal\" " +
-                                 "--blame-crash --blame-hang-timeout 15m";
-            if (Options.Quarantined)
+
+            // Use dotnet vstest instead of dotnet test. Both delegate to vstest.console
+            // internally, but dotnet vstest accepts multiple DLL paths as positional args
+            // (needed for future batching) and has a more predictable argument format.
+            // Argument mapping: --filter → --testcasefilter, --blame-crash → --blame:CollectDump
+            var commonTestArgs = $"vstest {Options.Target} --diag:\"{diagLog}\" --logger:xunit --logger:\"console;verbosity=normal\" " +
+                                 "--blame:CollectDump";
+
+            var filter = Options.Quarantined
+                ? "Quarantined=true"
+                : "Quarantined!=true|Quarantined=false";
+            var filterDesc = Options.Quarantined ? "quarantined" : "non-quarantined";
+
+            ProcessUtil.PrintMessage($"Running {filterDesc} tests.");
+            var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                commonTestArgs + $" --testcasefilter:\"{filter}\"",
+                environmentVariables: EnvironmentVariables,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
+                throwOnError: false,
+                cancellationToken: cts.Token);
+
+            if (cts.Token.IsCancellationRequested)
             {
-                ProcessUtil.PrintMessage("Running quarantined tests.");
-
-                // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    commonTestArgs + " --filter \"Quarantined=true\"",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: ProcessUtil.PrintMessage,
-                    errorDataReceived: ProcessUtil.PrintErrorMessage,
-                    throwOnError: false,
-                    cancellationToken: cts.Token);
-
-                if (cts.Token.IsCancellationRequested)
-                {
-                    ProcessUtil.PrintMessage($"Quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
-                }
-                if (result.ExitCode != 0)
-                {
-                    ProcessUtil.PrintMessage($"Failure in quarantined tests. Exit code: {result.ExitCode}.");
-                }
+                ProcessUtil.PrintMessage($"Tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
             }
-            else
+            if (result.ExitCode != 0)
             {
-                ProcessUtil.PrintMessage("Running non-quarantined tests.");
-
-                // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    commonTestArgs + " --filter \"Quarantined!=true|Quarantined=false\"",
-                    environmentVariables: EnvironmentVariables,
-                    outputDataReceived: ProcessUtil.PrintMessage,
-                    errorDataReceived: ProcessUtil.PrintErrorMessage,
-                    throwOnError: false,
-                    cancellationToken: cts.Token);
-
-                if (cts.Token.IsCancellationRequested)
-                {
-                    ProcessUtil.PrintMessage($"Non-quarantined tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
-                }
-                if (result.ExitCode != 0)
-                {
-                    ProcessUtil.PrintMessage($"Failure in non-quarantined tests. Exit code: {result.ExitCode}.");
-                    exitCode = result.ExitCode;
-                }
+                ProcessUtil.PrintMessage($"Failure in {filterDesc} tests. Exit code: {result.ExitCode}.");
+                exitCode = result.ExitCode;
             }
         }
         catch (Exception e)
