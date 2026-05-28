@@ -194,6 +194,7 @@
       <Using Namespace="System.Globalization" />
       <Using Namespace="System.IO" />
       <Using Namespace="System.Linq" />
+      <Using Namespace="System.Diagnostics" />
       <Using Namespace="Microsoft.Build.Framework" />
       <Using Namespace="Microsoft.Build.Utilities" />
       <Code Type="Fragment" Language="cs"><![CDATA[
@@ -236,32 +237,6 @@
             group.Add(workItem);
         }
 
-        static void CopyDirectory(string sourceDirectory, string destinationDirectory)
-        {
-            var source = new DirectoryInfo(sourceDirectory);
-            var sourcePrefix = source.FullName.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
-            Directory.CreateDirectory(destinationDirectory);
-
-            foreach (var directory in source.GetDirectories("*", SearchOption.AllDirectories))
-            {
-                var relativePath = directory.FullName.Substring(sourcePrefix.Length);
-                Directory.CreateDirectory(Path.Combine(destinationDirectory, relativePath));
-            }
-
-            foreach (var file in source.GetFiles("*", SearchOption.AllDirectories))
-            {
-                var relativePath = file.FullName.Substring(sourcePrefix.Length);
-                var destinationPath = Path.Combine(destinationDirectory, relativePath);
-                var destinationParent = Path.GetDirectoryName(destinationPath);
-                if (!string.IsNullOrEmpty(destinationParent))
-                {
-                    Directory.CreateDirectory(destinationParent);
-                }
-
-                file.CopyTo(destinationPath, overwrite: true);
-            }
-        }
-
         var batchNumber = 0;
         foreach (var group in eligibleGroups.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
         {
@@ -278,7 +253,25 @@
 
                 Directory.CreateDirectory(batchDirectory);
                 var firstItem = chunk[0];
-                CopyDirectory(firstItem.GetMetadata("PayloadDirectory"), batchDirectory);
+                // Copy the first item's shared content (runtests.cmd/sh, NuGet.config, etc.) to the batch root.
+                // Only copy files directly in the payload root — not subdirectories (those are assembly-specific).
+                var firstPayload = firstItem.GetMetadata("PayloadDirectory");
+                foreach (var file in Directory.GetFiles(firstPayload))
+                {
+                    File.Copy(file, Path.Combine(batchDirectory, Path.GetFileName(file)), overwrite: true);
+                }
+
+                // Create symbolic links from batch subdirectories to assembly publish directories.
+                // This is orders of magnitude faster than copying and matches Roslyn's approach.
+                // Directory.CreateSymbolicLink is .NET 6+ but the RoslynCodeTaskFactory targets
+                // an older runtime, so we shell out to mklink instead (build agent is always Windows).
+                static void CreateDirectorySymlink(string linkPath, string targetPath)
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /D \"{linkPath}\" \"{targetPath}\"")
+                        { UseShellExecute = false, CreateNoWindow = true };
+                    var proc = System.Diagnostics.Process.Start(psi);
+                    proc.WaitForExit(30000);
+                }
 
                 var targets = new List<string>();
                 foreach (var workItem in chunk)
@@ -286,7 +279,7 @@
                     var testAssembly = workItem.GetMetadata("TestAssembly");
                     var assemblyName = Path.GetFileNameWithoutExtension(testAssembly);
                     var targetDirectory = Path.Combine(batchDirectory, assemblyName);
-                    CopyDirectory(workItem.GetMetadata("PayloadDirectory"), targetDirectory);
+                    CreateDirectorySymlink(targetDirectory, workItem.GetMetadata("PayloadDirectory"));
 
                     var relativeSeparator = IsWindowsQueue ? "\\" : "/";
                     targets.Add($"{assemblyName}{relativeSeparator}{testAssembly}");
