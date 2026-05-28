@@ -145,6 +145,14 @@ public class HttpConnectionDispatcherOptions
     /// </summary>
     public TimeSpan AuthRefreshGracePeriod { get; set; } = TimeSpan.FromMinutes(5);
 
+    /// <summary>
+    /// An optional callback invoked when the <c>/refresh</c> endpoint has successfully re-authenticated
+    /// the request but before the connection's user is replaced. Return <c>true</c> to accept the new
+    /// principal, or <c>false</c> to reject the refresh. When rejected, the endpoint responds with
+    /// HTTP 403 and the connection's current user remains in place.
+    /// </summary>
+    public Func<AuthRefreshContext, ValueTask<bool>>? OnAuthRefresh { get; set; }
+
     internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 
     // We initialize these lazily based on the state of the options specified here.

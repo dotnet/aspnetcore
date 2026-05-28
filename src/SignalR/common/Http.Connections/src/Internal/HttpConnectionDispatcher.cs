@@ -179,7 +179,30 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         var newExpiration = authResult.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
-        connection.UpdateUser(authResult.Principal ?? context.User, newExpiration);
+        var newPrincipal = authResult.Principal ?? context.User;
+
+        if (options.OnAuthRefresh is { } callback)
+        {
+            var refreshContext = new AuthRefreshContext
+            {
+                HttpContext = context,
+                ConnectionId = connection.ConnectionId,
+                PreviousUser = connection.User ?? new ClaimsPrincipal(new ClaimsIdentity()),
+                NewUser = newPrincipal,
+                NewExpiration = newExpiration,
+            };
+
+            if (!await callback(refreshContext))
+            {
+                Log.AuthRefreshRejectedByCallback(_logger, connection.ConnectionId, refreshContext.DenyReason);
+                await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden,
+                    "permission_change_rejected",
+                    refreshContext.DenyReason ?? "Authentication refresh rejected by application policy.");
+                return;
+            }
+        }
+
+        connection.UpdateUser(newPrincipal, newExpiration);
 
         // Compute TTL for the response
         int? tokenLifetimeSeconds = null;

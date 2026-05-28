@@ -571,6 +571,199 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
+    public async Task RefreshInvokesOnAuthRefreshCallbackAndAcceptsWhenTrue()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            AuthRefreshContext captured = null;
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = ctx =>
+                {
+                    captured = ctx;
+                    return ValueTask.FromResult(true);
+                },
+            };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.User = originalUser;
+
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newExpires = DateTimeOffset.UtcNow.AddMinutes(30);
+            var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties { ExpiresUtc = newExpires }, "Test");
+
+            var services = new ServiceCollection();
+            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
+            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
+
+            var context = new DefaultHttpContext();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Same(newUser, connection.User);
+
+            Assert.NotNull(captured);
+            Assert.Same(context, captured.HttpContext);
+            Assert.Equal(connection.ConnectionId, captured.ConnectionId);
+            Assert.Same(originalUser, captured.PreviousUser);
+            Assert.Same(newUser, captured.NewUser);
+            Assert.Equal(newExpires, captured.NewExpiration, TimeSpan.FromSeconds(1));
+        }
+    }
+
+    [Fact]
+    public async Task RefreshReturnsForbiddenWhenOnAuthRefreshReturnsFalse()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = ctx =>
+                {
+                    ctx.DenyReason = "scope elevation not allowed";
+                    return ValueTask.FromResult(false);
+                },
+            };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.User = originalUser;
+            var originalExpiration = DateTimeOffset.UtcNow.AddMinutes(2);
+            connection.AuthenticationExpiration = originalExpiration;
+
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) }, "Test");
+
+            var services = new ServiceCollection();
+            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
+            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
+
+            var context = new DefaultHttpContext();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            Assert.Equal("permission_change_rejected", json.Value<string>("error"));
+            Assert.Equal("scope elevation not allowed", json.Value<string>("error_description"));
+
+            // Connection state must NOT have been swapped.
+            Assert.Same(originalUser, connection.User);
+            Assert.Equal(originalExpiration, connection.AuthenticationExpiration);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshDenyWithoutReasonUsesDefaultDescription()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = _ => ValueTask.FromResult(false),
+            };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
+
+            var services = new ServiceCollection();
+            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
+            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
+
+            var context = new DefaultHttpContext();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            Assert.Equal("permission_change_rejected", json.Value<string>("error"));
+            Assert.Equal("Authentication refresh rejected by application policy.", json.Value<string>("error_description"));
+        }
+    }
+
+    [Fact]
+    public async Task RefreshOnAuthRefreshCallbackExceptionPropagates()
+    {
+        using (StartVerifiableLog(expectedErrorsFilter: _ => true))
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = _ => throw new InvalidOperationException("boom"),
+            };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.User = originalUser;
+
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
+
+            var services = new ServiceCollection();
+            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
+            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
+
+            var context = new DefaultHttpContext();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            await Assert.ThrowsAsync<InvalidOperationException>(
+                () => dispatcher.ExecuteRefreshAsync(context, options));
+
+            // Connection user untouched.
+            Assert.Same(originalUser, connection.User);
+        }
+    }
+
+    [Fact]
     public void UpdateUserWithNoSubscribersDoesNotThrow()
     {
         using (StartVerifiableLog())
