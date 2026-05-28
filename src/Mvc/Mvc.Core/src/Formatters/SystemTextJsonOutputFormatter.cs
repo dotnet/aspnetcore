@@ -75,8 +75,7 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
             await problemDetailsService.TryWriteAsync(new()
             {
                 HttpContext = httpContext,
-                ProblemDetails = problemDetails,
-                AdditionalMetadata = httpContext.GetEndpoint()?.Metadata,
+                ProblemDetails = problemDetails
             }))
         {
             return;
