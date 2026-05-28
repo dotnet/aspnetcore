@@ -5,3 +5,19 @@ Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthRefres
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthRefreshGracePeriod.set -> void
 Microsoft.AspNetCore.Http.Connections.AuthRefreshMetadata
 Microsoft.AspNetCore.Http.Connections.AuthRefreshMetadata.AuthRefreshMetadata() -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.AuthRefreshContext() -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.ConnectionId.get -> string!
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.ConnectionId.init -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.DenyReason.get -> string?
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.DenyReason.set -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.HttpContext.init -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.NewExpiration.get -> System.DateTimeOffset
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.NewExpiration.init -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.NewUser.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.NewUser.init -> void
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.PreviousUser.get -> System.Security.Claims.ClaimsPrincipal!
+Microsoft.AspNetCore.Http.Connections.AuthRefreshContext.PreviousUser.init -> void
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.OnAuthRefresh.get -> System.Func<Microsoft.AspNetCore.Http.Connections.AuthRefreshContext!, System.Threading.Tasks.ValueTask<bool>>?
+Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.OnAuthRefresh.set -> void
