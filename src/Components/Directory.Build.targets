@@ -1,7 +1,7 @@
 ﻿<Project>
-  <!-- blazor.webassembly.js is now provided as a framework static web asset from
-       Microsoft.AspNetCore.App.Internal.Assets. No need to set BlazorWebAssemblyJSPath
-       for the Wasm SDK to resolve it separately. -->
+  <!-- blazor.web.js and blazor.server.js are provided by Microsoft.AspNetCore.App.Internal.Assets.
+       blazor.webassembly.js is provided by Microsoft.AspNetCore.Components.WebAssembly.
+       No need to set BlazorWebAssemblyJSPath for the Wasm SDK to resolve it separately. -->
   <!-- Add Assets.Internal reference in .targets so TargetFrameworkIdentifier is available.
        Exclude netstandard projects (analyzers, generators, tasks), Wasm projects
        (which provide their own JS via the Components.WebAssembly package), and
