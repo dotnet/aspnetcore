@@ -131,4 +131,27 @@ public sealed class ValidateContext
             Container = container
         });
     }
+
+    internal string? ResolveAttributeErrorMessage(
+        string memberName,
+        string displayName,
+        Type? declaringType,
+        ValidationAttribute attribute,
+        ValidationResult result)
+    {
+        if (ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
+        {
+            return result.ErrorMessage;
+        }
+
+        var context = new ErrorMessageLocalizationContext
+        {
+            MemberName = memberName,
+            DisplayName = displayName,
+            DeclaringType = declaringType,
+            Attribute = attribute,
+        };
+
+        return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
+    }
 }
