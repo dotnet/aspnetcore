@@ -100,15 +100,8 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         }
 
         // Validate against validation attributes
-        if (context.ValidationOptions.ValidateSynchronousBeforeAsynchronous)
-        {
-            await ValidateAttributesAsync(value, context, displayName, validationAttributes, validateSync: true, validateAsync: false, cancellationToken);
-            await ValidateAttributesAsync(value, context, displayName, validationAttributes, validateSync: false, validateAsync: true, cancellationToken);
-        }
-        else
-        {
-            await ValidateAttributesAsync(value, context, displayName, validationAttributes, validateSync: true, validateAsync: true, cancellationToken);
-        }
+        await ValidateAttributesAsync(value, context, displayName, validationAttributes, validateSync: true, validateAsync: false, cancellationToken);
+        await ValidateAttributesAsync(value, context, displayName, validationAttributes, validateSync: false, validateAsync: true, cancellationToken);
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)

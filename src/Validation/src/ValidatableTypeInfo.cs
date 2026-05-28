@@ -165,7 +165,8 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // Finally validate IValidatableObject if implemented
-            ValidateValidatableObjectInterface(value, context, displayName);
+            // TODO: Do we want to overlap this with attribute validation for a true all sync then all async?
+            await ValidateValidatableObjectInterfaceAsync(value, context, displayName);
         }
         finally
         {
@@ -202,15 +203,8 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = null;
 
-        if (context.ValidationOptions.ValidateSynchronousBeforeAsynchronous)
-        {
-            await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: true, validateAsync: false, cancellationToken);
-            await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: false, validateAsync: true, cancellationToken);
-        }
-        else
-        {
-            await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: true, validateAsync: true, cancellationToken);
-        }
+        await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: true, validateAsync: false, cancellationToken);
+        await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: false, validateAsync: true, cancellationToken);
 
         context.ValidationContext.DisplayName = originalDisplayName;
         context.ValidationContext.MemberName = originalMemberName;
@@ -281,7 +275,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private void ValidateValidatableObjectInterface(object? value, ValidateContext context, string displayName)
+    private async Task ValidateValidatableObjectInterfaceAsync(object? value, ValidateContext context, string displayName)
     {
         if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
@@ -294,8 +288,26 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;
 
-            var validationResults = validatable.Validate(context.ValidationContext);
-            foreach (var validationResult in validationResults)
+            if (value is IAsyncValidatableObject asyncValidatable)
+            {
+                await foreach (var validationResult in asyncValidatable.ValidateAsync(context.ValidationContext))
+                {
+                    HandleValidationResult(validationResult);
+                }
+            }
+            else
+            {
+                foreach (var validationResult in validatable.Validate(context.ValidationContext))
+                {
+                    HandleValidationResult(validationResult);
+                }
+            }
+
+            // Restore the original validation context properties
+            context.ValidationContext.DisplayName = originalDisplayName;
+            context.ValidationContext.MemberName = originalMemberName;
+
+            void HandleValidationResult(ValidationResult validationResult)
             {
                 if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
                 {
@@ -314,10 +326,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     }
                 }
             }
-
-            // Restore the original validation context properties
-            context.ValidationContext.DisplayName = originalDisplayName;
-            context.ValidationContext.MemberName = originalMemberName;
         }
     }
 

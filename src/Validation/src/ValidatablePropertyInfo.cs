@@ -126,15 +126,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        if (context.ValidationOptions.ValidateSynchronousBeforeAsynchronous)
-        {
-            await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: true, validateAsync: false);
-            await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: false, validateAsync: true);
-        }
-        else
-        {
-            await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: true, validateAsync: true);
-        }
+        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: true, validateAsync: false);
+        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: false, validateAsync: true);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)

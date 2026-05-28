@@ -33,11 +33,11 @@ Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.T
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatablePropertyInfo(System.Type! type, string! propertyName, out Microsoft.Extensions.Validation.IValidatableInfo? validatablePropertyInfo) -> bool
-Microsoft.Extensions.Validation.ValidationOptions.ValidateSynchronousBeforeAsynchronous.get -> bool
-Microsoft.Extensions.Validation.ValidationOptions.ValidateSynchronousBeforeAsynchronous.set -> void
 override abstract System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
 override sealed System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value) -> bool
 override sealed System.ComponentModel.DataAnnotations.AsyncValidationAttribute.RequiresValidationContext.get -> bool
 System.ComponentModel.DataAnnotations.AsyncValidationAttribute
 System.ComponentModel.DataAnnotations.AsyncValidationAttribute.AsyncValidationAttribute() -> void
 System.ComponentModel.DataAnnotations.AsyncValidationAttribute.GetValidationResultAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.ComponentModel.DataAnnotations.ValidationResult?>!
+System.ComponentModel.DataAnnotations.IAsyncValidatableObject
+System.ComponentModel.DataAnnotations.IAsyncValidatableObject.ValidateAsync(System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<System.ComponentModel.DataAnnotations.ValidationResult!>!

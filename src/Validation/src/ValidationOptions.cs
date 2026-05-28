@@ -59,11 +59,6 @@ public class ValidationOptions
     public IValidationLocalizer? Localizer { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether all synchronous <see cref="ValidationAttribute"/> should be executed before any <see cref="AsyncValidationAttribute"/>.
-    /// </summary>
-    public bool ValidateSynchronousBeforeAsynchronous { get; set; } // TODO: Decide the default value + create API proposal.
-
-    /// <summary>
     /// Attempts to get validation information for the specified type.
     /// </summary>
     /// <param name="type">The type to get validation information for.</param>

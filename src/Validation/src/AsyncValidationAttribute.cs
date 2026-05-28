@@ -1,9 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-
 namespace System.ComponentModel.DataAnnotations;
+
+/// <summary>
+/// Do not ship.
+/// </summary>
+public interface IAsyncValidatableObject : IValidatableObject
+{
+    /// <summary>
+    /// Do not ship.
+    /// </summary>
+    /// <param name="validationContext"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    IAsyncEnumerable<ValidationResult> ValidateAsync(
+        ValidationContext validationContext,
+        CancellationToken cancellationToken = default);
+}
 
 /// <summary>
 /// Do not ship. This must be shipped from .NET runtime.
@@ -15,10 +29,7 @@ public abstract class AsyncValidationAttribute : ValidationAttribute
 
     /// <inheritdoc/>
     public sealed override bool IsValid(object? value)
-        => throw new UnreachableException();
-
-    /// <inheritdoc/>
-    public sealed override bool RequiresValidationContext => true;
+        => IsValid(value, null!) == ValidationResult.Success;
 
     /// <summary>
     /// Do not ship. This must be shipped from .NET runtime.
