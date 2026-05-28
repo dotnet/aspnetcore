@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
 
@@ -64,6 +65,22 @@ public class SystemTextJsonOutputFormatter : TextOutputFormatter
         ArgumentNullException.ThrowIfNull(selectedEncoding);
 
         var httpContext = context.HttpContext;
+
+        // If the value being written is a ProblemDetails instance and an IProblemDetailsService
+        // is registered, give it a chance to write the response. This allows custom
+        // IProblemDetailsWriter implementations (registered via AddProblemDetails) to format
+        // ProblemDetails responses produced by MVC (including validation errors).
+        if (context.Object is ProblemDetails problemDetails &&
+            httpContext.RequestServices.GetService<IProblemDetailsService>() is { } problemDetailsService &&
+            await problemDetailsService.TryWriteAsync(new()
+            {
+                HttpContext = httpContext,
+                ProblemDetails = problemDetails,
+                AdditionalMetadata = httpContext.GetEndpoint()?.Metadata,
+            }))
+        {
+            return;
+        }
 
         // context.ObjectType reflects the declared model type when specified.
         // For polymorphic scenarios where the user declares a return type, but returns a derived type,
