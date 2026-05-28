@@ -3117,6 +3117,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         ScrollUntil(js, container, () => ScrollContainer(js, container, targetScrollTop),
             st => st < currentScrollTop - 100,
             $"scrollTop < {currentScrollTop - 100} after scrolling away from bottom");
+        WaitForRenderToSettle(container, js);
 
         var scrollTopBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         var scrollHeightBeforeSecondAppend = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
@@ -3156,6 +3157,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         ScrollUntil(js, container, () => ScrollContainer(js, container, 500),
             st => st > 200, "scrollTop > 200 after ScrollContainer(500)");
+        WaitForRenderToSettle(container, js);
 
         var scrollTopBefore = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
 
