@@ -267,11 +267,11 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
         var problemDetailsService = new Mock<IProblemDetailsService>();
         problemDetailsService
             .Setup(s => s.TryWriteAsync(It.IsAny<ProblemDetailsContext>()))
-            .Callback<ProblemDetailsContext>(ctx =>
+            .Returns(async (ProblemDetailsContext ctx) =>
             {
-                ctx.HttpContext.Response.WriteAsync("custom-writer-output").GetAwaiter().GetResult();
-            })
-            .Returns(ValueTask.FromResult(true));
+                await ctx.HttpContext.Response.WriteAsync("custom-writer-output");
+                return true;
+            });
 
         var services = new ServiceCollection();
         services.AddSingleton(problemDetailsService.Object);
@@ -344,6 +344,98 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
         var actualContent = encoding.GetString(body.ToArray());
         Assert.Contains("\"title\":\"Bad Request\"", actualContent);
         Assert.Contains("\"status\":400", actualContent);
+        problemDetailsService.Verify(s => s.TryWriteAsync(It.IsAny<ProblemDetailsContext>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_FallsBackToJsonSerialization_WhenNoProblemDetailsServiceIsRegistered()
+    {
+        // Arrange
+        var problemDetails = new ProblemDetails { Status = 400, Title = "Bad Request" };
+
+        var services = new ServiceCollection();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var formatter = SystemTextJsonOutputFormatter.CreateFormatter(new JsonOptions());
+
+        var mediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+        actionContext.HttpContext.RequestServices = serviceProvider;
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(ProblemDetails),
+            problemDetails)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        var actualContent = encoding.GetString(body.ToArray());
+        Assert.Contains("\"title\":\"Bad Request\"", actualContent);
+        Assert.Contains("\"status\":400", actualContent);
+    }
+
+    [Fact]
+    public async Task WriteResponseBodyAsync_UsesProblemDetailsService_ForDerivedProblemDetails()
+    {
+        // Arrange
+        var problemDetails = new HttpValidationProblemDetails(new Dictionary<string, string[]>
+        {
+            ["Name"] = ["Required"],
+        })
+        {
+            Status = 400,
+            Title = "Validation failed",
+        };
+
+        ProblemDetailsContext capturedContext = null;
+        var problemDetailsService = new Mock<IProblemDetailsService>();
+        problemDetailsService
+            .Setup(s => s.TryWriteAsync(It.IsAny<ProblemDetailsContext>()))
+            .Returns(async (ProblemDetailsContext ctx) =>
+            {
+                capturedContext = ctx;
+                await ctx.HttpContext.Response.WriteAsync("custom-writer-output");
+                return true;
+            });
+
+        var services = new ServiceCollection();
+        services.AddSingleton(problemDetailsService.Object);
+        var serviceProvider = services.BuildServiceProvider();
+
+        var formatter = SystemTextJsonOutputFormatter.CreateFormatter(new JsonOptions());
+
+        var mediaType = MediaTypeHeaderValue.Parse("application/problem+json; charset=utf-8");
+        var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
+
+        var body = new MemoryStream();
+        var actionContext = GetActionContext(mediaType, body);
+        actionContext.HttpContext.RequestServices = serviceProvider;
+
+        var outputFormatterContext = new OutputFormatterWriteContext(
+            actionContext.HttpContext,
+            new TestHttpResponseStreamWriterFactory().CreateWriter,
+            typeof(HttpValidationProblemDetails),
+            problemDetails)
+        {
+            ContentType = new StringSegment(mediaType.ToString()),
+        };
+
+        // Act
+        await formatter.WriteResponseBodyAsync(outputFormatterContext, Encoding.GetEncoding("utf-8"));
+
+        // Assert
+        var actualContent = encoding.GetString(body.ToArray());
+        Assert.Equal("custom-writer-output", actualContent);
+        Assert.Same(problemDetails, capturedContext.ProblemDetails);
         problemDetailsService.Verify(s => s.TryWriteAsync(It.IsAny<ProblemDetailsContext>()), Times.Once);
     }
 
