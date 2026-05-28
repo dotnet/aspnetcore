@@ -15,7 +15,7 @@ public static class EmailSenderExtensions
     public static Task SendEmailConfirmationAsync(this IEmailSender emailSender, string email, string link)
     {
         return emailSender.SendEmailAsync(email, "Confirm your email",
-            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(link)}'>clicking here</a>. If you didn't create an account, you can ignore this email.");
+            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(link)}'>clicking here</a>. If you didn't request this email confirmation, you can ignore this email.");
     }
 
     public static Task SendResetPasswordAsync(this IEmailSender emailSender, string email, string callbackUrl)
