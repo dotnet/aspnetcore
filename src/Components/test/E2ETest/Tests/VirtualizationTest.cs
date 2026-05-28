@@ -4062,7 +4062,9 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             var bestTop = Number.POSITIVE_INFINITY;
             for (var i = 0; i < items.length; i++) {
                 var ir = items[i].getBoundingClientRect();
-                if (ir.bottom <= rect.top) continue; // above viewport
+                // 1px tolerance: a sub-pixel sliver of the previous item just above the boundary
+                // (from variable-height browser rounding) shouldn't count as 'topmost visible'.
+                if (ir.bottom <= rect.top + 1) continue; // above viewport
                 if (ir.top < bestTop) { bestTop = ir.top; best = items[i]; }
             }
             if (!best) return -1;
