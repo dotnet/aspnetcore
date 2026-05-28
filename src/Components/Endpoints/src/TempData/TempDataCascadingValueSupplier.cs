@@ -15,6 +15,7 @@ internal partial class TempDataCascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private HttpContext? _httpContext;
+    private bool _onStartingRegistered;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<TempDataCascadingValueSupplier> _logger;
 
@@ -33,6 +34,16 @@ internal partial class TempDataCascadingValueSupplier
         SupplyParameterFromTempDataAttribute attribute,
         CascadingParameterInfo parameterInfo)
     {
+        if (!_onStartingRegistered && _httpContext is not null)
+        {
+            _onStartingRegistered = true;
+            _httpContext.Response.OnStarting(() =>
+            {
+                TempDataProviderServiceCollectionExtensions.PersistTempData(_httpContext);
+                return Task.CompletedTask;
+            });
+        }
+
         var tempDataKey = attribute.Name ?? parameterInfo.PropertyName;
         var componentType = componentState.Component.GetType();
         var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
@@ -85,6 +96,8 @@ internal partial class TempDataCascadingValueSupplier
             }
             tempData[key] = value;
         }
+
+        _valueCallbacks.Clear();
     }
 
     internal void DeleteValueCallback(string tempDataKey)
