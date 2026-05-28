@@ -73,6 +73,13 @@
     </TestContentPackage.RenderFragmentChild>
 }
 
+@if (Test == 8)
+{
+    <TestContentPackage.ConditionalRenderFragmentChild @rendermode="renderMode" IdSuffix="test8" ShowContent="false">
+        <p id="conditional-text">Content after toggle</p>
+    </TestContentPackage.ConditionalRenderFragmentChild>
+}
+
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "test")]
     public int Test { get; set; }

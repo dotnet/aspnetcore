@@ -20,7 +20,17 @@ internal sealed class RenderFragmentCapture
         _original = original;
     }
 
+    public bool HasSerializationExecutionPolicy { get; init; }
+
     public IReadOnlyDictionary<int, RenderFragmentCapture> ChildCaptures => _childCaptures;
+
+    public bool HasCapturedFrames => _capturedFrames is not null;
+
+    public void EnsureCaptured()
+    {
+        using var builder = new RenderTreeBuilder();
+        Invoke(builder);
+    }
 
     public void Invoke(RenderTreeBuilder builder)
     {
@@ -61,6 +71,7 @@ internal sealed class RenderFragmentCapture
             }
 
             var componentSubtreeEnd = i + frame.ComponentSubtreeLength;
+
             // A component's attribute frames always sit right after the Component
             // frame in the render tree, with no other frame types mixed in. So we can stop as
             // soon as we hit the first non-Attribute frame.
@@ -69,7 +80,10 @@ internal sealed class RenderFragmentCapture
                 ref readonly var attrFrame = ref frames.Array[j];
                 if (attrFrame.AttributeValue is RenderFragment innerRf)
                 {
-                    var innerCapture = new RenderFragmentCapture(innerRf);
+                    var innerCapture = new RenderFragmentCapture(innerRf)
+                    {
+                        HasSerializationExecutionPolicy = RenderFragmentSerializer.HasSerializationExecutionPolicy(frame.ComponentType, attrFrame.AttributeName!)
+                    };
                     // Replace the original delegate in the live render buffer with the wrapper.
                     // This is required so that when the nested component later invokes its
                     // RenderFragment parameter, control flows through innerCapture.Invoke and

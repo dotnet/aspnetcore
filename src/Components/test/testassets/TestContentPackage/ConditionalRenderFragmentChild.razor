@@ -1,0 +1,47 @@
+﻿@using Microsoft.AspNetCore.Components
+
+<div id="conditional-container-@IdSuffix">
+    <p>Interactive: <span id="is-interactive-@IdSuffix">@_isInteractive</span></p>
+    @if (ShowContent)
+    {
+        <div id="conditional-content-@IdSuffix">
+            @ChildContent
+        </div>
+    }
+    else
+    {
+        <div id="conditional-fallback-@IdSuffix">
+            <p>Content is hidden</p>
+        </div>
+    }
+    <button id="toggle-@IdSuffix" @onclick="Toggle">Toggle</button>
+    <p>ShowContent: <span id="show-content-value-@IdSuffix">@ShowContent</span></p>
+</div>
+
+@code {
+    private bool _isInteractive;
+
+    [Parameter, EditorRequired]
+    public string IdSuffix { get; set; } = default!;
+
+    [Parameter]
+    public bool ShowContent { get; set; }
+
+    [Parameter, SerializationExecutionPolicy]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    private void Toggle()
+    {
+        ShowContent = !ShowContent;
+        StateHasChanged();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _isInteractive = true;
+            StateHasChanged();
+        }
+    }
+}

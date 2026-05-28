@@ -124,4 +124,22 @@ public class RenderFragmentSerializationTest : ServerTestBase<BasicTestAppServer
         Browser.Equal("Item 2", () => Browser.FindElement(By.Id("keyed-2")).Text);
         Browser.Equal("Item 3", () => Browser.FindElement(By.Id("keyed-3")).Text);
     }
+
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void RenderFragmentCrossesBoundary_ConditionallySkipped_SerializesWithAttribute(string mode)
+    {
+        // The component has [SerializationExecutionPolicyAttribute] and ShowContent=false,
+        // so the RenderFragment is NOT invoked during prerendering. The attribute allows
+        // the serializer to execute the fragment directly instead of throwing.
+        Navigate($"{ServerPathBase}/render-fragment-interactive?test=8&mode={mode}");
+
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive-test8")).Text);
+
+        // Toggle ShowContent to true and verify the serialized fragment content appears.
+        // This proves the RenderFragment was actually captured and delivered across the boundary.
+        Browser.Click(By.Id("toggle-test8"));
+        Browser.Equal("Content after toggle", () => Browser.FindElement(By.Id("conditional-text")).Text);
+    }
 }
