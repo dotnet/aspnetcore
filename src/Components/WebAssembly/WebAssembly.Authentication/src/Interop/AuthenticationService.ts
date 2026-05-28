@@ -272,7 +272,9 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.operationCompleted();
             }
 
-            return this.error('There was an error signing in.');
+            const message = this.getExceptionMessage(error);
+            this.debug(`Complete sign in error '${message}'`);
+            return this.error(message);
         }
     }
 
@@ -327,7 +329,7 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private async stateExists(url: string) {
-        const stateParam = new URLSearchParams(new URL(url).search).get('state');
+        const stateParam = this.getUrlParameter(url, 'state');
         if (stateParam && this._userManager.settings.stateStore) {
             return await this._userManager.settings.stateStore.get(stateParam);
         } else {
@@ -336,13 +338,19 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private async loginRequired(url: string) {
-        const errorParameter = new URLSearchParams(new URL(url).search).get('error');
+        const errorParameter = this.getUrlParameter(url, 'error');
         if (errorParameter && this._userManager.settings.stateStore) {
             const error = await this._userManager.settings.stateStore.get(errorParameter);
             return error === 'login_required';
         } else {
             return false;
         }
+    }
+
+    private getUrlParameter(url: string, parameterName: string) {
+        const parsedUrl = new URL(url);
+        return new URLSearchParams(parsedUrl.hash.substring(1)).get(parameterName) ??
+            new URLSearchParams(parsedUrl.search).get(parameterName);
     }
 
     private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
