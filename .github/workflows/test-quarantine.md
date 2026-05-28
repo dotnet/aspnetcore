@@ -3,6 +3,119 @@ on:
   schedule:
     - cron: "0 10 * * *"
   workflow_dispatch:
+  steps:
+    - name: Fetch re-quarantine PRs
+      id: requarantine_prs
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Fetch all merged PRs with re-quarantine label or title, bypassing DIFC filtering.
+        # The agent's MCP search tools filter out PRs from external contributors, which
+        # can hide legitimate re-quarantine PRs. This deterministic step runs with full
+        # GitHub token access and writes results that get injected into the agent prompt.
+        python3 << 'SCRIPT'
+        import json, os, urllib.request
+
+        token = os.environ["GH_TOKEN"]
+        headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+
+        def search_prs(query):
+            results = []
+            url = f"https://api.github.com/search/issues?q={query}&per_page=100"
+            while url:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req) as resp:
+                    data = json.loads(resp.read())
+                    results.extend(data.get("items", []))
+                    # Follow pagination
+                    link = resp.headers.get("Link", "")
+                    url = None
+                    for part in link.split(","):
+                        if 'rel="next"' in part:
+                            url = part.split("<")[1].split(">")[0]
+            return results
+
+        def get_changed_files(pr_number):
+            url = f"https://api.github.com/repos/dotnet/aspnetcore/pulls/{pr_number}/files?per_page=100"
+            files = []
+            while url:
+                req = urllib.request.Request(url, headers=headers)
+                with urllib.request.urlopen(req) as resp:
+                    files.extend(json.loads(resp.read()))
+                    link = resp.headers.get("Link", "")
+                    url = None
+                    for part in link.split(","):
+                        if 'rel="next"' in part:
+                            url = part.split("<")[1].split(">")[0]
+            return files
+
+        # Search by label and by title
+        by_label = search_prs("repo:dotnet/aspnetcore+is:pr+is:merged+label:re-quarantine")
+        by_title = search_prs("repo:dotnet/aspnetcore+is:pr+is:merged+%22Re-quarantine%22+in:title")
+
+        # Deduplicate by PR number
+        seen = set()
+        prs = []
+        for pr in by_label + by_title:
+            if pr["number"] not in seen:
+                seen.add(pr["number"])
+                prs.append(pr)
+
+        # For each PR, get changed files and check for QuarantinedTest additions.
+        # Store the added lines containing [QuarantinedTest so the agent can match at
+        # method/class/assembly level, not just file level.
+        requarantine_data = []
+        for pr in prs:
+            files = get_changed_files(pr["number"])
+            quarantine_entries = []
+            for f in files:
+                patch = f.get("patch", "")
+                if not patch and f.get("status") in ("modified", "added"):
+                    # Patch may be omitted for large diffs — fail closed by
+                    # treating the whole file as potentially re-quarantined
+                    quarantine_entries.append({
+                        "filename": f["filename"],
+                        "added_lines": [],
+                        "patch_truncated": True
+                    })
+                    continue
+                added = [line[1:] for line in patch.split("\n")
+                         if line.startswith("+") and "[QuarantinedTest" in line]
+                if added:
+                    quarantine_entries.append({
+                        "filename": f["filename"],
+                        "added_lines": added,
+                        "patch_truncated": False
+                    })
+            requarantine_data.append({
+                "number": pr["number"],
+                "title": pr["title"],
+                "quarantine_entries": quarantine_entries
+            })
+
+        # Write JSON to GITHUB_OUTPUT so it flows through jobs.pre_activation.outputs
+        # into the agent prompt. /tmp/ is NOT shared between pre_activation and agent jobs.
+        import sys
+
+        # Filter out PRs with no quarantine_entries — they're irrelevant and
+        # keeping them wastes step output / prompt token budget.
+        requarantine_data = [pr for pr in requarantine_data if pr["quarantine_entries"]]
+
+        json_str = json.dumps(requarantine_data)
+        github_output = os.environ.get("GITHUB_OUTPUT", "")
+        if not github_output:
+            print("ERROR: GITHUB_OUTPUT is not set, cannot pass data to agent", file=sys.stderr)
+            sys.exit(1)
+        with open(github_output, "a") as gh_out:
+            gh_out.write(f"requarantine_data<<REQUARANTINE_EOF\n{json_str}\nREQUARANTINE_EOF\n")
+
+        print(f"Found {len(requarantine_data)} re-quarantine PRs, wrote to step output")
+        SCRIPT
+
+jobs:
+  pre_activation:
+    outputs:
+      requarantine_data: ${{ steps.requarantine_prs.outputs.requarantine_data }}
 
 description: "Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics"
 
@@ -25,11 +138,6 @@ safe-outputs:
     title-prefix: "Quarantine "
     labels: [test-failure]
     max: 10
-  close-issue:
-    target: "*"
-    max: 10
-    required-labels: [test-failure]
-    required-title-prefix: "Quarantine "
   add-comment:
     target: "*"
     max: 10
@@ -91,17 +199,28 @@ GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsby
 ```
 
 #### Source B: Merged PR failures
-Get all PR builds (`reasonFilter=pullRequest`) from the last 30 days. Group by PR number and `pr.sourceSha` (from `triggerInfo`). **Every criterion below is mandatory — do not skip or approximate any of them.** A group is included ONLY if ALL of the following are true:
-- **(B1)** This was the **final commit** for the PR (the last `pr.sourceSha` seen for that PR).
-- **(B2)** The PR **targets the `main` branch** — call `pull_request_read` (method `get`) and verify `base.ref` is `main`. Exclude PR builds targeting release branches or any other non-main branch.
-- **(B3)** The PR was **merged** — in the same `pull_request_read` response, verify the `merged` field is `true`. Exclude builds from open, draft, or abandoned PRs.
-- **(B4)** At least one build in the group **failed** or **partially succeeded**.
 
-**You MUST call `pull_request_read` for every PR** to verify B2 and B3. Do not assume a PR is merged or targets main based on build data alone. If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+**Source B is REQUIRED — do not skip it.** It captures flaky tests that only manifest in PR builds (which run more frequently than rolling builds). Skipping it leaves significant blind spots in quarantine coverage.
+
+Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use pagination (`$top=100` + `continuationToken`) and an explicit `minTime` to ensure all builds are retrieved. **To keep this efficient, use the following approach:**
+
+1. **Get the unique PR numbers** — extract PR numbers from `sourceBranch` (`refs/pull/{NUMBER}/merge`) across all PR builds. Deduplicate to get the set of unique PRs.
+
+2. **Verify B2 and B3 for each unique PR** — call `pull_request_read` (method `get`) once per PR number (not per build):
+   - **(B2)** The PR **targets the `main` branch** — verify `base.ref` is `main`. Exclude PRs targeting release branches or any other non-main branch.
+   - **(B3)** The PR was **merged** — verify the `merged` field is `true`. Exclude open, draft, or abandoned PRs.
+
+   If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+
+3. **For each qualifying PR, find all its builds** and apply:
+   - **(B1)** Keep only builds for the **final commit** — compare each build's `pr.sourceSha` (from `triggerInfo`) to the PR's `head.sha` from the `pull_request_read` response in step 2. Only include builds whose `pr.sourceSha` matches the PR's `head.sha`.
+   - **(B4)** At least one build in the group **failed** or **partially succeeded**.
+
+4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
+
+**Every criterion above is mandatory — do not skip or approximate any of them.**
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
-
-For qualifying groups, get the failed test results from the failed/partially-succeeded builds.
 
 #### Source C: Work item crash investigation
 For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
@@ -122,7 +241,9 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
-Combine failure counts from all sources across both pipelines. A test is a candidate for quarantining if it meets **either** of the following cases:
+**IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
+
+A test is a candidate for quarantining if it meets **either** of the following cases:
 
 **Case A – New quarantine**
 
@@ -199,7 +320,27 @@ A test is a candidate for unquarantining if ALL of the following are true:
   git log --format="%H %ai" -1 -G 'QuarantinedTest.*{ISSUE_NUMBER}' -- {FILE_PATH}
   ```
   If the commit date is less than 60 days ago, skip this test — it was recently quarantined and needs more time to establish reliability.
-- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR modified the same test file to add a `[QuarantinedTest]` attribute for this test. To check this, search for merged PRs with the `re-quarantine` label using `search_issues` (query: `repo:dotnet/aspnetcore is:pr is:merged label:re-quarantine`), and also search for merged PRs with "Re-quarantine" in the title (query: `repo:dotnet/aspnetcore is:pr is:merged "Re-quarantine" in:title`). For each matching PR, check its changed files — if any touch the same file and test, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+- The test has **never been re-quarantined**. A test is considered re-quarantined if there exists any merged PR in the repository that either has "Re-quarantine" (case-insensitive) in the title, or has the `re-quarantine` label, and that PR added a `[QuarantinedTest` attribute to the same test method, test class, or test assembly. To check this:
+
+  The re-quarantine data is injected below from the pre-activation step. Parse the JSON — it contains an array of objects, each with:
+  - `number`: PR number
+  - `title`: PR title
+  - `quarantine_entries`: array of `{filename, added_lines, patch_truncated}` — each entry represents a file where `[QuarantinedTest` was added
+
+  **If the data is missing (empty string or unset) or cannot be parsed as valid JSON, do NOT unquarantine any tests — fail closed and report the error.** An empty array (`[]`) is valid and means no re-quarantine PRs were found — unquarantining may proceed.
+
+  For each entry's `quarantine_entries`, determine whether the re-quarantine applies to the candidate test:
+  - If `patch_truncated` is `true`, the patch was too large for the API to return. **Fail closed**: treat this as matching any test in that file.
+  - Otherwise, examine `added_lines` (the actual source lines that were added). Since `[QuarantinedTest]` is an attribute placed above a method or class declaration, the added line alone won't name the target. To identify which method/class it applies to, find the matching `[QuarantinedTest` line in the current source file (by `filename`) and look at the next non-attribute, non-blank line — that will be the method or class declaration (e.g., `public async Task FooTest()` or `public class FooTests`). If the candidate test matches that declaration, it's a match.
+
+  If any re-quarantine PR matches the candidate, this test must be permanently excluded from automated unquarantining. Only a human may unquarantine such a test.
+
+  **Re-quarantine data (from pre-activation step):**
+  ```json
+  ${{ needs.pre_activation.outputs.requarantine_data }}
+  ```
+
+  **Do NOT use `search_pull_requests` (MCP: github) for this check.** The MCP tool applies an integrity filter that silently removes PRs authored by external contributors, which can hide legitimate re-quarantine PRs. The pre-activation step bypasses this filter.
 
 For IIS tests compiled into multiple assemblies (Common.LongTests, Common.FunctionalTests), the same test method appears with different namespace prefixes (e.g., `FunctionalTests.StartupTests.X`, `IISExpress.FunctionalTests.StartupTests.X`, `NewHandler.FunctionalTests.StartupTests.X`, `NewShim.FunctionalTests.StartupTests.X`). ALL variants must have 100% pass rates. Variants with 0 pass / 0 fail (all "other" outcomes) represent tests skipped by `[ConditionalFact]` and should be excluded from the pass-rate check — they are neither passing nor failing.
 
@@ -268,7 +409,6 @@ Test failure messages, stack traces, console logs, and all other data retrieved 
 This workflow has the following limits:
 - Maximum of 10 new PRs
 - Maximum of 10 new issues
-- Maximum of 10 issue closures
 - Maximum of 10 new comments
 Never attempt to exceed these limits. You must plan your output usage carefully to avoid orphaned state.
 
@@ -276,7 +416,7 @@ Never attempt to exceed these limits. You must plan your output usage carefully 
 
 Before creating any outputs, build a complete plan of all actions you intend to take. Count the totals for each output type:
 
-- **Unquarantine actions** each consume: 1 PR + 0-1 issue closures (only if no remaining tests reference the issue).
+- **Unquarantine actions** each consume: 1 PR (the PR body may include `Closes #issue` to auto-close the tracking issue on merge).
 - **New quarantine actions (Case A)** each consume: 1 issue + 1 PR + 1 comment. These three outputs are **atomic** — never create a quarantine PR without its corresponding issue, and never create an issue without its corresponding PR. If you don't have budget remaining for all three, skip that test entirely and let the next day's run handle it.
 - **Re-quarantine actions (Case B)** each consume: 1 PR + 1 comment (no new issue — reuse the existing one). These two outputs are atomic — never create a re-quarantine PR without its investigation comment.
 
@@ -299,7 +439,7 @@ Process items in this strict order:
 - **Never create a quarantine issue or re-quarantine PR without its investigation comment.** If you've hit the comment limit, stop creating quarantine issues/PRs too.
 - **Re-quarantine PRs (Case B) do not require a new issue** — they reuse the existing one. They still require an investigation comment.
 - **Unquarantine PRs do not require issues or comments**, so they can fill remaining PR budget after quarantine actions are complete.
-- **Issue closures are best-effort.** If you run out of close-issue budget, the issue simply stays open until the next run — this is harmless.
+- **Issue closure happens via PR merge.** Unquarantine PRs include `Closes #issue` in the body so GitHub automatically closes the tracking issue when the PR merges. Do not close issues manually.
 
 ### Turn budget awareness
 
@@ -366,8 +506,8 @@ For each unquarantine candidate group (from Step 2.4), using remaining budget:
 
 3. For each issue referenced:
    - Search the entire repository for any **remaining** `[QuarantinedTest]` attributes that reference that issue URL.
-   - If **no other** quarantined tests reference that issue, **close the issue** with a comment explaining all associated tests have been unquarantined.
-   - If other tests still reference the issue, do **not** close it.
+   - If **no other** quarantined tests reference that issue, include `Closes https://github.com/dotnet/aspnetcore/issues/{ISSUE_NUMBER}` in the PR body so the issue is automatically closed when the PR merges. Do **not** close the issue manually — let GitHub close it via the PR merge.
+   - If other tests still reference the issue, do **not** include a `Closes` reference for it.
 
 ---
 

@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import aiohttp
 import gzip
+import hashlib
 import os
 import re
 import shutil
@@ -16,7 +17,7 @@ import zstandard
 from collections import deque
 from functools import cmp_to_key
 
-async def download_file(session, url, dest_path, max_retries=3, retry_delay=2, timeout=60):
+async def download_file(session, url, dest_path, max_retries=3, retry_delay=2, timeout=60, checksum=None):
     """Asynchronous file download with retries."""
     attempt = 0
     while attempt < max_retries:
@@ -25,19 +26,25 @@ async def download_file(session, url, dest_path, max_retries=3, retry_delay=2, t
                 if response.status == 200:
                     with open(dest_path, "wb") as f:
                         content = await response.read()
+
+                        # verify checksum if provided
+                        if checksum:
+                            sha256 = hashlib.sha256(content).hexdigest()
+                            if sha256 != checksum:
+                                raise Exception(f"SHA256 mismatch for {url}: expected {checksum}, got {sha256}")
+
                         f.write(content)
                     print(f"Downloaded {url} at {dest_path}")
                     return
                 else:
-                    print(f"Failed to download {url}, Status Code: {response.status}")
-                    break
+                    raise Exception(f"Failed to download {url}, Status Code: {response.status}")
         except (asyncio.CancelledError, asyncio.TimeoutError, aiohttp.ClientError) as e:
             print(f"Error downloading {url}: {type(e).__name__} - {e}. Retrying...")
 
         attempt += 1
         await asyncio.sleep(retry_delay)
 
-    print(f"Failed to download {url} after {max_retries} attempts.")
+    raise Exception(f"Failed to download {url} after {max_retries} attempts.")
 
 async def download_deb_files_parallel(mirror, packages, tmp_dir):
     """Download .deb files in parallel."""
@@ -51,11 +58,11 @@ async def download_deb_files_parallel(mirror, packages, tmp_dir):
             if filename:
                 url = f"{mirror}/{filename}"
                 dest_path = os.path.join(tmp_dir, os.path.basename(filename))
-                tasks.append(asyncio.create_task(download_file(session, url, dest_path)))
+                tasks.append(asyncio.create_task(download_file(session, url, dest_path, checksum=info.get("SHA256"))))
 
         await asyncio.gather(*tasks)
 
-async def download_package_index_parallel(mirror, arch, suites):
+async def download_package_index_parallel(mirror, arch, suites, check_sig, keyring):
     """Download package index files for specified suites and components entirely in memory."""
     tasks = []
     timeout = aiohttp.ClientTimeout(total=60)
@@ -63,10 +70,9 @@ async def download_package_index_parallel(mirror, arch, suites):
     async with aiohttp.ClientSession(timeout=timeout) as session:
         for suite in suites:
             for component in ["main", "universe"]:
-                url = f"{mirror}/dists/{suite}/{component}/binary-{arch}/Packages.gz"
-                tasks.append(fetch_and_decompress(session, url))
+                tasks.append(fetch_and_decompress(session, mirror, arch, suite, component, check_sig, keyring))
 
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        results = await asyncio.gather(*tasks)
 
     merged_content = ""
     for result in results:
@@ -77,20 +83,71 @@ async def download_package_index_parallel(mirror, arch, suites):
 
     return merged_content
 
-async def fetch_and_decompress(session, url):
+async def fetch_and_decompress(session, mirror, arch, suite, component, check_sig, keyring):
     """Fetch and decompress the Packages.gz file."""
-    try:
-        async with session.get(url) as response:
-            if response.status == 200:
-                compressed_data = await response.read()
-                decompressed_data = gzip.decompress(compressed_data).decode('utf-8')
-                print(f"Downloaded index: {url}")
-                return decompressed_data
-            else:
-                print(f"Skipped index: {url} (doesn't exist)")
-                return None
-    except Exception as e:
-        print(f"Error fetching {url}: {e}")
+
+    path = f"{component}/binary-{arch}/Packages.gz"
+    url = f"{mirror}/dists/{suite}/{path}"
+
+    async with session.get(url) as response:
+        if response.status == 200:
+            compressed_data = await response.read()
+            decompressed_data = gzip.decompress(compressed_data).decode('utf-8')
+            print(f"Downloaded index: {url}")
+
+            if check_sig:
+                # Verify the package index against the sha256 recorded in the Release file
+                release_file_content = await fetch_release_file(session, mirror, suite, keyring)
+                packages_sha = parse_release_file(release_file_content, path)
+
+                sha256 = hashlib.sha256(compressed_data).hexdigest()
+                if sha256 != packages_sha:
+                    raise Exception(f"SHA256 mismatch for {path}: expected {packages_sha}, got {sha256}")
+                print(f"Checksum verified for {path}")
+
+            return decompressed_data
+        else:
+            print(f"Skipped index: {url} (doesn't exist)")
+            return None
+
+async def fetch_release_file(session, mirror, suite, keyring):
+    """Fetch Release and Release.gpg files and verify the signature."""
+
+    release_url = f"{mirror}/dists/{suite}/Release"
+    release_gpg_url = f"{mirror}/dists/{suite}/Release.gpg"
+
+    with tempfile.NamedTemporaryFile() as release_file, tempfile.NamedTemporaryFile() as release_gpg_file:
+        await download_file(session, release_url, release_file.name)
+        await download_file(session, release_gpg_url, release_gpg_file.name)
+
+        print("Verifying signature of Release with Release.gpg.")
+        verify_command = ["gpg"]
+        if keyring:
+            verify_command += ["--keyring", keyring]
+        verify_command += ["--verify", release_gpg_file.name, release_file.name]
+        result = subprocess.run(verify_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        if result.returncode != 0:
+            raise Exception(f"Signature verification failed: {result.stderr.decode('utf-8')}")
+
+        print("Signature verified successfully.")
+
+        with open(release_file.name) as f:
+            return f.read()
+
+def parse_release_file(content, path):
+    """Parses the Release file and returns sha256 checksum of the specified path."""
+
+    # data looks like this:
+    # <checksum>  <size>  <path>
+    matches = re.findall(r'^ (\S*) +(\S*) +(\S*)$', content, re.MULTILINE)
+
+    for entry in matches:
+        # the file has both md5 and sha256 checksums, we want sha256 which has a length of 64
+        if entry[2] == path and len(entry[0]) == 64:
+            return entry[0]
+
+    raise Exception(f"Could not find checksum for {path} in Release file.")
 
 def parse_debian_version(version):
     """Parse a Debian package version into epoch, upstream version, and revision."""
@@ -171,13 +228,15 @@ def parse_package_index(content):
             filename = fields.get("Filename")
             depends = fields.get("Depends")
             provides = fields.get("Provides", None)
+            sha256 = fields.get("SHA256")
 
             # Only update if package_name is not in packages or if the new version is higher
             if package_name not in packages or compare_debian_versions(version, packages[package_name]["Version"]) > 0:
                 packages[package_name] = {
                     "Version": version,
                     "Filename": filename,
-                    "Depends": depends
+                    "Depends": depends,
+                    "SHA256": sha256
                 }
 
                 # Update aliases if package provides any alternatives
@@ -233,7 +292,7 @@ def extract_deb_file(deb_file, tmp_dir, extract_dir, ar_tool):
     os.makedirs(extract_dir, exist_ok=True)
 
     with tempfile.TemporaryDirectory(dir=tmp_dir) as tmp_subdir:
-        result = subprocess.run(f"{ar_tool} t {os.path.abspath(deb_file)}", cwd=tmp_subdir, check=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        result = subprocess.run([ar_tool, "t", os.path.abspath(deb_file)], cwd=tmp_subdir, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         tar_filename = None
         for line in result.stdout.decode().splitlines():
@@ -247,7 +306,8 @@ def extract_deb_file(deb_file, tmp_dir, extract_dir, ar_tool):
         tar_file_path = os.path.join(tmp_subdir, tar_filename)
         print(f"Extracting {tar_filename} from {deb_file}..")
 
-        subprocess.run(f"{ar_tool} p {os.path.abspath(deb_file)} {tar_filename} > {tar_file_path}", check=True, shell=True)
+        with open(tar_file_path, "wb") as outfile:
+            subprocess.run([ar_tool, "p", os.path.abspath(deb_file), tar_filename], check=True, stdout=outfile, stderr=subprocess.PIPE)
 
         file_extension = os.path.splitext(tar_file_path)[1].lower()
 
@@ -268,7 +328,7 @@ def extract_deb_file(deb_file, tmp_dir, extract_dir, ar_tool):
             raise ValueError(f"Unsupported compression format: {file_extension}")
 
         with tarfile.open(tar_file_path, mode) as tar:
-            tar.extractall(path=extract_dir, filter='fully_trusted')
+            tar.extractall(path=extract_dir, filter='tar')
 
 def finalize_setup(rootfsdir):
     lib_dir = os.path.join(rootfsdir, 'lib')
@@ -295,23 +355,16 @@ def finalize_setup(rootfsdir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate rootfs for .NET runtime on Debian-like OS")
-    parser.add_argument("--distro", required=False, help="Distro name (e.g., debian, ubuntu, etc.)")
     parser.add_argument("--arch", required=True, help="Architecture (e.g., amd64, loong64, etc.)")
     parser.add_argument("--rootfsdir", required=True, help="Destination directory.")
     parser.add_argument('--suite', required=True, action='append', help='Specify one or more repository suites to collect index data.')
-    parser.add_argument("--mirror", required=False, help="Mirror (e.g., http://ftp.debian.org/debian-ports etc.)")
+    parser.add_argument("--mirror", required=True, help="Mirror (e.g., http://ftp.debian.org/debian-ports etc.)")
     parser.add_argument("--artool", required=False, default="ar", help="ar tool to extract debs (e.g., ar, llvm-ar etc.)")
+    parser.add_argument("--force-check-gpg", required=False, action='store_true', help="Verify the packages against signatures in Release file.")
+    parser.add_argument("--keyring", required=False, default='', help="Keyring file to check signature of Release file.")
     parser.add_argument("packages", nargs="+", help="List of package names to be installed.")
 
     args = parser.parse_args()
-
-    if args.mirror is None:
-        if args.distro == "ubuntu":
-            args.mirror = "http://archive.ubuntu.com/ubuntu" if args.arch in ["amd64", "i386"] else "http://ports.ubuntu.com/ubuntu-ports"
-        elif args.distro == "debian":
-            args.mirror = "http://ftp.debian.org/debian-ports"
-        else:
-            raise Exception("Unsupported distro")
 
     DESIRED_PACKAGES = args.packages + [ # base packages
         "dpkg",
@@ -322,9 +375,16 @@ if __name__ == "__main__":
         "debianutils"
     ]
 
-    print(f"Creating rootfs. rootfsdir: {args.rootfsdir}, distro: {args.distro}, arch: {args.arch}, suites: {args.suite}, mirror: {args.mirror}")
+    print(f"Creating rootfs. rootfsdir: {args.rootfsdir}, arch: {args.arch}, suites: {args.suite}, mirror: {args.mirror}")
 
-    package_index_content = asyncio.run(download_package_index_parallel(args.mirror, args.arch, args.suite))
+    check_sig = args.force_check_gpg
+    if check_sig and not args.keyring:
+        print("ERROR: --force-check-gpg requires --keyring to specify a keyring file for signature verification.")
+        print("Install the appropriate keyring package (e.g., debian-ports-archive-keyring, ubuntu-archive-keyring)")
+        print("or pass --skipsigcheck to build-rootfs.sh to disable signature checking.")
+        sys.exit(1)
+
+    package_index_content = asyncio.run(download_package_index_parallel(args.mirror, args.arch, args.suite, check_sig, args.keyring))
 
     packages_info, aliases = parse_package_index(package_index_content)
 

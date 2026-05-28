@@ -39,7 +39,6 @@ public class MultipleComponents
 
         app.Map("/Client/multiple-components", app =>
         {
-            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
             app.UseRouting();
