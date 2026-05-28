@@ -119,7 +119,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement.style.overflowAnchor = 'none';
   }
 
-  const mutationObserver = new MutationObserver((mutations) => {
+  function processStyleMutations(mutations: MutationRecord[]): void {
     for (const mutation of mutations) {
       if (mutation.type === 'attributes') {
         const el = mutation.target as HTMLElement;
@@ -139,7 +139,14 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         });
       }
     }
-  });
+  }
+
+  const mutationObserver = new MutationObserver(processStyleMutations);
+
+  // Drain queued MutationObserver records synchronously, before any layout read.
+  function flushPendingStyleMutations(): void {
+    processStyleMutations(mutationObserver.takeRecords());
+  }
   mutationObserver.observe(styleObserverRoot, {
     attributes: true,
     attributeFilter: ['data-blazor-style'],
@@ -349,6 +356,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // Corrects scrollTop after a render that shifted content, using the snapshot
   // saved by updateAnchorSnapshot() during the previous render cycle.
   function restoreAnchorForShift(): void {
+    // Apply styles before we read layout
+    flushPendingStyleMutations();
+
     const snapshot = observersByDotNetObjectId[id].anchorSnapshot;
     if (!snapshot) {
       return;
