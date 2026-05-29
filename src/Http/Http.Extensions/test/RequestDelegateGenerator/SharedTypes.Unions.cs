@@ -70,7 +70,7 @@ public union UnionAnimalString(PolyAnimal, string);
 public union UnionIntShortWithClassifier(int, short);
 #pragma warning restore SYSLIB1227
 
-// Trivial classifier: always pick int. (Serialize tests don't exercise this path.)
+// Trivial classifier: always pick int
 public sealed class IntFirstClassifierFactory : JsonTypeClassifierFactory<UnionIntShortWithClassifier>
 {
     public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
@@ -195,3 +195,99 @@ public sealed class UnionCharIntClassifierFactory : JsonTypeClassifierFactory<Un
             _ => null,
         };
 }
+
+// Nullable-case union with classifier. Without a classifier this is ambiguous on both the
+// String token (NumberHandling lets int? read from string) and the Null token (both cases
+// accept null). The classifier returns the underlying primitive type (typeof(int)) — STJ
+// stores the int? case using its underlying type, so typeof(int?) would be rejected with
+// "runtime type is not supported by union type".
+[JsonUnion(TypeClassifier = typeof(UnionNullableIntStringClassifierFactory))]
+public union UnionNullableIntStringWithClassifier(int?, string);
+public sealed class UnionNullableIntStringClassifierFactory : JsonTypeClassifierFactory<UnionNullableIntStringWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(int),
+            JsonTokenType.String => typeof(string),
+            JsonTokenType.Null => typeof(int),
+            _ => null,
+        };
+}
+
+// Object-case union resolved by property-name dispatch. Cat has "name", Dog has "breed".
+// The classifier clones the reader, walks the first object members until it finds a property
+// that identifies the case, and returns the matching type. Property comparison is case-insensitive
+// across the standard policies (PascalCase declaration + camelCase from web defaults).
+[JsonUnion(TypeClassifier = typeof(UnionPetClassifierFactory))]
+public union UnionPetWithClassifier(Cat, Dog);
+public sealed class UnionPetClassifierFactory : JsonTypeClassifierFactory<UnionPetWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) =>
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                return null;
+            }
+
+            var clone = reader;
+            clone.Read();
+            while (clone.TokenType == JsonTokenType.PropertyName)
+            {
+                if (clone.ValueTextEquals("name") || clone.ValueTextEquals("Name"))
+                {
+                    return typeof(Cat);
+                }
+                if (clone.ValueTextEquals("breed") || clone.ValueTextEquals("Breed"))
+                {
+                    return typeof(Dog);
+                }
+
+                clone.Read();
+                clone.Skip();
+                clone.Read();
+            }
+
+            return null;
+        };
+}
+
+// Inner union with a classifier — used as a case type of a nested outer union below.
+[JsonUnion(TypeClassifier = typeof(UnionInnerWithClassifierFactory))]
+public union UnionInnerWithClassifier(int, string);
+public sealed class UnionInnerWithClassifierFactory : JsonTypeClassifierFactory<UnionInnerWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(int),
+            JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+// Outer nested union with a classifier'd inner union case. The outer pair (UnionInnerWithClassifier, bool)
+// is token-distinct (Boolean vs {Number, String}), so the outer itself needs no classifier.
+public union UnionOuterWithClassifier(UnionInnerWithClassifier, bool);
+
+// Outer nested union with classifiers on BOTH the outer and the inner. The outer classifier maps
+// non-Boolean tokens to the inner union type so STJ recurses into UnionInnerWithClassifier, which
+// then resolves the Number/String ambiguity. Demonstrates that nested unions are reachable end-to-end
+// when callers opt in to classifiers at every level.
+[JsonUnion(TypeClassifier = typeof(UnionOuterWithBothClassifiersFactory))]
+public union UnionOuterWithBothClassifiers(UnionInnerWithClassifier, bool);
+public sealed class UnionOuterWithBothClassifiersFactory : JsonTypeClassifierFactory<UnionOuterWithBothClassifiers>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.True or JsonTokenType.False => typeof(bool),
+            JsonTokenType.Number or JsonTokenType.String => typeof(UnionInnerWithClassifier),
+            _ => null,
+        };
+}
+
+// Envelope that wraps a classifier'd inner union as one of its properties. The record itself is
+// unambiguous; the classifier resolves the inner-union ambiguity that surfaces during binding.
+public record UnionEnvelopeWithClassifier(string CorrelationId, UnionIntStringWithClassifier Payload);
