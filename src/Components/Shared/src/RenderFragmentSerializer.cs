@@ -18,7 +18,7 @@ internal static partial class RenderFragmentSerializer
 
     private static readonly ConcurrentDictionary<(Type, string), bool> _serializationPolicyCache = new();
 
-    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
     internal static bool HasSerializationExecutionPolicy(Type componentType, string parameterName) =>
         _serializationPolicyCache.GetOrAdd((componentType, parameterName),
             static key => key.Item1.GetProperty(key.Item2)?.GetCustomAttribute<SerializationExecutionPolicyAttribute>() is not null);
