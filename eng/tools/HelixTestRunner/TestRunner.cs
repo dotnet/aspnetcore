@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -126,90 +128,196 @@ public class TestRunner
 
         try
         {
-            // Do not use network for dotnet tool installations.
-            File.Move(filename, backupFilename);
-
-            // Install dotnet-dump first so we can catch any failures from running dotnet after this
-            // (installing tools, running tests, etc.)
-            await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
-                environmentVariables: EnvironmentVariables,
-                outputDataReceived: ProcessUtil.PrintMessage,
-                errorDataReceived: ProcessUtil.PrintErrorMessage,
-                throwOnError: false,
-                cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-            // Install dotnet-ef with the exact version from the correlation payload to avoid
-            // picking up a mismatched version from the global NuGet cache.
-            var efVersionArg = "";
-            var efPackages = Directory.GetFiles(correlationPayload, "dotnet-ef.*.nupkg");
-            if (efPackages.Length > 0)
-            {
-                // Extract version from filename: dotnet-ef.{version}.nupkg
-                var fileName = Path.GetFileNameWithoutExtension(efPackages[0]);
-                var version = fileName["dotnet-ef.".Length..];
-                efVersionArg = $"--version {version} ";
-                ProcessUtil.PrintMessage($"Found dotnet-ef package in payload: {efPackages[0]}, version: {version}");
-            }
-            else
-            {
-                ProcessUtil.PrintMessage("Warning: No dotnet-ef nupkg found in correlation payload. Tool install may pick an incompatible version.");
-            }
-
-            await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"tool install dotnet-ef {efVersionArg}--tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
-                environmentVariables: EnvironmentVariables,
-                outputDataReceived: ProcessUtil.PrintMessage,
-                errorDataReceived: ProcessUtil.PrintErrorMessage,
-                throwOnError: false,
-                cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-            await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
-                environmentVariables: EnvironmentVariables,
-                outputDataReceived: ProcessUtil.PrintMessage,
-                errorDataReceived: ProcessUtil.PrintErrorMessage,
-                throwOnError: false,
-                cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+            // Extract tools directly from nupkgs in the correlation payload instead of running
+            // `dotnet tool install`, which invokes the dotnet CLI and can hang on some machines.
+            // The nupkgs are zip files containing the tool binaries under tools/<tfm>/any/.
+            ExtractToolFromNupkg(correlationPayload, "dotnet-dump", "dotnet-dump");
+            ExtractToolFromNupkg(correlationPayload, "dotnet-ef", "dotnet-ef");
+            ExtractToolFromNupkg(correlationPayload, "dotnet-serve", "dotnet-serve");
         }
         catch (Exception e)
         {
-            ProcessUtil.PrintMessage($"Exception in InstallDotnetTools: {e}");
-            return false;
-        }
-        finally
-        {
-            File.Move(backupFilename, filename);
+            ProcessUtil.PrintMessage($"Exception extracting tools from nupkgs: {e}");
+            ProcessUtil.PrintMessage("Falling back to dotnet tool install...");
+
+            // Fall back to the original approach if extraction fails
+            try
+            {
+                // Do not use network for dotnet tool installations.
+                File.Move(filename, backupFilename);
+
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-dump --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: ProcessUtil.PrintMessage,
+                    errorDataReceived: ProcessUtil.PrintErrorMessage,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                var efVersionArg = "";
+                var efPackages = Directory.GetFiles(correlationPayload, "dotnet-ef.*.nupkg");
+                if (efPackages.Length > 0)
+                {
+                    var efFileName = Path.GetFileNameWithoutExtension(efPackages[0]);
+                    var version = efFileName["dotnet-ef.".Length..];
+                    efVersionArg = $"--version {version} ";
+                }
+
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-ef {efVersionArg}--tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: ProcessUtil.PrintMessage,
+                    errorDataReceived: ProcessUtil.PrintErrorMessage,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+
+                await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                    $"tool install dotnet-serve --tool-path {Options.HELIX_WORKITEM_ROOT} --add-source {correlationPayload}",
+                    environmentVariables: EnvironmentVariables,
+                    outputDataReceived: ProcessUtil.PrintMessage,
+                    errorDataReceived: ProcessUtil.PrintErrorMessage,
+                    throwOnError: false,
+                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+            }
+            catch (Exception fallbackEx)
+            {
+                ProcessUtil.PrintMessage($"Exception in fallback InstallDotnetTools: {fallbackEx}");
+                return false;
+            }
+            finally
+            {
+                if (File.Exists(backupFilename))
+                {
+                    File.Move(backupFilename, filename);
+                }
+            }
         }
 
         try
         {
-            ProcessUtil.PrintMessage($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
-
-            await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                $"nuget add source {Options.HELIX_WORKITEM_ROOT} --configfile {filename}",
-                environmentVariables: EnvironmentVariables,
-                outputDataReceived: ProcessUtil.PrintMessage,
-                errorDataReceived: ProcessUtil.PrintErrorMessage,
-                throwOnError: false,
-                cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-            // Write nuget sources to console, useful for debugging purposes
-            await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                "nuget list source",
-                environmentVariables: EnvironmentVariables,
-                outputDataReceived: ProcessUtil.PrintMessage,
-                errorDataReceived: ProcessUtil.PrintErrorMessage,
-                throwOnError: false,
-                cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+            // Add the work item root as a NuGet source by editing the config file directly
+            // instead of invoking `dotnet nuget add source`.
+            AddNuGetSource(Options.HELIX_WORKITEM_ROOT);
         }
         catch (Exception e)
         {
-            ProcessUtil.PrintMessage($"Exception in InstallDotnetTools: {e}");
+            ProcessUtil.PrintMessage($"Exception adding NuGet source: {e}");
             return false;
         }
 
         return true;
+    }
+
+    /// <summary>
+    /// Extracts a dotnet tool from its nupkg (zip) in the correlation payload and creates
+    /// a shell/batch shim so it can be invoked by name from PATH.
+    /// </summary>
+    private void ExtractToolFromNupkg(string correlationPayload, string toolNupkgPrefix, string toolName)
+    {
+        var nupkgs = Directory.GetFiles(correlationPayload, $"{toolNupkgPrefix}.*.nupkg");
+        if (nupkgs.Length == 0)
+        {
+            ProcessUtil.PrintMessage($"Warning: No {toolNupkgPrefix} nupkg found in {correlationPayload}");
+            return;
+        }
+
+        var nupkgPath = nupkgs[0];
+        var extractDir = Path.Combine(Options.HELIX_WORKITEM_ROOT, $".tools/{toolName}");
+        ProcessUtil.PrintMessage($"Extracting {toolName} from {Path.GetFileName(nupkgPath)} to {extractDir}");
+
+        System.IO.Compression.ZipFile.ExtractToDirectory(nupkgPath, extractDir, overwriteFiles: true);
+
+        // Find the tool DLL inside the extracted nupkg under tools/<tfm>/any/
+        var toolsDir = Path.Combine(extractDir, "tools");
+        if (!Directory.Exists(toolsDir))
+        {
+            ProcessUtil.PrintMessage($"Warning: No tools/ directory in {toolNupkgPrefix} nupkg");
+            return;
+        }
+
+        // Pick the highest TFM directory available
+        string toolDll = null;
+        foreach (var tfmDir in Directory.GetDirectories(toolsDir).OrderByDescending(d => d))
+        {
+            var anyDir = Path.Combine(tfmDir, "any");
+            if (Directory.Exists(anyDir))
+            {
+                var candidate = Path.Combine(anyDir, $"{toolName}.dll");
+                if (File.Exists(candidate))
+                {
+                    toolDll = candidate;
+                    break;
+                }
+            }
+        }
+
+        if (toolDll is null)
+        {
+            ProcessUtil.PrintMessage($"Warning: Could not find {toolName}.dll in extracted nupkg");
+            return;
+        }
+
+        // Create a shim script in the work item root (which is on PATH)
+        var dotnetExe = Path.Combine(Options.DotnetRoot, "dotnet");
+        if (OperatingSystem.IsWindows())
+        {
+            var shimPath = Path.Combine(Options.HELIX_WORKITEM_ROOT, $"{toolName}.exe");
+            // On Windows, create a batch file shim (rename to .cmd won't work for all callers, but
+            // dotnet tool install creates a native shim exe — we approximate with a .cmd)
+            var cmdShimPath = Path.Combine(Options.HELIX_WORKITEM_ROOT, $"{toolName}.cmd");
+            File.WriteAllText(cmdShimPath, $"@\"{dotnetExe}\" exec \"{toolDll}\" %*\r\n");
+            // Also copy/create a .exe shim — some callers look for .exe specifically
+            if (!File.Exists(shimPath))
+            {
+                File.Copy(cmdShimPath, shimPath);
+            }
+        }
+        else
+        {
+            var shimPath = Path.Combine(Options.HELIX_WORKITEM_ROOT, toolName);
+            File.WriteAllText(shimPath, $"#!/bin/sh\nexec \"{dotnetExe}\" exec \"{toolDll}\" \"$@\"\n");
+            // Make executable
+            File.SetUnixFileMode(shimPath,
+                UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+        }
+
+        ProcessUtil.PrintMessage($"Installed {toolName} shim -> {toolDll}");
+    }
+
+    /// <summary>
+    /// Adds a NuGet source to the NuGet.config file directly by editing the XML,
+    /// avoiding the need to invoke `dotnet nuget add source`.
+    /// </summary>
+    private static void AddNuGetSource(string sourcePath)
+    {
+        const string configFile = "NuGet.config";
+        if (!File.Exists(configFile))
+        {
+            ProcessUtil.PrintMessage($"Warning: {configFile} not found, skipping NuGet source addition");
+            return;
+        }
+
+        ProcessUtil.PrintMessage($"Adding NuGet source: {sourcePath}");
+
+        var doc = new System.Xml.XmlDocument();
+        doc.Load(configFile);
+
+        var packageSources = doc.SelectSingleNode("//packageSources");
+        if (packageSources is null)
+        {
+            ProcessUtil.PrintMessage("Warning: No <packageSources> element found in NuGet.config");
+            return;
+        }
+
+        var addElement = doc.CreateElement("add");
+        addElement.SetAttribute("key", "HelixWorkItemRoot");
+        addElement.SetAttribute("value", sourcePath);
+        packageSources.AppendChild(addElement);
+        doc.Save(configFile);
+
+        ProcessUtil.PrintMessage($"Added NuGet source 'HelixWorkItemRoot' = {sourcePath}");
     }
 
     public async Task<bool> CheckTestDiscoveryAsync()
