@@ -33,8 +33,6 @@ steps:
       '$(publishing-dnceng-devdiv-code-r-build-re)'
       '$(dn-bot-all-orgs-artifact-feeds-rw)'
       '$(akams-client-id)'
-      '$(microsoft-symbol-server-pat)'
-      '$(symweb-symbol-server-pat)'
       '$(dnceng-symbol-server-pat)'
       '$(dn-bot-all-orgs-build-rw-code-rw)'
       '$(System.AccessToken)'
