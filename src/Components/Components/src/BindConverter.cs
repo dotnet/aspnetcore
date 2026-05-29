@@ -1815,13 +1815,13 @@ public static class BindConverter
 
             return FormatArrayValue;
 
-             string? FormatArrayValue(T[]? value, CultureInfo? culture)
+            string? FormatArrayValue(T[]? value, CultureInfo? culture)
             {
                 if (value is null)
                 {
                     return null;
                 }
-				if (value.Length == 0)
+                if (value.Length == 0)
                 {
                     return "[]";
                 }
