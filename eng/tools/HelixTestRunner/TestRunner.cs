@@ -222,7 +222,7 @@ public class TestRunner
         }
 
         var nupkgPath = nupkgs[0];
-        var extractDir = Path.Combine(Options.HELIX_WORKITEM_ROOT, $".tools/{toolName}");
+        var extractDir = Path.Combine(Options.HELIX_WORKITEM_ROOT, ".tools", toolName);
         ProcessUtil.PrintMessage($"Extracting {toolName} from {Path.GetFileName(nupkgPath)} to {extractDir}");
 
         System.IO.Compression.ZipFile.ExtractToDirectory(nupkgPath, extractDir, overwriteFiles: true);
@@ -235,9 +235,18 @@ public class TestRunner
             return;
         }
 
-        // Pick the highest TFM directory available
+        // Pick the highest TFM directory available, sorting by parsed version number
+        // to handle multi-digit versions correctly (e.g., net10.0 > net9.0).
         string toolDll = null;
-        foreach (var tfmDir in Directory.GetDirectories(toolsDir).OrderByDescending(d => d))
+        var tfmDirs = Directory.GetDirectories(toolsDir)
+            .Select(d => (dir: d, name: Path.GetFileName(d)))
+            .OrderByDescending(d =>
+            {
+                // Parse version from TFM folder name like "net8.0", "net10.0", "netcoreapp3.1"
+                var numStr = new string(d.name.SkipWhile(c => !char.IsDigit(c)).ToArray());
+                return Version.TryParse(numStr, out var v) ? v : new Version(0, 0);
+            });
+        foreach (var (tfmDir, _) in tfmDirs)
         {
             var anyDir = Path.Combine(tfmDir, "any");
             if (Directory.Exists(anyDir))
@@ -261,16 +270,10 @@ public class TestRunner
         var dotnetExe = Path.Combine(Options.DotnetRoot, "dotnet");
         if (OperatingSystem.IsWindows())
         {
-            var shimPath = Path.Combine(Options.HELIX_WORKITEM_ROOT, $"{toolName}.exe");
-            // On Windows, create a batch file shim (rename to .cmd won't work for all callers, but
-            // dotnet tool install creates a native shim exe — we approximate with a .cmd)
+            // Create a .cmd shim only — a .cmd file on PATH is sufficient for tool invocation
+            // on Windows. Do not create a fake .exe since it would be an invalid executable.
             var cmdShimPath = Path.Combine(Options.HELIX_WORKITEM_ROOT, $"{toolName}.cmd");
             File.WriteAllText(cmdShimPath, $"@\"{dotnetExe}\" exec \"{toolDll}\" %*\r\n");
-            // Also copy/create a .exe shim — some callers look for .exe specifically
-            if (!File.Exists(shimPath))
-            {
-                File.Copy(cmdShimPath, shimPath);
-            }
         }
         else
         {
@@ -311,10 +314,19 @@ public class TestRunner
             return;
         }
 
-        var addElement = doc.CreateElement("add");
-        addElement.SetAttribute("key", "HelixWorkItemRoot");
-        addElement.SetAttribute("value", sourcePath);
-        packageSources.AppendChild(addElement);
+        // Update existing entry if present, otherwise add a new one
+        var existing = doc.SelectSingleNode("//packageSources/add[@key='HelixWorkItemRoot']") as System.Xml.XmlElement;
+        if (existing is not null)
+        {
+            existing.SetAttribute("value", sourcePath);
+        }
+        else
+        {
+            var addElement = doc.CreateElement("add");
+            addElement.SetAttribute("key", "HelixWorkItemRoot");
+            addElement.SetAttribute("value", sourcePath);
+            packageSources.AppendChild(addElement);
+        }
         doc.Save(configFile);
 
         ProcessUtil.PrintMessage($"Added NuGet source 'HelixWorkItemRoot' = {sourcePath}");
