@@ -20,6 +20,16 @@ public sealed class UserJwtsTestFixture : IDisposable
   </PropertyGroup>
 </Project>";
 
+    private const string FileBasedAppTemplate = @"#:sdk Microsoft.NET.Sdk.Web
+#:property TargetFramework=net11.0
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet(""/"", () => ""Hello world!"");
+app.Run();
+";
+
     private const string LaunchSettingsTemplate = @"
 {
   ""iisSettings"": {
@@ -52,6 +62,21 @@ public sealed class UserJwtsTestFixture : IDisposable
     ""IIS Express"": {
       ""commandName"": ""IISExpress"",
       ""launchBrowser"": true,
+      ""environmentVariables"": {
+        ""ASPNETCORE_ENVIRONMENT"": ""Development""
+      }
+    }
+  }
+}";
+
+    private const string FileBasedAppLaunchSettingsTemplate = @"
+{
+  ""profiles"": {
+    ""https"": {
+      ""commandName"": ""Project"",
+      ""dotnetRunMessages"": true,
+      ""launchBrowser"": true,
+      ""applicationUrl"": ""https://localhost:7001;http://localhost:7000"",
       ""environmentVariables"": {
         ""ASPNETCORE_ENVIRONMENT"": ""Development""
       }
@@ -101,6 +126,22 @@ public sealed class UserJwtsTestFixture : IDisposable
         _disposables.Push(() => TryDelete(projectPath.FullName));
 
         return projectPath.FullName;
+    }
+
+    public string CreateFileBasedApp()
+    {
+        var appDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
+        var appFile = Path.Combine(appDirectory.FullName, "app.cs");
+
+        File.WriteAllText(appFile, FileBasedAppTemplate);
+        File.WriteAllText(Path.Combine(appDirectory.FullName, "app.run.json"), FileBasedAppLaunchSettingsTemplate);
+        File.WriteAllText(
+            Path.Combine(appDirectory.FullName, "appsettings.Development.json"),
+            "{}");
+
+        _disposables.Push(() => TryDelete(appDirectory.FullName));
+
+        return appFile;
     }
 
     private static void TryDelete(string directory)

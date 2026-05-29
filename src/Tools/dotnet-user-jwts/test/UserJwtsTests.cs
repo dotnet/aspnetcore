@@ -68,6 +68,62 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Create_SupportsFileBasedAppFilePath()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var appsettings = Path.Combine(Path.GetDirectoryName(appFile), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            var output = _console.GetOutput();
+
+            Assert.Contains("New JWT saved", output);
+            Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
+
+            var match = Regex.Match(output, "New JWT saved with ID '(.*?)'");
+            Assert.True(match.Success, output);
+            var id = match.Groups[1].Value;
+            _console.ClearOutput();
+
+            app.Run(["print", id, "--file", appFile]);
+            Assert.Contains("Audience(s): https://localhost:7001, http://localhost:7000", _console.GetOutput());
+            _console.ClearOutput();
+
+            app.Run(["list", "--file", appFile]);
+            Assert.Contains(id, _console.GetOutput());
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
+    }
+
+    [Fact]
+    public void List_RejectsProjectAndFileOptionsTogether()
+    {
+        var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
+        var appFile = fixture.CreateFileBasedApp();
+        var app = new Program(_console);
+
+        app.Run(["list", "--project", project, "--file", appFile]);
+
+        Assert.Contains(Resources.ProjectAndFileOptions_Error, _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_RejectsFileBasedAppProjectPath()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var app = new Program(_console);
+
+        app.Run(["list", "--project", appFile]);
+
+        Assert.Contains(Resources.ProjectOption_FileBasedAppNotSupported, _console.GetOutput());
+    }
+
+    [Fact]
     public async Task Create_TokenAcceptedByJwtBearerHandler()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -861,5 +917,17 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         Assert.NotNull(app.UserJwtsFilePath);
         Assert.Equal(UnixFileMode.UserRead | UnixFileMode.UserWrite, File.GetUnixFileMode(app.UserJwtsFilePath));
+    }
+
+    private static void DeleteUserJwtsDirectory(Program app)
+    {
+        if (app.UserJwtsFilePath is { } userJwtsFilePath)
+        {
+            var userJwtsDirectory = Path.GetDirectoryName(userJwtsFilePath);
+            if (userJwtsDirectory is not null && Directory.Exists(userJwtsDirectory))
+            {
+                Directory.Delete(userJwtsDirectory, true);
+            }
+        }
     }
 }
