@@ -76,3 +76,122 @@ public sealed class IntFirstClassifierFactory : JsonTypeClassifierFactory<UnionI
     public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
         static (ref Utf8JsonReader reader) => typeof(int);
 }
+
+// Primitive-case unions paired with a classifier that disambiguates the cases
+
+[JsonUnion(TypeClassifier = typeof(UnionByteStringClassifierFactory))]
+public union UnionByteStringWithClassifier(byte, string);
+public sealed class UnionByteStringClassifierFactory : JsonTypeClassifierFactory<UnionByteStringWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(byte),
+            JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionShortStringClassifierFactory))]
+public union UnionShortStringWithClassifier(short, string);
+public sealed class UnionShortStringClassifierFactory : JsonTypeClassifierFactory<UnionShortStringWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(short),
+            JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionIntStringClassifierFactory))]
+public union UnionIntStringWithClassifier(int, string);
+public sealed class UnionIntStringClassifierFactory : JsonTypeClassifierFactory<UnionIntStringWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(int),
+            JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionLongStringClassifierFactory))]
+public union UnionLongStringWithClassifier(long, string);
+public sealed class UnionLongStringClassifierFactory : JsonTypeClassifierFactory<UnionLongStringWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(long),
+            JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionDecimalStringClassifierFactory))]
+public union UnionDecimalStringWithClassifier(decimal, string);
+public sealed class UnionDecimalStringClassifierFactory : JsonTypeClassifierFactory<UnionDecimalStringWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(decimal),
+            JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionDoubleStringClassifierFactory))]
+public union UnionDoubleStringWithClassifier(double, string);
+public sealed class UnionDoubleStringClassifierFactory : JsonTypeClassifierFactory<UnionDoubleStringWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(double),
+            JsonTokenType.String => typeof(string),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionGuidIntClassifierFactory))]
+public union UnionGuidIntWithClassifier(Guid, int);
+public sealed class UnionGuidIntClassifierFactory : JsonTypeClassifierFactory<UnionGuidIntWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(int),
+            JsonTokenType.String => typeof(Guid),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionDateTimeIntClassifierFactory))]
+public union UnionDateTimeIntWithClassifier(DateTime, int);
+public sealed class UnionDateTimeIntClassifierFactory : JsonTypeClassifierFactory<UnionDateTimeIntWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(int),
+            JsonTokenType.String => typeof(DateTime),
+            _ => null,
+        };
+}
+
+[JsonUnion(TypeClassifier = typeof(UnionCharIntClassifierFactory))]
+public union UnionCharIntWithClassifier(char, int);
+public sealed class UnionCharIntClassifierFactory : JsonTypeClassifierFactory<UnionCharIntWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => reader.TokenType switch
+        {
+            JsonTokenType.Number => typeof(int),
+            JsonTokenType.String => typeof(char),
+            _ => null,
+        };
+}
