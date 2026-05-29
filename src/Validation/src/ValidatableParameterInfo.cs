@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
@@ -100,8 +99,38 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         }
 
         // Validate against validation attributes
-        await ValidateAttributesAsync(value, context, displayName, validationAttributes, validateSync: true, validateAsync: false, cancellationToken);
-        await ValidateAttributesAsync(value, context, displayName, validationAttributes, validateSync: false, validateAsync: true, cancellationToken);
+        Action<ValidateContext, ValidationResult, ValidationAttribute, (string displayName, string Name)> onValidationError = static (context, result, attribute, state) =>
+        {
+            var (displayName, name) = ((string, string))state;
+            var errorMessage = context.ResolveAttributeErrorMessage(
+                memberName: name,
+                displayName,
+                declaringType: null,
+                attribute,
+                result);
+
+            if (errorMessage is not null)
+            {
+                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? name : $"{context.CurrentValidationPath}.{name}";
+                context.AddOrExtendValidationErrors(name, key, [errorMessage], null);
+            }
+        };
+
+        Action<ValidateContext, Exception, (string displayName, string Name)> onValidationException = static (context, ex, state) =>
+        {
+            var (_, name) = ((string, string))state;
+            var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? name : $"{context.CurrentValidationPath}.{name}";
+            context.AddValidationError(name, key, [ex.Message], null);
+        };
+
+        await ValidationHelpers.ValidateAttributesAsync(
+            validationAttributes,
+            value,
+            context,
+            (displayName, Name),
+            onValidationError,
+            onValidationException,
+            cancellationToken);
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
@@ -134,58 +163,6 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
             {
                 await validatableType.ValidateAsync(value, context, cancellationToken);
-            }
-        }
-    }
-
-    private async Task ValidateAttributesAsync(
-        object? value,
-        ValidateContext context,
-        string displayName,
-        ValidationAttribute[] validationAttributes,
-        bool validateSync,
-        bool validateAsync,
-        CancellationToken cancellationToken)
-    {
-        for (var i = 0; i < validationAttributes.Length; i++)
-        {
-            var attribute = validationAttributes[i];
-            var shouldValidate = (validateSync, validateAsync) switch
-            {
-                (true, true) => true,
-                (true, false) => attribute is not AsyncValidationAttribute,
-                (false, true) => attribute is AsyncValidationAttribute,
-                (false, false) => throw new UnreachableException()
-            };
-
-            if (!shouldValidate)
-            {
-                continue;
-            }
-
-            try
-            {
-                var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
-                if (result is not null && result != ValidationResult.Success)
-                {
-                    var errorMessage = context.ResolveAttributeErrorMessage(
-                        memberName: Name,
-                        displayName,
-                        declaringType: null,
-                        attribute,
-                        result);
-
-                    if (errorMessage is not null)
-                    {
-                        var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                        context.AddOrExtendValidationErrors(Name, key, [errorMessage], null);
-                    }
-                }
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-            {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                context.AddValidationError(Name, key, [ex.Message], null);
             }
         }
     }

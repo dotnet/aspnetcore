@@ -2,23 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
-
-internal static class AsyncValidationExtensions
-{
-    public static async Task<ValidationResult?> GetValidationResultAsync(this ValidationAttribute validationAttribute, object? value, ValidationContext validationContext, CancellationToken cancellationToken)
-    {
-        if (validationAttribute is AsyncValidationAttribute asyncValidationAttribute)
-        {
-            return await asyncValidationAttribute.GetValidationResultAsync(value, validationContext, cancellationToken);
-        }
-
-        return await Task.FromResult(validationAttribute.GetValidationResult(value, validationContext));
-    }
-}
 
 /// <summary>
 /// Contains validation information for a member of a type.
@@ -126,8 +112,31 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: true, validateAsync: false);
-        await ValidateValueAsync(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, validateSync: false, validateAsync: true);
+        await ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, context, (Name, displayName, DeclaringType, value),
+            static (context, result, attribute, state) =>
+            {
+                var (name, displayName, declaringType, container) = ((string, string, Type, object?))state;
+                var errorMessage = context.ResolveAttributeErrorMessage(
+                    memberName: name,
+                    displayName,
+                    declaringType: declaringType,
+                    attribute,
+                    result);
+
+                if (errorMessage is not null)
+                {
+                    var errorPrefix = context.CurrentValidationPath;
+                    var key = errorPrefix.TrimStart('.');
+                    context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
+                }
+            },
+            static (context, ex, state) =>
+            {
+                var (name, displayName, declaringType, container) = ((string, string, Type, object?))state;
+                var errorPrefix = context.CurrentValidationPath;
+                var key = errorPrefix.TrimStart('.');
+                context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
+            }, cancellationToken);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -183,51 +192,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             // Always decrement the depth counter and restore prefix
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
-        }
-
-        async Task ValidateValueAsync(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container, bool validateSync, bool validateAsync)
-        {
-            for (var i = 0; i < validationAttributes.Length; i++)
-            {
-                var attribute = validationAttributes[i];
-                var shouldValidate = (validateSync, validateAsync) switch
-                {
-                    (true, true) => true,
-                    (true, false) => attribute is not AsyncValidationAttribute,
-                    (false, true) => attribute is AsyncValidationAttribute,
-                    (false, false) => throw new UnreachableException()
-                };
-
-                if (!shouldValidate)
-                {
-                    continue;
-                }
-
-                try
-                {
-                    var result = await attribute.GetValidationResultAsync(val, context.ValidationContext, cancellationToken);
-                    if (result is not null && result != ValidationResult.Success)
-                    {
-                        var errorMessage = context.ResolveAttributeErrorMessage(
-                            memberName: Name,
-                            displayName,
-                            declaringType: DeclaringType,
-                            attribute,
-                            result);
-
-                        if (errorMessage is not null)
-                        {
-                            var key = errorPrefix.TrimStart('.');
-                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
-                        }
-                    }
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-                {
-                    var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
-                }
-            }
         }
     }
 }

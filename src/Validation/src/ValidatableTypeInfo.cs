@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -203,49 +202,17 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = null;
 
-        await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: true, validateAsync: false, cancellationToken);
-        await ValidateCoreAsync(validationAttributes, value, context, displayName, errorPrefix, validateSync: false, validateAsync: true, cancellationToken);
-
-        context.ValidationContext.DisplayName = originalDisplayName;
-        context.ValidationContext.MemberName = originalMemberName;
-    }
-
-    private async Task ValidateCoreAsync(
-        ValidationAttribute[] validationAttributes,
-        object? value,
-        ValidateContext context,
-        string displayName,
-        string errorPrefix,
-        bool validateSync,
-        bool validateAsync,
-        CancellationToken cancellationToken)
-    {
-        for (var i = 0; i < validationAttributes.Length; i++)
-        {
-            var attribute = validationAttributes[i];
-            var shouldValidate = (validateSync, validateAsync) switch
+        await ValidationHelpers.ValidateAttributesAsync(validationAttributes, value, context, (displayName, Type, errorPrefix, value),
+            onValidationError: static (context, result, attribute, state) =>
             {
-                (true, true) => true,
-                (true, false) => attribute is not AsyncValidationAttribute,
-                (false, true) => attribute is AsyncValidationAttribute,
-                (false, false) => throw new UnreachableException()
-            };
-
-            if (!shouldValidate)
-            {
-                continue;
-            }
-
-            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
-            if (result is not null && result != ValidationResult.Success)
-            {
+                var (displayName, type, errorPrefix, value) = ((string, Type, string, object))state;
                 foreach (var memberName in result.MemberNames)
                 {
                     // Create a validation error for each member name that is provided
                     var errorMessage = context.ResolveAttributeErrorMessage(
                         memberName,
                         displayName,
-                        declaringType: Type,
+                        declaringType: type,
                         attribute,
                         result);
 
@@ -260,9 +227,9 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 {
                     // If no member names are specified, then treat this as a top-level error
                     var errorMessage = context.ResolveAttributeErrorMessage(
-                        memberName: Type.Name,
+                        memberName: type.Name,
                         displayName,
-                        declaringType: Type,
+                        declaringType: type,
                         attribute,
                         result);
 
@@ -271,8 +238,12 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                         context.AddOrExtendValidationError(string.Empty, errorPrefix, errorMessage, value);
                     }
                 }
-            }
-        }
+            },
+            onValidationException: static (_, ex, _) => throw ex,
+            cancellationToken);
+
+        context.ValidationContext.DisplayName = originalDisplayName;
+        context.ValidationContext.MemberName = originalMemberName;
     }
 
     private async Task ValidateValidatableObjectInterfaceAsync(object? value, ValidateContext context, string displayName)
