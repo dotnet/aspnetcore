@@ -87,7 +87,7 @@ public class ServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
-        var marker = new HealthCheckRegistration("marker", _ => Task.FromResult(HealthCheckResult.Healthy()), failureStatus: null, tags: null);
+        var marker = new HealthCheckRegistration("marker", new DummyHealthCheck(), failureStatus: null, tags: null);
 
         // Act
         services.AddHealthChecks(options => options.Registrations.Add(marker));
@@ -103,8 +103,8 @@ public class ServiceCollectionExtensionsTest
     {
         // Arrange
         var services = new ServiceCollection();
-        var fromOptions = new HealthCheckRegistration("from-options", _ => Task.FromResult(HealthCheckResult.Healthy()), failureStatus: null, tags: null);
-        var fromBuilder = new HealthCheckRegistration("from-builder", _ => Task.FromResult(HealthCheckResult.Healthy()), failureStatus: null, tags: null);
+        var fromOptions = new HealthCheckRegistration("from-options", new DummyHealthCheck(), failureStatus: null, tags: null);
+        var fromBuilder = new HealthCheckRegistration("from-builder", new DummyHealthCheck(), failureStatus: null, tags: null);
 
         // Act
         var builder = services.AddHealthChecks(options => options.Registrations.Add(fromOptions));
@@ -130,6 +130,12 @@ public class ServiceCollectionExtensionsTest
         var services = new ServiceCollection();
 
         Assert.Throws<ArgumentNullException>(() => services.AddHealthChecks(configureOptions: null!));
+    }
+
+    private sealed class DummyHealthCheck : IHealthCheck
+    {
+        public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+            => Task.FromResult(HealthCheckResult.Healthy());
     }
 
     private class DummyHostedService : IHostedService
