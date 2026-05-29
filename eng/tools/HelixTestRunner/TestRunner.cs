@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace HelixTestRunner;
 
@@ -204,26 +202,22 @@ public class TestRunner
     {
         try
         {
-            foreach (var target in Options.Targets)
+            // Run test discovery to verify there are tests to run.
+            // dotnet test accepts multiple DLL paths.
+            var assemblyArgs = string.Join(" ", Options.Targets.Select(t => $"\"{t}\""));
+            ProcessUtil.PrintMessage($"Running test discovery for {Options.Targets.Length} assembly(ies).");
+            var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                $"test {assemblyArgs} --list-tests",
+                environmentVariables: EnvironmentVariables,
+                cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2 * Options.Targets.Length)).Token);
+
+            if (discoveryResult.StandardOutput.Contains("Exception thrown", StringComparison.Ordinal) ||
+                discoveryResult.StandardError.Contains("Exception thrown", StringComparison.Ordinal))
             {
-                ProcessUtil.PrintMessage($"Running test discovery for assembly: {target}");
-                var workingDirectory = GetTargetWorkingDirectory(target);
-
-                // Run test discovery so we know if there are tests to run.
-                var discoveryResult = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                    $"vstest \"{Path.GetFileName(target)}\" -lt",
-                    workingDirectory: workingDirectory,
-                    environmentVariables: EnvironmentVariables,
-                    cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                if (discoveryResult.StandardOutput.Contains("Exception thrown", StringComparison.Ordinal) ||
-                    discoveryResult.StandardError.Contains("Exception thrown", StringComparison.Ordinal))
-                {
-                    ProcessUtil.PrintMessage($"Exception thrown during test discovery for {target}.");
-                    ProcessUtil.PrintMessage(discoveryResult.StandardOutput);
-                    ProcessUtil.PrintMessage(discoveryResult.StandardError);
-                    return false;
-                }
+                ProcessUtil.PrintMessage("Exception thrown during test discovery.");
+                ProcessUtil.PrintMessage(discoveryResult.StandardOutput);
+                ProcessUtil.PrintMessage(discoveryResult.StandardError);
+                return false;
             }
 
             return true;
@@ -241,84 +235,50 @@ public class TestRunner
         try
         {
             // Timeout test run 5 minutes before the Helix job would timeout.
+            // For batched items, Options.Timeout is already scaled to the batch size
+            // (2min/assembly + 5min overhead, set in helix.proj's BatchHelixWorkItems task).
             var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
             if (testProcessTimeout <= TimeSpan.Zero)
             {
                 testProcessTimeout = Options.Timeout;
             }
 
-            var deadline = DateTime.UtcNow + testProcessTimeout;
             var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") ?? Directory.GetCurrentDirectory();
+            var diagLog = Path.Combine(uploadRoot, "vstest.log");
 
-            foreach (var target in Options.Targets)
+            // Pass all target assemblies to a single dotnet test invocation.
+            // dotnet test accepts multiple DLL paths and produces a unified test results file.
+            var assemblyArgs = string.Join(" ", Options.Targets.Select(t => $"\"{t}\""));
+            var commonTestArgs = $"test {assemblyArgs} --diag:{diagLog} --logger xunit --logger \"console;verbosity=normal\" " +
+                                 "--blame-crash --blame-hang-timeout 15m";
+
+            using var cts = new CancellationTokenSource(testProcessTimeout);
+
+            var filter = Options.Quarantined
+                ? "Quarantined=true"
+                : "Quarantined!=true|Quarantined=false";
+            var filterDesc = Options.Quarantined ? "quarantined" : "non-quarantined";
+
+            ProcessUtil.PrintMessage($"Running {filterDesc} tests for {Options.Targets.Length} assembly(ies).");
+            var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                commonTestArgs + $" --filter \"{filter}\"",
+                environmentVariables: EnvironmentVariables,
+                outputDataReceived: ProcessUtil.PrintMessage,
+                errorDataReceived: ProcessUtil.PrintErrorMessage,
+                throwOnError: false,
+                cancellationToken: cts.Token);
+
+            if (cts.Token.IsCancellationRequested)
             {
-                ProcessUtil.PrintMessage($"Running tests for assembly: {target}");
-                var remainingTime = deadline - DateTime.UtcNow;
-                if (remainingTime <= TimeSpan.Zero)
+                ProcessUtil.PrintMessage($"Tests exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
+            }
+            if (result.ExitCode != 0)
+            {
+                ProcessUtil.PrintMessage($"Failure in {filterDesc} tests. Exit code: {result.ExitCode}.");
+                // Quarantined test failures are expected and should not fail the work item.
+                if (!Options.Quarantined)
                 {
-                    ProcessUtil.PrintMessage($"Helix test batch exceeded configured timeout: {testProcessTimeout.TotalMinutes}m.");
-                    exitCode = exitCode == 0 ? 1 : exitCode;
-                    break;
-                }
-
-                var workingDirectory = GetTargetWorkingDirectory(target);
-                var assemblyName = GetSanitizedAssemblyName(target);
-                var diagLog = Path.Combine(uploadRoot, $"vstest_{assemblyName}.log");
-                var commonTestArgs = $"test \"{Path.GetFileName(target)}\" --diag:\"{diagLog}\" --logger xunit --logger \"console;verbosity=normal\" " +
-                                     "--blame-crash --blame-hang-timeout 15m";
-                using var cts = new CancellationTokenSource(remainingTime);
-
-                if (Options.Quarantined)
-                {
-                    ProcessUtil.PrintMessage("Running quarantined tests.");
-
-                    // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                    var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        commonTestArgs + " --filter \"Quarantined=true\"",
-                        workingDirectory: workingDirectory,
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: ProcessUtil.PrintMessage,
-                        errorDataReceived: ProcessUtil.PrintErrorMessage,
-                        throwOnError: false,
-                        cancellationToken: cts.Token);
-
-                    if (cts.Token.IsCancellationRequested)
-                    {
-                        ProcessUtil.PrintMessage($"Quarantined tests for {target} exceeded configured timeout: {remainingTime.TotalMinutes}m.");
-                        exitCode = exitCode == 0 ? 1 : exitCode;
-                        break;
-                    }
-                    if (result.ExitCode != 0)
-                    {
-                        ProcessUtil.PrintMessage($"Failure in quarantined tests for {target}. Exit code: {result.ExitCode}.");
-                        exitCode = exitCode == 0 ? result.ExitCode : exitCode;
-                    }
-                }
-                else
-                {
-                    ProcessUtil.PrintMessage("Running non-quarantined tests.");
-
-                    // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-                    var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        commonTestArgs + " --filter \"Quarantined!=true|Quarantined=false\"",
-                        workingDirectory: workingDirectory,
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: ProcessUtil.PrintMessage,
-                        errorDataReceived: ProcessUtil.PrintErrorMessage,
-                        throwOnError: false,
-                        cancellationToken: cts.Token);
-
-                    if (cts.Token.IsCancellationRequested)
-                    {
-                        ProcessUtil.PrintMessage($"Non-quarantined tests for {target} exceeded configured timeout: {remainingTime.TotalMinutes}m.");
-                        exitCode = exitCode == 0 ? 1 : exitCode;
-                        break;
-                    }
-                    if (result.ExitCode != 0)
-                    {
-                        ProcessUtil.PrintMessage($"Failure in non-quarantined tests for {target}. Exit code: {result.ExitCode}.");
-                        exitCode = exitCode == 0 ? result.ExitCode : exitCode;
-                    }
+                    exitCode = result.ExitCode;
                 }
             }
         }
@@ -332,58 +292,33 @@ public class TestRunner
 
     public void UploadResults()
     {
+        // 'testResults.xml' is the file Helix looks for when processing test results.
+        // With a single dotnet test invocation (even with multiple DLLs), there's one
+        // unified TestResults.xml.
         ProcessUtil.PrintMessage("Trying to upload results...");
-
-        var uploadRoot = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-        var copiedResultFiles = new List<string>();
-
-        foreach (var target in Options.Targets)
+        if (File.Exists("TestResults/TestResults.xml"))
         {
-            var workingDirectory = GetTargetWorkingDirectory(target);
-            var assemblyName = GetSanitizedAssemblyName(target);
-            var resultPath = Path.Combine(workingDirectory, "TestResults", "TestResults.xml");
-            if (!File.Exists(resultPath))
-            {
-                continue;
-            }
-
-            var destination = Path.Combine(Directory.GetCurrentDirectory(), $"testResults_{assemblyName}.xml");
-            ProcessUtil.PrintMessage($"Copying {resultPath} to {destination}");
-            File.Copy(resultPath, destination, overwrite: true);
-            copiedResultFiles.Add(destination);
-        }
-
-        if (copiedResultFiles.Count == 0)
-        {
-            ProcessUtil.PrintMessage("No test results found.");
-        }
-        else if (copiedResultFiles.Count == 1)
-        {
-            ProcessUtil.PrintMessage($"Copying {copiedResultFiles[0]} to ./testResults.xml");
-            File.Copy(copiedResultFiles[0], "testResults.xml", overwrite: true);
+            ProcessUtil.PrintMessage("Copying TestResults/TestResults.xml to ./testResults.xml");
+            File.Copy("TestResults/TestResults.xml", "testResults.xml", overwrite: true);
         }
         else
         {
-            ProcessUtil.PrintMessage("Merging batched test results into ./testResults.xml");
-            MergeTestResults(copiedResultFiles, "testResults.xml");
+            ProcessUtil.PrintMessage("No test results found.");
         }
 
-        if (string.IsNullOrEmpty(uploadRoot))
+        var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+        if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
         {
-            ProcessUtil.PrintMessage("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping upload root copies");
+            ProcessUtil.PrintMessage("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping log copy");
             return;
         }
 
         if (File.Exists("testResults.xml"))
         {
-            CopyFileToUploadRoot("testResults.xml", uploadRoot, "testResults.xml");
+            CopyFileToUploadRoot("testResults.xml", HELIX_WORKITEM_UPLOAD_ROOT, "testResults.xml");
         }
 
-        foreach (var resultFile in copiedResultFiles)
-        {
-            CopyFileToUploadRoot(resultFile, uploadRoot, Path.GetFileName(resultFile));
-        }
-
+        // Copy logs from each assembly's subdirectory
         foreach (var target in Options.Targets)
         {
             var workingDirectory = GetTargetWorkingDirectory(target);
@@ -391,65 +326,46 @@ public class TestRunner
             var artifactsLogDirectory = Path.Combine(workingDirectory, "artifacts", "log");
             if (Directory.Exists(artifactsLogDirectory))
             {
-                ProcessUtil.PrintMessage($"Copying logs from {artifactsLogDirectory} to {uploadRoot}/");
+                ProcessUtil.PrintMessage($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
                 foreach (var file in Directory.EnumerateFiles(artifactsLogDirectory, "*.log", SearchOption.AllDirectories))
                 {
-                    var logDirectoryName = Path.GetFileName(Path.GetDirectoryName(file));
-                    var logName = $"{assemblyName}_{logDirectoryName}_{Path.GetFileName(file)}";
-                    CopyFileToUploadRoot(file, uploadRoot, logName);
+                    var logName = $"{assemblyName}_{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
+                    CopyFileToUploadRoot(file, HELIX_WORKITEM_UPLOAD_ROOT, logName);
                 }
             }
-            else
-            {
-                ProcessUtil.PrintMessage($"No logs found in {artifactsLogDirectory}");
-            }
+        }
 
-            var resultsDirectory = Path.Combine(workingDirectory, "TestResults");
-            if (Directory.Exists(resultsDirectory))
+        ProcessUtil.PrintMessage($"Copying TestResults/**/Sequence*.xml to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+        if (Directory.Exists("TestResults"))
+        {
+            foreach (var file in Directory.EnumerateFiles("TestResults", "Sequence*.xml", SearchOption.AllDirectories))
             {
-                ProcessUtil.PrintMessage($"Copying {resultsDirectory}/Sequence*.xml to {uploadRoot}/");
-                foreach (var file in Directory.EnumerateFiles(resultsDirectory, "Sequence*.xml", SearchOption.AllDirectories))
-                {
-                    var fileName = $"{assemblyName}_{Path.GetFileName(file)}";
-                    CopyFileToUploadRoot(file, uploadRoot, fileName);
-                }
+                var fileName = Path.GetFileName(file);
+                CopyFileToUploadRoot(file, HELIX_WORKITEM_UPLOAD_ROOT, fileName);
             }
-            else
-            {
-                ProcessUtil.PrintMessage($"No TestResults directory found for {target}.");
-            }
+        }
+        else
+        {
+            ProcessUtil.PrintMessage("No TestResults directory found.");
         }
     }
 
     private async Task AddHelixSourcesAsync()
     {
-        var configDirectories = new HashSet<string>(GetTargetWorkingDirectories(), GetPathComparer())
+        // Add the work item root as a NuGet source. Only the root NuGet.config matters —
+        // dotnet test runs from the work item root.
+        var nugetConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "NuGet.config");
+        if (File.Exists(nugetConfigPath))
         {
-            Directory.GetCurrentDirectory(),
-        };
-
-        foreach (var directory in configDirectories)
-        {
-            var nugetConfigPath = Path.Combine(directory, "NuGet.config");
-            if (!File.Exists(nugetConfigPath))
-            {
-                ProcessUtil.PrintMessage($"No NuGet.config found in {directory}, skipping source update.");
-                continue;
-            }
-
-            ProcessUtil.PrintMessage($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT} using {nugetConfigPath}");
+            ProcessUtil.PrintMessage($"Adding current directory to nuget sources: {Options.HELIX_WORKITEM_ROOT}");
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                 $"nuget add source \"{Options.HELIX_WORKITEM_ROOT}\" --configfile \"{nugetConfigPath}\"",
-                workingDirectory: directory,
                 environmentVariables: EnvironmentVariables,
                 outputDataReceived: ProcessUtil.PrintMessage,
                 errorDataReceived: ProcessUtil.PrintErrorMessage,
                 throwOnError: false,
                 cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-        }
 
-        if (File.Exists("NuGet.config"))
-        {
             await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
                 "nuget list source",
                 environmentVariables: EnvironmentVariables,
@@ -505,32 +421,5 @@ public class TestRunner
         var destination = Path.Combine(uploadRoot, destinationFileName);
         ProcessUtil.PrintMessage($"Copying: {sourceFile} to {destination}");
         File.Copy(sourceFile, destination, overwrite: true);
-    }
-
-    private static void MergeTestResults(IEnumerable<string> resultFiles, string destination)
-    {
-        var root = new XElement("assemblies");
-        foreach (var resultFile in resultFiles)
-        {
-            var document = XDocument.Load(resultFile);
-            if (document.Root is null)
-            {
-                continue;
-            }
-
-            if (document.Root.Name.LocalName.Equals("assemblies", StringComparison.OrdinalIgnoreCase))
-            {
-                foreach (var assembly in document.Root.Elements())
-                {
-                    root.Add(new XElement(assembly));
-                }
-            }
-            else if (document.Root.Name.LocalName.Equals("assembly", StringComparison.OrdinalIgnoreCase))
-            {
-                root.Add(new XElement(document.Root));
-            }
-        }
-
-        new XDocument(root).Save(destination);
     }
 }
