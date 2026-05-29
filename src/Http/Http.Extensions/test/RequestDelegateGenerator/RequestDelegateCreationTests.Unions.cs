@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -379,5 +380,60 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         var shortCtx = CreateHttpContext();
         await endpoints.Single(e => e.RoutePattern.RawText == "/short").RequestDelegate(shortCtx);
         await VerifyResponseBodyAsync(shortCtx, "7");
+    }
+
+    [Fact]
+    public async Task MapAction_ReturnsAsyncEnumerableOfUnion_StreamsActiveCasePerItem()
+    {
+        // Streaming endpoints: IAsyncEnumerable<TUnion>
+
+        var source = """
+            app.MapGet("/stream", () => GetUnionsAsync());
+
+            static async IAsyncEnumerable<UnionIntString> GetUnionsAsync()
+            {
+                yield return new UnionIntString(1);
+                await Task.Yield();
+                yield return new UnionIntString("two");
+                yield return new UnionIntString(3);
+            }
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().Single(e => e.RoutePattern.RawText == "/stream");
+
+        var ctx = CreateHttpContext();
+        await endpoint.RequestDelegate(ctx);
+        Assert.Equal(200, ctx.Response.StatusCode);
+        await VerifyResponseBodyAsync(ctx, "[1,\"two\",3]");
+    }
+
+    [Fact]
+    public async Task MapAction_ReturnsUnion_HonorsConfigureHttpJsonOptions()
+    {
+        // ConfigureHttpJsonOptions modifications (naming policy, indented output, etc.)
+
+        var source = """
+            app.MapGet("/envelope", () => new UnionEnvelope("abc", new UnionIntString(42)));
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var serviceProvider = CreateServiceProvider(services =>
+        {
+            services.ConfigureHttpJsonOptions(o =>
+            {
+                o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+                o.SerializerOptions.WriteIndented = true;
+            });
+        });
+        var endpoint = GetEndpointsFromCompilation(compilation, serviceProvider: serviceProvider).OfType<RouteEndpoint>().Single(e => e.RoutePattern.RawText == "/envelope");
+
+        var ctx = CreateHttpContext(serviceProvider);
+        await endpoint.RequestDelegate(ctx);
+        Assert.Equal(200, ctx.Response.StatusCode);
+        var body = await GetResponseBodyAsync(ctx);
+
+        // Two assertions instead of a brittle exact-match: snake_case applied AND indentation produced newlines.
+        Assert.Contains("\"correlation_id\": \"abc\"", body);
+        Assert.Contains("\"payload\": 42", body);
+        Assert.Contains("\n", body);
     }
 }
