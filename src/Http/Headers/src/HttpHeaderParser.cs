@@ -28,8 +28,8 @@ internal abstract class HttpHeaderParser<T>
     // must point to 's', i.e. the first non-whitespace after the separator ','.
     //
     // 'parsedLength' is the number of input characters the call consumed and is always set:
-    //   - On success (returns true), 'parsedValue' is non-null and 'parsedLength' is the length of the
-    //     consumed input including any trailing whitespace/separator the parser ate.
+    //   - On success (returns true), 'parsedLength' is the length of the consumed input including any
+    //     trailing whitespace/separator the parser ate. 'parsedValue' may be null for empty list entries.
     //   - On failure (returns false), 'parsedValue' is null. 'parsedLength' is the number of input
     //     characters the parser consumed before giving up (it may be 0 if nothing was recognized at
     //     'startIndex', or non-zero when the parser recognized the shape of a value but could not
