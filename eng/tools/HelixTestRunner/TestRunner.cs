@@ -28,6 +28,13 @@ public class TestRunner
             EnvironmentVariables.Add("PATH", Options.Path);
             EnvironmentVariables.Add("helix", Options.HelixQueue);
 
+            // Skip the .NET SDK first-run experience (welcome message, dev cert generation,
+            // NuGet cache population). On some macOS Helix machines the first-run hangs
+            // during HTTPS dev cert installation, causing the 2-minute timeout to kill the
+            // dotnet process (exit code 130).
+            EnvironmentVariables.Add("DOTNET_NOLOGO", "1");
+            EnvironmentVariables.Add("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "1");
+
             ProcessUtil.PrintMessage($"Current Directory: {Options.HELIX_WORKITEM_ROOT}");
             var helixDir = Options.HELIX_WORKITEM_ROOT;
             ProcessUtil.PrintMessage($"Setting HELIX_DIR: {helixDir}");
