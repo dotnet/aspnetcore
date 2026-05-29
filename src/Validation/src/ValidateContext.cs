@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
@@ -12,6 +13,9 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private readonly Lazy<ConcurrentDictionary<string, string[]>> _validationErrors
+        = new Lazy<ConcurrentDictionary<string, string[]>>(() => new ConcurrentDictionary<string, string[]>());
+
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -56,7 +60,18 @@ public sealed class ValidateContext
     /// Keys are property names or paths, and values are arrays of error messages.
     /// In the default implementation, this dictionary is initialized when the first error is added.
     /// </remarks>
-    public Dictionary<string, string[]>? ValidationErrors { get; set; }
+    public IReadOnlyDictionary<string, string[]>? ValidationErrors
+    {
+        get
+        {
+            if (_validationErrors.IsValueCreated)
+            {
+                return _validationErrors.Value;
+            }
+
+            return null;
+        }
+    }
 
     /// <summary>
     /// Gets or sets the current depth in the validation hierarchy.
@@ -73,9 +88,9 @@ public sealed class ValidateContext
 
     internal void AddValidationError(string propertyName, string key, string[] error, object? container)
     {
-        ValidationErrors ??= [];
+        var validationErrors = _validationErrors.Value;
 
-        ValidationErrors[key] = error;
+        validationErrors[key] = error;
         OnValidationError?.Invoke(new ValidationErrorContext
         {
             Name = propertyName,
@@ -87,18 +102,18 @@ public sealed class ValidateContext
 
     internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
     {
-        ValidationErrors ??= [];
+        var validationErrors = _validationErrors.Value;
 
-        if (ValidationErrors.TryGetValue(key, out var existingErrors))
+        if (validationErrors.TryGetValue(key, out var existingErrors))
         {
             var newErrors = new string[existingErrors.Length + errors.Length];
             existingErrors.CopyTo(newErrors, 0);
             errors.CopyTo(newErrors, existingErrors.Length);
-            ValidationErrors[key] = newErrors;
+            validationErrors[key] = newErrors;
         }
         else
         {
-            ValidationErrors[key] = errors;
+            validationErrors[key] = errors;
         }
 
         OnValidationError?.Invoke(new ValidationErrorContext
@@ -112,15 +127,15 @@ public sealed class ValidateContext
 
     internal void AddOrExtendValidationError(string name, string key, string error, object? container)
     {
-        ValidationErrors ??= [];
+        var validationErrors = _validationErrors.Value;
 
-        if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
+        if (validationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
         {
-            ValidationErrors[key] = [.. existingErrors, error];
+            validationErrors[key] = [.. existingErrors, error];
         }
         else
         {
-            ValidationErrors[key] = [error];
+            validationErrors[key] = [error];
         }
 
         OnValidationError?.Invoke(new ValidationErrorContext

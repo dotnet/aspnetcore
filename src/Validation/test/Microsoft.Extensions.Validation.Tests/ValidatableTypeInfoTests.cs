@@ -363,7 +363,6 @@ public class ValidatableTypeInfoTests
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationErrors = [],
             ValidationContext = new ValidationContext(rootNode)
         };
 
@@ -561,14 +560,16 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
             ]);
 
-        context.ValidationErrors = [];
-        context.ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-        {
-            { typeof(MultiMemberErrorObject), multiType }
-        });
-
         var multiErrorInstance = new MultiMemberErrorObject { FirstName = "", LastName = "" };
-        context.ValidationContext = new ValidationContext(multiErrorInstance);
+
+        context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(MultiMemberErrorObject), multiType }
+            }),
+            ValidationContext = new ValidationContext(multiErrorInstance),
+        };
 
         await multiType.ValidateAsync(multiErrorInstance, context, default);
 
@@ -625,8 +626,11 @@ public class ValidatableTypeInfoTests
 
         // Second case:
         testTypeInstance.Value = 5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions,
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 
@@ -637,8 +641,11 @@ public class ValidatableTypeInfoTests
 
         // Third case:
         testTypeInstance.Value = -5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 

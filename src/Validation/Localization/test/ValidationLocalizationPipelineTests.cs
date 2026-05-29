@@ -274,9 +274,8 @@ public class ValidationLocalizationPipelineTests
         Assert.Equal("FROM-OVERRIDE-1", context.ValidationErrors!["Name"].Single());
 
         context.ValidationOptions.Localizer = override2;
-        context.ValidationErrors = null;
         await typeInfo.ValidateAsync(new CustomerModel { Name = null }, context, default);
-        Assert.Equal("FROM-OVERRIDE-2", context.ValidationErrors!["Name"].Single());
+        Assert.Equal("FROM-OVERRIDE-2", context.ValidationErrors!["Name"].Last());
     }
 
     [Fact]
