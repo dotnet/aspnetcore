@@ -347,10 +347,14 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
-    private getUrlParameter(url: string, parameterName: string) {
+    private getUrlParameter(url: string, parameterName: string): string | null {
         const parsedUrl = new URL(url);
-        return new URLSearchParams(parsedUrl.hash.substring(1)).get(parameterName) ??
-            new URLSearchParams(parsedUrl.search).get(parameterName);
+        const hashContent = parsedUrl.hash.substring(1);
+        // Only parse fragment as OIDC params if it doesn't look like a router path
+        const fromHash = hashContent && !hashContent.startsWith('/')
+            ? new URLSearchParams(hashContent).get(parameterName)
+            : null;
+        return fromHash ?? new URLSearchParams(parsedUrl.search).get(parameterName);
     }
 
     private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
