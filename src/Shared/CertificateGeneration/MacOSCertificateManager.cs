@@ -281,17 +281,17 @@ internal sealed class MacOSCertificateManager : CertificateManager
         var subject = subjectMatch.Groups[1].Value;
 
         // Run the find-certificate command, and look for the cert's hash in the output
-        var findCertificateProcessStartInfo = new ProcessStartInfo(
+        using var findCertificateProcess = Process.Start(new ProcessStartInfo(
             MacOSFindCertificateOnKeychainCommandLine,
             string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateOnKeychainCommandLineArgumentsFormat, subject, keychain))
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
+            RedirectStandardOutput = true
+        });
 
-        var findCertificateProcessOutput = Process.RunAndCaptureText(findCertificateProcessStartInfo);
+        var output = findCertificateProcess!.StandardOutput.ReadToEnd();
+        findCertificateProcess.WaitForExit();
 
-        var matches = Regex.Matches(findCertificateProcessOutput.StandardOutput, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
+        var matches = Regex.Matches(output, MacOSFindCertificateOutputRegex, RegexOptions.Multiline, MaxRegexTimeout);
         var hashes = matches.OfType<Match>().Select(m => m.Groups[1].Value).ToList();
 
         return hashes.Any(h => string.Equals(h, certificate.Thumbprint, StringComparison.Ordinal));
