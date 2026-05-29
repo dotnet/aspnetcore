@@ -438,4 +438,112 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         Assert.Contains("\"payload\": 42", body);
         Assert.Contains("\n", body);
     }
+
+    [Fact]
+    public async Task MapAction_UnionBody_ExplicitFromBody_BehavesLikeImplicitBody()
+    {
+        // [FromBody] on a union parameter should produce the same binding behavior as the
+        // implicit body inference. Both the happy-path (unambiguous Number) and the ambiguous
+        // (String) cases should match.
+
+        var source = """
+            app.MapPost("/implicit", (UnionIntString u) => u);
+            app.MapPost("/explicit", ([FromBody] UnionIntString u) => u);
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToList();
+        var implicitEndpoint = endpoints.Single(e => e.RoutePattern.RawText == "/implicit");
+        var explicitEndpoint = endpoints.Single(e => e.RoutePattern.RawText == "/explicit");
+
+        var cases = new (string Payload, int ExpectedStatus, string ExpectedBody)[]
+        {
+            ("42", 200, "42"),
+            ("\"hi\"", 400, string.Empty), // String token is ambiguous for UnionIntString
+        };
+
+        foreach (var (payload, expectedStatus, expectedBody) in cases)
+        {
+            var implicitCtx = CreateHttpContextWithJson(payload);
+            await implicitEndpoint.RequestDelegate(implicitCtx);
+            Assert.True(implicitCtx.Response.StatusCode == expectedStatus, $"/implicit with payload {payload} expected {expectedStatus} but got {implicitCtx.Response.StatusCode}.");
+            if (expectedStatus == 200)
+            {
+                await VerifyResponseBodyAsync(implicitCtx, expectedBody);
+            }
+
+            var explicitCtx = CreateHttpContextWithJson(payload);
+            await explicitEndpoint.RequestDelegate(explicitCtx);
+            Assert.True(explicitCtx.Response.StatusCode == expectedStatus, $"/explicit with payload {payload} expected {expectedStatus} but got {explicitCtx.Response.StatusCode}.");
+            if (expectedStatus == 200)
+            {
+                await VerifyResponseBodyAsync(explicitCtx, expectedBody);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task MapAction_UnionBody_EmptyBody_ReturnsExpectedStatusPerNullabilityAndPolicy()
+    {
+        // Three flavors of "what should the union parameter do when no request body is provided":
+        //  1. (UnionIntString u)                                                       — required → 400 (handler not invoked)
+        //  2. (UnionIntString? u)                                                      — nullable → 200, u is null
+        //  3. ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] UnionDoubleString u) — explicit allow → 200, u is default
+
+        // NOTE: `/allow-empty` intentionally uses a DIFFERENT union type (UnionDoubleString) than the other two endpoints
+        // see https://github.com/dotnet/aspnetcore/issues/66912
+
+        var source = """
+            app.MapPost("/required",    (UnionIntString u) => "invoked");
+            app.MapPost("/nullable",    (UnionIntString? u) => u.HasValue ? "has-value" : "null");
+            app.MapPost("/allow-empty", ([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] UnionDoubleString u) => "invoked");
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToList();
+        var requiredEndpoint   = endpoints.Single(e => e.RoutePattern.RawText == "/required");
+        var nullableEndpoint   = endpoints.Single(e => e.RoutePattern.RawText == "/nullable");
+        var allowEmptyEndpoint = endpoints.Single(e => e.RoutePattern.RawText == "/allow-empty");
+
+        var requiredCtx = CreateHttpContextWithEmptyJsonBody();
+        await requiredEndpoint.RequestDelegate(requiredCtx);
+        Assert.Equal(400, requiredCtx.Response.StatusCode);
+
+        // NOTE: response body differs across paths for `(UnionIntString? u)` with empty body:
+        // for runtime and source generator paths: https://github.com/dotnet/aspnetcore/issues/57055
+        var nullableCtx = CreateHttpContextWithEmptyJsonBody();
+        await nullableEndpoint.RequestDelegate(nullableCtx);
+        Assert.Equal(200, nullableCtx.Response.StatusCode);
+
+        var allowEmptyCtx = CreateHttpContextWithEmptyJsonBody();
+        await allowEmptyEndpoint.RequestDelegate(allowEmptyCtx);
+        Assert.Equal(200, allowEmptyCtx.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task MapAction_UnionBody_NonJsonContentType_Returns415()
+    {
+        // The body-bind path rejects non-JSON content types with 415, mirroring the behavior
+        // for ordinary complex body parameters. Asserts:
+        //   - application/json (baseline)         → 200
+        //   - text/plain                          → 415
+        //   - (no Content-Type header at all)     → 415
+
+        var source = """
+            app.MapPost("/", (UnionIntString u) => u);
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().Single();
+
+        var baselineCtx = CreateHttpContextWithJson("42");
+        await endpoint.RequestDelegate(baselineCtx);
+        Assert.Equal(200, baselineCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(baselineCtx, "42");
+
+        var textPlainCtx = CreateHttpContextWithCustomContentType("42", contentType: "text/plain");
+        await endpoint.RequestDelegate(textPlainCtx);
+        Assert.Equal(415, textPlainCtx.Response.StatusCode);
+
+        var noContentTypeCtx = CreateHttpContextWithCustomContentType("42", contentType: null);
+        await endpoint.RequestDelegate(noContentTypeCtx);
+        Assert.Equal(415, noContentTypeCtx.Response.StatusCode);
+    }
 }
