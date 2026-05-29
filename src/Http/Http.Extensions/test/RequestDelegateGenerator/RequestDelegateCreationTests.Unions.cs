@@ -133,6 +133,11 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     [Fact]
     public async Task MapAction_ReturnsObjectCaseUnion_SerializesActiveCase()
     {
+        // UnionPet(Cat, Dog) — both cases share JsonValueType.Object, so this is also
+        // an "object-bucket ambiguous" union from STJ's perspective. Serialization is
+        // unambiguous because the deconstructor dispatches by .NET runtime type; the
+        // ambiguity only matters on the deserialize path (where a classifier or property-
+        // name dispatch is needed to pick the case).
         var source = """
             app.MapGet("/cat", () => new UnionPet(new Cat("Whiskers")));
             app.MapGet("/dog", () => new UnionPet(new Dog("Labrador")));
@@ -204,8 +209,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     public async Task MapAction_ReturnsAmbiguousNumericUnion_SerializeWorksByDotNetType()
     {
         // UnionIntShort(int, short) — both cases map to JsonValueType.Number.
-        // The deconstructor sees the runtime .NET type and picks the correct case unambiguously,
-        // so the wire output is identical to the non-ambiguous case.
+
         var source = """
             app.MapGet("/int",   () => new UnionIntShort(42));
             app.MapGet("/short", () => new UnionIntShort((short)7));
@@ -226,8 +230,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
     public async Task MapAction_ReturnsAmbiguousStringUnion_SerializeWorksByDotNetType()
     {
         // UnionDateTimeString(DateTime, string) — both cases map to JsonValueType.String.
-        // Same as the numeric ambiguity case: serialize works because the deconstructor knows
-        // the .NET type. Deserialization would throw "String ambiguous" without a classifier.
+
         var source = """
             app.MapGet("/datetime", () => new UnionDateTimeString(new DateTime(2024, 5, 28, 10, 0, 0, DateTimeKind.Unspecified)));
             app.MapGet("/string",   () => new UnionDateTimeString("hello"));
@@ -242,5 +245,139 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         var stringCtx = CreateHttpContext();
         await endpoints.Single(e => e.RoutePattern.RawText == "/string").RequestDelegate(stringCtx);
         await VerifyResponseBodyAsync(stringCtx, "\"hello\"");
+    }
+
+    [Fact]
+    public async Task MapAction_ReturnsUnionViaResultWrappers_SerializesActiveCase()
+    {
+        var source = """
+            app.MapGet("/results-ok-int",     () => Results.Ok(new UnionIntString(42)));
+            app.MapGet("/results-ok-string",  () => Results.Ok(new UnionIntString("hi")));
+            app.MapGet("/typed-ok-int",       () => TypedResults.Ok(new UnionIntString(42)));
+            app.MapGet("/typed-ok-string",    () => TypedResults.Ok(new UnionIntString("hi")));
+            app.MapGet("/object-int",         object () => new UnionIntString(42));
+            app.MapGet("/object-string",      object () => new UnionIntString("hi"));
+            app.MapGet("/iresult-task",       Task<IResult> () => Task.FromResult<IResult>(TypedResults.Ok(new UnionIntString(42))));
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToArray();
+
+        var cases = new (string Route, string Expected)[]
+        {
+            ("/results-ok-int",    "42"),
+            ("/results-ok-string", "\"hi\""),
+            ("/typed-ok-int",      "42"),
+            ("/typed-ok-string",   "\"hi\""),
+            ("/object-int",        "42"),
+            ("/object-string",     "\"hi\""),
+            ("/iresult-task",      "42"),
+        };
+
+        foreach (var (route, expected) in cases)
+        {
+            var ctx = CreateHttpContext();
+            await endpoints.Single(e => e.RoutePattern.RawText == route).RequestDelegate(ctx);
+            var body = await GetResponseBodyAsync(ctx);
+            Assert.Equal(200, ctx.Response.StatusCode);
+            Assert.True(body == expected, $"Route '{route}' should serialize wrapped union to {expected} but got {body}.");
+        }
+    }
+
+    [Fact]
+    public async Task MapAction_ReturnsUnionInContainer_SerializesActiveCase()
+    {
+        // Testing a union flowing through other STJ containers (object property, array, dictionary value) 
+
+        var source = """
+            app.MapGet("/property-int",    () => new UnionEnvelope("abc", new UnionIntString(42)));
+            app.MapGet("/property-string", () => new UnionEnvelope("abc", new UnionIntString("hi")));
+            app.MapGet("/array",           () => new[] { new UnionIntString(1), new UnionIntString("two") });
+            app.MapGet("/dictionary",      () => new Dictionary<string, UnionIntString>
+            {
+                ["a"] = new UnionIntString(1),
+                ["b"] = new UnionIntString("two"),
+            });
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToArray();
+
+        var cases = new (string Route, string Expected)[]
+        {
+            ("/property-int",    "{\"correlationId\":\"abc\",\"payload\":42}"),
+            ("/property-string", "{\"correlationId\":\"abc\",\"payload\":\"hi\"}"),
+            ("/array",           "[1,\"two\"]"),
+            ("/dictionary",      "{\"a\":1,\"b\":\"two\"}"),
+        };
+
+        foreach (var (route, expected) in cases)
+        {
+            var ctx = CreateHttpContext();
+            await endpoints.Single(e => e.RoutePattern.RawText == route).RequestDelegate(ctx);
+            var body = await GetResponseBodyAsync(ctx);
+            Assert.Equal(200, ctx.Response.StatusCode);
+            Assert.True(body == expected, $"Route '{route}' (union in container) should serialize to {expected} but got {body}.");
+        }
+    }
+
+    [Fact]
+    public async Task MapAction_ReturnsUnion_WithPolymorphicCaseType_EmitsDiscriminator()
+    {
+        // UnionAnimalString(PolyAnimal, string) has a polymorphic case type (PolyAnimal carries
+        // [JsonPolymorphic] + [JsonDerivedType] for PolyCat/PolyDog). "$type" discriminator should be emitted.
+
+        // However UnionPolyCatDog(PolyCat, PolyDog) declares the *concrete derived types* as cases.
+        // STJ uses PolyCat's own contract — which has no polymorphism options of its own — so NO discriminator is emitted.
+
+        var source = """
+            app.MapGet("/cat",          () => new UnionAnimalString(new PolyCat("Whiskers")));
+            app.MapGet("/dog",          () => new UnionAnimalString(new PolyDog("Labrador")));
+            app.MapGet("/string",       () => new UnionAnimalString("plain"));
+            app.MapGet("/concrete-cat", () => new UnionPolyCatDog(new PolyCat("Whiskers")));
+            app.MapGet("/concrete-dog", () => new UnionPolyCatDog(new PolyDog("Labrador")));
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToArray();
+
+        var cases = new (string Route, string Expected)[]
+        {
+            ("/cat",          """{"$type":"cat","name":"Whiskers"}"""),
+            ("/dog",          """{"$type":"dog","breed":"Labrador"}"""),
+            ("/string",       "\"plain\""),
+            // No "$type" — union case type is the concrete derived type, not the polymorphic base.
+            ("/concrete-cat", "{\"name\":\"Whiskers\"}"),
+            ("/concrete-dog", "{\"breed\":\"Labrador\"}"),
+        };
+
+        foreach (var (route, expected) in cases)
+        {
+            var ctx = CreateHttpContext();
+            await endpoints.Single(e => e.RoutePattern.RawText == route).RequestDelegate(ctx);
+            var body = await GetResponseBodyAsync(ctx);
+            Assert.Equal(200, ctx.Response.StatusCode);
+            Assert.True(body == expected, $"Route '{route}' (polymorphic union case) should serialize to {expected} but got {body}.");
+        }
+    }
+
+    [Fact]
+    public async Task MapAction_ReturnsUnion_WithCustomTypeClassifier_SerializationUnaffected()
+    {
+        // A user-supplied JsonTypeClassifier only affects deserialization.
+        // Applying [JsonUnion(TypeClassifier = ...)] to an ambiguous union must not change the serialized output,
+        // which is still dispatched by .NET runtime type via the deconstructor.
+
+        var source = """
+            app.MapGet("/int",   () => new UnionIntShortWithClassifier(42));
+            app.MapGet("/short", () => new UnionIntShortWithClassifier((short)7));
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToArray();
+
+        var intCtx = CreateHttpContext();
+        await endpoints.Single(e => e.RoutePattern.RawText == "/int").RequestDelegate(intCtx);
+        await VerifyResponseBodyAsync(intCtx, "42");
+
+        var shortCtx = CreateHttpContext();
+        await endpoints.Single(e => e.RoutePattern.RawText == "/short").RequestDelegate(shortCtx);
+        await VerifyResponseBodyAsync(shortCtx, "7");
     }
 }

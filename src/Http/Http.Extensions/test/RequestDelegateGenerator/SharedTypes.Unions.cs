@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Http;
 
@@ -23,7 +25,10 @@ public union UnionCharInt(char, int);          // String + Number (char serializ
 // Nullable case
 public union UnionNullableIntString(int?, string);
 
-// Object-case union.
+// Object-case union. Both cases share the JSON Object value kind, which makes UnionPet
+// implicitly ambiguous on the deserialize side (resolved here via property-name dispatch
+// when the user supplies a classifier). For serialization the deconstructor dispatches by
+// .NET runtime type, so no classifier is needed.
 public record Cat(string Name);
 public record Dog(string Breed);
 public union UnionPet(Cat, Dog);
@@ -40,4 +45,34 @@ public union UnionOuter(UnionInner, bool); // union case is itself a union
 #pragma warning disable SYSLIB1227
 public union UnionIntShort(int, short);            // both → Number
 public union UnionDateTimeString(DateTime, string); // both → String
+public union UnionPolyCatDog(PolyCat, PolyDog);    // both → Object, declared as the concrete derived types
 #pragma warning restore SYSLIB1227
+
+// Envelope: union used as a property of another model.
+public record UnionEnvelope(string CorrelationId, UnionIntString Payload);
+
+// Polymorphism on a union case type: PolyAnimal is a JSON-polymorphic base with two
+// derived types. When used as a union case, returning a derived instance should emit
+// the "$type" discriminator from the polymorphic contract.
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+[JsonDerivedType(typeof(PolyCat), "cat")]
+[JsonDerivedType(typeof(PolyDog), "dog")]
+public record PolyAnimal();
+public record PolyCat(string Name) : PolyAnimal();
+public record PolyDog(string Breed) : PolyAnimal();
+public union UnionAnimalString(PolyAnimal, string);
+
+// Ambiguous numeric union with a user-supplied classifier. The classifier only affects
+// deserialization; serialization should be identical to UnionIntShort. Verifies the
+// JsonUnionAttribute is wired through the metadata pipeline without breaking writes.
+#pragma warning disable SYSLIB1227
+[JsonUnion(TypeClassifier = typeof(IntFirstClassifierFactory))]
+public union UnionIntShortWithClassifier(int, short);
+#pragma warning restore SYSLIB1227
+
+// Trivial classifier: always pick int. (Serialize tests don't exercise this path.)
+public sealed class IntFirstClassifierFactory : JsonTypeClassifierFactory<UnionIntShortWithClassifier>
+{
+    public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
+        static (ref Utf8JsonReader reader) => typeof(int);
+}
