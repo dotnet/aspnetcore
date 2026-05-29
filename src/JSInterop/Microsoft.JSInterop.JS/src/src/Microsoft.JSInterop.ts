@@ -774,6 +774,22 @@ export module DotNet {
       async arrayBuffer(): Promise<ArrayBuffer> {
           return new Response(await this.stream()).arrayBuffer();
       }
+
+      /**
+       * Supplies a Blob of data being sent from .NET.
+       * @param contentType Optional MIME type for the Blob. Defaults to 'application/octet-stream'.
+       */
+      async blob(contentType?: string): Promise<Blob> {
+          const stream = await this.stream();
+          const reader = stream.getReader();
+          const chunks: Uint8Array[] = [];
+          while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+          }
+          return new Blob(chunks, { type: contentType || 'application/octet-stream' });
+      }
   }
 
   class PendingStream {
