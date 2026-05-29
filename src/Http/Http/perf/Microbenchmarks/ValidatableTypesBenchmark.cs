@@ -3,6 +3,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -45,7 +46,6 @@ public class ValidatableTypeInfoBenchmark
         {
             ValidationOptions = validationOptions,
             ValidationContext = new ValidationContext(new object(), serviceProvider, null),
-            ValidationErrors = new Dictionary<string, string[]>(StringComparer.Ordinal)
         };
 
         // Create the model instances
@@ -111,7 +111,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Simple")]
     public async Task ValidateSimpleModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _simpleTypeInfo.ValidateAsync(_simpleModel, _context, default);
     }
 
@@ -119,7 +119,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Complex")]
     public async Task ValidateComplexModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _complexTypeInfo.ValidateAsync(_complexModel, _context, default);
     }
 
@@ -127,7 +127,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Hierarchical")]
     public async Task ValidateHierarchicalModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _hierarchicalTypeInfo.ValidateAsync(_hierarchicalModel, _context, default);
     }
 
@@ -135,7 +135,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("IValidatableObject")]
     public async Task ValidateIValidatableObjectModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _ivalidatableObjectTypeInfo.ValidateAsync(_validatableObjectModel, _context, default);
     }
 
@@ -143,7 +143,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Invalid")]
     public async Task ValidateInvalidSimpleModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         _simpleModel.Email = "invalid-email";
         await _simpleTypeInfo.ValidateAsync(_simpleModel, _context, default);
     }
@@ -152,9 +152,17 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Invalid")]
     public async Task ValidateInvalidIValidatableObjectModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         _validatableObjectModel.CustomField = "Invalid";
         await _ivalidatableObjectTypeInfo.ValidateAsync(_validatableObjectModel, _context, default);
+    }
+
+    private void ClearValidationErrors()
+    {
+        // Relies on implementation detail.
+        // We expose IReadOnlyDictionary on the context.
+        // This is fine for the purpose of benchmarking.
+        ((ConcurrentDictionary<string, string[]>)_context.ValidationErrors).Clear();
     }
 
     #region Helper methods to create type info instances manually if needed
