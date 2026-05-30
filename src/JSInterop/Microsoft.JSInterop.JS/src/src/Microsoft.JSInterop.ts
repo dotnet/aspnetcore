@@ -782,7 +782,7 @@ export module DotNet {
       async blob(contentType?: string): Promise<Blob> {
           const stream = await this.stream();
           const reader = stream.getReader();
-          const chunks: Uint8Array[] = [];
+          const chunks: BlobPart[] = [];
           while (true) {
               const { done, value } = await reader.read();
               if (done) break;
