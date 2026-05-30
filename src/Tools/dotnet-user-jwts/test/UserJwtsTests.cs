@@ -91,8 +91,10 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
             Assert.Contains("Audience(s): https://localhost:7001, http://localhost:7000", _console.GetOutput());
             _console.ClearOutput();
 
-            app.Run(["list", "--file", appFile]);
-            Assert.Contains(id, _console.GetOutput());
+            app.Run(["list", "--file", appFile, "--output", "json"]);
+            var jwts = JsonSerializer.Deserialize<Dictionary<string, Jwt>>(_console.GetOutput());
+            Assert.NotNull(jwts);
+            Assert.Contains(id, jwts.Keys);
         }
         finally
         {
