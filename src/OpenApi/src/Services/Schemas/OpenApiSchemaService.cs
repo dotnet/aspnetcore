@@ -32,6 +32,9 @@ internal sealed class OpenApiSchemaService(
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
+    // Tracks which type owns each schema ID so we can detect collisions when two
+    // different types end up with the same name (e.g. same class in different namespaces).
+    private readonly ConcurrentDictionary<string, Type> _schemaIdToType = new(StringComparer.Ordinal);
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
@@ -215,18 +218,13 @@ internal sealed class OpenApiSchemaService(
             },
         };
 
-        // Using JsonArray inline causes the compile to pick the generic Add<T>() overload
-        // which then generates native AoT warnings without adding a cost. To Avoid that use
-        // this helper method that uses JsonNode to pick the native AoT compatible overload instead.
         static JsonArray JsonArray(ReadOnlySpan<JsonNode> values)
         {
             var array = new JsonArray();
-
             foreach (var value in values)
             {
                 array.Add(value);
             }
-
             return array;
         }
     }
@@ -238,8 +236,6 @@ internal sealed class OpenApiSchemaService(
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
         }
-        // Use _jsonSchemaContext constructed from _jsonSerializerOptions to respect shared config set by end-user,
-        // particularly in the case of maxDepth.
         var deserializedSchema = JsonSerializer.Deserialize(schemaAsJsonObject, _jsonSchemaContext.OpenApiJsonSchema);
         Debug.Assert(deserializedSchema != null, "The schema should have been deserialized successfully and materialize a non-null value.");
         var schema = deserializedSchema.Schema;
@@ -249,10 +245,6 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
-        // For non-body enum parameters, check if a naming policy transforms the enum values.
-        // If so, skip componentization and return an inline schema with the original C# member
-        // names (which Enum.TryParse accepts). The component schema keeps the naming-policy
-        // values for body serialization.
         var inlineEnumParam = false;
         if (parameterDescription is { Source: { } source, Type: { } paramType }
             && IsNonBodyBindingSource(source)
@@ -277,17 +269,12 @@ internal sealed class OpenApiSchemaService(
 
         if (inlineEnumParam)
         {
-            // The schema was originally tagged for componentization (x-schema-id was set),
-            // so ApplyDefaultValue stored the default in the x-ref-default metadata annotation
-            // instead of the "default" keyword. Since we're now inlining this schema, promote
-            // the annotation to the schema's Default property.
             if (schema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out var refDefault) == true
                 && refDefault is JsonNode defaultNode)
             {
                 schema.Default = defaultNode;
                 schema.Metadata.Remove(OpenApiConstants.RefDefaultAnnotation);
             }
-
             return schema;
         }
 
@@ -296,7 +283,14 @@ internal sealed class OpenApiSchemaService(
         var baseSchemaId = _schemaIdCache.GetOrAdd(type, t =>
         {
             var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(t);
-            return optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
+            var schemaId = optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
+            if (string.IsNullOrEmpty(schemaId))
+            {
+                return schemaId;
+            }
+            // Two different types can end up with the same schema ID if they share the same
+            // short name. Append a numeric suffix to keep them separate in the components section.
+            return EnsureUniqueSchemaReferenceId(schemaId, t, _schemaIdToType);
         });
 
         return ResolveReferenceForSchema(document, schema, baseSchemaId);
@@ -308,13 +302,41 @@ internal sealed class OpenApiSchemaService(
         || bindingSource == BindingSource.Form
         || bindingSource == BindingSource.FormFile;
 
+    private static string EnsureUniqueSchemaReferenceId(string schemaId, Type type, ConcurrentDictionary<string, Type> schemaIdToType)
+    {
+        if (schemaIdToType.TryAdd(schemaId, type))
+        {
+            return schemaId;
+        }
+
+        if (schemaIdToType.TryGetValue(schemaId, out var existing) && existing == type)
+        {
+            return schemaId;
+        }
+
+        var suffix = 2;
+        while (true)
+        {
+            var candidate = $"{schemaId}{suffix}";
+            if (schemaIdToType.TryAdd(candidate, type))
+            {
+                return candidate;
+            }
+
+            if (schemaIdToType.TryGetValue(candidate, out existing) && existing == type)
+            {
+                return candidate;
+            }
+
+            suffix++;
+        }
+    }
+
     internal static IOpenApiSchema ResolveReferenceForSchema(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId, string? baseSchemaId = null)
     {
         var schema = UnwrapOpenApiSchema(inputSchema);
-
         var isComponentizedSchema = schema.IsComponentizedSchema(out var schemaId);
 
-        // When we register it, this will be the resulting reference
         OpenApiSchemaReference? resultSchemaReference = null;
         if (inputSchema is OpenApiSchema && isComponentizedSchema)
         {
@@ -325,7 +347,6 @@ internal sealed class OpenApiSchemaService(
             {
                 if (!document.AddOpenApiSchemaByReference(targetReferenceId, schema, out resultSchemaReference))
                 {
-                    // We already added this schema, so it has already been resolved.
                     return resultSchemaReference;
                 }
             }
@@ -438,7 +459,6 @@ internal sealed class OpenApiSchemaService(
         };
         for (var i = 0; i < schemaTransformers.Length; i++)
         {
-            // Reset context object to base state before running each transformer.
             var transformer = schemaTransformers[i];
             await InnerApplySchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, cancellationToken);
         }
@@ -455,8 +475,6 @@ internal sealed class OpenApiSchemaService(
         var schema = UnwrapOpenApiSchema(inputSchema);
         await transformer.TransformAsync(schema, context, cancellationToken);
 
-        // Only apply transformers on polymorphic schemas where we can resolve the derived
-        // types associated with the base type.
         if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
         {
             var anyOfIndex = 0;
@@ -472,7 +490,6 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        // If the schema is an array but uses AnyOf or OneOf then ElementType is null
         if (schema.Items is not null && jsonTypeInfo.ElementType is not null)
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
@@ -520,8 +537,6 @@ internal sealed class OpenApiSchemaService(
             {
                 try
                 {
-                    // Resolve the reference path to the actual schema content
-                    // to avoid relative references
                     var resolvedNode = ResolveReference(refString, rootSchema);
                     if (resolvedNode != null)
                     {
@@ -530,15 +545,12 @@ internal sealed class OpenApiSchemaService(
                 }
                 catch (InvalidOperationException)
                 {
-                    // If resolution fails due to invalid path, return the original reference
-                    // This maintains backward compatibility while preventing crashes
+                    // If resolution fails, fall through and return the original node
                 }
 
-                // If resolution fails, return the original reference
                 return node;
             }
 
-            // Process all properties recursively
             var newObject = new JsonObject();
             foreach (var property in jsonObject)
             {
@@ -572,7 +584,6 @@ internal sealed class OpenApiSchemaService(
             return newArray;
         }
 
-        // Return non-$ref nodes as-is
         return node;
     }
 
