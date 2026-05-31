@@ -79,7 +79,7 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
                 }
                 catch (Exception ex)
                 {
-                    Log.LogError(0, ex, "The connection listener failed to process an accepted connection.");
+                    Log.LogError(0, ex, "The connection listener failed to process an accepted connection. ConnectionId: {ConnectionId}", connection.ConnectionId);
 
                     try
                     {
