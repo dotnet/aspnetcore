@@ -54,11 +54,11 @@ internal sealed class ListCommand
     {
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
-            reporter.Output(JsonSerializer.Serialize(jwts, JwtSerializerOptions.Default));
+            reporter.Output(JsonSerializer.Serialize(jwts, JwtSerializerContext.Default.IDictionaryStringJwt));
         }
         else
         {
-            reporter.Output(JsonSerializer.Serialize(Array.Empty<Jwt>(), JwtSerializerOptions.Default));
+            reporter.Output(JsonSerializer.Serialize(Array.Empty<Jwt>(), JwtSerializerContext.Default.JwtArray));
         }
     }
 
