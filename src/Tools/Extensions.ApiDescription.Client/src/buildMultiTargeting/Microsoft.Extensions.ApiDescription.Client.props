@@ -1,4 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
-  <Import Project="../build/Microsoft.Extensions.ApiDescription.Client.props" />
+  <Import Project="$(MSBuildThisFileDirectory)../../build/netstandard2.0/Microsoft.Extensions.ApiDescription.Client.props"/>
 </Project>

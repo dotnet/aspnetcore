@@ -6,7 +6,7 @@
     <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
     <IsShippingPackage>true</IsShippingPackage>
     <DefineConstants>$(DefineConstants);BLAZOR_WEBVIEW</DefineConstants>
-    <NoWarn>$(NoWarn);BL0006</NoWarn>
+    <NoWarn>$(NoWarn);BL0006;NU5129</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>annotations</Nullable>
   </PropertyGroup>
@@ -33,9 +33,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="buildTransitive\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
-    <None Include="buildMultiTargeting\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
-    <None Include="build\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="%(Identity)" />
+    <None Include="buildTransitive\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="buildTransitive\$(DefaultNetCoreTargetFramework)\" />
+    <None Include="buildMultiTargeting\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="buildMultiTargeting\$(DefaultNetCoreTargetFramework)\" />
+    <None Include="build\Microsoft.AspNetCore.Components.WebView.props" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\" />
   </ItemGroup>
 
   <ItemGroup>

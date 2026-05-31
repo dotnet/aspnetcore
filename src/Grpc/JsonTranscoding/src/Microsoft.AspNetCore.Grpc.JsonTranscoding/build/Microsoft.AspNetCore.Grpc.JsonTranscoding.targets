@@ -4,7 +4,7 @@
   <!-- This saves the developer having to find and copy these files to the right location when doing gRPC JSON transcoding. -->
   <PropertyGroup>
     <!-- The path of the proto files. Content from the nupkg. -->
-    <GrpcJsonTranscoding_ProtosPath>$( [System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../content/protos) )</GrpcJsonTranscoding_ProtosPath>
+    <GrpcJsonTranscoding_ProtosPath>$( [System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)../../content/protos) )</GrpcJsonTranscoding_ProtosPath>
   </PropertyGroup>
 
   <!-- Run immediately before the Protobuf_BeforeCompile extension point. -->
