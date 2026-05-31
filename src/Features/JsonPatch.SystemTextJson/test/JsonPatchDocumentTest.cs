@@ -6,6 +6,7 @@ using System.Text.Json;
 using Xunit;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 public class JsonPatchDocumentTest
