@@ -37,18 +37,28 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
         async Task AcceptConnectionsAsync()
         {
-            try
+            while (true)
             {
-                while (true)
+                T? connection;
+                try
                 {
-                    var connection = await listener.AcceptAsync();
+                    connection = await listener.AcceptAsync();
+                }
+                catch (Exception ex)
+                {
+                    // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
+                    Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
+                    break;
+                }
 
-                    if (connection == null)
-                    {
-                        // We're done listening
-                        break;
-                    }
+                if (connection == null)
+                {
+                    // We're done listening
+                    break;
+                }
 
+                try
+                {
                     // Add the connection to the connection manager before we queue it for execution
                     var id = _transportConnectionManager.GetNewConnectionId();
 
@@ -67,16 +77,24 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
                     ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
                 }
+                catch (Exception ex)
+                {
+                    Log.LogError(0, ex, "The connection listener failed to process an accepted connection.");
+
+                    try
+                    {
+                        connection.Abort(new ConnectionAbortedException("The accepted connection failed while processing."));
+                        await connection.DisposeAsync().ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                    }
+
+                    continue;
+                }
             }
-            catch (Exception ex)
-            {
-                // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
-                Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
-            }
-            finally
-            {
-                _acceptLoopTcs.TrySetResult();
-            }
+
+            _acceptLoopTcs.TrySetResult();
         }
     }
 }
