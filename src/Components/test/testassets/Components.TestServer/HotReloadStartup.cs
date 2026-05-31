@@ -12,7 +12,7 @@ public class HotReloadStartup
 {
     public HotReloadStartup()
     {
-        HotReloadManager.Default.MetadataUpdateSupported = true;
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -32,8 +32,6 @@ public class HotReloadStartup
         {
             app.UseDeveloperExceptionPage();
         }
-
-        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
         app.UseBlazorFrameworkFiles();
         app.UseStaticFiles();
         app.UseRouting();

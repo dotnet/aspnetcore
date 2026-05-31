@@ -16,6 +16,7 @@ public class TransportMultiplexedConnectionFeatureCollection
                 "IConnectionItemsFeature",
                 "IMemoryPoolFeature",
                 "IConnectionLifetimeFeature",
+                "IConnectionEndPointFeature",
                 "IProtocolErrorCodeFeature",
                 "ITlsConnectionFeature"
             };
@@ -24,7 +25,8 @@ public class TransportMultiplexedConnectionFeatureCollection
                 "IConnectionIdFeature",
                 "IConnectionItemsFeature",
                 "IMemoryPoolFeature",
-                "IConnectionLifetimeFeature"
+                "IConnectionLifetimeFeature",
+                "IConnectionEndPointFeature"
             };
 
         var usings = $@"

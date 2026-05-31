@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal static class TempDataProviderServiceCollectionExtensions
 {
+    internal static readonly object HttpContextItemKey = new object();
+
     internal static IServiceCollection AddTempData(this IServiceCollection services)
     {
         services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
@@ -45,20 +47,22 @@ internal static class TempDataProviderServiceCollectionExtensions
         return services;
     }
 
-    private static ITempData GetOrCreateTempData(HttpContext httpContext)
+    internal static ITempData GetOrCreateTempData(HttpContext httpContext)
     {
-        var key = typeof(ITempData);
-        if (!httpContext.Items.ContainsKey(key))
+        if (httpContext.Items.TryGetValue(HttpContextItemKey, out var tempDataObj) && tempDataObj is ITempData tempData)
         {
-            var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
-            var tempDataInstance = tempDataService.CreateEmpty(httpContext);
-            httpContext.Items[key] = tempDataInstance;
-            httpContext.Response.OnStarting(() =>
-            {
-                tempDataService.Save(httpContext, tempDataInstance);
-                return Task.CompletedTask;
-            });
+            return tempData;
         }
-        return (ITempData)httpContext.Items[key]!;
+
+        var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
+        var tempDataInstance = tempDataService.CreateEmpty(httpContext);
+        httpContext.Items[HttpContextItemKey] = tempDataInstance;
+        httpContext.Response.OnStarting(() =>
+        {
+            tempDataService.Save(httpContext, tempDataInstance);
+            return Task.CompletedTask;
+        });
+
+        return tempDataInstance;
     }
 }

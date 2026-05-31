@@ -1,7 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
@@ -9,6 +14,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -804,6 +810,48 @@ public class KeyRingProviderTests
             });
 
         return CreateKeyRingProvider(mockKeyManager.Object, mockDefaultKeyResolver.Object, keyManagementOptions);
+    }
+
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/66380.
+    // On cold start (no cached key ring) the new async-refresh code path used to schedule
+    // the refresh work to TaskScheduler.Default and then block every caller on Task.Wait().
+    // When all available thread-pool threads were callers, the queued refresh work could
+    // not be picked up - producing thread-pool starvation and a multi-second freeze on
+    // start until the runtime's hill-climbing injected more threads.
+    //
+    // The starvation can't be reproduced deterministically in a unit test (the runtime's
+    // hill-climbing will eventually rescue the buggy code, so any timing-based assertion
+    // is flaky). We instead verify the underlying invariant that prevents starvation:
+    // on cold start, the calling thread itself must perform the refresh, not a pool worker.
+    // If this invariant holds, starvation is impossible by construction regardless of pool
+    // size or hill-climbing behavior.
+    [Fact]
+    public void GetCurrentKeyRing_ColdStart_RefreshRunsOnCallingThread()
+    {
+        var now = StringToDateTime("2015-03-01 00:00:00Z");
+        var expectedKeyRing = new Mock<IKeyRing>().Object;
+
+        var callingThreadId = Environment.CurrentManagedThreadId;
+        int? refreshThreadId = null;
+
+        var mockCacheableKeyRingProvider = new Mock<ICacheableKeyRingProvider>();
+        mockCacheableKeyRingProvider
+            .Setup(o => o.GetCacheableKeyRing(now))
+            .Returns(() =>
+            {
+                refreshThreadId = Environment.CurrentManagedThreadId;
+                return new CacheableKeyRing(
+                    expirationToken: CancellationToken.None,
+                    expirationTime: now.AddDays(1),
+                    keyRing: expectedKeyRing);
+            });
+
+        var keyRingProvider = CreateKeyRingProvider(mockCacheableKeyRingProvider.Object);
+
+        var keyRing = keyRingProvider.GetCurrentKeyRingCore(now);
+
+        Assert.Same(expectedKeyRing, keyRing);
+        Assert.Equal(callingThreadId, refreshThreadId);
     }
 
     [Fact]

@@ -31,7 +31,8 @@ internal static class OpenApiConstants
         HttpMethod.Options,
         HttpMethod.Head,
         HttpMethod.Patch,
-        HttpMethod.Trace
+        HttpMethod.Trace,
+        HttpMethod.Query
     ];
     // Represents primitive types that should never be represented as
     // a schema reference and always inlined.

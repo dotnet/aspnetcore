@@ -1,24 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.Managed;
+#if NET
 using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+#endif
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -52,8 +59,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -90,8 +97,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -430,8 +437,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -477,8 +484,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -526,8 +533,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
             {
-                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return expectedPlaintext;
             });
         var mockDescriptor = new Mock<IAuthenticatedEncryptorDescriptor>();
@@ -601,8 +608,8 @@ public class KeyRingBasedDataProtectorTests
             .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
             .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
             {
-                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan());
-                Assert.Equal(expectedAad, actualAad.AsSpan());
+                Assert.Equal(expectedPlaintext, actualPlaintext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
                 return new byte[] { 0x23, 0x29, 0x31, 0x37 }; // ciphertext + tag
             });
 
@@ -625,6 +632,7 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(expectedProtectedData, retVal);
     }
 
+#if NET
     [Theory]
     [InlineData("", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
     [InlineData("small", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
@@ -775,6 +783,114 @@ public class KeyRingBasedDataProtectorTests
         var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(new byte[10], ref buffer));
         Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
     }
+
+    [Fact]
+    public void SpanProtect_NonSpanEncryptorAfterKeyRotation_FallsBackToByteArrayPath()
+    {
+        // Regression test: KeyRingBasedSpanDataProtector.Protect checks if the default encryptor
+        // is ISpanAuthenticatedEncryptor. If the default key rotates
+        // after CreateProtector returned a KeyRingBasedSpanDataProtector (because the original
+        // default key WAS a span encryptor). The fallback code to the byte[] path should run.
+
+        // The key ring returns a non-span encryptor as the default.
+        // We construct KeyRingBasedSpanDataProtector directly (simulating key rotation:
+        // the protector was created when the default key had a span encryptor,
+        // but now the default key has rotated to a non-span one).
+        byte[] plaintext = new byte[] { 0x10, 0x20 };
+        byte[] expectedCiphertext = new byte[] { 0xAA, 0xBB };
+
+        var mockNonSpanEncryptor = new Mock<IAuthenticatedEncryptor>();
+        mockNonSpanEncryptor
+            .Setup(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
+            .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualPlaintext, actualAad) =>
+            {
+                Assert.Equal(plaintext, actualPlaintext.AsSpan().ToArray());
+                return expectedCiphertext;
+            });
+
+        Guid keyId = new Guid("ba73c9ce-d322-4e45-af90-341307e11c38");
+
+        var mockKeyRing = new Mock<IKeyRing>();
+        mockKeyRing.Setup(o => o.DefaultKeyId).Returns(keyId);
+        mockKeyRing.Setup(o => o.DefaultAuthenticatedEncryptor).Returns(mockNonSpanEncryptor.Object);
+
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(mockKeyRing.Object);
+
+        // Directly construct span protector (simulates post-rotation state)
+        var protector = new KeyRingBasedSpanDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        // Act - should fall back to byte[] Protect path
+        var destination = new ArrayBufferWriter<byte>();
+        protector.Protect(plaintext, ref destination);
+
+        // Assert - output should match the format: magic header + key id + ciphertext
+        byte[] expectedProtectedData = BuildProtectedDataFromCiphertext(keyId, expectedCiphertext);
+        Assert.Equal(expectedProtectedData, destination.WrittenSpan.ToArray());
+        mockNonSpanEncryptor.Verify(o => o.Encrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()), Times.Once);
+    }
+
+    [Fact]
+    public void SpanUnprotect_WithNonSpanEncryptor()
+    {
+        // Regression test: KeyRingBasedSpanDataProtector.Unprotect casts the encryptor
+        // from GetAuthenticatedEncryptorByKeyId to ISpanAuthenticatedEncryptor.
+        // If a key returns a plain IAuthenticatedEncryptor (custom encryptor that doesn't
+        // implement the span interface), we need to fallback to calling the byte[] encryptor methods.
+
+        // Default encryptor is both IAuthenticatedEncryptor AND ISpanAuthenticatedEncryptor
+        // (this is what CreateProtector checks to decide to create KeyRingBasedSpanDataProtector)
+        var mockSpanEncryptor = new Mock<ISpanAuthenticatedEncryptor>();
+        mockSpanEncryptor.As<IAuthenticatedEncryptor>();
+
+        // The payload key's encryptor is ONLY IAuthenticatedEncryptor (no span support)
+        byte[] expectedPlaintext = new byte[] { 0x42 };
+        byte[] expectedCiphertext = new byte[] { 0x03, 0x05, 0x07 };
+
+        Guid defaultKeyId = new Guid("ba73c9ce-d322-4e45-af90-341307e11c38");
+        Guid embeddedKeyId = new Guid("9b5d2db3-299f-4eac-89e9-e9067a5c1853");
+        byte[] expectedAad = BuildAadFromPurposeStrings(embeddedKeyId, "purpose");
+        byte[] protectedData = BuildProtectedDataFromCiphertext(embeddedKeyId, expectedCiphertext);
+
+        var mockNonSpanEncryptor = new Mock<IAuthenticatedEncryptor>();
+        mockNonSpanEncryptor
+            .Setup(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()))
+            .Returns<ArraySegment<byte>, ArraySegment<byte>>((actualCiphertext, actualAad) =>
+            {
+                Assert.Equal(expectedCiphertext, actualCiphertext.AsSpan().ToArray());
+                Assert.Equal(expectedAad, actualAad.AsSpan().ToArray());
+                return expectedPlaintext;
+            });
+
+        var mockKeyRing = new Mock<IKeyRing>(MockBehavior.Strict);
+        mockKeyRing.Setup(o => o.DefaultKeyId).Returns(defaultKeyId);
+        mockKeyRing.Setup(o => o.DefaultAuthenticatedEncryptor).Returns(mockSpanEncryptor.As<IAuthenticatedEncryptor>().Object);
+        bool isRevoked = false;
+        mockKeyRing.Setup(o => o.GetAuthenticatedEncryptorByKeyId(embeddedKeyId, out isRevoked))
+            .Returns(mockNonSpanEncryptor.Object); // returns non-span encryptor
+
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(mockKeyRing.Object);
+
+        var protector = new KeyRingBasedSpanDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        // Act - should succeed by falling back to byte[] Decrypt path
+        var destination = new ArrayBufferWriter<byte>();
+        protector.Unprotect(protectedData, ref destination);
+
+        // Assert - correct plaintext returned, byte[] Decrypt called once with right args
+        Assert.Equal(expectedPlaintext, destination.WrittenSpan.ToArray());
+        mockNonSpanEncryptor.Verify(o => o.Decrypt(It.IsAny<ArraySegment<byte>>(), It.IsAny<ArraySegment<byte>>()), Times.Once);
+    }
+#endif
 
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)
     {

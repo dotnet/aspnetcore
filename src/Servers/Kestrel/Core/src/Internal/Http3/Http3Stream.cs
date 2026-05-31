@@ -35,6 +35,10 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
     private static ReadOnlySpan<byte> TeBytes => "te"u8;
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
+    private static ReadOnlySpan<byte> TransferEncodingBytes => "transfer-encoding"u8;
+    private static ReadOnlySpan<byte> KeepAliveBytes => "keep-alive"u8;
+    private static ReadOnlySpan<byte> ProxyConnectionBytes => "proxy-connection"u8;
+    private static ReadOnlySpan<byte> UpgradeBytes => "upgrade"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
 
     private const PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
@@ -88,6 +92,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public long StreamId => _streamIdFeature.StreamId;
     public long StreamTimeoutTimestamp { get; set; }
     public bool IsReceivingHeader => _requestHeaderParsingState <= RequestHeaderParsingState.Headers; // Assigned once headers are received
+    public bool IsReceivingTrailerHeaders { get; private set; }
     public bool IsDraining => _appCompletedTaskSource.GetStatus() != ValueTaskSourceStatus.Pending; // Draining starts once app is complete
     public bool IsRequestStream => true;
     public BaseConnectionContext ConnectionContext => _context.ConnectionContext;
@@ -115,6 +120,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         _eagerRequestHeadersParsedLimit = ServerOptions.Limits.MaxRequestHeaderCount * 2;
         _isMethodConnect = false;
         _completionState = default;
+        IsReceivingTrailerHeaders = false;
         StreamTimeoutTimestamp = 0;
 
         if (_frameWriter == null)
@@ -540,9 +546,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         }
     }
 
+    // https://www.rfc-editor.org/rfc/rfc9114#section-4.2
     private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        return name.SequenceEqual(ConnectionBytes) || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
+        return name.SequenceEqual(ConnectionBytes)
+            || name.SequenceEqual(TransferEncodingBytes)
+            || name.SequenceEqual(KeepAliveBytes)
+            || name.SequenceEqual(ProxyConnectionBytes)
+            || name.SequenceEqual(UpgradeBytes)
+            || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
     }
 
     protected override void OnRequestProcessingEnded()
@@ -823,10 +835,12 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             if (endHeaders)
             {
                 QPackDecoder.Reset();
+                IsReceivingTrailerHeaders = false;
             }
             else
             {
-                // Headers frame isn't complete, return to read more of the frame
+                // Headers frame isn't complete, start trailer header timeout and return to read more of the frame.
+                IsReceivingTrailerHeaders = true;
                 return;
             }
         }

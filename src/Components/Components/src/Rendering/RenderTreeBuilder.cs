@@ -20,6 +20,10 @@ public sealed class RenderTreeBuilder : IDisposable
 {
     private static readonly object BoxedTrue = true;
     private static readonly object BoxedFalse = false;
+
+    // On WebAssembly, bool element attributes must be stored as strings because the JS
+    // shared memory render batch reader cannot distinguish boxed bools from strings.
+    private static readonly object ElementBoolTrueValue = OperatingSystem.IsBrowser() ? string.Empty : BoxedTrue;
     private static readonly string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
     private readonly RenderTreeFrameArrayBuilder _entries = new RenderTreeFrameArrayBuilder();
@@ -170,7 +174,7 @@ public sealed class RenderTreeBuilder : IDisposable
             throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
         }
 
-        _entries.AppendAttribute(sequence, name, BoxedTrue);
+        _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
     }
 
     /// <summary>
@@ -196,7 +200,7 @@ public sealed class RenderTreeBuilder : IDisposable
         {
             // Don't add 'false' attributes for elements. We want booleans to map to the presence
             // or absence of an attribute, and false => "False" which isn't falsy in js.
-            _entries.AppendAttribute(sequence, name, BoxedTrue);
+            _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
         }
         else
         {
@@ -366,7 +370,7 @@ public sealed class RenderTreeBuilder : IDisposable
             {
                 if (boolValue)
                 {
-                    _entries.AppendAttribute(sequence, name, BoxedTrue);
+                    _entries.AppendAttribute(sequence, name, ElementBoolTrueValue);
                 }
                 else
                 {
@@ -772,6 +776,35 @@ public sealed class RenderTreeBuilder : IDisposable
     /// <returns>An array range of <see cref="RenderTreeFrame"/> values.</returns>
     public ArrayRange<RenderTreeFrame> GetFrames() =>
         _entries.ToRange();
+
+    /// <summary>
+    /// Replaces the attribute value of an existing attribute frame at the specified index.
+    /// This is used to update attribute values in-place after frames have been appended,
+    /// for example when wrapping <see cref="RenderFragment"/> delegates during serialization.
+    /// </summary>
+    /// <param name="frameIndex">The zero-based index of the attribute frame whose value should be replaced.</param>
+    /// <param name="value">The new attribute value.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="frameIndex"/> is outside the range of appended frames.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the frame at <paramref name="frameIndex"/> is not of type <see cref="RenderTreeFrameType.Attribute"/>.</exception>
+    public void SetAttributeValue(int frameIndex, object? value)
+    {
+        var frames = _entries.Buffer;
+        var count = _entries.Count;
+
+        if ((uint)frameIndex >= (uint)count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(frameIndex));
+        }
+
+        ref var frame = ref frames[frameIndex];
+        if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
+        {
+            throw new InvalidOperationException(
+                $"The frame at index {frameIndex} is of type '{frame.FrameTypeField}', not '{RenderTreeFrameType.Attribute}'.");
+        }
+
+        frame.AttributeValueField = value;
+    }
 
     internal void AssertTreeIsValid(IComponent component)
     {

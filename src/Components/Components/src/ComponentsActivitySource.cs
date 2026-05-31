@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components;
@@ -17,6 +18,11 @@ internal class ComponentsActivitySource
 
     private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
     private ComponentsActivityLinkStore? _componentsActivityLinkStore;
+
+    // there is no System.Diagnostics.ActivitySource.IsSupported yet
+    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+    internal static bool IsSupported { get; } =
+        AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out var isSupported) ? isSupported : false;
 
     public void Init(ComponentsActivityLinkStore store)
     {

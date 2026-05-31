@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -236,6 +237,54 @@ public class Project : IDisposable
         return new AspNetProcess(DevCert, Output, TemplatePublishDir, projectDll, environment, published: true, hasListeningUri: hasListeningUri, usePublishedAppHost: usePublishedAppHost);
     }
 
+    internal (ProcessEx process, string listeningUri) ServePublishedStandaloneApp(ITestOutputHelper output)
+    {
+        var publishDir = Path.Combine(TemplatePublishDir, "wwwroot");
+
+        output.WriteLine("Running dotnet serve on published output...");
+        var command = DotNetMuxer.MuxerPathOrDefault();
+        string args;
+        if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("HELIX_DIR")))
+        {
+            args = "serve";
+        }
+        else
+        {
+            command = "dotnet-serve";
+            args = "--roll-forward LatestMajor";
+        }
+
+        var serveProcess = ProcessEx.Run(output, publishDir, command, args);
+        var listeningUri = ResolveListeningUrl(serveProcess);
+        return (serveProcess, listeningUri);
+
+        static string ResolveListeningUrl(ProcessEx process)
+        {
+            var buffer = new List<string>();
+            try
+            {
+                foreach (var line in process.OutputLinesAsEnumerable)
+                {
+                    if (line != null)
+                    {
+                        buffer.Add(line);
+                        if (line.Trim().Contains("https://", StringComparison.Ordinal) ||
+                            line.Trim().Contains("http://", StringComparison.Ordinal))
+                        {
+                            return line.Trim();
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+
+            throw new InvalidOperationException(
+                $"Couldn't find listening url:\n{string.Join(Environment.NewLine, buffer.Append(process.Error))}");
+        }
+    }
+
     internal async Task RunDotNetEfCreateMigrationAsync(string migrationName)
     {
         var args = $"--verbose --no-build migrations add {migrationName}";
@@ -298,11 +347,13 @@ public class Project : IDisposable
         }";
 
         // This comparison can break depending on how GIT checked out newlines on different files.
-        Assert.Contains(RemoveNewLines(emptyMigration), RemoveNewLines(contents));
+        // Whitespace is also normalized so the assertion works regardless of indentation
+        // (e.g. block-scoped vs file-scoped namespaces in generated migrations).
+        Assert.Contains(NormalizeWhitespace(emptyMigration), NormalizeWhitespace(contents));
 
-        static string RemoveNewLines(string str)
+        static string NormalizeWhitespace(string str)
         {
-            return str.Replace("\n", string.Empty).Replace("\r", string.Empty);
+            return new string(str.Where(c => !char.IsWhiteSpace(c)).ToArray());
         }
     }
 

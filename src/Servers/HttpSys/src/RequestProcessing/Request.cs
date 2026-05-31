@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal sealed partial class Request
 {
+    private static readonly bool AllowKeepAliveAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.AllowKeepAliveAfterCLTE", out var value) && value;
+
     private X509Certificate2? _clientCert;
     // TODO: https://github.com/aspnet/HttpSysServer/issues/231
     // private byte[] _providedTokenBindingId;
@@ -202,6 +204,8 @@ internal sealed partial class Request
     private SslStatus SslStatus { get; }
 
     private RequestContext RequestContext { get; }
+
+    public bool KeepAlive { get; private set; } = true;
 
     // With the leading ?, if any
     public string QueryString { get; }
@@ -514,24 +518,36 @@ internal sealed partial class Request
             return;
         }
 
-        // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+        // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
         // A sender MUST NOT send a Content-Length header field in any message
         // that contains a Transfer-Encoding header field.
-        // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+        // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
         // If a message is received with both a Transfer-Encoding and a
         // Content-Length header field, the Transfer-Encoding overrides the
-        // Content-Length.  Such a message might indicate an attempt to
-        // perform request smuggling (Section 9.5) or response splitting
-        // (Section 9.4) and ought to be handled as an error.  A sender MUST
-        // remove the received Content-Length field prior to forwarding such
-        // a message downstream.
+        // Content-Length. Such a message might indicate an attempt to
+        // perform request smuggling (Section 11.2) or response splitting
+        // (Section 11.1) and ought to be handled as an error. An intermediary
+        // that chooses to forward the message MUST first remove the received
+        // Content-Length field and process the Transfer-Encoding
+        // (as described below) prior to forwarding the message downstream.
         // We should remove the Content-Length request header in this case, for compatibility
-        // reasons, include X-Content-Length so that the original Content-Length is still available.
+        // reasons, include x-Content-Length so that the original Content-Length is still available.
         IHeaderDictionary headerDictionary = Headers;
 
         // dont overwrite if user explicitly set X-Content-Length
         _ = headerDictionary.TryAdd("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
         Headers.ContentLength = StringValues.Empty;
+
+        if (!AllowKeepAliveAfterCLTE)
+        {
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+            // A server MAY reject a request that contains both Content-Length
+            // and Transfer-Encoding or process such a request in accordance
+            // with the Transfer-Encoding alone. Regardless, the server MUST
+            // close the connection after responding to such a request to
+            // avoid the potential attacks.
+            KeepAlive = false;
+        }
     }
 
     private static bool IsChunked(string? transferEncoding)

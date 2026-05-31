@@ -48,7 +48,7 @@
         BuildInParallel="false"
         Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());RestoreDisableParallel=true"
         Targets="Restore" />
-    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Build">
+    <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="false" Targets="Build">
       <Output TaskParameter="TargetOutputs" ItemName="TargetPathWithTargetPlatformMoniker" />
     </MSBuild>
   </Target>

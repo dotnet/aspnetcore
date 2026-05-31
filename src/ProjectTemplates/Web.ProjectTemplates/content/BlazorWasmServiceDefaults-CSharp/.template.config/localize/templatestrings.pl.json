@@ -1,0 +1,10 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Domyślne ustawienia usługi Blazor WebAssembly",
+  "description": "Szablon projektu służący do tworzenia biblioteki domyślnych ustawień usług dla aplikacji Blazor WebAssembly. Obejmuje obsługę integracji z OpenTelemetry, wykrywanie usług oraz zapewnienie odporności w ramach integracji z platformą Aspire.",
+  "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
+  "symbols/hosted/description": "Skonfiguruj scenariusz hostowanej aplikacji internetowej Blazor, w którym konfiguracja jest przekazywana z serwera za pośrednictwem komentarza DOM. Gdy wartość wynosi fałsz (ustawienie domyślne), konfiguracja dotyczy scenariusza autonomicznego z punktem końcowym konfiguracji i inicjalizatorem JS.",
+  "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",
+  "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
+  "postActions/restore/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”"
+}
