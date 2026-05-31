@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Xunit;
+using Microsoft.AspNetCore.JsonPatch.Exceptions;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 public class JsonPatchDocumentTest
