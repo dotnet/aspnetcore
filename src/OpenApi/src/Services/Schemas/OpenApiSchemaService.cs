@@ -26,132 +26,123 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// an OpenAPI document. In particular, this is the API that is used to
 /// interact with the JSON schemas that are managed by a given OpenAPI document.
 /// </summary>
-internal sealed class OpenApiSchemaService
+internal sealed class OpenApiSchemaService(
+    [ServiceKey] string documentName,
+    IOptions<JsonOptions> jsonOptions,
+    IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
-    private readonly string _documentName;
-    private readonly IOptionsMonitor<OpenApiOptions> _optionsMonitor;
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
+    // Tracks schema ID -> Type mapping so we can detect and resolve duplicate schema IDs
+    // across types that happen to share the same name (e.g. same class name in different namespaces).
     private readonly ConcurrentDictionary<string, Type> _schemaIdToType = new(StringComparer.Ordinal);
-    private readonly OpenApiJsonSchemaContext _jsonSchemaContext;
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
-    private readonly JsonSchemaExporterOptions _configuration;
-
-    public OpenApiSchemaService(
-        [ServiceKey] string documentName,
-        IOptions<JsonOptions> jsonOptions,
-        IOptionsMonitor<OpenApiOptions> optionsMonitor)
+    private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
-        _documentName = documentName;
-        _optionsMonitor = optionsMonitor;
-        _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
-        _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
+        // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
+        // setting `JsonPropertyInfo.IsRequired` based on the presence of the `RequiredAttribute`.
+        TypeInfoResolver = jsonOptions.Value.SerializerOptions.TypeInfoResolver?.WithAddedModifier(jsonTypeInfo =>
         {
-            // In order to properly handle the `RequiredAttribute` on type properties, add a modifier to support
-            // setting `JsonPropertyInfo.IsRequired` based on the presence of the `RequiredAttribute`.
-            TypeInfoResolver = jsonOptions.Value.SerializerOptions.TypeInfoResolver?.WithAddedModifier(jsonTypeInfo =>
+            if (jsonTypeInfo.Kind != JsonTypeInfoKind.Object)
             {
-                if (jsonTypeInfo.Kind != JsonTypeInfoKind.Object)
-                {
-                    return;
-                }
-                foreach (var propertyInfo in jsonTypeInfo.Properties)
-                {
-                    var hasRequiredAttribute = propertyInfo.AttributeProvider?
-                        .GetCustomAttributes(inherit: false)
-                        .Any(attr => attr is RequiredAttribute);
-                    propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
-                }
-            })
-        };
+                return;
+            }
+            foreach (var propertyInfo in jsonTypeInfo.Properties)
+            {
+                var hasRequiredAttribute = propertyInfo.AttributeProvider?
+                    .GetCustomAttributes(inherit: false)
+                    .Any(attr => attr is RequiredAttribute);
+                propertyInfo.IsRequired |= hasRequiredAttribute ?? false;
+            }
+        })
+    };
 
-        _configuration = new JsonSchemaExporterOptions
+    private readonly JsonSchemaExporterOptions _configuration = new()
+    {
+        TreatNullObliviousAsNonNullable = true,
+        TransformSchemaNode = (context, schema) =>
         {
-            TreatNullObliviousAsNonNullable = true,
-            TransformSchemaNode = (context, schema) =>
+            var type = context.TypeInfo.Type;
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
+            // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
+            // that appear as properties within complex types.
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
+                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
+                || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
             {
-                var type = context.TypeInfo.Type;
-                // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
-                // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
-                // that appear as properties within complex types.
-                if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
-                    || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
-                    || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
+                schema = new JsonObject
                 {
-                    schema = new JsonObject
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.FormatKeyword] = "binary",
+                    [OpenApiConstants.SchemaId] = "IFormFile"
+                };
+            }
+            else if (type == typeof(IFormFileCollection))
+            {
+                schema = new JsonObject
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "array",
+                    [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
                     {
                         [OpenApiSchemaKeywords.TypeKeyword] = "string",
                         [OpenApiSchemaKeywords.FormatKeyword] = "binary",
                         [OpenApiConstants.SchemaId] = "IFormFile"
-                    };
-                }
-                else if (type == typeof(IFormFileCollection))
-                {
-                    schema = new JsonObject
-                    {
-                        [OpenApiSchemaKeywords.TypeKeyword] = "array",
-                        [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
-                        {
-                            [OpenApiSchemaKeywords.TypeKeyword] = "string",
-                            [OpenApiSchemaKeywords.FormatKeyword] = "binary",
-                            [OpenApiConstants.SchemaId] = "IFormFile"
-                        }
-                    };
-                }
-                else if (type.IsJsonPatchDocument())
-                {
-                    schema = CreateSchemaForJsonPatch();
-                }
-                // STJ uses `true` in place of an empty object to represent a schema that matches
-                // anything (like the `object` type) or types with user-defined converters. We override
-                // this default behavior here to match the format expected in OpenAPI v3.
-                if (schema.GetValueKind() == JsonValueKind.True)
-                {
-                    schema = new JsonObject();
-                }
-                var createSchemaReferenceId = GetSchemaReferenceId;
-                schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
-                schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
-                schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
-                if (context.PropertyInfo is { } jsonPropertyInfo)
-                {
-                    schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
-                }
-                if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
-                {
-                    schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
-                }
-                if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
-                {
-                    var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
-                    if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
-                    {
-                        schema.ApplyValidationAttributes(validationAttributes);
                     }
-                    if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
-                    {
-                        schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
-                    }
-                    var isInlinedSchema = !schema.WillBeComponentized();
-                    if (isInlinedSchema)
-                    {
-                        if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
-                        {
-                            schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
-                        }
-                    }
-                    else
-                    {
-                        if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
-                        {
-                            schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
-                        }
-                    }
-                }
-                schema.PruneNullTypeForComponentizedTypes();
-                return schema;
+                };
             }
-        };
-    }
+            else if (type.IsJsonPatchDocument())
+            {
+                schema = CreateSchemaForJsonPatch();
+            }
+            // STJ uses `true` in place of an empty object to represent a schema that matches
+            // anything (like the `object` type) or types with user-defined converters. We override
+            // this default behavior here to match the format expected in OpenAPI v3.
+            if (schema.GetValueKind() == JsonValueKind.True)
+            {
+                schema = new JsonObject();
+            }
+            var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
+            schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
+            schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
+            schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+            if (context.PropertyInfo is { } jsonPropertyInfo)
+            {
+                schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
+            }
+            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            {
+                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+            }
+            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
+            {
+                var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
+                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
+                {
+                    schema.ApplyValidationAttributes(validationAttributes);
+                }
+                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+                {
+                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                }
+                var isInlinedSchema = !schema.WillBeComponentized();
+                if (isInlinedSchema)
+                {
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                    }
+                }
+                else
+                {
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                    }
+                }
+            }
+            schema.PruneNullTypeForComponentizedTypes();
+            return schema;
+        }
+    };
 
     private static JsonObject CreateSchemaForJsonPatch()
     {
@@ -305,7 +296,18 @@ internal sealed class OpenApiSchemaService
 
         // Cache the root schema IDs since we expect to be called
         // on the same type multiple times within an API
-        var baseSchemaId = GetSchemaReferenceId(_jsonSerializerOptions.GetTypeInfo(type));
+        var baseSchemaId = _schemaIdCache.GetOrAdd(type, t =>
+        {
+            var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(t);
+            var schemaId = optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
+            if (string.IsNullOrEmpty(schemaId))
+            {
+                return schemaId;
+            }
+            // Make sure two different types with the same name don't end up sharing
+            // the same schema ID in the components section — append a numeric suffix if needed.
+            return EnsureUniqueSchemaReferenceId(schemaId, t, _schemaIdToType);
+        });
 
         return ResolveReferenceForSchema(document, schema, baseSchemaId);
     }
@@ -316,20 +318,11 @@ internal sealed class OpenApiSchemaService
         || bindingSource == BindingSource.Form
         || bindingSource == BindingSource.FormFile;
 
-    private string? GetSchemaReferenceId(JsonTypeInfo jsonTypeInfo)
-    {
-        return _schemaIdCache.GetOrAdd(jsonTypeInfo.Type, _ =>
-        {
-            var schemaId = _optionsMonitor.Get(_documentName).CreateSchemaReferenceId(jsonTypeInfo);
-            if (string.IsNullOrEmpty(schemaId))
-            {
-                return schemaId;
-            }
-
-            return EnsureUniqueSchemaReferenceId(schemaId, jsonTypeInfo.Type, _schemaIdToType);
-        });
-    }
-
+    /// <summary>
+    /// Appends a numeric suffix (2, 3, ...) to <paramref name="schemaId"/> until we find one
+    /// that hasn't been claimed by a different type yet. This prevents two different types that
+    /// happen to share the same short name from clobbering each other in the components section.
+    /// </summary>
     private static string EnsureUniqueSchemaReferenceId(string schemaId, Type type, ConcurrentDictionary<string, Type> schemaIdToType)
     {
         if (schemaIdToType.TryAdd(schemaId, type))
@@ -480,7 +473,7 @@ internal sealed class OpenApiSchemaService
         var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
         var context = new OpenApiSchemaTransformerContext
         {
-            DocumentName = _documentName,
+            DocumentName = documentName,
             JsonTypeInfo = jsonTypeInfo,
             JsonPropertyInfo = null,
             ParameterDescription = parameterDescription,
