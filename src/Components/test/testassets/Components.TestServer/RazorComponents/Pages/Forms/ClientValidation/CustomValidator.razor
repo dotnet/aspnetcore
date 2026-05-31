@@ -1,0 +1,44 @@
+﻿@page "/forms/client-validation/custom-validator"
+
+<h2 id="page-title">Custom validator</h2>
+
+<style>
+    .input-validation-error { border-color: red; }
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+</style>
+
+<form id="test-form" method="post">
+    <div>
+        <label for="code">Code (custom-format)</label>
+        <input id="code" name="Code" type="text"
+               data-val="true"
+               data-val-customformat="Code must start with 'ABC-'."
+               data-val-customformat-prefix="ABC-" />
+        <span data-valmsg-for="Code" data-valmsg-replace="true"></span>
+    </div>
+
+    <button type="submit" id="submit">Submit</button>
+</form>
+
+<script suppress-error="BL9992">
+    // Poll for Blazor.formValidation to become available, then register the custom validator.
+    (function register() {
+        if (window.Blazor && Blazor.formValidation) {
+            Blazor.formValidation.addValidator('customformat', function (context) {
+                if (!context.value) {
+                    return { success: true };
+                }
+                var prefix = context.params['prefix'] || '';
+                return { success: context.value.indexOf(prefix) === 0 };
+            });
+            // Re-scan so the engine picks up the newly-registered rule on the existing field.
+            Blazor.formValidation.scanRules();
+            var marker = document.createElement('span');
+            marker.id = 'custom-validator-ready';
+            document.body.appendChild(marker);
+        } else {
+            setTimeout(register, 30);
+        }
+    })();
+</script>

@@ -33,7 +33,8 @@
     "@tootallnate/once": ">=3.0.1",
     "oidc-client": {
       "serialize-javascript": ">=7.0.5"
-    }
+    },
+    "lodash": ">=4.18.0"
   },
   "engines": {
     "node": ">=20.9.0",

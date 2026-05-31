@@ -49,6 +49,10 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
     private static ReadOnlySpan<byte> TeBytes => "te"u8;
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
+    private static ReadOnlySpan<byte> TransferEncodingBytes => "transfer-encoding"u8;
+    private static ReadOnlySpan<byte> KeepAliveBytes => "keep-alive"u8;
+    private static ReadOnlySpan<byte> ProxyConnectionBytes => "proxy-connection"u8;
+    private static ReadOnlySpan<byte> UpgradeBytes => "upgrade"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
     private static ReadOnlySpan<byte> ProtocolBytes => ":protocol"u8;
 
@@ -835,6 +839,18 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
             _currentHeadersStream = stream;
             _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
 
+            // Cancel keep-alive timeout and start header timeout if necessary.
+            if (!_incomingFrame.HeadersEndHeaders)
+            {
+                if (TimeoutControl.TimerReason != TimeoutReason.None)
+                {
+                    Debug.Assert(TimeoutControl.TimerReason == TimeoutReason.KeepAlive, "Non keep-alive timeout set at start of trailer headers.");
+                    TimeoutControl.CancelTimeout();
+                }
+
+                TimeoutControl.SetTimeout(Limits.RequestHeadersTimeout, TimeoutReason.RequestHeaders);
+            }
+
             var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
             return DecodeTrailersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
         }
@@ -1195,6 +1211,11 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
         {
+            if (_incomingFrame.ContinuationEndHeaders)
+            {
+                TimeoutControl.CancelTimeout();
+            }
+
             return DecodeTrailersAsync(_incomingFrame.ContinuationEndHeaders, payload);
         }
         else
@@ -1826,9 +1847,15 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
     }
 
+    // https://www.rfc-editor.org/rfc/rfc9113#section-8.2.2
     private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        return name.SequenceEqual(ConnectionBytes) || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
+        return name.SequenceEqual(ConnectionBytes)
+            || name.SequenceEqual(TransferEncodingBytes)
+            || name.SequenceEqual(KeepAliveBytes)
+            || name.SequenceEqual(ProxyConnectionBytes)
+            || name.SequenceEqual(UpgradeBytes)
+            || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
     }
 
     private bool TryClose()

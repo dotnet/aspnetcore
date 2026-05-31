@@ -32,7 +32,11 @@ public class CaptureSeleniumLogsAttribute : BeforeAfterTestAttribute
         {
             // Put browser logs first, the test UI will truncate output after a certain length
             // and the browser logs will include exceptions thrown by js in the browser.
-            foreach (var kind in logs.AvailableLogTypes.OrderBy(k => k == LogType.Browser ? 0 : 1))
+            // Skip "performance" logs in routine output — they're very verbose and only useful on
+            // failure, where WaitAssert already extracts the relevant network details.
+            foreach (var kind in logs.AvailableLogTypes
+                .Where(k => k != "performance")
+                .OrderBy(k => k == LogType.Browser ? 0 : 1))
             {
                 output.WriteLine($"{kind} Logs from Selenium:");
 

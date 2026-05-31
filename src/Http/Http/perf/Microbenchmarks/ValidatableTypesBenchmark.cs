@@ -252,11 +252,17 @@ public class ValidatableTypeInfoBenchmark
         Type propertyType,
         string name,
         string displayName,
-        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, displayName)
+        ValidationAttribute[] validationAttributes) : ValidatablePropertyInfo(containingType, propertyType, name, new MockDisplayNameInfo(displayName))
     {
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+    }
+
+    private class MockDisplayNameInfo(string displayName) : DisplayNameInfo
+    {
+        public override string GetDisplayName(ValidateContext context, string memberName, Type declaringType)
+            => displayName;
     }
 
     #endregion
