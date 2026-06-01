@@ -2125,7 +2125,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         Assert.True(invoked);
         Assert.NotNull(fileCollectionArgument);
-        Assert.Empty(fileCollectionArgument!);
+        Assert.Empty(fileCollectionArgument);
         Assert.Equal(200, httpContext.Response.StatusCode);
     }
 
