@@ -205,7 +205,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         await ValidationHelpers.ValidateAttributesAsync(validationAttributes, value, context, (displayName, Type, errorPrefix, value),
             onValidationError: static (context, result, attribute, state) =>
             {
-                var (displayName, type, errorPrefix, value) = ((string, Type, string, object))state;
+                var (displayName, type, errorPrefix, value) = state;
                 foreach (var memberName in result.MemberNames)
                 {
                     // Create a validation error for each member name that is provided
@@ -239,7 +239,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     }
                 }
             },
-            onValidationException: static (_, ex, _) => throw ex,
             cancellationToken);
 
         context.ValidationContext.DisplayName = originalDisplayName;

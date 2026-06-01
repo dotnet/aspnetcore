@@ -115,7 +115,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         await ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, context, (Name, displayName, DeclaringType, value),
             static (context, result, attribute, state) =>
             {
-                var (name, displayName, declaringType, container) = ((string, string, Type, object?))state;
+                var (name, displayName, declaringType, container) = state;
                 var errorMessage = context.ResolveAttributeErrorMessage(
                     memberName: name,
                     displayName,
@@ -129,13 +129,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var key = errorPrefix.TrimStart('.');
                     context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
                 }
-            },
-            static (context, ex, state) =>
-            {
-                var (name, displayName, declaringType, container) = ((string, string, Type, object?))state;
-                var errorPrefix = context.CurrentValidationPath;
-                var key = errorPrefix.TrimStart('.');
-                context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
             }, cancellationToken);
 
         // Check if we've reached the maximum depth before validating complex properties

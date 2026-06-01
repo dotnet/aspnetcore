@@ -21,12 +21,11 @@ internal static class ValidationHelpers
         ValidateContext context,
         TState state,
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
-        Action<ValidateContext, Exception, TState> onValidationException,
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         CancellationToken cancellationToken)
     {
-        await ValidateAttributesAsync(validationAttributes, ValidationMode.SyncOnly, value, context, state, onValidationError, onValidationException, cancellationToken);
-        await ValidateAttributesAsync(validationAttributes, ValidationMode.AsyncOnly, value, context, state, onValidationError, onValidationException, cancellationToken);
+        await ValidateAttributesAsync(validationAttributes, ValidationMode.SyncOnly, value, context, state, onValidationError, cancellationToken);
+        await ValidateAttributesAsync(validationAttributes, ValidationMode.AsyncOnly, value, context, state, onValidationError, cancellationToken);
     }
 
     private static async Task ValidateAttributesAsync<TState>(
@@ -37,7 +36,6 @@ internal static class ValidationHelpers
         ValidateContext context,
         TState state,
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
-        Action<ValidateContext, Exception, TState> onValidationException,
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         CancellationToken cancellationToken)
     {
@@ -57,26 +55,19 @@ internal static class ValidationHelpers
                 continue;
             }
 
-            try
+            ValidationResult? result;
+            if (asyncValidationAttribute is not null)
             {
-                ValidationResult? result;
-                if (asyncValidationAttribute is not null)
-                {
-                    result = await asyncValidationAttribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
-                }
-                else
-                {
-                    result = attribute.GetValidationResult(value, context.ValidationContext);
-                }
-
-                if (result is not null && result != ValidationResult.Success)
-                {
-                    onValidationError(context, result, attribute, state);
-                }
+                result = await asyncValidationAttribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+            else
             {
-                onValidationException(context, ex, state);
+                result = attribute.GetValidationResult(value, context.ValidationContext);
+            }
+
+            if (result is not null && result != ValidationResult.Success)
+            {
+                onValidationError(context, result, attribute, state);
             }
         }
     }

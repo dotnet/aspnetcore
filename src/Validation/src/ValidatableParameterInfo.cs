@@ -101,7 +101,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         // Validate against validation attributes
         Action<ValidateContext, ValidationResult, ValidationAttribute, (string displayName, string Name)> onValidationError = static (context, result, attribute, state) =>
         {
-            var (displayName, name) = ((string, string))state;
+            var (displayName, name) = state;
             var errorMessage = context.ResolveAttributeErrorMessage(
                 memberName: name,
                 displayName,
@@ -116,20 +116,12 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             }
         };
 
-        Action<ValidateContext, Exception, (string displayName, string Name)> onValidationException = static (context, ex, state) =>
-        {
-            var (_, name) = ((string, string))state;
-            var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? name : $"{context.CurrentValidationPath}.{name}";
-            context.AddValidationError(name, key, [ex.Message], null);
-        };
-
         await ValidationHelpers.ValidateAttributesAsync(
             validationAttributes,
             value,
             context,
             (displayName, Name),
             onValidationError,
-            onValidationException,
             cancellationToken);
 
         // If the parameter is a collection, validate each item
