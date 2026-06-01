@@ -57,6 +57,15 @@ internal static class TempDataProviderServiceCollectionExtensions
         var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
         var tempDataInstance = tempDataService.CreateEmpty(httpContext);
         httpContext.Items[HttpContextItemKey] = tempDataInstance;
+        httpContext.Response.OnStarting(() =>
+        {
+            // The provider's SaveTempData establishes the underlying storage (e.g. issues
+            // the session cookie for SessionStorage) so that the post-streaming
+            // PersistTempData call can write the final state after async rendering.
+            _ = tempDataInstance.ContainsKey(string.Empty);
+            tempDataService.Save(httpContext, tempDataInstance);
+            return Task.CompletedTask;
+        });
 
         return tempDataInstance;
     }
