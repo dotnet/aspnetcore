@@ -217,8 +217,8 @@
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <HasSpecialDependencies Condition="'$(TestDependsOnIIS)' == 'true' OR '$(TestDependsOnPlaywright)' == 'true' OR '$(TestDependsOnJava)' == 'true' OR '$(TestDependsOnNode)' == 'true' OR '$(TestDependsOnMssql)' == 'true' OR '$(TestDependsOnAspNetPackages)' == 'true' OR '$(TestDependsOnAspNetAppPackages)' == 'true' OR '$(TestUsesHelixWorkItemRoot)' == 'true'">true</HasSpecialDependencies>
-        <HasSpecialDependencies Condition="'$(TestDependsOnIIS)' != 'true' AND '$(TestDependsOnPlaywright)' != 'true' AND '$(TestDependsOnJava)' != 'true' AND '$(TestDependsOnNode)' != 'true' AND '$(TestDependsOnMssql)' != 'true' AND '$(TestDependsOnAspNetPackages)' != 'true' AND '$(TestDependsOnAspNetAppPackages)' != 'true' AND '$(TestUsesHelixWorkItemRoot)' != 'true'">false</HasSpecialDependencies>
+        <HasSpecialDependencies Condition="'$(TestDependsOnIIS)' == 'true' OR '$(TestDependsOnPlaywright)' == 'true' OR '$(TestDependsOnJava)' == 'true' OR '$(TestDependsOnNode)' == 'true' OR '$(TestDependsOnMssql)' == 'true'">true</HasSpecialDependencies>
+        <HasSpecialDependencies Condition="'$(TestDependsOnIIS)' != 'true' AND '$(TestDependsOnPlaywright)' != 'true' AND '$(TestDependsOnJava)' != 'true' AND '$(TestDependsOnNode)' != 'true' AND '$(TestDependsOnMssql)' != 'true'">false</HasSpecialDependencies>
         <TargetFrameworkMoniker>$(TargetFramework)</TargetFrameworkMoniker>
         <RuntimeVersion>$(SharedFxVersion)</RuntimeVersion>
         <QueueName>$(_HelixFriendlyNameTargetQueue)</QueueName>

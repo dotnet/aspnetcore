@@ -4,8 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- Needed for integration snapshot tests. -->
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <!-- Tests reference HELIX_WORKITEM_ROOT for snapshot files; incompatible with work item batching -->
-    <TestUsesHelixWorkItemRoot>true</TestUsesHelixWorkItemRoot>
   </PropertyGroup>
 
   <ItemGroup>

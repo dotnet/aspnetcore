@@ -83,8 +83,8 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
-            .UseDirectory(SkipOnHelixAttribute.OnHelix() && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") is { } workItemRoot
-                ? Path.Combine(workItemRoot, "snapshots")
+            .UseDirectory(SkipOnHelixAttribute.OnHelix()
+                ? Path.Combine(AppContext.BaseDirectory, "snapshots")
                 : "snapshots");
     }
 

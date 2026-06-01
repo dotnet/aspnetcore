@@ -367,7 +367,7 @@ public static class {{className}}
         var baselineFilePathMetadataValue = typeof(RequestDelegateCreationTestBase).Assembly
             .GetCustomAttributes<AssemblyMetadataAttribute>().Single(d => d.Key == "RequestDelegateGeneratorTestBaselines").Value;
         var baselineFilePathRoot = SkipOnHelixAttribute.OnHelix()
-            ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "RequestDelegateGenerator", "Baselines")
+            ? Path.Combine(AppContext.BaseDirectory, "RequestDelegateGenerator", "Baselines")
             : baselineFilePathMetadataValue;
         var baselineFilePath = Path.Combine(baselineFilePathRoot!, $"{callerName}.generated.txt");
         var generatedSyntaxTree = compilation.SyntaxTrees.Last();

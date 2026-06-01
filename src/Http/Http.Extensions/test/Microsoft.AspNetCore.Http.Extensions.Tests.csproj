@@ -5,8 +5,6 @@
     <!-- This is needed to support codepaths that use NullabilityInfoContext. -->
     <Features>$(Features.Replace('nullablePublicOnly', ''))</Features>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <!-- Tests reference HELIX_WORKITEM_ROOT for baseline files; incompatible with work item batching -->
-    <TestUsesHelixWorkItemRoot>true</TestUsesHelixWorkItemRoot>
   </PropertyGroup>
 
   <ItemGroup>
