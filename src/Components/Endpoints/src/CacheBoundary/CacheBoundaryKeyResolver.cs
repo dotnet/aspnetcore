@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -53,7 +54,7 @@ internal static class CacheBoundaryKeyResolver
         if (cacheBoundary.VaryByUser is true)
         {
             AppendString(hash, "||VaryByUser||");
-            AppendLengthPrefixedString(hash, httpContext.User.Identity?.Name ?? "");
+            AppendUserIdentity(hash, httpContext.User);
         }
 
         if (cacheBoundary.VaryByCulture is true)
@@ -179,6 +180,20 @@ internal static class CacheBoundaryKeyResolver
         }
 
         AppendString(hash, ")");
+    }
+
+    private static void AppendUserIdentity(IncrementalHash hash, ClaimsPrincipal user)
+    {
+        var identity = user.Identity;
+        var isAuthenticated = identity?.IsAuthenticated == true;
+
+        AppendLengthPrefixedString(hash, isAuthenticated ? "1" : "0");
+        AppendLengthPrefixedString(hash, identity?.AuthenticationType ?? "");
+
+        var nameIdentifier = isAuthenticated
+            ? user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            : null;
+        AppendLengthPrefixedString(hash, nameIdentifier ?? identity?.Name ?? "");
     }
 
     private static void AppendLengthPrefixedString(IncrementalHash hash, string value)

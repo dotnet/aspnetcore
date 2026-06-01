@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components;
 /// server-side rendering (SSR). On cache hit, child components are not
 /// instantiated or rendered.
 /// </summary>
-public sealed class CacheBoundary : ComponentBase
+public sealed class CacheBoundary : ComponentBase, IDisposable
 {
     private static readonly ComponentParametersTypeCache _parametersTypeCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
@@ -54,6 +54,7 @@ public sealed class CacheBoundary : ComponentBase
 
     /// <summary>
     /// Gets or sets how long after last access the cache entry should be evicted.
+    /// Not supported when the cache boundary store is backed by <c>HybridCache</c>.
     /// </summary>
     [Parameter]
     public TimeSpan? ExpiresSliding { get; set; }
@@ -298,11 +299,27 @@ public sealed class CacheBoundary : ComponentBase
         finally
         {
             _activeCaptureWriter = null;
+            _captureCompletion = null;
+            _pendingCacheStoreTask = null;
             if (pending is not null)
             {
                 _ = ObserveCacheStorePersistAsync(pending);
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        var completion = _captureCompletion;
+        if (completion is not null && !completion.Task.IsCompleted)
+        {
+            completion.TrySetCanceled();
+        }
+
+        _activeCaptureWriter = null;
+        _captureCompletion = null;
+        _pendingCacheStoreTask = null;
     }
 
     private async Task ObserveCacheStorePersistAsync(Task<string> pending)

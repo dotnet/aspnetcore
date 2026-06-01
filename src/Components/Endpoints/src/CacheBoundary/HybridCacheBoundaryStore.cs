@@ -42,6 +42,16 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
 
     private static HybridCacheEntryOptions BuildHybridOptions(CacheStoreOptions options)
     {
+        if (options.ExpiresSliding.HasValue)
+        {
+            // HybridCache has no sliding-expiration concept. Silently mapping ExpiresSliding to
+            // LocalCacheExpiration would change the meaning (it's an absolute local TTL, not sliding),
+            // so we fail fast instead of producing wrong behavior.
+            throw new NotSupportedException(
+                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.ExpiresSliding)} is not supported when the cache boundary store is backed by HybridCache, because it is not support in HybridCache. " +
+                $"Use {nameof(CacheBoundary.ExpiresAfter)} or {nameof(CacheBoundary.ExpiresOn)} for absolute expiration.");
+        }
+
         var absolute = options.ExpiresOn.HasValue
             ? options.ExpiresOn.Value - DateTimeOffset.UtcNow
             : options.ExpiresAfter ?? RazorComponentsServiceOptions.DefaultCacheBoundaryExpiration;
@@ -54,7 +64,6 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
         return new HybridCacheEntryOptions
         {
             Expiration = absolute,
-            LocalCacheExpiration = options.ExpiresSliding,
         };
     }
 

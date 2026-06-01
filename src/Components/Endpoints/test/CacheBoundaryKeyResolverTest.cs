@@ -256,6 +256,45 @@ public class CacheBoundaryKeyResolverTest
         Assert.Equal(key1, key2);
     }
 
+    [Fact]
+    public void ComputeKey_VaryByUser_DistinguishesByNameIdentifier_WhenNameIsAbsent()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var ctxA = CreateHttpContext(nameIdentifier: "user-a", authType: "Bearer");
+        var ctxB = CreateHttpContext(nameIdentifier: "user-b", authType: "Bearer");
+
+        var keyA = CacheBoundaryKeyResolver.ComputeKey(component, ctxA);
+        var keyB = CacheBoundaryKeyResolver.ComputeKey(component, ctxB);
+
+        Assert.NotEqual(keyA, keyB);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByUser_DistinguishesByAuthenticationType()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var ctxCookie = CreateHttpContext(nameIdentifier: "shared-id", authType: "Cookies");
+        var ctxBearer = CreateHttpContext(nameIdentifier: "shared-id", authType: "Bearer");
+
+        var keyCookie = CacheBoundaryKeyResolver.ComputeKey(component, ctxCookie);
+        var keyBearer = CacheBoundaryKeyResolver.ComputeKey(component, ctxBearer);
+
+        Assert.NotEqual(keyCookie, keyBearer);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByUser_AnonymousDoesNotMatchAuthenticatedWithEmptyName()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var anonymousCtx = CreateHttpContext();
+        var emptyNameAuthCtx = CreateHttpContext(userName: "", authType: "test");
+
+        var keyAnon = CacheBoundaryKeyResolver.ComputeKey(component, anonymousCtx);
+        var keyAuth = CacheBoundaryKeyResolver.ComputeKey(component, emptyNameAuthCtx);
+
+        Assert.NotEqual(keyAnon, keyAuth);
+    }
+
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
     private static CacheBoundary CreateComponent(
@@ -291,7 +330,9 @@ public class CacheBoundaryKeyResolverTest
         RouteValueDictionary routeValues = null,
         Dictionary<string, string> headers = null,
         string cookieHeader = null,
-        string userName = null)
+        string userName = null,
+        string nameIdentifier = null,
+        string authType = "test")
     {
         var httpContext = new DefaultHttpContext();
 
@@ -318,10 +359,18 @@ public class CacheBoundaryKeyResolverTest
             httpContext.Request.Headers["Cookie"] = cookieHeader;
         }
 
-        if (userName is not null)
+        if (userName is not null || nameIdentifier is not null)
         {
-            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
-                [new Claim(ClaimTypes.Name, userName)], "test"));
+            var claims = new List<Claim>();
+            if (userName is not null)
+            {
+                claims.Add(new Claim(ClaimTypes.Name, userName));
+            }
+            if (nameIdentifier is not null)
+            {
+                claims.Add(new Claim(ClaimTypes.NameIdentifier, nameIdentifier));
+            }
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims, authType));
         }
 
         return httpContext;
