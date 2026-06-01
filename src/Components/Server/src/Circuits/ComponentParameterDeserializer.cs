@@ -49,6 +49,23 @@ internal sealed partial class ComponentParameterDeserializer
                 Log.IncompleteParameterDefinition(_logger, definition.Name, definition.TypeName, definition.Assembly);
                 return false;
             }
+            else if (definition.TypeName == typeof(SerializedRenderFragment).FullName
+                && definition.Assembly == "Microsoft.AspNetCore.Components.Endpoints")
+            {
+                try
+                {
+                    var value = (JsonElement)parameterValues[i];
+                    var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(
+                        value.GetRawText(),
+                        ServerComponentSerializationSettings.JsonSerializationOptions);
+                    parametersDictionary.Add(definition.Name, RenderFragmentSerializer.Deserialize(serialized!.Nodes, ServerComponentSerializationSettings.JsonSerializationOptions, _parametersCache));
+                }
+                catch (Exception e)
+                {
+                    Log.InvalidParameterValue(_logger, definition.Name, definition.TypeName, definition.Assembly, e);
+                    return false;
+                }
+            }
             else
             {
                 var parameterType = _parametersCache.GetParameterType(definition.Assembly, definition.TypeName);
@@ -66,7 +83,6 @@ internal sealed partial class ComponentParameterDeserializer
                         value.GetRawText(),
                         parameterType,
                         ServerComponentSerializationSettings.JsonSerializationOptions);
-
                     parametersDictionary.Add(definition.Name, parameterValue);
                 }
                 catch (Exception e)

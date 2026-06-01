@@ -135,8 +135,6 @@
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Client/HostedInAspNet.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Server/HostedInAspNet.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/StandaloneApp/StandaloneApp.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp.Server/ThreadingApp.Server.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp/ThreadingApp.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Client/Wasm.Prerendered.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Server/Wasm.Prerendered.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/WasmLinkerTest/WasmLinkerTest.csproj" />
@@ -1186,6 +1184,9 @@
   <Folder Name="/src/Tools/Microsoft.dotnet-openapi/">
     <Project Path="src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj" />
     <Project Path="src/Tools/Microsoft.dotnet-openapi/test/dotnet-microsoft.openapi.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/NativeAot/">
+    <Project Path="src/Tools/NativeAot/test/Microsoft.AspNetCore.Tools.NativeAot.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Validation/" />
   <Folder Name="/src/Validation/gen/">
