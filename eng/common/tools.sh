@@ -8,16 +8,6 @@ ci=${ci:-false}
 # Build mode
 source_build=${source_build:-false}
 
-# Set to true to use the pipelines logger which will enable Azure logging output.
-# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
-# This flag is meant as a temporary opt-opt for the feature while validate it across
-# our consumers. It will be deleted in the future.
-if [[ "$ci" == true ]]; then
-  pipelines_log=${pipelines_log:-true}
-else
-  pipelines_log=${pipelines_log:-false}
-fi
-
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 configuration=${configuration:-'Debug'}
 
@@ -513,26 +503,14 @@ function DotNet {
 
 function MSBuild {
   local args=( "$@" )
-  if [[ "$pipelines_log" == true ]]; then
-    InitializeBuildTool
+
+  if [[ "$ci" == true ]]; then
     InitializeToolset
 
-    if [[ "$ci" == true ]]; then
-      export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
-      export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
-      Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
-      Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
-    fi
-
-    local toolset_dir="${_InitializeToolset%/*}"
-    local selectedPath="$toolset_dir/net/Microsoft.DotNet.ArcadeLogging.dll"
-
-    if [[ -z "$selectedPath" ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Unable to find arcade sdk logger assembly: $selectedPath"
-      ExitWithExitCode 1
-    fi
-
-    args+=( "-logger:$selectedPath" )
+    export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
+    export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
+    Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
   fi
 
   MSBuild-Core "${args[@]}"

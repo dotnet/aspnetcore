@@ -12,6 +12,8 @@ set $installPlaywright=%7
 REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
 
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+set DOTNET_NOLOGO=1
+set DOTNET_GENERATE_ASPNET_CERTIFICATE=false
 set PLAYWRIGHT_BROWSERS_PATH=%CD%\ms-playwright
 
 REM Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
