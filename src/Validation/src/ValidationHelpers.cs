@@ -2,41 +2,64 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
 
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 internal static class ValidationHelpers
 {
-    private enum ValidationMode
-    {
-        SyncOnly,
-        AsyncOnly,
-    }
-
     internal static async Task ValidateAttributesAsync<TState>(
         ValidationAttribute[] validationAttributes,
         object? value,
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         ValidateContext context,
         TState state,
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
-#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         CancellationToken cancellationToken)
     {
-        await ValidateAttributesAsync(validationAttributes, ValidationMode.SyncOnly, value, context, state, onValidationError, cancellationToken);
-        await ValidateAttributesAsync(validationAttributes, ValidationMode.AsyncOnly, value, context, state, onValidationError, cancellationToken);
+        if (ValidateSynchronousOnly(validationAttributes, value, context, state, onValidationError))
+        {
+            // Only validate async attributes if synchronous validation passed.
+            await ValidateAsynchronousOnlyAsync(validationAttributes, value, context, state, onValidationError, cancellationToken);
+        }
     }
 
-    private static async Task ValidateAttributesAsync<TState>(
+    private static bool ValidateSynchronousOnly<TState>(
         ValidationAttribute[] validationAttributes,
-        ValidationMode mode,
         object? value,
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         ValidateContext context,
         TState state,
-        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
+        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError)
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    {
+        bool hasErrors = false;
+        for (var i = 0; i < validationAttributes.Length; i++)
+        {
+            var attribute = validationAttributes[i];
+
+            if (attribute is AsyncValidationAttribute)
+            {
+                continue;
+            }
+
+            var result = attribute.GetValidationResult(value, context.ValidationContext);
+            if (result is not null && result != ValidationResult.Success)
+            {
+                hasErrors = true;
+                onValidationError(context, result, attribute, state);
+            }
+        }
+
+        return !hasErrors;
+    }
+
+    private static async Task ValidateAsynchronousOnlyAsync<TState>(
+        ValidationAttribute[] validationAttributes,
+        object? value,
+        ValidateContext context,
+        TState state,
+        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
         CancellationToken cancellationToken)
     {
         List<Task>? validationResultTasks = null;
@@ -44,33 +67,14 @@ internal static class ValidationHelpers
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
-            var asyncValidationAttribute = attribute as AsyncValidationAttribute;
-            var shouldValidate = mode switch
-            {
-                ValidationMode.SyncOnly => asyncValidationAttribute is null,
-                ValidationMode.AsyncOnly => asyncValidationAttribute is not null,
-                _ => throw new UnreachableException(),
-            };
-
-            if (!shouldValidate)
+            if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
             {
                 continue;
             }
 
-            if (asyncValidationAttribute is not null)
-            {
-                validationResultTasks ??= new();
-                validationResultTasks.Add(
-                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken));
-            }
-            else
-            {
-                var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result is not null && result != ValidationResult.Success)
-                {
-                    onValidationError(context, result, attribute, state);
-                }
-            }
+            validationResultTasks ??= new();
+            validationResultTasks.Add(
+                GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken));
         }
 
         if (validationResultTasks is not null)
