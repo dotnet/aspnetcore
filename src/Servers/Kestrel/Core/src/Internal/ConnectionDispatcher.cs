@@ -37,64 +37,70 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
         async Task AcceptConnectionsAsync()
         {
-            while (true)
+            try
             {
-                T? connection;
-                try
+                while (true)
                 {
-                    connection = await listener.AcceptAsync();
-                }
-                catch (Exception ex)
-                {
-                    // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
-                    Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
-                    break;
-                }
+                    T? connection;
+                    try
+                    {
+                        connection = await listener.AcceptAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
+                        try
+                        {
+                            Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
+                        }
+                        catch
+                        {
 
-                if (connection == null)
-                {
-                    // We're done listening
-                    break;
-                }
+                        }
+                        break;
+                    }
 
-                try
-                {
-                    // Add the connection to the connection manager before we queue it for execution
-                    var id = _transportConnectionManager.GetNewConnectionId();
-
-                    // Cache counter enabled state at the start of the connection.
-                    // This ensures that the state is consistent for the entire connection.
-                    var metricsContext = Metrics.CreateContext(connection);
-
-                    var kestrelConnection = new KestrelConnection<T>(
-                        id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log, metricsContext);
-
-                    _transportConnectionManager.AddConnection(id, kestrelConnection);
-
-                    Log.ConnectionAccepted(connection.ConnectionId);
-                    KestrelEventSource.Log.ConnectionQueuedStart(connection);
-                    Metrics.ConnectionQueuedStart(metricsContext);
-
-                    ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
-                }
-                catch (Exception ex)
-                {
-                    Log.LogError(0, ex, "The connection listener failed to process an accepted connection. ConnectionId: {ConnectionId}", connection.ConnectionId);
+                    if (connection == null)
+                    {
+                        // We're done listening
+                        break;
+                    }
 
                     try
                     {
-                        connection.Abort(new ConnectionAbortedException("The accepted connection failed while processing."));
-                        await connection.DisposeAsync().ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                    }
+                        // Add the connection to the connection manager before we queue it for execution
+                        var id = _transportConnectionManager.GetNewConnectionId();
+                        // Cache counter enabled state at the start of the connection.
+                        // This ensures that the state is consistent for the entire connection.
+                        var metricsContext = Metrics.CreateContext(connection);
+                        var kestrelConnection = new KestrelConnection<T>(
+                            id, _serviceContext, _transportConnectionManager, _connectionDelegate, connection, Log, metricsContext);
 
-                    continue;
+                        _transportConnectionManager.AddConnection(id, kestrelConnection);
+
+                        Log.ConnectionAccepted(connection.ConnectionId);
+                        KestrelEventSource.Log.ConnectionQueuedStart(connection);
+                        Metrics.ConnectionQueuedStart(metricsContext);
+
+                        ThreadPool.UnsafeQueueUserWorkItem(kestrelConnection, preferLocal: false);
+                    }
+                    catch (Exception ex)
+                    {
+                        try { Log.LogError(0, ex, "Unexpected error while processing accepted connection. ConnectionId: {ConnectionId}", connection.ConnectionId); } catch { }
+
+                        try
+                        {
+                            connection.Abort(new ConnectionAbortedException("Failed while processing."));
+                            await connection.DisposeAsync().ConfigureAwait(false);
+                        }
+                        catch { }
+                    }
                 }
             }
-
-            _acceptLoopTcs.TrySetResult();
+            finally
+            {
+                _acceptLoopTcs.TrySetResult();
+            }
         }
-    }
+     }
 }
