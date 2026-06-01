@@ -39,6 +39,8 @@ internal static class ValidationHelpers
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         CancellationToken cancellationToken)
     {
+        List<Task>? validationResultTasks = null;
+
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
@@ -55,20 +57,46 @@ internal static class ValidationHelpers
                 continue;
             }
 
-            ValidationResult? result;
             if (asyncValidationAttribute is not null)
             {
-                result = await asyncValidationAttribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
+                validationResultTasks ??= new();
+                validationResultTasks.Add(
+                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken));
             }
             else
             {
-                result = attribute.GetValidationResult(value, context.ValidationContext);
+                var result = attribute.GetValidationResult(value, context.ValidationContext);
+                if (result is not null && result != ValidationResult.Success)
+                {
+                    onValidationError(context, result, attribute, state);
+                }
             }
+        }
 
-            if (result is not null && result != ValidationResult.Success)
-            {
-                onValidationError(context, result, attribute, state);
-            }
+        if (validationResultTasks is not null)
+        {
+            await Task.WhenAll(validationResultTasks);
+        }
+    }
+
+    private static async Task GetValidationResultTaskCoreAsync<TState>(
+        AsyncValidationAttribute attribute,
+        object? value,
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        ValidateContext context,
+        TState state,
+        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        CancellationToken cancellationToken)
+    {
+        // TODO: Discuss if we want to force yielding.
+        // await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
+        // The difference between that it introduces is, if the async validation attribute has some synchronous work at the beginning.
+        // Do we want those "initial" synchronous work among different async validation attributes to be run in parallel or not?
+        var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
+        if (result is not null && result != ValidationResult.Success)
+        {
+            onValidationError(context, result, attribute, state);
         }
     }
 }
