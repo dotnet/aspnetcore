@@ -17,7 +17,13 @@ internal static class EndpointEmitter
         using var parameterPreparationBuilder = new CodeWriter(stringWriter, baseIndent);
         var readFormEmitted = false;
 
-        foreach (var parameter in endpointParameters)
+        // Allow an empty form body if all form parameters are optional.
+        var endpointParametersList = endpointParameters.ToList();
+        var allFormBodyParamsOptional = endpointParametersList
+            .Where(p => p.Source == EndpointParameterSource.FormBody)
+            .All(p => p.IsOptional);
+
+        foreach (var parameter in endpointParametersList)
         {
             switch (parameter.Source)
             {
@@ -43,7 +49,7 @@ internal static class EndpointEmitter
                     parameter.EmitJsonBodyParameterPreparationString(parameterPreparationBuilder);
                     break;
                 case EndpointParameterSource.FormBody:
-                    parameter.EmitFormParameterPreparation(parameterPreparationBuilder, ref readFormEmitted);
+                    parameter.EmitFormParameterPreparation(parameterPreparationBuilder, ref readFormEmitted, allFormBodyParamsOptional);
                     break;
                 case EndpointParameterSource.JsonBodyOrService:
                     parameter.EmitJsonBodyOrServiceParameterPreparationString(parameterPreparationBuilder);

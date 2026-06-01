@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     // Endpoint Parameter: file (Type = Microsoft.AspNetCore.Http.IFormFile, IsOptional = False, IsParsable = False, IsArray = False, Source = FormBody)
-                    var file_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "IFormFile", "file");
+                    var file_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "IFormFile", "file", false);
                     if (!file_resolveFormResult.Item1)
                     {
                         return;
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                     var wasParamCheckFailure = false;
                     var httpContext_local = httpContext;
                     // Endpoint Parameter: file (Type = Microsoft.AspNetCore.Http.IFormFile, IsOptional = False, IsParsable = False, IsArray = False, Source = FormBody)
-                    var file_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "IFormFile", "file");
+                    var file_resolveFormResult = await GeneratedRouteBuilderExtensionsCore.TryResolveFormAsync(httpContext, logOrThrowExceptionHelper, "IFormFile", "file", false);
                     if (!file_resolveFormResult.Item1)
                     {
                         return;
@@ -328,10 +328,26 @@ namespace Microsoft.AspNetCore.Http.Generated
             HttpContext httpContext,
             LogOrThrowExceptionHelper logOrThrowExceptionHelper,
             string parameterTypeName,
-            string parameterName)
+            string parameterName,
+            bool allowEmpty = false)
         {
             object? formValue = null;
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == false)
+            {
+                if (!allowEmpty)
+                {
+                    logOrThrowExceptionHelper.UnexpectedRequestWithoutBody(parameterTypeName, parameterName);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+
+                // When the form body is optional and the request has no body, set the form to empty
+                // so that subsequent accesses to Request.Form don't throw.
+                httpContext.Request.Form = FormCollection.Empty;
+                return (true, null);
+            }
 
             if (feature?.CanHaveBody == true)
             {
@@ -563,5 +579,22 @@ namespace Microsoft.AspNetCore.Http.Generated
 
         private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(8, "InvalidFormRequestBody"), "Failed to read parameter \"{ParameterType} {ParameterName}\" from the request body as form.");
+
+        public void UnexpectedRequestWithoutBody(string parameterTypeName, string parameterName)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, "Unexpected request without body, failed to bind parameter \"{0} {1}\" from the request body as form.", parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, StatusCodes.Status400BadRequest);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _unexpectedRequestWithoutBody(_rdgLogger, parameterTypeName, parameterName, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _unexpectedRequestWithoutBody =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(11, "UnexpectedRequestWithoutBody"), "Unexpected request without body, failed to bind parameter \"{ParameterType} {ParameterName}\" from the request body as form.");
     }
 }
