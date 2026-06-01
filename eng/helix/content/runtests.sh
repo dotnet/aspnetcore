@@ -10,6 +10,8 @@ MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
+export DOTNET_NOLOGO=1
+export DOTNET_GENERATE_ASPNET_CERTIFICATE=false
 
 # Avoid https://github.com/dotnet/aspnetcore/issues/41937 in current session.
 unset ASPNETCORE_ENVIRONMENT

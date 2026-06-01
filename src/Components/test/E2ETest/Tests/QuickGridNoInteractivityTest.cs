@@ -5,12 +5,14 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 using OpenQA.Selenium;
 using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
+[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66883")]
 public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
     public QuickGridNoInteractivityTest(
