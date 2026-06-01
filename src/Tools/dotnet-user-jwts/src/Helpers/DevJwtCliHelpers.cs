@@ -164,7 +164,7 @@ internal static class DevJwtCliHelpers
 
         static void PrintJwtJson(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
         {
-            reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
+            reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerContext.Default.Jwt));
         }
 
         static void PrintJwtDefault(IReporter reporter, Jwt jwt, bool showAll, JwtSecurityToken fullToken)
