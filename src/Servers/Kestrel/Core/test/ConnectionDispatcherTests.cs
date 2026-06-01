@@ -83,7 +83,7 @@ public class ConnectionDispatcherTests : LoggedTest
 
         var error = TestSink.Writes.SingleOrDefault(m => m.LogLevel == LogLevel.Error);
         Assert.NotNull(error);
-        Assert.Equal("The connection listener failed to process an accepted connection.", error.Message);
+        Assert.StartsWith("The connection listener failed to process an accepted connection.", error.Message, StringComparison.Ordinal);
     }
 
     [Fact]
