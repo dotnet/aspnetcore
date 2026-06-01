@@ -543,6 +543,56 @@ public class AsyncValidationTests
         Assert.True(elapsed.TotalMilliseconds >= 150); // Both validations should have run
     }
 
+    [Fact]
+    public async Task AsyncValidation_MultipleAttributesOnSameProperty_CollectsAllErrors()
+    {
+        // Arrange
+        // The second DelayedAsyncValidationAttribute is going to wait until the semaphore can be entered.
+        // The semaphore initially can't be entered (initialCount = 0).
+        // Only when the first validation error is reached, it will release the semaphore, allowing
+        // the second validation to proceed and report its error as well.
+        // This ensures that we get the event as soon as validation results are available.
+        using var signal = new SemaphoreSlim(0, 1);
+        var recordType = new TestValidatableTypeInfo(
+            typeof(Record),
+            [
+                CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
+                    [
+                        new DelayedAsyncValidationAttribute(10) { ShouldFail = true, ErrorMessage = "First async error" },
+                        new DelayedAsyncValidationAttribute(10, signal) { ShouldFail = true, ErrorMessage = "Second async error" }
+                    ])
+            ]);
+
+        var record = new Record { Value = "test" };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Record), recordType }
+            }),
+            ValidationContext = new ValidationContext(record)
+        };
+
+        context.OnValidationError += context =>
+        {
+            if (context.Errors.Count == 1 && context.Errors[0] == "First async error")
+            {
+                signal.Release();
+            }
+        };
+
+        // Act
+        await recordType.ValidateAsync(record, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Value", error.Key);
+        Assert.Equal(2, error.Value.Length);
+        Assert.Contains("First async error", error.Value);
+        Assert.Contains("Second async error", error.Value);
+    }
+
     // Test model classes
     private class UserWithAsyncValidation
     {
@@ -925,24 +975,34 @@ public class AsyncValidationTests
     private class DelayedAsyncValidationAttribute : AsyncValidationAttribute
     {
         private readonly int _delayMs;
+        private readonly SemaphoreSlim? _signal;
 
         public DelayedAsyncValidationAttribute(int delayMs)
         {
             _delayMs = delayMs;
         }
 
+        public DelayedAsyncValidationAttribute(int delayMs, SemaphoreSlim signal)
+        {
+            _delayMs = delayMs;
+            _signal = signal;
+        }
+
         public bool ShouldFail { get; set; }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
+            if (_signal is not null)
+            {
+                await _signal.WaitAsync();
+            }
+
             await Task.Delay(_delayMs, cancellationToken);
 
             if (ShouldFail)
