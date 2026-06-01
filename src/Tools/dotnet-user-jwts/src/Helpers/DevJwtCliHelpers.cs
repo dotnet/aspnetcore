@@ -19,7 +19,7 @@ internal static class DevJwtCliHelpers
         var id = resolver.Resolve(projectFilePath, configuration: null);
         if (string.IsNullOrEmpty(id))
         {
-            if (IsFileBasedApp(projectFilePath))
+            if (ProjectIdResolver.IsFileBasedApp(projectFilePath))
             {
                 return null;
             }
@@ -57,7 +57,7 @@ internal static class DevJwtCliHelpers
             return false;
         }
 
-        if (!isFileBasedApp && IsFileBasedApp(project))
+        if (!isFileBasedApp && ProjectIdResolver.IsFileBasedApp(project))
         {
             reporter.Error(Resources.ProjectOption_FileBasedAppNotSupported);
             return false;
@@ -133,7 +133,7 @@ internal static class DevJwtCliHelpers
         var projectDirectory = Path.GetDirectoryName(project)!;
         var applicationUrls = new HashSet<string>();
 
-        if (IsFileBasedApp(project))
+        if (ProjectIdResolver.IsFileBasedApp(project))
         {
             var fileBasedAppLaunchSettingsFilePath = Path.Combine(projectDirectory, Path.GetFileNameWithoutExtension(project) + ".run.json");
             if (File.Exists(fileBasedAppLaunchSettingsFilePath))
@@ -317,6 +317,4 @@ internal static class DevJwtCliHelpers
         return enumerable == null || !enumerable.Any();
     }
 
-    private static bool IsFileBasedApp(string projectFile) =>
-        string.Equals(Path.GetExtension(projectFile), ".cs", StringComparison.OrdinalIgnoreCase);
 }

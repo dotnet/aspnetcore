@@ -68,6 +68,19 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Create_CreatesDefaultAppSettingsFileWhenMissing()
+    {
+        var project = Path.Combine(fixture.CreateProject(createAppSettings: false), "TestProject.csproj");
+        var appsettings = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        app.Run(["create", "--project", project]);
+
+        Assert.Contains("New JWT saved", _console.GetOutput());
+        Assert.Contains("dotnet-user-jwts", File.ReadAllText(appsettings));
+    }
+
+    [Fact]
     public void Create_SupportsFileBasedAppFilePath()
     {
         var appFile = fixture.CreateFileBasedApp(createProjectLaunchSettings: true);

@@ -211,7 +211,7 @@ internal sealed class ProjectIdResolver
         return id;
     }
 
-    private static bool IsFileBasedApp(string projectFile) =>
+    internal static bool IsFileBasedApp(string projectFile) =>
         string.Equals(Path.GetExtension(projectFile), ".cs", StringComparison.OrdinalIgnoreCase);
 
     private static void DisableBuildServerReuse(ProcessStartInfo psi) =>

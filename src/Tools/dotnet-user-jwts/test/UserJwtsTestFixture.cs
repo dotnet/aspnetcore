@@ -84,7 +84,7 @@ app.Run();
   }
 }";
 
-    public string CreateProject(bool hasSecret = true)
+    public string CreateProject(bool hasSecret = true, bool createAppSettings = true)
     {
         var projectPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
         Directory.CreateDirectory(Path.Combine(projectPath.FullName, "Properties"));
@@ -102,9 +102,12 @@ app.Run();
         File.WriteAllText(Path.Combine(projectPath.FullName, "Properties", "launchSettings.json"),
             LaunchSettingsTemplate);
 
-        File.WriteAllText(
-            Path.Combine(projectPath.FullName, "appsettings.Development.json"),
-            "{}");
+        if (createAppSettings)
+        {
+            File.WriteAllText(
+                Path.Combine(projectPath.FullName, "appsettings.Development.json"),
+                "{}");
+        }
 
         File.WriteAllText(
             Path.Combine(projectPath.FullName, "appsettings.Local.json"),
@@ -128,7 +131,7 @@ app.Run();
         return projectPath.FullName;
     }
 
-    public string CreateFileBasedApp(bool createProjectLaunchSettings = false)
+    public string CreateFileBasedApp(bool createProjectLaunchSettings = false, bool createAppSettings = false)
     {
         var appDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
         var appFile = Path.Combine(appDirectory.FullName, "app.cs");
@@ -140,9 +143,12 @@ app.Run();
             Directory.CreateDirectory(Path.Combine(appDirectory.FullName, "Properties"));
             File.WriteAllText(Path.Combine(appDirectory.FullName, "Properties", "launchSettings.json"), LaunchSettingsTemplate);
         }
-        File.WriteAllText(
-            Path.Combine(appDirectory.FullName, "appsettings.Development.json"),
-            "{}");
+        if (createAppSettings)
+        {
+            File.WriteAllText(
+                Path.Combine(appDirectory.FullName, "appsettings.Development.json"),
+                "{}");
+        }
 
         _disposables.Push(() => TryDelete(appDirectory.FullName));
 
