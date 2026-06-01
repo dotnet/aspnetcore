@@ -286,30 +286,23 @@ internal partial class EndpointHtmlRenderer
 
         if (componentState.Component is CacheBoundary cacheBoundary)
         {
-            if (cacheBoundary.Enabled && cacheBoundary.ResolvedCacheKey is { } cacheKey)
+            if (cacheBoundary.CachedData is not null)
             {
-                if (cacheBoundary.CachedData is not null)
-                {
-                    base.WriteComponentHtml(componentId, output);
-                    return;
-                }
+                base.WriteComponentHtml(componentId, output);
+                return;
+            }
 
-                if (_cacheStore is not null)
+            if (cacheBoundary.TryBeginCacheCapture(output, out var wrappedOutput))
+            {
+                try
                 {
-                    var cacheCaptureWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions(), cacheBoundary.ChildContentCapture);
-                    cacheCaptureWriter.StartCapture();
-                    base.WriteComponentHtml(componentId, cacheCaptureWriter);
-                    cacheCaptureWriter.StopCapture();
-
-                    _cacheStore.Set(cacheKey, cacheCaptureWriter.GetJson(GetRenderFragmentSerializationLogger()), new CacheStoreOptions
-                    {
-                        ExpiresAfter = cacheBoundary.ExpiresAfter,
-                        ExpiresOn = cacheBoundary.ExpiresOn,
-                        ExpiresSliding = cacheBoundary.ExpiresSliding,
-                        Priority = cacheBoundary.Priority,
-                    });
-                    return;
+                    base.WriteComponentHtml(componentId, wrappedOutput);
                 }
+                finally
+                {
+                    cacheBoundary.EndCacheCapture();
+                }
+                return;
             }
         }
 

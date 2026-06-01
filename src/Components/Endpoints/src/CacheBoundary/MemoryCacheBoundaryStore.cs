@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
@@ -9,6 +10,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
 {
     private readonly MemoryCache _cache;
+    private readonly ConcurrentDictionary<string, Task<string>> _pending = new(StringComparer.Ordinal);
 
     public MemoryCacheBoundaryStore(IOptions<RazorComponentsServiceOptions> options)
     {
@@ -18,13 +20,44 @@ internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
         });
     }
 
-    public string? Get(string key)
+    public async ValueTask<string> GetOrCreateAsync(
+        string key,
+        Func<CancellationToken, ValueTask<string>> factory,
+        CacheStoreOptions options,
+        CancellationToken cancellationToken)
     {
-        _cache.TryGetValue(key, out string? cached);
-        return cached;
+        if (_cache.TryGetValue<string>(key, out var existing) && existing is not null)
+        {
+            return existing;
+        }
+
+        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pending = _pending.GetOrAdd(key, tcs.Task);
+        if (!ReferenceEquals(pending, tcs.Task))
+        {
+            // Another caller is already creating this entry; observe their result.
+            return await pending.WaitAsync(cancellationToken);
+        }
+
+        try
+        {
+            var json = await factory(cancellationToken);
+            StoreEntry(key, json, options);
+            tcs.SetResult(json);
+            return json;
+        }
+        catch (Exception ex)
+        {
+            tcs.SetException(ex);
+            throw;
+        }
+        finally
+        {
+            _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
+        }
     }
 
-    public void Set(string key, string json, CacheStoreOptions options = default)
+    private void StoreEntry(string key, string json, CacheStoreOptions options)
     {
         var entryOptions = new MemoryCacheEntryOptions
         {

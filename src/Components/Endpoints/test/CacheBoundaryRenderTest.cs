@@ -120,11 +120,26 @@ public class CacheBoundaryRenderTest
         public Dictionary<string, string> Data { get; } = new();
         public string? ReturnForAnyKey { get; set; }
 
-        public string? Get(string key)
-            => ReturnForAnyKey ?? (Data.TryGetValue(key, out var value) ? value : null);
+        public async ValueTask<string> GetOrCreateAsync(
+            string key,
+            Func<CancellationToken, ValueTask<string>> factory,
+            CacheStoreOptions options,
+            CancellationToken cancellationToken)
+        {
+            if (ReturnForAnyKey is not null)
+            {
+                return ReturnForAnyKey;
+            }
 
-        public void Set(string key, string json, CacheStoreOptions options = default)
-            => Data[key] = json;
+            if (Data.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            var created = await factory(cancellationToken).ConfigureAwait(false);
+            Data[key] = created;
+            return created;
+        }
 
         public void Dispose() { }
     }

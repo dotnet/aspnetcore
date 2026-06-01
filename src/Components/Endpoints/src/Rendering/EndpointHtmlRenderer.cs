@@ -40,7 +40,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 {
     private readonly IServiceProvider _services;
     private readonly RazorComponentsServiceOptions _options;
-    private readonly ICacheBoundaryStore? _cacheStore;
     private Task? _servicesInitializedTask;
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private ResourceAssetCollection? _resourceCollection;
@@ -61,7 +60,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         _services = serviceProvider;
         _options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value;
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
-        _cacheStore = serviceProvider.GetService<ICacheBoundaryStore>();
     }
 
     internal HttpContext? HttpContext => _httpContext;

@@ -9,14 +9,15 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal interface ICacheBoundaryStore : IDisposable
 {
     /// <summary>
-    /// Gets a cached JSON template for the specified key, or <c>null</c> on cache miss.
+    /// Gets the cached JSON template for <paramref name="key"/>, or invokes <paramref name="factory"/>
+    /// to produce it on cache miss. Concurrent callers for the same key share a single factory
+    /// invocation; waiters observe the same returned value.
     /// </summary>
-    string? Get(string key);
-
-    /// <summary>
-    /// Stores a JSON template for the specified key.
-    /// </summary>
-    void Set(string key, string json, CacheStoreOptions options = default);
+    ValueTask<string> GetOrCreateAsync(
+        string key,
+        Func<CancellationToken, ValueTask<string>> factory,
+        CacheStoreOptions options,
+        CancellationToken cancellationToken);
 
     /// <summary>
     /// Removes all cached entries. Used primarily for testing scenarios.

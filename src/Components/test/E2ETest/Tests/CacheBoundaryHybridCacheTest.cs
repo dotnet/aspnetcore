@@ -12,9 +12,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
+public class CacheBoundaryHybridCacheTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
-    public CacheBoundaryTest(
+    public CacheBoundaryHybridCacheTest(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
         ITestOutputHelper output)
@@ -26,6 +26,7 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     protected override void InitializeAsyncCore()
     {
+        _serverFixture.AdditionalArguments.Add("--UseHybridCacheBoundaryStore=true");
         base.InitializeAsyncCore();
         Navigate($"{ServerPathBase}/cache-component/clear");
     }
@@ -94,7 +95,6 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         var loopItems = Browser.FindElement(By.Id("test-5")).FindElements(By.CssSelector(".loop-item"));
         Assert.Equal(3, loopItems.Count);
 
-        // Each iteration should have its own distinct cached value
         var firstRenderValues = new string[3];
         for (var i = 0; i < 3; i++)
         {
@@ -102,7 +102,6 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         }
         Assert.Equal(3, firstRenderValues.Distinct().Count());
 
-        // Second navigation — each entry should be independently cached
         Navigate($"{ServerPathBase}/cache-component");
         for (var i = 0; i < 3; i++)
         {
@@ -122,7 +121,6 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("second", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
         var cachedContent = Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text;
 
-        // Cache hit — holes with same (TypeName, Sequence) must not be swapped
         Navigate($"{ServerPathBase}/cache-component");
         Browser.Equal(cachedContent, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text);
         Browser.Equal("first", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
