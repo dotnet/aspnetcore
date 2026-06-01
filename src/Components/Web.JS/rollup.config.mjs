@@ -7,9 +7,9 @@ const __dirname = path.dirname(__filename);
 
 export default createBaseConfig({
   inputOutputMap: {
-    'blazor.server': './src/Boot.Server.ts',
-    'blazor.web': './src/Boot.Web.ts',
-    'blazor.webassembly': './src/Boot.WebAssembly.ts',
+    '_framework/blazor.server': './src/Boot.Server.ts',
+    '_framework/blazor.web': './src/Boot.Web.ts',
+    '_framework/blazor.webassembly': './src/Boot.WebAssembly.ts',
     'blazor.webview': './src/Boot.WebView.ts',
   },
   dir: __dirname,
