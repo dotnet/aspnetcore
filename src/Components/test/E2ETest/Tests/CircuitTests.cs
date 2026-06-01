@@ -35,7 +35,6 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
     [InlineData("render-throw")]
     [InlineData("afterrender-sync-throw")]
     [InlineData("afterrender-async-throw")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66027")]
     public void ComponentLifecycleMethodThrowsExceptionTerminatesTheCircuit(string id)
     {
         Browser.MountTestComponent<ReliabilityComponent>();
@@ -53,7 +52,6 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66027")]
     public void ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit()
     {
         Browser.MountTestComponent<ReliabilityComponent>();
