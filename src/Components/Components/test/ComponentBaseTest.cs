@@ -437,6 +437,101 @@ public class ComponentBaseTest
     }
 
     [Fact]
+    public void ErrorBoundaryStaysInErrorStateAfterChildRenderException()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+        var shouldThrow = true;
+
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder2 =>
+            {
+                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(1);
+                builder2.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), shouldThrow);
+                builder2.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, obj => capturedBoundary = (TestErrorBoundary)obj);
+            builder.CloseComponent();
+        };
+
+        // Act – first render (throws)
+        var rootId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootId);
+
+        // Assert – error boundary captured the exception and renders error UI
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary!.ReceivedException);
+
+        var errorBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+        var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
+        Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
+        Assert.Equal("div", frames.Array[0].ElementName);
+
+        // Act – second render with no error; ErrorBoundary must still show error content
+        // (the fix ensures _hasPendingQueuedRender doesn't suppress the re-render)
+        shouldThrow = false;
+        renderer.RenderRootComponent(rootId);
+
+        Assert.NotNull(capturedBoundary!.ReceivedException);
+        frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
+        Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
+        Assert.Equal("div", frames.Array[0].ElementName);
+    }
+
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/56950
+    // When MULTIPLE children throw in the same batch (e.g. from a @foreach loop),
+    // the ErrorBoundary must still show error content after all the empty renders
+    // and HandleException calls are processed.
+    [Fact]
+    public void ErrorBoundaryStaysInErrorStateWhenMultipleChildrenThrowInSameBatch()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(builder2 =>
+            {
+                // Three children all throw – mirrors the @foreach repro from the issue
+                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(1);
+                builder2.AddComponentParameter(2, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
+                builder2.CloseComponent();
+
+                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(3);
+                builder2.AddComponentParameter(4, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
+                builder2.CloseComponent();
+
+                builder2.OpenComponent<TestComponentErrorBuildRenderTree>(5);
+                builder2.AddComponentParameter(6, nameof(TestComponentErrorBuildRenderTree.ThrowDuringRender), true);
+                builder2.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, obj => capturedBoundary = (TestErrorBoundary)obj);
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootId = renderer.AssignRootComponentId(rootComponent);
+        renderer.RenderRootComponent(rootId);
+
+        // Assert – error boundary must have captured an exception and be showing error UI,
+        // not an empty/blank render (the bug before the fix).
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary!.ReceivedException);
+
+        var errorBoundaryId = renderer.Batches[0].GetComponentFrames<TestErrorBoundary>().Single().ComponentId;
+        var frames = renderer.GetCurrentRenderTreeFrames(errorBoundaryId);
+        Assert.Equal(RenderTree.RenderTreeFrameType.Element, frames.Array[0].FrameType);
+        Assert.Equal("div", frames.Array[0].ElementName);
+    }
+
+    [Fact]
     public async Task ComponentBaseDoesntRenderWhenOnInitializedAsyncFaultedTask()
     {
         // Arrange
