@@ -1551,6 +1551,32 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         AssertReExecutedPageIsInteractive();
     }
 
+    [Fact]
+    public void Textarea_DynamicallyUpdatesOnNavigation()
+    {
+        // Navigate to method1 and validate initial values
+        Navigate($"{ServerPathBase}/textarea-method?method=method1");
+
+        // Wait for elements to be present
+        Browser.Exists(By.Id("textArea"));
+        Browser.Exists(By.Id("textBox"));
+
+        Browser.Equal("Initial value for method 1", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return document.getElementById('textArea').value"));
+        Browser.Equal("Initial value for method 1", () => Browser.FindElement(By.Id("textBox")).GetAttribute("value"));
+
+        // Simulate user editing the textarea and firing change
+        ((IJavaScriptExecutor)Browser).ExecuteScript("var ta = document.getElementById('textArea'); ta.value = 'User edited'; ta.dispatchEvent(new Event('change'));");
+
+        // Navigate to method2 and check that textarea value updates to new method data
+        Navigate($"{ServerPathBase}/textarea-method?method=method2");
+
+        Browser.Exists(By.Id("textArea"));
+        Browser.Exists(By.Id("textBox"));
+
+        Browser.Equal("Method 2 initial value.", () => (string)((IJavaScriptExecutor)Browser).ExecuteScript("return document.getElementById('textArea').value"));
+        Browser.Equal("Method 2 initial value.", () => Browser.FindElement(By.Id("textBox")).GetAttribute("value"));
+    }
+
     private void AssertReExecutedPageIsInteractive()
     {
         Browser.Equal("Current count: 0", () => Browser.FindElement(By.CssSelector("[role='status']")).Text);
