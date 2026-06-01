@@ -272,9 +272,9 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.operationCompleted();
             }
 
-            const message = this.getExceptionMessage(error);
-            this.debug(`Complete sign in error '${message}'`);
-            return this.error(message);
+            const rawMessage = this.getExceptionMessage(error);
+            this.debug(`Complete sign in error '${rawMessage}'`);
+            return this.error(this.getSafeErrorMessage(error));
         }
     }
 
@@ -325,6 +325,39 @@ class OidcAuthorizeService implements AuthorizeService {
 
         function isRegularError(error: any): error is Error {
             return error && error.message;
+        }
+    }
+
+    // Maps known OIDC callback error codes (RFC 6749 §4.1.2.1 + OpenID Connect Core §3.1.2.6)
+    // to safe user-facing messages. Unknown codes and non-OIDC exceptions return a generic
+    // message; the original error is still written to the debug log for diagnostics.
+    private getSafeErrorMessage(error: any): string {
+        const genericMessage = 'There was an error signing in.';
+        const code: string | undefined = error && typeof error.error === 'string' ? error.error : undefined;
+        if (!code) {
+            return genericMessage;
+        }
+        switch (code) {
+            case 'access_denied': return 'Access was denied during sign-in.';
+            case 'login_required': return 'Sign-in is required to continue.';
+            case 'consent_required': return 'User consent is required to continue.';
+            case 'interaction_required': return 'User interaction is required to complete sign-in.';
+            case 'account_selection_required': return 'Please select an account to continue.';
+            case 'invalid_request':
+            case 'invalid_request_uri':
+            case 'invalid_request_object':
+            case 'invalid_scope':
+            case 'unauthorized_client':
+            case 'unsupported_response_type':
+            case 'request_not_supported':
+            case 'request_uri_not_supported':
+            case 'registration_not_supported':
+                return 'The sign-in request was not valid.';
+            case 'server_error':
+            case 'temporarily_unavailable':
+                return 'The sign-in service is temporarily unavailable. Please try again.';
+            default:
+                return genericMessage;
         }
     }
 
