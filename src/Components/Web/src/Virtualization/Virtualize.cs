@@ -80,7 +80,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private bool _pendingAnchorRestore;
 
     // True after the first interactive render; false during SSR/prerender.
-    private bool _isInterActive;
+    private bool _isInteractive;
 
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
@@ -253,7 +253,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         // During SSR/prerender, there are no interactive measurements from JS yet.
         // Use InitialItemCapacity to seed the first render with a reasonable estimate.
-        if (_visibleItemCapacity == 0 && !_isInterActive)
+        if (_visibleItemCapacity == 0 && !_isInteractive && InitialItemCapacity > 0)
         {
             _visibleItemCapacity = InitialItemCapacity;
         }
@@ -298,7 +298,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     {
         if (firstRender)
         {
-            _isInterActive = true;
+            _isInteractive = true;
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
             await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
             _lastRenderedAnchorMode = AnchorMode;
