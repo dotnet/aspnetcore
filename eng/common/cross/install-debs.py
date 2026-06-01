@@ -328,7 +328,18 @@ def extract_deb_file(deb_file, tmp_dir, extract_dir, ar_tool):
             raise ValueError(f"Unsupported compression format: {file_extension}")
 
         with tarfile.open(tar_file_path, mode) as tar:
-            tar.extractall(path=extract_dir, filter='tar')
+            tar.extractall(path=extract_dir, filter=_rootfs_extraction_filter)
+
+def _rootfs_extraction_filter(member, dest_path):
+    """Tarfile extraction filter based on the 'data' filter that additionally
+    rewrites absolute-target symlinks/hardlinks into rootfs-relative paths.
+    """
+    if (member.issym() or member.islnk()) and os.path.isabs(member.linkname):
+        link_dir = os.path.dirname(member.name)
+        new_linkname = os.path.relpath(member.linkname.lstrip('/'),
+                                       start=link_dir or '.')
+        member = member.replace(linkname=new_linkname, deep=False)
+    return tarfile.data_filter(member, dest_path)
 
 def finalize_setup(rootfsdir):
     lib_dir = os.path.join(rootfsdir, 'lib')
