@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
@@ -716,6 +717,39 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task SchemaTransformers_CanModifyNullableOneOfWrappers()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapPost("/subscriptions", (SchemaTransformerSubscription subscription) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            if (context.JsonPropertyInfo?.Name == "secondaryUser" && schema.OneOf is { Count: 2 })
+            {
+                schema.AllOf = [schema.OneOf.Single(item => item is not OpenApiSchema { Type: JsonSchemaType.Null })];
+                schema.OneOf = null;
+                schema.Description = "converted-to-allOf";
+            }
+
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var operation = document.Paths["/subscriptions"].Operations[HttpMethod.Post];
+            var requestSchema = operation.RequestBody.Content["application/json"].Schema;
+            var secondaryUserSchema = requestSchema.Properties["secondaryUser"];
+
+            Assert.Null(secondaryUserSchema.OneOf);
+            var nullableReferenceSchema = Assert.Single(secondaryUserSchema.AllOf);
+            Assert.Equal("SchemaTransformerProfile", ((OpenApiSchemaReference)nullableReferenceSchema).Reference.Id);
+            Assert.Equal("converted-to-allOf", secondaryUserSchema.Description);
+        });
+    }
+
+    [Fact]
     public async Task SchemaTransformers_CanImplementNotSchemaIndependently()
     {
         var builder = CreateBuilder();
@@ -1020,4 +1054,25 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 
         internal static int InstantiationCount = 0;
     }
+
+    #nullable enable
+
+    private class SchemaTransformerSubscription
+    {
+        public required SchemaTransformerProfile PrimaryUser { get; set; }
+
+        public SchemaTransformerProfile? SecondaryUser { get; set; }
+    }
+
+    private class SchemaTransformerProfile
+    {
+        public required SchemaTransformerUser User { get; set; }
+    }
+
+    private class SchemaTransformerUser
+    {
+        public required string Name { get; set; }
+    }
+
+    #nullable restore
 }
