@@ -620,4 +620,34 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         Assert.Equal(200, classifierStringCtx.Response.StatusCode);
         await VerifyResponseBodyAsync(classifierStringCtx, "9:hi");
     }
+
+    [Fact]
+    public async Task MapAction_UnionBody_NestedInWrapperDto_JsonRequiredOnUnionProperty_FailsOnMissing()
+    {
+        // Verifies that [JsonRequired] on a union property of a wrapper DTO behaves the same as for any other property type
+
+        var source = """
+            app.MapPost("/envelope-required", (UnionEnvelopeWithRequiredPayload e) => e);
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointsFromCompilation(compilation)
+            .OfType<RouteEndpoint>()
+            .Single(e => e.RoutePattern.RawText == "/envelope-required");
+
+        // payload key present: succeeds and round-trips
+        var presentCtx = CreateHttpContextWithJson("""{"correlationId":"abc","payload":42}""");
+        await endpoint.RequestDelegate(presentCtx);
+        Assert.Equal(200, presentCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(presentCtx, """{"correlationId":"abc","payload":42}""");
+
+        // payload key missing: STJ enforces [JsonRequired] → 400
+        var missingCtx = CreateHttpContextWithJson("""{"correlationId":"abc"}""");
+        await endpoint.RequestDelegate(missingCtx);
+        Assert.Equal(400, missingCtx.Response.StatusCode);
+
+        // payload explicitly null: the union converter rejects null on read → 400
+        var explicitNullCtx = CreateHttpContextWithJson("""{"correlationId":"abc","payload":null}""");
+        await endpoint.RequestDelegate(explicitNullCtx);
+        Assert.Equal(400, explicitNullCtx.Response.StatusCode);
+    }
 }

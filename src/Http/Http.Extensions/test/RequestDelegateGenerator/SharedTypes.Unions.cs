@@ -294,6 +294,13 @@ public sealed class UnionOuterWithBothClassifiersFactory : JsonTypeClassifierFac
 // unambiguous; the classifier resolves the inner-union ambiguity that surfaces during binding.
 public record UnionEnvelopeWithClassifier(string CorrelationId, UnionIntStringWithClassifier Payload);
 
+// Same as UnionEnvelopeWithClassifier but the union property is marked [JsonRequired].
+// Used to verify STJ rejects a missing "payload" key on read, instead of silently producing
+// a default(union) value that would later trip the union converter on the write path.
+public record UnionEnvelopeWithRequiredPayload(
+    string CorrelationId,
+    [property: JsonRequired] UnionIntStringWithClassifier Payload);
+
 // Container for [AsParameters] tests where a union property is the body slot and
 // a sibling property comes from the route. Verifies that the generator unwraps the
 // container and applies the standard body-inference cascade to the union property

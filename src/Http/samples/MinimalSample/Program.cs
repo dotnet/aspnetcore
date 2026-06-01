@@ -93,6 +93,8 @@ app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
 
     });
 
+app.MapPost("/weather", (Weather weather) => weather);
+
 app.MapPost("/todos", (TodoBindable todo) => todo);
 app.MapGet("/todos", () => new Todo[] { new Todo(1, "Walk the dog"), new Todo(2, "Come back home") });
 
@@ -185,6 +187,13 @@ public sealed class UnionPetClassifierFactory : JsonTypeClassifierFactory<UnionP
             return null;
         };
 }
+
+public class Weather
+{
+    public int TemperatureC { get; set; }
+    public string? Summary { get; set; }
+}
+
 public class TodoBindable : IBindableFromHttpContext<TodoBindable>
 {
     public int Id { get; set; }
