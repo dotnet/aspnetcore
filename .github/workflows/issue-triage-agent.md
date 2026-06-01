@@ -35,6 +35,9 @@ tools:
 safe-outputs:
   noop:
     report-as-issue: false
+  set-issue-type:
+    allowed: ["Bug", "Feature", "Task", "Epic"]
+    max: 1
   add-labels:
     allowed:
       - area-auth
@@ -56,8 +59,6 @@ safe-outputs:
       - area-signalr
       - area-ui-rendering
       - area-unified-build
-      - bug
-      - feature-request
       - by-design
       - question
       - external
@@ -79,7 +80,7 @@ You are an issue-triage agent for the **dotnet/aspnetcore** repository. Your job
 is to analyze a newly opened issue and perform three tasks:
 
 1. **Area classification** - assign the correct `area-*` label
-2. **Type classification** - assign a type label (bug, feature-request, etc.)
+2. **Type classification** - assign an issue type (not a label) (Bug, Feature, Task, or Epic)
 3. **Duplicate detection** - search for similar existing issues
 
 ## Issue to Triage
@@ -299,10 +300,15 @@ Explain why in the comment instead.
 
 Classify the issue into one of these types:
 
-| Type label | When to use |
+| Type | When to use |
 |-----------|-------------|
-| `bug` | The report clearly identifies a behavior as a bug and it can be reproduced. Something is broken or behaving unexpectedly compared to its intended design. |
-| `feature-request` | The report asks for a behavior that is not currently implemented. This may be a brand-new feature or an addition/enhancement to an existing feature. |
+| `Bug` | The report clearly identifies a behavior as a bug and it can be reproduced. Something is broken or behaving unexpectedly compared to its intended design. |
+| `Feature` | The report asks for a behavior that is not currently implemented. This may be a brand-new feature or an addition/enhancement to an existing feature. |
+
+## Step 3: Additional Labels
+
+Classify the issue using one of these labels, if applicable:
+
 | `by-design` | The report describes a behavior that doesn't match the reporter's expectations, but the behavior is actually the intended design. |
 | `question` | The report describes expected behavior, asks for clarification on how to use the product, or is a general "How do I...?" question. Mark as answered when a response is provided. |
 | `external` | The report is not related to an area that the aspnetcore team owns directly. The issue should be moved to the appropriate repo or the customer should be asked to file through the appropriate channels (typically VS Feedback). |
@@ -311,11 +317,11 @@ Classify the issue into one of these types:
 | `test-failure` | CI/test infrastructure failure report. |
 | `performance` | Performance regression or optimization request. |
 
-Apply the single best type label. If the issue template already indicates the type
+Apply the single best label (if applicable). If the issue template already indicates the type
 (e.g., filed via the bug report template), trust that signal but verify it matches
 the actual content — reporters sometimes pick the wrong template.
 
-## Step 3: Regression Detection
+## Step 4: Regression Detection
 
 If the issue is classified as a `bug`, check whether it describes a **regression** —
 a behavior that previously worked in an older version but is now broken in a newer one.
@@ -337,7 +343,7 @@ is known and flag that more information may be needed from the author.
 
 If there is no indication of a regression, omit this section from the summary.
 
-## Step 4: Duplicate Detection
+## Step 5: Duplicate Detection
 
 Search for potential duplicates among recent open issues using the GitHub MCP
 Server tools:
@@ -358,7 +364,7 @@ Only flag an issue as a potential duplicate if you have **high confidence** that
 it describes the same problem or feature request. When in doubt, list it as
 "related" rather than "duplicate".
 
-## Step 5: Post Results
+## Step 6: Post Results
 
 Compose a single triage comment summarizing your findings. Structure it as:
 
