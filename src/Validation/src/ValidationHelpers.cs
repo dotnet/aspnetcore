@@ -27,11 +27,9 @@ internal static class ValidationHelpers
     private static bool ValidateSynchronousOnly<TState>(
         ValidationAttribute[] validationAttributes,
         object? value,
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         ValidateContext context,
         TState state,
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError)
-#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     {
         bool hasErrors = false;
         for (var i = 0; i < validationAttributes.Length; i++)
@@ -86,11 +84,9 @@ internal static class ValidationHelpers
     private static async Task GetValidationResultTaskCoreAsync<TState>(
         AsyncValidationAttribute attribute,
         object? value,
-#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         ValidateContext context,
         TState state,
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
-#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         CancellationToken cancellationToken)
     {
         // TODO: Discuss if we want to force yielding.
