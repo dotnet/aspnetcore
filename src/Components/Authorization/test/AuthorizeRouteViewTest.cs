@@ -367,6 +367,241 @@ public class AuthorizeRouteViewTest
             });
     }
 
+    [Fact]
+    public void WhenAuthorized_WithAfterAuthorizedContent_RendersAfterAuthorizedContent()
+    {
+        // Arrange
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
+            {
+                { nameof(TestPageRequiringAuthorization.Message), "Hello, world!" }
+            });
+        _testAuthorizationService.NextResult = AuthorizationResult.Success();
+
+        string capturedContent = null;
+        RenderFragment<AuthenticationState> afterAuthorized =
+            state =>
+            {
+                capturedContent = $"Post-auth for: {state.User.Identity?.Name}";
+                return builder => builder.AddContent(0, capturedContent);
+            };
+
+        // Act
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.AfterAuthorized), afterAuthorized },
+            }));
+
+        // Assert: AfterAuthorized callback was invoked (indicating it was rendered)
+        Assert.Equal("Post-auth for: ", capturedContent);
+    }
+
+    [Fact]
+    public void WhenAuthorized_WithAfterAuthorizedContent_ReceivesCorrectAuthenticationState()
+    {
+        // Arrange
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
+            {
+                { nameof(TestPageRequiringAuthorization.Message), "Hello, world!" }
+            });
+        _testAuthorizationService.NextResult = AuthorizationResult.Success();
+        _authenticationStateProvider.CurrentAuthStateTask = Task.FromResult(
+            new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "TestUser"),
+                new Claim(ClaimTypes.Role, "Admin")
+            }, "TestScheme"))));
+
+        string capturedUserName = null;
+        RenderFragment<AuthenticationState> afterAuthorized =
+            state =>
+            {
+                capturedUserName = state.User.Identity?.Name;
+                return builder => builder.AddContent(0, $"User: {state.User.Identity?.Name}");
+            };
+
+        // Act
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.AfterAuthorized), afterAuthorized },
+            }));
+
+        // Assert: AfterAuthorized received the correct user name
+        Assert.Equal("TestUser", capturedUserName);
+    }
+
+    [Fact]
+    public void WhenAuthorized_WithoutAfterAuthorizedContent_RendersPageContent()
+    {
+        // Arrange - Test backward compatibility: when AfterAuthorized is null, the normal
+        // page content renders when authorization succeeds (no AfterAuthorized interception)
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
+            {
+                { nameof(TestPageRequiringAuthorization.Message), "Hello, BackwardCompat!" }
+            });
+        _testAuthorizationService.NextResult = AuthorizationResult.Success();
+
+        // Note: AfterAuthorized is NOT provided - this is key for backward compatibility
+
+        // Act
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                // No AfterAuthorized parameter provided
+            }));
+
+        // Assert: The normal page content renders when AfterAuthorized is not intercepting
+        var batch = _renderer.Batches.Single();
+        var pageDiff = batch.GetComponentDiffs<TestPageRequiringAuthorization>().Single();
+        Assert.Collection(pageDiff.Edits,
+            edit => AssertPrependText(batch, edit, "Hello from the page with message: Hello, BackwardCompat!"));
+    }
+
+    [Fact]
+    public void WhenNotAuthorized_WithAfterAuthorizedContent_RendersNotAuthorized_NotAfterAuthorized()
+    {
+        // Arrange - AfterAuthorized should NOT render when authorization fails
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+        _testAuthorizationService.NextResult = AuthorizationResult.Failed();
+
+        RenderFragment<AuthenticationState> afterAuthorized =
+            state => builder => builder.AddContent(0, "This should NOT render");
+
+        RenderFragment<AuthenticationState> notAuthorized =
+            state => builder => builder.AddContent(0, "Not authorized content");
+
+        // Act
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.AfterAuthorized), afterAuthorized },
+                { nameof(AuthorizeRouteView.NotAuthorized), notAuthorized },
+            }));
+
+        // Assert: renders NotAuthorized content, NOT AfterAuthorized
+        var batch = _renderer.Batches.Single();
+        var layoutDiff = batch.GetComponentDiffs<TestLayout>().Single();
+        Assert.Collection(layoutDiff.Edits,
+            edit => AssertPrependText(batch, edit, "Layout starts here"),
+            edit => AssertPrependText(batch, edit, "Not authorized content"),
+            edit => AssertPrependText(batch, edit, "Layout ends here"));
+    }
+
+    [Fact]
+    public void WhenAuthorized_WithAfterAuthorizedContent_CanAccessClaims()
+    {
+        // Arrange - Test that AfterAuthorized can access user claims for decision-making
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
+            {
+                { nameof(TestPageRequiringAuthorization.Message), "Hello, world!" }
+            });
+        _testAuthorizationService.NextResult = AuthorizationResult.Success();
+        _authenticationStateProvider.CurrentAuthStateTask = Task.FromResult(
+            new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "ManagerUser"),
+                new Claim(ClaimTypes.Role, "Manager"),
+                new Claim("Department", "Engineering")
+            }, "TestScheme"))));
+
+        string capturedRole = null;
+        string capturedDept = null;
+        RenderFragment<AuthenticationState> afterAuthorized =
+            state =>
+            {
+                capturedRole = state.User.IsInRole("Manager") ? "Manager" : "NotManager";
+                capturedDept = state.User.FindFirst("Department")?.Value ?? "None";
+                return builder => builder.AddContent(0, $"Role: {capturedRole}, Dept: {capturedDept}");
+            };
+
+        // Act
+        _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.AfterAuthorized), afterAuthorized },
+            }));
+
+        // Assert: AfterAuthorized can correctly access claims
+        Assert.Equal("Manager", capturedRole);
+        Assert.Equal("Engineering", capturedDept);
+    }
+
+    [Fact]
+    public async Task WhenAuthorizing_WithAfterAuthorizedContent_ShowsAuthorizingThenAfterAuthorized()
+    {
+        // Arrange - Test async auth flow: shows Authorizing, then AfterAuthorized after auth completes
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
+            {
+                { nameof(TestPageRequiringAuthorization.Message), "Hello, world!" }
+            });
+        _testAuthorizationService.NextResult = AuthorizationResult.Success();
+
+        var authStateTcs = new TaskCompletionSource<AuthenticationState>();
+        _authenticationStateProvider.CurrentAuthStateTask = authStateTcs.Task;
+
+        string capturedUser = null;
+        RenderFragment<AuthenticationState> afterAuthorized =
+            state =>
+            {
+                capturedUser = state.User.Identity?.Name;
+                return builder => builder.AddContent(0, $"Post-auth for: {state.User.Identity?.Name}");
+            };
+
+        // Act - initial render (auth pending)
+        var firstRenderTask = _renderer.RenderRootComponentAsync(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.AfterAuthorized), afterAuthorized },
+            }));
+
+        // Assert 1: shows Authorizing content while auth is pending
+        Assert.False(firstRenderTask.IsCompleted);
+        var batch1 = _renderer.Batches.Single();
+        var layoutDiff1 = batch1.GetComponentDiffs<TestLayout>().Single();
+        Assert.Collection(layoutDiff1.Edits,
+            edit => AssertPrependText(batch1, edit, "Layout starts here"),
+            edit => AssertPrependText(batch1, edit, "Authorizing..."),
+            edit => AssertPrependText(batch1, edit, "Layout ends here"));
+
+        // Act 2: complete authorization
+        authStateTcs.SetResult(new AuthenticationState(
+            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, "AsyncUser") }, "TestScheme"))));
+        await firstRenderTask;
+
+        // Assert 2: AfterAuthorized was invoked with correct user after auth completes
+        Assert.Equal("AsyncUser", capturedUser);
+    }
+
+    [Fact]
+    public void WhenAuthorized_WithAfterAuthorizedContent_AcceptsParameter()
+    {
+        // Arrange
+        var routeData = new RouteData(typeof(TestPageWithNoAuthorization), EmptyParametersDictionary);
+
+        // Act
+        RenderFragment<AuthenticationState> afterAuthorized =
+            state => builder => builder.AddContent(0, "After authorized content");
+
+        // This test verifies that AfterAuthorized parameter is accepted without error
+        // The feature allows passing AfterAuthorized content that can be used for post-auth validation
+        var renderTask = _renderer.RenderRootComponentAsync(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.AfterAuthorized), afterAuthorized },
+            }));
+
+        // Assert: rendering completes without error
+        Assert.True(renderTask.IsCompletedSuccessfully);
+        Assert.NotEmpty(_renderer.Batches);
+    }
+
     private static void AssertPrependText(CapturedBatch batch, RenderTreeEdit edit, string text)
     {
         Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);

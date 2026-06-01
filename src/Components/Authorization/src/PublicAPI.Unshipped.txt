@@ -1,1 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.AfterAuthorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeRouteView.AfterAuthorized.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.AfterAuthorized.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>?
+Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore.AfterAuthorized.set -> void

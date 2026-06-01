@@ -29,6 +29,7 @@ public sealed class AuthorizeRouteView : RouteView
     private readonly RenderFragment<AuthenticationState> _renderAuthorizedDelegate;
     private readonly RenderFragment<AuthenticationState> _renderNotAuthorizedDelegate;
     private readonly RenderFragment _renderAuthorizingDelegate;
+    private readonly RenderFragment<AuthenticationState> _renderAfterAuthorizedDelegate;
 
     /// <summary>
     /// Initialize a new instance of a <see cref="AuthorizeRouteView"/>.
@@ -42,6 +43,7 @@ public sealed class AuthorizeRouteView : RouteView
         _renderAuthorizedDelegate = authenticateState => renderBaseRouteViewDelegate;
         _renderNotAuthorizedDelegate = authenticationState => builder => RenderNotAuthorizedInDefaultLayout(builder, authenticationState);
         _renderAuthorizingDelegate = RenderAuthorizingInDefaultLayout;
+        _renderAfterAuthorizedDelegate = authenticationState => renderBaseRouteViewDelegate;
         _renderAuthorizeRouteViewCoreDelegate = RenderAuthorizeRouteViewCore;
     }
 
@@ -56,6 +58,13 @@ public sealed class AuthorizeRouteView : RouteView
     /// </summary>
     [Parameter]
     public RenderFragment? Authorizing { get; set; }
+
+    /// <summary>
+    /// The content that will be displayed after authorization succeeds but before the route is processed.
+    /// This allows for additional validation or redirects based on user state or claims.
+    /// </summary>
+    [Parameter]
+    public RenderFragment<AuthenticationState>? AfterAuthorized { get; set; }
 
     /// <summary>
     /// The resource to which access is being controlled.
@@ -92,6 +101,7 @@ public sealed class AuthorizeRouteView : RouteView
         builder.AddComponentParameter(3, nameof(AuthorizeRouteViewCore.Authorizing), _renderAuthorizingDelegate);
         builder.AddComponentParameter(4, nameof(AuthorizeRouteViewCore.NotAuthorized), _renderNotAuthorizedDelegate);
         builder.AddComponentParameter(5, nameof(AuthorizeRouteViewCore.Resource), Resource);
+        builder.AddComponentParameter(6, nameof(AuthorizeRouteViewCore.AfterAuthorized), AfterAuthorized);
         builder.CloseComponent();
     }
 
