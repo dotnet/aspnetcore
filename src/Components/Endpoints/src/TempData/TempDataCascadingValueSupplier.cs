@@ -96,8 +96,6 @@ internal partial class TempDataCascadingValueSupplier
             }
             tempData[key] = value;
         }
-
-        _valueCallbacks.Clear();
     }
 
     internal void DeleteValueCallback(string tempDataKey)

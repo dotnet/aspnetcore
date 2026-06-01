@@ -40,7 +40,7 @@ internal partial class SessionCascadingValueSupplier
         if (!_onStartingRegistered && _httpContext is not null)
         {
             _onStartingRegistered = true;
-            _httpContext.Response.OnStarting(() => PersistAllValues());
+            _httpContext.Response.OnStarting(PersistAllValues);
         }
 
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
@@ -72,7 +72,7 @@ internal partial class SessionCascadingValueSupplier
         }
     }
 
-    internal Task PersistAllValues(bool clean = false)
+    internal Task PersistAllValues()
     {
         if (_valueCallbacks.Count == 0)
         {
@@ -96,16 +96,12 @@ internal partial class SessionCascadingValueSupplier
                     var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
                     session.SetString(sessionKey, json);
                 }
-                else if (clean)
-                {
-                    session.Remove(sessionKey);
-                }
                 else
                 {
-                    // Write an empty value so that session.Set() is called even for null
-                    // values. This ensures the session is established (cookie registered)
-                    // when PersistAllValues runs via the OnStarting callback before the
-                    // response starts. The read side treats empty strings as null.
+                    // Write an empty value (read side treats empty strings as null) so that
+                    // session.Set is called even when all current values are null. This ensures
+                    // the session cookie is issued during the OnStarting callback, before
+                    // streaming chunks flush the response headers and prevent further cookies.
                     session.SetString(sessionKey, string.Empty);
                 }
             }
@@ -114,8 +110,6 @@ internal partial class SessionCascadingValueSupplier
                 Log.SessionPersistFail(_logger, ex);
             }
         }
-
-        _valueCallbacks.Clear();
         return Task.CompletedTask;
     }
 
