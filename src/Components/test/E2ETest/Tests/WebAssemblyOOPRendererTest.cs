@@ -18,8 +18,7 @@ public class WebAssemblyOOPRendererTest(
     ITestOutputHelper output)
     : ServerTestBase<OOPRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
-    [ConditionalFact]
-    [SkipMultithreadedMono]
+    [Fact]
     public void OOPRendererIsActiveAndComponentIsInteractive()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -31,8 +30,7 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal("true", () => Browser.Exists(By.Id("oop-renderer-active")).Text);
     }
 
-    [ConditionalFact]
-    [SkipMultithreadedMono]
+    [Fact]
     public void OOPRendererHandlesClickEvents()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -47,8 +45,7 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal("3", () => Browser.Exists(By.Id("counter-value")).Text);
     }
 
-    [ConditionalFact]
-    [SkipMultithreadedMono]
+    [Fact]
     public void OOPRendererHandlesTextInputBinding()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -62,8 +59,7 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal(text, () => Browser.Exists(By.Id("text-output")).Text);
     }
 
-    [ConditionalFact]
-    [SkipMultithreadedMono]
+    [Fact]
     public void OOPRendererHandlesJSInterop()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -74,8 +70,7 @@ public class WebAssemblyOOPRendererTest(
         Browser.Equal("Hello from JS", () => Browser.Exists(By.Id("jsinterop-result")).Text);
     }
 
-    [ConditionalFact]
-    [SkipMultithreadedMono]
+    [Fact]
     public void OOPRendererHandlesConditionalRendering()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
@@ -93,8 +88,7 @@ public class WebAssemblyOOPRendererTest(
         Browser.Exists(By.Id("toggle-content"));
     }
 
-    [ConditionalFact]
-    [SkipMultithreadedMono]
+    [Fact]
     public void OOPRendererHandlesListRendering()
     {
         Navigate($"{ServerPathBase}/oop-renderer-interactivity");
