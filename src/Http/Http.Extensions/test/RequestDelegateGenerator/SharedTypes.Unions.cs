@@ -3,6 +3,8 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Http;
 
@@ -291,3 +293,15 @@ public sealed class UnionOuterWithBothClassifiersFactory : JsonTypeClassifierFac
 // Envelope that wraps a classifier'd inner union as one of its properties. The record itself is
 // unambiguous; the classifier resolves the inner-union ambiguity that surfaces during binding.
 public record UnionEnvelopeWithClassifier(string CorrelationId, UnionIntStringWithClassifier Payload);
+
+// Container for [AsParameters] tests where a union property is the body slot and
+// a sibling property comes from the route. Verifies that the generator unwraps the
+// container and applies the standard body-inference cascade to the union property
+// while the non-union property is routed/queried independently.
+public record UnionAsParametersList(HttpContext HttpContext, [FromRoute] int TenantId, UnionIntString Payload);
+
+// Same shape as UnionAsParametersList but the union has a JsonUnion classifier wired
+// up. Used to verify both case types (int and string) bind through the body inside an
+// [AsParameters] container — the bare UnionIntString variant is ambiguous on the String
+// token under web defaults, so we need a classifier to cover the string-case path.
+public record UnionWithClassifierAsParametersList(HttpContext HttpContext, [FromRoute] int TenantId, UnionIntStringWithClassifier Payload);

@@ -546,4 +546,93 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         await endpoint.RequestDelegate(noContentTypeCtx);
         Assert.Equal(415, noContentTypeCtx.Response.StatusCode);
     }
+
+    [Theory]
+    [InlineData("(UnionIntString a, UnionPet b) => \"x\"")]
+    [InlineData("(UnionIntString u, Todo t) => \"x\"")]
+    public async Task MapAction_UnionBody_MultipleBodyParameters_ThrowsAtEndpointBuild(string handler)
+    {
+        // Minimal API allows at most one body-bound parameter per endpoint.
+
+        var source = $$"""
+            app.MapPost("/", {{handler}});
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+
+        Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation));
+    }
+
+    [Fact]
+    public async Task MapAction_UnionBody_NestedInWrapperDto_DeserializesUnionProperty()
+    {
+        // UnionEnvelope wraps a UnionIntString as a property.
+
+        var source = """
+            app.MapPost("/envelope",            (UnionEnvelope e) => e);
+            app.MapPost("/envelope-classifier", (UnionEnvelopeWithClassifier e) => e);
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToList();
+        var bareEndpoint       = endpoints.Single(e => e.RoutePattern.RawText == "/envelope");
+        var classifierEndpoint = endpoints.Single(e => e.RoutePattern.RawText == "/envelope-classifier");
+
+        var bareIntCtx = CreateHttpContextWithJson("""{"correlationId":"abc","payload":42}""");
+        await bareEndpoint.RequestDelegate(bareIntCtx);
+        Assert.Equal(200, bareIntCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(bareIntCtx, """{"correlationId":"abc","payload":42}""");
+
+        // ambiguous for string case without classifier
+        var bareStringCtx = CreateHttpContextWithJson("""{"correlationId":"abc","payload":"hi"}""");
+        await bareEndpoint.RequestDelegate(bareStringCtx);
+        Assert.Equal(400, bareStringCtx.Response.StatusCode);
+
+        var classifierIntCtx = CreateHttpContextWithJson("""{"correlationId":"abc","payload":42}""");
+        await classifierEndpoint.RequestDelegate(classifierIntCtx);
+        Assert.Equal(200, classifierIntCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(classifierIntCtx, """{"correlationId":"abc","payload":42}""");
+
+        var classifierStringCtx = CreateHttpContextWithJson("""{"correlationId":"abc","payload":"hi"}""");
+        await classifierEndpoint.RequestDelegate(classifierStringCtx);
+        Assert.Equal(200, classifierStringCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(classifierStringCtx, """{"correlationId":"abc","payload":"hi"}""");
+    }
+
+    [Fact]
+    public async Task MapAction_UnionBody_AsParametersContainer_BindsUnionFromBodyAndRouteFromRoute()
+    {
+        // [AsParameters] unwraps the container and binds each property: union → body, TenantId → route
+
+        var source = """
+            app.MapPost("/tenants/{TenantId}",            ([AsParameters] UnionAsParametersList args)               => $"{args.TenantId}:{args.Payload.Value}");
+            app.MapPost("/classifier-tenants/{TenantId}", ([AsParameters] UnionWithClassifierAsParametersList args) => $"{args.TenantId}:{args.Payload.Value}");
+        """;
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToList();
+        var bareEndpoint       = endpoints.Single(e => e.RoutePattern.RawText == "/tenants/{TenantId}");
+        var classifierEndpoint = endpoints.Single(e => e.RoutePattern.RawText == "/classifier-tenants/{TenantId}");
+
+        var bareIntCtx = CreateHttpContextWithJson("42");
+        bareIntCtx.Request.RouteValues["TenantId"] = "7";
+        await bareEndpoint.RequestDelegate(bareIntCtx);
+        Assert.Equal(200, bareIntCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(bareIntCtx, "7:42");
+
+        // ambiguous for string case without classifier
+        var bareStringCtx = CreateHttpContextWithJson("\"hi\"");
+        bareStringCtx.Request.RouteValues["TenantId"] = "9";
+        await bareEndpoint.RequestDelegate(bareStringCtx);
+        Assert.Equal(400, bareStringCtx.Response.StatusCode);
+
+        var classifierIntCtx = CreateHttpContextWithJson("42");
+        classifierIntCtx.Request.RouteValues["TenantId"] = "7";
+        await classifierEndpoint.RequestDelegate(classifierIntCtx);
+        Assert.Equal(200, classifierIntCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(classifierIntCtx, "7:42");
+
+        var classifierStringCtx = CreateHttpContextWithJson("\"hi\"");
+        classifierStringCtx.Request.RouteValues["TenantId"] = "9";
+        await classifierEndpoint.RequestDelegate(classifierStringCtx);
+        Assert.Equal(200, classifierStringCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(classifierStringCtx, "9:hi");
+    }
 }
