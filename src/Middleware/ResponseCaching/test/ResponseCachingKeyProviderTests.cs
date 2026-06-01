@@ -103,7 +103,7 @@ public class ResponseCachingKeyProviderTests
             Headers = new string[] { "HeaderA", "HeaderC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueAValueB{KeyDelimiter}HeaderC=",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC=",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 
@@ -151,8 +151,6 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "*" }
         };
 
-        // To support case insensitivity, all query keys are converted to upper case.
-        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeyDelimiter}QUERYB=ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
@@ -169,8 +167,6 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "*" }
         };
 
-        // To support case insensitivity, all query keys are converted to upper case.
-        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
@@ -187,8 +183,6 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "*" }
         };
 
-        // To support case insensitivity, all query keys are converted to upper case.
-        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }

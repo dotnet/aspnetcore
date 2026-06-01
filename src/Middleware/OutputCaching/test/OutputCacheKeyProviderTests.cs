@@ -171,7 +171,7 @@ public class OutputCacheKeyProviderTests
         context.HttpContext.Request.Headers.Append("HeaderA", "ValueA");
         context.CacheVaryByRules.HeaderNames = new string[] { "HeaderA", "HeaderC" };
 
-        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueAValueB{KeyDelimiter}HeaderC=",
+        Assert.Equal($"{EmptyBaseKey}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC=",
             cacheKeyProvider.CreateStorageKey(context));
     }
 
@@ -223,8 +223,6 @@ public class OutputCacheKeyProviderTests
         context.CacheVaryByRules.CacheKeyPrefix = Guid.NewGuid().ToString("n");
         context.CacheVaryByRules.QueryKeys = new string[] { "*" };
 
-        // To support case insensitivity, all query keys are converted to upper case.
-        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeyDelimiter}QUERYB=ValueB",
             cacheKeyProvider.CreateStorageKey(context));
     }
@@ -238,8 +236,6 @@ public class OutputCacheKeyProviderTests
         context.CacheVaryByRules.CacheKeyPrefix = Guid.NewGuid().ToString("n");
         context.CacheVaryByRules.QueryKeys = new string[] { "*" };
 
-        // To support case insensitivity, all query keys are converted to upper case.
-        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageKey(context));
     }
@@ -253,8 +249,6 @@ public class OutputCacheKeyProviderTests
         context.CacheVaryByRules.CacheKeyPrefix = Guid.NewGuid().ToString("n");
         context.CacheVaryByRules.QueryKeys = new string[] { "*" };
 
-        // To support case insensitivity, all query keys are converted to upper case.
-        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CacheVaryByRules.CacheKeyPrefix}{KeyDelimiter}{EmptyBaseKey}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageKey(context));
     }
