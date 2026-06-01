@@ -13,8 +13,8 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    private readonly Lazy<ConcurrentDictionary<string, string[]>> _validationErrors
-        = new Lazy<ConcurrentDictionary<string, string[]>>(() => new ConcurrentDictionary<string, string[]>());
+    private readonly Lazy<ConcurrentDictionary<string, IEnumerable<string>>> _validationErrors
+        = new Lazy<ConcurrentDictionary<string, IEnumerable<string>>>(() => new ConcurrentDictionary<string, IEnumerable<string>>());
 
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
@@ -60,7 +60,7 @@ public sealed class ValidateContext
     /// Keys are property names or paths, and values are arrays of error messages.
     /// In the default implementation, this dictionary is initialized when the first error is added.
     /// </remarks>
-    public IReadOnlyDictionary<string, string[]>? ValidationErrors
+    public IReadOnlyDictionary<string, IEnumerable<string>>? ValidationErrors
     {
         get
         {
@@ -104,16 +104,10 @@ public sealed class ValidateContext
     {
         var validationErrors = _validationErrors.Value;
 
-        if (validationErrors.TryGetValue(key, out var existingErrors))
+        var existingErrors = (ConcurrentQueue<string>)validationErrors.GetOrAdd(key, static _ => new ConcurrentQueue<string>());
+        foreach (var error in errors)
         {
-            var newErrors = new string[existingErrors.Length + errors.Length];
-            existingErrors.CopyTo(newErrors, 0);
-            errors.CopyTo(newErrors, existingErrors.Length);
-            validationErrors[key] = newErrors;
-        }
-        else
-        {
-            validationErrors[key] = errors;
+            existingErrors.Enqueue(error);
         }
 
         OnValidationError?.Invoke(new ValidationErrorContext
@@ -129,14 +123,8 @@ public sealed class ValidateContext
     {
         var validationErrors = _validationErrors.Value;
 
-        if (validationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
-        {
-            validationErrors[key] = [.. existingErrors, error];
-        }
-        else
-        {
-            validationErrors[key] = [error];
-        }
+        var existingErrors = (ConcurrentQueue<string>)validationErrors.GetOrAdd(key, static _ => new ConcurrentQueue<string>());
+        existingErrors.Enqueue(error);
 
         OnValidationError?.Invoke(new ValidationErrorContext
         {
