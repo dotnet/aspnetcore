@@ -1,0 +1,227 @@
+name: Validate PAT Pool
+
+on:
+  schedule:
+    - cron: '17 2 * * *' # Daily at ~2:17 AM UTC (off-round to reduce contention)
+  workflow_dispatch:
+
+# No GitHub API permissions needed
+permissions: {}
+
+jobs:
+  validate:
+    name: Validate Copilot PAT Pool
+    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
+    runs-on: ubuntu-latest
+    env:
+      VALIDATE_PAT: |
+        if [ -z "$COPILOT_GITHUB_TOKEN" ]; then echo "status=empty" >> "$GITHUB_OUTPUT"; exit 0; fi
+        set +e; timeout 30 copilot --prompt "Say OK" --available-tools="" --silent --effort=low; rc=$?; set -e
+        if [ $rc -eq 0 ]; then echo "status=valid" >> "$GITHUB_OUTPUT"
+        elif [ $rc -eq 124 ]; then echo "status=unknown" >> "$GITHUB_OUTPUT"
+        else echo "status=invalid" >> "$GITHUB_OUTPUT"; fi
+    steps:
+      - name: Setup gh-aw scripts
+        uses: github/gh-aw-actions/setup@b8068426813005612b960b5ab0b8bd2c27142323 # v0.71.5
+        with:
+          destination: ${{ runner.temp }}/gh-aw/actions
+
+      - name: Install Copilot CLI
+        run: bash "${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh" 1.0.21
+
+      # -----------------------------------------------------------
+      # Make a Copilot CLI request with each PAT.
+      # Each step sets COPILOT_GITHUB_TOKEN directly from the secret
+      # via env: so the value never passes through shell variables.
+      # -----------------------------------------------------------
+
+      - name: Validate COPILOT_PAT_0
+        id: pat0
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_1
+        id: pat1
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_1 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_2
+        id: pat2
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_2 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_3
+        id: pat3
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_3 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_4
+        id: pat4
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_4 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_5
+        id: pat5
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_5 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_6
+        id: pat6
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_6 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_7
+        id: pat7
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_7 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_8
+        id: pat8
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_8 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      - name: Validate COPILOT_PAT_9
+        id: pat9
+        continue-on-error: true
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_9 }}
+        shell: bash
+        run: |
+          # copilot --prompt "Say OK"
+          eval "$VALIDATE_PAT"
+
+      # -----------------------------------------------------------
+      # Collect results and build the step summary
+      # -----------------------------------------------------------
+
+      - name: Build summary
+        if: always()
+        env:
+          S0: ${{ steps.pat0.outputs.status }}
+          S1: ${{ steps.pat1.outputs.status }}
+          S2: ${{ steps.pat2.outputs.status }}
+          S3: ${{ steps.pat3.outputs.status }}
+          S4: ${{ steps.pat4.outputs.status }}
+          S5: ${{ steps.pat5.outputs.status }}
+          S6: ${{ steps.pat6.outputs.status }}
+          S7: ${{ steps.pat7.outputs.status }}
+          S8: ${{ steps.pat8.outputs.status }}
+          S9: ${{ steps.pat9.outputs.status }}
+        shell: bash
+        run: |
+          # Build summary
+          statuses=("$S0" "$S1" "$S2" "$S3" "$S4" "$S5" "$S6" "$S7" "$S8" "$S9")
+
+          valid=0; empty=0; invalid=0; unknown=0
+          for s in "${statuses[@]}"; do
+            case "$s" in
+              valid)   valid=$((valid + 1)) ;;
+              empty)   empty=$((empty + 1)) ;;
+              invalid) invalid=$((invalid + 1)) ;;
+              *)       unknown=$((unknown + 1)) ;;
+            esac
+          done
+
+          {
+            if [ $invalid -eq 0 ] && [ $unknown -eq 0 ] && [ $valid -gt 0 ]; then
+              echo "> [!NOTE]"
+              echo "> **PAT pool is valid** — no action needed"
+              echo ""
+            fi
+
+            if [ $invalid -eq 0 ] && [ $unknown -eq 0 ] && [ $valid -eq 0 ]; then
+              echo "> [!WARNING]"
+              echo "> **Empty PAT pool** — agentic workflows will fall back to the default \`COPILOT_GITHUB_TOKEN\`."
+              echo ""
+            fi
+
+            if [ $invalid -gt 0 ]; then
+              echo "> [!CAUTION]"
+              echo "> **Invalid PAT pool** — agentic workflows selecting an invalid PAT will fail."
+              echo ""
+            fi
+
+            if [ $unknown -gt 0 ]; then
+              echo "> [!WARNING]"
+              echo "> **PAT pool not verified** due to transient errors — re-run the workflow to retry."
+              echo ""
+            fi
+
+            echo "☑️ Valid: ${valid} • ⏹️ Empty: ${empty} • ❌ Invalid: ${invalid} • ❓ Unknown: ${unknown}"
+            echo ""
+
+            echo "| PAT Secret | Status |"
+            echo "|:-----------|:-------|"
+
+            for i in $(seq 0 9); do
+              case "${statuses[$i]}" in
+                valid)   symbol="☑️ Valid" ;;
+                empty)   symbol="⏹️ Empty" ;;
+                invalid) symbol="❌ Invalid" ;;
+                *)       symbol="❓ Unknown" ;;
+              esac
+              echo "| \`COPILOT_PAT_${i}\` | ${symbol} |"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ $invalid -gt 0 ]; then
+            echo "::error::${invalid} PAT(s) in the pool are invalid and need to be removed or replaced"
+            exit 1
+          fi
+
+          if [ $unknown -gt 0 ]; then
+            echo "::error::${unknown} PAT(s) could not be verified due to transient errors — re-run to retry"
+            exit 1
+          fi
+
+          if [ $valid -eq 0 ]; then
+            echo "::error::The PAT pool is empty — no PATs are available"
+            exit 1
+          fi
+
+          echo "PAT pool validation passed: ${valid} valid PAT(s)"

@@ -1,0 +1,239 @@
+name: Skill Validation
+
+on:
+  pull_request:
+    paths:
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.github/workflows/skill-validation.yml'
+      - '.github/workflows/skill-validation-comment.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/skills/**'
+      - '.github/agents/**'
+      - '.github/workflows/skill-validation.yml'
+      - '.github/workflows/skill-validation-comment.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: skill-validation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  validate:
+    name: Validate skills and agents
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/skills
+            .github/agents
+          persist-credentials: false
+
+      # ── Determine changed skills/agents (PRs only) ───────────────
+      - name: Determine changed skills and agents
+        id: changed
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          changed_files=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json files --jq '.files[].path')
+
+          changed_skill_files=$(echo "$changed_files" | grep '^\.github/skills/' || true)
+          changed_agent_files=$(echo "$changed_files" | grep '^\.github/agents/' || true)
+
+          if [ -z "$changed_skill_files" ] && [ -z "$changed_agent_files" ]; then
+            echo "No skill/agent files changed in this PR"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+          # Extract unique skill directory names
+          if [ -n "$changed_skill_files" ]; then
+            echo "$changed_skill_files" | sed 's|\.github/skills/\([^/]*\)/.*|\1|' | sort -u > changed-skill-dirs.txt
+            echo "has_skills=true" >> "$GITHUB_OUTPUT"
+            echo "Changed skill directories:"
+            cat changed-skill-dirs.txt
+          else
+            echo "has_skills=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ -n "$changed_agent_files" ]; then
+            echo "$changed_agent_files" > changed-agent-files.txt
+            echo "has_agents=true" >> "$GITHUB_OUTPUT"
+            echo "Changed agent files:"
+            cat changed-agent-files.txt
+          else
+            echo "has_agents=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Filter to only changed skills/agents (PRs only) ──────────
+      - name: Filter to changed skills and agents
+        if: github.event_name == 'pull_request' && steps.changed.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          # Remove unchanged skill directories
+          if [ "${{ steps.changed.outputs.has_skills }}" = "true" ] && [ -f changed-skill-dirs.txt ]; then
+            for dir in .github/skills/*/; do
+              dirname=$(basename "$dir")
+              if ! grep -Fxq "$dirname" changed-skill-dirs.txt; then
+                rm -rf "$dir"
+              fi
+            done
+          elif [ -d .github/skills ]; then
+            rm -rf .github/skills
+          fi
+
+          # Remove unchanged agent files
+          if [ "${{ steps.changed.outputs.has_agents }}" = "true" ] && [ -f changed-agent-files.txt ]; then
+            for f in .github/agents/*; do
+              if ! grep -Fxq "$f" changed-agent-files.txt; then
+                rm -f "$f"
+              fi
+            done
+          elif [ -d .github/agents ]; then
+            rm -rf .github/agents
+          fi
+
+          # Log what remains
+          echo "Skills to validate:"
+          find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null || echo "  (none)"
+          echo "Agents to validate:"
+          find .github/agents -name '*.agent.md' 2>/dev/null || echo "  (none)"
+
+      # ── Download & cache skill-validator ──────────────────────────
+      - name: Get cache key date
+        id: cache-date
+        run: echo "date=$(date +%Y-%m-%d)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore skill-validator from cache
+        id: cache-sv
+        uses: actions/cache/restore@v4
+        with:
+          path: skill-validator-bin
+          key: skill-validator-linux-x64-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            skill-validator-linux-x64-
+
+      - name: Download skill-validator
+        if: steps.cache-sv.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p skill-validator-bin
+          curl -fsSL --retry 3 --retry-all-errors -o skill-validator.tar.gz \
+            https://github.com/dotnet/skills/releases/download/skill-validator-nightly/skill-validator-linux-x64.tar.gz
+          tar -xzf skill-validator.tar.gz -C skill-validator-bin
+          if [ ! -f skill-validator-bin/skill-validator ]; then
+            echo "::error::skill-validator binary not found after extraction"
+            exit 1
+          fi
+          chmod +x skill-validator-bin/skill-validator
+
+      - name: Save skill-validator to cache
+        if: steps.cache-sv.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: skill-validator-bin
+          key: skill-validator-linux-x64-${{ steps.cache-date.outputs.date }}
+
+      # ── Run skill-validator check ─────────────────────────────────
+      - name: Run skill-validator check
+        id: check
+        if: github.event_name != 'pull_request' || steps.changed.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          rc=0
+
+          if [ -d .github/skills ]; then
+            echo "::group::Validate skills"
+            set +e
+            skill-validator-bin/skill-validator check --skills .github/skills --allow-repo-traversal --verbose 2>&1 | tee skill-check-skills.txt
+            skills_rc=${PIPESTATUS[0]}
+            set -e
+            echo "::endgroup::"
+            if [ "$skills_rc" -ne 0 ]; then rc=1; fi
+          fi
+
+          if [ -d .github/agents ]; then
+            echo "::group::Validate agents"
+            set +e
+            skill-validator-bin/skill-validator check --agents .github/agents --verbose 2>&1 | tee skill-check-agents.txt
+            agents_rc=${PIPESTATUS[0]}
+            set -e
+            echo "::endgroup::"
+            if [ "$agents_rc" -ne 0 ]; then rc=1; fi
+          fi
+
+          # Combine output for the commenting workflow
+          cat skill-check-skills.txt skill-check-agents.txt > sv-output.txt 2>/dev/null || true
+
+          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
+
+          # Write to step summary
+          {
+            echo "## skill-validator check"
+            echo ""
+            if [ "$rc" -eq 0 ]; then
+              echo "All checks passed."
+              echo ""
+              skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l || true)
+              agent_count=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l || true)
+              echo "Validated **${skill_count}** skill(s) and **${agent_count}** agent(s)."
+            else
+              for f in skill-check-skills.txt skill-check-agents.txt; do
+                if [ -f "$f" ]; then
+                  echo "### ${f}"
+                  echo '```'
+                  head -n 200 "$f"
+                  echo '```'
+                  echo ""
+                fi
+              done
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$rc"
+
+      # ── Upload results for the commenting workflow ────────────────
+      - name: Save metadata
+        if: always()
+        run: |
+          mkdir -p sv-results
+
+          # If check step was skipped (PR with no skill/agent changes), emit zeros
+          exit_code="${{ steps.check.outputs.exit_code }}"
+          skill_count=0
+          agent_count=0
+          total=0
+          if [ -z "$exit_code" ]; then
+            exit_code=0
+          else
+            skill_count=$(find .github/skills -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l || true)
+            agent_count=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l || true)
+            total=$((skill_count + agent_count))
+          fi
+          echo "${{ github.event.pull_request.number }}" > sv-results/pr-number.txt
+          echo "$skill_count" > sv-results/skill-count.txt
+          echo "$agent_count" > sv-results/agent-count.txt
+          echo "$total" > sv-results/total.txt
+          echo "$exit_code" > sv-results/exit-code.txt
+          if [ -f sv-output.txt ]; then
+            cp sv-output.txt sv-results/sv-output.txt
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-validator-results
+          path: sv-results/
+          retention-days: 1
