@@ -71,7 +71,6 @@ internal sealed class RenderFragmentCapture
             }
 
             var componentSubtreeEnd = i + frame.ComponentSubtreeLength;
-
             // A component's attribute frames always sit right after the Component
             // frame in the render tree, with no other frame types mixed in. So we can stop as
             // soon as we hit the first non-Attribute frame.
