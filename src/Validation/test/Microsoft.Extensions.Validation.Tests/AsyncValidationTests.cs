@@ -469,13 +469,10 @@ public class AsyncValidationTests
         };
 
         // Act
-        await documentType.ValidateAsync(document, context, default);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => documentType.ValidateAsync(document, context, default));
 
-        // Assert - Exceptions during property validation are caught and converted to errors
-        Assert.NotNull(context.ValidationErrors);
-        var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Content", error.Key);
-        Assert.Contains("Async validation failed", error.Value.First());
+        Assert.Null(context.ValidationErrors);
+        Assert.Contains("Async validation failed", ex.Message);
     }
 
     [Fact]
