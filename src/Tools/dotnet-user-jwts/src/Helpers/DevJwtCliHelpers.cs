@@ -131,19 +131,22 @@ internal static class DevJwtCliHelpers
         }
 
         var projectDirectory = Path.GetDirectoryName(project)!;
-        var launchSettingsFilePath = Path.Combine(projectDirectory, "Properties", "launchSettings.json");
         var applicationUrls = new HashSet<string>();
-        if (File.Exists(launchSettingsFilePath))
-        {
-            applicationUrls.UnionWith(ExtractApplicationUrlsFromLaunchSettings(launchSettingsFilePath));
-        }
-        else if (IsFileBasedApp(project))
+
+        if (IsFileBasedApp(project))
         {
             var fileBasedAppLaunchSettingsFilePath = Path.Combine(projectDirectory, Path.GetFileNameWithoutExtension(project) + ".run.json");
             if (File.Exists(fileBasedAppLaunchSettingsFilePath))
             {
                 applicationUrls.UnionWith(ExtractApplicationUrlsFromLaunchSettings(fileBasedAppLaunchSettingsFilePath));
+                return applicationUrls.ToList();
             }
+        }
+
+        var launchSettingsFilePath = Path.Combine(projectDirectory, "Properties", "launchSettings.json");
+        if (File.Exists(launchSettingsFilePath))
+        {
+            applicationUrls.UnionWith(ExtractApplicationUrlsFromLaunchSettings(launchSettingsFilePath));
         }
 
         return applicationUrls.ToList();

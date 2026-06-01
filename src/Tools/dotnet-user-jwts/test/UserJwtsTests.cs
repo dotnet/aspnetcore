@@ -70,7 +70,7 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     [Fact]
     public void Create_SupportsFileBasedAppFilePath()
     {
-        var appFile = fixture.CreateFileBasedApp();
+        var appFile = fixture.CreateFileBasedApp(createProjectLaunchSettings: true);
         var appsettings = Path.Combine(Path.GetDirectoryName(appFile), "appsettings.Development.json");
         var app = new Program(_console);
 

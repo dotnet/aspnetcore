@@ -128,13 +128,18 @@ app.Run();
         return projectPath.FullName;
     }
 
-    public string CreateFileBasedApp()
+    public string CreateFileBasedApp(bool createProjectLaunchSettings = false)
     {
         var appDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
         var appFile = Path.Combine(appDirectory.FullName, "app.cs");
 
         File.WriteAllText(appFile, FileBasedAppTemplate);
         File.WriteAllText(Path.Combine(appDirectory.FullName, "app.run.json"), FileBasedAppLaunchSettingsTemplate);
+        if (createProjectLaunchSettings)
+        {
+            Directory.CreateDirectory(Path.Combine(appDirectory.FullName, "Properties"));
+            File.WriteAllText(Path.Combine(appDirectory.FullName, "Properties", "launchSettings.json"), LaunchSettingsTemplate);
+        }
         File.WriteAllText(
             Path.Combine(appDirectory.FullName, "appsettings.Development.json"),
             "{}");
