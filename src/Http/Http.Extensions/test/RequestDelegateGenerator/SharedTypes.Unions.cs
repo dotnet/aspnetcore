@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Http;
+namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
 #nullable enable
 

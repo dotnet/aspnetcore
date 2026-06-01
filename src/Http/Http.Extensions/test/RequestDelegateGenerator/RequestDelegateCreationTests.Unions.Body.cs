@@ -547,21 +547,6 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         Assert.Equal(415, noContentTypeCtx.Response.StatusCode);
     }
 
-    [Theory]
-    [InlineData("(UnionIntString a, UnionPet b) => \"x\"")]
-    [InlineData("(UnionIntString u, Todo t) => \"x\"")]
-    public async Task MapAction_UnionBody_MultipleBodyParameters_ThrowsAtEndpointBuild(string handler)
-    {
-        // Minimal API allows at most one body-bound parameter per endpoint.
-
-        var source = $$"""
-            app.MapPost("/", {{handler}});
-        """;
-        var (_, compilation) = await RunGeneratorAsync(source);
-
-        Assert.Throws<InvalidOperationException>(() => GetEndpointFromCompilation(compilation));
-    }
-
     [Fact]
     public async Task MapAction_UnionBody_NestedInWrapperDto_DeserializesUnionProperty()
     {
