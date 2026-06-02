@@ -103,7 +103,7 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         if (!string.IsNullOrEmpty(connection.UserIdentifier))
         {
-            userTask = SubscribeToUser(connection);
+            userTask = SubscribeToUser(connection, connection.UserIdentifier);
         }
 
         await Task.WhenAll(connectionTask, userTask);
@@ -143,10 +143,40 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
 
         if (!string.IsNullOrEmpty(connection.UserIdentifier))
         {
-            tasks.Add(RemoveUserAsync(connection));
+            tasks.Add(RemoveUserAsync(connection, connection.UserIdentifier));
         }
 
         return Task.WhenAll(tasks);
+    }
+
+    /// <inheritdoc />
+    public override async Task<bool> OnUserIdentifierChangedAsync(HubConnectionContext connection, string? oldUserIdentifier, string? newUserIdentifier)
+    {
+        if (string.Equals(oldUserIdentifier, newUserIdentifier, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        // If the bus is null then the Redis connection failed to be established and we cannot update the
+        // backplane subscriptions. Fail closed and let the caller abort rather than silently misroute messages.
+        if (_bus is null)
+        {
+            return false;
+        }
+
+        if (!string.IsNullOrEmpty(oldUserIdentifier))
+        {
+            await RemoveUserAsync(connection, oldUserIdentifier);
+        }
+
+        connection.UserIdentifier = newUserIdentifier;
+
+        if (!string.IsNullOrEmpty(newUserIdentifier))
+        {
+            await SubscribeToUser(connection, newUserIdentifier);
+        }
+
+        return true;
     }
 
     /// <inheritdoc />
@@ -354,9 +384,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         await ack;
     }
 
-    private Task RemoveUserAsync(HubConnectionContext connection)
+    private Task RemoveUserAsync(HubConnectionContext connection, string userIdentifier)
     {
-        var userChannel = _channels.User(connection.UserIdentifier!);
+        var userChannel = _channels.User(userIdentifier);
 
         return _users.RemoveSubscriptionAsync(userChannel, connection, this, static (state, channelName) =>
         {
@@ -580,9 +610,9 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
         });
     }
 
-    private Task SubscribeToUser(HubConnectionContext connection)
+    private Task SubscribeToUser(HubConnectionContext connection, string userIdentifier)
     {
-        var userChannel = _channels.User(connection.UserIdentifier!);
+        var userChannel = _channels.User(userIdentifier);
 
         return _users.AddSubscriptionAsync(userChannel, connection, async (channelName, subscriptions) =>
         {

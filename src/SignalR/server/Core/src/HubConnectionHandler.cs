@@ -150,7 +150,9 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         Action<ClaimsPrincipal>? userUpdatedHandler = null;
         if (userUpdateFeature is not null)
         {
-            userUpdatedHandler = _ => OnUserUpdated(connectionContext);
+            // Serializes auth-refresh handling for this connection so concurrent refreshes don't race the re-key.
+            var authRefreshLock = new SemaphoreSlim(1, 1);
+            userUpdatedHandler = _ => OnUserUpdated(connectionContext, authRefreshLock);
             userUpdateFeature.UserUpdated += userUpdatedHandler;
         }
 
@@ -173,16 +175,52 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
     }
 
-    private void OnUserUpdated(HubConnectionContext connection)
+    private void OnUserUpdated(HubConnectionContext connection, SemaphoreSlim authRefreshLock)
     {
-        // Recompute the user identifier; SignalR's user-targeting (Clients.User, HubLifetimeManager _users)
-        // assumes a stable identifier per connection, so a change forces a reconnect.
-        var newUserId = _userIdProvider.GetUserId(connection);
-        if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+        // Fire and forget; HandleUserUpdatedAsync serializes work per connection through authRefreshLock.
+        _ = HandleUserUpdatedAsync(connection, authRefreshLock);
+    }
+
+    private async Task HandleUserUpdatedAsync(HubConnectionContext connection, SemaphoreSlim authRefreshLock)
+    {
+        await authRefreshLock.WaitAsync();
+        try
         {
-            Log.UserIdentifierChangedOnRefresh(_logger, connection.UserIdentifier, newUserId);
-            connection.Abort();
-            return;
+            // Recompute inside the lock so a concurrent refresh observes the latest principal and identifier.
+            var newUserId = _userIdProvider.GetUserId(connection);
+            if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+            {
+                var previousUserId = connection.UserIdentifier;
+
+                bool rekeyed;
+                try
+                {
+                    // SignalR's user-targeting (Clients.User) keys on the user identifier, so re-key the
+                    // connection in the lifetime manager to move it from the old user to the new one.
+                    rekeyed = await _lifetimeManager.OnUserIdentifierChangedAsync(connection, previousUserId, newUserId);
+                }
+                catch (Exception ex)
+                {
+                    Log.UserIdentifierRekeyFailed(_logger, previousUserId, newUserId, ex);
+                    connection.Abort();
+                    return;
+                }
+
+                if (!rekeyed)
+                {
+                    // The lifetime manager doesn't support changing a connection's user identifier, so the only
+                    // safe option is to drop the connection rather than leave it reachable under a stale identifier.
+                    Log.UserIdentifierChangedOnRefresh(_logger, previousUserId, newUserId);
+                    connection.Abort();
+                    return;
+                }
+
+                Log.UserIdentifierRekeyedOnRefresh(_logger, previousUserId, newUserId);
+            }
+        }
+        finally
+        {
+            authRefreshLock.Release();
         }
 
         // Fire and forget; the dispatcher serializes through ActiveInvocationLimit so the work runs

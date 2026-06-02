@@ -57,6 +57,11 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     // from a request whose lifetime is shorter than the connection). When true, identities must be
     // disposed when replaced or when the connection ends.
     private bool _ownsUserIdentities;
+    // Guards User/_ownsUserIdentities swaps in UpdateUser and the final identity disposal in
+    // DisposeAsync so concurrent /refresh requests (or a /refresh racing connection teardown)
+    // can't double-dispose or leak owned WindowsIdentity SafeHandles.
+    private readonly object _userLock = new object();
+    private bool _userIdentitiesDisposed;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
 
@@ -258,27 +263,68 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// <summary>
     /// Updates the User/ClaimsPrincipal on this connection and refreshes the authentication expiration.
     /// </summary>
-    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
+    /// <param name="user">The refreshed principal to apply to the connection.</param>
+    /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
+    /// <param name="requireMonotonicExpiration">
+    /// When <see langword="true"/>, the update is skipped if <paramref name="authenticationExpiration"/> is
+    /// older than the currently applied <see cref="AuthenticationExpiration"/>. This makes the staleness check
+    /// and the swap atomic (both happen under <c>_userLock</c>) so a caller racing a concurrent refresh that
+    /// already applied a newer token can't roll the connection back to an older identity.
+    /// </param>
+    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration, bool requireMonotonicExpiration = false)
     {
         // The incoming principal comes from the /refresh HTTP request and its WindowsIdentity (if any)
         // wraps SafeHandles that will be disposed when that request completes. We must clone the
         // identities so the connection can outlive the refresh request.
         var (newUser, ownsNew) = CloneIfWindowsIdentity(user);
 
-        var previousUser = User;
-        var previouslyOwned = _ownsUserIdentities;
+        ClaimsPrincipal? previousUser;
+        bool previouslyOwned;
 
-        User = newUser;
-        _ownsUserIdentities = ownsNew;
-        AuthenticationExpiration = authenticationExpiration;
-
-        // Also update the HttpContext's user if available
-        if (HttpContext is { } httpContext)
+        lock (_userLock)
         {
-            httpContext.User = newUser;
+            // The connection is being torn down and its owned identities have already been disposed.
+            // Don't publish a new principal; just release the clone we just made so it doesn't leak.
+            if (_userIdentitiesDisposed)
+            {
+                if (ownsNew)
+                {
+                    DisposeWindowsIdentities(newUser);
+                }
+                return;
+            }
+
+            // A concurrent refresh (for example the /refresh endpoint racing a long-polling poll) may have
+            // already applied a newer token. Don't roll the connection back to an older one. Checking this
+            // under _userLock makes the decision atomic with the swap below.
+            if (requireMonotonicExpiration
+                && authenticationExpiration != DateTimeOffset.MaxValue
+                && AuthenticationExpiration != DateTimeOffset.MaxValue
+                && authenticationExpiration < AuthenticationExpiration)
+            {
+                if (ownsNew)
+                {
+                    DisposeWindowsIdentities(newUser);
+                }
+                return;
+            }
+
+            previousUser = User;
+            previouslyOwned = _ownsUserIdentities;
+
+            User = newUser;
+            _ownsUserIdentities = ownsNew;
+            AuthenticationExpiration = authenticationExpiration;
+
+            // Also update the HttpContext's user if available
+            if (HttpContext is { } httpContext)
+            {
+                httpContext.User = newUser;
+            }
         }
 
-        // Notify subscribers (e.g., the SignalR Hub layer) that the user has been updated.
+        // Notify subscribers (e.g., the SignalR Hub layer) that the user has been updated. Invoke
+        // outside _userLock to avoid reentrancy/deadlock if a subscriber aborts/disposes the connection.
         // Intentionally do not surface the previous principal: its underlying resources
         // (for example a WindowsIdentity's SafeHandle) may be disposed below, making later access unsafe.
         var handler = UserUpdated;
@@ -295,12 +341,16 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
 
         // After subscribers have observed the swap (synchronously), dispose the previously owned
-        // WindowsIdentity SafeHandles. Subscribers are documented to be quick and synchronous, and
-        // anything they queue should read from connection.User (the new principal) — not capture the
-        // previous one.
+        // WindowsIdentity SafeHandles. Each UpdateUser call disposes exactly the principal it swapped
+        // out (captured under the lock), so concurrent refreshes can't double-dispose or leak.
+        // Subscribers are documented to be quick and synchronous, and anything they queue should read
+        // from connection.User (the new principal) — not capture the previous one.
         if (previouslyOwned && previousUser is not null)
         {
-            DisposeWindowsIdentities(previousUser);
+            lock (_userLock)
+            {
+                DisposeWindowsIdentities(previousUser);
+            }
         }
     }
 
@@ -397,10 +447,18 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             Cancellation = null;
 
             // Dispose WindowsIdentity SafeHandles we own (long-polling first-poll cloned the user,
-            // and /refresh may have replaced it with another clone).
-            if (_ownsUserIdentities && User is not null)
+            // and /refresh may have replaced it with another clone). Coordinate with UpdateUser via
+            // _userLock so a concurrent refresh can't double-dispose or publish a user we then leak.
+            lock (_userLock)
             {
-                DisposeWindowsIdentities(User);
+                if (!_userIdentitiesDisposed)
+                {
+                    _userIdentitiesDisposed = true;
+                    if (_ownsUserIdentities && User is not null)
+                    {
+                        DisposeWindowsIdentities(User);
+                    }
+                }
             }
 
             ServiceScope?.Dispose();

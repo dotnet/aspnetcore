@@ -754,12 +754,14 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         using var request = new HttpRequestMessage(HttpMethod.Post, refreshUri);
 
-        // Add the access token if available
-        var accessToken = await GetAccessTokenAsync().ConfigureAwait(false);
-        if (!string.IsNullOrEmpty(accessToken))
-        {
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        }
+        // Mark this as a refresh request so the AccessTokenHttpMessageHandler fetches a fresh access token
+        // (and updates its cache) rather than reusing the token captured when the connection started. Setting
+        // the Authorization header directly here is not sufficient because that handler overwrites it.
+#if NET5_0_OR_GREATER
+        request.Options.Set(new HttpRequestOptionsKey<bool>("IsRefresh"), true);
+#else
+        request.Properties.Add("IsRefresh", true);
+#endif
 
         using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();

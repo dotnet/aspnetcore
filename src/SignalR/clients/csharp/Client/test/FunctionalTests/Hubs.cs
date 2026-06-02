@@ -327,3 +327,15 @@ public class HubWithAuthorization2 : Hub
 {
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 }
+
+// Connection-level authorization (JwtBearer) is applied via endpoint routing in Startup;
+// the EnableAuthRefresh connection option is set there as well.
+public class AuthRefreshHub : Hub
+{
+    public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    [Authorize("AuthRefreshScope")]
+    public string ScopeProtected() => "ok";
+
+    public Task SendToUser(string userId, string message) => Clients.User(userId).SendAsync("Receive", message);
+}
