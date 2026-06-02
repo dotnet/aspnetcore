@@ -17,7 +17,7 @@ namespace RepoTasks;
 /// pre-commands are excluded from batching and passed through as-is.
 /// Batched items use symlinks to assembly publish directories for fast payload creation.
 /// </summary>
-public class BatchHelixWorkItems : Task
+public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
 {
     [Required]
     public ITaskItem[] WorkItems { get; set; }
