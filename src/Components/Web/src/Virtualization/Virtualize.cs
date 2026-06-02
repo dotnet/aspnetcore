@@ -594,6 +594,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             : GetSpacerStylePreventingLoadLoop(itemsAfter, _unusedItemCapacity);
         builder.AddAttribute(9, "data-blazor-style", spacerAfterStyle);
         builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
+
         builder.CloseElement();
     }
 
