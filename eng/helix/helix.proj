@@ -18,7 +18,6 @@
   <Import Project="..\targets\Helix.Common.props" />
   <Import Project="..\Build.props" />
   <Import Project="..\Versions.props" />
-  <Import Project="..\tools\RepoTasks\RepoTasks.tasks" />
 
   <!-- Microsoft.DotNet.Helix.Sdk.MultiQueue.targets splits $(HelixTargetQueues) into @(HelixTargetQueue) items. -->
   <ItemGroup Condition=" '$(HelixTargetQueues)' == '' ">
@@ -42,6 +41,9 @@
         >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
     <OutputPath Condition=" '$(OutputPath)' == '' "
         >$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', '$(MSBuildProjectName)'))</OutputPath>
+  </PropertyGroup>
+
+  <Import Project="..\tools\RepoTasks\RepoTasks.tasks" />
 
     <!--
       Define $(HelixTestConfigurationFilePath) so the Helix SDK automatically includes our test config file in the
