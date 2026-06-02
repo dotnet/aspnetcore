@@ -165,7 +165,7 @@
     <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.26224.3</MicrosoftDotNetBuildTasksTemplatingVersion>
     <MicrosoftDotNetRemoteExecutorVersion>8.0.0-beta.26224.3</MicrosoftDotNetRemoteExecutorVersion>
     <!-- Packages from dotnet/source-build-externals -->
-    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>8.0.0-alpha.1.26216.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
+    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>8.0.0-alpha.1.26301.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
     <!-- Packages from dotnet/source-build-assets -->
     <MicrosoftSourceBuildIntermediatesourcebuildassetsVersion>8.0.0-alpha.1.26223.1</MicrosoftSourceBuildIntermediatesourcebuildassetsVersion>
     <!-- Packages from dotnet/symreader -->
