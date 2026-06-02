@@ -201,7 +201,7 @@ internal sealed class ResponseCachingKeyProvider : IResponseCachingKeyProvider
 
     internal static void ThrowIfContainsDelimiters(string? value)
     {
-        if (!string.IsNullOrEmpty(value) && value.AsSpan().IndexOfAny(KeyDelimiter, KeySubDelimiter) >= 0)
+        if (!string.IsNullOrEmpty(value) && value.ContainsAny(KeyDelimiter, KeySubDelimiter))
         {
             throw new CacheKeyDelimiterException();
         }

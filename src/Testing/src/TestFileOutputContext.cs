@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+#if NET8_0_OR_GREATER
+using System.Buffers;
+#endif
 using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.InternalTesting;
@@ -26,8 +29,7 @@ public sealed class TestFileOutputContext
         "\u001F:*?\\/ \u007F";
 
 #if NET8_0_OR_GREATER
-    private static readonly System.Buffers.SearchValues<char> InvalidFileChars =
-        System.Buffers.SearchValues.Create(InvalidFileCharsString);
+    private static readonly SearchValues<char> InvalidFileChars = SearchValues.Create(InvalidFileCharsString);
 #else
     private static readonly char[] InvalidFileChars = InvalidFileCharsString.ToCharArray();
 #endif
@@ -130,11 +132,7 @@ public sealed class TestFileOutputContext
 
         foreach (var c in s)
         {
-#if NET8_0_OR_GREATER
             if (InvalidFileChars.Contains(c))
-#else
-            if (Array.IndexOf(InvalidFileChars, c) >= 0)
-#endif
             {
                 if (sb.Length > 0 && sb[sb.Length - 1] != '_')
                 {

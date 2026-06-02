@@ -330,7 +330,7 @@ public abstract class NavigationManager
             return uri.Substring(_baseUri.OriginalString.Length);
         }
 
-        var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
+        var pathEndIndex = uri.IndexOfAny('#', '?');
         var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
         if (_baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(_baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {
@@ -622,7 +622,7 @@ public abstract class NavigationManager
             return true;
         }
 
-        var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
+        var pathEndIndex = uri.IndexOfAny('#', '?');
         var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
         if (baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(baseUri.OriginalString.AsSpan(0, baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
         {

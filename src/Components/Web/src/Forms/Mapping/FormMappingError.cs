@@ -57,7 +57,7 @@ public sealed class FormMappingError
     private static string GetName(string path)
     {
         var errorKey = path;
-        var lastSeparatorIndex = path.AsSpan().LastIndexOfAny('.', '[');
+        var lastSeparatorIndex = path.LastIndexOfAny('.', '[');
         if (lastSeparatorIndex >= 0)
         {
             if (path[lastSeparatorIndex] == '[')

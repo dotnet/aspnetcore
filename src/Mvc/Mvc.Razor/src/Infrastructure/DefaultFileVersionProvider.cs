@@ -39,7 +39,7 @@ internal sealed class DefaultFileVersionProvider : IFileVersionProvider
 
         var resolvedPath = path;
 
-        var queryStringOrFragmentStartIndex = path.AsSpan().IndexOfAny('?', '#');
+        var queryStringOrFragmentStartIndex = path.IndexOfAny('?', '#');
         if (queryStringOrFragmentStartIndex != -1)
         {
             resolvedPath = path.Substring(0, queryStringOrFragmentStartIndex);

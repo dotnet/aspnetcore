@@ -258,7 +258,7 @@ public class ForwardedHeadersMiddleware
 
             if (checkProto)
             {
-                if (!string.IsNullOrEmpty(set.Scheme) && set.Scheme.AsSpan().IndexOfAnyExcept(SchemeChars) < 0)
+                if (!string.IsNullOrEmpty(set.Scheme) && !set.Scheme.ContainsAnyExcept(SchemeChars))
                 {
                     applyChanges = true;
                     currentValues.Scheme = set.Scheme;
@@ -433,7 +433,7 @@ public class ForwardedHeadersMiddleware
             return false;
         }
 
-        var firstNonHostCharIdx = host.AsSpan().IndexOfAnyExcept(HostChars);
+        var firstNonHostCharIdx = host.IndexOfAnyExcept(HostChars);
         if (firstNonHostCharIdx == -1)
         {
             // no port

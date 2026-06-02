@@ -79,7 +79,7 @@ public readonly struct PathString : IEquatable<PathString>
             return string.Empty;
         }
 
-        var indexOfInvalidChar = value.AsSpan().IndexOfAnyExcept(s_validPathChars);
+        var indexOfInvalidChar = value.IndexOfAnyExcept(s_validPathChars);
 
         return indexOfInvalidChar < 0
             ? value

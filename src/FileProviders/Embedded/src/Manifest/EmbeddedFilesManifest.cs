@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,13 +13,13 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
 internal sealed class EmbeddedFilesManifest
 {
-#if NET8_0_OR_GREATER
-    private static readonly System.Buffers.SearchValues<char> _invalidFileNameChars =
-        System.Buffers.SearchValues.Create(new string(Path.GetInvalidFileNameChars()
-            .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray()));
-#else
-    private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
+    private static char[] GetInvalidFileNameChars() => Path.GetInvalidFileNameChars()
         .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
+
+#if NET8_0_OR_GREATER
+    private static readonly SearchValues<char> _invalidFileNameChars = SearchValues.Create(GetInvalidFileNameChars());
+#else
+    private static readonly char[] _invalidFileNameChars = GetInvalidFileNameChars();
 #endif
 
     private static readonly char[] _separators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
@@ -93,7 +94,7 @@ internal sealed class EmbeddedFilesManifest
     private static bool HasInvalidPathChars(string path)
     {
 #if NET8_0_OR_GREATER
-        return path.AsSpan().IndexOfAny(_invalidFileNameChars) != -1;
+        return path.ContainsAny(_invalidFileNameChars);
 #else
         return path.IndexOfAny(_invalidFileNameChars) != -1;
 #endif
