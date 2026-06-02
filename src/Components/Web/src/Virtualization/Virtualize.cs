@@ -589,18 +589,20 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(7, SpacerElement);
         builder.AddAttribute(8, "aria-hidden", "true");
-        builder.AddAttribute(9, "data-blazor-style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
+        var spacerAfterStyle = _unusedItemCapacity == 0
+            ? GetSpacerStyle(itemsAfter)
+            : GetSpacerStylePreventingLoadLoop(itemsAfter, _unusedItemCapacity);
+        builder.AddAttribute(9, "data-blazor-style", spacerAfterStyle);
         builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
         builder.CloseElement();
     }
 
-    private string GetSpacerStyle(int itemsInSpacer, int numItemsGapAbove)
+    private string GetSpacerStylePreventingLoadLoop(int itemsInSpacer, int unusedItemCapacity)
     {
         var avgHeight = GetItemHeight();
-        var transformValue = numItemsGapAbove == 0
-            ? "none"
-            : $"translateY({(numItemsGapAbove * avgHeight).ToString(CultureInfo.InvariantCulture)}px)";
-        return $"--blazor-virtualize-height: {(itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture)}px; --blazor-virtualize-flex-shrink: 0; --blazor-virtualize-transform: {transformValue};";
+        var heightPx = (itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture);
+        var pushOutOfViewportPx = (unusedItemCapacity * avgHeight).ToString(CultureInfo.InvariantCulture);
+        return $"--blazor-virtualize-height: {heightPx}px; --blazor-virtualize-flex-shrink: 0; --blazor-virtualize-transform: translateY({pushOutOfViewportPx}px);";
     }
 
     private string GetSpacerStyle(int itemsInSpacer)

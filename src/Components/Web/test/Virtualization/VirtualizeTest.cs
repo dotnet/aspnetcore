@@ -1258,7 +1258,6 @@ public class VirtualizeTest
         var afterStyle = (string)dataStyleAttributes[1].AttributeValue;
         Assert.Contains("--blazor-virtualize-height:", afterStyle);
         Assert.Contains("--blazor-virtualize-flex-shrink: 0", afterStyle);
-        Assert.Contains("--blazor-virtualize-transform:", afterStyle);
     }
 
     [Fact]
