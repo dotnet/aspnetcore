@@ -178,8 +178,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (context.RequestServices.GetService<SessionCascadingValueSupplier>() is { } sessionSupplier)
         {
             await sessionSupplier.PersistAllValues();
+            sessionSupplier.CleanupNullValues();
         }
         TempDataProviderServiceCollectionExtensions.PersistTempData(context);
+        TempDataProviderServiceCollectionExtensions.CleanupTempDataIfEmpty(context);
 
         // Emit comment containing state.
         if (!isErrorHandlerOrReExecuted)

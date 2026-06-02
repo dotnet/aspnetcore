@@ -113,6 +113,35 @@ internal partial class SessionCascadingValueSupplier
         return Task.CompletedTask;
     }
 
+    internal void CleanupNullValues()
+    {
+        if (_valueCallbacks.Count == 0)
+        {
+            return;
+        }
+
+        var session = GetSession();
+        if (session is null)
+        {
+            return;
+        }
+
+        foreach (var (key, valueGetter) in _valueCallbacks)
+        {
+            try
+            {
+                if (valueGetter() is null)
+                {
+                    session.Remove(key.ToLowerInvariant());
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.SessionPersistFail(_logger, ex);
+            }
+        }
+    }
+
     internal void DeleteValueCallback(string sessionKey)
     {
         _valueCallbacks.Remove(sessionKey);

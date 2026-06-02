@@ -85,6 +85,24 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
         Log.TempDataSessionSaveSuccess(_logger);
     }
 
+    public void CleanupIfEmpty(HttpContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        try
+        {
+            var session = context.Session;
+            if (session.TryGetValue(TempDataSessionStateKey, out var bytes) && bytes.Length == 0)
+            {
+                session.Remove(TempDataSessionStateKey);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.TempDataSessionLoadFailure(_logger, ex);
+        }
+    }
+
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Debug, "TempData was not found in session.", EventName = "TempDataSessionNotFound")]

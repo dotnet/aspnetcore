@@ -78,4 +78,13 @@ internal static class TempDataProviderServiceCollectionExtensions
             tempDataService.Save(httpContext, tempData);
         }
     }
+
+    internal static void CleanupTempDataIfEmpty(HttpContext httpContext)
+    {
+        var provider = httpContext.RequestServices.GetService<ITempDataProvider>();
+        if (provider is SessionStorageTempDataProvider sessionProvider)
+        {
+            sessionProvider.CleanupIfEmpty(httpContext);
+        }
+    }
 }
