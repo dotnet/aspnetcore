@@ -116,7 +116,7 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
         => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66963")]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66970")]
     public override void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
         => base.AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(variableHeight, useItemsProvider);
 }
