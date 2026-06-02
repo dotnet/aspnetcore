@@ -690,7 +690,8 @@ public static class HeaderUtilities
     public static StringSegment EscapeAsQuotedString(StringSegment input)
     {
         // By calling this, we know that the string requires quotes around it to be a valid token.
-        var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
+        var inputSpan = input.AsSpan();
+        var backSlashCount = inputSpan.Count('\\') + inputSpan.Count('"');
 
         // 2 for quotes
         return string.Create(input.Length + backSlashCount + 2, input, (span, segment) =>
@@ -714,11 +715,6 @@ public static class HeaderUtilities
                 span[spanIndex++] = segment[i];
             }
         });
-    }
-
-    private static int CountAndCheckCharactersNeedingBackslashesWhenEncoding(StringSegment input)
-    {
-        return input.AsSpan().Count('\\') + input.AsSpan().Count('"');
     }
 
     internal static void ThrowIfReadOnly(bool isReadOnly)

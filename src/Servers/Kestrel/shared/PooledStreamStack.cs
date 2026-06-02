@@ -121,16 +121,10 @@ internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
         }
 
         // Move remaining streams
-        for (var i = 0; i < newSize; i++)
-        {
-            array[i] = array[i + removeCount];
-        }
+        array.AsSpan(removeCount, newSize).CopyTo(array.AsSpan(0, newSize));
 
         // Clear unused array indexes
-        for (var i = newSize; i < size; i++)
-        {
-            array[i] = default;
-        }
+        array.AsSpan(newSize, size - newSize).Clear();
 
         _size = newSize;
     }

@@ -50,18 +50,10 @@ internal struct PathTokenizer : IReadOnlyList<StringSegment>
                 }
 
                 // This is a non-trivial PathString
-                _count = 1;
-
                 // Since a non-empty PathString must begin with a `/`, we can just count the number of occurrences
                 // of `/` to find the number of segments. However, we don't look at the last character, because
                 // routing ignores a trailing slash.
-                for (var i = 1; i < _path.Length - 1; i++)
-                {
-                    if (_path[i] == '/')
-                    {
-                        _count++;
-                    }
-                }
+                _count = 1 + _path.AsSpan(1, _path.Length - 2).Count('/');
             }
 
             return _count;
