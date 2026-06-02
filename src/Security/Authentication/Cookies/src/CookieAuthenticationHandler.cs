@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -445,53 +446,10 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
         }
     }
 
-    // Mirror of Microsoft.AspNetCore.Internal.SharedUrlHelper.IsLocalUrl
-    // (src/Shared/ResultsHelpers/SharedUrlHelper.cs). Keep the two in sync.
-    // Intentional difference: cookie auth rejects "~/" paths because ApplyHeaders
-    // writes the value verbatim into the Location header and never resolves
-    // PathBase like IUrlHelper.Content does — so the "~/..." branch from
-    // IsLocalUrl is omitted here.
     private static bool IsHostRelative(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return false;
-        }
-
-        // Allows "/" or "/foo" but not "//" or "/\".
-        if (path[0] == '/')
-        {
-            // path is exactly "/"
-            if (path.Length == 1)
-            {
-                return true;
-            }
-
-            // path doesn't start with "//" or "/\"
-            if (path[1] != '/' && path[1] != '\\')
-            {
-                return !HasControlCharacter(path.AsSpan(1));
-            }
-
-            return false;
-        }
-
-        return false;
-
-        static bool HasControlCharacter(ReadOnlySpan<char> readOnlySpan)
-        {
-            // URLs may not contain ASCII control characters.
-            for (var i = 0; i < readOnlySpan.Length; i++)
-            {
-                if (char.IsControl(readOnlySpan[i]))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-    }
+        => !string.IsNullOrEmpty(path)
+            && path[0] == '/' // Suppresses the "~/..." branch of SharedUrlHelper.IsLocalUrl so only true host-relative paths are accepted.
+            && SharedUrlHelper.IsLocalUrl(path);
 
     /// <inheritdoc />
     protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
