@@ -41,9 +41,6 @@
         >$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts', 'bin'))</ArtifactsBinDir>
     <OutputPath Condition=" '$(OutputPath)' == '' "
         >$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', '$(MSBuildProjectName)'))</OutputPath>
-  </PropertyGroup>
-
-  <Import Project="..\tools\RepoTasks\RepoTasks.tasks" />
 
     <!--
       Define $(HelixTestConfigurationFilePath) so the Helix SDK automatically includes our test config file in the
@@ -53,6 +50,8 @@
     <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
     <HelixWorkItemMaxBatchSize Condition="'$(HelixWorkItemMaxBatchSize)' == ''">20</HelixWorkItemMaxBatchSize>
   </PropertyGroup>
+
+  <Import Project="..\tools\RepoTasks\RepoTasks.tasks" />
 
   <!-- Specify the .NET runtime we need which will be included as a correlation payload. -->
   <ItemGroup>
