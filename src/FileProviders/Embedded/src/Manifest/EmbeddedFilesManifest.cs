@@ -91,8 +91,5 @@ internal sealed class EmbeddedFilesManifest
         throw new InvalidOperationException($"Invalid path: '{path}'");
     }
 
-    private static bool HasInvalidPathChars(string path)
-    {
-        return path.IndexOfAny(_invalidFileNameChars) != -1;
-    }
+    private static bool HasInvalidPathChars(string path) => path.IndexOfAny(_invalidFileNameChars) != -1;
 }
