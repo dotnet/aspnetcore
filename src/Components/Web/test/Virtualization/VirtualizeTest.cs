@@ -1217,7 +1217,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_SpacersRenderDataAttributesForCspCompliance()
+    public async Task Virtualize_SpacersUseDataAttributeNotInlineStyle()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -1246,44 +1246,15 @@ public class VirtualizeTest
                      && f.AttributeName == "data-blazor-style")
             .ToList();
 
-        // Both spacerBefore and spacerAfter should have the data attribute
         Assert.Equal(2, dataStyleAttributes.Count);
 
-        // spacerBefore style: _itemsBefore is 0 initially, so height = 0px
         var beforeStyle = (string)dataStyleAttributes[0].AttributeValue;
         Assert.Contains("--blazor-virtualize-height: 0px", beforeStyle);
         Assert.Contains("--blazor-virtualize-flex-shrink: 0", beforeStyle);
 
-        // spacerAfter style: height + flex-shrink + explicit transform on every render.
         var afterStyle = (string)dataStyleAttributes[1].AttributeValue;
         Assert.Contains("--blazor-virtualize-height:", afterStyle);
         Assert.Contains("--blazor-virtualize-flex-shrink: 0", afterStyle);
-    }
-
-    [Fact]
-    public async Task Virtualize_SpacersDoNotRenderInlineStyleAttributes()
-    {
-        Virtualize<int> renderedVirtualize = null;
-
-        var rootComponent = new VirtualizeTestHostcomponent
-        {
-            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
-                captureRenderedVirtualize: v => renderedVirtualize = v)
-        };
-
-        var serviceProvider = new ServiceCollection()
-            .AddTransient((sp) => Mock.Of<IJSRuntime>())
-            .BuildServiceProvider();
-
-        var testRenderer = new TestRenderer(serviceProvider);
-        var componentId = testRenderer.AssignRootComponentId(rootComponent);
-
-        await testRenderer.RenderRootComponentAsync(componentId);
-        Assert.NotNull(renderedVirtualize);
-
-        // Spacers must NOT have inline style attributes — only data-blazor-style.
-        // JS applies styles via CSSOM which is not blocked by CSP.
-        var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
         var spacerStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
