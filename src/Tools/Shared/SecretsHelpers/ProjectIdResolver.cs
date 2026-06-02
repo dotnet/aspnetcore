@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -130,16 +131,29 @@ internal sealed class ProjectIdResolver
         }
     }
 
+    [UnconditionalSuppressMessage(
+        "SingleFile",
+        "IL3000:Avoid accessing Assembly file path when publishing as a single file",
+        Justification = "Assembly.Location is used only as a fallback path and ignored when empty.")]
     private string FindTargetsFile()
     {
-        var assemblyDir = Path.GetDirectoryName(typeof(ProjectIdResolver).Assembly.Location);
-        var searchPaths = new[]
+        List<string> searchPaths =
+        [
+            Path.Combine(AppContext.BaseDirectory, "assets"),
+            AppContext.BaseDirectory,
+        ];
+
+        var assemblyLocation = typeof(ProjectIdResolver).Assembly.Location;
+        if (!string.IsNullOrEmpty(assemblyLocation))
         {
-                Path.Combine(AppContext.BaseDirectory, "assets"),
-                Path.Combine(assemblyDir, "assets"),
-                AppContext.BaseDirectory,
-                assemblyDir,
-            };
+            var assemblyDir = Path.GetDirectoryName(assemblyLocation);
+            if (!string.IsNullOrEmpty(assemblyDir))
+            {
+                // Preserve search order from previous versions before the check of the assembly location value was added.
+                searchPaths.Insert(1, Path.Combine(assemblyDir, "assets"));
+                searchPaths.Add(assemblyDir);
+            }
+        }
 
         var targetPath = searchPaths.Select(p => Path.Combine(p, "SecretManager.targets")).FirstOrDefault(File.Exists);
         if (targetPath == null)
