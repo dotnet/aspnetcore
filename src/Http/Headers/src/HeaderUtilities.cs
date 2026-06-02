@@ -718,15 +718,7 @@ public static class HeaderUtilities
 
     private static int CountAndCheckCharactersNeedingBackslashesWhenEncoding(StringSegment input)
     {
-        var numberOfCharactersNeedingEscaping = 0;
-        for (var i = 0; i < input.Length; i++)
-        {
-            if (input[i] == '\\' || input[i] == '\"')
-            {
-                numberOfCharactersNeedingEscaping++;
-            }
-        }
-        return numberOfCharactersNeedingEscaping;
+        return input.AsSpan().Count('\\') + input.AsSpan().Count('"');
     }
 
     internal static void ThrowIfReadOnly(bool isReadOnly)
