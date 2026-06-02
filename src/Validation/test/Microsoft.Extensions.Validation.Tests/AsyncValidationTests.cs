@@ -588,9 +588,10 @@ public class AsyncValidationTests
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Value", error.Key);
-        Assert.Equal(2, error.Value.Length);
-        Assert.Contains("First async error", error.Value);
-        Assert.Contains("Second async error", error.Value);
+        var errors = error.Value.ToArray();
+        Assert.Equal(2, errors.Length);
+        Assert.Contains("First async error", errors);
+        Assert.Contains("Second async error", errors);
     }
 
     // Test model classes

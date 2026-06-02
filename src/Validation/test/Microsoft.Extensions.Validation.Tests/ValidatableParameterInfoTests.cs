@@ -164,7 +164,8 @@ public class ValidatableParameterInfoTests
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
         Assert.Equal("Name", error.Key);
-        Assert.Equal("The Name field is required.", error.Value[0]);
+        var errorValue = Assert.Single(error.Value);
+        Assert.Equal("The Name field is required.", errorValue);
     }
 
     [Fact]
@@ -208,7 +209,8 @@ public class ValidatableParameterInfoTests
         Assert.NotNull(errors);
         var error = Assert.Single(errors);
         Assert.Equal("people[1].Name", error.Key);
-        Assert.Equal("The Name field is required.", error.Value[0]);
+        var errorValue = Assert.Single(error.Value);
+        Assert.Equal("The Name field is required.", errorValue);
     }
 
     [Fact]

@@ -436,9 +436,10 @@ public class ValidatableTypeInfoTests
         // Assert
         Assert.NotNull(context.ValidationErrors);
         Assert.Single(context.ValidationErrors.Keys); // Only the "Password" key
-        Assert.Equal(2, context.ValidationErrors["Password"].Length); // But with 2 errors
-        Assert.Contains("Password must be at least 8 characters.", context.ValidationErrors["Password"]);
-        Assert.Contains("Password must contain at least one number and one special character.", context.ValidationErrors["Password"]);
+        var passwordErrors = context.ValidationErrors["Password"].ToArray();
+        Assert.Equal(2, passwordErrors.Length); // But with 2 errors
+        Assert.Contains("Password must be at least 8 characters.", passwordErrors);
+        Assert.Contains("Password must contain at least one number and one special character.", passwordErrors);
     }
 
     [Fact]
