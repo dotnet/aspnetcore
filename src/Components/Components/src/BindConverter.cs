@@ -1678,18 +1678,6 @@ public static class BindConverter
 
         private static MethodInfo? _makeArrayFormatter;
 
-        [UnconditionalSuppressMessage(
-            "ReflectionAnalysis",
-            "IL2060:MakeGenericMethod",
-            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-        [UnconditionalSuppressMessage(
-            "ReflectionAnalysis",
-            "IL2075:MakeGenericMethod",
-            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-        [UnconditionalSuppressMessage(
-            "ReflectionAnalysis",
-            "IL2076:MakeGenericMethod",
-            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindFormatter<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             if (!_cache.TryGetValue(typeof(T), out var formatter))
@@ -1794,9 +1782,7 @@ public static class BindConverter
                 }
                 else if (typeof(T).IsArray)
                 {
-                    var method = _makeArrayFormatter ??= typeof(FormatterDelegateCache).GetMethod(nameof(MakeArrayFormatter), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    var elementType = typeof(T).GetElementType()!;
-                    formatter = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
+                    formatter = CreateArrayFormatter<T>();
                 }
                 else
                 {
@@ -1807,6 +1793,25 @@ public static class BindConverter
             }
 
             return (BindFormatter<T>)formatter;
+        }
+
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2060:MakeGenericMethod",
+            Justification = "MakeArrayFormatter has DynamicallyAccessedMembers(All) constraint. T is constrained to have All members, and GetElementType is validated at runtime.")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2076",
+            Justification = "The elementType is retrieved from a generic array type T[], and the element type is validated at runtime before being used.")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL3050",
+            Justification = "MakeArrayFormatter has DynamicallyAccessedMembers(All) constraint. Element type is validated at runtime.")]
+        private static Delegate CreateArrayFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
+        {
+            var method = _makeArrayFormatter ??= typeof(FormatterDelegateCache).GetMethod(nameof(MakeArrayFormatter), BindingFlags.NonPublic | BindingFlags.Static)!;
+            var elementType = typeof(T).GetElementType()!;
+            return (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
         }
 
         private static BindFormatter<T[]> MakeArrayFormatter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
@@ -1877,18 +1882,6 @@ public static class BindConverter
         private static MethodInfo? _convertToNullableEnum;
         private static MethodInfo? _makeArrayTypeConverter;
 
-        [UnconditionalSuppressMessage(
-            "ReflectionAnalysis",
-            "IL2060:MakeGenericMethod",
-            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-        [UnconditionalSuppressMessage(
-            "ReflectionAnalysis",
-            "IL2075:MakeGenericMethod",
-            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
-        [UnconditionalSuppressMessage(
-            "ReflectionAnalysis",
-            "IL2076:MakeGenericMethod",
-            Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
         public static BindParser<T> Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             if (!_cache.TryGetValue(typeof(T), out var parser))
@@ -1998,20 +1991,16 @@ public static class BindConverter
                 else if (typeof(T).IsEnum)
                 {
                     // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                    var method = _convertToEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    parser = method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindParser<T>), target: null);
+                    parser = CreateEnumParser<T>();
                 }
                 else if (Nullable.GetUnderlyingType(typeof(T)) is Type innerType && innerType.IsEnum)
                 {
                     // We have to deal invoke this dynamically to work around the type constraint on Enum.TryParse.
-                    var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    parser = method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
+                    parser = CreateNullableEnumParser<T>(innerType);
                 }
                 else if (typeof(T).IsArray)
                 {
-                    var method = _makeArrayTypeConverter ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
-                    var elementType = typeof(T).GetElementType()!;
-                    parser = (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
+                    parser = CreateArrayParser<T>();
                 }
                 else
                 {
@@ -2022,6 +2011,57 @@ public static class BindConverter
             }
 
             return (BindParser<T>)parser;
+        }
+
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2060:MakeGenericMethod",
+            Justification = "ConvertToEnum has DynamicallyAccessedMembers(All) constraint. T is constrained to have All members, so this is safe.")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL3050",
+            Justification = "ConvertToEnum has DynamicallyAccessedMembers(All) constraint. T is constrained to have All members, so this is safe.")]
+        private static Delegate CreateEnumParser<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
+        {
+            var method = _convertToEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
+            return method.MakeGenericMethod(typeof(T)).CreateDelegate(typeof(BindParser<T>), target: null);
+        }
+
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2060:MakeGenericMethod",
+            Justification = "ConvertToNullableEnum has DynamicallyAccessedMembers(PublicParameterlessConstructor) constraint on the inner type. The innerType is verified to be an enum at runtime.")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2071",
+            Justification = "The innerType parameter is verified to be an enum at runtime, ensuring the necessary members are preserved.")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL3050",
+            Justification = "ConvertToNullableEnum is safe for the verified enum type.")]
+        private static Delegate CreateNullableEnumParser<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(Type innerType)
+        {
+            var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
+            return method.MakeGenericMethod(innerType).CreateDelegate(typeof(BindParser<T>), target: null);
+        }
+
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2060:MakeGenericMethod",
+            Justification = "MakeArrayTypeConverter has DynamicallyAccessedMembers(All) constraint. T is constrained to have All members, and GetElementType is validated at runtime.")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL2076",
+            Justification = "The elementType is retrieved from a generic array type T[], and the element type is validated at runtime before being used.")]
+        [UnconditionalSuppressMessage(
+            "ReflectionAnalysis",
+            "IL3050",
+            Justification = "MakeArrayTypeConverter has DynamicallyAccessedMembers(All) constraint. Element type is validated at runtime.")]
+        private static Delegate CreateArrayParser<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
+        {
+            var method = _makeArrayTypeConverter ??= typeof(ParserDelegateCache).GetMethod(nameof(MakeArrayTypeConverter), BindingFlags.NonPublic | BindingFlags.Static)!;
+            var elementType = typeof(T).GetElementType()!;
+            return (Delegate)method.MakeGenericMethod(elementType).Invoke(null, null)!;
         }
 
         private static BindParser<T[]?> MakeArrayTypeConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
