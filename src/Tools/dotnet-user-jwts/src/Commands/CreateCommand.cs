@@ -271,7 +271,7 @@ internal sealed class CreateCommand
                 reporter.Output(jwt.Token);
                 break;
             case "json":
-                reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerOptions.Default));
+                reporter.Output(JsonSerializer.Serialize(jwt, JwtSerializerContext.Default.Jwt));
                 break;
             default:
                 reporter.Output(Resources.FormatCreateCommand_Confirmed(jwtToken.Id));
