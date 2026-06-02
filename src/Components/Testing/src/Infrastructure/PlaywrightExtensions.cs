@@ -18,10 +18,9 @@ public static class PlaywrightExtensions
     // is OS-dependent (Linux only returns '/' and '\0'), so we use a fixed set
     // covering Windows, macOS, and Linux to ensure consistent sanitization.
     private static readonly SearchValues<char> s_invalidFileNameChars = SearchValues.Create(
-        "\\/:*?\"<>|\0" +
-        "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000A" +
-        "\u000B\u000C\u000D\u000E\u000F\u0010\u0011\u0012\u0013\u0014" +
-        "\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F");
+        "\\/:*?\"<>|" +
+        "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000A\u000B\u000C\u000D\u000E\u000F" +
+        "\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F");
 
     // Toggle video recording via environment variable.
     // Set PLAYWRIGHT_RECORD_VIDEO=1 to enable video capture for all tests.

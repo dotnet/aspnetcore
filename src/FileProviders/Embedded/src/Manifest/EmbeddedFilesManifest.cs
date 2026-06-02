@@ -93,10 +93,6 @@ internal sealed class EmbeddedFilesManifest
 
     private static bool HasInvalidPathChars(string path)
     {
-#if NET8_0_OR_GREATER
-        return path.ContainsAny(_invalidFileNameChars);
-#else
         return path.IndexOfAny(_invalidFileNameChars) != -1;
-#endif
     }
 }

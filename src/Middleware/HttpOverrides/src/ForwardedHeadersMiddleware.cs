@@ -433,7 +433,7 @@ public class ForwardedHeadersMiddleware
             return false;
         }
 
-        var firstNonHostCharIdx = host.IndexOfAnyExcept(HostChars);
+        var firstNonHostCharIdx = host.AsSpan().IndexOfAnyExcept(HostChars);
         if (firstNonHostCharIdx == -1)
         {
             // no port

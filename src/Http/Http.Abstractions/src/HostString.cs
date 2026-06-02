@@ -139,7 +139,7 @@ public readonly struct HostString : IEquatable<HostString>
             return string.Empty;
         }
 
-        if (!_value.ContainsAnyExcept(s_safeHostStringChars))
+        if (!_value.AsSpan().ContainsAnyExcept(s_safeHostStringChars))
         {
             return _value;
         }

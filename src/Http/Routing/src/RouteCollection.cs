@@ -153,7 +153,7 @@ public class RouteCollection : IRouteCollection
 
         if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
         {
-            var indexOfSeparator = url.IndexOfAny('?', '#');
+            var indexOfSeparator = url.AsSpan().IndexOfAny('?', '#');
             var urlWithoutQueryString = url;
             var queryString = string.Empty;
 
