@@ -19,14 +19,18 @@ namespace Microsoft.AspNetCore.InternalTesting;
 /// </remarks>
 public sealed class TestFileOutputContext
 {
-    private static readonly char[] InvalidFileChars = new char[]
-    {
-            '\"', '<', '>', '|', '\0',
-            (char)1, (char)2, (char)3, (char)4, (char)5, (char)6, (char)7, (char)8, (char)9, (char)10,
-            (char)11, (char)12, (char)13, (char)14, (char)15, (char)16, (char)17, (char)18, (char)19, (char)20,
-            (char)21, (char)22, (char)23, (char)24, (char)25, (char)26, (char)27, (char)28, (char)29, (char)30,
-            (char)31, ':', '*', '?', '\\', '/', ' ', (char)127
-    };
+    private const string InvalidFileCharsString = "\"<>|\0" +
+        "\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000A" +
+        "\u000B\u000C\u000D\u000E\u000F\u0010\u0011\u0012\u0013\u0014" +
+        "\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E" +
+        "\u001F:*?\\/ \u007F";
+
+#if NET8_0_OR_GREATER
+    private static readonly System.Buffers.SearchValues<char> InvalidFileChars =
+        System.Buffers.SearchValues.Create(InvalidFileCharsString);
+#else
+    private static readonly char[] InvalidFileChars = InvalidFileCharsString.ToCharArray();
+#endif
 
     private readonly TestContext _parent;
 
@@ -126,7 +130,11 @@ public sealed class TestFileOutputContext
 
         foreach (var c in s)
         {
+#if NET8_0_OR_GREATER
             if (InvalidFileChars.Contains(c))
+#else
+            if (Array.IndexOf(InvalidFileChars, c) >= 0)
+#endif
             {
                 if (sb.Length > 0 && sb[sb.Length - 1] != '_')
                 {

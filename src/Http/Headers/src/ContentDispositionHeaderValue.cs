@@ -31,7 +31,6 @@ public class ContentDispositionHeaderValue
     private const int MaxStackAllocSizeBytes = 256;
     private static readonly char[] QuestionMark = new char[] { '?' };
     private static readonly char[] SingleQuote = new char[] { '\'' };
-    private static readonly char[] EscapeChars = new char[] { '\\', '"' };
     private static ReadOnlySpan<byte> MimePrefix => "\"=?utf-8?B?"u8;
     private static ReadOnlySpan<byte> MimeSuffix => "?=\""u8;
 
@@ -487,7 +486,7 @@ public class ContentDispositionHeaderValue
 
         if (needsQuotes)
         {
-            if (result.IndexOfAny(EscapeChars) != -1)
+            if (result.AsSpan().IndexOfAny('\\', '"') != -1)
             {
                 // '\' and '"' must be escaped in a quoted string
                 result = result.ToString().Replace(@"\", @"\\").Replace(@"""", @"\""");

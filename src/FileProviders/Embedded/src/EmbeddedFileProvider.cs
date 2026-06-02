@@ -21,8 +21,14 @@ namespace Microsoft.Extensions.FileProviders;
 /// </summary>
 public class EmbeddedFileProvider : IFileProvider
 {
+#if NET8_0_OR_GREATER
+    private static readonly System.Buffers.SearchValues<char> _invalidFileNameChars =
+        System.Buffers.SearchValues.Create(new string(Path.GetInvalidFileNameChars()
+            .Where(c => c != '/' && c != '\\').ToArray()));
+#else
     private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
         .Where(c => c != '/' && c != '\\').ToArray();
+#endif
 
     private readonly Assembly _assembly;
     private readonly string _baseNamespace;
@@ -180,7 +186,11 @@ public class EmbeddedFileProvider : IFileProvider
 
     private static bool HasInvalidPathChars(string path)
     {
+#if NET8_0_OR_GREATER
+        return path.AsSpan().IndexOfAny(_invalidFileNameChars) != -1;
+#else
         return path.IndexOfAny(_invalidFileNameChars) != -1;
+#endif
     }
 
     #region Helper methods

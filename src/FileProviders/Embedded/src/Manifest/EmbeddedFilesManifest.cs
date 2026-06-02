@@ -12,8 +12,14 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
 internal sealed class EmbeddedFilesManifest
 {
+#if NET8_0_OR_GREATER
+    private static readonly System.Buffers.SearchValues<char> _invalidFileNameChars =
+        System.Buffers.SearchValues.Create(new string(Path.GetInvalidFileNameChars()
+            .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray()));
+#else
     private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
         .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
+#endif
 
     private static readonly char[] _separators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 
@@ -84,5 +90,12 @@ internal sealed class EmbeddedFilesManifest
         throw new InvalidOperationException($"Invalid path: '{path}'");
     }
 
-    private static bool HasInvalidPathChars(string path) => path.IndexOfAny(_invalidFileNameChars) != -1;
+    private static bool HasInvalidPathChars(string path)
+    {
+#if NET8_0_OR_GREATER
+        return path.AsSpan().IndexOfAny(_invalidFileNameChars) != -1;
+#else
+        return path.IndexOfAny(_invalidFileNameChars) != -1;
+#endif
+    }
 }
