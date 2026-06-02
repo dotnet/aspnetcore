@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Claims;
@@ -44,6 +45,11 @@ public class Startup
             {
                 policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
                 policy.RequireClaim(ClaimTypes.Name);
+            });
+            options.AddPolicy("AuthRefreshScope", policy =>
+            {
+                policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
+                policy.RequireClaim("scope", "signalr:invoke");
             });
         });
 
@@ -102,6 +108,9 @@ public class Startup
             endpoints.MapHub<HubWithAuthorization2>("/windowsauthhub")
                   .RequireAuthorization(new AuthorizeAttribute(NegotiateDefaults.AuthenticationScheme));
 
+            endpoints.MapHub<AuthRefreshHub>("/authRefreshHub", o => o.EnableAuthRefresh = true)
+                  .RequireAuthorization(new AuthorizeAttribute(JwtBearerDefaults.AuthenticationScheme));
+
             endpoints.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
 
             endpoints.MapHub<TestHub>("/negotiateProtocolVersion12", options =>
@@ -119,6 +128,14 @@ public class Startup
                 return context.Response.WriteAsync(GenerateJwtToken(name ?? "testuser"));
             });
 
+            // Like /generateJwtToken but optionally includes the "scope" claim required by the
+            // AuthRefreshScope policy. Pass ?scope=false to omit it (used to exercise auth changes on refresh).
+            endpoints.MapGet("/generateJwtTokenWithScope/{name?}", (HttpContext context, string name) =>
+            {
+                var includeScope = context.Request.Query["scope"] != "false";
+                return context.Response.WriteAsync(GenerateJwtToken(name ?? "testuser", includeScope));
+            });
+
             endpoints.Map("/redirect/{*anything}", context =>
             {
                 return context.Response.WriteAsync(JsonConvert.SerializeObject(new
@@ -130,9 +147,13 @@ public class Startup
         });
     }
 
-    private string GenerateJwtToken(string name = "testuser")
+    private string GenerateJwtToken(string name = "testuser", bool includeScopeClaim = false)
     {
-        var claims = new[] { new Claim(ClaimTypes.NameIdentifier, name) };
+        var claims = new List<Claim> { new Claim(ClaimTypes.NameIdentifier, name) };
+        if (includeScopeClaim)
+        {
+            claims.Add(new Claim("scope", "signalr:invoke"));
+        }
         var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
         var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.Now.AddSeconds(5), signingCredentials: credentials);
         return JwtTokenHandler.WriteToken(token);

@@ -115,13 +115,7 @@ public partial class HttpConnectionDispatcherTests
             var options = new HttpConnectionDispatcherOptions { EnableAuthRefresh = true };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(
-                AuthenticateResult.Fail("Bad token")));
-            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
-
             var context = new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
@@ -129,6 +123,9 @@ public partial class HttpConnectionDispatcherTests
             {
                 ["id"] = connection.ConnectionToken,
             });
+
+            // The authorization middleware produced a failed authentication result for this request.
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Fail("Bad token")));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -157,13 +154,7 @@ public partial class HttpConnectionDispatcherTests
             var authProps = new AuthenticationProperties { ExpiresUtc = newExpires };
             var ticket = new AuthenticationTicket(newUser, authProps, "Test");
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(
-                AuthenticateResult.Success(ticket)));
-            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
-
             var context = new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
@@ -171,6 +162,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 ["id"] = connection.ConnectionToken,
             });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -203,9 +196,49 @@ public partial class HttpConnectionDispatcherTests
             // No ExpiresUtc on AuthenticationProperties => server should fall back to MaxValue and omit TTL
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            Assert.Null(json["tokenLifetimeSeconds"]);
+            Assert.Equal(connection.ConnectionId, json.Value<string>("connectionId"));
+            Assert.Equal(DateTimeOffset.MaxValue, connection.AuthenticationExpiration);
+            Assert.Same(newUser, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshUsesAuthenticateResultFeatureWithoutReauthenticating()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+
+            connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
+
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var newExpires = DateTimeOffset.UtcNow.AddMinutes(30);
+
             var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(
-                AuthenticateResult.Success(ticket)));
+            // Simulates a multi-scheme app with no default authenticate scheme: AuthenticateAsync() would throw.
+            // The refresh handler must not call it because the authorization middleware already authenticated
+            // the request against the endpoint's scheme and populated IAuthenticateResultFeature.
+            services.AddSingleton<IAuthenticationService>(new ThrowingAuthenticationService());
             services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
 
             var context = new DefaultHttpContext();
@@ -218,14 +251,51 @@ public partial class HttpConnectionDispatcherTests
                 ["id"] = connection.ConnectionToken,
             });
 
+            var props = new AuthenticationProperties { ExpiresUtc = newExpires };
+            var ticket = new AuthenticationTicket(newUser, props, "Test");
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
             await dispatcher.ExecuteRefreshAsync(context, options);
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            var json = ReadJson(context.Response.Body);
-            Assert.Null(json["tokenLifetimeSeconds"]);
-            Assert.Equal(connection.ConnectionId, json.Value<string>("connectionId"));
-            Assert.Equal(DateTimeOffset.MaxValue, connection.AuthenticationExpiration);
             Assert.Same(newUser, connection.User);
+            Assert.Equal(newExpires, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+
+            var json = ReadJson(context.Response.Body);
+            Assert.Equal(connection.ConnectionId, json.Value<string>("connectionId"));
+            var ttl = json.Value<int?>("tokenLifetimeSeconds");
+            Assert.NotNull(ttl);
+            Assert.InRange(ttl.Value, 1, 1801);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshReturnsUnauthorizedWhenAuthenticateResultFeatureMissing()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            // No IAuthenticateResultFeature is present (no authorization middleware ran for the endpoint).
+            // /refresh relies on the middleware-produced result like the other endpoints and does not
+            // re-authenticate, so it cannot refresh and returns 401.
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            Assert.Equal("invalid_token", json.Value<string>("error"));
         }
     }
 
@@ -244,13 +314,7 @@ public partial class HttpConnectionDispatcherTests
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(
-                AuthenticateResult.Success(ticket)));
-            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
-
             var context = new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
@@ -258,6 +322,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 ["id"] = connection.ConnectionId,
             });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -597,12 +663,7 @@ public partial class HttpConnectionDispatcherTests
             var newExpires = DateTimeOffset.UtcNow.AddMinutes(30);
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties { ExpiresUtc = newExpires }, "Test");
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
-            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
-
             var context = new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
@@ -610,6 +671,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 ["id"] = connection.ConnectionToken,
             });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -652,12 +715,7 @@ public partial class HttpConnectionDispatcherTests
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) }, "Test");
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
-            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
-
             var context = new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
@@ -665,6 +723,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 ["id"] = connection.ConnectionToken,
             });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -698,12 +758,7 @@ public partial class HttpConnectionDispatcherTests
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
-            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
-
             var context = new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
@@ -711,6 +766,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 ["id"] = connection.ConnectionToken,
             });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
@@ -741,12 +798,7 @@ public partial class HttpConnectionDispatcherTests
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
             var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
-            var services = new ServiceCollection();
-            services.AddSingleton<IAuthenticationService>(new FakeAuthenticationService(AuthenticateResult.Success(ticket)));
-            services.AddSingleton<IAuthenticationSchemeProvider>(new FakeAuthenticationSchemeProvider());
-
             var context = new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
             context.Request.Path = "/foo/refresh";
             context.Request.Method = "POST";
             context.Response.Body = new MemoryStream();
@@ -754,6 +806,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 ["id"] = connection.ConnectionToken,
             });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await Assert.ThrowsAsync<InvalidOperationException>(
                 () => dispatcher.ExecuteRefreshAsync(context, options));
@@ -859,6 +913,364 @@ public partial class HttpConnectionDispatcherTests
         }
     }
 
+    [Fact]
+    public async Task LongPollingRefreshedPrincipalInvokesOnAuthRefreshAndUpdatesUser()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            AuthRefreshContext captured = null;
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = ctx =>
+                {
+                    captured = ctx;
+                    return ValueTask.FromResult(true);
+                },
+            };
+
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            // First poll establishes the original principal on the connection.
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var expA = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context1 = BuildAuthPollContext(connection, sp, userA, expA);
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+            Assert.Same(userA, connection.User);
+
+            // Second poll carries a refreshed token (different subject and later expiration).
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userB") }, "Test"));
+            var expB = DateTimeOffset.UtcNow.AddMinutes(30);
+            var context2 = BuildAuthPollContext(connection, sp, userB, expB);
+            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+
+            // The OnAuthRefresh callback ran with the refreshed principal, and the connection was updated.
+            Assert.NotNull(captured);
+            Assert.Same(userA, captured.PreviousUser);
+            Assert.Same(userB, captured.NewUser);
+            Assert.Equal(expB, captured.NewExpiration, TimeSpan.FromSeconds(1));
+            Assert.Same(userB, connection.User);
+            Assert.Equal(expB, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingRefreshedPrincipalRejectedByOnAuthRefreshTearsDownConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = ctx =>
+                {
+                    ctx.DenyReason = "scope elevation not allowed";
+                    return ValueTask.FromResult(false);
+                },
+            };
+
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var expA = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context1 = BuildAuthPollContext(connection, sp, userA, expA);
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+            Assert.Same(userA, connection.User);
+
+            // Second poll carries a refreshed token the application rejects.
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userB") }, "Test"));
+            var expB = DateTimeOffset.UtcNow.AddMinutes(30);
+            var context2 = BuildAuthPollContext(connection, sp, userB, expB);
+            await dispatcher.ExecuteAsync(context2, options, app).DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status403Forbidden, context2.Response.StatusCode);
+            var json = ReadJson(context2.Response.Body);
+            Assert.Equal("permission_change_rejected", json.Value<string>("error"));
+            Assert.Equal("scope elevation not allowed", json.Value<string>("error_description"));
+
+            // The connection principal must NOT have been swapped to the rejected one.
+            Assert.Same(userA, connection.User);
+
+            // The connection is torn down and removed from the manager.
+            Assert.NotNull(connection.DisposeAndRemoveTask);
+            await connection.DisposeAndRemoveTask.DefaultTimeout();
+            Assert.False(manager.TryGetConnection(connection.ConnectionToken, out _));
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingPollCarryingSameTokenDoesNotInvokeOnAuthRefresh()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var refreshCount = 0;
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = _ =>
+                {
+                    refreshCount++;
+                    return ValueTask.FromResult(true);
+                },
+            };
+
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var exp = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context1 = BuildAuthPollContext(connection, sp, user, exp);
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+            Assert.Same(user, connection.User);
+
+            // Second poll carries the SAME token (same subject and expiration) but as a distinct principal
+            // instance. This is not a refresh, so the callback should not run and the connection must NOT be
+            // swapped to the new instance (which would re-introduce the check-then-act rollback race against a
+            // concurrent /refresh); connection.User stays the principal already applied.
+            var samePrincipalDifferentInstance = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var context2 = BuildAuthPollContext(connection, sp, samePrincipalDifferentInstance, exp);
+            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            Assert.Equal(0, refreshCount);
+            Assert.Same(user, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingRefreshedPrincipalIgnoredWhenAuthRefreshDisabled()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var refreshCount = 0;
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = false,
+                OnAuthRefresh = _ =>
+                {
+                    refreshCount++;
+                    return ValueTask.FromResult(true);
+                },
+            };
+
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var context1 = BuildAuthPollContext(connection, sp, userA, DateTimeOffset.UtcNow.AddMinutes(5));
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+
+            // A changed principal on a poll with auth-refresh disabled keeps the legacy raw-swap behavior:
+            // the callback never runs but connection.User still tracks the latest poll principal.
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userB") }, "Test"));
+            var context2 = BuildAuthPollContext(connection, sp, userB, DateTimeOffset.UtcNow.AddMinutes(30));
+            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            Assert.Equal(0, refreshCount);
+            Assert.Same(userB, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingStalePollDoesNotRollBackPrincipalOrExpiration()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var refreshCount = 0;
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = _ =>
+                {
+                    refreshCount++;
+                    return ValueTask.FromResult(true);
+                },
+            };
+
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            // First poll establishes the principal with a later expiration (mimics a token applied by /refresh).
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var laterExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+            var context1 = BuildAuthPollContext(connection, sp, userA, laterExpiration);
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+            Assert.Same(userA, connection.User);
+            Assert.Equal(laterExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+
+            // A delayed poll arrives carrying an OLDER token (earlier expiration) than the one already applied
+            // (e.g. it lost the race against an explicit /refresh). It must not roll the connection back.
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userB") }, "Test"));
+            var earlierExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context2 = BuildAuthPollContext(connection, sp, userB, earlierExpiration);
+            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            // No refresh callback fired and the connection kept the newer principal/expiration.
+            Assert.Equal(0, refreshCount);
+            Assert.Same(userA, connection.User);
+            Assert.Equal(laterExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingRejectionDoesNotTearDownConnectionWhenTokenSupersededDuringCallback()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            // First poll establishes the principal.
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var initialExpiration = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context1 = BuildAuthPollContext(connection, sp, userA, initialExpiration);
+
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+            };
+
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+
+            // A delayed poll carrying an older token runs the callback, but while the (slow) callback runs an
+            // explicit /refresh applies a NEWER token. The callback then rejects the older token. The
+            // connection must not be torn down for a token it has already moved past.
+            var newerUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userC") }, "Test"));
+            var newerExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+            options.OnAuthRefresh = ctx =>
+            {
+                // Simulate a concurrent /refresh landing a newer token mid-callback.
+                connection.UpdateUser(newerUser, newerExpiration);
+                ctx.DenyReason = "rejected";
+                return ValueTask.FromResult(false);
+            };
+
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userB") }, "Test"));
+            var context2 = BuildAuthPollContext(connection, sp, userB, DateTimeOffset.UtcNow.AddMinutes(10));
+            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            // The poll proceeds (200), the connection is not torn down, and it keeps the newer token.
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            Assert.Null(connection.DisposeAndRemoveTask);
+            Assert.Same(newerUser, connection.User);
+            Assert.Equal(newerExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+        }
+    }
+
+    [Fact]
+    public void UpdateUserWithRequireMonotonicExpirationSkipsOlderToken()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
+
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "A") }, "Test"));
+            var laterExpiration = DateTimeOffset.UtcNow.AddMinutes(30);
+            connection.UpdateUser(userA, laterExpiration);
+
+            var feature = connection.Features.Get<IConnectionUserUpdateFeature>();
+            var notified = 0;
+            feature.UserUpdated += _ => notified++;
+
+            // An older token with the monotonic guard must be skipped (no swap, no notification).
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "B") }, "Test"));
+            connection.UpdateUser(userB, DateTimeOffset.UtcNow.AddMinutes(5), requireMonotonicExpiration: true);
+
+            Assert.Same(userA, connection.User);
+            Assert.Equal(laterExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            Assert.Equal(0, notified);
+
+            // A newer token with the monotonic guard is still applied.
+            var userC = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "C") }, "Test"));
+            var newerExpiration = DateTimeOffset.UtcNow.AddMinutes(60);
+            connection.UpdateUser(userC, newerExpiration, requireMonotonicExpiration: true);
+
+            Assert.Same(userC, connection.User);
+            Assert.Equal(newerExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            Assert.Equal(1, notified);
+        }
+    }
+
+    private static ConnectionDelegate BuildTestConnectionHandlerApp(out IServiceProvider serviceProvider)
+    {
+        var services = new ServiceCollection();
+        services.AddOptions();
+        services.AddSingleton<TestConnectionHandler>();
+        services.AddLogging();
+        serviceProvider = services.BuildServiceProvider();
+        var builder = new ConnectionBuilder(serviceProvider);
+        builder.UseConnectionHandler<TestConnectionHandler>();
+        return builder.Build();
+    }
+
+    private static DefaultHttpContext BuildAuthPollContext(HttpConnectionContext connection, IServiceProvider serviceProvider, ClaimsPrincipal user, DateTimeOffset expiration)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/foo";
+        context.Request.Method = "GET";
+        context.RequestServices = serviceProvider;
+        context.Response.Body = new MemoryStream();
+        var values = new Dictionary<string, StringValues>
+        {
+            ["id"] = connection.ConnectionToken,
+            ["negotiateVersion"] = "1",
+        };
+        context.Request.Query = new QueryCollection(values);
+        context.User = user;
+
+        var props = new AuthenticationProperties { ExpiresUtc = expiration };
+        var ticket = new AuthenticationTicket(user, props, "Test");
+        context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+        return context;
+    }
+
     private static DefaultHttpContext BuildNegotiateContext(out MemoryStream body)
     {
         body = new MemoryStream();
@@ -898,16 +1310,10 @@ public partial class HttpConnectionDispatcherTests
         return JObject.Parse(reader.ReadToEnd());
     }
 
-    private sealed class FakeAuthenticationService : IAuthenticationService
+    private sealed class ThrowingAuthenticationService : IAuthenticationService
     {
-        private readonly AuthenticateResult _result;
-
-        public FakeAuthenticationService(AuthenticateResult result)
-        {
-            _result = result;
-        }
-
-        public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme) => Task.FromResult(_result);
+        public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme) =>
+            throw new InvalidOperationException("No authenticationScheme was specified, and there was no DefaultAuthenticateScheme found.");
         public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties) => Task.CompletedTask;
         public Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties) => Task.CompletedTask;
         public Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties) => Task.CompletedTask;

@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.AspNetCore.SignalR.StackExchangeRedis.RedisHubLifetimeManager<THub>.OnUserIdentifierChangedAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext! connection, string? oldUserIdentifier, string? newUserIdentifier) -> System.Threading.Tasks.Task<bool>!

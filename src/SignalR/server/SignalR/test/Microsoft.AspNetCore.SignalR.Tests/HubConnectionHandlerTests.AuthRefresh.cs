@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Tests;
 
@@ -274,11 +275,56 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
-    public async Task UserIdentifierChangeOnRefreshAbortsConnection()
+    public async Task UserIdentifierChangeOnRefreshRekeysConnection()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
+                services => services.AddSingleton(hubObserver), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthRefreshHub>>();
+            var lifetimeManager = serviceProvider.GetRequiredService<HubLifetimeManager<AuthRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "user-1"))
+            {
+                var feature = new TestConnectionUserUpdateFeature();
+                client.Connection.Features.Set<IConnectionUserUpdateFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "user-2"),
+                }, "Test"));
+                client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+
+                // OnAuthRefreshedAsync runs only after the re-key completes, so awaiting it guarantees the new key is live.
+                await hubObserver.RefreshedTask.DefaultTimeout();
+
+                // The connection should still be alive (not aborted) and routed under the new user identifier.
+                await lifetimeManager.SendUserAsync("user-1", "Old", new object[] { "x" }).DefaultTimeout();
+                await lifetimeManager.SendUserAsync("user-2", "New", new object[] { "y" }).DefaultTimeout();
+
+                var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
+                Assert.Equal("New", message.Target);
+                Assert.Equal("y", message.Arguments[0]);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UserIdentifierChangeOnRefreshAbortsWhenLifetimeManagerDoesNotSupportRekey()
     {
         using (StartVerifiableLog(write => write.EventId.Name == "UserIdentifierChangedOnRefresh"))
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(_ => { }, LoggerFactory);
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(typeof(HubLifetimeManager<>), typeof(NoRekeyHubLifetimeManager<>));
+            }, LoggerFactory);
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
 
             using (var client = new TestClient(userIdentifier: "user-1"))
@@ -295,7 +341,7 @@ public partial class HubConnectionHandlerTests
                 client.Connection.User = refreshedUser;
                 feature.Raise(refreshedUser);
 
-                // Connection should be aborted by the handler; the dispatch loop completes without the client disposing.
+                // The lifetime manager refuses to re-key, so the handler aborts the connection.
                 await connectionHandlerTask.DefaultTimeout();
             }
         }
@@ -416,6 +462,19 @@ public partial class HubConnectionHandlerTests
         public void Raise(ClaimsPrincipal current)
         {
             UserUpdated?.Invoke(current);
+        }
+    }
+
+    private sealed class NoRekeyHubLifetimeManager<THub> : DefaultHubLifetimeManager<THub> where THub : Hub
+    {
+        public NoRekeyHubLifetimeManager()
+            : base(NullLogger<DefaultHubLifetimeManager<THub>>.Instance)
+        {
+        }
+
+        public override Task<bool> OnUserIdentifierChangedAsync(HubConnectionContext connection, string? oldUserIdentifier, string? newUserIdentifier)
+        {
+            return Task.FromResult(false);
         }
     }
 
