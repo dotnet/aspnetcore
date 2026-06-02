@@ -16,6 +16,7 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
     private Expression<Func<TGridItem, TProp>>? _lastAssignedProperty;
     private Func<TGridItem, string?>? _cellTextFunc;
     private GridSort<TGridItem>? _sortBuilder;
+    private IComparer<TProp>? _lastAssignedComparer;
 
     /// <summary>
     /// Defines the value to be displayed in this column's cells.
@@ -29,6 +30,11 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
     /// </summary>
     [Parameter] public string? Format { get; set; }
 
+    /// <summary>
+    /// Optionally specifies a custom comparer for sorting this column.
+    /// </summary>
+    [Parameter] public IComparer<TProp>? Comparer { get; set; }
+
     /// <inheritdoc/>
     public override GridSort<TGridItem>? SortBy
     {
@@ -40,9 +46,10 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
     protected override void OnParametersSet()
     {
         // We have to do a bit of pre-processing on the lambda expression. Only do that if it's new or changed.
-        if (_lastAssignedProperty != Property)
+        if (_lastAssignedProperty != Property || _lastAssignedComparer != Comparer)
         {
             _lastAssignedProperty = Property;
+            _lastAssignedComparer = Comparer;
             var compiledPropertyExpression = Property.Compile();
 
             if (!string.IsNullOrEmpty(Format))
@@ -65,7 +72,9 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
                 _cellTextFunc = item => compiledPropertyExpression!(item)?.ToString();
             }
 
-            _sortBuilder = GridSort<TGridItem>.ByAscending(Property);
+            _sortBuilder = Comparer is not null
+                ? GridSort<TGridItem>.ByAscending(Property, Comparer)
+                : GridSort<TGridItem>.ByAscending(Property);
         }
 
         if (Title is null && Property.Body is MemberExpression memberExpression)

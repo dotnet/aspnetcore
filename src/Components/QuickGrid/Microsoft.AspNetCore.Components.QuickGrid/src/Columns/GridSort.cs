@@ -38,8 +38,30 @@ public sealed class GridSort<TGridItem>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
     /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
     public static GridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
-        => new((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
+    {
+        return new((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
             (expression, true));
+    }
+
+    /// <summary>
+    /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>, ascending, using a custom comparer.
+    /// </summary>
+    /// <typeparam name="U">The type of the expression's value.</typeparam>
+    /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
+    /// <param name="comparer">The comparer to use for sorting.</param>
+    /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <remarks>
+    /// The <paramref name="comparer"/> overloads work only with in-memory LINQ (LINQ-to-Objects).
+    /// If the <see cref="IQueryable{TGridItem}"/> is backed by a remote provider such as EF Core,
+    /// the call may fail at runtime because the comparer cannot be translated to the provider's query language.
+    /// In such cases, materialize the query first (e.g., call <c>.AsEnumerable()</c> before sorting)
+    /// or use the expression-based overloads instead.
+    /// </remarks>
+    public static GridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression, IComparer<U> comparer)
+    {
+        return new((queryable, asc) => asc ? queryable.OrderBy(expression, comparer) : queryable.OrderByDescending(expression, comparer),
+            (expression, true));
+    }
 
     /// <summary>
     /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>, descending.
@@ -48,8 +70,30 @@ public sealed class GridSort<TGridItem>
     /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
     /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
     public static GridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
-        => new((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
+    {
+        return new((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
             (expression, false));
+    }
+
+    /// <summary>
+    /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>, descending, using a custom comparer.
+    /// </summary>
+    /// <typeparam name="U">The type of the expression's value.</typeparam>
+    /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
+    /// <param name="comparer">The comparer to use for sorting.</param>
+    /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <remarks>
+    /// The <paramref name="comparer"/> overloads work only with in-memory LINQ (LINQ-to-Objects).
+    /// If the <see cref="IQueryable{TGridItem}"/> is backed by a remote provider such as EF Core,
+    /// the call may fail at runtime because the comparer cannot be translated to the provider's query language.
+    /// In such cases, materialize the query first (e.g., call <c>.AsEnumerable()</c> before sorting)
+    /// or use the expression-based overloads instead.
+    /// </remarks>
+    public static GridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression, IComparer<U> comparer)
+    {
+        return new((queryable, asc) => asc ? queryable.OrderByDescending(expression, comparer) : queryable.OrderBy(expression, comparer),
+            (expression, false));
+    }
 
     /// <summary>
     /// Updates a <see cref="GridSort{T}"/> instance by appending a further sorting rule.
@@ -69,6 +113,31 @@ public sealed class GridSort<TGridItem>
     }
 
     /// <summary>
+    /// Updates a <see cref="GridSort{T}"/> instance by appending a further sorting rule using a custom comparer.
+    /// </summary>
+    /// <typeparam name="U">The type of the expression's value.</typeparam>
+    /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
+    /// <param name="comparer">The comparer to use for sorting.</param>
+    /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <remarks>
+    /// The <paramref name="comparer"/> overloads work only with in-memory LINQ (LINQ-to-Objects).
+    /// If the <see cref="IQueryable{TGridItem}"/> is backed by a remote provider such as EF Core,
+    /// the call may fail at runtime because the comparer cannot be translated to the provider's query language.
+    /// In such cases, materialize the query first (e.g., call <c>.AsEnumerable()</c> before sorting)
+    /// or use the expression-based overloads instead.
+    /// </remarks>
+    public GridSort<TGridItem> ThenAscending<U>(Expression<Func<TGridItem, U>> expression, IComparer<U> comparer)
+    {
+        _then ??= new();
+        _thenExpressions ??= new();
+        _then.Add((queryable, asc) => asc ? queryable.ThenBy(expression, comparer) : queryable.ThenByDescending(expression, comparer));
+        _thenExpressions.Add((expression, true));
+        _cachedPropertyListAscending = null;
+        _cachedPropertyListDescending = null;
+        return this;
+    }
+
+    /// <summary>
     /// Updates a <see cref="GridSort{T}"/> instance by appending a further sorting rule.
     /// </summary>
     /// <typeparam name="U">The type of the expression's value.</typeparam>
@@ -79,6 +148,31 @@ public sealed class GridSort<TGridItem>
         _then ??= new();
         _thenExpressions ??= new();
         _then.Add((queryable, asc) => asc ? queryable.ThenByDescending(expression) : queryable.ThenBy(expression));
+        _thenExpressions.Add((expression, false));
+        _cachedPropertyListAscending = null;
+        _cachedPropertyListDescending = null;
+        return this;
+    }
+
+    /// <summary>
+    /// Updates a <see cref="GridSort{T}"/> instance by appending a further sorting rule using a custom comparer.
+    /// </summary>
+    /// <typeparam name="U">The type of the expression's value.</typeparam>
+    /// <param name="expression">An expression defining how a set of <typeparamref name="TGridItem"/> instances are to be sorted.</param>
+    /// <param name="comparer">The comparer to use for sorting.</param>
+    /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
+    /// <remarks>
+    /// The <paramref name="comparer"/> overloads work only with in-memory LINQ (LINQ-to-Objects).
+    /// If the <see cref="IQueryable{TGridItem}"/> is backed by a remote provider such as EF Core,
+    /// the call may fail at runtime because the comparer cannot be translated to the provider's query language.
+    /// In such cases, materialize the query first (e.g., call <c>.AsEnumerable()</c> before sorting)
+    /// or use the expression-based overloads instead.
+    /// </remarks>
+    public GridSort<TGridItem> ThenDescending<U>(Expression<Func<TGridItem, U>> expression, IComparer<U> comparer)
+    {
+        _then ??= new();
+        _thenExpressions ??= new();
+        _then.Add((queryable, asc) => asc ? queryable.ThenByDescending(expression, comparer) : queryable.ThenBy(expression, comparer));
         _thenExpressions.Add((expression, false));
         _cachedPropertyListAscending = null;
         _cachedPropertyListDescending = null;
