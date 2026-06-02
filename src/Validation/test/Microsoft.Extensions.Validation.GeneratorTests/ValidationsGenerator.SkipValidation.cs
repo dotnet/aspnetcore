@@ -243,13 +243,13 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
                     {
-                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange2", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange1", kvp.Key);
+                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.Single());
                     },
                     kvp =>
                     {
-                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange1", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange2", kvp.Key);
+                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.Single());
                     });
             }
 
