@@ -12,7 +12,6 @@ using TestServer;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66883")]
 public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
     public QuickGridNoInteractivityTest(

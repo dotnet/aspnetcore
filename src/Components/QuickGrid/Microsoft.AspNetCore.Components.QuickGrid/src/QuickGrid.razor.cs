@@ -125,6 +125,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Inject] private IJSRuntime JS { get; set; } = default!;
     [Inject] private NavigationManager NavigationManager { get; set; } = default!;
 
+    // For testing only.
+    [CascadingParameter(Name = QuickGridFeatureFlags.EnableUrlBasedNavigationSwitchName)]
+    internal bool? UrlBasedNavigationOverride { get; set; }
+
+    internal bool UseUrlBasedNavigationAndSorting
+        => UrlBasedNavigationOverride ?? QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting;
+
     private ElementReference _tableReference;
     private Virtualize<(int, TGridItem)>? _virtualizeComponent;
     private int _ariaBodyRowCount;

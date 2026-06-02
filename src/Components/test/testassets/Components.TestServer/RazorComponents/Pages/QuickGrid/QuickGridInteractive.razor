@@ -1,9 +1,11 @@
 @page "/quickgrid-interactive"
 @rendermode RenderMode.InteractiveServer
 @using Microsoft.AspNetCore.Components.QuickGrid
+@inject IConfiguration Configuration
 
 <h3>Sample QuickGrid Component</h3>
 
+<CascadingValue Name="Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting" Value="@_urlBasedNavigationOverride">
 <div id="grid">
     <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" OnRowClick="@((Person p) => HandleRowClick(p))" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
@@ -51,6 +53,7 @@
         <p id="no-click">No row clicked yet</p>
     }
 </div>
+</CascadingValue>
 
 @code {
     record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);
@@ -60,6 +63,15 @@
     QuickGrid<Person> quickGridRef;
     Person clickedPerson;
     int clickCount;
+    bool? _urlBasedNavigationOverride;
+
+    protected override void OnInitialized()
+    {
+        // Drive the per-tree override from configuration so this page can serve both the
+        // URL-driven QuickGridInteractiveTest scenario and the legacy button-driven
+        // QuickGridInteractiveCompatTest scenario without mutating any process-wide state.
+        _urlBasedNavigationOverride = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
+    }
 
     void HandleRowClick(Person person)
     {

@@ -15,7 +15,7 @@
             }
         </div>
         <nav role="navigation">
-            @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
+            @if (UseUrlBasedNavigationAndSorting)
             {
                 <a class="go-first" href="@(CanGoBack ? GetPageUrl(0) : null)" title="Go to first page" aria-label="Go to first page" aria-disabled="@(!CanGoBack ? "true" : "false")">«</a>
                 <a class="go-previous" href="@(CanGoBack ? GetPageUrl(State.CurrentPageIndex - 1) : null)" title="Go to previous page" aria-label="Go to previous page" aria-disabled="@(!CanGoBack ? "true" : "false")">‹</a>
