@@ -29,8 +29,7 @@ description: >
   .NET version-status claims, stray Notes section, unrelated duplicate
   citations) and posts the cleaned comment. Has no label permissions.
 
-# Per-issue concurrency. Forward-compatible with the gh-aw fix tracked
-# in https://github.com/github/gh-aw/issues/35161.
+# Per-issue concurrency.
 concurrency:
   group: gh-aw-triage-comment-reviewer-${{ inputs.issue_number || github.run_id }}
   cancel-in-progress: false
@@ -93,8 +92,11 @@ issue is a **vulnerability report**.
 **An issue is a vulnerability report if** it explicitly contains one or
 more of these indicators:
 
-- A **CVE identifier** matching the pattern `CVE-YYYY-NNNNN` (e.g.
-  `CVE-2021-44228`).
+- A **CVE identifier** matching the pattern `CVE-\d{4}-\d{4,}` — a 4-digit
+  year followed by a 4-or-more-digit sequence number (e.g. `CVE-2020-0601`,
+  `CVE-2021-44228`). The sequence number is **not** fixed-width — short
+  IDs like `CVE-2020-0601` (4 digits) and long ones like `CVE-2021-44228`
+  (5 digits) and `CVE-2014-0160` are all valid.
 - A **specific exploit, attack vector, or proof-of-concept**: a payload
   the reporter says triggers a vulnerability ("send `${jndi:ldap://…}`",
   "I can bypass auth by setting header X to Y", "this allows arbitrary
@@ -154,6 +156,53 @@ If the issue **is not** a vulnerability report → continue to Step 2b.
 Read `${{ inputs.proposed_comment }}` carefully. For each match below,
 strip the offending content during `REWRITE`. None of these alone is a
 `FAIL` trigger.
+
+### Stripping mechanics (how to apply the content rules below cleanly)
+
+A strip is not just a delete — it is a delete followed by a cleanup pass
+so the surviving markdown reads as if the offending text was never there.
+Apply these mechanics every time you `REWRITE`:
+
+- **(A) Whole-line stripping is the default.** For sentences in their own
+  paragraph, or bullets in their own list item: delete the entire line
+  (including its newline). If that leaves two or more consecutive blank
+  lines, collapse to exactly one.
+
+- **(B) If you strip the only remaining content under a heading, strip the
+  heading too.** A bare `#### Notes` heading with nothing under it is
+  uglier than no section at all. Same for `#### Regression Info` if it
+  ever becomes empty. **Exception:** `#### Potential Duplicates` is
+  handled differently by content rule 7 below — keep the heading and
+  write `- _None found_` instead of stripping it.
+
+- **(C) Mid-sentence or mid-clause phrases — prefer stripping the whole
+  sentence over leaving a grammatical hole.** Example: a Type line of
+  `_Type:_ Bug (HTTP parsing hardening, request smuggling vector)` —
+  strip the `, request smuggling vector` clause *together with its
+  leading comma* so the result reads
+  `_Type:_ Bug (HTTP parsing hardening)`. If removing the offending
+  phrase would leave a sentence that no longer parses (e.g.
+  `_Type:_ Bug (, request smuggling vector)`), strip the whole
+  parenthetical or the whole sentence instead — never leave dangling
+  punctuation or fragments.
+
+- **(D) Trailing-punctuation cleanup.** After any strip, scan the line
+  immediately before and after the deletion: if the previous line now
+  ends with a dangling comma, semicolon, or "and"/"but"/"because",
+  remove that connector. If a bullet list now ends with a continuation
+  marker (e.g. *"…such as:"*), drop that connector or rewrite to a
+  period — but if rewriting would change meaning, prefer to strip the
+  whole introducing bullet too.
+
+- **(E) If you cannot strip cleanly without rewriting — `FAIL`, do not
+  `REWRITE`.** You are allowed to *remove* content from the
+  orchestrator's draft; you are not allowed to *invent* replacement
+  wording. If the only way to leave a clean comment is to add or
+  paraphrase new text, prefer `FAIL`. This rule is intentionally blunt:
+  it is the operational consequence of "when in doubt, `FAIL`"
+  (see Step 3).
+
+### Things to strip
 
 1. **Constructed security analysis** — sentences the orchestrator added
    that are not present in the issue body and that argue the issue is a
@@ -253,6 +302,8 @@ Specifically, `FAIL` (don't `REWRITE`) if any of the following are true:
 
 - The Notes-section heuristic in 2b.6 triggered AND you are unsure
   what the orchestrator's intent was.
+- Stripping mechanic (E) triggered — i.e. you cannot apply a strip
+  without inventing replacement wording.
 - More than ~30% of the comment is Step 2b content you need to strip
   (the surviving structured fields may still be coherent, but the
   comment is now noticeably shorter than the orchestrator intended,
