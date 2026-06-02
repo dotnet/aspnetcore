@@ -185,7 +185,10 @@ public class EmbeddedFileProvider : IFileProvider
         return NullChangeToken.Singleton;
     }
 
-    private static bool HasInvalidPathChars(string path) => path.IndexOfAny(_invalidFileNameChars) != -1;
+    private static bool HasInvalidPathChars(string path)
+    {
+        return path.IndexOfAny(_invalidFileNameChars) != -1;
+    }
 
     #region Helper methods
 

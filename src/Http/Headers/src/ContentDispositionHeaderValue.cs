@@ -534,7 +534,7 @@ public class ContentDispositionHeaderValue
     {
         Contract.Assert(input != null);
 
-        return input.AsSpan().IndexOfAnyExceptInRange((char)0x20, (char)0x7e) >= 0;
+        return input.AsSpan().ContainsAnyExceptInRange((char)0x20, (char)0x7e);
     }
 
     // Encode using MIME encoding
