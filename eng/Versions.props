@@ -199,6 +199,7 @@
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
     <AnalyzersSystemTextJsonVersion>$(SystemTextJsonVersion)</AnalyzersSystemTextJsonVersion>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
+    <RepoTasksSystemSecurityCryptographyXmlVersion>8.0.3</RepoTasksSystemSecurityCryptographyXmlVersion>
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
