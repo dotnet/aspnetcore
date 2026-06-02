@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AssemblyName>Microsoft.AspNetCore.Tools.NativeAot.Tests</AssemblyName>
+    <TestGroupName>NativeAotToolTests</TestGroupName>
+    <NativeAotToolPublishRoot>$([MSBuild]::NormalizeDirectory('$(OutputPath)', '$(TargetFramework)', 'nativeaot-tools'))</NativeAotToolPublishRoot>
+    <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == '' AND '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
+    <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == '' AND '$(TargetRuntimeIdentifier)' != ''">$(TargetRuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
+    <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <SkipTests Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\NativeAotToolRunner.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\TemporaryCSharpProject.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\TemporaryDirectory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeAotToolUnderTest Include="dotnet-dev-certs">
+      <ProjectPath>..\..\dotnet-dev-certs\src\dotnet-dev-certs.csproj</ProjectPath>
+    </NativeAotToolUnderTest>
+    <NativeAotToolUnderTest Include="dotnet-user-jwts">
+      <ProjectPath>..\..\dotnet-user-jwts\src\dotnet-user-jwts.csproj</ProjectPath>
+    </NativeAotToolUnderTest>
+    <NativeAotToolUnderTest Include="dotnet-user-secrets">
+      <ProjectPath>..\..\dotnet-user-secrets\src\dotnet-user-secrets.csproj</ProjectPath>
+    </NativeAotToolUnderTest>
+  </ItemGroup>
+
+  <Target Name="PublishNativeAotToolsForTests"
+    BeforeTargets="Build"
+    Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <MSBuild
+      Projects="%(NativeAotToolUnderTest.ProjectPath)"
+      Targets="Publish"
+      Properties="Configuration=$(Configuration);RuntimeIdentifier=$(NativeAotToolPublishRuntimeIdentifier);SelfContained=true;PublishAot=true;PublishDir=$([MSBuild]::NormalizeDirectory('$(NativeAotToolPublishRoot)', '%(NativeAotToolUnderTest.Identity)'))" />
+  </Target>
+
+  <ItemGroup>
+    <HelixContent Include="$(NativeAotToolPublishRoot)**" LinkBase="nativeaot-tools" />
+  </ItemGroup>
+
+</Project>

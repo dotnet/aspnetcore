@@ -13,6 +13,7 @@ usage()
   echo "  --configuration <value>    Build configuration: 'Debug' or 'Release' (short: -c)"
   echo "  --verbosity <value>        Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   echo "  --binaryLog                Create MSBuild binary log (short: -bl)"
+  echo "  --binaryLogName <value>    Binary log file name or path; implies --binaryLog (short: -bln)"
   echo "  --help                     Print help and exit (short: -h)"
   echo ""
 
@@ -83,8 +84,8 @@ warn_not_as_error=''
 node_reuse=true
 build_check=false
 binary_log=false
+binary_log_name=''
 exclude_ci_binary_log=false
-pipelines_log=false
 
 projects=''
 configuration=''
@@ -115,11 +116,13 @@ while [[ $# -gt 0 ]]; do
     -binarylog|-bl)
       binary_log=true
       ;;
+    -binarylogname|-bln)
+      binary_log=true
+      binary_log_name=$2
+      shift
+      ;;
     -excludecibinarylog|-nobl)
       exclude_ci_binary_log=true
-      ;;
-    -pipelineslog|-pl)
-      pipelines_log=true
       ;;
     -restore|-r)
       restore=true
@@ -210,7 +213,6 @@ if [[ -z "$configuration" ]]; then
 fi
 
 if [[ "$ci" == true ]]; then
-  pipelines_log=true
   node_reuse=false
   if [[ "$exclude_ci_binary_log" == false ]]; then
     binary_log=true
@@ -237,7 +239,17 @@ function Build {
 
   local bl=""
   if [[ "$binary_log" == true ]]; then
-    bl="/bl:\"$log_dir/Build.binlog\""
+    local binary_log_path=""
+    if [[ -z "$binary_log_name" ]]; then
+      binary_log_path="$log_dir/Build.binlog"
+    elif [[ "$binary_log_name" = /* ]]; then
+      binary_log_path="$binary_log_name"
+    else
+      binary_log_path="$log_dir/$binary_log_name"
+    fi
+
+    mkdir -p "$(dirname "$binary_log_path")"
+    bl="/bl:\"$binary_log_path\""
   fi
 
   local check=""
