@@ -7,7 +7,7 @@
 <div id="grid">
     <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" OnRowClick="@((Person p) => HandleRowClick(p))" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true">
+        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" CellClassFunc='@(p => p.FirstName == "Julie" ? "highlight-cell" : null)'>
             <ColumnOptions>
                 <div class="search-box">
                     <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />

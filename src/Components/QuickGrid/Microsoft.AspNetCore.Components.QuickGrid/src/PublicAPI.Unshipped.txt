@@ -3,6 +3,8 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNam
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.CellClassFunc.get -> System.Func<TGridItem, string?>?
+Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.CellClassFunc.set -> void
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void

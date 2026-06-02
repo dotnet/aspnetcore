@@ -27,6 +27,11 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// An optional factory that can be used to compute the CSS class name for the body cells in this column.
+    /// </summary>
+    [Parameter] public Func<TGridItem, string?>? CellClassFunc { get; set; }
+
+    /// <summary>
     /// If specified, controls the justification of table header and body cells for this column.
     /// </summary>
     [Parameter] public Align Align { get; set; }
@@ -104,6 +109,14 @@ public abstract partial class ColumnBase<TGridItem>
     /// </summary>
     /// <returns>True if the column should be sortable by default, otherwise false.</returns>
     protected virtual bool IsSortableByDefault() => false;
+
+    /// <summary>
+    /// Gets the resolved CSS class value for this column's body cells.
+    /// </summary>
+    /// <param name="item">The data item being rendered.</param>
+    /// <returns>The CSS class string, or <see langword="null" />.</returns>
+    internal string? GetClass(TGridItem item)
+        => CellClassFunc?.Invoke(item) ?? Class;
 
     /// <summary>
     /// Constructs an instance of <see cref="ColumnBase{TGridItem}" />.

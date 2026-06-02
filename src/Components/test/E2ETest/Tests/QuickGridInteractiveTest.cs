@@ -151,4 +151,13 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("people_sort=FirstName", Browser.Url);
         Assert.Contains("people_order=asc", Browser.Url);
     }
+
+    [Fact]
+    public void CellClassFuncAppliedToPropertyColumn()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid > table"));
+        var firstNameCell = Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(1) > td:nth-child(2)"));
+        Assert.Contains("highlight-cell", firstNameCell.GetDomAttribute("class"));
+    }
 }

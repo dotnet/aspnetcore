@@ -557,6 +557,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         _ => column.Class,
     };
 
+    private static string? ColumnClass(ColumnBase<TGridItem> column, TGridItem item) => column.Align switch
+    {
+        Align.Start => $"col-justify-start {column.GetClass(item)}",
+        Align.Center => $"col-justify-center {column.GetClass(item)}",
+        Align.End => $"col-justify-end {column.GetClass(item)}",
+        Align.Left => $"col-justify-left {column.GetClass(item)}",
+        Align.Right => $"col-justify-right {column.GetClass(item)}",
+        _ => column.GetClass(item),
+    };
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
