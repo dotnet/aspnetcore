@@ -37,13 +37,6 @@ public abstract class AuthorizeViewCore : ComponentBase
     [Parameter] public RenderFragment? Authorizing { get; set; }
 
     /// <summary>
-    /// The content that will be displayed after authorization succeeds but before the primary content is rendered.
-    /// This allows for additional validation or redirects based on user state or claims.
-    /// Only applicable when used within <see cref="AuthorizeRouteView"/>.
-    /// </summary>
-    [Parameter] public RenderFragment<AuthenticationState>? AfterAuthorized { get; set; }
-
-    /// <summary>
     /// The resource to which access is being controlled.
     /// </summary>
     [Parameter] public object? Resource { get; set; }
@@ -65,16 +58,8 @@ public abstract class AuthorizeViewCore : ComponentBase
         }
         else if (isAuthorized == true)
         {
-            // If AfterAuthorized is provided, render it first (used for post-auth validation/redirects)
-            if (AfterAuthorized != null)
-            {
-                builder.AddContent(0, AfterAuthorized.Invoke(currentAuthenticationState!));
-            }
-            else
-            {
-                var authorized = Authorized ?? ChildContent;
-                builder.AddContent(0, authorized?.Invoke(currentAuthenticationState!));
-            }
+            var authorized = Authorized ?? ChildContent;
+            builder.AddContent(0, authorized?.Invoke(currentAuthenticationState!));
         }
         else
         {
