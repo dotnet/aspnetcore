@@ -50,7 +50,7 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
         {
             var payloadDirectory = workItem.GetMetadata("PayloadDirectory");
             var preCommands = workItem.GetMetadata("PreCommands");
-            var hasSpecialDependencies = workItem.GetMetadata("HasSpecialDependencies");
+            var skipBatching = workItem.GetMetadata("SkipHelixWorkItemBatching");
             var tfm = workItem.GetMetadata("TargetFrameworkMoniker");
             if (string.IsNullOrWhiteSpace(tfm))
             {
@@ -60,11 +60,19 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
 
             var shouldBatch = !string.IsNullOrWhiteSpace(tfm) &&
                 string.IsNullOrWhiteSpace(preCommands) &&
-                !string.Equals(hasSpecialDependencies, "true", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(skipBatching, "true", StringComparison.OrdinalIgnoreCase) &&
                 Directory.Exists(payloadDirectory);
 
             if (!shouldBatch)
             {
+                // Write a single-entry targets.txt for unbatched items so all items
+                // use the same @targets.txt command format.
+                if (Directory.Exists(payloadDirectory))
+                {
+                    var testAssembly = workItem.GetMetadata("TestAssembly");
+                    File.WriteAllText(Path.Combine(payloadDirectory, "targets.txt"), testAssembly);
+                }
+
                 unbatched.Add(workItem);
                 continue;
             }
@@ -151,7 +159,7 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                 batchedWorkItem.SetMetadata("PayloadDirectory", batchDirectory);
                 batchedWorkItem.SetMetadata("TestAssembly", "targets.txt");
                 batchedWorkItem.SetMetadata("Timeout", batchTimeout.ToString("c", CultureInfo.InvariantCulture));
-                batchedWorkItem.SetMetadata("HasSpecialDependencies", "false");
+                batchedWorkItem.SetMetadata("SkipHelixWorkItemBatching", "false");
                 batchedWorkItem.SetMetadata("TargetFrameworkMoniker", group.Key);
                 batchedWorkItem.SetMetadata(
                     "Command",
