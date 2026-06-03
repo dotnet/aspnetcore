@@ -1255,6 +1255,8 @@ public class VirtualizeTest
                      && f.AttributeName == "style")
             .ToList();
 
-        Assert.Empty(inlineStyleAttributes);
+        // The only inline style is the test host's scroll container; Virtualize itself emits none.
+        var hostStyle = Assert.Single(inlineStyleAttributes);
+        Assert.Equal("overflow: auto; height: 800px;", (string)hostStyle.AttributeValue);
     }
 }
