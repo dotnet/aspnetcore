@@ -41,7 +41,7 @@ internal static class ApiDescriptionExtensions
             "OPTIONS" => HttpMethod.Options,
             "TRACE" => HttpMethod.Trace,
             "QUERY" => HttpMethod.Query,
-            _ => TryCreateHttpMethod(httpMethod),
+            _ => TryCreateHttpMethod(normalizedHttpMethod),
         };
 
         static HttpMethod? TryCreateHttpMethod(string httpMethod)

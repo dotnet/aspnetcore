@@ -293,7 +293,7 @@ internal sealed class OpenApiDocumentService(
 
             if (description.GetHttpMethod() is not { } method)
             {
-                // Skip descriptions with no HTTP method.
+                // Skip descriptions with a missing or invalid HTTP method.
                 continue;
             }
 

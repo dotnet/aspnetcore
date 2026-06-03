@@ -77,16 +77,16 @@ public class ApiDescriptionExtensionsTests
 
         public static IEnumerable<object[]> UnsupportedMethods => new List<object[]>
         {
-            new object[] { "foo" },
-            new object[] { "Foo" },
-            new object[] { "FOO" },
-            new object[] { "customMethod" },
+            new object[] { "foo", "foo" },
+            new object[] { "Foo", "Foo" },
+            new object[] { "FOO", "FOO" },
+            new object[] { "customMethod", "customMethod" },
+            new object[] { " FOO ", "FOO" },
+            new object[] { " FooBar ", "FooBar" },
         };
 
         public static IEnumerable<object[]> InvalidMethods => new List<object[]>
         {
-            new object[] { "FOO " },
-            new object[] { " FOO" },
             new object[] { "FOO BAR" },
         };
     }
@@ -108,7 +108,7 @@ public class ApiDescriptionExtensionsTests
 
     [Theory]
     [MemberData(nameof(HttpMethodTestData.UnsupportedMethods), MemberType = typeof(HttpMethodTestData))]
-    public void GetHttpMethod_PreservesOriginalCasingForUnsupportedMethod(string httpMethod)
+    public void GetHttpMethod_PreservesUnsupportedMethodCasingAfterTrimming(string httpMethod, string expectedHttpMethod)
     {
         var apiDescription = new ApiDescription
         {
@@ -117,7 +117,7 @@ public class ApiDescriptionExtensionsTests
 
         var result = apiDescription.GetHttpMethod();
 
-        Assert.Equal(httpMethod, result?.Method);
+        Assert.Equal(expectedHttpMethod, result?.Method);
     }
 
     [Theory]
