@@ -21,25 +21,19 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
     {
     }
 
-    protected override void InitializeAsyncCore()
+    [Fact]
+    public void Virtualize_WithItems_DoesNotViolate_StrictStyleCspPolicy()
     {
         // strict-style-csp causes ServerStartup to add `Content-Security-Policy: style-src 'self'`.
         Navigate($"{ServerPathBase}?strict-style-csp=true");
         Browser.MountTestComponent<VirtualizationCsp>();
-        Browser.Exists(By.Id("csp-container"));
-    }
 
-    [Fact]
-    public void Virtualize_DoesNotViolate_StrictStyleCspPolicy()
-    {
         var container = Browser.Exists(By.Id("csp-container"));
-
-        // Wait until items have rendered through the Virtualize component.
         Browser.True(() => container.FindElements(By.CssSelector(".csp-item")).Count > 0);
 
-        // Scroll to force spacer/placeholder style updates which set CSS custom properties via CSSOM.
-        ((IJavaScriptExecutor)Browser).ExecuteScript(
-            "document.getElementById('csp-container').scrollTop = 5000;");
+        // Scroll to force spacer style updates which set CSS custom properties via CSSOM.
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("document.getElementById('csp-container').scrollTop = 5000;");
 
         // Allow the MutationObserver microtask + CSSOM updates to flush.
         Browser.True(() =>
@@ -49,11 +43,37 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
             return style != null && !style.Contains("--blazor-virtualize-height: 0px");
         });
 
-        // No style-src CSP violation should appear in the browser console.
-        var cspErrorMessage = "violates the following Content Security Policy directive: \"style-src";
+        AssertNoStyleCspViolations();
+    }
+
+    [Fact]
+    public void Virtualize_WithItemsProvider_DoesNotViolate_StrictStyleCspPolicy()
+    {
+        // strict-style-csp causes ServerStartup to add `Content-Security-Policy: style-src 'self'`.
+        Navigate($"{ServerPathBase}?strict-style-csp=true&mode=items-provider");
+        Browser.MountTestComponent<VirtualizationCsp>();
+
+        var container = Browser.Exists(By.Id("csp-container-async"));
+
+        // Wait for either placeholders (during in-flight load) or resolved items.
+        Browser.True(() => container.FindElements(
+            By.CssSelector(".csp-placeholder, .csp-item-async")).Count > 0);
+
+        // Scroll to trigger new placeholder renders and spacer style updates.
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("document.getElementById('csp-container-async').scrollTop = 5000;");
+
+        // Wait for resolved items after scroll so the placeholder path has executed.
+        Browser.True(() => container.FindElements(By.CssSelector(".csp-item-async")).Count > 0);
+
+        AssertNoStyleCspViolations();
+    }
+
+    private void AssertNoStyleCspViolations()
+    {
+        const string cspErrorMessage = "violates the following Content Security Policy directive: \"style-src";
         var logs = Browser.Manage().Logs.GetLog(LogType.Browser);
         var styleErrors = logs.Where(log => log.Message.Contains(cspErrorMessage)).ToList();
-
         Assert.Empty(styleErrors);
     }
 }
