@@ -58,7 +58,7 @@ public class ApiDescriptionExtensionsTests
 
     public static class HttpMethodTestData
     {
-        public static IEnumerable<object[]> TestCases => new List<object[]>
+        public static IEnumerable<object[]> KnownMethods => new List<object[]>
         {
             new object[] { "GET", HttpMethod.Get },
             new object[] { "POST", HttpMethod.Post },
@@ -69,38 +69,47 @@ public class ApiDescriptionExtensionsTests
             new object[] { "OPTIONS", HttpMethod.Options },
             new object[] { "TRACE", HttpMethod.Trace },
             new object[] { "QUERY", HttpMethod.Query },
-            new object[] { "gEt", HttpMethod.Get }, // Test case-insensitivity
+            new object[] { "gEt", HttpMethod.Get },
+            new object[] { "pOsT", HttpMethod.Post },
+            new object[] { "QuErY", HttpMethod.Query },
+        };
+
+        public static IEnumerable<object[]> UnsupportedMethods => new List<object[]>
+        {
+            new object[] { "foo" },
+            new object[] { "Foo" },
+            new object[] { "FOO" },
+            new object[] { "customMethod" },
         };
     }
 
     [Theory]
-    [MemberData(nameof(HttpMethodTestData.TestCases), MemberType = typeof(HttpMethodTestData))]
-    public void GetHttpMethod_ReturnsHttpMethodForApiDescription(string httpMethod, HttpMethod expectedHttpMethod)
+    [MemberData(nameof(HttpMethodTestData.KnownMethods), MemberType = typeof(HttpMethodTestData))]
+    public void GetHttpMethod_ReturnsKnownHttpMethodForApiDescription(string httpMethod, HttpMethod expectedHttpMethod)
     {
-        // Arrange
         var apiDescription = new ApiDescription
         {
             HttpMethod = httpMethod
         };
 
-        // Act
         var result = apiDescription.GetHttpMethod();
 
-        // Assert
         Assert.Equal(expectedHttpMethod, result);
+        Assert.Equal(expectedHttpMethod.Method, result?.Method);
     }
 
-    [Fact]
-    public void GetHttpMethod_ReturnsCustomHttpMethodForUnsupportedMethod()
+    [Theory]
+    [MemberData(nameof(HttpMethodTestData.UnsupportedMethods), MemberType = typeof(HttpMethodTestData))]
+    public void GetHttpMethod_PreservesOriginalCasingForUnsupportedMethod(string httpMethod)
     {
         var apiDescription = new ApiDescription
         {
-            HttpMethod = "foo"
+            HttpMethod = httpMethod
         };
 
         var result = apiDescription.GetHttpMethod();
 
-        Assert.Equal(new HttpMethod("FOO"), result);
+        Assert.Equal(httpMethod, result?.Method);
     }
 
     [Theory]

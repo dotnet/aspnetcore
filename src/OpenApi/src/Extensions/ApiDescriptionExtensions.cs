@@ -19,13 +19,13 @@ internal static class ApiDescriptionExtensions
     /// <returns>The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, if known.</returns>
     public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription)
     {
-        var httpMethod = apiDescription.HttpMethod?.ToUpperInvariant();
+        var httpMethod = apiDescription.HttpMethod;
         if (string.IsNullOrWhiteSpace(httpMethod))
         {
             return null;
         }
 
-        return httpMethod switch
+        return httpMethod.ToUpperInvariant() switch
         {
             "GET" => HttpMethod.Get,
             "POST" => HttpMethod.Post,
