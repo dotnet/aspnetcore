@@ -164,11 +164,26 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
 
                 var batchedWorkItem = new TaskItem($"batch_{batchNumber}--{group.Key}");
 
-                // Build the command from work item metadata rather than parsing command strings.
+                // Validate that all items in this batch share the same queue, architecture,
+                // runtime, and quarantine settings. These must be consistent because the
+                // batch produces a single command that applies to all assemblies.
                 var runtimeVersion = firstItem.GetMetadata("RuntimeVersion");
                 var queueName = firstItem.GetMetadata("QueueName");
                 var arch = firstItem.GetMetadata("TestingArchitecture");
                 var quarantined = firstItem.GetMetadata("RunQuarantined");
+
+                foreach (var workItem in chunk)
+                {
+                    ValidateMetadataConsistency(workItem, firstItem, "RuntimeVersion");
+                    ValidateMetadataConsistency(workItem, firstItem, "QueueName");
+                    ValidateMetadataConsistency(workItem, firstItem, "TestingArchitecture");
+                    ValidateMetadataConsistency(workItem, firstItem, "RunQuarantined");
+                }
+
+                if (Log.HasLoggedErrors)
+                {
+                    return false;
+                }
                 var timeoutStr = batchTimeout.ToString("c", CultureInfo.InvariantCulture);
                 var script = IsWindowsQueue ? "call runtests.cmd" : "./runtests.sh";
                 var command = $"{script} @targets.txt {runtimeVersion} {queueName} {arch} {quarantined} {timeoutStr} false";
@@ -200,5 +215,18 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
             BatchedWorkItems.Length);
 
         return !Log.HasLoggedErrors;
+    }
+
+    private void ValidateMetadataConsistency(ITaskItem item, ITaskItem reference, string metadataName)
+    {
+        var itemValue = item.GetMetadata(metadataName) ?? "";
+        var refValue = reference.GetMetadata(metadataName) ?? "";
+        if (!string.Equals(itemValue, refValue, StringComparison.OrdinalIgnoreCase))
+        {
+            Log.LogError(
+                "Work item '{0}' has {1}='{2}' but batch expects '{3}' (from '{4}'). " +
+                "All items in a batch must share the same {1}.",
+                item.ItemSpec, metadataName, itemValue, refValue, reference.ItemSpec);
+        }
     }
 }
