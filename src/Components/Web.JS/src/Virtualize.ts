@@ -85,17 +85,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     el.style.transform = 'var(--blazor-virtualize-loop-breaker-transform, none)';
   }
 
-  const layoutAttrToCssVar: readonly (readonly [string, string, (n: number) => string])[] = [
-    ['data-blazor-virtualize-reserved-height', '--blazor-virtualize-reserved-height', n => `${n}px`],
-    ['data-blazor-virtualize-loop-breaker-transform', '--blazor-virtualize-loop-breaker-transform', n => `translateY(${n}px)`],
-  ];
-  const layoutAttrNames = layoutAttrToCssVar.map(([attr]) => attr);
+  const layoutAttrs = [
+    ['data-blazor-virtualize-reserved-height', '--blazor-virtualize-reserved-height', (n: number) => `${n}px`],
+    ['data-blazor-virtualize-loop-breaker-transform', '--blazor-virtualize-loop-breaker-transform', (n: number) => `translateY(${n}px)`],
+  ] as const;
+  const layoutAttrNames = layoutAttrs.map(([a]) => a);
   const layoutAttrSelector = layoutAttrNames.map(a => `[${a}]`).join(',');
   function applyLayoutAttrs(el: HTMLElement): void {
     ensureBaseStyles(el);
-    for (const [attr, cssVar, format] of layoutAttrToCssVar) {
+    for (const [attr, cssVar, format] of layoutAttrs) {
       const raw = el.getAttribute(attr);
-      const n = raw === null || raw === '' ? NaN : Number(raw);
+      const n = raw ? Number(raw) : NaN;
       if (Number.isFinite(n)) {
         el.style.setProperty(cssVar, format(n));
       } else {
@@ -104,7 +104,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     }
   }
 
-  // Apply initial styles via CSSOM so they work even under strict CSP.
+  // Apply layout attributes before the MutationObserver starts catching changes.
   const styleObserverRoot = spacerBefore.parentElement ?? scrollElement;
   styleObserverRoot.querySelectorAll(layoutAttrSelector).forEach(el => {
     applyLayoutAttrs(el as HTMLElement);
