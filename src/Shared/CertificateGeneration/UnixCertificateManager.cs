@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.Certificates.Generation;
 
@@ -685,15 +686,14 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // Encode the PowerShell script to Base64 (UTF-16LE as required by PowerShell)
         var encodedCommand = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(powershellScript));
 
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(PowerShellCommand, $"-NoProfile -NonInteractive -EncodedCommand {encodedCommand}")
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
         };
 
-        using var process = Process.Start(startInfo)!;
-        process.WaitForExit();
-        return process.ExitCode == 0;
+        return Process.Run(startInfo).ExitCode == 0;
     }
 
     /// <remarks>
@@ -706,17 +706,16 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // (The docs suggest that "-V -u A" should do this, but it seems to accept all certs.)
         var operation = nssDb.IsFirefox ? "-L" : "-V -u V";
 
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -n {nickname} {operation}")
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
         };
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            return process.ExitCode == 0;
+            return Process.Run(startInfo).ExitCode == 0;
         }
         catch (Exception ex)
         {
@@ -735,17 +734,16 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         var usage = nssDb.IsFirefox ? "C" : "P";
 
         // This silently clobbers an existing entry, so there's no need to check for existence first.
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -n {nickname} -A -i {certificatePath} -t \"{usage},,\"")
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
         };
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            return process.ExitCode == 0;
+            return Process.Run(startInfo).ExitCode == 0;
         }
         catch (Exception ex)
         {
@@ -759,17 +757,16 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     /// </remarks>
     private static bool TryRemoveCertificateFromNssDb(string nickname, NssDb nssDb)
     {
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
         var startInfo = new ProcessStartInfo(CertUtilCommand, $"-d sql:{nssDb.Path} -D -n {nickname}")
         {
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle
         };
 
         try
         {
-            using var process = Process.Start(startInfo)!;
-            process.WaitForExit();
-            if (process.ExitCode == 0)
+            if (Process.Run(startInfo).ExitCode == 0)
             {
                 return true;
             }
@@ -939,17 +936,15 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 RedirectStandardError = true
             };
 
-            using var process = Process.Start(processInfo);
-            var stdout = process!.StandardOutput.ReadToEnd();
+            var processOutput = Process.RunAndCaptureText(processInfo);
 
-            process.WaitForExit();
-            if (process.ExitCode != 0)
+            if (processOutput.ExitStatus.ExitCode != 0)
             {
                 Log.UnixOpenSslVersionFailed();
                 return false;
             }
 
-            var match = OpenSslVersionRegex.Match(stdout);
+            var match = OpenSslVersionRegex.Match(processOutput.StandardOutput);
             if (!match.Success)
             {
                 Log.UnixOpenSslVersionParsingFailed();
@@ -983,17 +978,15 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 RedirectStandardError = true
             };
 
-            using var process = Process.Start(processInfo);
-            var stdout = process!.StandardOutput.ReadToEnd();
-
-            process.WaitForExit();
-            if (process.ExitCode != 0)
+            var processOutput = Process.RunAndCaptureText(processInfo);
+            
+            if (processOutput.ExitStatus.ExitCode != 0)
             {
                 Log.UnixOpenSslHashFailed(certificatePath);
                 return false;
             }
 
-            hash = stdout.Trim();
+            hash = processOutput.StandardOutput.Trim();
             return true;
         }
         catch (Exception ex)
