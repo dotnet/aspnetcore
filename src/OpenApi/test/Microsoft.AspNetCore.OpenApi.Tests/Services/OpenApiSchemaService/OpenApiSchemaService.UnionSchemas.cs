@@ -55,8 +55,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.NotNull(unionComponent.AnyOf);
             Assert.Equal(2, unionComponent.AnyOf.Count);
 
-            Assert.Contains(unionComponent.AnyOf, branch => branch.Type == JsonSchemaType.Integer);
-            Assert.Contains(unionComponent.AnyOf, branch => branch.Type == JsonSchemaType.String);
+            Assert.Contains(unionComponent.AnyOf, branch => branch.Type is { } t && t.HasFlag(JsonSchemaType.Integer));
+            Assert.Contains(unionComponent.AnyOf, branch => branch.Type is { } t && t.HasFlag(JsonSchemaType.String));
         });
     }
 

@@ -96,13 +96,36 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("200", response.Key);
             Assert.Equal(2, response.Value.Content.Count);
 
+            // application/json must be a direct $ref to UnionPet — not wrapped in an outer
+            // anyOf with the text/plain branch (the two content types must stay separate).
             Assert.True(response.Value.Content.TryGetValue("application/json", out var jsonContent));
             var jsonRef = Assert.IsType<OpenApiSchemaReference>(jsonContent.Schema);
             Assert.Equal(nameof(UnionPet), jsonRef.Reference.Id);
-            Assert.Null(jsonContent.Schema.AnyOf);
 
+            // Peek through the ref into the actual UnionPet component to verify the union
+            // shape (anyOf over UnionPetKitten + UnionPetPuppy) is preserved as-is. STJ
+            // names union case components by prefixing the parent union name to disambiguate
+            // from any standalone Kitten/Puppy schemas that might exist in the document.
+            Assert.True(document.Components.Schemas.TryGetValue(nameof(UnionPet), out var unionComponent));
+            Assert.NotNull(unionComponent.AnyOf);
+            Assert.Equal(2, unionComponent.AnyOf.Count);
+            var unionBranchIds = unionComponent.AnyOf
+                .OfType<OpenApiSchemaReference>()
+                .Select(s => s.Reference.Id)
+                .ToArray();
+            Assert.Contains(nameof(UnionPet) + nameof(Kitten), unionBranchIds);
+            Assert.Contains(nameof(UnionPet) + nameof(Puppy), unionBranchIds);
+
+            // text/plain must be a direct $ref to Error — independent of the JSON branch.
             Assert.True(response.Value.Content.TryGetValue("text/plain", out var textContent));
-            Assert.Null(textContent.Schema.AnyOf);
+            var textRef = Assert.IsType<OpenApiSchemaReference>(textContent.Schema);
+            Assert.Equal(nameof(Error), textRef.Reference.Id);
+
+            // Peek through the ref into the actual Error component to verify it's an object,
+            // not accidentally wrapped in an anyOf alongside UnionPet.
+            Assert.True(document.Components.Schemas.TryGetValue(nameof(Error), out var errorComponent));
+            Assert.Null(errorComponent.AnyOf);
+            Assert.Equal(JsonSchemaType.Object, errorComponent.Type);
         });
     }
 
