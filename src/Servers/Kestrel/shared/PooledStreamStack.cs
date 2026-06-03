@@ -121,7 +121,7 @@ internal struct PooledStreamStack<TValue> where TValue : class, IPooledStream
         }
 
         // Move remaining streams
-        array.AsSpan(removeCount, newSize).CopyTo(array.AsSpan(0, newSize));
+        array.AsSpan(removeCount, newSize).CopyTo(array);
 
         // Clear unused array indexes
         array.AsSpan(newSize, size - newSize).Clear();
