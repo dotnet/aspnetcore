@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Http.Generators.Tests;
 public abstract partial class RequestDelegateCreationTests : RequestDelegateCreationTestBase
 {
     [Theory]
-    [InlineData("true", "true", "Boolean")]
-    [InlineData("false", "false", "Boolean")]
-    [InlineData("\"hi\"", "\"hi\"", "String")]
+    [InlineData("true", "true")]
+    [InlineData("false", "false")]
+    [InlineData("\"hi\"", "\"hi\"")]
     public async Task MapAction_UnionBody_NaturallyUnambiguousPrimitiveCases_RoundTrip(
-        string requestJson, string expectedBody, string tokenKindForReadability)
+        string requestJson, string expectedBody)
     {
         var source = """
             app.MapPost("/bool-string", (UnionBoolString u) => u);
@@ -27,7 +27,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         var ctx = CreateHttpContextWithJson(requestJson);
         await endpoint.RequestDelegate(ctx);
 
-        Assert.True(ctx.Response.StatusCode == 200, $"UnionBoolString body bind for {tokenKindForReadability} payload {requestJson} should return 200 but got {ctx.Response.StatusCode}.");
+        Assert.True(ctx.Response.StatusCode == 200);
         await VerifyResponseBodyAsync(ctx, expectedBody);
     }
 
@@ -178,9 +178,9 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         Assert.True(stringCtx.Response.StatusCode == 400, $"UnionNullableIntString body bind for {"\"hi\""} should return 400 but got {stringCtx.Response.StatusCode}.");
 
         // TODO enable after fix https://github.com/dotnet/runtime/issues/128688
-        var nullCtx = CreateHttpContextWithJson("null");
-        await endpoints.Single(e => e.RoutePattern.RawText == "/nullable-int-string").RequestDelegate(stringCtx);
-        Assert.True(stringCtx.Response.StatusCode == 400, $"UnionNullableIntString body bind for \"null\" should return 400 but got {stringCtx.Response.StatusCode}.");
+        //var nullCtx = CreateHttpContextWithJson("null");
+        //await endpoints.Single(e => e.RoutePattern.RawText == "/nullable-int-string").RequestDelegate(nullCtx);
+        //Assert.True(nullCtx.Response.StatusCode == 400, $"UnionNullableIntString body bind for \"null\" should return 400 but got {nullCtx.Response.StatusCode}.");
 
         // Classifier endpoint accepts and round-trips every token kind.
         foreach (var (payload, expected) in new[]
