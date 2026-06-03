@@ -3093,7 +3093,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+    public virtual void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("2", variableHeight, useItemsProvider);
 
