@@ -452,7 +452,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
         var statusCode = NativeMethods.HttpQueryRequestProperty(
             RequestId,
-            (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo,
             qualifier: null,
             qualifierSize: 0,
             output: &cipherInfo,
