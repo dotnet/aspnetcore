@@ -80,12 +80,17 @@ public class IPNetwork
     private byte[] CreateMask()
     {
         var mask = new byte[PrefixBytes.Length];
-        int fullBytes = PrefixLength / 8;
-        mask.AsSpan(0, fullBytes).Fill(0xFF);
-        int remainingBits = PrefixLength - (fullBytes * 8);
+        int remainingBits = PrefixLength;
+        int i = 0;
+        while (remainingBits >= 8)
+        {
+            mask[i] = 0xFF;
+            i++;
+            remainingBits -= 8;
+        }
         if (remainingBits > 0)
         {
-            mask[fullBytes] = (byte)(0xFF << (8 - remainingBits));
+            mask[i] = (byte)(0xFF << (8 - remainingBits));
         }
 
         return mask;
