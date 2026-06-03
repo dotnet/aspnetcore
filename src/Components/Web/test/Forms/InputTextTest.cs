@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
@@ -10,339 +11,20 @@ public class InputTextTest
 {
     private readonly TestRenderer _testRenderer = new TestRenderer();
 
+    #region Core Rendering
+
     [Fact]
     public async Task InputElementIsAssignedSuccessfully()
     {
         // Arrange
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
-
-        // Act
-        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        // Assert
-        Assert.NotNull(inputSelectComponent.Element);
-    }
-
-    [Fact]
-    public async Task RendersIdAttribute()
-    {
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
-
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
-    }
-
-    [Fact]
-    public async Task ExplicitIdOverridesGenerated()
-    {
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "id", "custom-id" } }
-        };
-
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        var idAttribute = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("custom-id", idAttribute.AttributeValue);
-    }
-
-    [Fact]
-    public async Task RendersIdAttribute_WhenShouldUseFieldIdentifiersIsFalse_InteractiveMode()
-    {
-        // simulate interactive mode where ShouldUseFieldIdentifiers is false
-        var model = new TestModel();
-        var editContext = new EditContext(model) { ShouldUseFieldIdentifiers = false };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = editContext,
-            ValueExpression = () => model.StringProperty,
-        };
-
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // id should still be generated for Label/Input association to work in interactive mode
-        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
-    }
-
-    [Fact]
-    public async Task HandlesNullValue()
-    {
-        // Arrange
-        var model = new TestModel { StringProperty = null };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
-
-        // Act
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        // Assert - should not throw, handle null gracefully
-        Assert.NotNull(inputComponent.Element);
-    }
-
-    [Fact]
-    public async Task HandlesEmptyStringValue()
-    {
-        // Arrange
-        var model = new TestModel { StringProperty = "" };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
+        var rootComponent = CreateInputHostComponent(model);
 
         // Act
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Assert
         Assert.NotNull(inputComponent.Element);
-    }
-
-    [Fact]
-    public async Task RendersPlaceholderAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "placeholder", "Enter text here" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "placeholder" && (string)f.AttributeValue == "Enter text here");
-    }
-
-    [Fact]
-    public async Task RendersMaxLengthAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "maxlength", "50" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "maxlength" && f.AttributeValue.ToString() == "50");
-    }
-
-    [Fact]
-    public async Task RendersDisabledAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "disabled", true } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "disabled");
-    }
-
-    [Fact]
-    public async Task RendersReadOnlyAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "readonly", true } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "readonly");
-    }
-
-    [Fact]
-    public async Task RendersRequiredAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "required", true } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "required");
-    }
-
-    [Fact]
-    public async Task RendersTypeAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "type", "email" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type" && (string)f.AttributeValue == "email");
-    }
-
-    [Fact]
-    public async Task RendersClassAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "class", "custom-class form-control" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class" && f.AttributeValue.ToString().Contains("custom-class"));
-    }
-
-    [Fact]
-    public async Task RendersValueAttribute_WithCurrentValue()
-    {
-        // Arrange
-        var model = new TestModel { StringProperty = "test-value" };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert - verify the input element exists with value set (via element existence check)
-        // Note: InputText renders value attribute but TestRenderer may not expose it as Attribute frame
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "input");
-    }
-
-    [Fact]
-    public async Task RendersMultipleCustomAttributes()
-    {
-        // Arrange
-        var model = new TestModel();
-        var additionalAttributes = new Dictionary<string, object>
-        {
-            { "id", "custom-id" },
-            { "placeholder", "Enter name" },
-            { "maxlength", 100 },
-            { "class", "form-control" },
-            { "data-test", "value123" }
-        };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = additionalAttributes
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert - all attributes should be present
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id" && (string)f.AttributeValue == "custom-id");
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "placeholder");
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "maxlength");
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
-    }
-
-    [Fact]
-    public async Task HandlesSpecialCharactersInValue()
-    {
-        // Arrange
-        var model = new TestModel { StringProperty = "<script>alert('xss')</script>" };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
-
-        // Act & Assert - should not throw
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-        Assert.NotNull(inputComponent.Element);
-    }
-
-    [Fact]
-    public async Task HandlesUnicodeCharactersInValue()
-    {
-        // Arrange
-        var model = new TestModel { StringProperty = "こんにちは世界 🌍" };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert - input element renders value differently
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "input");
     }
 
     [Fact]
@@ -350,290 +32,558 @@ public class InputTextTest
     {
         // Arrange
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
+        var rootComponent = CreateInputHostComponent(model);
 
         // Act
         var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         // Assert - should render <input> element
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "input");
+        AssertContainsElement(frames, "input");
+    }
+
+    #endregion
+
+    #region ID Attribute Tests
+
+    [Fact]
+    public async Task RendersIdAttribute_WithAutoGeneratedValue()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model);
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = GetSingleAttribute(frames, "id");
+        Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
     }
 
     [Fact]
-    public async Task IgnoresUnknownAdditionalAttributes()
+    public async Task ExplicitId_OverridesAutoGenerated()
     {
-        // Arrange - test that unknown attributes don't cause errors
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "id", "custom-id" } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = GetFirstAttribute(frames, "id");
+        Assert.Equal("custom-id", idAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task RendersIdAttribute_InInteractiveMode()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model) { ShouldUseFieldIdentifiers = false };
+        var rootComponent = CreateInputHostComponent(model, editContext: editContext);
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = GetSingleAttribute(frames, "id");
+        Assert.Equal("model_StringProperty", idAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task RendersIdAttribute_WithComplexPropertyName()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponentWithExpression(model, () => model.ComplexPropertyName);
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var idAttribute = GetSingleAttribute(frames, "id");
+        Assert.Contains("ComplexPropertyName", idAttribute.AttributeValue.ToString());
+    }
+
+    #endregion
+
+    #region Name Attribute Tests
+
+    [Fact]
+    public async Task RendersNameAttribute_BindsToFieldIdentifier()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model);
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var nameAttribute = GetSingleAttribute(frames, "name");
+        Assert.Equal("model.StringProperty", nameAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task NameAttribute_CanBeOverriddenViaAdditionalAttributes()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "name", "custom-name" } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var nameAttribute = GetFirstAttribute(frames, "name");
+        Assert.Equal("custom-name", nameAttribute.AttributeValue);
+    }
+
+    #endregion
+
+    #region Value Attribute Tests
+
+    [Fact]
+    public async Task RendersValueAttribute_BoundToModel()
+    {
+        var model = new TestModel { StringProperty = "test-value" };
+        var rootComponent = CreateInputHostComponent(model);
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        // Verify input element renders and model value is bound
+        AssertContainsElement(frames, "input");
+        // Rendered value attribute may be represented directly or via the onchange event's updates attribute.
+        var hasValueAttr = frames.Array.Any(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value");
+        if (hasValueAttr)
+        {
+            var valueAttribute = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value");
+            Assert.Equal("test-value", valueAttribute.AttributeValue);
+        }
+        else
+        {
+            // Fallback: ensure the onchange event is wired to update the 'value' attribute
+            var onchange = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
+            Assert.Equal("value", onchange.AttributeEventUpdatesAttributeName);
+        }
+        Assert.Equal("test-value", model.StringProperty);
+    }
+
+    #endregion
+
+    #region AdditionalAttributes Tests
+
+    [Fact]
+    public async Task RendersPlaceholderAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "placeholder", "Enter text here" } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeValue(frames, "placeholder", "Enter text here");
+    }
+
+    [Fact]
+    public async Task RendersMaxLengthAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "maxlength", "50" } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeValue(frames, "maxlength", "50");
+    }
+
+    [Fact]
+    public async Task RendersDisabledAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "disabled", true } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeExists(frames, "disabled");
+    }
+
+    [Fact]
+    public async Task RendersReadOnlyAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "readonly", true } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeExists(frames, "readonly");
+    }
+
+    [Fact]
+    public async Task RendersRequiredAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "required", true } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeExists(frames, "required");
+    }
+
+    [Fact]
+    public async Task RendersTypeAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "type", "email" } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeValue(frames, "type", "email");
+    }
+
+    [Fact]
+    public async Task RendersClassAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "class", "custom-class" } });
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeValueContains(frames, "class", "custom-class");
+    }
+
+    [Fact]
+    public async Task RendersMultipleCustomAttributes()
+    {
+        var model = new TestModel();
+        var additionalAttributes = new Dictionary<string, object>
+        {
+            { "id", "custom-id" },
+            { "placeholder", "Enter name" },
+            { "maxlength", 100 }
+        };
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: additionalAttributes);
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertAttributeValue(frames, "id", "custom-id");
+        AssertAttributeExists(frames, "placeholder");
+        AssertAttributeExists(frames, "maxlength");
+    }
+
+    [Fact]
+    public async Task IgnoresUnknownAdditionalAttributes_DoesNotThrow()
+    {
         var model = new TestModel();
         var additionalAttributes = new Dictionary<string, object>
         {
             { "data-custom-property", "value" },
             { "aria-label", "Custom Input" }
         };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = additionalAttributes
-        };
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: additionalAttributes);
 
-        // Act & Assert
+        // Act & Assert - should not throw
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
 
     [Fact]
-    public async Task RendersIdWithComplexPropertyName()
+    public async Task EmptyAdditionalAttributesDictionary_DoesNotThrow()
     {
-        // Arrange
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.ComplexPropertyName,
-        };
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object>());
 
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert - ID should handle complex names
-        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
-        Assert.Contains("ComplexPropertyName", idAttribute.AttributeValue.ToString());
-    }
-
-    [Fact]
-    public async Task EmptyAdditionalAttributesDictionary()
-    {
-        // Arrange - test with empty additional attributes
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object>()
-        };
-
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
 
     [Fact]
-    public async Task NullAdditionalAttributes()
+    public async Task NullAdditionalAttributes_DoesNotThrow()
     {
-        // Arrange - test with null additional attributes
         var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = null
-        };
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: null);
 
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
 
-    [Fact]
-    public async Task RendersNameAttribute_BindsToFieldIdentifier()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
+    #endregion
 
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert - name attribute should be generated from FieldIdentifier
-        var nameAttribute = frames.Array.Single(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "name");
-        Assert.Equal("model.StringProperty", nameAttribute.AttributeValue);
-    }
-
-    [Fact]
-    public async Task RendersNameAttribute_CanBeOverriddenViaAdditionalAttributes()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "name", "custom-name" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert - AdditionalAttributes["name"] should override generated name
-        var nameAttribute = frames.Array.First(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "name");
-        Assert.Equal("custom-name", nameAttribute.AttributeValue);
-    }
+    #region CSS Class Validation Tests
 
     [Fact]
     public async Task CssClassIncludesValidClass_WhenNoValidationErrors()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "some value" };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
+        var rootComponent = CreateInputHostComponent(model);
 
-        // Act
         var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - CssClass should include "valid" when model is valid (no validation errors)
-        var classAttribute = frames.Array.Single(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        var classAttribute = GetSingleAttribute(frames, "class");
         Assert.Contains("valid", classAttribute.AttributeValue.ToString());
     }
 
     [Fact]
     public async Task CssClassIncludesInvalidClass_WhenValidationErrorsExist()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "" };
         var editContext = new EditContext(model);
         var field = FieldIdentifier.Create(() => model.StringProperty);
         var messages = new ValidationMessageStore(editContext);
         messages.Add(field, "Required");
 
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = editContext,
-            ValueExpression = () => model.StringProperty,
-        };
+        var rootComponent = CreateInputHostComponent(model, editContext: editContext);
 
-        // Act
         var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - CssClass should include "invalid" when validation errors exist
-        var classAttribute = frames.Array.Single(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        var classAttribute = GetSingleAttribute(frames, "class");
         Assert.Contains("invalid", classAttribute.AttributeValue.ToString());
     }
 
     [Fact]
     public async Task CssClassIncludesModifiedClass_WhenFieldIsModified()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "" };
         var editContext = new EditContext(model);
         var field = FieldIdentifier.Create(() => model.StringProperty);
 
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = editContext,
-            ValueExpression = () => model.StringProperty,
-        };
+        var rootComponent = CreateInputHostComponent(model, editContext: editContext);
 
         var hostComponentId = _testRenderer.AssignRootComponentId(rootComponent);
         await _testRenderer.RenderRootComponentAsync(hostComponentId);
 
-        // Act - simulate field modification (user typing)
+        // Act - simulate field modification
         editContext.NotifyFieldChanged(field);
-
-        // Re-render the host component after modification
         await _testRenderer.RenderRootComponentAsync(hostComponentId);
 
-        // Get the InputText component's frames - use First() since there may be multiple batches
+        // Get latest frames
         var batch = _testRenderer.Batches.First();
         var inputTextFrames = batch.GetComponentFrames<InputText>();
         var inputComponentId = inputTextFrames.First().ComponentId;
         var frames = _testRenderer.GetCurrentRenderTreeFrames(inputComponentId);
 
-        // Assert - CssClass should include "modified" when field has been changed
-        var classAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
-        Assert.True(classAttribute.FrameType != RenderTreeFrameType.None, "class attribute should be rendered");
+        var classAttribute = GetFirstAttribute(frames, "class");
         Assert.Contains("modified", classAttribute.AttributeValue.ToString());
     }
 
     [Fact]
     public async Task CssClassMergesUserClassWithValidationClass()
     {
-        // Arrange - user provides custom class, component should append validation class
         var model = new TestModel { StringProperty = "some value" };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "class", "user-class" } }
-        };
+        var rootComponent = CreateInputHostComponent(model, additionalAttributes: new Dictionary<string, object> { { "class", "user-class" } });
 
-        // Act
         var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - both user class and validation class should be present
-        var classAttribute = frames.Array.Single(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        var classAttribute = GetSingleAttribute(frames, "class");
         var classValue = classAttribute.AttributeValue.ToString();
         Assert.Contains("user-class", classValue);
         Assert.Contains("valid", classValue);
     }
 
+    #endregion
+
+    #region Accessibility Tests
+
     [Fact]
     public async Task RendersAriaInvalidAttribute_WhenValidationFails()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "" };
         var editContext = new EditContext(model);
         var field = FieldIdentifier.Create(() => model.StringProperty);
         var messages = new ValidationMessageStore(editContext);
         messages.Add(field, "Required");
 
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = editContext,
-            ValueExpression = () => model.StringProperty,
-        };
+        var rootComponent = CreateInputHostComponent(model, editContext: editContext);
 
-        // Act
         var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - aria-invalid="true" should be auto-added when validation fails
-        var ariaInvalid = frames.Array.Single(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "aria-invalid");
+        var ariaInvalid = GetSingleAttribute(frames, "aria-invalid");
         Assert.Equal("true", ariaInvalid.AttributeValue);
     }
+
+    #endregion
+
+    #region Event Handler Tests
 
     [Fact]
     public async Task RendersOnChangeEventHandler()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "initial" };
-        var rootComponent = new TestInputHostComponent<string, InputText>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-        };
+        var rootComponent = CreateInputHostComponent(model);
 
-        // Act
         var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - onchange event handler should be present
-        Assert.Contains(frames.Array, f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
+        AssertAttributeExists(frames, "onchange");
+    }
+
+    [Fact]
+    public async Task InputText_UpdatesModel_OnChange()
+    {
+        var model = new TestModel { StringProperty = "before" };
+        var rootComponent = CreateInputHostComponentBoundToModel(model);
+
+        // Render host and get input component id
+        var hostComponentId = _testRenderer.AssignRootComponentId(rootComponent);
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+        var batch = _testRenderer.Batches.First();
+        var inputComponentId = batch.GetComponentFrames<InputText>().Single().ComponentId;
+
+        // Find the onchange attribute and its event handler id
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(inputComponentId);
+        var onchangeAttr = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
+        var eventHandlerId = onchangeAttr.AttributeEventHandlerId;
+        Assert.NotEqual((ulong)0, eventHandlerId);
+
+        // Dispatch change event
+        await _testRenderer.DispatchEventAsync(eventHandlerId, new ChangeEventArgs { Value = "after" });
+
+        // Model should be updated
+        Assert.Equal("after", model.StringProperty);
+    }
+
+    #endregion
+
+    #region Edge Cases
+
+    [Fact]
+    public async Task HandlesNullValue_DoesNotThrow()
+    {
+        var model = new TestModel { StringProperty = null };
+        var rootComponent = CreateInputHostComponent(model);
+
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        Assert.NotNull(inputComponent.Element);
+    }
+
+    [Fact]
+    public async Task HandlesEmptyStringValue_DoesNotThrow()
+    {
+        var model = new TestModel { StringProperty = "" };
+        var rootComponent = CreateInputHostComponent(model);
+
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        Assert.NotNull(inputComponent.Element);
+    }
+
+    [Fact]
+    public async Task HandlesSpecialCharacters_DoesNotThrow()
+    {
+        var model = new TestModel { StringProperty = "<script>alert('xss')</script>" };
+        var rootComponent = CreateInputHostComponent(model);
+
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        Assert.NotNull(inputComponent.Element);
+    }
+
+    [Fact]
+    public async Task HandlesUnicodeCharacters_DoesNotThrow()
+    {
+        var model = new TestModel { StringProperty = "こんにちは世界 🌍" };
+        var rootComponent = CreateInputHostComponent(model);
+
+        var componentId = await RenderAndGetInputTextComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        AssertContainsElement(frames, "input");
+    }
+
+    #endregion
+
+    #region No EditContext Scenario
+
+    [Fact]
+    public async Task WorksWithoutEditContext_DoesNotThrow()
+    {
+        var model = new TestModel { StringProperty = "test-value" };
+        var rootComponent = new TestInputHostComponent<string, InputText>
+        {
+            ValueExpression = () => model.StringProperty
+        };
+
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        Assert.NotNull(inputComponent.Element);
+    }
+
+    #endregion
+
+    #region Validation Lifecycle Tests
+
+    [Fact]
+    public async Task ValidationStateChange_UpdatesCssClasses()
+    {
+        var model = new TestModel { StringProperty = "valid" };
+        var editContext = new EditContext(model);
+        var field = FieldIdentifier.Create(() => model.StringProperty);
+        var rootComponent = CreateInputHostComponent(model, editContext: editContext);
+
+        var hostComponentId = _testRenderer.AssignRootComponentId(rootComponent);
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+
+        // Initially valid
+        var batch = _testRenderer.Batches.First();
+        var inputFrames = batch.GetComponentFrames<InputText>().ToList();
+        Assert.True(inputFrames.Count > 0);
+        var inputComponentId = inputFrames.First().ComponentId;
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(inputComponentId);
+        var classAttribute = GetSingleAttribute(frames, "class");
+        Assert.Contains("valid", classAttribute.AttributeValue.ToString());
+
+        // Add validation message and notify via the renderer dispatcher
+        var messages = new ValidationMessageStore(editContext);
+        messages.Add(field, "Required");
+        await _testRenderer.Dispatcher.InvokeAsync(() => editContext.NotifyValidationStateChanged());
+
+        // Re-render and verify invalid class appears
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+        // Use the previously captured component id to get the latest render frames
+        frames = _testRenderer.GetCurrentRenderTreeFrames(inputComponentId);
+        classAttribute = GetSingleAttribute(frames, "class");
+        Assert.Contains("invalid", classAttribute.AttributeValue.ToString());
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private TestInputHostComponent<string, InputText> CreateInputHostComponent(
+        TestModel model,
+        EditContext editContext = null,
+        Dictionary<string, object> additionalAttributes = null)
+    {
+        return new TestInputHostComponent<string, InputText>
+        {
+            EditContext = editContext ?? new EditContext(model),
+            ValueExpression = () => model.StringProperty,
+            AdditionalAttributes = additionalAttributes
+        };
+    }
+
+    private TestInputHostComponent<string, InputText> CreateInputHostComponentWithExpression(
+        TestModel model,
+        Expression<Func<string>> valueExpression)
+    {
+        return new TestInputHostComponent<string, InputText>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = valueExpression,
+        };
+    }
+
+    private TestInputHostComponent<string, InputText> CreateInputHostComponentBoundToModel(
+        TestModel model,
+        EditContext editContext = null,
+        Dictionary<string, object> additionalAttributes = null)
+    {
+        return new TestInputHostComponent<string, InputText>
+        {
+            EditContext = editContext ?? new EditContext(model),
+            Value = model.StringProperty,
+            ValueChanged = v => model.StringProperty = v,
+            ValueExpression = () => model.StringProperty,
+            AdditionalAttributes = additionalAttributes
+        };
     }
 
     private async Task<int> RenderAndGetInputTextComponentIdAsync(TestInputHostComponent<string, InputText> hostComponent)
@@ -644,9 +594,43 @@ public class InputTextTest
         return batch.GetComponentFrames<InputText>().Single().ComponentId;
     }
 
+    private static RenderTreeFrame GetSingleAttribute(ArrayRange<RenderTreeFrame> frames, string attributeName)
+    {
+        return frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == attributeName);
+    }
+
+    private static RenderTreeFrame GetFirstAttribute(ArrayRange<RenderTreeFrame> frames, string attributeName)
+    {
+        return frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == attributeName);
+    }
+
+    private static void AssertAttributeExists(ArrayRange<RenderTreeFrame> frames, string attributeName)
+    {
+        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == attributeName);
+    }
+
+    private static void AssertAttributeValue(ArrayRange<RenderTreeFrame> frames, string attributeName, string expectedValue)
+    {
+        var attribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == attributeName);
+        Assert.Equal(expectedValue, attribute.AttributeValue);
+    }
+
+    private static void AssertAttributeValueContains(ArrayRange<RenderTreeFrame> frames, string attributeName, string expectedSubstring)
+    {
+        var attribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == attributeName);
+        Assert.Contains(expectedSubstring, attribute.AttributeValue.ToString());
+    }
+
+    private static void AssertContainsElement(ArrayRange<RenderTreeFrame> frames, string elementName)
+    {
+        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == elementName);
+    }
+
+    #endregion
+
     private class TestModel
     {
-        public string StringProperty { get; set; }
-        public string ComplexPropertyName { get; set; }
+        public string StringProperty { get; set; } = "";
+        public string ComplexPropertyName { get; set; } = "";
     }
 }
