@@ -85,17 +85,17 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     el.style.transform = 'var(--blazor-virtualize-loop-breaker-transform, none)';
   }
 
-  const layoutAttrToCssVar: readonly (readonly [string, string])[] = [
-    ['data-blazor-virtualize-reserved-height', '--blazor-virtualize-reserved-height'],
-    ['data-blazor-virtualize-loop-breaker-transform', '--blazor-virtualize-loop-breaker-transform'],
+  const layoutAttrToCssVar: readonly (readonly [string, string, RegExp])[] = [
+    ['data-blazor-virtualize-reserved-height', '--blazor-virtualize-reserved-height', /^\d+px$/],
+    ['data-blazor-virtualize-loop-breaker-transform', '--blazor-virtualize-loop-breaker-transform', /^translateY\(-?\d+px\)$/],
   ];
   const layoutAttrNames = layoutAttrToCssVar.map(([attr]) => attr);
   const layoutAttrSelector = layoutAttrNames.map(a => `[${a}]`).join(',');
   function applyLayoutAttrs(el: HTMLElement): void {
     ensureBaseStyles(el);
-    for (const [attr, cssVar] of layoutAttrToCssVar) {
+    for (const [attr, cssVar, pattern] of layoutAttrToCssVar) {
       const value = el.getAttribute(attr);
-      if (value !== null) {
+      if (value !== null && pattern.test(value)) {
         el.style.setProperty(cssVar, value);
       } else {
         el.style.removeProperty(cssVar);

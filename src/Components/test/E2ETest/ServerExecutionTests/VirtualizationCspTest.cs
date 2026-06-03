@@ -69,6 +69,48 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
         AssertNoStyleCspViolations();
     }
 
+    [Theory]
+    [InlineData("url(https://example.invalid/x.png)")]    // value with url() token
+    [InlineData("120.5px")]                               // decimal not emitted by C# (int formatter)
+    [InlineData("120px; background:url(x)")]              // value containing extra declarations
+    [InlineData("var(--cookie)")]                          // custom-property indirection
+    [InlineData("120em")]                                  // wrong unit
+    [InlineData("")]                                       // empty
+    public void Virtualize_RejectsUnexpectedLayoutAttributeValues(string invalidValue)
+    {
+        // Values that don't match the C#-emitted shape must not propagate to CSS custom properties.
+        Navigate($"{ServerPathBase}?strict-style-csp=true");
+        Browser.MountTestComponent<VirtualizationCsp>();
+
+        var container = Browser.Exists(By.Id("csp-container"));
+        Browser.True(() => container.FindElements(By.CssSelector(".csp-item")).Count > 0);
+
+        var js = (IJavaScriptExecutor)Browser;
+        const string spacerSelector = "#csp-container > div:first-of-type";
+
+        js.ExecuteScript(
+            "var el = document.querySelector(arguments[0]);" +
+            "el.setAttribute('data-blazor-virtualize-reserved-height', arguments[1]);" +
+            "el.setAttribute('data-blazor-virtualize-loop-breaker-transform', arguments[1]);",
+            spacerSelector, invalidValue);
+
+        // Acceptable outcomes: the property is unset or contains the previous value
+        Browser.True(() =>
+        {
+            var heightVar = (string)js.ExecuteScript(
+                "return getComputedStyle(document.querySelector(arguments[0]))" +
+                ".getPropertyValue('--blazor-virtualize-reserved-height').trim();",
+                spacerSelector);
+            var transformVar = (string)js.ExecuteScript(
+                "return getComputedStyle(document.querySelector(arguments[0]))" +
+                ".getPropertyValue('--blazor-virtualize-loop-breaker-transform').trim();",
+                spacerSelector);
+            return heightVar != invalidValue && transformVar != invalidValue;
+        });
+
+        AssertNoStyleCspViolations();
+    }
+
     private void AssertNoStyleCspViolations()
     {
         const string cspErrorMessage = "violates the following Content Security Policy directive: \"style-src";
