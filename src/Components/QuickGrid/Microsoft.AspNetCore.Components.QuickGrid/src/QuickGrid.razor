@@ -32,6 +32,16 @@
                     @_renderNonVirtualizedRows
                 }
             </tbody>
+            @if (FooterTemplate is not null)
+            {
+                <tfoot>
+                    <tr>
+                        <td colspan="@_columns.Count" class="grid-footer-cell">
+                            @FooterTemplate
+                        </td>
+                    </tr>
+                </tfoot>
+            }
         </table>
     </Defer>
 </CascadingValue>

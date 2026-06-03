@@ -52,6 +52,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Optional. A template to render in the table footer area. If specified, the template will
+    /// be rendered inside a single <tfoot> row which spans all columns.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
     /// If true, the grid will be rendered with virtualization. This is normally used in conjunction with
     /// scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
     /// This can greatly improve the performance when scrolling through large data sets.
