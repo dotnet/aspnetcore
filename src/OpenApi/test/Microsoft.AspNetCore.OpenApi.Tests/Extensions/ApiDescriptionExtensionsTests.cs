@@ -91,18 +91,31 @@ public class ApiDescriptionExtensionsTests
     }
 
     [Fact]
-    public void GetHttpMethod_ReturnsNullForUnsupportedMethod()
+    public void GetHttpMethod_ReturnsCustomHttpMethodForUnsupportedMethod()
     {
-        // Arrange - Test that unsupported HTTP methods return null
         var apiDescription = new ApiDescription
         {
-            HttpMethod = "UNSUPPORTED"
+            HttpMethod = "foo"
         };
 
-        // Act
         var result = apiDescription.GetHttpMethod();
 
-        // Assert
+        Assert.Equal(new HttpMethod("FOO"), result);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void GetHttpMethod_ReturnsNullWhenApiDescriptionHasNoHttpMethod(string httpMethod)
+    {
+        var apiDescription = new ApiDescription
+        {
+            HttpMethod = httpMethod
+        };
+
+        var result = apiDescription.GetHttpMethod();
+
         Assert.Null(result);
     }
 }

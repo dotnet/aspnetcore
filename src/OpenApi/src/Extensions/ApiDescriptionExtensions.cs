@@ -17,10 +17,16 @@ internal static class ApiDescriptionExtensions
     /// </summary>
     /// <param name="apiDescription">The ApiDescription to resolve an HttpMethod from.</param>
     /// <returns>The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, if known.</returns>
-    public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription) =>
-        apiDescription.HttpMethod?.ToUpperInvariant() switch
+    public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription)
+    {
+        var httpMethod = apiDescription.HttpMethod?.ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(httpMethod))
         {
-            // Only add methods documented in the OpenAPI spec: https://spec.openapis.org/oas/v3.2.0.html#path-item-object
+            return null;
+        }
+
+        return httpMethod switch
+        {
             "GET" => HttpMethod.Get,
             "POST" => HttpMethod.Post,
             "PUT" => HttpMethod.Put,
@@ -30,8 +36,9 @@ internal static class ApiDescriptionExtensions
             "OPTIONS" => HttpMethod.Options,
             "TRACE" => HttpMethod.Trace,
             "QUERY" => HttpMethod.Query,
-            _ => null,
+            _ => new HttpMethod(httpMethod),
         };
+    }
 
     /// <summary>
     /// Maps the relative path included in the ApiDescription to the path
