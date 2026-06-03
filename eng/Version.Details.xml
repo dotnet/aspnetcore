@@ -338,9 +338,9 @@
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-assets" Version="8.0.0-alpha.1.26223.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-assets" Version="8.0.0-alpha.1.26301.2">
       <Uri>https://github.com/dotnet/source-build-assets</Uri>
-      <Sha>a7c930004f706d64044b2bdda1b7086ff8e84078</Sha>
+      <Sha>2bb24ee4d15de5a4550abed0265ca9e0ef0beae3</Sha>
       <SourceBuild RepoName="source-build-assets" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
