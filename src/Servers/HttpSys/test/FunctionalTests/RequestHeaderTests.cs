@@ -178,6 +178,41 @@ public class RequestHeaderTests : LoggedTest
     }
 
     [ConditionalFact]
+    public async Task RequestHeaders_ClientSendTransferEncodingWithTrailingCommaAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("chunked,", requestHeaders.TransferEncoding);
+
+            Assert.Null(request.ContentLength);
+            Assert.True(request.HasEntityBody);
+
+            Assert.False(requestHeaders.ContainsKey("Content-Length"));
+            Assert.Null(requestHeaders.ContentLength);
+
+            Assert.Single(requestHeaders["X-Content-Length"]);
+            Assert.Equal("1", requestHeaders["X-Content-Length"]);
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            // Trailing comma in Transfer-Encoding (https://github.com/dotnet/aspnetcore/issues/66720).
+            // Per RFC 7230, http.sys treats this as chunked; the managed layer must agree
+            // and strip Content-Length.
+            var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
+                { "Transfer-Encoding", "chunked," },
+                { "Content-Length", "1" },
+            });
+            var response = await SendRequestAsync(address, headerDictionary);
+            var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+            Assert.Equal("200", responseStatusCode);
+        }
+    }
+
+    [ConditionalFact]
     public async Task RequestHeaders_ClientSendTransferEncodingAndContentLengthAndXContentLength_ContentLengthShouldBeRemoved()
     {
         string address;
