@@ -1,4 +1,4 @@
-@page "/quickgrid-interactive"
+﻿@page "/quickgrid-interactive"
 @rendermode RenderMode.InteractiveServer
 @using Microsoft.AspNetCore.Components.QuickGrid
 
@@ -18,6 +18,9 @@
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" Align="Align.Center" />
         <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true" Align="Align.Right"/>
+        <TemplateColumn Title="Full Name" CellClassFunc='@(p => p.LastName.StartsWith("M") ? "highlight-cell" : null)'>
+            <div class="full-name-cell">@context.FirstName @context.LastName</div>
+        </TemplateColumn>
     </QuickGrid>
 </div>
 <div class="first-paginator">
