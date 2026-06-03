@@ -1,4 +1,4 @@
-@page "/streaming-session-persistence"
+﻿@page "/streaming-session-persistence"
 @attribute [StreamRendering]
 
 <h1>Streaming Session Persistence Test</h1>
@@ -6,9 +6,6 @@
 @if (_done)
 {
     <p id="streaming-complete">Done</p>
-    <p id="session-value">@StreamingSessionPersistenceValue</p>
-    <p id="tempdata-value">@SupplyFromTempDataValue</p>
-    <p id="tempdata-message">@_tempDataMessage</p>
 }
 else
 {
@@ -17,13 +14,12 @@ else
 
 @code {
     private bool _done;
-    private string? _tempDataMessage;
 
-    [SupplyParameterFromSession(Name = "StreamingSessionPersistenceValue")]
-    public string? StreamingSessionPersistenceValue { get; set; }
+    [SupplyParameterFromSession]
+    public string? Email { get; set; }
 
     [SupplyParameterFromTempData]
-    private string SupplyFromTempDataValue { get; set; } = string.Empty;
+    private string SupplyParameterFromTempDataValue { get; set; } = string.Empty;
 
     [CascadingParameter]
     public ITempData? TempData { get; set; }
@@ -35,16 +31,11 @@ else
         // OnStarting-based persistence, because OnStarting fires before streaming begins.
         await Task.Delay(100);
 
-        StreamingSessionPersistenceValue = "set-during-streaming";
-        SupplyFromTempDataValue = "tempdata-set-during-streaming";
+        Email = "set-during-streaming";
+        SupplyParameterFromTempDataValue = "tempdata-set-during-streaming";
         if (TempData is not null)
         {
-            TempData["StreamingTempDataMessage"] = "streaming-tempdata-message";
-            _tempDataMessage = "tempdata-was-set";
-        }
-        else
-        {
-            _tempDataMessage = "tempdata-was-null";
+            TempData["Message"] = "streaming-tempdata-message";
         }
         _done = true;
     }

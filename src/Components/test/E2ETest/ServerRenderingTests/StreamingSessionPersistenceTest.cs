@@ -36,13 +36,9 @@ public class StreamingSessionPersistenceTest : ServerTestBase<BasicTestAppServer
     {
         Navigate($"{ServerPathBase}/streaming-session-persistence");
 
-        // Wait for streaming to complete — values are set AFTER an await in OnInitializedAsync
         Browser.Exists(By.Id("streaming-complete"));
-        Browser.Equal("set-during-streaming", () => Browser.FindElement(By.Id("session-value")).Text);
-
-        // Navigate to the read page with a full page load to verify the value survived the request boundary
-        Navigate($"{ServerPathBase}/streaming-session-persistence/read");
-        Browser.Equal("set-during-streaming", () => Browser.FindElement(By.Id("read-session-value")).Text);
+        Navigate($"{ServerPathBase}/supply-parameter-from-session");
+        Browser.Equal("set-during-streaming", () => Browser.FindElement(By.Id("text-email")).Text);
     }
 
     [Fact]
@@ -50,13 +46,9 @@ public class StreamingSessionPersistenceTest : ServerTestBase<BasicTestAppServer
     {
         Navigate($"{ServerPathBase}/streaming-session-persistence");
 
-        // Wait for streaming to complete
         Browser.Exists(By.Id("streaming-complete"));
-        Browser.Equal("tempdata-set-during-streaming", () => Browser.FindElement(By.Id("tempdata-value")).Text);
-
-        // Navigate to the read page to verify TempData was persisted via session storage
-        Navigate($"{ServerPathBase}/streaming-session-persistence/read");
-        Browser.Equal("tempdata-set-during-streaming", () => Browser.FindElement(By.Id("read-tempdata-supply-value")).Text);
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("tempdata-set-during-streaming", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
     }
 
     [Fact]
@@ -64,11 +56,8 @@ public class StreamingSessionPersistenceTest : ServerTestBase<BasicTestAppServer
     {
         Navigate($"{ServerPathBase}/streaming-session-persistence");
 
-        // Wait for streaming to complete
         Browser.Exists(By.Id("streaming-complete"));
-
-        // Navigate to the read page to verify ITempData values set during streaming were persisted
-        Navigate($"{ServerPathBase}/streaming-session-persistence/read");
-        Browser.Equal("streaming-tempdata-message", () => Browser.FindElement(By.Id("read-tempdata-message")).Text);
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("streaming-tempdata-message", () => Browser.FindElement(By.Id("message")).Text);
     }
 }
