@@ -74,6 +74,9 @@ public class OpenApiServiceCollectionExtensions
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
         var options = optionsMonitor.Get("RandomDocName");
         Assert.Equal("RandomDocName", options.DocumentName);
+
+        options = optionsMonitor.Get("RandomDocName2");
+        Assert.Equal("RandomDocName2", options.DocumentName);
     }
 
     [Fact]
