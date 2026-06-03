@@ -13,8 +13,8 @@ namespace RepoTasks;
 
 /// <summary>
 /// Groups eligible Helix work items into batches to reduce per-item overhead.
-/// Items with special dependencies (IIS, Playwright, Java, Node, MSSQL) or
-/// pre-commands are excluded from batching and passed through as-is.
+/// Items marked with SkipHelixWorkItemBatching=true or that have pre-commands
+/// are excluded from batching and passed through as-is.
 /// Batched items use symlinks to assembly publish directories for fast payload creation.
 /// </summary>
 public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
@@ -30,6 +30,21 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
 
     [Required]
     public bool IsWindowsQueue { get; set; }
+
+    /// <summary>
+    /// Minutes of test execution time to allow per assembly in a batch.
+    /// </summary>
+    public int TimeoutMinutesPerAssembly { get; set; } = 2;
+
+    /// <summary>
+    /// Minutes of fixed overhead to add to each batch timeout (tool installs, result upload, etc.).
+    /// </summary>
+    public int TimeoutMinutesOverhead { get; set; } = 5;
+
+    /// <summary>
+    /// Maximum timeout in minutes for any single batch.
+    /// </summary>
+    public int MaxTimeoutMinutes { get; set; } = 45;
 
     [Output]
     public ITaskItem[] BatchedWorkItems { get; set; }
@@ -103,12 +118,17 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                 Directory.CreateDirectory(batchDirectory);
                 var firstItem = chunk[0];
 
-                // Copy the first item's shared content (runtests.cmd/sh, NuGet.config, etc.) to the batch root.
-                // Only copy files directly in the payload root — not subdirectories (those are assembly-specific).
+                // Copy shared content files (runtests.cmd/sh, NuGet.config, etc.) from the first
+                // item's payload root into the batch directory. Only root-level files are copied,
+                // not subdirectories (those are assembly-specific and handled via symlinks below).
                 var firstPayload = firstItem.GetMetadata("PayloadDirectory");
                 foreach (var file in Directory.GetFiles(firstPayload))
                 {
-                    File.Copy(file, Path.Combine(batchDirectory, Path.GetFileName(file)), overwrite: true);
+                    var destPath = Path.Combine(batchDirectory, Path.GetFileName(file));
+                    if (!File.Exists(destPath))
+                    {
+                        File.Copy(file, destPath);
+                    }
                 }
 
                 // Create symbolic links from batch subdirectories to assembly publish directories.
@@ -119,53 +139,52 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                     var testAssembly = workItem.GetMetadata("TestAssembly");
                     var assemblyName = Path.GetFileNameWithoutExtension(testAssembly);
                     var targetDirectory = Path.Combine(batchDirectory, assemblyName);
-                    CreateDirectorySymlink(targetDirectory, workItem.GetMetadata("PayloadDirectory"));
+                    Directory.CreateSymbolicLink(targetDirectory, workItem.GetMetadata("PayloadDirectory"));
+
+                    // Playwright tests should never be batched — they require special setup.
+                    var installPlaywright = workItem.GetMetadata("InstallPlaywright");
+                    if (string.Equals(installPlaywright, "true", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log.LogError("Work item '{0}' requires Playwright but is being batched. " +
+                            "Set SkipHelixWorkItemBatching=true in the project to exclude it.", workItem.ItemSpec);
+                        return false;
+                    }
 
                     var relativeSeparator = IsWindowsQueue ? "\\" : "/";
                     targets.Add($"{assemblyName}{relativeSeparator}{testAssembly}");
                 }
 
-                // Batch timeout: allow 2 minutes per assembly for test execution + 5 minutes
-                // for shared overhead (tool installs, result upload). Individual assembly default
-                // is 45 minutes, but most small assemblies complete in under 30 seconds.
-                var batchTimeout = TimeSpan.FromMinutes(2 * chunk.Count + 5);
-                if (batchTimeout > TimeSpan.FromMinutes(45))
+                var batchTimeout = TimeSpan.FromMinutes(TimeoutMinutesPerAssembly * chunk.Count + TimeoutMinutesOverhead);
+                if (batchTimeout > TimeSpan.FromMinutes(MaxTimeoutMinutes))
                 {
-                    batchTimeout = TimeSpan.FromMinutes(45);
+                    batchTimeout = TimeSpan.FromMinutes(MaxTimeoutMinutes);
                 }
 
                 File.WriteAllLines(Path.Combine(batchDirectory, "targets.txt"), targets);
 
                 var batchedWorkItem = new TaskItem($"batch_{batchNumber}--{group.Key}");
+
+                // Build the command from work item metadata rather than parsing command strings.
+                var runtimeVersion = firstItem.GetMetadata("RuntimeVersion");
+                var queueName = firstItem.GetMetadata("QueueName");
+                var arch = firstItem.GetMetadata("TestingArchitecture");
+                var quarantined = firstItem.GetMetadata("RunQuarantined");
+                var timeoutStr = batchTimeout.ToString("c", CultureInfo.InvariantCulture);
+                var script = IsWindowsQueue ? "call runtests.cmd" : "./runtests.sh";
+                var command = $"{script} @targets.txt {runtimeVersion} {queueName} {arch} {quarantined} {timeoutStr} false";
+
+                // Copy metadata from the first item, then override batch-specific values.
                 foreach (System.Collections.DictionaryEntry metadataEntry in firstItem.CloneCustomMetadata())
                 {
                     batchedWorkItem.SetMetadata((string)metadataEntry.Key, (string)metadataEntry.Value);
                 }
 
-                // Parse runtime/queue/arch/quarantine args from the first item's original Command.
-                // The original command format is:
-                //   [call] runtests.cmd|./runtests.sh <target.dll> <runtime> <queue> <arch> <quarantined> <timeout> <playwright>
-                var originalCommand = firstItem.GetMetadata("Command") ?? "";
-                var commandParts = originalCommand.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                var scriptIndex = Array.FindIndex(commandParts, p => p.Contains("runtests."));
-
-                // Args after the script are: target, runtime, queue, arch, quarantined, timeout, playwright
-                var runtimeArg = scriptIndex >= 0 && scriptIndex + 2 < commandParts.Length ? commandParts[scriptIndex + 2] : "";
-                var queueArg = scriptIndex >= 0 && scriptIndex + 3 < commandParts.Length ? commandParts[scriptIndex + 3] : "";
-                var archArg = scriptIndex >= 0 && scriptIndex + 4 < commandParts.Length ? commandParts[scriptIndex + 4] : "x64";
-                var quarantinedArg = scriptIndex >= 0 && scriptIndex + 5 < commandParts.Length ? commandParts[scriptIndex + 5] : "false";
-                var playwrightArg = scriptIndex >= 0 && scriptIndex + 7 < commandParts.Length ? commandParts[scriptIndex + 7] : "false";
-
                 batchedWorkItem.SetMetadata("PayloadDirectory", batchDirectory);
                 batchedWorkItem.SetMetadata("TestAssembly", "targets.txt");
-                batchedWorkItem.SetMetadata("Timeout", batchTimeout.ToString("c", CultureInfo.InvariantCulture));
+                batchedWorkItem.SetMetadata("Timeout", timeoutStr);
                 batchedWorkItem.SetMetadata("SkipHelixWorkItemBatching", "false");
                 batchedWorkItem.SetMetadata("TargetFrameworkMoniker", group.Key);
-                batchedWorkItem.SetMetadata(
-                    "Command",
-                    IsWindowsQueue
-                        ? $"call runtests.cmd @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {batchTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}"
-                        : $"./runtests.sh @targets.txt {runtimeArg} {queueArg} {archArg} {quarantinedArg} {batchTimeout.ToString("c", CultureInfo.InvariantCulture)} {playwrightArg}");
+                batchedWorkItem.SetMetadata("Command", command);
 
                 Log.LogMessage(MessageImportance.High, "Created batched Helix work item {0} with {1} assemblies.", batchedWorkItem.ItemSpec, chunk.Count);
                 batched.Add(batchedWorkItem);
@@ -181,10 +200,5 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
             BatchedWorkItems.Length);
 
         return !Log.HasLoggedErrors;
-    }
-
-    private static void CreateDirectorySymlink(string linkPath, string targetPath)
-    {
-        Directory.CreateSymbolicLink(linkPath, targetPath);
     }
 }
