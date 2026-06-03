@@ -132,4 +132,22 @@ public class CookieAuthenticationOptions : AuthenticationSchemeOptions
     /// </para>
     /// </summary>
     public TimeSpan ExpireTimeSpan { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Device Bound Session Credentials (DBSC) options.
+    /// When enabled, session cookies are bound to a device using cryptographic key pairs,
+    /// preventing session cookie theft and exfiltration.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// DBSC uses a two-cookie pattern: a long-lived cookie (containing the auth ticket and public key)
+    /// and a short-lived cookie (the DBSC-bound credential). When the short-lived cookie expires,
+    /// the browser must prove possession of the device-bound private key to obtain a new one.
+    /// </para>
+    /// <para>
+    /// This feature requires browser support (currently Chrome 135+). Browsers that do not support DBSC
+    /// will simply ignore the <c>Secure-Session-Registration</c> header and continue using the long-lived cookie.
+    /// </para>
+    /// </remarks>
+    public DeviceBoundSessionOptions? DeviceBoundSession { get; set; }
 }

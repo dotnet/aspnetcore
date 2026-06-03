@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ChunkingCookieManager\**\*.cs" />
   </ItemGroup>
 

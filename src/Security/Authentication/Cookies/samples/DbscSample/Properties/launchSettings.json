@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DbscSample": {
+      "commandName": "Project",
+      "applicationUrl": "https://localhost:7298"
+    }
+  }
+}
