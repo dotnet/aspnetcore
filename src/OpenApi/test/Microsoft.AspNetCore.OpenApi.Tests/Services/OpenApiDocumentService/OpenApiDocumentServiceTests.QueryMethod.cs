@@ -92,7 +92,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         var builder = CreateBuilder();
         var action = CreateActionDescriptor(nameof(ActionWithCustomMethod));
         var documentService = CreateDocumentService(builder, action);
-        var scopedService = builder.ServiceProvider.CreateScope();
+        using var scopedService = builder.ServiceProvider.CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
 
         await documentService.ForEachOperationAsync(document, (operation, context, cancellationToken) =>

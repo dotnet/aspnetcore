@@ -16,7 +16,10 @@ internal static class ApiDescriptionExtensions
     /// Maps the HTTP method of the ApiDescription to the HttpMethod.
     /// </summary>
     /// <param name="apiDescription">The ApiDescription to resolve an HttpMethod from.</param>
-    /// <returns>The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, if known.</returns>
+    /// <returns>
+    /// The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, including custom methods
+    /// when the provided HTTP method token is valid. Returns <see langword="null"/> when the HTTP method is missing or invalid.
+    /// </returns>
     public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription)
     {
         var httpMethod = apiDescription.HttpMethod;
@@ -25,7 +28,9 @@ internal static class ApiDescriptionExtensions
             return null;
         }
 
-        return httpMethod.ToUpperInvariant() switch
+        var normalizedHttpMethod = httpMethod.Trim();
+
+        return normalizedHttpMethod.ToUpperInvariant() switch
         {
             "GET" => HttpMethod.Get,
             "POST" => HttpMethod.Post,
@@ -36,8 +41,20 @@ internal static class ApiDescriptionExtensions
             "OPTIONS" => HttpMethod.Options,
             "TRACE" => HttpMethod.Trace,
             "QUERY" => HttpMethod.Query,
-            _ => new HttpMethod(httpMethod),
+            _ => TryCreateHttpMethod(httpMethod),
         };
+
+        static HttpMethod? TryCreateHttpMethod(string httpMethod)
+        {
+            try
+            {
+                return new HttpMethod(httpMethod);
+            }
+            catch (FormatException)
+            {
+                return null;
+            }
+        }
     }
 
     /// <summary>

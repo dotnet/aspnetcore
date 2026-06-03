@@ -72,6 +72,7 @@ public class ApiDescriptionExtensionsTests
             new object[] { "gEt", HttpMethod.Get },
             new object[] { "pOsT", HttpMethod.Post },
             new object[] { "QuErY", HttpMethod.Query },
+            new object[] { " GET ", HttpMethod.Get },
         };
 
         public static IEnumerable<object[]> UnsupportedMethods => new List<object[]>
@@ -80,6 +81,13 @@ public class ApiDescriptionExtensionsTests
             new object[] { "Foo" },
             new object[] { "FOO" },
             new object[] { "customMethod" },
+        };
+
+        public static IEnumerable<object[]> InvalidMethods => new List<object[]>
+        {
+            new object[] { "FOO " },
+            new object[] { " FOO" },
+            new object[] { "FOO BAR" },
         };
     }
 
@@ -110,6 +118,20 @@ public class ApiDescriptionExtensionsTests
         var result = apiDescription.GetHttpMethod();
 
         Assert.Equal(httpMethod, result?.Method);
+    }
+
+    [Theory]
+    [MemberData(nameof(HttpMethodTestData.InvalidMethods), MemberType = typeof(HttpMethodTestData))]
+    public void GetHttpMethod_ReturnsNullForInvalidHttpMethodToken(string httpMethod)
+    {
+        var apiDescription = new ApiDescription
+        {
+            HttpMethod = httpMethod
+        };
+
+        var result = apiDescription.GetHttpMethod();
+
+        Assert.Null(result);
     }
 
     [Theory]
