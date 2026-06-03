@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.OpenApi;
@@ -61,7 +62,7 @@ public static class OpenApiServiceCollectionExtensions
     /// });
     /// </code>
     /// </example>
-    public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName, Action<OpenApiOptions> configureOptions)
+    public static IServiceCollection AddOpenApi(this IServiceCollection services, string? documentName, Action<OpenApiOptions> configureOptions)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configureOptions);
@@ -69,14 +70,11 @@ public static class OpenApiServiceCollectionExtensions
         // We need to register the document name in a case-insensitive manner to support case-insensitive document name resolution.
         // The document name is used to store and retrieve keyed services and configuration options, which are all case-sensitive.
         // To achieve parity with ASP.NET Core routing, which is case-insensitive, we need to ensure the document name is lowercased.
-        var lowercasedDocumentName = documentName.ToLowerInvariant();
+        var lowercasedDocumentName = documentName?.ToLowerInvariant();
 
         services.AddOpenApiCore(lowercasedDocumentName);
-        services.Configure<OpenApiOptions>(lowercasedDocumentName, options =>
-        {
-            options.DocumentName = lowercasedDocumentName;
-            configureOptions(options);
-        });
+
+        services.Configure<OpenApiOptions>(lowercasedDocumentName, configureOptions);
         return services;
     }
 
@@ -124,6 +122,8 @@ public static class OpenApiServiceCollectionExtensions
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
 
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenApiOptions>, ConfigureNamedOpenApiOptions>());
+
         if (documentName is not null)
         {
             // Required to resolve document names for build-time generation
@@ -133,5 +133,14 @@ public static class OpenApiServiceCollectionExtensions
         // Required to support JSON serializations
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
         return services;
+    }
+
+    private sealed class ConfigureNamedOpenApiOptions : IConfigureNamedOptions<OpenApiOptions>
+    {
+        public void Configure(string? name, OpenApiOptions options)
+            => options.DocumentName = name ?? throw new UnreachableException();
+
+        public void Configure(OpenApiOptions options)
+            => throw new NotImplementedException();
     }
 }

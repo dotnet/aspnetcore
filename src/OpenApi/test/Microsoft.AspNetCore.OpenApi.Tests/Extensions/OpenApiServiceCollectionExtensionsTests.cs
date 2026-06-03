@@ -60,6 +60,23 @@ public class OpenApiServiceCollectionExtensions
     }
 
     [Fact]
+    public void AddOpenApi_WithNullDocumentNameAndConfigureOptions_ReturnsServiceCollection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+
+        // Act
+        var returnedServices = services.AddOpenApi(documentName: null, options => { });
+
+        // Assert
+        Assert.IsAssignableFrom<IServiceCollection>(returnedServices);
+        var provider = returnedServices.BuildServiceProvider();
+        var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
+        var options = optionsMonitor.Get("RandomDocName");
+        Assert.Equal("RandomDocName", options.DocumentName);
+    }
+
+    [Fact]
     public void AddOpenApi_WithDocumentNameAndConfigureOptions_RegistersServices()
     {
         // Arrange
