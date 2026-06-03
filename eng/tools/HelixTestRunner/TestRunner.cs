@@ -49,7 +49,7 @@ public class TestRunner
             var dotnetEFFullPath = Path.Combine(nugetRestore, helixDir, "dotnet-ef.exe");
             ProcessUtil.PrintMessage($"Set DotNetEfFullPath: {dotnetEFFullPath}");
             EnvironmentVariables.Add("DotNetEfFullPath", dotnetEFFullPath);
-            var dumpPath = Environment.GetEnvironmentVariable("HELIX_DUMP_FOLDER");
+            var dumpPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
             ProcessUtil.PrintMessage($"Set VSTEST_DUMP_PATH: {dumpPath}");
             EnvironmentVariables.Add("VSTEST_DUMP_PATH", dumpPath);
             EnvironmentVariables.Add("DOTNET_CLI_VSTEST_TRACE", "1");
