@@ -1250,16 +1250,14 @@ public class VirtualizeTest
 
         var beforeStyle = (string)dataStyleAttributes[0].AttributeValue;
         Assert.Contains("--blazor-virtualize-height: 0px", beforeStyle);
-        Assert.Contains("--blazor-virtualize-flex-shrink: 0", beforeStyle);
 
         var afterStyle = (string)dataStyleAttributes[1].AttributeValue;
         Assert.Contains("--blazor-virtualize-height:", afterStyle);
-        Assert.Contains("--blazor-virtualize-flex-shrink: 0", afterStyle);
 
         var spacerStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
                      && f.AttributeName == "style"
-                     && ((string)f.AttributeValue).Contains("--blazor-virtualize-flex-shrink: 0"))
+                     && ((string)f.AttributeValue).Contains("--blazor-virtualize-height"))
             .ToList();
 
         Assert.Empty(spacerStyleAttributes);

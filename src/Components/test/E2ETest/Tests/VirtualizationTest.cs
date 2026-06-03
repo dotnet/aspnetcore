@@ -41,13 +41,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerLayout = "--blazor-virtualize-height: 0px;";
 
         int initialItemCount = 0;
 
         // Wait until items have been rendered.
         Browser.True(() => (initialItemCount = GetItemCount()) > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.Equal(expectedInitialSpacerLayout, () => topSpacer.GetDomAttribute("data-blazor-virtualize-layout"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll halfway.
@@ -55,7 +55,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validate that we get the same item count after scrolling halfway.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerLayout, () => topSpacer.GetDomAttribute("data-blazor-virtualize-layout"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll to the bottom.
@@ -63,7 +63,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validate that we get the same item count after scrolling to the bottom.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerLayout, () => topSpacer.GetDomAttribute("data-blazor-virtualize-layout"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         int GetItemCount() => Browser.FindElements(By.Id("sync-item")).Count;
@@ -204,13 +204,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void CanUseViewportAsContainer()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerLayout = "--blazor-virtualize-height: 0px;";
         var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
 
         // Validate that the top spacer has a height of zero.
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.Equal(expectedInitialSpacerLayout, () => topSpacer.GetDomAttribute("data-blazor-virtualize-layout"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
@@ -219,7 +219,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => Browser.Exists(By.Id("999")).Displayed);
 
         // Validate that the top spacer has expanded.
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerLayout, () => topSpacer.GetDomAttribute("data-blazor-virtualize-layout"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
     }
 
@@ -228,11 +228,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerLayout = "--blazor-virtualize-height: 0px;";
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.Equal(expectedInitialSpacerLayout, () => topSpacer.GetDomAttribute("data-blazor-virtualize-layout"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll slowly, in increments of 50px at a time. At one point this would trigger a bug
@@ -246,7 +246,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Validate that the top spacer did change
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerLayout, () => topSpacer.GetDomAttribute("data-blazor-virtualize-layout"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         int GetItemCount() => Browser.FindElements(By.ClassName("incorrect-size-item")).Count;
@@ -256,14 +256,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
-        var expectedInitialSpacerStyle = "--blazor-virtualize-height: 0px; --blazor-virtualize-flex-shrink: 0;";
+        var expectedInitialSpacerLayout = "--blazor-virtualize-height: 0px;";
         var topSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :first-child"));
         var bottomSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :last-child"));
 
         // We can override the tag name of the spacer
         Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
         Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
-        Browser.True(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
+        Browser.True(() => topSpacer.GetDomAttribute("data-blazor-virtualize-layout").Contains(expectedInitialSpacerLayout));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
         Assert.Contains("true", bottomSpacer.GetDomAttribute("aria-hidden"));
 

@@ -603,11 +603,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var avgHeight = GetItemHeight();
         var heightPx = (itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture);
         var pushOutOfViewportPx = (unusedItemCapacity * avgHeight).ToString(CultureInfo.InvariantCulture);
-        return $"--blazor-virtualize-height: {heightPx}px; --blazor-virtualize-flex-shrink: 0; --blazor-virtualize-transform: translateY({pushOutOfViewportPx}px);";
+        return $"--blazor-virtualize-height: {heightPx}px; --blazor-virtualize-transform: translateY({pushOutOfViewportPx}px);";
     }
 
     private string GetSpacerStyle(int itemsInSpacer)
-        => $"--blazor-virtualize-height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px; --blazor-virtualize-flex-shrink: 0;";
+        => $"--blazor-virtualize-height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px;";
 
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
@@ -941,7 +941,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "data-blazor-virtualize-layout", $"--blazor-virtualize-height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px; --blazor-virtualize-flex-shrink: 0;");
+        builder.AddAttribute(1, "data-blazor-virtualize-layout", $"--blazor-virtualize-height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px;");
         builder.CloseElement();
     };
 

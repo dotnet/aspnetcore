@@ -17,21 +17,6 @@ export const Virtualize = {
 const dispatcherObserversByDotNetIdPropname = Symbol();
 const THROTTLE_MS = 50;
 
-// Static stylesheet consumed by data-blazor-virtualize-layout custom properties.
-// The transform fallback handles elements (spacerBefore, placeholders) that never emit it.
-let virtualizeStylesheetInstalled = false;
-function ensureVirtualizeStylesheet(): void {
-  if (virtualizeStylesheetInstalled) {
-    return;
-  }
-  virtualizeStylesheetInstalled = true;
-  const sheet = new CSSStyleSheet();
-  sheet.replaceSync(
-    '[data-blazor-virtualize-layout]{height:var(--blazor-virtualize-height);flex-shrink:var(--blazor-virtualize-flex-shrink);transform:var(--blazor-virtualize-transform,none);}'
-  );
-  document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-}
-
 function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   // If we recurse up as far as body or the document root, return null so that the
   // IntersectionObserver observes intersection with the top-level scroll viewport
@@ -68,8 +53,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     return;
   }
 
-  ensureVirtualizeStylesheet();
-
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   const scrollElement = scrollContainer || document.documentElement;
   const isTable = isValidTableElement(spacerAfter.parentElement);
@@ -89,9 +72,20 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     spacerAfter.style.display = 'table-row';
   }
 
-  // Applies declarations from data-blazor-virtualize-layout via CSSOM setProperty (CSP-compliant).
-  // Values are CSS custom properties consumed by the rule from ensureVirtualizeStylesheet.
+  // Sets base layout rules referencing custom properties (with fallbacks) so values
+  // C# doesn't emit naturally resolve to defaults. Applied per-element on first sight.
+  const baseStylesAppliedProp = Symbol();
+  function ensureBaseStyles(el: HTMLElement): void {
+    if ((el as any)[baseStylesAppliedProp]) {
+      return;
+    }
+    (el as any)[baseStylesAppliedProp] = true;
+    el.style.height = 'var(--blazor-virtualize-height, 0)';
+    el.style.flexShrink = '0';
+    el.style.transform = 'var(--blazor-virtualize-transform, none)';
+  }
   function applyStyleViaCssom(el: HTMLElement, styleValue: string): void {
+    ensureBaseStyles(el);
     if (!styleValue) {
       return;
     }

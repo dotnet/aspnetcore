@@ -39,8 +39,8 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
         Browser.True(() =>
         {
             var topSpacer = container.FindElements(By.CssSelector(":scope > div"))[0];
-            var style = topSpacer.GetDomAttribute("data-blazor-virtualize-layout");
-            return style != null && !style.Contains("--blazor-virtualize-height: 0px");
+            var layout = topSpacer.GetDomAttribute("data-blazor-virtualize-layout");
+            return layout != null && !layout.Contains("--blazor-virtualize-height: 0px");
         });
 
         AssertNoStyleCspViolations();
