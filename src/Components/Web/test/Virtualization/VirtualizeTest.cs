@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -1247,8 +1248,8 @@ public class VirtualizeTest
             .ToList();
 
         Assert.Equal(2, heightAttributes.Count);
-        Assert.Equal("0px", (string)heightAttributes[0].AttributeValue);
-        Assert.EndsWith("px", (string)heightAttributes[1].AttributeValue);
+        Assert.Equal("0", (string)heightAttributes[0].AttributeValue);
+        Assert.True(double.TryParse((string)heightAttributes[1].AttributeValue, NumberStyles.Float, CultureInfo.InvariantCulture, out _));
 
         var inlineStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute

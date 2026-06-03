@@ -40,7 +40,7 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
         {
             var topSpacer = container.FindElements(By.CssSelector(":scope > div"))[0];
             var height = topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height");
-            return height != null && height != "0px";
+            return height != null && height != "0";
         });
 
         AssertNoStyleCspViolations();
@@ -70,15 +70,16 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
     }
 
     [Theory]
-    [InlineData("url(https://example.invalid/x.png)")]    // value with url() token
-    [InlineData("120.5px")]                               // decimal not emitted by C# (int formatter)
-    [InlineData("120px; background:url(x)")]              // value containing extra declarations
-    [InlineData("var(--cookie)")]                          // custom-property indirection
-    [InlineData("120em")]                                  // wrong unit
+    [InlineData("url(https://example.invalid/x.png)")]    // non-numeric, CSS-like
+    [InlineData("120px")]                                  // a unit suffix is no longer accepted
+    [InlineData("abc")]                                    // non-numeric
+    [InlineData("1e9999")]                                 // overflows to Infinity (not finite)
+    [InlineData("NaN")]                                    // non-finite
+    [InlineData("1 2")]                                    // multi-token
     [InlineData("")]                                       // empty
     public void Virtualize_RejectsUnexpectedLayoutAttributeValues(string invalidValue)
     {
-        // Values that don't match the C#-emitted shape must not propagate to CSS custom properties.
+        // Values that don't parse as a finite number must not propagate to CSS custom properties.
         Navigate($"{ServerPathBase}?strict-style-csp=true");
         Browser.MountTestComponent<VirtualizationCsp>();
 
@@ -94,7 +95,7 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
             "el.setAttribute('data-blazor-virtualize-loop-breaker-transform', arguments[1]);",
             spacerSelector, invalidValue);
 
-        // Acceptable outcomes: the property is unset or contains the previous value
+        // Invalid values must result in the custom property being removed (empty).
         Browser.True(() =>
         {
             var heightVar = (string)js.ExecuteScript(
@@ -105,7 +106,7 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
                 "return getComputedStyle(document.querySelector(arguments[0]))" +
                 ".getPropertyValue('--blazor-virtualize-loop-breaker-transform').trim();",
                 spacerSelector);
-            return heightVar != invalidValue && transformVar != invalidValue;
+            return heightVar == "" && transformVar == "";
         });
 
         AssertNoStyleCspViolations();

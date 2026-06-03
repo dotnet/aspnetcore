@@ -41,7 +41,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerHeight = "0px";
+        var expectedInitialSpacerHeight = "0";
 
         int initialItemCount = 0;
 
@@ -204,7 +204,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void CanUseViewportAsContainer()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var expectedInitialSpacerHeight = "0px";
+        var expectedInitialSpacerHeight = "0";
         var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
@@ -228,7 +228,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerHeight = "0px";
+        var expectedInitialSpacerHeight = "0";
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
@@ -256,7 +256,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
-        var expectedInitialSpacerHeight = "0px";
+        var expectedInitialSpacerHeight = "0";
         var topSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :first-child"));
         var bottomSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :last-child"));
 

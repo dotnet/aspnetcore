@@ -600,10 +600,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     }
 
     private string GetSpacerHeightPx(int itemsInSpacer)
-        => $"{(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px";
+        => (itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture);
 
     private string GetLoadLoopPreventionTransform(int unusedItemCapacity)
-        => $"translateY({(unusedItemCapacity * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px)";
+        => (unusedItemCapacity * GetItemHeight()).ToString(CultureInfo.InvariantCulture);
 
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
@@ -937,7 +937,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", $"{_itemSize.ToString(CultureInfo.InvariantCulture)}px");
+        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", _itemSize.ToString(CultureInfo.InvariantCulture));
         builder.CloseElement();
     };
 
