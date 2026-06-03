@@ -7,7 +7,7 @@
 <div id="grid">
     <QuickGrid @ref="@quickGridRef" Items="@FilteredPeople" Pagination="@pagination" RowClass="HighlightJulie" OnRowClick="@((Person p) => HandleRowClick(p))" custom-attrib="somevalue" class="custom-class-attrib">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" CellClassFunc='@(p => p.FirstName == "Julie" ? "highlight-cell" : null)'>
+        <PropertyColumn Property="@(p => p.FirstName)" Sortable="true" CellClass='@(p => p.FirstName == "Julie" ? "highlight-cell" : null)'>
             <ColumnOptions>
                 <div class="search-box">
                     <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />
@@ -18,7 +18,7 @@
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
         <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" Align="Align.Center" />
         <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true" Align="Align.Right"/>
-        <TemplateColumn Title="Full Name" CellClassFunc='@(p => p.LastName.StartsWith("M") ? "highlight-cell" : null)'>
+        <TemplateColumn Title="Full Name" CellClass='@(p => p.LastName.StartsWith("M") ? "highlight-cell" : null)'>
             <div class="full-name-cell">@context.FirstName @context.LastName</div>
         </TemplateColumn>
     </QuickGrid>

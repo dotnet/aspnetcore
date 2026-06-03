@@ -153,7 +153,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void CellClassFuncAppliedToPropertyColumn()
+    public void CellClassAppliedToPropertyColumn()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
@@ -162,7 +162,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void CellClassFuncAppliedToTemplateColumn()
+    public void CellClassAppliedToTemplateColumn()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
