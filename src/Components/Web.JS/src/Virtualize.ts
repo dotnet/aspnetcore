@@ -17,7 +17,7 @@ export const Virtualize = {
 const dispatcherObserversByDotNetIdPropname = Symbol();
 const THROTTLE_MS = 50;
 
-// Static stylesheet consumed by data-blazor-style custom properties.
+// Static stylesheet consumed by data-blazor-virtualize-layout custom properties.
 // The transform fallback handles elements (spacerBefore, placeholders) that never emit it.
 let virtualizeStylesheetInstalled = false;
 function ensureVirtualizeStylesheet(): void {
@@ -27,7 +27,7 @@ function ensureVirtualizeStylesheet(): void {
   virtualizeStylesheetInstalled = true;
   const sheet = new CSSStyleSheet();
   sheet.replaceSync(
-    '[data-blazor-style]{height:var(--blazor-virtualize-height);flex-shrink:var(--blazor-virtualize-flex-shrink);transform:var(--blazor-virtualize-transform,none);}'
+    '[data-blazor-virtualize-layout]{height:var(--blazor-virtualize-height);flex-shrink:var(--blazor-virtualize-flex-shrink);transform:var(--blazor-virtualize-transform,none);}'
   );
   document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
 }
@@ -89,7 +89,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     spacerAfter.style.display = 'table-row';
   }
 
-  // Applies declarations from data-blazor-style via CSSOM setProperty (CSP-compliant).
+  // Applies declarations from data-blazor-virtualize-layout via CSSOM setProperty (CSP-compliant).
   // Values are CSS custom properties consumed by the rule from ensureVirtualizeStylesheet.
   function applyStyleViaCssom(el: HTMLElement, styleValue: string): void {
     if (!styleValue) {
@@ -108,8 +108,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   // Apply initial styles via CSSOM so they work even under strict CSP.
   const styleObserverRoot = spacerBefore.parentElement ?? scrollElement;
-  styleObserverRoot.querySelectorAll('[data-blazor-style]').forEach(el => {
-    applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-style') || '');
+  styleObserverRoot.querySelectorAll('[data-blazor-virtualize-layout]').forEach(el => {
+    applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-virtualize-layout') || '');
   });
 
   if (useNativeAnchoring) {
@@ -125,18 +125,18 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     for (const mutation of mutations) {
       if (mutation.type === 'attributes') {
         const el = mutation.target as HTMLElement;
-        applyStyleViaCssom(el, el.getAttribute('data-blazor-style') || '');
+        applyStyleViaCssom(el, el.getAttribute('data-blazor-virtualize-layout') || '');
       } else {
         mutation.addedNodes.forEach(node => {
           if (node.nodeType !== Node.ELEMENT_NODE) {
             return;
           }
           const el = node as Element;
-          if (el.hasAttribute('data-blazor-style')) {
-            applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-style') || '');
+          if (el.hasAttribute('data-blazor-virtualize-layout')) {
+            applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-virtualize-layout') || '');
           }
-          el.querySelectorAll('[data-blazor-style]').forEach(descendant => {
-            applyStyleViaCssom(descendant as HTMLElement, descendant.getAttribute('data-blazor-style') || '');
+          el.querySelectorAll('[data-blazor-virtualize-layout]').forEach(descendant => {
+            applyStyleViaCssom(descendant as HTMLElement, descendant.getAttribute('data-blazor-virtualize-layout') || '');
           });
         });
       }
@@ -151,7 +151,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
   mutationObserver.observe(styleObserverRoot, {
     attributes: true,
-    attributeFilter: ['data-blazor-style'],
+    attributeFilter: ['data-blazor-virtualize-layout'],
     childList: true,
     subtree: true,
   });
