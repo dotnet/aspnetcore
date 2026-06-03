@@ -80,30 +80,33 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       return;
     }
     (el as any)[baseStylesAppliedProp] = true;
-    el.style.height = 'var(--blazor-virtualize-height, 0)';
+    el.style.height = 'var(--blazor-virtualize-reserved-height, 0)';
     el.style.flexShrink = '0';
-    el.style.transform = 'var(--blazor-virtualize-transform, none)';
+    el.style.transform = 'var(--blazor-virtualize-loop-breaker-transform, none)';
   }
-  function applyStyleViaCssom(el: HTMLElement, styleValue: string): void {
+
+  const layoutAttrToCssVar: readonly (readonly [string, string])[] = [
+    ['data-blazor-virtualize-reserved-height', '--blazor-virtualize-reserved-height'],
+    ['data-blazor-virtualize-loop-breaker-transform', '--blazor-virtualize-loop-breaker-transform'],
+  ];
+  const layoutAttrNames = layoutAttrToCssVar.map(([attr]) => attr);
+  const layoutAttrSelector = layoutAttrNames.map(a => `[${a}]`).join(',');
+  function applyLayoutAttrs(el: HTMLElement): void {
     ensureBaseStyles(el);
-    if (!styleValue) {
-      return;
-    }
-    for (const declaration of styleValue.split(';')) {
-      const colon = declaration.indexOf(':');
-      if (colon < 0) continue;
-      const prop = declaration.substring(0, colon).trim();
-      const value = declaration.substring(colon + 1).trim();
-      if (prop && value) {
-        el.style.setProperty(prop, value);
+    for (const [attr, cssVar] of layoutAttrToCssVar) {
+      const value = el.getAttribute(attr);
+      if (value !== null) {
+        el.style.setProperty(cssVar, value);
+      } else {
+        el.style.removeProperty(cssVar);
       }
     }
   }
 
   // Apply initial styles via CSSOM so they work even under strict CSP.
   const styleObserverRoot = spacerBefore.parentElement ?? scrollElement;
-  styleObserverRoot.querySelectorAll('[data-blazor-virtualize-layout]').forEach(el => {
-    applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-virtualize-layout') || '');
+  styleObserverRoot.querySelectorAll(layoutAttrSelector).forEach(el => {
+    applyLayoutAttrs(el as HTMLElement);
   });
 
   if (useNativeAnchoring) {
@@ -118,19 +121,18 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   function processStyleMutations(mutations: MutationRecord[]): void {
     for (const mutation of mutations) {
       if (mutation.type === 'attributes') {
-        const el = mutation.target as HTMLElement;
-        applyStyleViaCssom(el, el.getAttribute('data-blazor-virtualize-layout') || '');
+        applyLayoutAttrs(mutation.target as HTMLElement);
       } else {
         mutation.addedNodes.forEach(node => {
           if (node.nodeType !== Node.ELEMENT_NODE) {
             return;
           }
           const el = node as Element;
-          if (el.hasAttribute('data-blazor-virtualize-layout')) {
-            applyStyleViaCssom(el as HTMLElement, el.getAttribute('data-blazor-virtualize-layout') || '');
+          if (layoutAttrNames.some(a => el.hasAttribute(a))) {
+            applyLayoutAttrs(el as HTMLElement);
           }
-          el.querySelectorAll('[data-blazor-virtualize-layout]').forEach(descendant => {
-            applyStyleViaCssom(descendant as HTMLElement, descendant.getAttribute('data-blazor-virtualize-layout') || '');
+          el.querySelectorAll(layoutAttrSelector).forEach(descendant => {
+            applyLayoutAttrs(descendant as HTMLElement);
           });
         });
       }
@@ -145,7 +147,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
   mutationObserver.observe(styleObserverRoot, {
     attributes: true,
-    attributeFilter: ['data-blazor-virtualize-layout'],
+    attributeFilter: layoutAttrNames,
     childList: true,
     subtree: true,
   });

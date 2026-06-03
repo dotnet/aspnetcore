@@ -520,7 +520,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         builder.OpenElement(0, SpacerElement);
-        builder.AddAttribute(1, "data-blazor-virtualize-layout", GetSpacerStyle(_itemsBefore));
+        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(_itemsBefore));
         builder.AddAttribute(2, "aria-hidden", "true");
         builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
@@ -589,25 +589,21 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(7, SpacerElement);
         builder.AddAttribute(8, "aria-hidden", "true");
-        var spacerAfterStyle = _unusedItemCapacity == 0
-            ? GetSpacerStyle(itemsAfter)
-            : GetSpacerStylePreventingLoadLoop(itemsAfter, _unusedItemCapacity);
-        builder.AddAttribute(9, "data-blazor-virtualize-layout", spacerAfterStyle);
-        builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
+        builder.AddAttribute(9, "data-blazor-virtualize-reserved-height", GetSpacerHeightPx(itemsAfter));
+        if (_unusedItemCapacity != 0)
+        {
+            builder.AddAttribute(10, "data-blazor-virtualize-loop-breaker-transform", GetLoadLoopPreventionTransform(_unusedItemCapacity));
+        }
+        builder.AddElementReferenceCapture(11, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
 
-    private string GetSpacerStylePreventingLoadLoop(int itemsInSpacer, int unusedItemCapacity)
-    {
-        var avgHeight = GetItemHeight();
-        var heightPx = (itemsInSpacer * avgHeight).ToString(CultureInfo.InvariantCulture);
-        var pushOutOfViewportPx = (unusedItemCapacity * avgHeight).ToString(CultureInfo.InvariantCulture);
-        return $"--blazor-virtualize-height: {heightPx}px; --blazor-virtualize-transform: translateY({pushOutOfViewportPx}px);";
-    }
+    private string GetSpacerHeightPx(int itemsInSpacer)
+        => $"{(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px";
 
-    private string GetSpacerStyle(int itemsInSpacer)
-        => $"--blazor-virtualize-height: {(itemsInSpacer * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px;";
+    private string GetLoadLoopPreventionTransform(int unusedItemCapacity)
+        => $"translateY({(unusedItemCapacity * GetItemHeight()).ToString(CultureInfo.InvariantCulture)}px)";
 
     private float GetItemHeight()
         => _measuredItemCount > 0 ? _totalMeasuredHeight / _measuredItemCount : _itemSize;
@@ -941,7 +937,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "data-blazor-virtualize-layout", $"--blazor-virtualize-height: {_itemSize.ToString(CultureInfo.InvariantCulture)}px;");
+        builder.AddAttribute(1, "data-blazor-virtualize-reserved-height", $"{_itemSize.ToString(CultureInfo.InvariantCulture)}px");
         builder.CloseElement();
     };
 

@@ -1237,29 +1237,24 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
         Assert.NotNull(renderedVirtualize);
 
-        // Spacer elements use data-blazor-virtualize-layout instead of inline style attributes.
-        // A MutationObserver on the JS side reads data-blazor-virtualize-layout and applies via CSSOM.
+        // Spacer elements use data-blazor-virtualize-* attributes instead of inline style.
+        // A MutationObserver on the JS side mirrors them to CSS custom properties via CSSOM.
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
-        var dataStyleAttributes = referenceFrames
+        var heightAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
-                     && f.AttributeName == "data-blazor-virtualize-layout")
+                     && f.AttributeName == "data-blazor-virtualize-reserved-height")
             .ToList();
 
-        Assert.Equal(2, dataStyleAttributes.Count);
+        Assert.Equal(2, heightAttributes.Count);
+        Assert.Equal("0px", (string)heightAttributes[0].AttributeValue);
+        Assert.EndsWith("px", (string)heightAttributes[1].AttributeValue);
 
-        var beforeStyle = (string)dataStyleAttributes[0].AttributeValue;
-        Assert.Contains("--blazor-virtualize-height: 0px", beforeStyle);
-
-        var afterStyle = (string)dataStyleAttributes[1].AttributeValue;
-        Assert.Contains("--blazor-virtualize-height:", afterStyle);
-
-        var spacerStyleAttributes = referenceFrames
+        var inlineStyleAttributes = referenceFrames
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute
-                     && f.AttributeName == "style"
-                     && ((string)f.AttributeValue).Contains("--blazor-virtualize-height"))
+                     && f.AttributeName == "style")
             .ToList();
 
-        Assert.Empty(spacerStyleAttributes);
+        Assert.Empty(inlineStyleAttributes);
     }
 }

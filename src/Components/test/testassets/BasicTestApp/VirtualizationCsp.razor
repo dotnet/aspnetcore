@@ -30,7 +30,7 @@ else
     private async ValueTask<ItemsProviderResult<int>> LoadItemsAsync(ItemsProviderRequest request)
     {
         // Delay so placeholders actually render and the placeholder
-        // data-blazor-virtualize-layout path is exercised.
+        // data-blazor-virtualize-* path is exercised.
         await Task.Delay(50, request.CancellationToken);
         var items = Enumerable.Range(request.StartIndex, request.Count).ToArray();
         return new ItemsProviderResult<int>(items, totalItemCount: 1000);
