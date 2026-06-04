@@ -142,7 +142,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
   const mutationObserver = new MutationObserver(processStyleMutations);
 
-  // Drain queued MutationObserver records synchronously, before any layout read.
   function flushPendingStyleMutations(): void {
     processStyleMutations(mutationObserver.takeRecords());
   }
