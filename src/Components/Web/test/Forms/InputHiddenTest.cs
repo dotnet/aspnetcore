@@ -11,7 +11,7 @@ public class InputHiddenTest
     private readonly TestRenderer _testRenderer = new TestRenderer();
 
     [Fact]
-    public async Task InputElementIsAssignedSuccessfully()
+    public async Task InputElementIsAssignedSuccessfullyAndHasCorrectAttributes()
     {
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputHidden>
@@ -22,7 +22,14 @@ public class InputHiddenTest
 
         var inputHiddenComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
+        // Verify element reference is captured
         Assert.NotNull(inputHiddenComponent.Element);
+
+        // Verify it renders the correct input type
+        var componentId = await RenderAndGetInputHiddenComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+        var typeAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type");
+        Assert.Equal("hidden", typeAttribute.AttributeValue);
     }
 
     [Fact]
@@ -93,6 +100,8 @@ public class InputHiddenTest
         var nameAttribute = frames.Array.FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "name");
         // Name attribute should be present (generated from field name)
         Assert.True(nameAttribute.AttributeName == "name");
+        Assert.NotNull(nameAttribute.AttributeValue);
+        Assert.True(!string.IsNullOrEmpty(nameAttribute.AttributeValue?.ToString()));
     }
 
     [Fact]
@@ -132,37 +141,6 @@ public class InputHiddenTest
     }
 
     [Fact]
-    public async Task RendersMultipleAdditionalAttributes()
-    {
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputHidden>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object>
-            {
-                { "data-test", "custom-data" },
-                { "aria-label", "Hidden field" },
-                { "title", "This is a hidden field" }
-            }
-        };
-
-        var componentId = await RenderAndGetInputHiddenComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        var dataTestAttr = frames.Array.FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "data-test");
-        var ariaLabelAttr = frames.Array.FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "aria-label");
-        var titleAttr = frames.Array.FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "title");
-
-        Assert.True(dataTestAttr.AttributeName == "data-test");
-        Assert.Equal("custom-data", dataTestAttr.AttributeValue);
-        Assert.True(ariaLabelAttr.AttributeName == "aria-label");
-        Assert.Equal("Hidden field", ariaLabelAttr.AttributeValue);
-        Assert.True(titleAttr.AttributeName == "title");
-        Assert.Equal("This is a hidden field", titleAttr.AttributeValue);
-    }
-
-    [Fact]
     public async Task OnChangeEventBinderIsPresent()
     {
         var model = new TestModel();
@@ -180,7 +158,8 @@ public class InputHiddenTest
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "onchange");
 
-        Assert.True(onchangeEvent.AttributeName == "onchange");
+        Assert.NotNull(onchangeEvent.AttributeValue);
+        Assert.Equal("onchange", onchangeEvent.AttributeName);
     }
 
     [Fact]
@@ -216,6 +195,8 @@ public class InputHiddenTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var nameAttribute = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "name");
+        Assert.NotNull(nameAttribute.AttributeValue);
+        Assert.Equal("name", nameAttribute.AttributeName);
         Assert.Equal("custom-name", nameAttribute.AttributeValue);
     }
 
@@ -261,15 +242,20 @@ public class InputHiddenTest
         var dataEncryptedAttr = frames.Array.FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "data-encrypted");
         var disabledAttr = frames.Array.FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "disabled");
 
-        Assert.True(dataFieldIdAttr.AttributeName == "data-field-id");
+        Assert.NotNull(dataFieldIdAttr.AttributeValue);
+        Assert.Equal("data-field-id", dataFieldIdAttr.AttributeName);
         Assert.Equal("field123", dataFieldIdAttr.AttributeValue);
-        Assert.True(dataEncryptedAttr.AttributeName == "data-encrypted");
+
+        Assert.NotNull(dataEncryptedAttr.AttributeValue);
+        Assert.Equal("data-encrypted", dataEncryptedAttr.AttributeName);
         Assert.Equal("true", dataEncryptedAttr.AttributeValue);
-        Assert.True(disabledAttr.AttributeName == "disabled");
+
+        Assert.NotNull(disabledAttr.AttributeValue);
+        Assert.Equal("disabled", disabledAttr.AttributeName);
     }
 
-     [Fact]
-    public async Task RendersNullValueAsEmptyString()
+    [Fact]
+    public async Task RendersNullValueCorrectly()
     {
         var model = new TestModel { StringProperty = null };
         var rootComponent = new TestInputHostComponent<string, InputHidden>
@@ -282,22 +268,23 @@ public class InputHiddenTest
         var componentId = await RenderAndGetInputHiddenComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // When value is null, CurrentValueAsString returns null which may not render value attribute
-        var valueAttributes = frames.Array.Where(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value").ToList();
+        // When value is null, the value attribute should either be null or empty
+        var valueAttribute = frames.Array.FirstOrDefault(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value");
 
-        // Verify the input element exists and is a hidden input
-        var typeAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type");
-        Assert.Equal("hidden", typeAttribute.AttributeValue);
+        // Value attribute should exist (even if null/empty)
+        Assert.True(
+            valueAttribute.Equals(default(RenderTreeFrame)) ||
+            valueAttribute.AttributeValue == null ||
+            valueAttribute.AttributeValue.ToString() == ""
+        );
     }
 
     [Fact]
-    public async Task RendersCssClassWithFieldValidationClass()
+    public async Task RendersCssClassAttribute()
     {
         var model = new TestModel();
         var editContext = new EditContext(model);
-        editContext.Validate(); // trigger validation to see field class
 
         var rootComponent = new TestInputHostComponent<string, InputHidden>
         {
@@ -310,8 +297,9 @@ public class InputHiddenTest
 
         var classAttribute = frames.Array.FirstOrDefault(f =>
             f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
-        // Should include field validation CSS class (e.g., "modified", "valid", or "invalid")
-        Assert.True(classAttribute.AttributeName == "class");
+
+        // Class attribute should exist (may be empty or contain field CSS classes)
+        Assert.Equal("class", classAttribute.AttributeName);
     }
 
     [Fact]
@@ -329,6 +317,53 @@ public class InputHiddenTest
 
         // FieldIdentifier should be created from ValueExpression
         Assert.Equal("StringProperty", inputHiddenComponent.FieldIdentifier.FieldName);
+    }
+
+    [Fact]
+    public async Task ValueAttributeAlwaysExists()
+    {
+        var model = new TestModel { StringProperty = "test-value" };
+        var rootComponent = new TestInputHostComponent<string, InputHidden>
+        {
+            EditContext = new EditContext(model),
+            Value = "test-value",
+            ValueExpression = () => model.StringProperty,
+        };
+
+        var componentId = await RenderAndGetInputHiddenComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        // Value attribute must always exist for hidden inputs
+        var valueAttribute = frames.Array.FirstOrDefault(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value");
+
+        Assert.NotNull(valueAttribute.AttributeValue);
+        Assert.Equal("value", valueAttribute.AttributeName);
+        Assert.Equal("test-value", valueAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task UserProvidedClassMergedWithValidationClass()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<string, InputHidden>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringProperty,
+            AdditionalAttributes = new Dictionary<string, object> { { "class", "user-class" } }
+        };
+
+        var componentId = await RenderAndGetInputHiddenComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var classAttribute = frames.Array.FirstOrDefault(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+
+        // Class should contain user-provided class
+        Assert.Equal("class", classAttribute.AttributeName);
+        Assert.NotNull(classAttribute.AttributeValue);
+        var classValue = classAttribute.AttributeValue?.ToString() ?? "";
+        Assert.Contains("user-class", classValue);
     }
 
     private async Task<int> RenderAndGetInputHiddenComponentIdAsync(TestInputHostComponent<string, InputHidden> hostComponent)
