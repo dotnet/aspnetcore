@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -60,55 +59,17 @@ public class ValidationSummary : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // As an optimization, only evaluate the messages enumerable once, and
-        // only produce the enclosing <ul> if there's at least one message,
-        // or client-side validation is enabled.
-        var validationMessages = Model is null ?
-            CurrentEditContext.GetValidationMessages() :
-            CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
+        var validationMessages = Model is null
+            ? CurrentEditContext.GetValidationMessages()
+            : CurrentEditContext.GetValidationMessages(new FieldIdentifier(Model, string.Empty));
 
-        if (CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
-            && serviceObj is IClientValidationService)
-        {
-            RenderForClientValidation(builder, validationMessages);
-            return;
-        }
-
-        var first = true;
-        foreach (var error in validationMessages)
-        {
-            if (first)
-            {
-                first = false;
-
-                builder.OpenElement(0, "ul");
-                builder.AddAttribute(1, "class", "validation-errors");
-                builder.AddMultipleAttributes(2, AdditionalAttributes);
-            }
-
-            builder.OpenElement(3, "li");
-            builder.AddAttribute(4, "class", "validation-message");
-            builder.AddContent(5, error);
-            builder.CloseElement();
-        }
-
-        if (!first)
-        {
-            // We have at least one validation message.
-            builder.CloseElement();
-        }
-    }
-
-    /// <summary>
-    /// Renders a validation summary container with data-valmsg-summary="true" for the JS
-    /// validation library. Sets the initial CSS class based on whether server-rendered messages
-    /// exist: validation-summary-errors when non-empty (so CSS that hides validation-summary-valid
-    /// won't suppress initial server errors), validation-summary-valid when empty.
-    /// </summary>
-    private void RenderForClientValidation(RenderTreeBuilder builder, IEnumerable<string> validationMessages)
-    {
+        // Materialize once so the count drives the initial CSS class while we still iterate
+        // the same set for rendering.
         var messages = new List<string>(validationMessages);
 
+        // Wrapping div carries data-valmsg-summary="true" so the JS client-validation engine
+        // can locate the summary, plus a CSS class reflecting current state. Inert when no
+        // JS engine is present.
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "data-valmsg-summary", "true");
         builder.AddAttribute(2, "class", messages.Count > 0 ? "validation-summary-errors" : "validation-summary-valid");

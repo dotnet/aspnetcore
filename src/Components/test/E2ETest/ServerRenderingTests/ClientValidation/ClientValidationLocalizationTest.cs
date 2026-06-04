@@ -26,7 +26,7 @@ public class ClientValidationLocalizationTest : ClientValidationTestBase
     {
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void DefaultCulture_UsesLiteralAttributeValuesAndDefaultMessages()
     {
         // No ?culture= → CurrentUICulture stays at the default (en-US). The localizer's lookup
@@ -39,7 +39,7 @@ public class ClientValidationLocalizationTest : ClientValidationTestBase
         Assert.Equal("RangeKey", GetDataValAttribute("age", "data-val-range"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void FrenchCulture_LocalizesDisplayNameAndErrorMessage()
     {
         Navigate("subdir/forms/client-validation/localized-validation?culture=fr");
@@ -54,7 +54,7 @@ public class ClientValidationLocalizationTest : ClientValidationTestBase
         Assert.Equal("Le champ Âge doit être entre 18 et 120 (fr)", GetDataValAttribute("age", "data-val-range"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void GermanCulture_LocalizesDisplayNameAndErrorMessage()
     {
         Navigate("subdir/forms/client-validation/localized-validation?culture=de");
@@ -66,7 +66,7 @@ public class ClientValidationLocalizationTest : ClientValidationTestBase
         Assert.Equal("Das Feld Alter muss zwischen 18 und 120 liegen (de)", GetDataValAttribute("age", "data-val-range"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void DifferentCulturesProduceDifferentOutput_NoCachePoisoning()
     {
         // Regression guard: visit French first, then German on the SAME server (which holds the

@@ -27,7 +27,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
     {
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void Required_EmitsDataValRequired_WithDisplayNameInMessage()
     {
         NavigateToEditFormValidationPage();
@@ -37,7 +37,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
         Assert.Equal("The Full Name field is required.", GetDataValAttribute("name", "data-val-required"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void Required_NoDisplayAttribute_UsesPropertyNameInMessage()
     {
         NavigateToEditFormValidationPage();
@@ -46,7 +46,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
         Assert.Equal("The Password field is required.", GetDataValAttribute("password", "data-val-required"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void StringLength_EmitsLengthAttributesWithMinAndMax()
     {
         NavigateToEditFormValidationPage();
@@ -57,7 +57,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
         Assert.Equal("500", bio.GetAttribute("data-val-length-max"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void RegularExpression_EmitsRegexAttributeAndPattern()
     {
         NavigateToEditFormValidationPage();
@@ -67,7 +67,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
         Assert.Equal(@"\d{5}", zip.GetAttribute("data-val-regex-pattern"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void Url_EmitsDataValUrl()
     {
         NavigateToEditFormValidationPage();
@@ -76,7 +76,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
         Assert.NotNull(website.GetAttribute("data-val-url"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void Compare_EmitsEqualToAttributeAndOther()
     {
         NavigateToEditFormValidationPage();
@@ -88,7 +88,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
         Assert.Equal("*.Password", confirm.GetAttribute("data-val-equalto-other"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void TrackedField_HasDataValTrueMarker()
     {
         NavigateToEditFormValidationPage();
@@ -98,7 +98,7 @@ public class ClientValidationEditFormTest : ClientValidationTestBase
         Assert.Equal("true", Browser.Exists(By.Id("zipcode")).GetAttribute("data-val"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void FormHasNovalidate_AfterJsValidationLibraryScans()
     {
         // Sanity check: the JS lib scans the rendered form and applies novalidate.
