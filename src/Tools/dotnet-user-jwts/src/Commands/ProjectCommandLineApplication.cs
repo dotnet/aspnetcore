@@ -10,6 +10,8 @@ internal sealed class ProjectCommandLineApplication : CommandLineApplication
 {
     public CommandOption ProjectOption { get; private set; }
 
+    public CommandOption FileOption { get; private set; }
+
     public CommandOption OutputOption { get; private set; }
 
     public IReporter Reporter { get; private set; }
@@ -20,6 +22,11 @@ internal sealed class ProjectCommandLineApplication : CommandLineApplication
         ProjectOption = Option(
             "-p|--project",
             Resources.ProjectOption_Description,
+            CommandOptionType.SingleValue);
+
+        FileOption = Option(
+            "--file",
+            Resources.FileOption_Description,
             CommandOptionType.SingleValue);
 
         OutputOption = Option(
@@ -36,5 +43,27 @@ internal sealed class ProjectCommandLineApplication : CommandLineApplication
         Commands.Add(command);
         configuration(command);
         return command;
+    }
+
+    public bool TryGetProjectOrFilePath(out string path, out bool isFileBasedApp)
+    {
+        path = null;
+        isFileBasedApp = false;
+
+        if (ProjectOption.HasValue() && FileOption.HasValue())
+        {
+            Reporter.Error(Resources.ProjectAndFileOptions_Error);
+            return false;
+        }
+
+        if (FileOption.HasValue())
+        {
+            path = FileOption.Value();
+            isFileBasedApp = true;
+            return true;
+        }
+
+        path = ProjectOption.Value();
+        return true;
     }
 }
