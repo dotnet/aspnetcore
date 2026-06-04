@@ -370,16 +370,6 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
 
         await Events.SignedIn(signedInContext);
 
-        // Emit DBSC registration header if enabled
-        if (Options.DeviceBoundSession is { Enabled: true } dbscOptions)
-        {
-            var algorithms = string.Join(" ", dbscOptions.SupportedAlgorithms);
-            var registrationPath = dbscOptions.RegistrationPath.Value;
-            var challenge = GenerateDbscRegistrationChallenge();
-            Response.Headers.Append("Secure-Session-Registration",
-                $"({algorithms});path=\"{registrationPath}\";challenge=\"{challenge}\"");
-        }
-
         // Only honor the ReturnUrl query string parameter on the login path
         var shouldHonorReturnUrlParameter = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
         await ApplyHeaders(shouldRedirect: true, shouldHonorReturnUrlParameter, signedInContext.Properties);
@@ -499,13 +489,5 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
     {
         var binding = Context.Features.Get<ITlsTokenBindingFeature>()?.GetProvidedTokenBindingId();
         return binding == null ? null : Convert.ToBase64String(binding);
-    }
-
-    private static string GenerateDbscRegistrationChallenge()
-    {
-        return Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32))
-            .Replace('+', '-')
-            .Replace('/', '_')
-            .TrimEnd('=');
     }
 }
