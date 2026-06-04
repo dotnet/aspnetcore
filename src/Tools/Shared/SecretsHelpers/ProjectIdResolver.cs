@@ -67,7 +67,6 @@ internal sealed class ProjectIdResolver
                     {
                         "build",
                         projectFile,
-                        "--disable-build-servers",
                         "--no-restore",
                         "/t:_ExtractUserSecretsMetadata", // defined in SecretManager.targets
                         "/p:_UserSecretsMetadataFile=" + outputFile,
@@ -77,7 +76,6 @@ internal sealed class ProjectIdResolver
                         "-verbosity:detailed",
                     }
             };
-            DisableBuildServerReuse(psi);
 
 #if DEBUG
             _reporter.Verbose($"Invoking '{psi.FileName} {string.Join(' ', psi.ArgumentList)}'");
@@ -140,75 +138,89 @@ internal sealed class ProjectIdResolver
 
     private string ResolveFileBasedApp(string projectFile, string configuration)
     {
-        var psi = new ProcessStartInfo
+        var outputFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        try
         {
-            FileName = DotNetMuxer.MuxerPathOrDefault(),
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            ArgumentList =
-                {
-                    "build",
-                    projectFile,
-                    "--nologo",
-                    "--disable-build-servers",
-                    "-getProperty=UserSecretsId",
-                    "/p:Configuration=" + configuration,
-                }
-        };
-        DisableBuildServerReuse(psi);
+            var psi = new ProcessStartInfo
+            {
+                FileName = DotNetMuxer.MuxerPathOrDefault(),
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                ArgumentList =
+                    {
+                        "build",
+                        projectFile,
+                        "--nologo",
+                        "--disable-build-servers",
+                        "--no-restore",
+                        "-getProperty=UserSecretsId",
+                        "-getResultOutputFile=" + outputFile,
+                        "/p:Configuration=" + configuration,
+                    }
+            };
+            DisableBuildServerReuse(psi);
 
 #if DEBUG
-        _reporter.Verbose($"Invoking '{psi.FileName} {string.Join(' ', psi.ArgumentList)}'");
+            _reporter.Verbose($"Invoking '{psi.FileName} {string.Join(' ', psi.ArgumentList)}'");
 #endif
 
-        using var process = new Process()
-        {
-            StartInfo = psi,
-        };
-
-        var outputBuilder = new StringBuilder();
-        var errorBuilder = new StringBuilder();
-        process.OutputDataReceived += (_, d) =>
-        {
-            if (!string.IsNullOrEmpty(d.Data))
+            using var process = new Process()
             {
-                outputBuilder.AppendLine(d.Data);
-            }
-        };
-        process.ErrorDataReceived += (_, d) =>
-        {
-            if (!string.IsNullOrEmpty(d.Data))
+                StartInfo = psi,
+            };
+
+            var outputBuilder = new StringBuilder();
+            var errorBuilder = new StringBuilder();
+            process.OutputDataReceived += (_, d) =>
             {
-                errorBuilder.AppendLine(d.Data);
+                if (!string.IsNullOrEmpty(d.Data))
+                {
+                    outputBuilder.AppendLine(d.Data);
+                }
+            };
+            process.ErrorDataReceived += (_, d) =>
+            {
+                if (!string.IsNullOrEmpty(d.Data))
+                {
+                    errorBuilder.AppendLine(d.Data);
+                }
+            };
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                _reporter.Verbose(outputBuilder.ToString());
+                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Error($"Exit code: {process.ExitCode}");
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectFailedToLoad(projectFile));
+                return null;
             }
-        };
-        process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        process.WaitForExit();
 
-        if (process.ExitCode != 0)
-        {
-            _reporter.Verbose(outputBuilder.ToString());
-            _reporter.Verbose(errorBuilder.ToString());
-            _reporter.Error($"Exit code: {process.ExitCode}");
-            _reporter.Error(SecretsHelpersResources.FormatError_ProjectFailedToLoad(projectFile));
-            return null;
-        }
+            if (!File.Exists(outputFile))
+            {
+                _reporter.Verbose(outputBuilder.ToString());
+                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
+                return null;
+            }
 
-        var id = outputBuilder
-            .ToString()
-            .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
-            .LastOrDefault()
-            ?.Trim();
-        if (string.IsNullOrEmpty(id))
-        {
-            _reporter.Verbose(outputBuilder.ToString());
-            _reporter.Verbose(errorBuilder.ToString());
-            _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
+            var id = File.ReadAllText(outputFile)?.Trim();
+            if (string.IsNullOrEmpty(id))
+            {
+                _reporter.Verbose(outputBuilder.ToString());
+                _reporter.Verbose(errorBuilder.ToString());
+                _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
+            }
+            return id;
         }
-        return id;
+        finally
+        {
+            TryDelete(outputFile);
+        }
     }
 
     internal static bool IsFileBasedApp(string projectFile) =>
