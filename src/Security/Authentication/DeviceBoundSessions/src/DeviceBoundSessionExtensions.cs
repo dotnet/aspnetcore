@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using DbscOptions = Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions;
@@ -51,29 +50,18 @@ public static class DeviceBoundSessionExtensions
         var sessionScheme = $"{sourceScheme}.Dbsc.Session";
         var policyScheme = $"{sourceScheme}.Dbsc";
 
-        // Add the refresh cookie scheme (path-scoped to /.well-known/dbsc/)
+        // Add the refresh cookie scheme — settings will be copied from the source
+        // scheme via PostConfigureDeviceBoundSessionDerivedCookieOptions
         builder.AddCookie(refreshScheme, o =>
         {
             o.Cookie.Name = $".AspNetCore.{sourceScheme}.Dbsc.Refresh";
             o.Cookie.Path = "/.well-known/dbsc";
-            o.Cookie.HttpOnly = true;
-            o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            o.Cookie.SameSite = SameSiteMode.Lax;
-            // Long-lived — matches original session lifetime
-            o.ExpireTimeSpan = TimeSpan.FromDays(7);
-            o.SlidingExpiration = false;
         });
 
-        // Add the session cookie scheme (short-lived, path=/)
+        // Add the session cookie scheme — settings copied from source, expiry overridden
         builder.AddCookie(sessionScheme, o =>
         {
             o.Cookie.Name = $".AspNetCore.{sourceScheme}.Dbsc.Session";
-            o.Cookie.Path = "/";
-            o.Cookie.HttpOnly = true;
-            o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-            o.Cookie.SameSite = SameSiteMode.Lax;
-            o.ExpireTimeSpan = TimeSpan.FromSeconds(30);
-            o.SlidingExpiration = false;
         });
 
         // Add a policy scheme that tries the session cookie first, then falls back to the source scheme
@@ -82,18 +70,24 @@ public static class DeviceBoundSessionExtensions
         {
             o.ForwardDefaultSelector = context =>
             {
-                // If the short-lived session cookie exists, use it
                 if (context.Request.Cookies.ContainsKey(sessionCookieName))
                 {
                     return sessionScheme;
                 }
-                // Otherwise fall back to the source cookie (pre-registration or non-DBSC browser)
                 return sourceScheme;
             };
         });
 
+        // Register services
+        builder.Services.TryAddSingleton<DeviceBoundSessionChallengeProtector>();
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureDeviceBoundSessionCookieOptions>());
-        builder.Services.Configure<DeviceBoundSessionSourceSchemes>(o => o.Schemes[sourceScheme] = authenticationScheme);
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureDeviceBoundSessionDerivedCookieOptions>());
+        builder.Services.Configure<DeviceBoundSessionSourceSchemes>(o =>
+        {
+            o.Schemes[sourceScheme] = authenticationScheme;
+            o.RefreshSchemes[refreshScheme] = sourceScheme;
+            o.SessionSchemes[sessionScheme] = sourceScheme;
+        });
 
         // Add the DBSC protocol handler
         builder.AddScheme<DbscOptions, DeviceBoundSessionHandler>(authenticationScheme, o =>

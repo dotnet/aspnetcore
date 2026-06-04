@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// </summary>
 public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessionOptions>, IAuthenticationRequestHandler
 {
-    private readonly IDataProtectionProvider _dataProtectionProvider;
+    private readonly DeviceBoundSessionChallengeProtector _challengeProtector;
 
     /// <summary>
     /// Initializes a new instance of <see cref="DeviceBoundSessionHandler"/>.
@@ -33,7 +33,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         IDataProtectionProvider dataProtectionProvider)
         : base(options, logger, encoder)
     {
-        _dataProtectionProvider = dataProtectionProvider;
+        _challengeProtector = new DeviceBoundSessionChallengeProtector(dataProtectionProvider);
     }
 
     /// <summary>
@@ -294,33 +294,16 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
     }
 
     private string GenerateRegistrationChallenge(ClaimsPrincipal principal)
-    {
-        return DeviceBoundSessionChallengeProtector.GenerateRegistrationChallenge(
-            _dataProtectionProvider,
-            principal,
-            Options.ChallengeMaxAge);
-    }
+        => _challengeProtector.GenerateRegistrationChallenge(principal, Options.ChallengeMaxAge);
 
     private bool ValidateRegistrationChallenge(string challenge, ClaimsPrincipal principal)
-    {
-        return DeviceBoundSessionChallengeProtector.TryValidateRegistrationChallenge(
-            _dataProtectionProvider, challenge, principal);
-    }
+        => _challengeProtector.TryValidateRegistrationChallenge(challenge, principal);
 
     private string GenerateRefreshChallenge(ClaimsPrincipal principal, string sessionId)
-    {
-        return DeviceBoundSessionChallengeProtector.GenerateRefreshChallenge(
-            _dataProtectionProvider,
-            principal,
-            sessionId,
-            Options.ChallengeMaxAge);
-    }
+        => _challengeProtector.GenerateRefreshChallenge(principal, sessionId, Options.ChallengeMaxAge);
 
     private bool ValidateRefreshChallenge(string challenge, ClaimsPrincipal principal, string expectedSessionId)
-    {
-        return DeviceBoundSessionChallengeProtector.TryValidateRefreshChallenge(
-            _dataProtectionProvider, challenge, principal, expectedSessionId);
-    }
+        => _challengeProtector.TryValidateRefreshChallenge(challenge, principal, expectedSessionId);
 
     private static string GenerateSessionId()
     {

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -47,13 +46,11 @@ internal sealed class PostConfigureDeviceBoundSessionCookieOptions : IPostConfig
         var dbscOptions = context.HttpContext.RequestServices
             .GetRequiredService<IOptionsMonitor<DeviceBoundSessionOptions>>()
             .Get(dbscScheme);
-        var dataProtectionProvider = context.HttpContext.RequestServices.GetRequiredService<IDataProtectionProvider>();
+        var challengeProtector = context.HttpContext.RequestServices
+            .GetRequiredService<DeviceBoundSessionChallengeProtector>();
 
         var principal = context.Principal ?? new System.Security.Claims.ClaimsPrincipal();
-        var challenge = DeviceBoundSessionChallengeProtector.GenerateRegistrationChallenge(
-            dataProtectionProvider,
-            principal,
-            dbscOptions.ChallengeMaxAge);
+        var challenge = challengeProtector.GenerateRegistrationChallenge(principal, dbscOptions.ChallengeMaxAge);
 
         var headerValue = $"(ES256 RS256);path=\"{dbscOptions.RegistrationPath.Value}\";challenge=\"{challenge}\"";
         context.Response.Headers.Append("Secure-Session-Registration", headerValue);
