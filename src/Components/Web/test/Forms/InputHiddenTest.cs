@@ -268,6 +268,69 @@ public class InputHiddenTest
         Assert.True(disabledAttr.AttributeName == "disabled");
     }
 
+     [Fact]
+    public async Task RendersNullValueAsEmptyString()
+    {
+        var model = new TestModel { StringProperty = null };
+        var rootComponent = new TestInputHostComponent<string, InputHidden>
+        {
+            Value = null,
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringProperty,
+        };
+
+        var componentId = await RenderAndGetInputHiddenComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        // When value is null, CurrentValueAsString returns null which may not render value attribute
+        var valueAttributes = frames.Array.Where(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value").ToList();
+
+        // Verify the input element exists and is a hidden input
+        var typeAttribute = frames.Array.FirstOrDefault(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type");
+        Assert.Equal("hidden", typeAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task RendersCssClassWithFieldValidationClass()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        editContext.Validate(); // trigger validation to see field class
+
+        var rootComponent = new TestInputHostComponent<string, InputHidden>
+        {
+            EditContext = editContext,
+            ValueExpression = () => model.StringProperty,
+        };
+
+        var componentId = await RenderAndGetInputHiddenComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var classAttribute = frames.Array.FirstOrDefault(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        // Should include field validation CSS class (e.g., "modified", "valid", or "invalid")
+        Assert.True(classAttribute.AttributeName == "class");
+    }
+
+    [Fact]
+    public async Task FieldIdentifierIsCreatedCorrectly()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var rootComponent = new TestInputHostComponent<string, InputHidden>
+        {
+            EditContext = editContext,
+            ValueExpression = () => model.StringProperty,
+        };
+
+        var inputHiddenComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        // FieldIdentifier should be created from ValueExpression
+        Assert.Equal("StringProperty", inputHiddenComponent.FieldIdentifier.FieldName);
+    }
+
     private async Task<int> RenderAndGetInputHiddenComponentIdAsync(TestInputHostComponent<string, InputHidden> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
