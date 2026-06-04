@@ -479,7 +479,7 @@ public class ContentDispositionHeaderValue
             needsQuotes = false;
             result = EncodeMimeWithQuotes(result); // "=?utf-8?B?asdfasdfaesdf?="
         }
-        else if (!needsQuotes && HttpRuleParser.GetTokenLength(result, 0) != result.Length)
+        else if (!needsQuotes && !HttpRuleParser.IsToken(result))
         {
             needsQuotes = true;
         }

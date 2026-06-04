@@ -75,7 +75,7 @@ public static class HeaderUtilities
             throw new ArgumentException("An empty string is not allowed.", parameterName);
         }
 
-        if (HttpRuleParser.GetTokenLength(value, 0) != value.Length)
+        if (!HttpRuleParser.IsToken(value))
         {
             throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}'.", value));
         }
