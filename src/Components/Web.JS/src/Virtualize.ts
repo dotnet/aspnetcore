@@ -267,16 +267,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(): void {
-    if (isTable) {
-      spacerBefore.style.display = 'table-row';
-      spacerAfter.style.display = 'table-row';
-    }
-
-    if (useNativeAnchoring) {
-      spacerBefore.style.overflowAnchor = 'none';
-      spacerAfter.style.overflowAnchor = 'none';
-    }
-
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
