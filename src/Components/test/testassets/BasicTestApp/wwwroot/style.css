@@ -50,3 +50,9 @@
     height: 50px;
 }
 
+#csp-quickgrid {
+    background-color: #eee;
+    height: 500px;
+    overflow-y: auto;
+}
+

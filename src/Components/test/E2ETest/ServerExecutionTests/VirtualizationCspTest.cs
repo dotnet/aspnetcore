@@ -112,6 +112,33 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
         AssertNoStyleCspViolations();
     }
 
+    [Fact]
+    public void QuickGrid_WithVirtualize_DoesNotViolate_StrictStyleCspPolicy()
+    {
+        // QuickGrid uses Virtualize internally. Validates the integration is CSP-clean end-to-end.
+        Navigate($"{ServerPathBase}?strict-style-csp=true");
+        Browser.MountTestComponent<BasicTestApp.QuickGridTest.QuickGridCsp>();
+
+        var container = Browser.Exists(By.Id("csp-quickgrid"));
+
+        // Wait for QuickGrid to render at least one data row.
+        Browser.True(() => container.FindElements(By.CssSelector("tbody tr")).Count > 0);
+
+        // Scroll to force spacer style updates which set CSS custom properties via CSSOM.
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("document.getElementById('csp-quickgrid').scrollTop = 20000;");
+
+        // Wait for the top spacer's reserved-height attribute to grow past 0 after scrolling.
+        Browser.True(() =>
+        {
+            var spacers = container.FindElements(By.CssSelector("[data-blazor-virtualize-reserved-height]"));
+            return spacers.Count > 0
+                && spacers[0].GetDomAttribute("data-blazor-virtualize-reserved-height") != "0";
+        });
+
+        AssertNoStyleCspViolations();
+    }
+
     private void AssertNoStyleCspViolations()
     {
         const string cspErrorMessage = "violates the following Content Security Policy directive: \"style-src";
