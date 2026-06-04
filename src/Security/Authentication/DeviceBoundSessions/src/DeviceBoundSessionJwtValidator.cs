@@ -112,14 +112,3 @@ internal static class DeviceBoundSessionJwtValidator
         };
     }
 }
-
-/// <summary>
-/// Result of validating a DBSC proof JWT.
-/// </summary>
-internal sealed class DeviceBoundSessionJwtResult
-{
-    public required string Algorithm { get; init; }
-    public required string PublicKeyJwk { get; init; }
-    public string? Challenge { get; init; }
-    public string? Authorization { get; init; }
-}

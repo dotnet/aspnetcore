@@ -22,14 +22,4 @@ public static class DeviceBoundSessionDefaults
     /// The default refresh path.
     /// </summary>
     public const string RefreshPath = "/.well-known/dbsc/refresh";
-
-    /// <summary>
-    /// The default cookie name suffix for the session cookie.
-    /// </summary>
-    public const string SessionCookieSuffix = "__dbsc";
-
-    /// <summary>
-    /// The default cookie name suffix for the refresh cookie.
-    /// </summary>
-    public const string RefreshCookieSuffix = "__dbsc_refresh";
 }
