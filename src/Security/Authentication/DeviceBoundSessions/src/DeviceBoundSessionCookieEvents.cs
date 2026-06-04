@@ -50,10 +50,9 @@ internal sealed class PostConfigureDeviceBoundSessionCookieOptions : IPostConfig
         var dataProtectionProvider = context.HttpContext.RequestServices.GetRequiredService<IDataProtectionProvider>();
 
         var principal = context.Principal ?? new System.Security.Claims.ClaimsPrincipal();
-        var challenge = DeviceBoundSessionChallengeProtector.GenerateChallenge(
+        var challenge = DeviceBoundSessionChallengeProtector.GenerateRegistrationChallenge(
             dataProtectionProvider,
             principal,
-            DeviceBoundSessionChallengeProtector.RegistrationSessionId,
             dbscOptions.ChallengeMaxAge);
 
         var headerValue = $"(ES256 RS256);path=\"{dbscOptions.RegistrationPath.Value}\";challenge=\"{challenge}\"";

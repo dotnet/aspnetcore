@@ -11,10 +11,30 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
 internal static class DeviceBoundSessionChallengeProtector
 {
-    internal const string RegistrationSessionId = "registration";
     private const string ChallengePurpose = "Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.v1";
 
-    public static string GenerateChallenge(
+    /// <summary>
+    /// Generates a challenge for registration (no session ID yet).
+    /// </summary>
+    public static string GenerateRegistrationChallenge(
+        IDataProtectionProvider dataProtectionProvider,
+        ClaimsPrincipal principal,
+        TimeSpan lifetime)
+    {
+        var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
+        var claimUid = ComputeClaimUid(principal);
+        Span<byte> nonceBytes = stackalloc byte[16];
+        RandomNumberGenerator.Fill(nonceBytes);
+        var nonce = WebEncoders.Base64UrlEncode(nonceBytes);
+        var payload = $"{claimUid}|{nonce}";
+
+        return protector.Protect(payload, lifetime);
+    }
+
+    /// <summary>
+    /// Generates a challenge for refresh (session ID is known).
+    /// </summary>
+    public static string GenerateRefreshChallenge(
         IDataProtectionProvider dataProtectionProvider,
         ClaimsPrincipal principal,
         string sessionId,
@@ -22,16 +42,49 @@ internal static class DeviceBoundSessionChallengeProtector
     {
         var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
         var claimUid = ComputeClaimUid(principal);
-        var nonce = WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(16));
+        Span<byte> nonceBytes = stackalloc byte[16];
+        RandomNumberGenerator.Fill(nonceBytes);
+        var nonce = WebEncoders.Base64UrlEncode(nonceBytes);
         var payload = $"{claimUid}|{nonce}|{sessionId}";
 
         return protector.Protect(payload, lifetime);
     }
 
-    public static bool TryValidateChallenge(
+    /// <summary>
+    /// Validates a registration challenge (no session ID expected).
+    /// </summary>
+    public static bool TryValidateRegistrationChallenge(
         IDataProtectionProvider dataProtectionProvider,
         string challenge,
-        out DeviceBoundSessionChallengeMetadata metadata)
+        ClaimsPrincipal principal)
+    {
+        try
+        {
+            var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
+            var payload = protector.Unprotect(challenge);
+            var parts = payload.Split('|', 2);
+            if (parts.Length < 2)
+            {
+                return false;
+            }
+
+            var storedClaimUid = parts[0];
+            return ValidateClaimUid(principal, storedClaimUid);
+        }
+        catch (CryptographicException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates a refresh challenge (session ID must match).
+    /// </summary>
+    public static bool TryValidateRefreshChallenge(
+        IDataProtectionProvider dataProtectionProvider,
+        string challenge,
+        ClaimsPrincipal principal,
+        string expectedSessionId)
     {
         try
         {
@@ -40,21 +93,23 @@ internal static class DeviceBoundSessionChallengeProtector
             var parts = payload.Split('|', 3);
             if (parts.Length != 3)
             {
-                metadata = default;
                 return false;
             }
 
-            metadata = new DeviceBoundSessionChallengeMetadata(parts[0], parts[1], parts[2]);
-            return true;
+            var storedClaimUid = parts[0];
+            // parts[1] is the nonce (not validated, just for uniqueness)
+            var storedSessionId = parts[2];
+
+            return ValidateClaimUid(principal, storedClaimUid) &&
+                string.Equals(storedSessionId, expectedSessionId, StringComparison.Ordinal);
         }
         catch (CryptographicException)
         {
-            metadata = default;
             return false;
         }
     }
 
-    public static bool ValidateClaimUid(ClaimsPrincipal principal, string expectedClaimUid)
+    private static bool ValidateClaimUid(ClaimsPrincipal principal, string expectedClaimUid)
     {
         var actualClaimUid = ComputeClaimUid(principal);
         return string.Equals(actualClaimUid, expectedClaimUid, StringComparison.Ordinal);
@@ -124,11 +179,8 @@ internal static class DeviceBoundSessionChallengeProtector
             hasher.AppendData(Encoding.UTF8.GetBytes(claim.Issuer));
         }
 
-        return WebEncoders.Base64UrlEncode(hasher.GetHashAndReset());
+        Span<byte> hashBytes = stackalloc byte[32];
+        hasher.TryGetHashAndReset(hashBytes, out _);
+        return WebEncoders.Base64UrlEncode(hashBytes);
     }
 }
-
-internal readonly record struct DeviceBoundSessionChallengeMetadata(
-    string ClaimUid,
-    string Nonce,
-    string SessionId);
