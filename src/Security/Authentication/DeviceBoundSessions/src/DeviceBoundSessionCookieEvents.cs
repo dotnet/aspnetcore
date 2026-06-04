@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
@@ -49,9 +48,11 @@ internal sealed class PostConfigureDeviceBoundSessionCookieOptions : IPostConfig
             .GetRequiredService<IOptionsMonitor<DeviceBoundSessionOptions>>()
             .Get(dbscScheme);
         var dataProtectionProvider = context.HttpContext.RequestServices.GetRequiredService<IDataProtectionProvider>();
+
+        var principal = context.Principal ?? new System.Security.Claims.ClaimsPrincipal();
         var challenge = DeviceBoundSessionChallengeProtector.GenerateChallenge(
             dataProtectionProvider,
-            context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+            principal,
             DeviceBoundSessionChallengeProtector.RegistrationSessionId,
             dbscOptions.ChallengeMaxAge);
 
