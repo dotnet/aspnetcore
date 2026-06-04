@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
@@ -151,6 +151,8 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "*" }
         };
 
+        // To support case insensitivity, all query keys are converted to upper case.
+        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeyDelimiter}QUERYB=ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
@@ -167,6 +169,8 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "*" }
         };
 
+        // To support case insensitivity, all query keys are converted to upper case.
+        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
@@ -183,6 +187,8 @@ public class ResponseCachingKeyProviderTests
             QueryKeys = new string[] { "*" }
         };
 
+        // To support case insensitivity, all query keys are converted to upper case.
+        // Explicit query keys uses the casing specified in the setting.
         Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}Q{KeyDelimiter}QUERYA=ValueA{KeySubDelimiter}ValueB",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
