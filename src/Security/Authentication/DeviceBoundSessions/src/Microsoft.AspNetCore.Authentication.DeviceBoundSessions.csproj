@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <Reference Include="System.Formats.Cbor" />
   </ItemGroup>
 
 </Project>

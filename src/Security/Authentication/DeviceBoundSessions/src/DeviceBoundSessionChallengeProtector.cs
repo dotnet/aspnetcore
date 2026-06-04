@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Formats.Cbor;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -15,6 +16,7 @@ internal static class DeviceBoundSessionChallengeProtector
 
     /// <summary>
     /// Generates a challenge for registration (no session ID yet).
+    /// Payload: CBOR map { "uid": claimUid }
     /// </summary>
     public static string GenerateRegistrationChallenge(
         IDataProtectionProvider dataProtectionProvider,
@@ -23,16 +25,21 @@ internal static class DeviceBoundSessionChallengeProtector
     {
         var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
         var claimUid = ComputeClaimUid(principal);
-        Span<byte> nonceBytes = stackalloc byte[16];
-        RandomNumberGenerator.Fill(nonceBytes);
-        var nonce = WebEncoders.Base64UrlEncode(nonceBytes);
-        var payload = $"{claimUid}|{nonce}";
 
-        return protector.Protect(payload, lifetime);
+        var writer = new CborWriter();
+        writer.WriteStartMap(1);
+        writer.WriteTextString("uid");
+        writer.WriteTextString(claimUid);
+        writer.WriteEndMap();
+
+        var payload = writer.Encode();
+        return Convert.ToBase64String(protector.Protect(payload, lifetime))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
     }
 
     /// <summary>
     /// Generates a challenge for refresh (session ID is known).
+    /// Payload: CBOR map { "uid": claimUid, "sid": sessionId }
     /// </summary>
     public static string GenerateRefreshChallenge(
         IDataProtectionProvider dataProtectionProvider,
@@ -42,12 +49,18 @@ internal static class DeviceBoundSessionChallengeProtector
     {
         var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
         var claimUid = ComputeClaimUid(principal);
-        Span<byte> nonceBytes = stackalloc byte[16];
-        RandomNumberGenerator.Fill(nonceBytes);
-        var nonce = WebEncoders.Base64UrlEncode(nonceBytes);
-        var payload = $"{claimUid}|{nonce}|{sessionId}";
 
-        return protector.Protect(payload, lifetime);
+        var writer = new CborWriter();
+        writer.WriteStartMap(2);
+        writer.WriteTextString("uid");
+        writer.WriteTextString(claimUid);
+        writer.WriteTextString("sid");
+        writer.WriteTextString(sessionId);
+        writer.WriteEndMap();
+
+        var payload = writer.Encode();
+        return Convert.ToBase64String(protector.Protect(payload, lifetime))
+            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
     }
 
     /// <summary>
@@ -58,23 +71,20 @@ internal static class DeviceBoundSessionChallengeProtector
         string challenge,
         ClaimsPrincipal principal)
     {
-        try
-        {
-            var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
-            var payload = protector.Unprotect(challenge);
-            var parts = payload.Split('|', 2);
-            if (parts.Length < 2)
-            {
-                return false;
-            }
-
-            var storedClaimUid = parts[0];
-            return ValidateClaimUid(principal, storedClaimUid);
-        }
-        catch (CryptographicException)
+        if (!TryUnprotectChallenge(dataProtectionProvider, challenge, out var payload))
         {
             return false;
         }
+
+        var reader = new CborReader(payload);
+        var claimUid = ReadClaimUid(reader);
+        if (claimUid is null)
+        {
+            return false;
+        }
+
+        var expected = ComputeClaimUid(principal);
+        return string.Equals(claimUid, expected, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -86,33 +96,113 @@ internal static class DeviceBoundSessionChallengeProtector
         ClaimsPrincipal principal,
         string expectedSessionId)
     {
-        try
-        {
-            var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
-            var payload = protector.Unprotect(challenge);
-            var parts = payload.Split('|', 3);
-            if (parts.Length != 3)
-            {
-                return false;
-            }
-
-            var storedClaimUid = parts[0];
-            // parts[1] is the nonce (not validated, just for uniqueness)
-            var storedSessionId = parts[2];
-
-            return ValidateClaimUid(principal, storedClaimUid) &&
-                string.Equals(storedSessionId, expectedSessionId, StringComparison.Ordinal);
-        }
-        catch (CryptographicException)
+        if (!TryUnprotectChallenge(dataProtectionProvider, challenge, out var payload))
         {
             return false;
         }
+
+        var reader = new CborReader(payload);
+        var (claimUid, sessionId) = ReadClaimUidAndSessionId(reader);
+        if (claimUid is null || sessionId is null)
+        {
+            return false;
+        }
+
+        var expected = ComputeClaimUid(principal);
+        return string.Equals(claimUid, expected, StringComparison.Ordinal) &&
+            string.Equals(sessionId, expectedSessionId, StringComparison.Ordinal);
     }
 
-    private static bool ValidateClaimUid(ClaimsPrincipal principal, string expectedClaimUid)
+    private static bool TryUnprotectChallenge(
+        IDataProtectionProvider dataProtectionProvider,
+        string challenge,
+        out byte[] payload)
     {
-        var actualClaimUid = ComputeClaimUid(principal);
-        return string.Equals(actualClaimUid, expectedClaimUid, StringComparison.Ordinal);
+        try
+        {
+            var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
+            // Decode URL-safe base64
+            var base64 = challenge.Replace('-', '+').Replace('_', '/');
+            switch (base64.Length % 4)
+            {
+                case 2: base64 += "=="; break;
+                case 3: base64 += "="; break;
+            }
+            var protectedBytes = Convert.FromBase64String(base64);
+            payload = protector.Unprotect(protectedBytes);
+            return true;
+        }
+        catch (Exception) when (IsExpectedUnprotectException())
+        {
+            payload = [];
+            return false;
+        }
+
+        // CryptographicException (expired/tampered) and FormatException (bad base64)
+        static bool IsExpectedUnprotectException() => true;
+    }
+
+    private static string? ReadClaimUid(CborReader reader)
+    {
+        try
+        {
+            var mapLength = reader.ReadStartMap();
+            string? claimUid = null;
+
+            for (var i = 0; i < (mapLength ?? 0); i++)
+            {
+                var key = reader.ReadTextString();
+                if (key == "uid")
+                {
+                    claimUid = reader.ReadTextString();
+                }
+                else
+                {
+                    reader.SkipValue();
+                }
+            }
+
+            reader.ReadEndMap();
+            return claimUid;
+        }
+        catch (CborContentException)
+        {
+            return null;
+        }
+    }
+
+    private static (string? ClaimUid, string? SessionId) ReadClaimUidAndSessionId(CborReader reader)
+    {
+        try
+        {
+            var mapLength = reader.ReadStartMap();
+            string? claimUid = null;
+            string? sessionId = null;
+
+            for (var i = 0; i < (mapLength ?? 0); i++)
+            {
+                var key = reader.ReadTextString();
+                switch (key)
+                {
+                    case "uid":
+                        claimUid = reader.ReadTextString();
+                        break;
+                    case "sid":
+                        sessionId = reader.ReadTextString();
+                        break;
+                    default:
+                        reader.SkipValue();
+                        break;
+                }
+            }
+
+            reader.ReadEndMap();
+            return (claimUid, sessionId);
+        }
+        catch (CborContentException)
+        {
+            return (null, null);
+        }
     }
 
     /// <summary>
@@ -132,21 +222,18 @@ internal static class DeviceBoundSessionChallengeProtector
                 continue;
             }
 
-            // Try "sub" claim first (OIDC standard)
             var subClaim = identity.FindFirst(c => string.Equals("sub", c.Type, StringComparison.Ordinal));
             if (subClaim is not null && !string.IsNullOrEmpty(subClaim.Value))
             {
                 return $"sub:{subClaim.Value}:{subClaim.Issuer}";
             }
 
-            // Try NameIdentifier
             var nameIdClaim = identity.FindFirst(c => string.Equals(ClaimTypes.NameIdentifier, c.Type, StringComparison.Ordinal));
             if (nameIdClaim is not null && !string.IsNullOrEmpty(nameIdClaim.Value))
             {
                 return $"nid:{nameIdClaim.Value}:{nameIdClaim.Issuer}";
             }
 
-            // Try UPN
             var upnClaim = identity.FindFirst(c => string.Equals(ClaimTypes.Upn, c.Type, StringComparison.Ordinal));
             if (upnClaim is not null && !string.IsNullOrEmpty(upnClaim.Value))
             {
@@ -171,6 +258,7 @@ internal static class DeviceBoundSessionChallengeProtector
 
         allClaims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
 
+        Span<byte> hashBytes = stackalloc byte[SHA256.HashSizeInBytes];
         using var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (var claim in allClaims)
         {
@@ -179,7 +267,6 @@ internal static class DeviceBoundSessionChallengeProtector
             hasher.AppendData(Encoding.UTF8.GetBytes(claim.Issuer));
         }
 
-        Span<byte> hashBytes = stackalloc byte[32];
         hasher.TryGetHashAndReset(hashBytes, out _);
         return WebEncoders.Base64UrlEncode(hashBytes);
     }
