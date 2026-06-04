@@ -90,7 +90,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     ['data-blazor-virtualize-loop-breaker-transform', '--blazor-virtualize-loop-breaker-transform', (n: number) => `translateY(${n}px)`],
   ] as const;
   const layoutAttrNames = layoutAttrs.map(([a]) => a);
-  const layoutAttrSelector = layoutAttrNames.map(a => `[${a}]`).join(',');
   function applyLayoutAttrs(el: HTMLElement): void {
     ensureBaseStyles(el);
     for (const [attr, cssVar, format] of layoutAttrs) {
@@ -105,10 +104,16 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   }
 
   // Apply layout attributes before the MutationObserver starts catching changes.
-  const styleObserverRoot = spacerBefore.parentElement ?? scrollElement;
-  styleObserverRoot.querySelectorAll(layoutAttrSelector).forEach(el => {
-    applyLayoutAttrs(el as HTMLElement);
-  });
+  function applyLayoutAttrsBetweenSpacers(): void {
+    for (let el: Element | null = spacerBefore;
+         el && el !== spacerAfter.nextElementSibling;
+         el = el.nextElementSibling) {
+      if (layoutAttrNames.some(a => el!.hasAttribute(a))) {
+        applyLayoutAttrs(el as HTMLElement);
+      }
+    }
+  }
+  applyLayoutAttrsBetweenSpacers();
 
   if (useNativeAnchoring) {
     // Prevent spacers from being used as scroll anchors — only rendered items should anchor.
@@ -119,38 +124,21 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement.style.overflowAnchor = 'none';
   }
 
-  function processStyleMutations(mutations: MutationRecord[]): void {
-    for (const mutation of mutations) {
-      if (mutation.type === 'attributes') {
-        applyLayoutAttrs(mutation.target as HTMLElement);
-      } else {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType !== Node.ELEMENT_NODE) {
-            return;
-          }
-          const el = node as Element;
-          if (layoutAttrNames.some(a => el.hasAttribute(a))) {
-            applyLayoutAttrs(el as HTMLElement);
-          }
-          el.querySelectorAll(layoutAttrSelector).forEach(descendant => {
-            applyLayoutAttrs(descendant as HTMLElement);
-          });
-        });
-      }
-    }
-  }
-
-  const mutationObserver = new MutationObserver(processStyleMutations);
+  // Observe only the two spacers we already hold references to. Placeholders are siblings between them,
+  // so on each spacer mutation we walk the sibling chain to reapply styles.
+  const mutationObserver = new MutationObserver(applyLayoutAttrsBetweenSpacers);
 
   function flushPendingStyleMutations(): void {
-    processStyleMutations(mutationObserver.takeRecords());
+    if (mutationObserver.takeRecords().length > 0) {
+      applyLayoutAttrsBetweenSpacers();
+    }
   }
-  mutationObserver.observe(styleObserverRoot, {
+  const spacerObserverOptions: MutationObserverInit = {
     attributes: true,
     attributeFilter: layoutAttrNames,
-    childList: true,
-    subtree: true,
-  });
+  };
+  mutationObserver.observe(spacerBefore, spacerObserverOptions);
+  mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
