@@ -73,6 +73,11 @@ public class Startup
 
     public void Configure(IApplicationBuilder app)
     {
+        // Write all HTTP traffic to a HAR file
+        var harPath = Path.Combine(AppContext.BaseDirectory, "dbsc-v2-traffic.har");
+        Console.WriteLine($"[HAR] Writing traffic to: {harPath}");
+        app.UseMiddleware<HarLoggingMiddleware>(harPath);
+
         app.UseRouting();
         app.UseAuthentication();
 
