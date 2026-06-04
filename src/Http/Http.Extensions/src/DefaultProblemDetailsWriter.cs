@@ -56,8 +56,7 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
 
         var traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
-        var traceIdKeyName = _serializerOptions.PropertyNamingPolicy?.ConvertName("traceId") ?? "traceId";
-        context.ProblemDetails.Extensions[traceIdKeyName] = traceId;
+        context.ProblemDetails.Extensions["traceId"] = traceId;
 
         _options.CustomizeProblemDetails?.Invoke(context);
 
