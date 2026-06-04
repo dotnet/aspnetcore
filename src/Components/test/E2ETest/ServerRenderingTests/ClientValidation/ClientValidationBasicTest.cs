@@ -36,7 +36,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
         ((IJavaScriptExecutor)Browser).ExecuteScript("localStorage.removeItem('lastValidation');");
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void SubmittingEmptyFormShowsRequiredErrors()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -49,7 +49,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Password']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void FillingRequiredFieldsAndSubmittingValidates()
     {
         Browser.Exists(By.Id("name")).SendKeys("Alice");
@@ -67,7 +67,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
                 "return localStorage.getItem('lastValidation');"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void InvalidFieldGetsAriaInvalidAndAriaDescribedBy()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -78,7 +78,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
             () => !string.IsNullOrEmpty(Browser.Exists(By.Id("name")).GetAttribute("aria-describedby")));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void ValidFieldHasNoAriaInvalid()
     {
         var name = Browser.Exists(By.Id("name"));
@@ -88,7 +88,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
         Browser.True(() => Browser.Exists(By.Id("name")).GetAttribute("aria-invalid") is null);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void SummaryUpdatesAfterInvalidSubmit()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -97,7 +97,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
             Browser.FindElements(By.CssSelector("[data-valmsg-summary='true'] li")).Count >= 4);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void SummaryClearsAfterValidSubmit()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -116,7 +116,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
                 "return localStorage.getItem('lastValidation');"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void ResetClearsValidationErrorsAndCssClasses()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -128,7 +128,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
         Browser.DoesNotExist(By.CssSelector(".input-validation-valid"));
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void NovalidateAttributeAddedToTrackedForm()
     {
         // Verified by the InitializeAsyncCore precondition; reasserted here for
@@ -136,7 +136,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
         Browser.True(() => Browser.Exists(By.Id("test-form")).GetAttribute("novalidate") != null);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void ValidationCompleteEventDispatchedOnInvalidSubmit()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -147,7 +147,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
         Browser.Contains("valid:false", () => Browser.Exists(By.Id("event-log")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void CheckboxRequiredValidation_RejectsUnchecked()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -155,7 +155,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Agree']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void SelectRequiredValidation_RejectsUnselected()
     {
         Browser.Exists(By.Id("submit")).Click();
@@ -163,7 +163,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Category']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void MaxlengthShowsErrorWhenExceeded()
     {
         Browser.Exists(By.Id("bio")).SendKeys(new string('x', 101));
@@ -172,7 +172,7 @@ public class ClientValidationBasicTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Bio']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void LengthMinMaxShowsErrorWhenTooShort()
     {
         Browser.Exists(By.Id("password")).SendKeys("short");

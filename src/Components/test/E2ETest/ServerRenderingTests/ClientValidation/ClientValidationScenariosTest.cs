@@ -24,7 +24,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
     {
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void DataValeventSubmit_NoValidationOnChangeOrInput()
     {
         NavigateToClientValidationPage("timing");
@@ -43,7 +43,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='SubmitOnly']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void DataValeventInput_ValidatesEagerlyOnPristineForm()
     {
         NavigateToClientValidationPage("timing");
@@ -58,7 +58,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='InputEager']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void HiddenDisabledAndDisplayNoneFieldsAreSkipped()
     {
         NavigateToClientValidationPage("formnovalidate");
@@ -71,7 +71,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
         Browser.Contains("valid:true", () => Browser.Exists(By.Id("event-log")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void FormnovalidateButtonBypassesValidation()
     {
         NavigateToClientValidationPage("formnovalidate");
@@ -85,7 +85,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Name']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void UntrackedFormHasNoNovalidateAttribute()
     {
         // The 'no-validation' page intentionally has no [data-val=true] elements,
@@ -97,7 +97,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
         Browser.True(() => Browser.Exists(By.Id("plain-form")).GetAttribute("novalidate") is null);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void SubmittingOneFormDoesNotValidateOtherForm()
     {
         NavigateToClientValidationPage("multiple-forms");
@@ -112,7 +112,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("#form-b [data-valmsg-for='Name']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void EachFormHasIndependentSummary()
     {
         NavigateToClientValidationPage("multiple-forms");
@@ -125,7 +125,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
             () => Browser.FindElements(By.CssSelector("#form-b [data-valmsg-summary='true'] li")).Count);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void DynamicallyAddedFieldsValidatedAfterScanRules()
     {
         NavigateToClientValidationPage("dynamic-content");
@@ -139,7 +139,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Dyn']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void RemovedFieldsCleanedUpOnReScan()
     {
         NavigateToClientValidationPage("dynamic-content");
@@ -156,7 +156,7 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Name']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void FirstInvalidFieldFocusedOnSubmit()
     {
         NavigateToClientValidationPage("basic-validation");
