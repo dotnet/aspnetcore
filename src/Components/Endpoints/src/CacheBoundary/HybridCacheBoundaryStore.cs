@@ -48,8 +48,18 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
             // LocalCacheExpiration would change the meaning (it's an absolute local TTL, not sliding),
             // so we fail fast instead of producing wrong behavior.
             throw new NotSupportedException(
-                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.ExpiresSliding)} is not supported when the cache boundary store is backed by HybridCache, because it is not support in HybridCache. " +
+                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.ExpiresSliding)} is not supported when the cache boundary store is backed by HybridCache. " +
                 $"Use {nameof(CacheBoundary.ExpiresAfter)} or {nameof(CacheBoundary.ExpiresOn)} for absolute expiration.");
+        }
+
+        if (options.Priority.HasValue)
+        {
+            // HybridCache does not expose a per-entry priority knob, so silently dropping a
+            // user-supplied Priority (e.g. NeverRemove) would hide the fact that the eviction
+            // policy is not honored. Fail fast for the same reason as ExpiresSliding.
+            throw new NotSupportedException(
+                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.Priority)} is not supported when the cache boundary store is backed by HybridCache. " +
+                $"Remove the {nameof(CacheBoundary.Priority)} parameter or switch to the in-memory cache boundary store.");
         }
 
         var absolute = options.ExpiresOn.HasValue

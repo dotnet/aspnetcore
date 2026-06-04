@@ -190,10 +190,29 @@ internal static class CacheBoundaryKeyResolver
         AppendLengthPrefixedString(hash, isAuthenticated ? "1" : "0");
         AppendLengthPrefixedString(hash, identity?.AuthenticationType ?? "");
 
-        var nameIdentifier = isAuthenticated
-            ? user.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            : null;
-        AppendLengthPrefixedString(hash, nameIdentifier ?? identity?.Name ?? "");
+        if (!isAuthenticated)
+        {
+            // Anonymous: nothing more to mix in.
+            AppendLengthPrefixedString(hash, "anonymous");
+            return;
+        }
+
+        var nameIdentifier = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (nameIdentifier is not null)
+        {
+            AppendLengthPrefixedString(hash, "nameid");
+            AppendLengthPrefixedString(hash, nameIdentifier);
+            return;
+        }
+
+        AppendLengthPrefixedString(hash, "claims");
+        AppendLengthPrefixedString(hash, identity?.Name ?? "");
+        foreach (var claim in user.Claims)
+        {
+            AppendLengthPrefixedString(hash, claim.Type);
+            AppendLengthPrefixedString(hash, claim.Value);
+            AppendLengthPrefixedString(hash, claim.Issuer);
+        }
     }
 
     private static void AppendLengthPrefixedString(IncrementalHash hash, string value)

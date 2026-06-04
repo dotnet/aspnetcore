@@ -314,7 +314,7 @@ internal partial class EndpointHtmlRenderer
             pausedCapture = true;
             captureWriter.PauseCapture();
             var (holeComponentType, renderModeName) = componentState.Component is SSRRenderModeBoundary boundary2
-                ? (boundary2.ComponentType, RenderFragmentSerializer.GetRenderModeName(boundary2.RenderMode))
+                ? (boundary2.ComponentType, GetRenderModeNameOrThrowForCache(boundary2.RenderMode, boundary2.ComponentType))
                 : (componentState.Component.GetType(), (string?)null);
             captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, sequenceAndKey.Key, renderModeName);
         }
@@ -388,22 +388,42 @@ internal partial class EndpointHtmlRenderer
             return false;
         }
 
-        // This will be false, when we have nothing in the attribute for VaryBy (e.g. AntiforgeryToken), because it is never safe to cach
+        // A VaryBy of None means the component is never safe to include in the
+        // cached output regardless of what dimensions the boundary varies by.
         var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
 
         if (attr.Throw && !varyByMatches)
         {
             throw new InvalidOperationException(
-                $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary " +
-                $"because its parameters (delegates, expressions, or complex objects) cannot be serialized. " +
-                $"Move this component outside the CacheBoundary, or wrap it in a component " +
-                $"marked with [CacheBoundaryPolicy] so that its subtree is excluded from caching " +
-                $"and re-rendered on every request.");
+                $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary in its current configuration. " +
+                $"It is annotated with [CacheBoundaryPolicy(Throw = true, VaryBy = {attr.VaryBy})] " +
+                $"because its rendered output depends on per-request state that cannot be safely captured into a cache entry and replayed on later requests. " +
+                (attr.VaryBy != CacheBoundaryVaryBy.None
+                    ? $"To use it inside a CacheBoundary, configure the boundary so that it varies by all of the following dimensions: {attr.VaryBy}. "
+                    : "") +
+                $"Alternatively, move this component outside the CacheBoundary, or wrap it in a component marked with [CacheBoundaryPolicy] so that its subtree is excluded from caching.");
         }
 
         // If Throw is true we only reach here when varyByMatches is true (safe to cache).
         // If Throw is false, it's a hole only when VaryBy dimensions aren't covered.
         return !varyByMatches;
+    }
+
+    private static string? GetRenderModeNameOrThrowForCache(IComponentRenderMode? renderMode, Type componentType)
+    {
+        try
+        {
+            return RenderFragmentSerializer.GetRenderModeName(renderMode);
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException(
+                $"Component '{componentType.FullName}' uses a custom render mode of type '{renderMode?.GetType().FullName}' " +
+                $"that is not supported inside a CacheBoundary. " +
+                $"Only the built-in interactive render modes (InteractiveServer, InteractiveWebAssembly, InteractiveAuto) " +
+                $"can be replayed from a cache entry.",
+                ex);
+        }
     }
 
     private ILogger? _renderFragmentSerializerLogger;

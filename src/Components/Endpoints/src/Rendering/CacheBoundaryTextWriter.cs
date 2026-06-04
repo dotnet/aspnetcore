@@ -104,7 +104,9 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
             if (!componentIndex!.TryGetValue(key, out var queue) || queue.Count == 0)
             {
                 throw new InvalidOperationException(
-                    $"CacheBoundary could not locate component '{key.Item1}' (sequence {key.Item2}) in the serialized ChildContent tree.");
+                    $"CacheBoundary could not locate component '{key.Item1}' (sequence {key.Item2}) in the serialized ChildContent tree. " +
+                    "This happens when a component marked with [CacheBoundaryPolicy] (a \"hole\") is emitted by an intermediate component's own BuildRenderTree rather than appearing directly inside the CacheBoundary's ChildContent or inside a RenderFragment parameter passed through it. " +
+                    "To fix this, either move the hole component so that it is a direct child of the CacheBoundary's content (or passed as a RenderFragment parameter), or annotate the intermediate wrapper component itself with [CacheBoundaryPolicy] so its entire subtree is treated as a hole.");
             }
 
             var componentNode = queue.Dequeue();
