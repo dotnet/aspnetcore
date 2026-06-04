@@ -16,10 +16,12 @@ namespace Microsoft.AspNetCore.Components;
 /// server-side rendering (SSR). On cache hit, child components are not
 /// instantiated or rendered.
 /// </summary>
-public sealed class CacheBoundary : ComponentBase, IDisposable
+public sealed class CacheBoundary : IComponent, IDisposable
 {
     private static readonly ComponentParametersTypeCache _parametersTypeCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
+
+    private RenderHandle _renderHandle;
 
     /// <summary>
     /// Gets or sets the content to be cached.
@@ -167,7 +169,13 @@ public sealed class CacheBoundary : ComponentBase, IDisposable
     }
 
     /// <inheritdoc/>
-    public override async Task SetParametersAsync(ParameterView parameters)
+    void IComponent.Attach(RenderHandle renderHandle)
+    {
+        _renderHandle = renderHandle;
+    }
+
+    /// <inheritdoc/>
+    async Task IComponent.SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
 
@@ -185,7 +193,7 @@ public sealed class CacheBoundary : ComponentBase, IDisposable
             await ResolveOrBeginCreateAsync(httpContext.RequestAborted);
         }
 
-        await base.SetParametersAsync(ParameterView.Empty);
+        _renderHandle.Render(BuildRenderTree);
     }
 
     private async Task ResolveOrBeginCreateAsync(CancellationToken cancellationToken)
@@ -227,8 +235,7 @@ public sealed class CacheBoundary : ComponentBase, IDisposable
         }
     }
 
-    /// <inheritdoc/>
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    private void BuildRenderTree(RenderTreeBuilder builder)
     {
         if (TryDeserializeCachedNodes(out var nodes))
         {
