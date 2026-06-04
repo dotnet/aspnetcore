@@ -338,6 +338,62 @@ public class InputFileTest
         Assert.Equal(file.Id, invocation.args[1]);
     }
 
+    [Fact]
+    public void BrowserFile_DefaultPropertyValues()
+    {
+        var file = new BrowserFile();
+
+        Assert.Equal(string.Empty, file.Name);
+        Assert.Equal(string.Empty, file.ContentType);
+        Assert.Equal(default(DateTimeOffset), file.LastModified);
+        Assert.Null(file.RelativePath);
+    }
+
+    [Fact]
+    public void RequestImageFileAsync_ThrowsIfCustomIBrowserFile()
+    {
+        var custom = new CustomBrowserFile();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => BrowserFileExtensions.RequestImageFileAsync(custom, "jpeg", 100, 100));
+        Assert.Contains("custom", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task RequestImageFileAsync_DelegatesToOwner()
+    {
+        var inputFile = new InputFile();
+        var browserFile = new BrowserFile { Id = 5, Name = "f", Size = 1 };
+        var returned = new BrowserFile { Id = 6 };
+
+        var jsRuntime = new TestJSRuntime((identifier, args) =>
+        {
+            if (identifier == InputFileInterop.ToImageFile)
+            {
+                return returned;
+            }
+
+            return null;
+        });
+
+        inputFile.JSRuntime = jsRuntime;
+        browserFile.Owner = inputFile;
+
+        var result = await BrowserFileExtensions.RequestImageFileAsync(browserFile, "png", 10, 10);
+
+        Assert.Same(returned, result);
+        Assert.Same(inputFile, ((BrowserFile)result).Owner);
+    }
+
+    private class CustomBrowserFile : IBrowserFile
+    {
+        public string Name => "custom";
+        public DateTimeOffset LastModified => DateTimeOffset.Now;
+        public long Size => 10;
+        public string ContentType => "image/png";
+        public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+            => throw new NotImplementedException();
+    }
+
     private class TestJSStreamReference : IJSStreamReference
     {
         private readonly Stream _stream;
@@ -361,5 +417,52 @@ public class InputFileTest
             return new ValueTask();
         }
         public long Length => _stream.CanSeek ? _stream.Length : 0L;
+    }
+
+    [Fact]
+    public async Task BrowserFileStream_MembersThrowOrReturnExpectedValues()
+    {
+        var inputFile = new InputFile();
+        var file = new BrowserFile { Id = 11, Size = 3 };
+        var bytes = new byte[] { 1, 2, 3 };
+
+        var jsRuntime = new TestJSRuntime((identifier, args) =>
+        {
+            if (identifier == InputFileInterop.ReadFileData)
+            {
+                return new TestJSStreamReference(new MemoryStream(bytes));
+            }
+
+            return null;
+        });
+
+        inputFile.JSRuntime = jsRuntime;
+        file.Owner = inputFile;
+
+        using var stream = file.OpenReadStream(maxAllowedSize: 1000);
+
+        Assert.True(stream.CanRead);
+        Assert.False(stream.CanSeek);
+        Assert.False(stream.CanWrite);
+        Assert.Equal(file.Size, stream.Length);
+
+        // Synchronous read not supported
+        Assert.Throws<NotSupportedException>(() => stream.Read(new byte[1], 0, 1));
+
+        // Seek/Write/Flush/SetLength not supported
+        Assert.Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
+        Assert.Throws<NotSupportedException>(() => stream.Write(new byte[1], 0, 1));
+        Assert.Throws<NotSupportedException>(() => stream.Flush());
+        Assert.Throws<NotSupportedException>(() => stream.SetLength(10));
+
+        // Position setter not supported
+        Assert.Throws<NotSupportedException>(() => stream.Position = 1);
+
+        // Read to end then additional read returns 0
+        var buffer = new byte[3];
+        var read = await stream.ReadAsync(buffer, 0, buffer.Length);
+        Assert.Equal(3, read);
+        var read2 = await stream.ReadAsync(buffer, 0, buffer.Length);
+        Assert.Equal(0, read2);
     }
 }
