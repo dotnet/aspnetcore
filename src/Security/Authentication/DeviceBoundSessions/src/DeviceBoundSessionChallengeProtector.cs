@@ -16,7 +16,7 @@ internal static class DeviceBoundSessionChallengeProtector
 
     /// <summary>
     /// Generates a challenge for registration (no session ID yet).
-    /// Payload: CBOR map { "uid": claimUid }
+    /// Payload: CBOR array [ claimUid ]
     /// </summary>
     public static string GenerateRegistrationChallenge(
         IDataProtectionProvider dataProtectionProvider,
@@ -27,19 +27,17 @@ internal static class DeviceBoundSessionChallengeProtector
         var claimUid = ComputeClaimUid(principal);
 
         var writer = new CborWriter();
-        writer.WriteStartMap(1);
-        writer.WriteTextString("uid");
+        writer.WriteStartArray(1);
         writer.WriteTextString(claimUid);
-        writer.WriteEndMap();
+        writer.WriteEndArray();
 
-        var payload = writer.Encode();
-        return Convert.ToBase64String(protector.Protect(payload, lifetime))
-            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+        var protectedBytes = protector.Protect(writer.Encode(), lifetime);
+        return WebEncoders.Base64UrlEncode(protectedBytes);
     }
 
     /// <summary>
     /// Generates a challenge for refresh (session ID is known).
-    /// Payload: CBOR map { "uid": claimUid, "sid": sessionId }
+    /// Payload: CBOR array [ claimUid, sessionId ]
     /// </summary>
     public static string GenerateRefreshChallenge(
         IDataProtectionProvider dataProtectionProvider,
@@ -51,16 +49,13 @@ internal static class DeviceBoundSessionChallengeProtector
         var claimUid = ComputeClaimUid(principal);
 
         var writer = new CborWriter();
-        writer.WriteStartMap(2);
-        writer.WriteTextString("uid");
+        writer.WriteStartArray(2);
         writer.WriteTextString(claimUid);
-        writer.WriteTextString("sid");
         writer.WriteTextString(sessionId);
-        writer.WriteEndMap();
+        writer.WriteEndArray();
 
-        var payload = writer.Encode();
-        return Convert.ToBase64String(protector.Protect(payload, lifetime))
-            .Replace('+', '-').Replace('/', '_').TrimEnd('=');
+        var protectedBytes = protector.Protect(writer.Encode(), lifetime);
+        return WebEncoders.Base64UrlEncode(protectedBytes);
     }
 
     /// <summary>
@@ -71,20 +66,30 @@ internal static class DeviceBoundSessionChallengeProtector
         string challenge,
         ClaimsPrincipal principal)
     {
-        if (!TryUnprotectChallenge(dataProtectionProvider, challenge, out var payload))
+        if (!TryUnprotect(dataProtectionProvider, challenge, out var payload))
         {
             return false;
         }
 
-        var reader = new CborReader(payload);
-        var claimUid = ReadClaimUid(reader);
-        if (claimUid is null)
+        try
+        {
+            var reader = new CborReader(payload);
+            var count = reader.ReadStartArray();
+            if (count < 1)
+            {
+                return false;
+            }
+
+            var storedClaimUid = reader.ReadTextString();
+            reader.ReadEndArray();
+
+            var expected = ComputeClaimUid(principal);
+            return string.Equals(storedClaimUid, expected, StringComparison.Ordinal);
+        }
+        catch (CborContentException)
         {
             return false;
         }
-
-        var expected = ComputeClaimUid(principal);
-        return string.Equals(claimUid, expected, StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -96,124 +101,55 @@ internal static class DeviceBoundSessionChallengeProtector
         ClaimsPrincipal principal,
         string expectedSessionId)
     {
-        if (!TryUnprotectChallenge(dataProtectionProvider, challenge, out var payload))
+        if (!TryUnprotect(dataProtectionProvider, challenge, out var payload))
         {
             return false;
         }
 
-        var reader = new CborReader(payload);
-        var (claimUid, sessionId) = ReadClaimUidAndSessionId(reader);
-        if (claimUid is null || sessionId is null)
+        try
+        {
+            var reader = new CborReader(payload);
+            var count = reader.ReadStartArray();
+            if (count < 2)
+            {
+                return false;
+            }
+
+            var storedClaimUid = reader.ReadTextString();
+            var storedSessionId = reader.ReadTextString();
+            reader.ReadEndArray();
+
+            var expected = ComputeClaimUid(principal);
+            return string.Equals(storedClaimUid, expected, StringComparison.Ordinal) &&
+                string.Equals(storedSessionId, expectedSessionId, StringComparison.Ordinal);
+        }
+        catch (CborContentException)
         {
             return false;
         }
-
-        var expected = ComputeClaimUid(principal);
-        return string.Equals(claimUid, expected, StringComparison.Ordinal) &&
-            string.Equals(sessionId, expectedSessionId, StringComparison.Ordinal);
     }
 
-    private static bool TryUnprotectChallenge(
-        IDataProtectionProvider dataProtectionProvider,
-        string challenge,
-        out byte[] payload)
+    private static bool TryUnprotect(IDataProtectionProvider dataProtectionProvider, string challenge, out byte[] payload)
     {
         try
         {
             var protector = dataProtectionProvider.CreateProtector(ChallengePurpose).ToTimeLimitedDataProtector();
-            // Decode URL-safe base64
-            var base64 = challenge.Replace('-', '+').Replace('_', '/');
-            switch (base64.Length % 4)
-            {
-                case 2: base64 += "=="; break;
-                case 3: base64 += "="; break;
-            }
-            var protectedBytes = Convert.FromBase64String(base64);
+            var protectedBytes = WebEncoders.Base64UrlDecode(challenge);
             payload = protector.Unprotect(protectedBytes);
             return true;
         }
-        catch (Exception) when (IsExpectedUnprotectException())
+        catch
         {
             payload = [];
             return false;
-        }
-
-        // CryptographicException (expired/tampered) and FormatException (bad base64)
-        static bool IsExpectedUnprotectException() => true;
-    }
-
-    private static string? ReadClaimUid(CborReader reader)
-    {
-        try
-        {
-            var mapLength = reader.ReadStartMap();
-            string? claimUid = null;
-
-            for (var i = 0; i < (mapLength ?? 0); i++)
-            {
-                var key = reader.ReadTextString();
-                if (key == "uid")
-                {
-                    claimUid = reader.ReadTextString();
-                }
-                else
-                {
-                    reader.SkipValue();
-                }
-            }
-
-            reader.ReadEndMap();
-            return claimUid;
-        }
-        catch (CborContentException)
-        {
-            return null;
-        }
-    }
-
-    private static (string? ClaimUid, string? SessionId) ReadClaimUidAndSessionId(CborReader reader)
-    {
-        try
-        {
-            var mapLength = reader.ReadStartMap();
-            string? claimUid = null;
-            string? sessionId = null;
-
-            for (var i = 0; i < (mapLength ?? 0); i++)
-            {
-                var key = reader.ReadTextString();
-                switch (key)
-                {
-                    case "uid":
-                        claimUid = reader.ReadTextString();
-                        break;
-                    case "sid":
-                        sessionId = reader.ReadTextString();
-                        break;
-                    default:
-                        reader.SkipValue();
-                        break;
-                }
-            }
-
-            reader.ReadEndMap();
-            return (claimUid, sessionId);
-        }
-        catch (CborContentException)
-        {
-            return (null, null);
         }
     }
 
     /// <summary>
     /// Computes a stable identifier for the user from their claims.
-    /// Follows the same priority as antiforgery:
-    /// 1. "sub" claim (OpenID Connect subject)
-    /// 2. ClaimTypes.NameIdentifier
-    /// 3. ClaimTypes.Upn
-    /// 4. SHA256 hash of all claims (sorted by type)
+    /// Priority: sub > NameIdentifier > UPN > SHA256(all claims).
     /// </summary>
-    private static string ComputeClaimUid(ClaimsPrincipal principal)
+    internal static string ComputeClaimUid(ClaimsPrincipal principal)
     {
         foreach (var identity in principal.Identities)
         {
