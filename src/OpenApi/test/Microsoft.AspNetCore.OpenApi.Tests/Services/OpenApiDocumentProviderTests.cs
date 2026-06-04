@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.OpenApi.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using System.Net.Http;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
@@ -109,7 +111,10 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.AddOpenApi(documentName: null);
+        builder.Services.AddOpenApi(documentName: null, options =>
+        {
+            options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from doc transformer."));
+        });
         builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameProvider>(
             new MultiDocumentNameProvider(["products", "orders"]));
 
@@ -139,6 +144,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         Assert.Empty(productsResult.Diagnostic.Errors);
 
         var productsDoc = productsResult.Document;
+        Assert.Equal("Updated title from doc transformer.", productsDoc.Info.Title);
         Assert.Equal(2, productsDoc.Paths.Count);
         Assert.Contains("/products", productsDoc.Paths.Keys);
         Assert.Contains("/products/{id}", productsDoc.Paths.Keys);
@@ -154,12 +160,116 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         Assert.Empty(ordersResult.Diagnostic.Errors);
 
         var ordersDoc = ordersResult.Document;
+        Assert.Equal("Updated title from doc transformer.", ordersDoc.Info.Title);
         Assert.Single(ordersDoc.Paths);
         Assert.Contains("/orders", ordersDoc.Paths.Keys);
         Assert.DoesNotContain("/products", ordersDoc.Paths.Keys);
         Assert.DoesNotContain("/products/{id}", ordersDoc.Paths.Keys);
         Assert.True(ordersDoc.Paths["/orders"].Operations.ContainsKey(HttpMethod.Get));
         Assert.True(ordersDoc.Paths["/orders"].Operations.ContainsKey(HttpMethod.Post));
+
+        await app.StopAsync();
+    }
+
+    [Fact]
+    public async Task GenerateAsync_WithBothNullDocumentNameAndExplicitDocumentName_AndAdditionalDocumentNameProvider_GeneratesDocumentsForEachName()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddOpenApi(documentName: null, options =>
+        {
+            options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from doc transformer."));
+        });
+
+        builder.Services.AddOpenApi(options =>
+        {
+            // IMPORTANT: Currently, when resolving the options for "v1", the
+            // lambda for the null document name also gets applied.
+            // They are called in the same order of registration.
+            // We need to decide if this is a reasonable behavior?
+            options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from v1 doc transformer."));
+        });
+
+        builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameProvider>(
+            new MultiDocumentNameProvider(["products", "orders"]));
+
+        await using var app = builder.Build();
+
+        app.MapGet("/products", () => "All products")
+           .WithGroupName("products");
+        app.MapGet("/products/{id}", (int id) => $"Product {id}")
+           .WithGroupName("products");
+        app.MapGet("/orders", () => "All orders")
+           .WithGroupName("orders");
+        app.MapPost("/orders", () => "Order created")
+           .WithGroupName("orders");
+
+        app.MapGet("/not-grouped", () => "Not grouped API");
+
+        await app.StartAsync();
+
+        var productsOptions = app.Services.GetRequiredService<IOptionsMonitor<OpenApiOptions>>().Get("products");
+        var productsTransformer = Assert.Single(productsOptions.DocumentTransformers);
+        var titleProductsTransformer = Assert.IsType<TestTitleDocumentTransformer>(productsTransformer);
+        Assert.Equal("Updated title from doc transformer.", titleProductsTransformer.Title);
+
+        var v1Options = app.Services.GetRequiredService<IOptionsMonitor<OpenApiOptions>>().Get("v1");
+        Assert.Equal(2, v1Options.DocumentTransformers.Count);
+        var firstV1Transformer = Assert.IsType<TestTitleDocumentTransformer>(v1Options.DocumentTransformers[0]);
+        Assert.Equal("Updated title from doc transformer.", firstV1Transformer.Title);
+        var secondV1Transformer = Assert.IsType<TestTitleDocumentTransformer>(v1Options.DocumentTransformers[1]);
+        Assert.Equal("Updated title from v1 doc transformer.", secondV1Transformer.Title);
+
+        var documentProvider = app.Services.GetRequiredService<IDocumentProvider>();
+
+        var documentNames = documentProvider.GetDocumentNames().ToList();
+        Assert.Equal(["v1", "products", "orders"], documentNames);
+
+        // Products document
+        var productsWriter = new StringWriter();
+        await documentProvider.GenerateAsync("products", productsWriter);
+        var productsJson = productsWriter.ToString();
+        var productsResult = OpenApiDocument.Parse(productsJson, format: "json");
+        Assert.Empty(productsResult.Diagnostic.Errors);
+
+        var productsDoc = productsResult.Document;
+        Assert.Equal("Updated title from doc transformer.", productsDoc.Info.Title);
+        Assert.Equal(3, productsDoc.Paths.Count);
+        Assert.Contains("/products", productsDoc.Paths.Keys);
+        Assert.Contains("/products/{id}", productsDoc.Paths.Keys);
+        Assert.Contains("/not-grouped", productsDoc.Paths.Keys);
+        Assert.True(productsDoc.Paths["/products"].Operations.ContainsKey(HttpMethod.Get));
+        Assert.True(productsDoc.Paths["/products/{id}"].Operations.ContainsKey(HttpMethod.Get));
+        Assert.True(productsDoc.Paths["/not-grouped"].Operations.ContainsKey(HttpMethod.Get));
+
+        // Orders document
+        var ordersWriter = new StringWriter();
+        await documentProvider.GenerateAsync("orders", ordersWriter);
+        var ordersJson = ordersWriter.ToString();
+        var ordersResult = OpenApiDocument.Parse(ordersJson, format: "json");
+        Assert.Empty(ordersResult.Diagnostic.Errors);
+
+        var ordersDoc = ordersResult.Document;
+        Assert.Equal("Updated title from doc transformer.", ordersDoc.Info.Title);
+        Assert.Equal(2, ordersDoc.Paths.Count);
+        Assert.Contains("/orders", ordersDoc.Paths.Keys);
+        Assert.Contains("/not-grouped", ordersDoc.Paths.Keys);
+        Assert.True(ordersDoc.Paths["/orders"].Operations.ContainsKey(HttpMethod.Get));
+        Assert.True(ordersDoc.Paths["/orders"].Operations.ContainsKey(HttpMethod.Post));
+        Assert.True(ordersDoc.Paths["/not-grouped"].Operations.ContainsKey(HttpMethod.Get));
+
+        // v1 document
+        var v1Writer = new StringWriter();
+        await documentProvider.GenerateAsync("v1", v1Writer);
+        var v1Json = v1Writer.ToString();
+        var v1Result = OpenApiDocument.Parse(v1Json, format: "json");
+        Assert.Empty(v1Result.Diagnostic.Errors);
+
+        var v1Doc = v1Result.Document;
+        Assert.Equal("Updated title from v1 doc transformer.", v1Doc.Info.Title);
+        Assert.Single(v1Doc.Paths);
+        Assert.Contains("/not-grouped", v1Doc.Paths.Keys);
+        Assert.True(v1Doc.Paths["/not-grouped"].Operations.ContainsKey(HttpMethod.Get));
 
         await app.StopAsync();
     }
@@ -190,5 +300,19 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     private sealed class MultiDocumentNameProvider(IEnumerable<string> documentNames) : IAdditionalOpenApiDocumentNameProvider
     {
         public IEnumerable<string> DocumentNames => documentNames;
+    }
+
+    private class TestTitleDocumentTransformer : IOpenApiDocumentTransformer
+    {
+        public TestTitleDocumentTransformer(string title)
+            => Title = title;
+
+        public string Title { get; }
+
+        public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            document.Info.Title = Title;
+            return Task.CompletedTask;
+        }
     }
 }
