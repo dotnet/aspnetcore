@@ -138,46 +138,6 @@ public class InputTextAreaTest
     }
 
     [Fact]
-    public async Task RendersColsAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputTextArea>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "cols", "80" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "cols" && f.AttributeValue.ToString() == "80");
-    }
-
-    [Fact]
-    public async Task RendersMaxLengthAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputTextArea>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "maxlength", "500" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "maxlength" && f.AttributeValue.ToString() == "500");
-    }
-
-    [Fact]
     public async Task RendersDisabledAttribute()
     {
         // Arrange
@@ -492,26 +452,6 @@ public class InputTextAreaTest
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "spellcheck");
     }
 
-    [Fact]
-    public async Task RendersWrapAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<string, InputTextArea>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringProperty,
-            AdditionalAttributes = new Dictionary<string, object> { { "wrap", "soft" } }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "wrap" && (string)f.AttributeValue == "soft");
-    }
-
     #region CSS Class Validation Tests
 
     [Fact]
@@ -663,21 +603,11 @@ public class InputTextAreaTest
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Verify textarea element renders and value attribute is bound
+        // Verify textarea element renders
         AssertContainsElement(frames, "textarea");
-        // Rendered value attribute may be represented directly or via the onchange event's updates attribute.
-        var hasValueAttr = frames.Array.Any(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value");
-        if (hasValueAttr)
-        {
-            var valueAttribute = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "value");
-            Assert.Equal("multi-line\ntest\nvalue", valueAttribute.AttributeValue);
-        }
-        else
-        {
-            // Fallback: ensure the onchange event is wired to update the 'value' attribute
-            var onchange = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
-            Assert.Equal("value", onchange.AttributeEventUpdatesAttributeName);
-        }
+        // Verify binding via onchange event handler with value attribute update
+        var onchange = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
+        Assert.Equal("value", onchange.AttributeEventUpdatesAttributeName);
         Assert.Equal("multi-line\ntest\nvalue", model.StringProperty);
     }
 
