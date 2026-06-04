@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal static class TempDataProviderServiceCollectionExtensions
+internal static partial class TempDataProviderServiceCollectionExtensions
 {
     internal static readonly object HttpContextItemKey = new object();
 
@@ -57,34 +57,32 @@ internal static class TempDataProviderServiceCollectionExtensions
         var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
         var tempDataInstance = tempDataService.CreateEmpty(httpContext);
         httpContext.Items[HttpContextItemKey] = tempDataInstance;
-        httpContext.Response.OnStarting(() =>
-        {
-            // The provider's SaveTempData establishes the underlying storage (e.g. issues
-            // the session cookie for SessionStorage) so that the post-streaming
-            // PersistTempData call can write the final state after async rendering.
-            _ = tempDataInstance.ContainsKey(string.Empty);
-            tempDataService.Save(httpContext, tempDataInstance);
-            return Task.CompletedTask;
-        });
-
         return tempDataInstance;
     }
 
     internal static void PersistTempData(HttpContext httpContext)
     {
-        if (httpContext.Items.TryGetValue(HttpContextItemKey, out var tempDataObj) && tempDataObj is TempData tempData)
+        if (httpContext.Items.TryGetValue(HttpContextItemKey, out var tempDataObj) && tempDataObj is ITempData tempData)
         {
+            var provider = httpContext.RequestServices.GetService<ITempDataProvider>();
+            if (provider is CookieTempDataProvider && httpContext.Response.HasStarted)
+            {
+                var logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(TempDataProviderServiceCollectionExtensions).FullName!);
+                Log.CookieTempDataNotPersistedAfterResponseStarted(logger);
+                return;
+            }
+
             var tempDataService = httpContext.RequestServices.GetRequiredService<TempDataService>();
             tempDataService.Save(httpContext, tempData);
         }
     }
 
-    internal static void CleanupTempDataIfEmpty(HttpContext httpContext)
+    private static partial class Log
     {
-        var provider = httpContext.RequestServices.GetService<ITempDataProvider>();
-        if (provider is SessionStorageTempDataProvider sessionProvider)
-        {
-            sessionProvider.CleanupIfEmpty(httpContext);
-        }
+        [LoggerMessage(1, LogLevel.Warning,
+            "TempData values written during or after streaming SSR cannot be persisted by the cookie TempData provider because the response has already started. " +
+            "Switch to the session-storage TempData provider (RazorComponentsServiceOptions.TempDataProviderType = TempDataProviderType.SessionStorage) to enable persistence in streaming SSR scenarios.",
+            EventName = "CookieTempDataNotPersistedAfterResponseStarted")]
+        public static partial void CookieTempDataNotPersistedAfterResponseStarted(ILogger logger);
     }
 }

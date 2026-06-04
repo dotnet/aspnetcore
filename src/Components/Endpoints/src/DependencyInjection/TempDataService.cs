@@ -25,17 +25,17 @@ internal sealed partial class TempDataService
         return _tempDataProvider.LoadTempData(httpContext);
     }
 
-    public void Save(HttpContext httpContext, TempData tempData)
+    public void Save(HttpContext httpContext, ITempData tempData)
     {
         if (httpContext.RequestServices.GetService<TempDataCascadingValueSupplier>() is { } supplier)
         {
             supplier.PersistValues(tempData);
         }
 
-        if (!tempData.WasLoaded)
+        if (tempData is not TempData concrete || !concrete.WasLoaded)
         {
             return;
         }
-        _tempDataProvider.SaveTempData(httpContext, tempData.Save());
+        _tempDataProvider.SaveTempData(httpContext, concrete.Save());
     }
 }

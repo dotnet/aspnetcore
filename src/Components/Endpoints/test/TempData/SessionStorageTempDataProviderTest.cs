@@ -34,42 +34,17 @@ public class SessionStorageTempDataProviderTest
     }
 
     [Fact]
-    public void Save_WritesEmptyPayload_WhenNoDataToSave()
-    {
-        var httpContext = CreateHttpContext();
-        var tempData = CreateTempData();
-
-        _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save());
-
-        var session = (TestSession)httpContext.Session;
-        Assert.Contains(SessionStorageTempDataProvider.TempDataSessionStateKey, session.Keys);
-        Assert.True(session.TryGetValue(SessionStorageTempDataProvider.TempDataSessionStateKey, out var bytes));
-        Assert.Empty(bytes);
-        Assert.Empty(_sessionStateTempDataProvider.LoadTempData(httpContext));
-    }
-
-    [Fact]
-    public void CleanupIfEmpty_RemovesSessionKey_WhenPayloadIsEmpty()
-    {
-        var httpContext = CreateHttpContext();
-        var session = (TestSession)httpContext.Session;
-        session.Set(SessionStorageTempDataProvider.TempDataSessionStateKey, []);
-
-        _sessionStateTempDataProvider.CleanupIfEmpty(httpContext);
-
-        Assert.DoesNotContain(SessionStorageTempDataProvider.TempDataSessionStateKey, session.Keys);
-    }
-
-    [Fact]
-    public void CleanupIfEmpty_DoesNotRemoveSessionKey_WhenPayloadHasData()
+    public void Save_RemovesSessionEntry_WhenNoDataToSave()
     {
         var httpContext = CreateHttpContext();
         var session = (TestSession)httpContext.Session;
         session.Set(SessionStorageTempDataProvider.TempDataSessionStateKey, new byte[] { 1, 2, 3 });
 
-        _sessionStateTempDataProvider.CleanupIfEmpty(httpContext);
+        var tempData = CreateTempData();
+        _sessionStateTempDataProvider.SaveTempData(httpContext, tempData.Save());
 
-        Assert.Contains(SessionStorageTempDataProvider.TempDataSessionStateKey, session.Keys);
+        Assert.DoesNotContain(SessionStorageTempDataProvider.TempDataSessionStateKey, session.Keys);
+        Assert.Empty(_sessionStateTempDataProvider.LoadTempData(httpContext));
     }
 
     [Fact]

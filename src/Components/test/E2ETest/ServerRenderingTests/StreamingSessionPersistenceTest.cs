@@ -9,7 +9,7 @@ using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests;
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 public class StreamingSessionPersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {

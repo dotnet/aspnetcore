@@ -31,11 +31,6 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
 
             if (session.TryGetValue(TempDataSessionStateKey, out var value))
             {
-                if (value is null || value.Length == 0)
-                {
-                    return new Dictionary<string, object?>();
-                }
-
                 var dataFromSession = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(value);
                 if (dataFromSession is null)
                 {
@@ -71,36 +66,13 @@ internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
         var session = context.Session;
         if (values.Count == 0)
         {
-            // Write an empty payload (rather than Remove) so that the session is
-            // established and the session cookie is issued. This mirrors the
-            // SessionCascadingValueSupplier behavior and is necessary for streaming SSR
-            // where the response headers flush before async work has populated TempData.
-            // The Load path treats empty bytes as no-TempData.
-            session.Set(TempDataSessionStateKey, []);
+            session.Remove(TempDataSessionStateKey);
             return;
         }
 
         var bytes = _tempDataSerializer.SerializeData(values);
         session.Set(TempDataSessionStateKey, bytes);
         Log.TempDataSessionSaveSuccess(_logger);
-    }
-
-    public void CleanupIfEmpty(HttpContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-
-        try
-        {
-            var session = context.Session;
-            if (session.TryGetValue(TempDataSessionStateKey, out var bytes) && bytes.Length == 0)
-            {
-                session.Remove(TempDataSessionStateKey);
-            }
-        }
-        catch (Exception ex)
-        {
-            Log.TempDataSessionLoadFailure(_logger, ex);
-        }
     }
 
     private static partial class Log

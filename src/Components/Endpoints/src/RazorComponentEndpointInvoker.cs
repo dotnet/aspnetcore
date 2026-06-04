@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointInvoker
 {
+    private const string SessionEstablishmentKey = "__AspNetCore.Components.Endpoints.SessionEstablishment";
     private readonly EndpointHtmlRenderer _renderer;
     private readonly ILogger<RazorComponentEndpointInvoker> _logger;
     private readonly ComponentsActivityLinkStore _activityLinkStore;
@@ -31,6 +32,34 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         _renderer = renderer;
         _activityLinkStore = new ComponentsActivityLinkStore(renderer);
         _logger = logger;
+    }
+
+    // Issues the session cookie before the first response chunk is flushed, so that
+    // session-backed values written during or after streaming SSR (TempData,
+    // SupplyParameterFromSession) can still be committed once headers are frozen.
+    private static void TryRegisterSessionEstablishment(HttpContext context)
+    {
+        var session = context.Features.Get<ISessionFeature>()?.Session;
+        if (session is null)
+        {
+            return;
+        }
+
+        context.Response.OnStarting(static state =>
+        {
+            var session = (ISession)state!;
+            if (session.TryGetValue(SessionEstablishmentKey, out _))
+            {
+                return Task.CompletedTask;
+            }
+
+            // Flip the session middleware's establishment gate with a no-op Set+Remove.
+            // Set is the only operation that triggers SessionEstablisher.TryEstablishSession;
+            // Remove leaves no entry behind in the in-memory store and doesn't reset the gate.
+            session.Set(SessionEstablishmentKey, []);
+            session.Remove(SessionEstablishmentKey);
+            return Task.CompletedTask;
+        }, session);
     }
 
     public Task Render(HttpContext context)
@@ -88,6 +117,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             componentType: pageComponent,
             handler: result.HandlerName,
             form: result.HandlerName != null && context.Request.HasFormContentType ? await context.Request.ReadFormAsync() : null);
+
+        // Issue the session cookie before any streaming chunks flush the response headers,
+        // so that TempData / [SupplyParameterFromSession] values written during async
+        // rendering can still be persisted after Response.HasStarted. No-op when session
+        // middleware is not registered.
+        TryRegisterSessionEstablishment(context);
 
         // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
         var defaultBufferSize = 16 * 1024;
@@ -178,10 +213,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (context.RequestServices.GetService<SessionCascadingValueSupplier>() is { } sessionSupplier)
         {
             await sessionSupplier.PersistAllValues();
-            sessionSupplier.CleanupNullValues();
         }
         TempDataProviderServiceCollectionExtensions.PersistTempData(context);
-        TempDataProviderServiceCollectionExtensions.CleanupTempDataIfEmpty(context);
 
         // Emit comment containing state.
         if (!isErrorHandlerOrReExecuted)

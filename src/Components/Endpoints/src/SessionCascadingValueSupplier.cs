@@ -18,7 +18,6 @@ internal partial class SessionCascadingValueSupplier
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
-    private bool _onStartingRegistered;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
@@ -37,12 +36,6 @@ internal partial class SessionCascadingValueSupplier
         SupplyParameterFromSessionAttribute attribute,
         CascadingParameterInfo parameterInfo)
     {
-        if (!_onStartingRegistered && _httpContext is not null)
-        {
-            _onStartingRegistered = true;
-            _httpContext.Response.OnStarting(PersistAllValues);
-        }
-
         var sessionKey = attribute.Name ?? parameterInfo.PropertyName;
         var componentType = componentState.Component.GetType();
         var getter = _propertyGetterCache.GetOrAdd((componentType, parameterInfo.PropertyName), PropertyGetterFactory);
@@ -98,11 +91,7 @@ internal partial class SessionCascadingValueSupplier
                 }
                 else
                 {
-                    // Write an empty value (read side treats empty strings as null) so that
-                    // session.Set is called even when all current values are null. This ensures
-                    // the session cookie is issued during the OnStarting callback, before
-                    // streaming chunks flush the response headers and prevent further cookies.
-                    session.SetString(sessionKey, string.Empty);
+                    session.Remove(sessionKey);
                 }
             }
             catch (Exception ex)
@@ -111,35 +100,6 @@ internal partial class SessionCascadingValueSupplier
             }
         }
         return Task.CompletedTask;
-    }
-
-    internal void CleanupNullValues()
-    {
-        if (_valueCallbacks.Count == 0)
-        {
-            return;
-        }
-
-        var session = GetSession();
-        if (session is null)
-        {
-            return;
-        }
-
-        foreach (var (key, valueGetter) in _valueCallbacks)
-        {
-            try
-            {
-                if (valueGetter() is null)
-                {
-                    session.Remove(key.ToLowerInvariant());
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.SessionPersistFail(_logger, ex);
-            }
-        }
     }
 
     internal void DeleteValueCallback(string sessionKey)

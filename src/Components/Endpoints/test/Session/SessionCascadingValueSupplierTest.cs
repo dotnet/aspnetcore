@@ -59,38 +59,26 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
-    public async Task PersistAllValues_WritesEmptyPlaceholder_WhenCallbackReturnsNull()
+    public async Task PersistAllValues_RemovesKey_WhenCallbackReturnsNull()
     {
         var httpContext = CreateHttpContextWithSession();
+        httpContext.Session.SetString("key", "previous");
 
         _supplier.RegisterValueCallback("key", () => null);
         _supplier.SetRequestContext(httpContext);
         await _supplier.PersistAllValues();
-        Assert.Equal(string.Empty, httpContext.Session.GetString("key"));
-    }
-
-    [Fact]
-    public async Task CleanupNullValues_RemovesKey_WhenCallbackReturnsNull()
-    {
-        var httpContext = CreateHttpContextWithSession();
-
-        _supplier.RegisterValueCallback("key", () => null);
-        _supplier.SetRequestContext(httpContext);
-        await _supplier.PersistAllValues();
-        _supplier.CleanupNullValues();
 
         Assert.Null(httpContext.Session.GetString("key"));
     }
 
     [Fact]
-    public async Task CleanupNullValues_KeepsKey_WhenCallbackReturnsValue()
+    public async Task PersistAllValues_KeepsKey_WhenCallbackReturnsValue()
     {
         var httpContext = CreateHttpContextWithSession();
 
         _supplier.RegisterValueCallback("key", () => "value");
         _supplier.SetRequestContext(httpContext);
         await _supplier.PersistAllValues();
-        _supplier.CleanupNullValues();
 
         Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
     }
