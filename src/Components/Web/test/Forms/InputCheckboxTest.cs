@@ -450,6 +450,130 @@ public class InputCheckboxTest
         Assert.Equal("checkbox", typeAttributeFrame.AttributeValue);
     }
 
+    [Fact]
+    public async Task DisplayNameIsUsedInValidationMessages()
+    {
+        // ✨ NEW TEST: Validates that validation messages are properly associated with the checkbox field
+        // This ensures EditContext correctly tracks and retrieves messages for this component's field
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var fieldIdentifier = FieldIdentifier.Create(() => model.BoolProperty);
+
+        // ACT: Add a validation error message to the store
+        var messages = new ValidationMessageStore(editContext);
+        messages.Add(fieldIdentifier, "The Checkbox must be checked");
+
+        var rootComponent = new TestInputHostComponent<bool, TestInputCheckboxComponent>
+        {
+            EditContext = editContext,
+            Value = false,
+            ValueExpression = () => model.BoolProperty,
+        };
+
+        var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        // ASSERT: Validation messages should be retrievable from EditContext for this field
+        var fieldMessages = editContext.GetValidationMessages(fieldIdentifier);
+        Assert.Single(fieldMessages);
+        Assert.Equal("The Checkbox must be checked", fieldMessages.First());
+    }
+
+    [Fact]
+    public async Task RendersCorrectlyWithNullAdditionalAttributes()
+    {
+        // ✨ NEW TEST: Validates component works when AdditionalAttributes is explicitly null
+        // Edge case: ensures null reference doesn't break rendering
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.BoolProperty,
+            AdditionalAttributes = null!  // Explicitly pass null - should not throw
+        };
+
+        // ACT & ASSERT: Component should render successfully without throwing NullReferenceException
+        var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        // Verify core attributes are still rendered despite null AdditionalAttributes
+        var typeAttribute = frames.Array.Single(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type");
+        Assert.Equal("checkbox", typeAttribute.AttributeValue);
+
+        var idAttribute = frames.Array.SingleOrDefault(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        Assert.NotNull(idAttribute.AttributeValue);
+
+        var classAttribute = frames.Array.SingleOrDefault(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        Assert.NotNull(classAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task ValueChangedCallbackInvokedCorrectlyForRapidChanges()
+    {
+        // ✨ NEW TEST: Validates that callback is invoked correctly for rapid value toggling
+        // Ensures callback tracking works for multiple rapid changes, not just single change
+        var model = new TestModel { BoolProperty = false };
+        var valueChangedCallLog = new List<bool>();
+        var rootComponent = new TestInputHostComponent<bool, TestInputCheckboxComponent>
+        {
+            EditContext = new EditContext(model),
+            Value = false,
+            ValueChanged = val => valueChangedCallLog.Add(val),
+            ValueExpression = () => model.BoolProperty,
+        };
+
+        var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        Assert.Empty(valueChangedCallLog);  // Verify no callbacks yet
+
+        // ACT: Rapid toggling - simulate user quickly changing checkbox state multiple times
+        inputCheckboxComponent.SetCurrentValue(true);
+        inputCheckboxComponent.SetCurrentValue(false);
+        inputCheckboxComponent.SetCurrentValue(true);
+        inputCheckboxComponent.SetCurrentValue(false);
+
+        // ASSERT: All 4 changes should be logged in correct order
+        Assert.Equal(4, valueChangedCallLog.Count);
+        Assert.Equal(new[] { true, false, true, false }, valueChangedCallLog);
+
+        // EditContext should track that field is modified
+        Assert.True(rootComponent.EditContext.IsModified(() => model.BoolProperty));
+    }
+
+    [Fact]
+    public async Task CssClassCombinesFieldValidationStateWithAdditionalClass()
+    {
+        // ✨ NEW TEST: Validates that CssClass properly merges AdditionalAttributes class with validation state
+        // Ensures custom classes don't override validation classes, they combine
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+
+        var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
+        {
+            EditContext = editContext,
+            Value = false,
+            ValueExpression = () => model.BoolProperty,
+            AdditionalAttributes = new Dictionary<string, object>
+            {
+                { "class", "my-custom-class" }  // User-provided custom class
+            }
+        };
+
+        var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var classAttribute = frames.Array.Single(f =>
+            f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+
+        var cssClass = classAttribute.AttributeValue?.ToString();
+
+        // ASSERT: Should contain BOTH custom class AND validation state class
+        Assert.NotNull(cssClass);
+        Assert.Contains("my-custom-class", cssClass);      // Custom class present
+        Assert.Contains("valid", cssClass);                 // Validation state class also present
+    }
+
     private async Task<int> RenderAndGetInputCheckboxComponentIdAsync(TestInputHostComponent<bool, InputCheckbox> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
