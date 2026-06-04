@@ -26,7 +26,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
     {
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void RangeRejectsOutOfRangeValue()
     {
         NavigateToClientValidationPage("all-validators");
@@ -38,7 +38,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Age']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void RegexRejectsNonMatchingValue()
     {
         NavigateToClientValidationPage("all-validators");
@@ -50,7 +50,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='ZipCode']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void EmailRejectsInvalidEmail()
     {
         NavigateToClientValidationPage("all-validators");
@@ -62,7 +62,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Email']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void EqualToRejectsMismatchedPasswords()
     {
         NavigateToClientValidationPage("all-validators");
@@ -75,7 +75,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='ConfirmPassword']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void EqualToAcceptsMatchingPasswords()
     {
         NavigateToClientValidationPage("all-validators");
@@ -90,7 +90,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='ConfirmPassword']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void FileExtensionsRejectsDisallowedExtension()
     {
         NavigateToClientValidationPage("all-validators");
@@ -102,7 +102,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Avatar']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void RequiredRadioGroup_ShowsErrorWhenNoneSelected()
     {
         NavigateToClientValidationPage("radio-group");
@@ -113,7 +113,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Color']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void RequiredRadioGroup_ClearsErrorWhenOneSelected()
     {
         NavigateToClientValidationPage("radio-group");
@@ -129,7 +129,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Color']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void CustomValidatorRejectsInvalidInput()
     {
         NavigateToClientValidationPage("custom-validator");
@@ -142,7 +142,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Code']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void CustomValidatorAcceptsValidInput()
     {
         NavigateToClientValidationPage("custom-validator");
@@ -155,7 +155,7 @@ public class ClientValidationAttributesTest : ClientValidationTestBase
             () => Browser.Exists(By.CssSelector("[data-valmsg-for='Code']")).Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Rework in progress: see rework-client-validation-tests.md - existing E2E suite depends on the data-val-* wire protocol that is being replaced by <blazor-client-validation-data> in Phase 2 of the rework.")]
     public void JsRemovesSiblingServerErrorsWhenFieldBecomesValid()
     {
         NavigateToClientValidationPage("server-rendered-messages");

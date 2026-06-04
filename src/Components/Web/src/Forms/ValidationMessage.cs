@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -71,33 +70,6 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        if (CurrentEditContext.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj)
-            && serviceObj is IClientValidationService)
-        {
-            RenderForClientValidation(builder);
-            return;
-        }
-
-        foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
-        {
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "class", "validation-message");
-            builder.AddMultipleAttributes(2, AdditionalAttributes);
-            builder.AddContent(3, message);
-            builder.CloseElement();
-        }
-    }
-
-    /// <summary>
-    /// Renders validation messages with data-valmsg-for and data-valmsg-replace attributes
-    /// for the JS validation library. The first message element carries the attributes so the
-    /// JS library can find it and replace its content. If no server-side messages exist yet,
-    /// an empty placeholder div is rendered for JS to populate when client validation runs.
-    /// Server-rendered sibling messages (without data-valmsg-for) are cleaned up by the JS library
-    /// when it inserts the client-side validation messages.
-    /// </summary>
-    private void RenderForClientValidation(RenderTreeBuilder builder)
-    {
         // Use HtmlFieldPrefix to compute the field name consistently with InputBase.
         // In nested Editor scenarios, FieldPrefix adjusts the name to match the rendered input's name attribute.
         var fieldName = FieldPrefix?.GetFieldName(For!) ?? ExpressionFormatter.FormatLambda(For!);
@@ -109,7 +81,8 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
             builder.AddAttribute(1, "class", "validation-message");
             if (first)
             {
-                // First message element will be used as container for client-side validation message
+                // First message element carries data-valmsg-for/replace so the JS client-validation
+                // engine can locate it and swap its content with client-side messages.
                 builder.AddAttribute(2, "data-valmsg-for", fieldName);
                 builder.AddAttribute(3, "data-valmsg-replace", "true");
                 first = false;
@@ -121,7 +94,8 @@ public class ValidationMessage<TValue> : ComponentBase, IDisposable
 
         if (first)
         {
-            // No messages - render empty placeholder for JS to find
+            // No server-side messages - render an empty placeholder so the JS engine has an
+            // element to populate when client validation runs. Inert when no JS engine is present.
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", "validation-message");
             builder.AddAttribute(2, "data-valmsg-for", fieldName);
