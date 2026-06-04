@@ -42,9 +42,9 @@ public class DeviceBoundSessionOptions : AuthenticationSchemeOptions
 
     /// <summary>
     /// Gets or sets the expiration for the short-lived session cookie.
-    /// Defaults to 30 seconds.
+    /// Defaults to 10 minutes.
     /// </summary>
-    public TimeSpan ShortLivedCookieExpiration { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan ShortLivedCookieExpiration { get; set; } = TimeSpan.FromMinutes(10);
 
     /// <summary>
     /// Gets or sets the maximum age for challenges before they are considered stale.

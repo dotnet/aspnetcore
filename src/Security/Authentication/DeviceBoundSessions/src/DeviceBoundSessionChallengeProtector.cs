@@ -16,7 +16,7 @@ internal static class DeviceBoundSessionChallengeProtector
 
     /// <summary>
     /// Generates a challenge for registration (no session ID yet).
-    /// Payload: CBOR array [ claimUid ]
+    /// Payload: CBOR byte string (claimUid)
     /// </summary>
     public static string GenerateRegistrationChallenge(
         IDataProtectionProvider dataProtectionProvider,
@@ -27,9 +27,7 @@ internal static class DeviceBoundSessionChallengeProtector
         var claimUid = ComputeClaimUid(principal);
 
         var writer = new CborWriter();
-        writer.WriteStartArray(1);
         writer.WriteTextString(claimUid);
-        writer.WriteEndArray();
 
         var protectedBytes = protector.Protect(writer.Encode(), lifetime);
         return WebEncoders.Base64UrlEncode(protectedBytes);
@@ -37,7 +35,7 @@ internal static class DeviceBoundSessionChallengeProtector
 
     /// <summary>
     /// Generates a challenge for refresh (session ID is known).
-    /// Payload: CBOR array [ claimUid, sessionId ]
+    /// Payload: CBOR sequence (claimUid, sessionId)
     /// </summary>
     public static string GenerateRefreshChallenge(
         IDataProtectionProvider dataProtectionProvider,
@@ -49,10 +47,8 @@ internal static class DeviceBoundSessionChallengeProtector
         var claimUid = ComputeClaimUid(principal);
 
         var writer = new CborWriter();
-        writer.WriteStartArray(2);
         writer.WriteTextString(claimUid);
         writer.WriteTextString(sessionId);
-        writer.WriteEndArray();
 
         var protectedBytes = protector.Protect(writer.Encode(), lifetime);
         return WebEncoders.Base64UrlEncode(protectedBytes);
@@ -74,14 +70,7 @@ internal static class DeviceBoundSessionChallengeProtector
         try
         {
             var reader = new CborReader(payload);
-            var count = reader.ReadStartArray();
-            if (count < 1)
-            {
-                return false;
-            }
-
             var storedClaimUid = reader.ReadTextString();
-            reader.ReadEndArray();
 
             var expected = ComputeClaimUid(principal);
             return string.Equals(storedClaimUid, expected, StringComparison.Ordinal);
@@ -109,15 +98,8 @@ internal static class DeviceBoundSessionChallengeProtector
         try
         {
             var reader = new CborReader(payload);
-            var count = reader.ReadStartArray();
-            if (count < 2)
-            {
-                return false;
-            }
-
             var storedClaimUid = reader.ReadTextString();
             var storedSessionId = reader.ReadTextString();
-            reader.ReadEndArray();
 
             var expected = ComputeClaimUid(principal);
             return string.Equals(storedClaimUid, expected, StringComparison.Ordinal) &&
