@@ -19,6 +19,7 @@
   <PropertyGroup Condition="'$(TestTrimmedApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+    <MetricsSupport>false</MetricsSupport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TestTrimmedApps)' != 'true'">
     <!-- Temporarily disabled to test hypothesis that MetadataUpdaterSupport=true (from PR #65903)
