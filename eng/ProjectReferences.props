@@ -57,6 +57,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.BearerToken" ProjectPath="$(RepoRoot)src\Security\Authentication\BearerToken\src\Microsoft.AspNetCore.Authentication.BearerToken.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Certificate" ProjectPath="$(RepoRoot)src\Security\Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Cookies" ProjectPath="$(RepoRoot)src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.DeviceBoundSessions" ProjectPath="$(RepoRoot)src\Security\Authentication\DeviceBoundSessions\src\Microsoft.AspNetCore.Authentication.DeviceBoundSessions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication" ProjectPath="$(RepoRoot)src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Facebook" ProjectPath="$(RepoRoot)src\Security\Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Google" ProjectPath="$(RepoRoot)src\Security\Authentication\Google\src\Microsoft.AspNetCore.Authentication.Google.csproj" />
