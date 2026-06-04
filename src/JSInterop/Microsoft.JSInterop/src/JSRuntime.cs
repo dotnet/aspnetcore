@@ -118,11 +118,11 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
                 // We need to await here due to the using
                 return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
             }
-            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            catch (OperationCanceledException ex) when (cts.IsCancellationRequested)
             {
                 throw new JSException(
                     $"The JS interop call '{identifier}' timed out after {DefaultAsyncTimeout.Value.TotalMilliseconds}ms. " +
-                    $"The timeout is controlled by {nameof(DefaultAsyncTimeout)}.");
+                    $"The timeout is controlled by {nameof(DefaultAsyncTimeout)}.", ex);
             }
         }
 

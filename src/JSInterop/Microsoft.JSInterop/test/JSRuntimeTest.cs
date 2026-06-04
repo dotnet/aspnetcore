@@ -49,6 +49,7 @@ public class JSRuntimeTest
         // Assert
         var ex = await Assert.ThrowsAsync<JSException>(async () => await task);
         Assert.Equal("The JS interop call 'test identifier 1' timed out after 1000ms. The timeout is controlled by DefaultAsyncTimeout.", ex.Message);
+        Assert.IsType<TaskCanceledException>(ex.InnerException);
     }
 
     [Fact]
