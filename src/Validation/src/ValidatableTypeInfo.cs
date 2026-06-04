@@ -219,7 +219,14 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     if (errorMessage is not null)
                     {
                         var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                        context.AddOrExtendValidationError(memberName, key, errorMessage, value);
+                        var errorContext = new ValidationErrorContext()
+                        {
+                            Name = memberName,
+                            Path = key,
+                            Errors = [errorMessage],
+                            Container = value,
+                        };
+                        context.AddValidationError(errorContext);
                     }
                 }
 
@@ -235,7 +242,14 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 
                     if (errorMessage is not null)
                     {
-                        context.AddOrExtendValidationError(string.Empty, errorPrefix, errorMessage, value);
+                        var errorContext = new ValidationErrorContext()
+                        {
+                            Name = string.Empty,
+                            Path = errorPrefix,
+                            Errors = [errorMessage],
+                            Container = value,
+                        };
+                        context.AddValidationError(errorContext);
                     }
                 }
             },
@@ -286,13 +300,27 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     foreach (var memberName in validationResult.MemberNames)
                     {
                         var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                        context.AddOrExtendValidationError(memberName, key, validationResult.ErrorMessage, value);
+                        var errorContext = new ValidationErrorContext()
+                        {
+                            Name = memberName,
+                            Path = key,
+                            Errors = [validationResult.ErrorMessage],
+                            Container = value,
+                        };
+                        context.AddValidationError(errorContext);
                     }
 
                     if (!validationResult.MemberNames.Any())
                     {
                         // If no member names are specified, then treat this as a top-level error
-                        context.AddOrExtendValidationError(string.Empty, string.Empty, validationResult.ErrorMessage, value);
+                        var errorContext = new ValidationErrorContext()
+                        {
+                            Name = string.Empty,
+                            Path = string.Empty,
+                            Errors = [validationResult.ErrorMessage],
+                            Container = value,
+                        };
+                        context.AddValidationError(errorContext);
                     }
                 }
             }

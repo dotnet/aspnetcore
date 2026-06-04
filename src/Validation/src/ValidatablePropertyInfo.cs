@@ -103,7 +103,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
                 if (errorMessage is not null)
                 {
-                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], value);
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = Name,
+                        Path = context.CurrentValidationPath,
+                        Errors = [errorMessage],
+                        Container = value,
+                    };
+                    context.AddValidationError(errorContext);
                 }
 
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
@@ -127,7 +134,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 {
                     var errorPrefix = context.CurrentValidationPath;
                     var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = name,
+                        Path = key,
+                        Errors = [errorMessage],
+                        Container = container,
+                    };
+                    context.AddValidationError(errorContext);
                 }
             }, cancellationToken);
 

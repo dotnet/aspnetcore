@@ -32,6 +32,7 @@ Microsoft.Extensions.Validation.IValidationLocalizer.ResolveErrorMessage(in Micr
 Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
+Microsoft.Extensions.Validation.ValidateContext.AddValidationError(Microsoft.Extensions.Validation.ValidationErrorContext validationErrorContext) -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IEnumerable<string!>!>?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void

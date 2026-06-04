@@ -75,53 +75,19 @@ public sealed class ValidateContext
     /// </summary>
     public event Action<ValidationErrorContext>? OnValidationError;
 
-    internal void AddValidationError(string propertyName, string key, string[] error, object? container)
+    /// <summary>
+    /// Adds a validation error to <see cref="ValidationErrors"/> and raises the <see cref="OnValidationError"/> event.
+    /// </summary>
+    /// <param name="validationErrorContext"></param>
+    public void AddValidationError(ValidationErrorContext validationErrorContext)
     {
-        var validationErrors = _validationErrors;
-
-        validationErrors[key] = error;
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = propertyName,
-            Path = key,
-            Errors = error,
-            Container = container
-        });
-    }
-
-    internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
-    {
-        var validationErrors = _validationErrors;
-
-        var existingErrors = (ConcurrentQueue<string>)validationErrors.GetOrAdd(key, static _ => new ConcurrentQueue<string>());
-        foreach (var error in errors)
+        var existingErrors = (ConcurrentQueue<string>)_validationErrors.GetOrAdd(validationErrorContext.Path, static _ => new ConcurrentQueue<string>());
+        foreach (var error in validationErrorContext.Errors)
         {
             existingErrors.Enqueue(error);
         }
 
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = propertyName,
-            Path = key,
-            Errors = errors,
-            Container = container
-        });
-    }
-
-    internal void AddOrExtendValidationError(string name, string key, string error, object? container)
-    {
-        var validationErrors = _validationErrors;
-
-        var existingErrors = (ConcurrentQueue<string>)validationErrors.GetOrAdd(key, static _ => new ConcurrentQueue<string>());
-        existingErrors.Enqueue(error);
-
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = name,
-            Path = key,
-            Errors = [error],
-            Container = container
-        });
+        OnValidationError?.Invoke(validationErrorContext);
     }
 
     internal string? ResolveAttributeErrorMessage(

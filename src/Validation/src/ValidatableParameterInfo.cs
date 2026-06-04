@@ -91,7 +91,14 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 if (errorMessage is not null)
                 {
                     var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    context.AddValidationError(Name, key, [errorMessage], null);
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = Name,
+                        Path = key,
+                        Errors = [errorMessage],
+                        Container = null,
+                    };
+                    context.AddValidationError(errorContext);
                 }
 
                 return;
@@ -112,7 +119,14 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             if (errorMessage is not null)
             {
                 var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? name : $"{context.CurrentValidationPath}.{name}";
-                context.AddOrExtendValidationErrors(name, key, [errorMessage], null);
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = name,
+                    Path = key,
+                    Errors = [errorMessage],
+                    Container = null,
+                };
+                context.AddValidationError(errorContext);
             }
         };
 
