@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using DbscOptions = Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -88,6 +91,9 @@ public static class DeviceBoundSessionExtensions
                 return sourceScheme;
             };
         });
+
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureDeviceBoundSessionCookieOptions>());
+        builder.Services.Configure<DeviceBoundSessionSourceSchemes>(o => o.Schemes[sourceScheme] = authenticationScheme);
 
         // Add the DBSC protocol handler
         builder.AddScheme<DbscOptions, DeviceBoundSessionHandler>(authenticationScheme, o =>

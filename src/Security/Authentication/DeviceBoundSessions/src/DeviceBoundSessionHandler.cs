@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -19,8 +21,6 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// </summary>
 public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessionOptions>, IAuthenticationRequestHandler
 {
-    private const string ChallengePurpose = "Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.v1";
-
     private readonly IDataProtectionProvider _dataProtectionProvider;
 
     /// <summary>
@@ -78,7 +78,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         responseHeader = responseHeader.Trim('"');
 
         // Validate the JWT and extract the public key (registration: no existing key to check against)
-        var jwtResult = DeviceBoundSessionJwtValidator.Validate(responseHeader, publicKeyJwk: null, expectedChallenge: null);
+        var jwtResult = await DeviceBoundSessionJwtValidator.ValidateAsync(responseHeader, publicKeyJwk: null, expectedChallenge: null);
         if (jwtResult is null)
         {
             Logger.LogWarning("DBSC registration: invalid JWT proof.");
@@ -97,6 +97,14 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
 
         var principal = authResult.Principal;
         var properties = authResult.Properties ?? new AuthenticationProperties();
+        var nameIdentifier = GetNameIdentifier(principal);
+
+        if (jwtResult.Challenge is null || !ValidateChallenge(jwtResult.Challenge, nameIdentifier, DeviceBoundSessionChallengeProtector.RegistrationSessionId))
+        {
+            Logger.LogWarning("DBSC registration: invalid challenge for user {NameIdentifier}.", nameIdentifier);
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
 
         // Generate a session ID
         var sessionId = GenerateSessionId();
@@ -134,7 +142,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         Response.ContentType = "application/json";
 
         // Include a challenge for the next refresh
-        var challenge = GenerateChallenge(sessionId);
+        var challenge = GenerateChallenge(nameIdentifier, sessionId);
         Response.Headers["Secure-Session-Challenge"] = $"\"{challenge}\";id=\"{sessionId}\"";
 
         await JsonSerializer.SerializeAsync(Response.Body, config, DeviceBoundSessionJsonContext.Default.DeviceBoundSessionConfiguration, Context.RequestAborted);
@@ -184,7 +192,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         if (string.IsNullOrEmpty(proofHeader))
         {
             // No proof yet — issue a challenge (first leg of refresh)
-            var challenge = GenerateChallenge(sessionIdHeader);
+            var challenge = GenerateChallenge(GetNameIdentifier(authResult.Principal), sessionIdHeader);
             Response.StatusCode = StatusCodes.Status403Forbidden;
             Response.Headers["Secure-Session-Challenge"] = $"\"{challenge}\";id=\"{sessionIdHeader}\"";
             return;
@@ -193,7 +201,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         proofHeader = proofHeader.Trim('"');
 
         // Validate the JWT proof against the public key from the refresh cookie
-        var jwtResult = DeviceBoundSessionJwtValidator.Validate(proofHeader, publicKeyJwk, expectedChallenge: null);
+        var jwtResult = await DeviceBoundSessionJwtValidator.ValidateAsync(proofHeader, publicKeyJwk, expectedChallenge: null);
         if (jwtResult is null)
         {
             Logger.LogWarning("DBSC refresh: invalid JWT signature for session {SessionId}.", sessionIdHeader);
@@ -201,8 +209,10 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
             return;
         }
 
-        // Validate the challenge (jti) is one we issued and is fresh
-        if (jwtResult.Challenge is not null && !ValidateChallenge(jwtResult.Challenge, sessionIdHeader))
+        var nameIdentifier = GetNameIdentifier(authResult.Principal);
+
+        // Validate the challenge (jti) is one we issued and is fresh.
+        if (jwtResult.Challenge is null || !ValidateChallenge(jwtResult.Challenge, nameIdentifier, sessionIdHeader))
         {
             Logger.LogWarning("DBSC refresh: stale or invalid challenge for session {SessionId}.", sessionIdHeader);
             Response.StatusCode = StatusCodes.Status403Forbidden;
@@ -220,7 +230,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
 
         // Return session configuration with new challenge
         var config = BuildSessionConfiguration(sessionIdHeader);
-        var nextChallenge = GenerateChallenge(sessionIdHeader);
+        var nextChallenge = GenerateChallenge(nameIdentifier, sessionIdHeader);
 
         Response.StatusCode = StatusCodes.Status200OK;
         Response.ContentType = "application/json";
@@ -286,51 +296,33 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         return ".AspNetCore.Dbsc.Session";
     }
 
-    private string GenerateChallenge(string sessionId)
+    private string GenerateChallenge(string? nameIdentifier, string sessionId)
     {
-        var protector = _dataProtectionProvider.CreateProtector(ChallengePurpose);
-        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
-        var payload = $"{timestamp}|{nonce}|{sessionId}";
-        return protector.Protect(payload);
+        return DeviceBoundSessionChallengeProtector.GenerateChallenge(
+            _dataProtectionProvider,
+            nameIdentifier,
+            sessionId,
+            Options.ChallengeMaxAge);
     }
 
-    private bool ValidateChallenge(string challenge, string expectedSessionId)
+    private bool ValidateChallenge(string challenge, string? expectedNameIdentifier, string expectedSessionId)
     {
-        try
-        {
-            var protector = _dataProtectionProvider.CreateProtector(ChallengePurpose);
-            var payload = protector.Unprotect(challenge);
-            var parts = payload.Split('|', 3);
-            if (parts.Length != 3)
-            {
-                return false;
-            }
-
-            if (!long.TryParse(parts[0], out var timestamp))
-            {
-                return false;
-            }
-
-            var issued = DateTimeOffset.FromUnixTimeSeconds(timestamp);
-            if (DateTimeOffset.UtcNow - issued > Options.ChallengeMaxAge)
-            {
-                return false;
-            }
-
-            return string.Equals(parts[2], expectedSessionId, StringComparison.Ordinal);
-        }
-        catch
+        if (!DeviceBoundSessionChallengeProtector.TryValidateChallenge(_dataProtectionProvider, challenge, out var metadata))
         {
             return false;
         }
+
+        return string.Equals(metadata.NameIdentifier, expectedNameIdentifier ?? string.Empty, StringComparison.Ordinal) &&
+            string.Equals(metadata.SessionId, expectedSessionId, StringComparison.Ordinal);
     }
 
     private static string GenerateSessionId()
     {
-        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(24))
-            .Replace('+', '-')
-            .Replace('/', '_')
-            .TrimEnd('=');
+        return WebEncoders.Base64UrlEncode(RandomNumberGenerator.GetBytes(24));
+    }
+
+    private static string GetNameIdentifier(ClaimsPrincipal principal)
+    {
+        return principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
     }
 }

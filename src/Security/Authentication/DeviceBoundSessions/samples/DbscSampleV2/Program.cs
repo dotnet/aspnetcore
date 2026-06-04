@@ -56,11 +56,6 @@ public class Startup
                 o.Cookie.Name = ".AspNetCore.Application";
                 o.LoginPath = "/login";
                 o.ExpireTimeSpan = TimeSpan.FromDays(7);
-                // Wire up DBSC event to emit Secure-Session-Registration header on sign-in
-                o.Events = new DeviceBoundSessionCookieEvents(new Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions
-                {
-                    RegistrationPath = DeviceBoundSessionDefaults.RegistrationPath,
-                });
             })
             // The DBSC handler + refresh/session cookie schemes + policy scheme
             .AddDeviceBoundSession(SourceScheme, o =>
@@ -113,10 +108,10 @@ public class Startup
                 }
 
                 var identity = new ClaimsIdentity(SourceScheme);
+                identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, username));
                 identity.AddClaim(new Claim(ClaimTypes.Name, username));
 
-                // Sign in to the SOURCE scheme — this stamps the long-lived cookie
-                // and emits the Secure-Session-Registration header via the events
+                // Sign in to the source scheme.
                 await context.SignInAsync(
                     SourceScheme,
                     new ClaimsPrincipal(identity),
