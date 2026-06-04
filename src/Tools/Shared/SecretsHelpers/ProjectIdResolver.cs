@@ -208,12 +208,13 @@ internal sealed class ProjectIdResolver
                 return null;
             }
 
-            var id = File.ReadAllText(outputFile)?.Trim();
+            var id = File.ReadAllText(outputFile).Trim();
             if (string.IsNullOrEmpty(id))
             {
                 _reporter.Verbose(outputBuilder.ToString());
                 _reporter.Verbose(errorBuilder.ToString());
                 _reporter.Error(SecretsHelpersResources.FormatError_ProjectMissingId(projectFile));
+                return null;
             }
             return id;
         }
