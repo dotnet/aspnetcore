@@ -341,13 +341,17 @@
     });
 
     $jQval.addMethod("regex", function (value, element, params) {
-        var match;
         if (this.optional(element)) {
             return true;
         }
-
-        match = new RegExp(params).exec(value);
-        return (match && (match.index === 0) && (match[0].length === value.length));
+        try {
+            var match = new RegExp(params).exec(value);
+            return match !== null && match.index === 0 && match[0].length === value.length;
+        } catch (e) {
+            // Invalid regex pattern - skip validation to avoid crashing all form validation.
+            // Server-side validation at form submission time provides the fallback.
+            return true;
+        }
     });
 
     $jQval.addMethod("nonalphamin", function (value, element, nonalphamin) {
