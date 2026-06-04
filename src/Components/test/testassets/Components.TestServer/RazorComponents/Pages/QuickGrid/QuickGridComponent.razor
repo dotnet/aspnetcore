@@ -2,7 +2,6 @@
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Microsoft.AspNetCore.Components.Forms
 
-<CascadingValue Name="Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting" Value="@((bool?)true)">
 <div id="grid">
     <QuickGrid Items="@people" Pagination="@pagination">
         <PropertyColumn Property="@(p => p.PersonId)" Sortable="true" />
@@ -44,7 +43,6 @@
         <Paginator State="@pagination3" />
     </div>
 </FormMappingScope>
-</CascadingValue>
 
 @code {
     record Person(int PersonId, string FirstName, string LastName, DateOnly BirthDate);

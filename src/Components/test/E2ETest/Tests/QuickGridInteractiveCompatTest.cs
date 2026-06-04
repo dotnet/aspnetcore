@@ -16,21 +16,19 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 /// <c>Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting</c> AppContext switch.
 /// Mirrors <see cref="QuickGridInteractiveTest"/> but asserts button-based UI elements are rendered.
 /// URL still updates in both modes — only the rendered HTML element (button vs anchor) differs.
+///
+/// Uses <see cref="RazorComponentEndpointsCompatStartup{TRootComponent}"/> so this test gets its own
+/// <see cref="BasicTestAppServerSiteFixture{TStartup}"/> instance (and host) — same isolation pattern
+/// as the SSR-only scenario. That startup flips the feature switch off before any QuickGrid render.
 /// </summary>
-public class QuickGridInteractiveCompatTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class QuickGridInteractiveCompatTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsCompatStartup<App>>>
 {
     public QuickGridInteractiveCompatTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsCompatStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
-    }
-
-    protected override void InitializeAsyncCore()
-    {
-        _serverFixture.AdditionalArguments.Add("--DisableUrlDrivenNavigation=true");
-        base.InitializeAsyncCore();
     }
 
     public override Task InitializeAsync() => InitializeAsync(BrowserFixture.StreamingContext);

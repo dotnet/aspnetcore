@@ -17,13 +17,6 @@ public partial class Paginator : IDisposable
     private NavigationManager NavigationManager { get; set; } = default!;
     private string QueryName => State.QueryName;
 
-    // Internal for testing
-    [CascadingParameter(Name = QuickGridFeatureFlags.EnableUrlBasedNavigationSwitchName)]
-    internal bool? UrlBasedNavigationOverride { get; set; }
-
-    internal bool UseUrlBasedNavigationAndSorting
-        => UrlBasedNavigationOverride ?? QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting;
-
     /// <summary>
     /// Specifies the associated <see cref="PaginationState"/>. This parameter is required.
     /// </summary>

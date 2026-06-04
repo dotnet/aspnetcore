@@ -20,6 +20,11 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     public RazorComponentEndpointsNoInteractivityStartup(IConfiguration configuration)
     {
         Configuration = configuration;
+
+        // Mirror the reset done by RazorComponentEndpointsStartup so this fixture isn't
+        // affected by the QuickGrid URL-navigation switch left over from a previously-built
+        // in-process fixture (e.g. RazorComponentEndpointsCompatStartup).
+        RazorComponentEndpointsStartup<TRootComponent>.ResetQuickGridUrlNavigationSwitch(enabled: true);
     }
 
     public IConfiguration Configuration { get; }

@@ -24,14 +24,14 @@
 
             if (Sortable.HasValue ? Sortable.Value : IsSortableByDefault())
             {
-                @if (Grid.UseUrlBasedNavigationAndSorting && Title is not null)
+                @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting && Title is not null)
                 {
                     <a class="col-title" href="@(Grid.GetSortUrl(this))">
                         <div class="col-title-text">@Title</div>
                         <div class="sort-indicator" aria-hidden="true"></div>
                     </a>
                 }
-                else if (!Grid.UseUrlBasedNavigationAndSorting && Title is not null)
+                else if (!QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting && Title is not null)
                 {
                     <button class="col-title" type="button" @onclick="@(() => Grid.SortByColumnAsync(this))">
                         <div class="col-title-text">@Title</div>
