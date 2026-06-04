@@ -273,8 +273,9 @@ class OidcAuthorizeService implements AuthorizeService {
             }
 
             const rawMessage = this.getExceptionMessage(error);
+            const errorCode = this.getUrlParameter(url, 'error');
             this.debug(`Complete sign in error '${rawMessage}'`);
-            return this.error(this.getSafeErrorMessage(error));
+            return this.error(this.getSafeErrorMessage(error, errorCode));
         }
     }
 
@@ -331,9 +332,9 @@ class OidcAuthorizeService implements AuthorizeService {
     // Maps known OIDC callback error codes (RFC 6749 §4.1.2.1 + OpenID Connect Core §3.1.2.6)
     // to safe user-facing messages. Unknown codes and non-OIDC exceptions return a generic
     // message; the original error is still written to the debug log for diagnostics.
-    private getSafeErrorMessage(error: any): string {
+    private getSafeErrorMessage(error: any, fallbackCode?: string | null): string {
         const genericMessage = 'There was an error signing in.';
-        const code: string | undefined = error && typeof error.error === 'string' ? error.error : undefined;
+        const code: string | undefined = error && typeof error.error === 'string' ? error.error : fallbackCode ?? undefined;
         if (!code) {
             return genericMessage;
         }
