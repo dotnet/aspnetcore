@@ -115,7 +115,6 @@
          This gets overriden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
     <MicrosoftCodeAnalysisSourceGeneratorVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisSourceGeneratorVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
-    <MicrosoftIdentityModelJsonWebTokensVersion>$(IdentityModelVersion)</MicrosoftIdentityModelJsonWebTokensVersion>
     <MicrosoftIdentityModelLoggingVersion>$(IdentityModelVersion)</MicrosoftIdentityModelLoggingVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
     <MicrosoftIdentityModelProtocolsWsFederationVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsWsFederationVersion>

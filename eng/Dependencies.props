@@ -170,7 +170,6 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-    <LatestPackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />

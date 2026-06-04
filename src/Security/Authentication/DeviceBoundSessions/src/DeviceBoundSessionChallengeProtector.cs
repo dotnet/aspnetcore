@@ -4,7 +4,6 @@
 using System.Formats.Cbor;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -129,7 +128,7 @@ internal static class DeviceBoundSessionChallengeProtector
 
     /// <summary>
     /// Computes a stable identifier for the user from their claims.
-    /// Priority: sub > NameIdentifier > UPN > SHA256(all claims).
+    /// Priority: sub > NameIdentifier > UPN > SHA256(all claims as CBOR).
     /// </summary>
     internal static string ComputeClaimUid(ClaimsPrincipal principal)
     {
@@ -143,23 +142,37 @@ internal static class DeviceBoundSessionChallengeProtector
             var subClaim = identity.FindFirst(c => string.Equals("sub", c.Type, StringComparison.Ordinal));
             if (subClaim is not null && !string.IsNullOrEmpty(subClaim.Value))
             {
-                return $"sub:{subClaim.Value}:{subClaim.Issuer}";
+                return EncodeClaim(subClaim);
             }
 
             var nameIdClaim = identity.FindFirst(c => string.Equals(ClaimTypes.NameIdentifier, c.Type, StringComparison.Ordinal));
             if (nameIdClaim is not null && !string.IsNullOrEmpty(nameIdClaim.Value))
             {
-                return $"nid:{nameIdClaim.Value}:{nameIdClaim.Issuer}";
+                return EncodeClaim(nameIdClaim);
             }
 
             var upnClaim = identity.FindFirst(c => string.Equals(ClaimTypes.Upn, c.Type, StringComparison.Ordinal));
             if (upnClaim is not null && !string.IsNullOrEmpty(upnClaim.Value))
             {
-                return $"upn:{upnClaim.Value}:{upnClaim.Issuer}";
+                return EncodeClaim(upnClaim);
             }
         }
 
-        // Fallback: SHA256 hash of all claims sorted by type
+        // Fallback: SHA256 hash of all claims encoded as CBOR
+        return ComputeClaimHashFallback(principal);
+    }
+
+    private static string EncodeClaim(Claim claim)
+    {
+        var writer = new CborWriter();
+        writer.WriteTextString(claim.Type);
+        writer.WriteTextString(claim.Value);
+        writer.WriteTextString(claim.Issuer);
+        return WebEncoders.Base64UrlEncode(writer.Encode());
+    }
+
+    private static string ComputeClaimHashFallback(ClaimsPrincipal principal)
+    {
         var allClaims = new List<Claim>();
         foreach (var identity in principal.Identities)
         {
@@ -176,16 +189,18 @@ internal static class DeviceBoundSessionChallengeProtector
 
         allClaims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
 
-        Span<byte> hashBytes = stackalloc byte[SHA256.HashSizeInBytes];
-        using var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        // Encode all claims as a CBOR sequence, then hash
+        var writer = new CborWriter();
         foreach (var claim in allClaims)
         {
-            hasher.AppendData(Encoding.UTF8.GetBytes(claim.Type));
-            hasher.AppendData(Encoding.UTF8.GetBytes(claim.Value));
-            hasher.AppendData(Encoding.UTF8.GetBytes(claim.Issuer));
+            writer.WriteTextString(claim.Type);
+            writer.WriteTextString(claim.Value);
+            writer.WriteTextString(claim.Issuer);
         }
 
-        hasher.TryGetHashAndReset(hashBytes, out _);
+        var encoded = writer.Encode();
+        Span<byte> hashBytes = stackalloc byte[SHA256.HashSizeInBytes];
+        SHA256.HashData(encoded, hashBytes);
         return WebEncoders.Base64UrlEncode(hashBytes);
     }
 }

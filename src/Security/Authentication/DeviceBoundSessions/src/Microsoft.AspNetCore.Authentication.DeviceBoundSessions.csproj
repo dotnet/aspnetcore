@@ -24,7 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
-    <Reference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <Reference Include="System.Formats.Cbor" />
   </ItemGroup>
 
