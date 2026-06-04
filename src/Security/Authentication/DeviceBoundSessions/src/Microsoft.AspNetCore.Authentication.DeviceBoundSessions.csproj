@@ -3,11 +3,8 @@
   <PropertyGroup>
     <Description>ASP.NET Core authentication handler for Device Bound Session Credentials (DBSC).</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <DefineConstants>$(DefineConstants);SECURITY</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security;dbsc</PackageTags>
-    <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <Nullable>enable</Nullable>
     <NoWarn>$(NoWarn);RS0016;RS0026</NoWarn>
