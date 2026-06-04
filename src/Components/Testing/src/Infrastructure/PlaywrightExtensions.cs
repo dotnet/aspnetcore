@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Linq;
 using Microsoft.Playwright;
 using Microsoft.Playwright.Xunit.v3;
@@ -17,10 +16,11 @@ public static class PlaywrightExtensions
     // Cross-platform invalid file name characters. Path.GetInvalidFileNameChars()
     // is OS-dependent (Linux only returns '/' and '\0'), so we use a fixed set
     // covering Windows, macOS, and Linux to ensure consistent sanitization.
-    private static readonly SearchValues<char> s_invalidFileNameChars = SearchValues.Create(
-        "\\/:*?\"<>|" +
-        "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000A\u000B\u000C\u000D\u000E\u000F" +
-        "\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001A\u001B\u001C\u001D\u001E\u001F");
+    private static readonly HashSet<char> s_invalidFileNameChars =
+    [
+        '\\', '/', ':', '*', '?', '"', '<', '>', '|', '\0',
+        .. Enumerable.Range(1, 31).Select(i => (char)i)
+    ];
 
     // Toggle video recording via environment variable.
     // Set PLAYWRIGHT_RECORD_VIDEO=1 to enable video capture for all tests.
