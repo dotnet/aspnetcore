@@ -1,10 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.OpenApi.Extensions;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
+using System.Net.Http;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
@@ -100,6 +104,66 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
             x => Assert.Equal("v1", x));
     }
 
+    [Fact]
+    public async Task GenerateAsync_WithNullDocumentName_AndAdditionalDocumentNameProvider_GeneratesDocumentsForEachName()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddOpenApi(documentName: null);
+        builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameProvider>(
+            new MultiDocumentNameProvider(["products", "orders"]));
+
+        await using var app = builder.Build();
+
+        app.MapGet("/products", () => "All products")
+           .WithGroupName("products");
+        app.MapGet("/products/{id}", (int id) => $"Product {id}")
+           .WithGroupName("products");
+        app.MapGet("/orders", () => "All orders")
+           .WithGroupName("orders");
+        app.MapPost("/orders", () => "Order created")
+           .WithGroupName("orders");
+
+        await app.StartAsync();
+
+        var documentProvider = app.Services.GetRequiredService<IDocumentProvider>();
+
+        var documentNames = documentProvider.GetDocumentNames().ToList();
+        Assert.Equal(["products", "orders"], documentNames);
+
+        // Products document
+        var productsWriter = new StringWriter();
+        await documentProvider.GenerateAsync("products", productsWriter);
+        var productsJson = productsWriter.ToString();
+        var productsResult = OpenApiDocument.Parse(productsJson, format: "json");
+        Assert.Empty(productsResult.Diagnostic.Errors);
+
+        var productsDoc = productsResult.Document;
+        Assert.Equal(2, productsDoc.Paths.Count);
+        Assert.Contains("/products", productsDoc.Paths.Keys);
+        Assert.Contains("/products/{id}", productsDoc.Paths.Keys);
+        Assert.DoesNotContain("/orders", productsDoc.Paths.Keys);
+        Assert.True(productsDoc.Paths["/products"].Operations.ContainsKey(HttpMethod.Get));
+        Assert.True(productsDoc.Paths["/products/{id}"].Operations.ContainsKey(HttpMethod.Get));
+
+        // Orders document
+        var ordersWriter = new StringWriter();
+        await documentProvider.GenerateAsync("orders", ordersWriter);
+        var ordersJson = ordersWriter.ToString();
+        var ordersResult = OpenApiDocument.Parse(ordersJson, format: "json");
+        Assert.Empty(ordersResult.Diagnostic.Errors);
+
+        var ordersDoc = ordersResult.Document;
+        Assert.Single(ordersDoc.Paths);
+        Assert.Contains("/orders", ordersDoc.Paths.Keys);
+        Assert.DoesNotContain("/products", ordersDoc.Paths.Keys);
+        Assert.DoesNotContain("/products/{id}", ordersDoc.Paths.Keys);
+        Assert.True(ordersDoc.Paths["/orders"].Operations.ContainsKey(HttpMethod.Get));
+        Assert.True(ordersDoc.Paths["/orders"].Operations.ContainsKey(HttpMethod.Post));
+
+        await app.StopAsync();
+    }
+
     private static void ValidateOpenApiDocument(StringWriter stringWriter, Action<OpenApiDocument> action)
     {
         var result = OpenApiDocument.Parse(stringWriter.ToString());
@@ -121,5 +185,10 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         }
         var serviceProvider = serviceCollection.BuildServiceProvider(validateScopes: true);
         return serviceProvider;
+    }
+
+    private sealed class MultiDocumentNameProvider(IEnumerable<string> documentNames) : IAdditionalOpenApiDocumentNameProvider
+    {
+        public IEnumerable<string> DocumentNames => documentNames;
     }
 }
