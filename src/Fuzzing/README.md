@@ -40,12 +40,12 @@ Run `run.bat`, which will create separate directories for each fuzzing target, i
 When iterating on changes, remember to rebuild the project again.
 
 ```cmd
-dotnet build & run.bat
+dotnet build && run.bat
 ```
 
 Start fuzzing by running the `local-run.bat` script in the folder of the fuzzer you are interested in.
 ```cmd
-deployment\HeaderParserFuzzer\local-run.bat
+deployment\MultipartReaderFuzzer\local-run.bat
 ```
 
 By default, libFuzzer will run indefinitely, generating and testing random inputs. Press `Ctrl+C` to stop. When it discovers interesting inputs or crashes, it writes files to the current directory:
@@ -64,9 +64,9 @@ See the [libFuzzer options](https://llvm.org/docs/LibFuzzer.html#options) docume
 | `-jobs=5` | Run 5 parallel fuzzer instances |
 | `-max_len=1024` | Limit generated input size to 1024 bytes |
 
-For example, here is how you can run the fuzzer against a `header-inputs` corpus directory for 10 minutes, running multiple instances in parallel:
+For example, here is how you can run the fuzzer against a `multipart-inputs` corpus directory for 10 minutes, running multiple instances in parallel:
 ```cmd
-deployment\HeaderParserFuzzer\local-run.bat header-inputs -timeout=30 -max_total_time=600 -jobs=5
+deployment\MultipartReaderFuzzer\local-run.bat multipart-inputs -timeout=30 -max_total_time=600 -jobs=5
 ```
 
 ### Investigating crashes and timeouts
@@ -77,21 +77,21 @@ When libFuzzer finds a problem, it writes a `crash-<hash>` or `timeout-<hash>` f
 cd src/Fuzzing/AspNetCoreFuzzing
 
 :: Reproduce a single crash file
-dotnet run -- HeaderParserFuzzer C:\path\to\crash-abc123
+dotnet run -- MultipartReaderFuzzer C:\path\to\crash-abc123
 
 :: Reproduce all crash/timeout files in a directory
-dotnet run -- HeaderParserFuzzer C:\path\to\directory-with-crash-files\
+dotnet run -- MultipartReaderFuzzer C:\path\to\directory-with-crash-files\
 ```
 
 > [!TIP]
 > Since the project is self-contained, you can also run the exe directly without `dotnet run`:
 > ```cmd
-> artifacts\bin\AspNetCoreFuzzing\Debug\net11.0\win-x64\AspNetCoreFuzzing.exe HeaderParserFuzzer crash-abc123
+> artifacts\bin\AspNetCoreFuzzing\Debug\net11.0\win-x64\AspNetCoreFuzzing.exe MultipartReaderFuzzer crash-abc123
 > ```
 
 To debug interactively, set a breakpoint in the relevant fuzzer's `FuzzTarget` method and launch with a debugger:
 ```cmd
-dotnet run --no-build -- HeaderParserFuzzer crash-abc123
+dotnet run --no-build -- MultipartReaderFuzzer crash-abc123
 ```
 
 ### Available fuzzers
@@ -106,10 +106,10 @@ dotnet run --no-build
 After letting the fuzzer run for a while, you can use the generated inputs to test code coverage.
 
 ```cmd
-mkdir header-inputs
-deployment\HeaderParserFuzzer\local-run.bat header-inputs
+mkdir multipart-inputs
+deployment\MultipartReaderFuzzer\local-run.bat multipart-inputs
 
-.\collect-coverage.ps1 HeaderParserFuzzer header-inputs
+.\collect-coverage.ps1 MultipartReaderFuzzer multipart-inputs
 ```
 
 The HTML report can be opened from
@@ -151,17 +151,17 @@ Targets are discovered via reflection, so they will automatically become availab
 ### Running against a sample input
 
 The program accepts two arguments: the name of the fuzzer and the path to a sample input file or directory.
-To run the `HeaderParserFuzzer` target against the `inputs` directory, use the following command:
+To run the `MultipartReaderFuzzer` target against the `inputs` directory, use the following command:
 
 ```cmd
 cd src/Fuzzing/AspNetCoreFuzzing
 
-dotnet run -- HeaderParserFuzzer inputs
+dotnet run -- MultipartReaderFuzzer inputs
 ```
 
 You can also pass a single file:
 ```cmd
-dotnet run -- HeaderParserFuzzer inputs/sample.bin
+dotnet run -- MultipartReaderFuzzer inputs/sample.bin
 ```
 
 This is useful for regression testing — save interesting inputs or crash files and re-run them after a fix to confirm the issue is resolved.

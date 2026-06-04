@@ -1,4 +1,4 @@
-# Usage: .\collect-coverage.ps1 HeaderParserFuzzer .\header-inputs\
+# Usage: .\collect-coverage.ps1 <FuzzerName> .\multipart-inputs\
 param(
     [Parameter(Mandatory=$true, Position=0)]
     [string]$FuzzerName,
@@ -30,7 +30,7 @@ $installedTools = & $dotnetPath tool list
 $coverletInstalled = $installedTools | Select-String "coverlet.console"
 if (-not $coverletInstalled) {
     Write-Host "  Installing coverlet.console..." -ForegroundColor Yellow
-    & $dotnetPath tool install coverlet.console
+    & $dotnetPath tool install --global coverlet.console
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to install coverlet.console"
         exit 1
@@ -42,7 +42,7 @@ if (-not $coverletInstalled) {
 $reportGeneratorInstalled = $installedTools | Select-String "dotnet-reportgenerator-globaltool"
 if (-not $reportGeneratorInstalled) {
     Write-Host "  Installing dotnet-reportgenerator-globaltool..." -ForegroundColor Yellow
-    & $dotnetPath tool install dotnet-reportgenerator-globaltool
+    & $dotnetPath tool install --global dotnet-reportgenerator-globaltool
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Failed to install reportgenerator."
         exit 1

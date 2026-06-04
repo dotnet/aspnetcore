@@ -69,20 +69,17 @@ internal sealed class MultipartReaderFuzzer : IFuzzer
 
                 // Drain the section body to exercise the stream reading logic.
                 var buffer = new byte[1024];
-                int totalRead = 0;
-                int read;
-                if (async)
+                int read = 1;
+                while (read > 0)
                 {
-                    read = await section.Body.ReadAsync(buffer);
-                }
-                else
-                {
-                    read = section.Body.Read(buffer, 0, buffer.Length);
-                }
-
-                while (read > 0 && totalRead < 64 * 1024)
-                {
-                    totalRead += read;
+                    if (async)
+                    {
+                        read = await section.Body.ReadAsync(buffer);
+                    }
+                    else
+                    {
+                        read = section.Body.Read(buffer, 0, buffer.Length);
+                    }
                 }
 
                 section = await reader.ReadNextSectionAsync(CancellationToken.None);

@@ -369,7 +369,7 @@ public static class Program
 
     private static string GenerateLocalRunHelperScript(IFuzzer fuzzer)
     {
-        string script = $"%~dp0/libfuzzer-dotnet.exe --target_path=%~dp0/AspNetCoreFuzzing.exe --target_arg={fuzzer.Name}";
+        string script = $"%~dp0libfuzzer-dotnet.exe --target_path=%~dp0AspNetCoreFuzzing.exe --target_arg={fuzzer.Name}";
 
         if (fuzzer.Dictionary is not null)
         {
@@ -385,7 +385,7 @@ public static class Program
         // new inputs get added there instead.
         if (fuzzer.Corpus is not null)
         {
-            script += " %~dp0/corpus";
+            script += " %~dp0corpus";
         }
 
         return script;

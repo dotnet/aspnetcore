@@ -237,7 +237,7 @@ internal sealed class MultipartReaderStream : Stream
 
             if (!stream.FinalBoundaryFound && !remainder.IsEmpty)
             {
-                throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
+                throw new IOException("Unexpected data found on the boundary line.");
             }
             stream._finished = true;
             return 0;
@@ -327,7 +327,7 @@ internal sealed class MultipartReaderStream : Stream
 
             if (!stream.FinalBoundaryFound && !string.Equals(string.Empty, remainder, StringComparison.Ordinal))
             {
-                throw new IOException("Unexpected end of Stream, the content may have already been read by another component. ");
+                throw new IOException("Unexpected data found on the boundary line.");
             }
 
             stream._finished = true;
