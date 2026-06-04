@@ -290,4 +290,84 @@ public record CreateRecordCommand : RecordCommandBase<CreateRecordCommand>
             }
         });
     }
+
+    // Coverage for the ContainsTypeParameter guard — the typeof(TSelf) compile-error half of
+    // issue dotnet/aspnetcore#65418. A generic endpoint helper constrains its request type to a
+    // CRTP base (where T : Node<T>) whose only validatable member is itself of the type
+    // parameter. Reached through the constraint walk as an open type, that member's type is the
+    // unresolved parameter, so ContainsTypeParameter is true and the member is dropped — at the
+    // regular-property guard for the class (Node<TSelf>.Next) and at the record primary-constructor
+    // guard for the record (RecordNode<TSelf>(TSelf Link)). With the member dropped, the base has no
+    // validatable members and is never emitted as a ValidatableType, so the snapshot resolver
+    // contains neither Node<T> nor RecordNode<T>.
+    //
+    // Without the guard the generator keeps the member and adds the open base with
+    // typeof(global::Node<T>) — T is not in scope in the generated resolver — and the generated
+    // code fails to compile (CS0246). VerifyEndpoint re-emits source + generated code and asserts
+    // the emit succeeds, so this test is exactly that compile-error repro.
+    [Fact]
+    public async Task DoesNotEmitTypeofForTypeParameterMembersReachedThroughConstraint()
+    {
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Validation;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapValidatedNode<ConcreteNode>("/nodes");
+app.MapValidatedRecord<ConcreteRecord>("/records");
+
+app.Run();
+
+public class Node<TSelf> where TSelf : Node<TSelf>
+{
+    [Required]
+    public TSelf Next { get; set; } = default!;
+}
+
+public class ConcreteNode : Node<ConcreteNode>
+{
+}
+
+public record RecordNode<TSelf>(TSelf Link) where TSelf : RecordNode<TSelf>;
+
+public record ConcreteRecord() : RecordNode<ConcreteRecord>(default!);
+
+public static class GenericCrtpEndpointExtensions
+{
+    public static RouteHandlerBuilder MapValidatedNode<T>(this IEndpointRouteBuilder endpoints, string pattern)
+        where T : Node<T>
+        => endpoints.MapPost(pattern, (T req) => Results.Ok());
+
+    public static RouteHandlerBuilder MapValidatedRecord<T>(this IEndpointRouteBuilder endpoints, string pattern)
+        where T : RecordNode<T>
+        => endpoints.MapPost(pattern, (T req) => Results.Ok());
+}
+""";
+        await Verify(source, out var compilation);
+
+        // Reaching either callback proves source + generated code compiled and the host started;
+        // without the guard the generated resolver references typeof(global::Node<T>) and fails to
+        // compile at the VerifyEndpoint emit step.
+        await VerifyEndpoint(compilation, "/nodes", (endpoint, _) =>
+        {
+            Assert.NotNull(endpoint);
+            return Task.CompletedTask;
+        });
+
+        await VerifyEndpoint(compilation, "/records", (endpoint, _) =>
+        {
+            Assert.NotNull(endpoint);
+            return Task.CompletedTask;
+        });
+    }
 }
