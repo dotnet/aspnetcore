@@ -407,7 +407,8 @@ public class WebViewManagerTests
         Assert.False(pendingInvoke.IsCompleted);
 
         // Pull the asyncHandle out of the outbound BeginInvokeJS message.
-        var beginInvokeMessage = webViewManager.SentIpcMessages.Last();
+        var beginInvokeMessage = webViewManager.SentIpcMessages.Reverse().First(m =>
+            IpcCommon.TryDeserializeOutgoing(m, out var t, out _) && t == IpcCommon.OutgoingMessageType.BeginInvokeJS);
         Assert.True(IpcCommon.TryDeserializeOutgoing(beginInvokeMessage, out var outMsgType, out var outArgs));
         Assert.Equal(IpcCommon.OutgoingMessageType.BeginInvokeJS, outMsgType);
         var asyncHandle = outArgs[0].GetInt64();
@@ -451,7 +452,8 @@ public class WebViewManagerTests
         var pendingInvoke = capturedRuntime.InvokeAsync<byte[]>("returnBytes", Array.Empty<object>()).AsTask();
         Assert.False(pendingInvoke.IsCompleted);
 
-        var beginInvokeMessage = webViewManager.SentIpcMessages.Last();
+        var beginInvokeMessage = webViewManager.SentIpcMessages.Reverse().First(m =>
+            IpcCommon.TryDeserializeOutgoing(m, out var t, out _) && t == IpcCommon.OutgoingMessageType.BeginInvokeJS);
         Assert.True(IpcCommon.TryDeserializeOutgoing(beginInvokeMessage, out var outMsgType, out var outArgs));
         Assert.Equal(IpcCommon.OutgoingMessageType.BeginInvokeJS, outMsgType);
         var asyncHandle = outArgs[0].GetInt64();
@@ -479,6 +481,33 @@ public class WebViewManagerTests
         var completed = await Task.WhenAny(pendingInvoke, Task.Delay(TimeSpan.FromSeconds(5)));
         Assert.Same(pendingInvoke, completed);
         Assert.Equal(payload, await pendingInvoke);
+    }
+
+    [Fact]
+    public async Task WebViewManagerDispose_DoesNotHangWhenPendingRenderBatchAckNeverArrives()
+    {
+        // Round-4 rubber-duck concern: WebViewRenderer.UpdateDisplayAsync enqueues a
+        // TaskCompletionSource for each render batch and returns the TCS task. The TCS
+        // is only completed by an OnRenderCompleted IPC arriving back from JS. After
+        // IpcSender.Dispose() drops outbound traffic during teardown, the sent
+        // ApplyRenderBatch may never get a JS-side ack, leaving the TCS pending. If
+        // anything awaited that task during disposal (e.g., AttachToPageAsync's
+        // Task.WhenAll on pendingRenders, or a renderer disposal flush), DisposeAsync
+        // would hang.
+        //
+        // This test exercises the disposal path while the test harness never sends
+        // back any OnRenderCompleted IPC, so any orphaned render TCS would hang dispose.
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+
+        var disposeTask = webViewManager.DisposeAsync().AsTask();
+        var completed = await Task.WhenAny(disposeTask, Task.Delay(TimeSpan.FromSeconds(5)));
+
+        Assert.Same(disposeTask, completed);
+        await disposeTask; // surface any exception
     }
 
     private static IServiceCollection RegisterTestServices()
