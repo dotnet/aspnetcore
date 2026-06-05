@@ -72,33 +72,30 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     spacerAfter.style.display = 'table-row';
   }
 
-  // Sets base layout rules referencing custom properties (with fallbacks) so values
-  // C# doesn't emit naturally resolve to defaults. Applied per-element on first sight.
+  // Applies one-time base style (flex-shrink) on first sight of an element.
   const baseStylesAppliedProp = Symbol();
   function ensureBaseStyles(el: HTMLElement): void {
     if ((el as any)[baseStylesAppliedProp]) {
       return;
     }
     (el as any)[baseStylesAppliedProp] = true;
-    el.style.height = 'var(--blazor-virtualize-reserved-height, 0)';
     el.style.flexShrink = '0';
-    el.style.transform = 'var(--blazor-virtualize-loop-breaker-transform, none)';
   }
 
   const layoutAttrs = [
-    ['data-blazor-virtualize-reserved-height', '--blazor-virtualize-reserved-height', (n: number) => `${n}px`],
-    ['data-blazor-virtualize-loop-breaker-transform', '--blazor-virtualize-loop-breaker-transform', (n: number) => `translateY(${n}px)`],
+    ['data-blazor-virtualize-reserved-height', 'height', (n: number) => `${n}px`],
+    ['data-blazor-virtualize-loop-breaker-transform', 'transform', (n: number) => `translateY(${n}px)`],
   ] as const;
   const layoutAttrNames = layoutAttrs.map(([a]) => a);
   function applyLayoutAttrs(el: HTMLElement): void {
     ensureBaseStyles(el);
-    for (const [attr, cssVar, format] of layoutAttrs) {
+    for (const [attr, styleProp, format] of layoutAttrs) {
       const raw = el.getAttribute(attr);
       const n = raw ? Number(raw) : NaN;
       if (Number.isFinite(n)) {
-        el.style.setProperty(cssVar, format(n));
+        el.style.setProperty(styleProp, format(n));
       } else {
-        el.style.removeProperty(cssVar);
+        el.style.removeProperty(styleProp);
       }
     }
   }

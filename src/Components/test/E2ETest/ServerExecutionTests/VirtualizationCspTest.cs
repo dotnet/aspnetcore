@@ -95,18 +95,16 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
             "el.setAttribute('data-blazor-virtualize-loop-breaker-transform', arguments[1]);",
             spacerSelector, invalidValue);
 
-        // Invalid values must result in the custom property being removed (empty).
+        // Invalid values must result in the inline style being removed (empty).
         Browser.True(() =>
         {
-            var heightVar = (string)js.ExecuteScript(
-                "return getComputedStyle(document.querySelector(arguments[0]))" +
-                ".getPropertyValue('--blazor-virtualize-reserved-height').trim();",
+            var heightStyle = (string)js.ExecuteScript(
+                "return document.querySelector(arguments[0]).style.height;",
                 spacerSelector);
-            var transformVar = (string)js.ExecuteScript(
-                "return getComputedStyle(document.querySelector(arguments[0]))" +
-                ".getPropertyValue('--blazor-virtualize-loop-breaker-transform').trim();",
+            var transformStyle = (string)js.ExecuteScript(
+                "return document.querySelector(arguments[0]).style.transform;",
                 spacerSelector);
-            return heightVar == "" && transformVar == "";
+            return heightStyle == "" && transformStyle == "";
         });
 
         AssertNoStyleCspViolations();
