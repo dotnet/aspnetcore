@@ -48,6 +48,12 @@
       we intentionally do not do that in this project.
     -->
     <HelixTestConfigurationFilePath>$(RepoRoot)eng/test-configuration.json</HelixTestConfigurationFilePath>
+    <!--
+      Maximum number of small test assemblies grouped into a single Helix work item.
+      20 balances reducing per-work-item overhead (payload upload, machine acquisition,
+      result reporting) against keeping each batch's total runtime well within the
+      work item timeout. Override by setting HelixWorkItemMaxBatchSize.
+    -->
     <HelixWorkItemMaxBatchSize Condition="'$(HelixWorkItemMaxBatchSize)' == ''">20</HelixWorkItemMaxBatchSize>
   </PropertyGroup>
 

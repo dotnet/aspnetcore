@@ -246,8 +246,8 @@ public class TestRunner
         try
         {
             // Timeout test run 5 minutes before the Helix job would timeout.
-            // For batched items, Options.Timeout is already scaled to the batch size
-            // (2min/assembly + 5min overhead, set in helix.proj's BatchHelixWorkItems task).
+            // Batched items inherit the same timeout each individual work item was given
+            // (the repo's HelixTimeout), set in helix.proj's BatchHelixWorkItems task.
             var testProcessTimeout = Options.Timeout.Subtract(TimeSpan.FromMinutes(5));
             if (testProcessTimeout <= TimeSpan.Zero)
             {

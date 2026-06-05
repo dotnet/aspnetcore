@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
@@ -32,19 +31,10 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
     public bool IsWindowsQueue { get; set; }
 
     /// <summary>
-    /// Minutes of test execution time to allow per assembly in a batch.
+    /// Fallback work item timeout (HH:MM:SS) used when an item has no Timeout metadata.
+    /// Batched items otherwise inherit the same timeout each individual work item was given.
     /// </summary>
-    public int TimeoutMinutesPerAssembly { get; set; } = 2;
-
-    /// <summary>
-    /// Minutes of fixed overhead to add to each batch timeout (tool installs, result upload, etc.).
-    /// </summary>
-    public int TimeoutMinutesOverhead { get; set; } = 5;
-
-    /// <summary>
-    /// Maximum timeout in minutes for any single batch.
-    /// </summary>
-    public int MaxTimeoutMinutes { get; set; } = 45;
+    public string DefaultTimeout { get; set; } = "00:45:00";
 
     [Output]
     public ITaskItem[] BatchedWorkItems { get; set; }
@@ -154,12 +144,6 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                     targets.Add($"{assemblyName}{relativeSeparator}{testAssembly}");
                 }
 
-                var batchTimeout = TimeSpan.FromMinutes(TimeoutMinutesPerAssembly * chunk.Count + TimeoutMinutesOverhead);
-                if (batchTimeout > TimeSpan.FromMinutes(MaxTimeoutMinutes))
-                {
-                    batchTimeout = TimeSpan.FromMinutes(MaxTimeoutMinutes);
-                }
-
                 File.WriteAllLines(Path.Combine(batchDirectory, "targets.txt"), targets);
 
                 var batchedWorkItem = new TaskItem($"batch_{batchNumber}--{group.Key}");
@@ -184,7 +168,18 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                 {
                     return false;
                 }
-                var timeoutStr = batchTimeout.ToString("c", CultureInfo.InvariantCulture);
+
+                // A batch inherits the same timeout each individual work item was given
+                // (the repo's HelixTimeout, 45 minutes by default). Batches run in parallel
+                // on the queue just like individual items did, and the per-test
+                // --blame-hang-timeout (15 min) catches genuinely hung tests, so there is no
+                // need to scale the work item timeout down for batched runs.
+                var timeoutStr = firstItem.GetMetadata("Timeout");
+                if (string.IsNullOrWhiteSpace(timeoutStr))
+                {
+                    timeoutStr = DefaultTimeout;
+                }
+
                 var script = IsWindowsQueue ? "call runtests.cmd" : "./runtests.sh";
                 var command = $"{script} @targets.txt {runtimeVersion} {queueName} {arch} {quarantined} {timeoutStr} false";
 

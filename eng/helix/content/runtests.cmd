@@ -2,9 +2,9 @@
 SETLOCAL EnableDelayedExpansion
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
-REM First arg is always @targets.txt
-set "$firstArg=%~1"
-set "$targetsFile=!$firstArg:~1!"
+REM First arg is always @targets.txt; strip the leading '@' to get the file name
+set "$targetsArg=%~1"
+set "$targetsFile=!$targetsArg:~1!"
 set "$aspRuntimeVersion=%~2"
 set "$queue=%~3"
 set "$arch=%~4"
