@@ -60,11 +60,10 @@ public static class BlazorGateway
             app.UseHsts();
         }
 
-        // Only redirect document navigations (browser URL bar / top-level navigation) from HTTP
-        // to HTTPS. The Sec-Fetch-Dest header distinguishes navigations from subresource loads
-        // and API fetches. This ensures the WASM client loads on HTTPS when available, making
-        // OTLP and service fetch requests same-origin, without redirecting programmatic requests
-        // that might legitimately target the HTTP endpoint.
+        // Only redirect top-level navigations (browser URL bar) from HTTP to HTTPS.
+        // The Sec-Fetch-Dest header distinguishes navigations from subresource loads
+        // and API fetches. This ensures the served document loads on HTTPS when
+        // available, making subsequent fetch/XHR requests same-origin.
         // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest
         app.UseWhen(
             context => string.Equals(
@@ -101,7 +100,7 @@ public static class BlazorGateway
                     .WithMetadata(new ContentEncodingMetadata("identity", 1.0));
             }
 
-            if (!string.IsNullOrEmpty(appConfig.EndpointsManifest) && File.Exists(appConfig.EndpointsManifest))
+            if (!string.IsNullOrEmpty(appConfig.EndpointsManifest))
             {
                 app.MapGroup(appConfig.PathPrefix ?? "").MapStaticAssets(appConfig.EndpointsManifest);
             }
@@ -117,13 +116,6 @@ public static class BlazorGateway
             logging.IncludeFormattedMessage = true;
             logging.IncludeScopes = true;
         });
-
-        // Suppress verbose per-request logs from ASP.NET Core and HttpClient
-        // for static assets, OTLP ingestion, and OTLP export to keep the
-        // dashboard focused on application-level activity.
-        builder.Logging.AddFilter("Microsoft.AspNetCore.StaticAssets", LogLevel.Warning);
-        builder.Logging.AddFilter("Microsoft.AspNetCore.Routing", LogLevel.Warning);
-        builder.Logging.AddFilter("System.Net.Http.HttpClient.OtlpExporter", LogLevel.Warning);
 
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
@@ -141,7 +133,7 @@ public static class BlazorGateway
                             var path = context.Request.Path.Value;
                             return !context.Request.Path.StartsWithSegments("/health")
                                 && !context.Request.Path.StartsWithSegments("/alive")
-                                && (path is null || !path.Contains("/_otlp/", StringComparison.Ordinal));
+                                && (path is null || !path.Contains("/_otlp/", StringComparison.OrdinalIgnoreCase));
                         }
                     )
                     .AddHttpClientInstrumentation(options =>
@@ -149,7 +141,7 @@ public static class BlazorGateway
                         // to prevent a feedback loop (exporting traces creates new traces).
                         options.FilterHttpRequestMessage = request =>
                             request.RequestUri is null
-                            || !request.RequestUri.AbsolutePath.StartsWith("/v1/", StringComparison.Ordinal)
+                            || !request.RequestUri.AbsolutePath.StartsWith("/v1/", StringComparison.OrdinalIgnoreCase)
                     );
             });
 

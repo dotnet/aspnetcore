@@ -9,6 +9,6 @@
     <_GatewayStaticWebAssetsManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'staticwebassets.development.json'))</_GatewayStaticWebAssetsManifest>
     <_GatewayEndpointsManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'staticwebassets.build.endpoints.json'))</_GatewayEndpointsManifest>
     <RunCommand>dotnet</RunCommand>
-    <RunArguments>&quot;$(_BlazorGatewayDll)&quot; --environment Development --staticWebAssets &quot;$(_GatewayStaticWebAssetsManifest)&quot; --ClientApps:app:EndpointsManifest &quot;$(_GatewayEndpointsManifest)&quot; --ClientApps:app:PathPrefix &quot;&quot;</RunArguments>
+    <RunArguments>&quot;$(_BlazorGatewayDll)&quot; --environment Development --staticWebAssets &quot;$(_GatewayStaticWebAssetsManifest)&quot; --ClientApps:app:EndpointsManifest &quot;$(_GatewayEndpointsManifest)&quot; --ClientApps:app:PathPrefix &quot;&quot; --Logging:LogLevel:Microsoft=Warning --Logging:LogLevel:Microsoft.Hosting.Lifetime=Information --Logging:LogLevel:System.Net.Http.HttpClient.OtlpExporter=Warning</RunArguments>
   </PropertyGroup>
 </Project>
