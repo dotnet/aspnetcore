@@ -2016,7 +2016,7 @@ public static class BindConverter
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL2060:MakeGenericMethod",
-            Justification = "ConvertToEnum has DynamicallyAccessedMembers(All) constraint. T is constrained to have All members, so this is safe.")]
+            Justification = "ConvertToEnum<TEnum> does not impose DynamicallyAccessedMembers requirements on its generic parameter; this MakeGenericMethod usage is safe from a trimming perspective.")]
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL3050",
