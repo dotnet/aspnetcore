@@ -1,8 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.StaticAssets;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
@@ -18,10 +27,11 @@ public static class BlazorGateway
     /// Builds a <see cref="WebApplication"/> configured as a Blazor Gateway.
     /// Reads ClientApps config section for endpoint manifests and YARP reverse proxy configuration.
     /// </summary>
-    public static WebApplication BuildWebHost(string[] args)
-    {
-        var builder = WebApplication.CreateSlimBuilder(args);
+    public static WebApplication BuildWebHost(string[] args) =>
+        BuildWebHost(WebApplication.CreateSlimBuilder(args));
 
+    internal static WebApplication BuildWebHost(WebApplicationBuilder builder)
+    {
         var options = new BlazorGatewayOptions();
         builder.Configuration.GetSection(BlazorGatewayOptions.SectionName).Bind(options);
 
@@ -148,43 +158,11 @@ public static class BlazorGateway
             {
                 tracing.AddSource(builder.Environment.ApplicationName)
                     .AddAspNetCoreInstrumentation(options =>
-                        options.Filter = context =>
-                        {
-                            var path = context.Request.Path.Value;
-                            if (path is null)
-                            {
-                                return true;
-                            }
-                            foreach (var excluded in telemetry.ExcludePaths)
-                            {
-                                if (context.Request.Path.StartsWithSegments(excluded) ||
-                                    path.Contains(excluded, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-                    )
+                        options.Filter = context => TelemetryFilters.ShouldTraceInboundRequest(context.Request.Path, telemetry.ExcludePaths))
                     .AddHttpClientInstrumentation(options =>
                         // Filter out the gateway's own OTLP export calls to the dashboard
                         // to prevent a feedback loop (exporting traces creates new traces).
-                        options.FilterHttpRequestMessage = request =>
-                        {
-                            if (request.RequestUri is null)
-                            {
-                                return true;
-                            }
-                            foreach (var excluded in telemetry.ExcludeOutboundPaths)
-                            {
-                                if (request.RequestUri.AbsolutePath.StartsWith(excluded, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-                    );
+                        options.FilterHttpRequestMessage = request => TelemetryFilters.ShouldTraceOutboundRequest(request.RequestUri, telemetry.ExcludeOutboundPaths));
             });
 
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);

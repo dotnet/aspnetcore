@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.Components.Gateway</RootNamespace>
+    <Nullable>enable</Nullable>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\BlazorGateway.cs" />
+    <Compile Include="..\src\BlazorGatewayOptions.cs" />
+    <Compile Include="..\src\TelemetryFilters.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <Reference Include="Yarp.ReverseProxy" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
+  </ItemGroup>
+
+</Project>
