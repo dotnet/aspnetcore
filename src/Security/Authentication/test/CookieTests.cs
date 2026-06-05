@@ -307,6 +307,45 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
+    public async Task SignOutClearsSessionKeySoSubsequentSignInGeneratesNewKey()
+    {
+        var sessionStore = new TestTicketStore();
+        using var host = await CreateHostWithServices(s =>
+        {
+            s.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(o =>
+            {
+                o.TimeProvider = _timeProvider;
+                o.SessionStore = sessionStore;
+            });
+        }, async context =>
+        {
+            if (context.Request.Query.ContainsKey("signoutfirst"))
+            {
+                await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            }
+            await SignInAsAlice(context);
+        });
+
+        using var server = host.GetTestServer();
+
+        // Establish an initial session with one key in the store.
+        var transaction1 = await SendAsync(server, "http://example.com/testpath");
+        var key1 = Assert.Single(sessionStore.Store.Keys);
+
+        // In the same request, sign out and then sign back in while attaching the existing cookie.
+        // SignOutAsync must clear the cached session key so that the subsequent SignInAsync
+        // generates a fresh key via StoreAsync rather than reusing the just-removed key via RenewAsync.
+        // See https://github.com/dotnet/aspnetcore/issues/47503.
+        var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/testpath?signoutfirst=1");
+        request.Headers.Add("Cookie", transaction1.CookieNameValue);
+        var response = await server.CreateClient().SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        var key2 = Assert.Single(sessionStore.Store.Keys);
+        Assert.NotEqual(key1, key2);
+    }
+
+    [Fact]
     public async Task CustomAuthSchemeEncodesCookieName()
     {
         var schemeName = "With spaces and 界";
