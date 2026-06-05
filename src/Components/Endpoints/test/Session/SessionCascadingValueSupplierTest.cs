@@ -62,7 +62,7 @@ public class SessionCascadingValueSupplierTest
     public async Task PersistAllValues_RemovesKey_WhenCallbackReturnsNull()
     {
         var httpContext = CreateHttpContextWithSession();
-        httpContext.Session.SetString("key", "previous");
+        httpContext.Session.SetString("key", "\"existing\"");
 
         _supplier.RegisterValueCallback("key", () => null);
         _supplier.SetRequestContext(httpContext);

@@ -38,10 +38,7 @@ internal partial class SessionCascadingValueSupplier
     {
         if (_httpContext is not null)
         {
-            // Ensure a session cookie is issued before the first response chunk flushes,
-            // so the value the component will produce can be persisted even if the write
-            // happens after streaming has started. Idempotent and no-op when session
-            // middleware is not registered or the response has already started.
+            // Ensure that session cookie is issued to allow for persistence from streaming context
             SessionEstablishmentHelper.TryRegisterSessionEstablishment(_httpContext);
         }
 
@@ -103,13 +100,6 @@ internal partial class SessionCascadingValueSupplier
                     session.Remove(sessionKey);
                 }
             }
-            catch (InvalidOperationException ex)
-            {
-                // Most likely: session.Set threw because the response has already started
-                // and no session cookie was issued before the first flush — i.e. the value
-                // is being written by a component that first mounted during streaming.
-                Log.SessionPersistFailAfterResponseStarted(_logger, sessionKey, ex);
-            }
             catch (Exception ex)
             {
                 Log.SessionPersistFail(_logger, ex);
@@ -130,13 +120,6 @@ internal partial class SessionCascadingValueSupplier
 
         [LoggerMessage(2, LogLevel.Warning, "Deserialization of the element from session failed.", EventName = "SessionDeserializeFail")]
         public static partial void SessionDeserializeFail(ILogger logger, Exception exception);
-
-        [LoggerMessage(3, LogLevel.Warning,
-            "The session value for key '{SessionKey}' could not be persisted because the response has already started and the session cookie was not issued in time. " +
-            "This typically happens when a component using [SupplyParameterFromSession] is first mounted during streaming SSR. " +
-            "Declare the parameter on a component that mounts in the initial (pre-streaming) render tree to ensure the session cookie is issued before the first flush.",
-            EventName = "SessionPersistFailAfterResponseStarted")]
-        public static partial void SessionPersistFailAfterResponseStarted(ILogger logger, string sessionKey, Exception exception);
     }
 
     internal partial class SessionSubscription : CascadingParameterSubscription

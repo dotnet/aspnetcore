@@ -40,11 +40,6 @@ internal sealed partial class TempDataService
         _tempDataProvider.SaveTempData(httpContext, data.Save());
     }
 
-    // Persists the per-request TempData (created lazily in
-    // TempDataProviderServiceCollectionExtensions.GetOrCreateTempData) at the end of
-    // rendering. Called explicitly by the invoker after streaming completes.
-    // Cookie-based TempData cannot append Set-Cookie after Response.HasStarted, so we
-    // log a warning and skip persistence in that case rather than throwing.
     public void Persist(HttpContext httpContext)
     {
         if (!httpContext.Items.TryGetValue(TempDataProviderServiceCollectionExtensions.HttpContextItemKey, out var tempDataObj)

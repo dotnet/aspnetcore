@@ -58,10 +58,7 @@ internal static class TempDataProviderServiceCollectionExtensions
         var tempDataInstance = tempDataService.CreateEmpty(httpContext);
         httpContext.Items[HttpContextItemKey] = tempDataInstance;
 
-        // For session-storage TempData, ensure a session cookie is issued before the
-        // first response chunk flushes so that values written during or after streaming
-        // SSR can still be persisted. Cookie-based TempData can't be saved post-flush
-        // and is handled by a separate warning at persist time.
+        // Ensure that session cookie is issued to allow for persistence from streaming context
         if (httpContext.RequestServices.GetService<ITempDataProvider>() is SessionStorageTempDataProvider)
         {
             SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
