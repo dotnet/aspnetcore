@@ -118,6 +118,15 @@ public sealed class EditContext
     }
 
     /// <summary>
+    /// Signals that the validation state for the specified field has changed.
+    /// </summary>
+    /// <param name="fieldIdentifier">Identifies the field whose validation state has changed.</param>
+    public void NotifyValidationStateChanged(in FieldIdentifier fieldIdentifier)
+    {
+        OnValidationStateChanged?.Invoke(this, new ValidationStateChangedEventArgs(fieldIdentifier));
+    }
+
+    /// <summary>
     /// Clears any modification flag that may be tracked for the specified field.
     /// </summary>
     /// <param name="fieldIdentifier">Identifies the field whose modification flag (if any) should be cleared.</param>
@@ -248,7 +257,7 @@ public sealed class EditContext
     /// <see cref="OnValidationRequestedAsync"/>, or <see cref="OnValidationStateChanged"/>
     /// handler attached to the same <see cref="EditContext"/>; doing so produces undefined
     /// behavior (in particular, it can cause infinite recursion via the validator's own
-    /// <see cref="NotifyValidationStateChanged"/> calls).
+    /// <see cref="NotifyValidationStateChanged()"/> calls).
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown when an <see cref="OnValidationRequestedAsync"/> handler does not complete synchronously.
