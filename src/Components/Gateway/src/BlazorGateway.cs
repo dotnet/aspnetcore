@@ -20,20 +20,38 @@ public static class BlazorGateway
     /// </summary>
     public static WebApplication BuildWebHost(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var builder = WebApplication.CreateSlimBuilder(args);
 
-        builder.ConfigureOpenTelemetry();
+        var options = new BlazorGatewayOptions();
+        builder.Configuration.GetSection(BlazorGatewayOptions.SectionName).Bind(options);
 
-        builder.Services.AddHealthChecks()
-            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
+        if (options.Telemetry.Enabled)
+        {
+            builder.ConfigureOpenTelemetry(options.Telemetry);
+        }
 
-        builder.Services.AddServiceDiscovery();
+        if (options.HealthChecks.Enabled)
+        {
+            builder.Services.AddHealthChecks()
+                .AddCheck("self", () => HealthCheckResult.Healthy(), [options.HealthChecks.LivenessTag]);
+        }
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            http.AddStandardResilienceHandler();
-            http.AddServiceDiscovery();
+            if (options.HttpClient.StandardResilience)
+            {
+                http.AddStandardResilienceHandler();
+            }
+            if (options.HttpClient.ServiceDiscovery)
+            {
+                http.AddServiceDiscovery();
+            }
         });
+
+        if (options.HttpClient.ServiceDiscovery)
+        {
+            builder.Services.AddServiceDiscovery();
+        }
 
         builder.WebHost.UseStaticWebAssets();
 
@@ -55,35 +73,37 @@ public static class BlazorGateway
         // HSTS tells browsers to always use HTTPS for this host, preventing future HTTP requests.
         // Only enable in non-development to avoid interfering with dev certificates and localhost.
         // See https://aka.ms/aspnetcore-hsts
-        if (!app.Environment.IsDevelopment())
+        if (!app.Environment.IsDevelopment() && options.Hsts.Enabled)
         {
             app.UseHsts();
         }
 
-        // Only redirect top-level navigations (browser URL bar) from HTTP to HTTPS.
-        // The Sec-Fetch-Dest header distinguishes navigations from subresource loads
-        // and API fetches. This ensures the served document loads on HTTPS when
-        // available, making subsequent fetch/XHR requests same-origin.
-        // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest
-        app.UseWhen(
-            context => string.Equals(
-                context.Request.Headers["Sec-Fetch-Dest"].ToString(),
-                "document",
-                StringComparison.OrdinalIgnoreCase),
-            branch => branch.UseHttpsRedirection());
-
-        var pathBase = builder.Configuration.GetValue<string>("pathbase");
-        if (!string.IsNullOrEmpty(pathBase))
+        if (options.HttpsRedirection.Enabled)
         {
-            app.UsePathBase(pathBase);
+            // Only redirect top-level navigations (browser URL bar) from HTTP to HTTPS.
+            // The Sec-Fetch-Dest header distinguishes navigations from subresource loads
+            // and API fetches. This ensures the served document loads on HTTPS when
+            // available, making subsequent fetch/XHR requests same-origin.
+            // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Sec-Fetch-Dest
+            app.UseWhen(
+                context => string.Equals(
+                    context.Request.Headers["Sec-Fetch-Dest"].ToString(),
+                    "document",
+                    StringComparison.OrdinalIgnoreCase),
+                branch => branch.UseHttpsRedirection());
         }
 
-        if (app.Environment.IsDevelopment())
+        if (!string.IsNullOrEmpty(options.PathBase))
         {
-            app.MapHealthChecks("/health");
-            app.MapHealthChecks("/alive", new HealthCheckOptions
+            app.UsePathBase(options.PathBase);
+        }
+
+        if (app.Environment.IsDevelopment() && options.HealthChecks.Enabled)
+        {
+            app.MapHealthChecks(options.HealthChecks.Path);
+            app.MapHealthChecks(options.HealthChecks.LivenessPath, new HealthCheckOptions
             {
-                Predicate = r => r.Tags.Contains("live")
+                Predicate = r => r.Tags.Contains(options.HealthChecks.LivenessTag)
             });
         }
 
@@ -109,7 +129,7 @@ public static class BlazorGateway
         return app;
     }
 
-    private static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder)
+    private static IHostApplicationBuilder ConfigureOpenTelemetry(this IHostApplicationBuilder builder, BlazorGatewayOptions.TelemetryOptions telemetry)
     {
         builder.Logging.AddOpenTelemetry(logging =>
         {
@@ -131,17 +151,39 @@ public static class BlazorGateway
                         options.Filter = context =>
                         {
                             var path = context.Request.Path.Value;
-                            return !context.Request.Path.StartsWithSegments("/health")
-                                && !context.Request.Path.StartsWithSegments("/alive")
-                                && (path is null || !path.Contains("/_otlp/", StringComparison.OrdinalIgnoreCase));
+                            if (path is null)
+                            {
+                                return true;
+                            }
+                            foreach (var excluded in telemetry.ExcludePaths)
+                            {
+                                if (context.Request.Path.StartsWithSegments(excluded) ||
+                                    path.Contains(excluded, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return false;
+                                }
+                            }
+                            return true;
                         }
                     )
                     .AddHttpClientInstrumentation(options =>
                         // Filter out the gateway's own OTLP export calls to the dashboard
                         // to prevent a feedback loop (exporting traces creates new traces).
                         options.FilterHttpRequestMessage = request =>
-                            request.RequestUri is null
-                            || !request.RequestUri.AbsolutePath.StartsWith("/v1/", StringComparison.OrdinalIgnoreCase)
+                        {
+                            if (request.RequestUri is null)
+                            {
+                                return true;
+                            }
+                            foreach (var excluded in telemetry.ExcludeOutboundPaths)
+                            {
+                                if (request.RequestUri.AbsolutePath.StartsWith(excluded, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        }
                     );
             });
 
