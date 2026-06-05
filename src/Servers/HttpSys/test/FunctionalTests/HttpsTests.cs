@@ -263,6 +263,43 @@ public class HttpsTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetRequestProperty_TlsCipherInfo_RoundTrips()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var feature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(feature);
+
+                // TlsCipherInfo is available on any HTTPS request without per-binding configuration,
+                // unlike TlsClientHello which requires HTTP_SERVICE_CONFIG_SSL_FLAG_ENABLE_CACHE_CLIENT_HELLO.
+                // The buffer is generously sized so the API can write its (fixed-size) struct without
+                // us having to know the exact size up front.
+                var propertyId = (int)HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo;
+
+                var buffer = new byte[4096];
+                Assert.True(feature.TryGetRequestProperty(propertyId, qualifier: default, output: buffer, out var written));
+                Assert.InRange(written, 1, buffer.Length);
+
+                // Buffer too small returns false. Some HTTP_REQUEST_PROPERTY values report the required
+                // size in `bytesReturned`, others do not, so we only assert the false return here.
+                var tooSmall = new byte[1];
+                Assert.False(feature.TryGetRequestProperty(propertyId, qualifier: default, output: tooSmall, out _));
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
     public async Task Https_SetsIHttpSysRequestTimingFeature()
     {
         using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
