@@ -162,7 +162,7 @@ public class ValidatableTypeInfoBenchmark
         // Relies on implementation detail.
         // We expose IReadOnlyDictionary on the context.
         // This is fine for the purpose of benchmarking.
-        ((ConcurrentDictionary<string, string[]>)_context.ValidationErrors)?.Clear();
+        ((ConcurrentDictionary<string, IEnumerable<string>>)_context.ValidationErrors)?.Clear();
     }
 
     #region Helper methods to create type info instances manually if needed
