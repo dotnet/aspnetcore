@@ -60,4 +60,14 @@ public class StreamingSessionPersistenceTest : ServerTestBase<BasicTestAppServer
         Navigate($"{ServerPathBase}/tempdata");
         Browser.Equal("streaming-tempdata-message", () => Browser.FindElement(By.Id("message")).Text);
     }
+
+    [Fact]
+    public void StreamingSSR_DeferredChildSubscription_DoesNotPersistSession_OnFirstRequest()
+    {
+        Navigate($"{ServerPathBase}/streaming-parent-with-deferred-child");
+
+        Browser.Exists(By.Id("deferred-child-done"));
+        Navigate($"{ServerPathBase}/supply-parameter-from-session");
+        Browser.Equal(string.Empty, () => Browser.FindElement(By.Id("text-email")).Text);
+    }
 }
