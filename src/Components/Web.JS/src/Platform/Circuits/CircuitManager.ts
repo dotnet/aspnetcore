@@ -57,6 +57,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _isFirstRender = true;
 
+  private _pauseAbortController?: AbortController;
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -177,7 +179,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.RequestPause', async () => {
       try {
         if (this._options.onPauseRequested) {
-          await this._options.onPauseRequested();
+          this._pauseAbortController = new AbortController();
+          await this._options.onPauseRequested(this._pauseAbortController.signal);
         }
         await this.pause(true);
       } catch (error) {
@@ -529,6 +532,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
+      this._pauseAbortController?.abort();
       return;
     }
 
@@ -537,6 +541,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
+    this._pauseAbortController?.abort();
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone
