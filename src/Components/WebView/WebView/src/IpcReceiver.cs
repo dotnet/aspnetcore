@@ -47,19 +47,25 @@ internal sealed class IpcReceiver
             }
 
             // If the page's JS runtime has been marked disconnected (page reload or WebView
-            // shutdown in progress), drop EVERY incoming message EXCEPT EndInvokeJS. Letting
-            // OnLocationChanged through would fire LocationChanged on user subscribers that
-            // may belong to disposed components; letting OnRenderCompleted through would call
-            // into a disposed renderer's Dequeue that can throw on duplicate / error / out-of-
-            // order acks; letting BeginInvokeDotNet / ReceiveByteArrayFromJS / OnLocationChanging
-            // through would invoke .NET user code on a disposed scope.
+            // shutdown in progress), drop EVERY incoming message EXCEPT EndInvokeJS and
+            // ReceiveByteArrayFromJS:
             //
-            // EndInvokeJS is the lone exception: it only completes pending InvokeAsync<T> task
-            // completion sources on the runtime, so dropping it would leave caller-awaited tasks
-            // hanging indefinitely. (Tracked as the only safe pass-through under
-            // dotnet/aspnetcore#66255 / dotnet/maui#34855.)
+            //   * EndInvokeJS completes pending InvokeAsync<T> task completion sources on
+            //     the runtime. Dropping it would leave caller-awaited tasks hanging forever.
+            //   * ReceiveByteArrayFromJS is the chunked-byte-array transport path: when an
+            //     InvokeAsync<T> returns a byte[], JS sends the bytes via one or more
+            //     ReceiveByteArrayFromJS messages BEFORE the EndInvokeJS that references
+            //     them. DotNetDispatcher.ReceiveByteArray stores the bytes in the runtime's
+            //     internal cache (it does NOT invoke user code) so they can be consumed
+            //     during EndInvokeJS deserialization. Dropping these chunks would prevent
+            //     the otherwise-allowed EndInvokeJS from completing the pending invocation.
+            //
+            // Everything else (BeginInvokeDotNet, OnLocationChanging, OnLocationChanged,
+            // OnRenderCompleted) is dropped because it invokes user code or fires events on
+            // a disposed scope (see dotnet/aspnetcore#66255, dotnet/maui#34855).
             if (pageContext.JSRuntime.IsDisposed &&
-                messageType != IpcCommon.IncomingMessageType.EndInvokeJS)
+                messageType != IpcCommon.IncomingMessageType.EndInvokeJS &&
+                messageType != IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS)
             {
                 return;
             }

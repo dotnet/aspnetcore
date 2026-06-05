@@ -28,8 +28,14 @@ public abstract class WebViewManager : IAsyncDisposable
     private readonly JSComponentConfigurationStore _jsComponents;
     private readonly Dictionary<string, RootComponent> _rootComponentsBySelector = new();
 
-    // Each time a web page connects, we establish a new per-page context
-    private PageContext _currentPageContext;
+    // Each time a web page connects, we establish a new per-page context.
+    // volatile: writes happen on both the dispatcher thread (AttachToPageAsync) and the
+    // caller's thread (DisposeAsyncCore's atomic-detach). Reads happen from MessageReceived,
+    // TryDispatchAsync, Add/RemoveRootComponentAsync — none of which are guaranteed to be
+    // on the dispatcher. Without acquire/release semantics the atomic-detach pattern is
+    // race-prone (e.g., AttachToPageAsync could read a stale non-null _currentPageContext
+    // after DisposeAsyncCore already nulled it and disposed it).
+    private volatile PageContext _currentPageContext;
 
     // volatile: written by DisposeAsyncCore which runs on the caller's thread (often the
     // host UI thread, not the dispatcher), and read by MessageReceived / AttachToPageAsync

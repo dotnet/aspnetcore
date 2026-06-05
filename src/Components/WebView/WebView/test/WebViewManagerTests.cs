@@ -432,6 +432,55 @@ public class WebViewManagerTests
         Assert.Equal("result-string", await pendingInvoke);
     }
 
+    [Fact]
+    public async Task IpcReceiver_AllowsReceiveByteArrayFromJSThroughAfterRuntimeDisposed_CompletesPendingByteArrayInvocation()
+    {
+        // Companion to the EndInvokeJS pass-through test. When an InvokeAsync<byte[]> reply
+        // arrives, JS sends the bytes via ReceiveByteArrayFromJS BEFORE the EndInvokeJS that
+        // references them by id. If the IpcReceiver guard dropped ReceiveByteArrayFromJS after
+        // MarkAsDisconnected, the otherwise-allowed EndInvokeJS would deserialize a missing
+        // byte cache entry and the pending Task would not complete with the expected payload.
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(CaptureJSRuntimeComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+
+        var capturedRuntime = (WebViewJSRuntime)services.GetRequiredService<SingletonService>().CapturedJSRuntime;
+
+        var pendingInvoke = capturedRuntime.InvokeAsync<byte[]>("returnBytes", Array.Empty<object>()).AsTask();
+        Assert.False(pendingInvoke.IsCompleted);
+
+        var beginInvokeMessage = webViewManager.SentIpcMessages.Last();
+        Assert.True(IpcCommon.TryDeserializeOutgoing(beginInvokeMessage, out var outMsgType, out var outArgs));
+        Assert.Equal(IpcCommon.OutgoingMessageType.BeginInvokeJS, outMsgType);
+        var asyncHandle = outArgs[0].GetInt64();
+
+        capturedRuntime.MarkAsDisconnected();
+
+        // Deliver a byte-array chunk first, then the EndInvokeJS that references it. The
+        // chunked-byte-array protocol uses a placeholder `{"__byte[]":<id>}` token in the
+        // serialized value; ReceiveByteArrayFromJS populates the runtime's internal cache
+        // for that id, and EndInvokeJS deserialization resolves the placeholder against the
+        // cache. Both messages must be allowed through the disposed-runtime guard.
+        var payload = new byte[] { 9, 8, 7, 6, 5 };
+        webViewManager.ReceiveIpcMessage(
+            IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS,
+            /* id */ 0,
+            payload);
+
+        var innerArgsJson = $"[{asyncHandle},true,{{\"__byte[]\":0}}]";
+        webViewManager.ReceiveIpcMessage(
+            IpcCommon.IncomingMessageType.EndInvokeJS,
+            asyncHandle,
+            /* succeeded */ true,
+            innerArgsJson);
+
+        var completed = await Task.WhenAny(pendingInvoke, Task.Delay(TimeSpan.FromSeconds(5)));
+        Assert.Same(pendingInvoke, completed);
+        Assert.Equal(payload, await pendingInvoke);
+    }
+
     private static IServiceCollection RegisterTestServices()
     {
         return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();
