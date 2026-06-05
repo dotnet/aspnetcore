@@ -24,39 +24,25 @@ namespace TestServer;
 
 public class RazorComponentEndpointsStartup<TRootComponent>
 {
-    internal const string EnableUrlBasedNavigationSwitchName =
-        "Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting";
-
     public RazorComponentEndpointsStartup(IConfiguration configuration)
     {
         Configuration = configuration;
-
-        // Reset the QuickGrid URL-navigation switch to its default (enabled) value at fixture-build
-        // time so we don't inherit a 'disabled' state from a previously-built in-process fixture
-        // (e.g. RazorComponentEndpointsCompatStartup). xUnit serializes fixtures in this assembly
-        // (parallelizeTestCollections: false), so the value set here applies to all tests in the
-        // owning class without races.
-        ResetQuickGridUrlNavigationSwitch(enabled: true);
     }
 
     public IConfiguration Configuration { get; }
 
-    internal static void ResetQuickGridUrlNavigationSwitch(bool enabled)
-    {
-        AppContext.SetSwitch(EnableUrlBasedNavigationSwitchName, enabled);
-
-        // QuickGridFeatureFlags caches the switch in a static readonly field at type init (the
-        // trim/AOT-friendly [FeatureSwitchDefinition] pattern), so SetSwitch alone is not enough
-        // once any other fixture in the process has touched the type. Reflectively reset the cache.
-        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
-            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
-        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
-            ?.SetValue(null, enabled);
-    }
-
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
+
+        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
+        // switch value once at static initialization and won't see subsequent AppContext changes.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, enableUrlNavigation);
 
         if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {

@@ -20,11 +20,6 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     public RazorComponentEndpointsNoInteractivityStartup(IConfiguration configuration)
     {
         Configuration = configuration;
-
-        // Mirror the reset done by RazorComponentEndpointsStartup so this fixture isn't
-        // affected by the QuickGrid URL-navigation switch left over from a previously-built
-        // in-process fixture (e.g. RazorComponentEndpointsCompatStartup).
-        RazorComponentEndpointsStartup<TRootComponent>.ResetQuickGridUrlNavigationSwitch(enabled: true);
     }
 
     public IConfiguration Configuration { get; }
@@ -32,6 +27,12 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, true);
+
         var builder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
