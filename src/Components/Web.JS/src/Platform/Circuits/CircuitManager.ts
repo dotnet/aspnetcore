@@ -179,6 +179,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.RequestPause', async () => {
       try {
         if (this._options.onPauseRequested) {
+          this._pauseAbortController?.abort();
           this._pauseAbortController = new AbortController();
           await this._options.onPauseRequested(this._pauseAbortController.signal);
         }
