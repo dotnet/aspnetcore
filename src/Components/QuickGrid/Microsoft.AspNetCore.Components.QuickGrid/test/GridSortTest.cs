@@ -201,6 +201,7 @@ public class GridSortTest
             {
                 return -1;
             }
+
             int lengthCmp = -x.Length.CompareTo(y.Length);
             return lengthCmp != 0 ? lengthCmp : string.Compare(x, y, StringComparison.Ordinal);
         }
