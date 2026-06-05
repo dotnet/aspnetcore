@@ -946,33 +946,33 @@ internal partial class CircuitHost : IAsyncDisposable
         return result;
     }
 
-    internal async ValueTask<bool> RequestPauseAsync(CancellationToken cancellationToken)
+    internal Task<bool> RequestPauseAsync(CancellationToken cancellationToken)
     {
         Log.ServerPauseRequested(_logger, CircuitId);
 
         if (_disposed)
         {
             Log.ServerPauseRejected(_logger, CircuitId);
-            return false;
+            return Task.FromResult(false);
         }
 
         if (!_initialized || !_onConnectionUpFired)
         {
             Log.ServerPauseRejected(_logger, CircuitId);
-            return false;
+            return Task.FromResult(false);
         }
 
         if (!Client.Connected)
         {
             Log.ServerPauseRejected(_logger, CircuitId);
-            return false;
+            return Task.FromResult(false);
         }
 
         // Dispatch the send onto the dispatcher to serialize with any sync work
         // (renders, event handlers) that may be in progress.
         // The client receives the message and decides when to actually pause via
         // an optional onPauseRequested callback in CircuitStartOptions.
-        return await Renderer.Dispatcher.InvokeAsync(async () =>
+        return Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_disposed || !Client.Connected)
             {
