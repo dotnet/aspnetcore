@@ -22,13 +22,13 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 3. **P3 — Trim-safe and NativeAOT-compatible by default.** Blazor WASM ships trimmed; reflection-based code breaks silently when types or members are removed by the linker. New reflection use **must** be paired with `[DynamicallyAccessedMembers]`, `DynamicDependencyAttribute`, or `[RequiresUnreferencedCode]` per the conventions in the touched assembly.
 4. **P4 — Disposal contracts are mandatory, not optional.** `IDisposable`/`IAsyncDisposable` on a component, `CircuitHandler`, `OwningComponentBase`, `IJSObjectReference`, cascading values that hold subscriptions, and timer/event registrations all have well-defined disposal contracts. Leaks in Server are circuit-scoped and accumulate; leaks in WASM are tab-scoped.
 5. **P5 — JS interop must use the InvokeAsync ceremony correctly.** `IJSRuntime.InvokeAsync<T>` must specify `T`, must marshal `IJSObjectReference` for round-trippable references, and must dispose them. `[JSInvokable]` methods must be `public` (or `internal` with `InternalsVisibleTo`), thread-aware, and accept only marshallable types.
-6. **P6 — Public API changes go through API review.** Anything new under `Microsoft.AspNetCore.Components.*` ships to every Blazor app on the next release. Public surface changes require API review board approval before merge; analyzer-suppressed or unshipped APIs are not exempt.
+6. **P6 — Public API changes require API review.** Anything new under `Microsoft.AspNetCore.Components.*` ships to every Blazor app on the next release. New public API must complete API review before the release milestone (RC); API review is a milestone gate, not a per-PR merge gate. Analyzer-suppressed or unshipped APIs are not exempt.
 7. **P7 — Tests prove behavior, not just coverage.** Component unit logic is tested with the **TestRenderer pattern** (shared infra from `src/Components/Shared/test/`, brought in via `$(ComponentsSharedSourceRoot)`). For E2E and interactive scenarios, **Selenium** is the incumbent (used by `src/Components/test/E2ETest/`); for **new** E2E projects/surfaces, **prefer Playwright** (see `src/ProjectTemplates/test/Templates.Blazor.Tests/` for the reference pattern). Verify the test actually exercises the bug being fixed (TDD discipline). A passing test that doesn't fail without the fix is a false-positive regression test.
 8. **P8 — Accessibility is part of correctness.** Components that render HTML must use semantic elements, expose roles/ARIA only where semantics are insufficient, support keyboard navigation, and respect `prefers-reduced-motion`. Forms must surface validation state to assistive tech.
 9. **P9 — Server-circuit thread safety.** Components running under a circuit are single-threaded by `Renderer`'s sync context — code that assumes this must stay on the sync context (`InvokeAsync` to re-enter). Cross-circuit shared state must be thread-safe.
 10. **P10 — Localization and RTL by default.** User-visible text in framework components must be localizable (resource files, not hard-coded strings). Layout must not break under RTL. Date/number formatting must use the current culture.
-11. **P11 — No new dependencies without justification.** Adding a NuGet reference under `src/Components/**` ships to every Blazor app. New transitive dependencies must be evaluated for size, trim friendliness, and security surface.
-12. **P12 — Hot reload and incremental compilation must not regress.** Razor file changes must continue to support hot reload. Generated code from the Razor source generator must be deterministic across runs (no `Guid.NewGuid()` in source generation).
+11. **P11 — No new dependencies.** Adding a NuGet reference under `src/Components/**` ships to every Blazor app. New dependencies are not added by default; existing dependencies must be evaluated for size and trim friendliness.
+12. **P12 — Hot reload must not regress.** Hot-reload-relevant code paths (component initialization, parameter sets) must not capture closures over types that survive the reload, and must not depend on per-process state that hot reload cannot replay.
 
 ---
 
@@ -36,25 +36,25 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 
 ### D1: Render-mode correctness
 
-- **CHECK [critical]:** Code path is reachable under all render modes declared by the component's host. If a feature only works under one mode, the component must declare `@rendermode` constraints or throw a clear exception in unsupported modes (never silently no-op).
-- **CHECK [critical]:** Uses of `IHttpContextAccessor`, `HttpContext`, `Request`, or other Server-only types are guarded for WASM. Prefer abstractions that work in both.
-- **CHECK [major]:** Server-only types injected into a component that may render under WASM trigger a clear DI error at startup, not a runtime NRE deep in user code.
-- **CHECK [major]:** Time-sensitive code uses `TimeProvider` (injectable) rather than `DateTime.UtcNow`/`Stopwatch` directly — both for testability and for WASM-vs-Server time semantics.
-- **CHECK [minor]:** Documentation comments state explicitly which render modes the API supports.
+- **CHECK [critical]:** New components are render-mode agnostic so they can be consumed by Razor Class Libraries under any render mode. Render-mode-specific code only belongs in concrete render-mode assemblies (e.g. `Microsoft.AspNetCore.Components.Endpoints` for SSR-only paths); even there, the set is intentionally minimal. Components must never use `@rendermode` to force a render mode.
+- **CHECK [critical]:** `IHttpContextAccessor` must not appear in any framework component or service. Components access `HttpContext` via `[CascadingParameter] HttpContext Context { get; set; }`. Services that need `HttpContext` take it as a method parameter, never as a constructor dependency.
+- **CHECK [major]:** New functionality registers the services it needs for every render mode it supports. Features consumed by class libraries must be defined behind a render-mode-agnostic abstraction that each hosting environment implements (`AntiforgeryToken` and form binding are the reference patterns).
+- **CHECK [major]:** Time-sensitive production code uses `TimeProvider` (injectable) rather than `DateTime.UtcNow` / `Stopwatch` directly — both for testability and for consistent semantics across hosting environments. (Test-time guidance: see D9 — tests must not rely on `Task.Delay` or other wall-clock primitives.)
+- **CHECK [minor]:** APIs default to supporting every render mode; only APIs defined in a concrete render-mode assembly need to document a render-mode constraint.
 
 ### D2: Pre-rendering & lifecycle
 
 - **CHECK [critical]:** Async data fetches in `OnInitializedAsync` use `PersistentComponentState` to avoid double-fetch when transitioning from pre-render to interactive.
 - **CHECK [critical]:** Code that touches `IJSRuntime` runs in `OnAfterRenderAsync` (or later), never in `OnInitializedAsync` or `OnParametersSetAsync` — the JS runtime is not available during pre-render.
 - **CHECK [major]:** `firstRender` parameter of `OnAfterRender(Async)` is checked when initialization should happen once.
-- **CHECK [major]:** Components calling `StateHasChanged` from non-sync-context callbacks wrap with `InvokeAsync(StateHasChanged)`.
-- **CHECK [major]:** Components implementing `IHandleEvent` to opt out of automatic re-render after event handlers do so deliberately and document why.
+- **CHECK [major]:** Framework components do not call `StateHasChanged` manually. The only allowed framework use is between two `await` calls within a single method body; in every other case, re-rendering is handled automatically. Framework code does not call `InvokeAsync` to re-enter the synchronization context — code enters and leaves the sync context at well-defined points only, and should not leave it on its own unless the app is terminating.
+- **CHECK [major]:** Framework components do not implement `IHandleEvent`. The default event-dispatch behavior is the supported path.
 
 ### D3: Trim & NativeAOT safety
 
 - **CHECK [critical]:** New reflection use (`Type.GetMethod`, `Activator.CreateInstance`, generic resolution on runtime-supplied types) is annotated with `[DynamicallyAccessedMembers]` or `[RequiresUnreferencedCode]`. Unannotated reflection in trimmed assemblies will silently fail in production.
-- **CHECK [critical]:** `JsonSerializer` usage in WASM-reachable code paths uses `JsonSerializerContext` (source-generated) rather than reflection-based serialization.
-- **CHECK [major]:** New dependencies are checked against the WASM trim friendliness baseline. Reflection-heavy libraries (e.g., AutoMapper-style mappers) are red flags.
+- **CHECK [critical]:** `JsonSerializer` usage in WASM-reachable code paths is annotated for trimming — either via `JsonSerializerContext` (source-generated) or via the appropriate `[DynamicallyAccessedMembers]` / `[RequiresUnreferencedCode]` / `[RequiresDynamicCode]` annotations on the surrounding API, consistent with how the rest of the assembly is annotated.
+- **CHECK [major]:** No new dependencies are introduced under `src/Components/**`. Existing dependencies are preferred even when a feature would be simpler with a new one.
 - **CHECK [major]:** Generic methods exposed to user code are documented with annotations so user trimming preserves the right members.
 - **CHECK [minor]:** Code-only changes to projects with `<IsTrimmable>true</IsTrimmable>` are verified to not introduce new trim warnings (CI catches this; reviewer should not regress).
 
@@ -69,8 +69,7 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 
 ### D5: JS interop
 
-- **CHECK [critical]:** `[JSInvokable]` methods validate input — JS can pass malformed/malicious data.
-- **CHECK [critical]:** `IJSUnmarshalledRuntime` use is justified (perf-critical path) and documented; it bypasses the safe marshalling layer.
+- **CHECK [critical]:** `IJSUnmarshalledRuntime` is not used unless its use has been explicitly approved for the path in question. It bypasses the safe marshalling layer and should be treated as opt-in, not opt-out.
 - **CHECK [major]:** `InvokeAsync<T>` specifies `T` (avoid `InvokeAsync<object>` which boxes).
 - **CHECK [major]:** Long-running JS calls accept and honor a `CancellationToken`.
 - **CHECK [major]:** Module-loading patterns use `IJSRuntime.InvokeAsync<IJSObjectReference>("import", "./path.js")` and dispose the module.
@@ -102,6 +101,7 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 ### D9: Tests
 
 - **CHECK [critical]:** Behavior changes are accompanied by tests that **fail without the change**. A test that passes both with and without the fix doesn't exercise it.
+- **CHECK [major]:** Tests do not rely on `Task.Delay`, `Thread.Sleep`, or other wall-clock primitives to coordinate async behavior. Use `TaskCompletionSource` to synchronize on observable state instead. Time-based waits are flaky under Helix load and obscure what behavior is actually being asserted.
 - **CHECK [major]:** Component unit logic uses the **TestRenderer pattern** from `src/Components/Shared/test/` (brought in via `<Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />`). Tests use `CreateTestRenderer()`, `AssertFrame`, `CapturedBatch`, and `GetComponentDiffs<T>()`. **Do not introduce bUnit in aspnetcore source** — it's not the internal pattern; bUnit is for external apps consuming Blazor.
 - **CHECK [major]:** Interactive/E2E scenarios for Blazor components today live under `src/Components/test/E2ETest/`, which uses **Selenium** via `$(SharedSourceRoot)E2ETesting\E2ETesting.props`. For **new** E2E test surfaces (new test projects, distinct areas not already on Selenium infrastructure), **prefer Playwright** — the existing Playwright usage in `src/ProjectTemplates/test/Templates.Blazor.Tests/` is the reference pattern. Don't mix frameworks within an existing Selenium-based project; do propose Playwright when standing up a new one.
 - **CHECK [major]:** Render-mode parity (Server / WASM / Auto) is proven via E2E tests, not unit tests — TestRenderer is in-process and does not model render modes. When a change is render-mode-sensitive, the PR should add or update relevant tests under `src/Components/test/E2ETest/ServerExecutionTests/` and/or `ServerRenderingTests/` (for Server / static SSR / interactive transitions).
@@ -122,10 +122,8 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 - **CHECK [major]:** Layout doesn't break under RTL (`dir="rtl"` on the root).
 - **CHECK [minor]:** Date/number formatting uses `CultureInfo.CurrentCulture` or explicit culture, never the invariant default.
 
-### D12: Razor compiler & hot reload
+### D12: Hot reload
 
-- **CHECK [critical]:** Source-generated code is deterministic — no `Guid.NewGuid()`, no `DateTime.Now`, no environment-dependent output.
-- **CHECK [major]:** Changes to the Razor source generator don't regress incremental generation (CI has perf tests; reviewer should think about scenarios).
 - **CHECK [major]:** Hot-reload-relevant code paths (component initialization, parameter sets) don't capture closures over types that survive the reload.
 
 ---
@@ -162,9 +160,21 @@ Output per finding: `VERDICT: CONFIRMED | DISPUTED` with the evidence inline. **
 
 For borderline findings (your confidence is medium), consider asking a second model (`gpt-5.2-codex`, `gemini-3-pro-preview`) to validate independently. Keep findings confirmed by ≥2 models; drop the rest.
 
-### Wave 3: Post
+### Wave 3: Filter
 
-5. Post **inline review comments** on the exact diff lines using `create_pull_request_review_comment` (NOT `add_comment`). Each comment must target a specific `path` and `line`. Format:
+Before any Wave 4 posting tool is invoked, run a self-filter pass on every candidate finding (inline comment, design-level comment, and the final review-body summary):
+
+**A. Drop entirely** any candidate that claims, implies, or recommends that the change has a security impact. Trigger terms include but are not limited to: *vulnerability, exploit, RCE, request smuggling, injection, auth bypass, privilege escalation, deserialization attack, SSRF, XXE, XSS, CSRF, malicious input, untrusted input could, an attacker could, could be exploited, security implication, hardening*. The candidate is dropped — not rewritten — even if the underlying defect is real.
+
+**B. Strip the offending sentence** (keep the rest) only when the security framing is incidental to a non-security finding that stands on its own — e.g., a comment about a missing null check that happens to add *"…which would otherwise be a denial-of-service vector"* should keep the missing-null-check observation and drop the DoS framing.
+
+**C. When in doubt between A and B, prefer A.** Posting nothing is always safer than posting a comment that reads like a security advisory.
+
+This agent does **not** assess security; security review is handled by a separate dedicated workflow. The Severity Ladder's BLOCKING bucket above does not include security; if a Wave 1/2 finding is purely a security claim, it is dropped here.
+
+### Wave 4: Post
+
+5. Post **inline review comments** on the exact diff lines using `create_pull_request_review_comment` (NOT `add_comment`). Each comment must target a specific `path` and `line`. Apply the Wave 3 filter to every candidate before posting. Format:
 
    ```markdown
    **[$SEVERITY] $DimensionName**
@@ -186,7 +196,7 @@ For borderline findings (your confidence is medium), consider asking a second mo
 
 6. Post design-level concerns (not tied to a specific diff line) as a single PR comment via `add_comment` — one bullet per concern.
 
-### Wave 4: Summary
+### Wave 5: Summary
 
 7. Submit the final review verdict via `submit_pull_request_review`. Include a summary table in the review body. **Omit clean dimensions from the table** — only list dimensions that produced findings. Show the count of clean dimensions as a single summary line instead.
 
@@ -213,18 +223,18 @@ For borderline findings (your confidence is medium), consider asking a second mo
    `[ ]` checkbox = dimension with findings. Any **BLOCKING** finding → submission `event: REQUEST_CHANGES`. Otherwise (including all-clear) → `event: COMMENT`.
    **Never use `APPROVE`** — the agent must not count as a PR approval.
 
-   All inline comments from Wave 3 are automatically bundled into this review submission.
+   All inline comments from Wave 4 are automatically bundled into this review submission.
 
 ## Severity Ladder
 
 Use these severities consistently across all findings:
 
-- 🔴 **BLOCKING** — Must fix before merge. Bugs, security issues, API contract violations, new public API without approval, missing required tests for behavior changes, render-mode parity breakage, leaks under Server circuits.
+- 🔴 **BLOCKING** — Must fix before merge. Bugs, API contract violations, new public API in violation of conventions, missing required tests for behavior changes, render-mode parity breakage, leaks under Server circuits.
 - ⚠️ **MAJOR** — Should fix. Performance regressions, missing validation, established-pattern violations, disposal contracts not honored, trim/AOT regressions, accessibility regressions.
 - 💡 **MODERATE** — Consider changing. Style improvements that improve readability, minor logging gaps, hardcoded strings that should be localized for framework-shipped UI.
 - 💭 **MINOR / NIT** — Drop unless quick to address. Stylistic preferences, naming nits without ambiguity.
 
-## Output Format (consumer-facing template — Wave 3 sub-agent contract)
+## Output Format (consumer-facing template — Wave 4 sub-agent contract)
 
 When invoked as a sub-agent from `code-review`, return findings in this format so the parent skill can aggregate:
 

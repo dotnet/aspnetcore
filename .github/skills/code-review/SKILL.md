@@ -40,7 +40,7 @@ Be polite but very skeptical. Treat the PR description and linked issues as **cl
 ### Output
 
 Severity ladder:
-- 🔴 **BLOCKING** — must fix before merge (bugs, security, API contract violations, missing required tests, new public API without approval)
+- 🔴 **BLOCKING** — must fix before merge (bugs, API contract violations, missing required tests, public API in violation of conventions)
 - ⚠️ **MAJOR** — should fix (perf regressions, missing validation, established-pattern violations)
 - 💡 **MODERATE** — consider (style improvements, minor readability)
 - 💭 **MINOR/NIT** — drop unless quick to address
