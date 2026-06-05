@@ -139,6 +139,37 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void List_RejectsFileBasedAppFilePathThatDoesNotExist()
+    {
+        var appFile = Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString(), "does_not_exist.cs");
+        var app = new Program(_console);
+
+        app.Run(["list", "--file", appFile]);
+
+        Assert.Contains(Resources.FileOption_FileNotFound, _console.GetOutput());
+    }
+
+    [Fact]
+    public void List_RejectsFileBasedAppFilePathWithInvalidExtension()
+    {
+        var appDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
+        try
+        {
+            var appFile = Path.Combine(appDirectory.FullName, "foo.txt");
+            File.WriteAllText(appFile, string.Empty);
+            var app = new Program(_console);
+
+            app.Run(["list", "--file", appFile]);
+
+            Assert.Contains(Resources.FileOption_InvalidExtension, _console.GetOutput());
+        }
+        finally
+        {
+            Directory.Delete(appDirectory.FullName, true);
+        }
+    }
+
+    [Fact]
     public async Task Create_TokenAcceptedByJwtBearerHandler()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -280,6 +311,31 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Remove_RemovesGeneratedToken_WithFileBasedApp()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var appsettings = Path.Combine(Path.GetDirectoryName(appFile), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            var matches = Regex.Matches(_console.GetOutput(), "New JWT saved with ID '(.*?)'");
+            var id = matches.SingleOrDefault().Groups[1].Value;
+            app.Run(["create", "--file", appFile, "--scheme", "Scheme2"]);
+
+            app.Run(["remove", id, "--file", appFile]);
+            var appsettingsContent = File.ReadAllText(appsettings);
+            Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+            Assert.Contains("Scheme2", appsettingsContent);
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
+    }
+
+    [Fact]
     public void Remove_RemovesGeneratedTokenInGivenAppsettings()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -334,6 +390,31 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
     }
 
     [Fact]
+    public void Clear_RemovesGeneratedTokens_WithFileBasedApp()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var appsettings = Path.Combine(Path.GetDirectoryName(appFile), "appsettings.Development.json");
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            app.Run(["create", "--file", appFile, "--scheme", "Scheme2"]);
+
+            Assert.Contains("New JWT saved", _console.GetOutput());
+
+            app.Run(["clear", "--file", appFile, "--force"]);
+            var appsettingsContent = File.ReadAllText(appsettings);
+            Assert.DoesNotContain(DevJwtsDefaults.Scheme, appsettingsContent);
+            Assert.DoesNotContain("Scheme2", appsettingsContent);
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
+    }
+
+    [Fact]
     public void Key_CanResetSigningKey()
     {
         var project = Path.Combine(fixture.CreateProject(), "TestProject.csproj");
@@ -345,6 +426,27 @@ public class UserJwtsTests(UserJwtsTestFixture fixture, ITestOutputHelper output
 
         app.Run(new[] { "key", "--reset", "--force", "--project", project });
         Assert.Contains("New signing key created:", _console.GetOutput());
+    }
+
+    [Fact]
+    public void Key_CanResetSigningKey_WithFileBasedApp()
+    {
+        var appFile = fixture.CreateFileBasedApp();
+        var app = new Program(_console);
+
+        try
+        {
+            app.Run(["create", "--file", appFile]);
+            app.Run(["key", "--file", appFile]);
+            Assert.Contains("Signing Key:", _console.GetOutput());
+
+            app.Run(["key", "--reset", "--force", "--file", appFile]);
+            Assert.Contains("New signing key created:", _console.GetOutput());
+        }
+        finally
+        {
+            DeleteUserJwtsDirectory(app);
+        }
     }
 
     [Fact]
