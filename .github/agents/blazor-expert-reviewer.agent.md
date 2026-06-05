@@ -21,11 +21,11 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 2. **P2 — Pre-rendering correctness.** Static SSR pre-render → interactive boundary is the #1 source of subtle Blazor bugs. Components that fetch data must handle "I'm in pre-render → I'm in interactive" lifecycle correctly (`PersistentComponentState`, `OnAfterRenderAsync` for browser-only work). Double-fetch and missing-data flashes are regressions.
 3. **P3 — Trim-safe and NativeAOT-compatible by default.** Blazor WASM ships trimmed; reflection-based code breaks silently when types or members are removed by the linker. New reflection use **must** be paired with `[DynamicallyAccessedMembers]`, `DynamicDependencyAttribute`, or `[RequiresUnreferencedCode]` per the conventions in the touched assembly.
 4. **P4 — Disposal contracts are mandatory, not optional.** `IDisposable`/`IAsyncDisposable` on a component, `CircuitHandler`, `OwningComponentBase`, `IJSObjectReference`, cascading values that hold subscriptions, and timer/event registrations all have well-defined disposal contracts. Leaks in Server are circuit-scoped and accumulate; leaks in WASM are tab-scoped.
-5. **P5 — JS interop must use the InvokeAsync ceremony correctly.** `IJSRuntime.InvokeAsync<T>` must specify `T`, must marshal `IJSObjectReference` for round-trippable references, and must dispose them. `[JSInvokable]` methods must be `public` (or `internal` with `InternalsVisibleTo`), thread-aware, and accept only marshallable types.
+5. **P5 — JS interop must use the InvokeAsync ceremony correctly.** `IJSRuntime.InvokeAsync<T>` must specify `T`, must marshal `IJSObjectReference` for round-trippable references, and must dispose them. `[JSInvokable]` methods must be `public`, thread-aware, and accept only marshallable types.
 6. **P6 — Public API changes require API review.** Anything new under `Microsoft.AspNetCore.Components.*` ships to every Blazor app on the next release. New public API must complete API review before the release milestone (RC); API review is a milestone gate, not a per-PR merge gate. Analyzer-suppressed or unshipped APIs are not exempt.
-7. **P7 — Tests prove behavior, not just coverage.** Component unit logic is tested with the **TestRenderer pattern** (shared infra from `src/Components/Shared/test/`, brought in via `$(ComponentsSharedSourceRoot)`). For E2E and interactive scenarios, **Selenium** is the incumbent (used by `src/Components/test/E2ETest/`); for **new** E2E projects/surfaces, **prefer Playwright** (see `src/ProjectTemplates/test/Templates.Blazor.Tests/` for the reference pattern). Verify the test actually exercises the bug being fixed (TDD discipline). A passing test that doesn't fail without the fix is a false-positive regression test.
+7. **P7 — Tests prove behavior, not just coverage.** Component unit logic is tested with the **TestRenderer pattern** (shared infra from `src/Components/Shared/test/`, brought in via `$(ComponentsSharedSourceRoot)`). E2E and interactive scenarios use the existing **Selenium** infrastructure under `src/Components/test/E2ETest/` — do not introduce a second E2E framework for Blazor components. Verify the test actually exercises the bug being fixed (TDD discipline). A passing test that doesn't fail without the fix is a false-positive regression test.
 8. **P8 — Accessibility is part of correctness.** Components that render HTML must use semantic elements, expose roles/ARIA only where semantics are insufficient, support keyboard navigation, and respect `prefers-reduced-motion`. Forms must surface validation state to assistive tech.
-9. **P9 — Server-circuit thread safety.** Components running under a circuit are single-threaded by `Renderer`'s sync context — code that assumes this must stay on the sync context (`InvokeAsync` to re-enter). Cross-circuit shared state must be thread-safe.
+9. **P9 — Server-circuit thread safety.** Components running under a circuit are single-threaded by the renderer's sync context. Framework code that mutates component state must already be on the sync context — it enters at well-defined dispatch points and must not leave on its own. Cross-circuit shared state must be thread-safe.
 10. **P10 — Localization and RTL by default.** User-visible text in framework components must be localizable (resource files, not hard-coded strings). Layout must not break under RTL. Date/number formatting must use the current culture.
 11. **P11 — No new dependencies.** Adding a NuGet reference under `src/Components/**` ships to every Blazor app. New dependencies are not added by default; existing dependencies must be evaluated for size and trim friendliness.
 12. **P12 — Hot reload must not regress.** Hot-reload-relevant code paths (component initialization, parameter sets) must not capture closures over types that survive the reload, and must not depend on per-process state that hot reload cannot replay.
@@ -47,7 +47,7 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 - **CHECK [critical]:** Async data fetches in `OnInitializedAsync` use `PersistentComponentState` to avoid double-fetch when transitioning from pre-render to interactive.
 - **CHECK [critical]:** Code that touches `IJSRuntime` runs in `OnAfterRenderAsync` (or later), never in `OnInitializedAsync` or `OnParametersSetAsync` — the JS runtime is not available during pre-render.
 - **CHECK [major]:** `firstRender` parameter of `OnAfterRender(Async)` is checked when initialization should happen once.
-- **CHECK [major]:** Framework components do not call `StateHasChanged` manually. The only allowed framework use is between two `await` calls within a single method body; in every other case, re-rendering is handled automatically. Framework code does not call `InvokeAsync` to re-enter the synchronization context — code enters and leaves the sync context at well-defined points only, and should not leave it on its own unless the app is terminating.
+- **CHECK [major]:** Framework components do not call `StateHasChanged` manually. The only allowed framework use is between two `await` calls; in every other case, re-rendering is handled automatically. Framework code does not call `InvokeAsync` to re-enter the synchronization context — code enters and leaves the sync context at well-defined points only, and does not leave it on its own unless the app is terminating.
 - **CHECK [major]:** Framework components do not implement `IHandleEvent`. The default event-dispatch behavior is the supported path.
 
 ### D3: Trim & NativeAOT safety
@@ -77,8 +77,8 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 
 ### D6: Public API surface
 
-- **CHECK [critical]:** Any new `public` type/member in `Microsoft.AspNetCore.Components.*` is flagged for API review board approval. Changes to `*.PublicAPI.Shipped.txt` are a strong signal.
-- **CHECK [critical]:** Public API removals or signature changes are documented breaking changes with `BreakingChange-Severity:` labels.
+- **CHECK [major]:** New `public` types/members in `Microsoft.AspNetCore.Components.*` appear in `*.PublicAPI.Unshipped.txt`. Flag for API-review tracking — per P6, API review is a milestone gate (must complete before RC), not a per-PR merge gate.
+- **CHECK [major]:** Public API removals or signature changes are flagged as breaking changes and documented.
 - **CHECK [major]:** New extension methods don't create ambiguity with existing user code in commonly-used namespaces.
 - **CHECK [major]:** Parameter names on public APIs follow `[Parameter] public T Name { get; set; }` casing conventions.
 - **CHECK [minor]:** New types follow the existing namespace structure (`Forms` types in `Microsoft.AspNetCore.Components.Forms`, not at root).
@@ -88,13 +88,13 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 - **CHECK [major]:** Components use `[Parameter]` (and `[CascadingParameter]` where appropriate) rather than constructor injection for component inputs.
 - **CHECK [major]:** Optional callbacks use `EventCallback`/`EventCallback<T>` (not `Action`/`Func`), which handle async correctly and avoid manual `StateHasChanged`.
 - **CHECK [major]:** Two-way binding pairs follow `@bind-Value` / `ValueChanged` / `ValueExpression` triple convention.
-- **CHECK [major]:** Cascading values that are mutable or scoped must declare `IsFixed: false` only when necessary (perf impact).
+- **CHECK [major]:** Cascading values declare `IsFixed=true` when the value will not change after first render. Mutable cascades (the default) force every subscriber to re-render on any change — that cost should be intentional, not the path of least resistance.
 - **CHECK [minor]:** `ChildContent` is named consistently; `RenderFragment` parameters follow the same casing.
 
 ### D8: Server / circuit specifics
 
 - **CHECK [critical]:** Code reachable from a circuit doesn't block on `Task.Result` / `Task.Wait()` — deadlocks the renderer.
-- **CHECK [critical]:** Code that resumes from non-renderer threads re-enters the sync context via `InvokeAsync` before touching component state.
+- **CHECK [critical]:** Framework code stays on the renderer's sync context — it does not resume on non-renderer threads and re-enter via `InvokeAsync`. If a framework code path is reaching for `InvokeAsync`, the design needs revisiting (see D2 / P9).
 - **CHECK [major]:** Per-circuit memory growth (subscriptions, caches) is bounded.
 - **CHECK [major]:** New `CircuitHandler` implementations handle all four lifecycle methods (`OnConnectionUp/Down`, `OnCircuitOpened/Closed`) idempotently.
 
@@ -103,7 +103,7 @@ These principles govern all Blazor review decisions. They are listed in roughly 
 - **CHECK [critical]:** Behavior changes are accompanied by tests that **fail without the change**. A test that passes both with and without the fix doesn't exercise it.
 - **CHECK [major]:** Tests do not rely on `Task.Delay`, `Thread.Sleep`, or other wall-clock primitives to coordinate async behavior. Use `TaskCompletionSource` to synchronize on observable state instead. Time-based waits are flaky under Helix load and obscure what behavior is actually being asserted.
 - **CHECK [major]:** Component unit logic uses the **TestRenderer pattern** from `src/Components/Shared/test/` (brought in via `<Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />`). Tests use `CreateTestRenderer()`, `AssertFrame`, `CapturedBatch`, and `GetComponentDiffs<T>()`. **Do not introduce bUnit in aspnetcore source** — it's not the internal pattern; bUnit is for external apps consuming Blazor.
-- **CHECK [major]:** Interactive/E2E scenarios for Blazor components today live under `src/Components/test/E2ETest/`, which uses **Selenium** via `$(SharedSourceRoot)E2ETesting\E2ETesting.props`. For **new** E2E test surfaces (new test projects, distinct areas not already on Selenium infrastructure), **prefer Playwright** — the existing Playwright usage in `src/ProjectTemplates/test/Templates.Blazor.Tests/` is the reference pattern. Don't mix frameworks within an existing Selenium-based project; do propose Playwright when standing up a new one.
+- **CHECK [major]:** Interactive/E2E scenarios for Blazor components live under `src/Components/test/E2ETest/` on Selenium via `$(SharedSourceRoot)E2ETesting\E2ETesting.props`. Use the existing Selenium infrastructure for new component E2E tests — do not introduce a second E2E framework in this area. (Playwright is used under `src/ProjectTemplates/test/Templates.Blazor.Tests/` for a distinct surface and is not generalized to `src/Components/test/**`.)
 - **CHECK [major]:** Render-mode parity (Server / WASM / Auto) is proven via E2E tests, not unit tests — TestRenderer is in-process and does not model render modes. When a change is render-mode-sensitive, the PR should add or update relevant tests under `src/Components/test/E2ETest/ServerExecutionTests/` and/or `ServerRenderingTests/` (for Server / static SSR / interactive transitions).
 - **CHECK [major]:** Pre-rendering scenarios are explicitly tested for components that fetch data.
 - **CHECK [minor]:** Test names describe the scenario, not the implementation.
@@ -255,7 +255,7 @@ When invoked as a sub-agent from `code-review`, return findings in this format s
 #### Public API surface
 
 ✅ No new public API.
-🔴 New public API introduced — requires API review board approval before merge. See the `assessing-breaking-changes` skill.
+⚠️ New public API introduced (appears in `*.PublicAPI.Unshipped.txt`) — flag for API-review tracking before the release milestone (RC). See the `assessing-breaking-changes` skill.
 
 #### Tests
 
