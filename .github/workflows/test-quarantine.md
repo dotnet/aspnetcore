@@ -239,17 +239,20 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `python3` with `urllib.request` to download the log and search it.
 
-   **Extract the `[FAIL]` blocks inside the `python3` script and print only those — never `print()`, `cat`, or otherwise surface the full log into your context.** The download lands in the runner; only the text you print is read back, so dumping a 10MB+ log wastes the run's token budget. For each `[FAIL]` marker, capture from the `[FAIL]` line through the end of its trailing `Error Message:` / `Stack Trace:` section (i.e., up to the next `[PASS]`/`[FAIL]`/`[SKIP]` marker), apply a per-block safety cap of ~8,000 characters, and print the blocks separated by a delimiter. Prefix the output with a one-line summary (`# {N} [FAIL] blocks, full log {size} bytes`) and cap the total printed output at ~100,000 characters. This is lossless for the quarantine decision — every `[FAIL]` and its complete error/stack section is preserved — while discarding the irrelevant build/restore/passing-test noise that makes up the bulk of the log. For example:
+   **Extract the `[FAIL]` blocks inside the `python3` script and print only those — never `print()`, `cat`, or otherwise surface the full log into your context.** The download lands in the runner; only the text you print is read back, so dumping a 10MB+ log wastes the run's token budget. For each `[FAIL]` marker, capture from the `[FAIL]` line through the end of its trailing `Error Message:` / `Stack Trace:` section (i.e., up to the next result marker). Detect result lines by anchoring the `[FAIL]`/`[PASS]`/`[SKIP]` token to the **end of the line** — in the xUnit console format the marker is the last token on the test-result line (`... Namespace.Class.Method [FAIL]`), whereas the same tokens can appear mid-line inside an error message or stack trace, so anchoring avoids splitting a block on those. Apply a per-block cap of ~8,000 characters and a total printed cap of ~100,000 characters, print the blocks separated by a delimiter, and prefix the output with a one-line summary (`# {N} [FAIL] blocks, full log {size} bytes`).
+
+   These caps are safety valves, not a routine trim: a failure's marker, `Error Message:`, and top stack frames sit at the head of each block and almost always fit within ~8,000 characters, and a crashing work item usually has only a handful of `[FAIL]` blocks, so the decision-relevant content is normally preserved while the build/restore/passing-test noise that makes up the bulk of the log is dropped. The caps **can** truncate, however: if a block is cut off at ~8,000 characters, or the summary reports more blocks than the ~100,000-character total could hold (so the printed list is truncated), call this out in your analysis and — when it affects the quarantine decision — re-run the extraction for that specific work item with a higher cap or filtered to the relevant test name. Do not silently drop failures. For example:
 
    ```python
    import urllib.request, re
    data = urllib.request.urlopen(url, timeout=60).read().decode('utf-8', 'replace')
    lines = data.splitlines()
+   is_marker = lambda s: re.search(r'\[(?:PASS|FAIL|SKIP)\]\s*$', s)
    blocks, i = [], 0
    while i < len(lines):
-       if '[FAIL]' in lines[i]:
+       if re.search(r'\[FAIL\]\s*$', lines[i]):
            j = i + 1
-           while j < len(lines) and not re.search(r'\[(PASS|FAIL|SKIP)\]', lines[j]):
+           while j < len(lines) and not is_marker(lines[j]):
                j += 1
            blocks.append('\n'.join(lines[i:j])[:8000])
            i = j
