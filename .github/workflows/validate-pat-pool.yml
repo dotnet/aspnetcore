@@ -175,8 +175,8 @@ jobs:
             fi
 
             if [ $invalid -eq 0 ] && [ $unknown -eq 0 ] && [ $valid -eq 0 ]; then
-              echo "> [!WARNING]"
-              echo "> **Empty PAT pool** — agentic workflows will fall back to the default \`COPILOT_GITHUB_TOKEN\`."
+              echo "> [!CAUTION]"
+              echo "> **Empty PAT pool** — agentic workflows will fall back to the default \`COPILOT_GITHUB_TOKEN\` at runtime, but this validator treats an empty pool as a failure to prompt operators to seed it. Add at least one \`COPILOT_PAT_*\` secret to clear this warning."
               echo ""
             fi
 

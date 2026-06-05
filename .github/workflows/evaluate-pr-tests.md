@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       pr_number:
-        description: 'PR number to evaluate'
-        required: true
+        description: 'PR number to evaluate (required for workflow_dispatch; slash-command callers supply via the triggering PR context)'
+        required: false
         type: number
       suppress_output:
         description: 'Dry-run — evaluate but do not post output on the PR'
@@ -16,8 +16,6 @@ on:
         type: boolean
         default: false
   roles: [admin, maintain, write]
-  bots:
-    - "copilot-swe-agent[bot]"
 
 labels: ["pr-review", "testing"]
 
@@ -78,12 +76,14 @@ steps:
     run: |
       # Verify this is an open PR
       if ! STATE=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json state --jq .state 2>&1); then
-        echo "❌ Failed to fetch PR #$PR_NUMBER state: $STATE"
+        echo "::error::Failed to fetch PR #$PR_NUMBER state: $STATE"
         exit 1
       fi
       if [ "$STATE" != "OPEN" ]; then
-        echo "⏭️ PR #$PR_NUMBER is $STATE — skipping evaluation."
-        exit 1
+        echo "::notice::PR #$PR_NUMBER is $STATE — skipping evaluation. The downstream agent will noop."
+        # Exit 0 so this clean skip doesn't show as a CI failure. The agent
+        # will still activate and call `noop` after seeing no work to do.
+        exit 0
       fi
       # Try gh pr diff first; fall back to REST API on command failure
       if DIFF_OUTPUT=$(gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --name-only 2>/dev/null); then
@@ -94,7 +94,7 @@ steps:
       else
         # gh pr diff fails with HTTP 406 for PRs with 300+ files; use paginated files API
         if ! API_FILES=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate --jq '.[].filename' 2>&1); then
-          echo "❌ gh pr diff failed and REST API fallback also failed: $API_FILES"
+          echo "::error::gh pr diff failed and REST API fallback also failed: $API_FILES"
           exit 1
         fi
         TEST_FILES=$(echo "$API_FILES" \
@@ -103,8 +103,9 @@ steps:
           || true)
       fi
       if [ -z "$TEST_FILES" ]; then
-        echo "⏭️ No test source files (.cs/.razor) found in PR diff. Nothing to evaluate."
-        exit 1
+        echo "::notice::No test source files (.cs/.razor) found in PR diff for PR #$PR_NUMBER. Nothing to evaluate; agent will noop."
+        # Exit 0 — a "no work to do" gate is a clean skip, not a failure.
+        exit 0
       fi
       echo "✅ Found test files to evaluate:"
       echo "$TEST_FILES" | head -20
