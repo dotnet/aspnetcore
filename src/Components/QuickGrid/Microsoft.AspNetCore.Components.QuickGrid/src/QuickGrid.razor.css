@@ -97,6 +97,35 @@ td.col-justify-left {
     text-align: left;
 }
 
+/* Row-details expander column */
+th.row-details-toggle-header,
+td.row-details-toggle-cell {
+    width: 2rem;
+    min-width: 2rem;
+    max-width: 2rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.row-details-toggle-button {
+    border: none;
+    padding: 0;
+    width: 1rem;
+    height: 1rem;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5 16.5 12 8 18.5Z"/></svg>') center center / 1rem no-repeat;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+tr.row-details-expanded .row-details-toggle-button {
+    transform: rotate(90deg);
+}
+
+tr.row-details-row td.row-details-cell {
+    padding: 0.75rem 1rem;
+    background: rgba(0, 0, 0, 0.02);
+}
+
 /* Unfortunately we can't use the :dir pseudoselector due to lack of browser support. Instead we have to rely on
     the developer setting <html dir="rtl"> to detect if we're in RTL mode. */
 html[dir=rtl] td.col-justify-end {
@@ -115,6 +144,10 @@ html[dir=rtl] td.col-justify-start {
 html[dir=rtl] .col-justify-end .col-options {
     right: unset;
     left: 0;
+}
+
+html[dir=rtl] tr .row-details-toggle-button {
+    transform: rotate(180deg);
 }
 
 /* Clickable rows when OnRowClick is set */
