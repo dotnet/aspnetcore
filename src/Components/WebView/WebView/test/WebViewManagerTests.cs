@@ -332,6 +332,54 @@ public class WebViewManagerTests
         Assert.Empty(sentMessages);
     }
 
+    [Fact]
+    public async Task AttachToPageAsync_AfterWebViewManagerDispose_DoesNotResurrectManager()
+    {
+        // A late AttachPage IPC message after WebViewManager.DisposeAsync must NOT
+        // create a new PageContext, scope, renderer, or JS runtime. Without the guard,
+        // the manager would resurrect itself with a new page graph built against an
+        // already-disposed IpcSender (see dotnet/maui#34855 race with window close
+        // happening mid-navigation).
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        await webViewManager.DisposeAsync();
+
+        var ipcMessagesBefore = webViewManager.SentIpcMessages.Count;
+        var scopesBefore = services.GetRequiredService<SingletonService>().Services.Count;
+
+        // Simulate a late AttachPage arriving after disposal.
+        webViewManager.ReceiveAttachPageMessage();
+
+        // No new attach/render IPC traffic (because no new PageContext was constructed)
+        // and no new scoped service instance was created.
+        Assert.Equal(ipcMessagesBefore, webViewManager.SentIpcMessages.Count);
+        Assert.Equal(scopesBefore, services.GetRequiredService<SingletonService>().Services.Count);
+    }
+
+    [Fact]
+    public async Task TryDispatchAsync_AfterWebViewManagerDispose_ReturnsFalse()
+    {
+        // TryDispatchAsync used to only check whether _currentPageContext was non-null
+        // and whether the captured reference still matched. After WebViewManager.DisposeAsync,
+        // both can remain true (the field is not nulled out by disposal), so workItem
+        // would run against a disposed scope. Guarding on _disposed prevents that.
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+        await webViewManager.DisposeAsync();
+
+        var workItemRan = false;
+        var result = await webViewManager.TryDispatchAsync(_ => workItemRan = true);
+
+        Assert.False(result);
+        Assert.False(workItemRan);
+    }
+
     private static IServiceCollection RegisterTestServices()
     {
         return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();

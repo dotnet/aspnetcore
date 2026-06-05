@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Services;
 internal sealed class WebViewJSRuntime : JSRuntime
 {
     private IpcSender _ipcSender;
-    private bool _isDisposed;
+
+    // volatile: written from disposal paths (potentially off the dispatcher thread) and read
+    // from every JS-interop call and incoming-message processor. Acquire/release semantics
+    // ensure cross-thread visibility of the disconnect flip.
+    private volatile bool _isDisposed;
 
     public ElementReferenceContext ElementReferenceContext { get; }
 

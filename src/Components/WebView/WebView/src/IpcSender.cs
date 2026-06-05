@@ -14,7 +14,12 @@ internal sealed class IpcSender
 {
     private readonly Dispatcher _dispatcher;
     private readonly Action<string> _messageDispatcher;
-    private bool _disposed;
+
+    // volatile: written from WebViewManager.DisposeAsyncCore (which may run off the
+    // dispatcher thread) and read from every outbound path plus from queued dispatcher
+    // delegates. Without acquire/release semantics, a queued delegate could observe a
+    // stale "false" after Dispose() flipped the flag.
+    private volatile bool _disposed;
 
     public IpcSender(Dispatcher dispatcher, Action<string> messageDispatcher)
     {
@@ -111,12 +116,29 @@ internal sealed class IpcSender
             return;
         }
 
-        // Send the serialized exception to the WebView for display
+        // Send the serialized exception to the WebView for display. Re-check _disposed
+        // inside the dispatcher delegate to close the TOCTOU window between the early
+        // return above and the delegate executing on the dispatcher thread; otherwise a
+        // Dispose() that races after the check still produces a host-crashing rethrow.
         var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.Message, exception.StackTrace);
-        _dispatcher.InvokeAsync(() => _messageDispatcher(message));
+        _dispatcher.InvokeAsync(() =>
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _messageDispatcher(message);
+        });
 
-        // Also rethrow so the AppDomain's UnhandledException handler gets notified
-        _dispatcher.InvokeAsync(() => ExceptionDispatchInfo.Capture(exception).Throw());
+        // Also rethrow so the AppDomain's UnhandledException handler gets notified.
+        _dispatcher.InvokeAsync(() =>
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            ExceptionDispatchInfo.Capture(exception).Throw();
+        });
     }
 
     private void DispatchMessageWithErrorHandling(string message)
@@ -129,7 +151,17 @@ internal sealed class IpcSender
             return;
         }
 
-        NotifyErrors(_dispatcher.InvokeAsync(() => _messageDispatcher(message)));
+        // Re-check _disposed inside the dispatcher delegate to close the TOCTOU window
+        // between the early return above and the delegate executing on the dispatcher
+        // thread. Disposal may flip the flag in between.
+        NotifyErrors(_dispatcher.InvokeAsync(() =>
+        {
+            if (_disposed)
+            {
+                return;
+            }
+            _messageDispatcher(message);
+        }));
     }
 
     private void NotifyErrors(Task task)

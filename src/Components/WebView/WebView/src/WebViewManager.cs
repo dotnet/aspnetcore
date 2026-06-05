@@ -149,14 +149,34 @@ public abstract class WebViewManager : IAsyncDisposable
             return;
         }
 
+        if (_disposed)
+        {
+            // The WebView is shutting down. Late inbound messages (including a stale AttachPage
+            // that would otherwise resurrect the manager by creating a new PageContext) must be
+            // dropped (see dotnet/maui#34855).
+            return;
+        }
+
+        // Capture the current page context at message-receipt time. If a page reload installs
+        // a new context while this message is queued on the dispatcher, the message must still
+        // target the original page (whose JS runtime IsDisposed guard will short-circuit
+        // user-code invocations). Without this capture, stale JS object IDs / .NET-from-JS
+        // calls / location events would route to the new page's renderer (see #66255).
+        var capturedPageContext = _currentPageContext;
+
         _ = _dispatcher.InvokeAsync(async () =>
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             // TODO: Verify this produces the correct exception-surfacing behaviors.
             // For example, JS interop exceptions should flow back into JS, whereas
             // renderer exceptions should be fatal.
             try
             {
-                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
+                await _ipcReceiver.OnMessageReceivedAsync(capturedPageContext, message);
             }
             catch (Exception ex)
             {
@@ -177,6 +197,11 @@ public abstract class WebViewManager : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(workItem);
 
+        if (_disposed)
+        {
+            return false;
+        }
+
         var capturedCurrentPageContext = _currentPageContext;
 
         if (capturedCurrentPageContext is null)
@@ -186,11 +211,13 @@ public abstract class WebViewManager : IAsyncDisposable
 
         return await capturedCurrentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
         {
-            if (capturedCurrentPageContext != _currentPageContext)
+            if (_disposed || capturedCurrentPageContext != _currentPageContext)
             {
                 // If the captured context doesn't match the current context, that means that there was something like
                 // a navigation event that caused the original page to be detached and a new one attached. Thus, we
-                // cancel out of the operation and return failure.
+                // cancel out of the operation and return failure. The _disposed check covers the case where the whole
+                // WebViewManager was disposed between capture and execution (which would otherwise let workItem run
+                // against a disposed scope).
                 return false;
             }
             workItem(_currentPageContext.ServiceProvider);
@@ -213,12 +240,28 @@ public abstract class WebViewManager : IAsyncDisposable
 
     internal async Task AttachToPageAsync(string baseUrl, string startUrl)
     {
+        if (_disposed)
+        {
+            // A late AttachPage IPC message arrived after the manager was disposed. Creating
+            // a new PageContext here would resurrect the WebViewManager — recreating the
+            // scoped services, the renderer, and the JS runtime against a disposed sender.
+            // See dotnet/maui#34855.
+            return;
+        }
+
         // If there was some previous attached page, dispose all its resources. We're not eagerly disposing
         // page contexts when the user navigates away, because we don't get notified about that. We could
         // change this if any important reason emerges.
         if (_currentPageContext != null)
         {
             await _currentPageContext.DisposeAsync();
+        }
+
+        if (_disposed)
+        {
+            // The manager may have been disposed while we awaited the previous context's
+            // disposal. Re-check before constructing a fresh page context.
+            return;
         }
 
         var serviceScope = _provider.CreateAsyncScope();
