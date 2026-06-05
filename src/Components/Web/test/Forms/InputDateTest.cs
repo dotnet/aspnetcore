@@ -368,6 +368,168 @@ public class InputDateTest
         Assert.Contains("The DateProperty field must be a time.", validationMessages);
     }
 
+    [Fact]
+    public async Task RendersTypeAttributeAsTime()
+    {
+        var model = new TestModelTimeOnly();
+        var rootComponent = new TestInputHostComponent<TimeOnly, TestInputDateTimeOnlyComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.TimeProperty,
+            AdditionalAttributes = new Dictionary<string, object>
+            {
+                { "Type", InputDateType.Time }
+            }
+        };
+
+        var hostId = _testRenderer.AssignRootComponentId(rootComponent);
+        await _testRenderer.RenderRootComponentAsync(hostId);
+        var batch = _testRenderer.Batches.Single();
+        var componentFrame = batch.GetComponentFrames<TestInputDateTimeOnlyComponent>().Single();
+        var componentId = componentFrame.ComponentId;
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var typeAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type");
+        Assert.Equal("time", typeAttribute.AttributeValue);
+    }
+
+    [Fact]
+    public async Task UsesCustomParsingErrorMessage()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+            AdditionalAttributes = new Dictionary<string, object>
+            {
+                { "ParsingErrorMessage", "My custom parse error for {0}." }
+            }
+        };
+
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("invalidDate");
+
+        var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
+        Assert.NotEmpty(validationMessages);
+        Assert.Contains("My custom parse error for DateProperty.", validationMessages);
+    }
+
+    [Fact]
+    public async Task ValueChangedCallbackInvokedWhenValueChanges()
+    {
+        var model = new TestModel();
+        DateTime? captured = null;
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+            ValueChanged = v => captured = v
+        };
+
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        await inputComponent.SetCurrentValueAsStringAsync("2020-01-01");
+
+        Assert.NotNull(captured);
+        Assert.Equal(new DateTime(2020, 1, 1), captured.Value);
+    }
+
+    [Fact]
+    public async Task CssClassIncludesFieldValidationState()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+        };
+
+        var componentId = await RenderAndGetInputDateComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var classAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
+        Assert.Contains("valid", classAttribute.AttributeValue.ToString());
+    }
+
+    [Fact]
+    public async Task RendersNameAttribute()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+        };
+
+        var componentId = await RenderAndGetInputDateComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var nameAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "name");
+        Assert.False(string.IsNullOrEmpty(nameAttribute.AttributeValue?.ToString()));
+    }
+
+    [Fact]
+    public async Task AdditionalAttributesArePropagated()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+            AdditionalAttributes = new Dictionary<string, object>
+            {
+                { "placeholder", "Enter date" },
+                { "data-test", "input-date" }
+            }
+        };
+
+        var hostComponentId = _testRenderer.AssignRootComponentId(rootComponent);
+        await _testRenderer.RenderRootComponentAsync(hostComponentId);
+        var componentId = _testRenderer.Batches.Last().GetComponentFrames<TestInputDateComponent>().Single().ComponentId;
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var placeholder = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "placeholder");
+        var dataTest = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "data-test");
+
+        Assert.Equal("Enter date", placeholder.AttributeValue);
+        Assert.Equal("input-date", dataTest.AttributeValue);
+    }
+
+    [Fact]
+    public async Task WorksWithoutEditContext()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            // No EditContext
+            ValueExpression = () => model.DateProperty,
+        };
+
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        Assert.NotNull(inputComponent.Element);
+    }
+
+    [Fact]
+    public async Task OnchangeHandlerHasValidEventHandlerId()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestInputDateComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty,
+        };
+
+        var componentId = await RenderAndGetInputDateComponentIdAsync(rootComponent);
+        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
+
+        var onchange = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
+        Assert.NotNull(onchange.AttributeValue);
+    }
+
     private async Task<int> RenderAndGetInputDateComponentIdAsync(TestInputHostComponent<DateTime, TestInputDateComponent> hostComponent)
     {
         var hostComponentId = _testRenderer.AssignRootComponentId(hostComponent);
