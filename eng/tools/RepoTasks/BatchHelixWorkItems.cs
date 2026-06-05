@@ -162,6 +162,7 @@ public class BatchHelixWorkItems : Microsoft.Build.Utilities.Task
                     ValidateMetadataConsistency(workItem, firstItem, "QueueName");
                     ValidateMetadataConsistency(workItem, firstItem, "TestingArchitecture");
                     ValidateMetadataConsistency(workItem, firstItem, "RunQuarantined");
+                    ValidateMetadataConsistency(workItem, firstItem, "Timeout");
                 }
 
                 if (Log.HasLoggedErrors)

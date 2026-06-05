@@ -217,7 +217,7 @@
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <SkipHelixWorkItemBatching Condition="'$(TestDependsOnIIS)' == 'true' OR '$(TestDependsOnPlaywright)' == 'true' OR '$(TestDependsOnJava)' == 'true' OR '$(TestDependsOnNode)' == 'true' OR '$(TestDependsOnMssql)' == 'true' OR '$(SkipHelixWorkItemBatching)' == 'true'">true</SkipHelixWorkItemBatching>
+        <SkipHelixWorkItemBatching Condition="'$(TestDependsOnIIS)' == 'true' OR '$(TestDependsOnPlaywright)' == 'true' OR '$(TestDependsOnJava)' == 'true' OR '$(TestDependsOnNode)' == 'true' OR '$(TestDependsOnMssql)' == 'true' OR '$(SkipHelixWorkItemBatching)' == 'true' OR '$(HelixTimeout)' != '$(DefaultHelixTimeout)'">true</SkipHelixWorkItemBatching>
         <TargetFrameworkMoniker>$(TargetFramework)</TargetFrameworkMoniker>
         <RuntimeVersion>$(SharedFxVersion)</RuntimeVersion>
         <QueueName>$(_HelixFriendlyNameTargetQueue)</QueueName>
