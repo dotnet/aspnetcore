@@ -85,7 +85,7 @@
                 <td class="row-details-toggle-cell" @key="@(GetRowDetailsKey(item))">
                     <button class="row-details-toggle-button"
                         type="button"
-                        title="Toggle row details"
+                        aria-label="@(detailsExpanded ? "Row Collapse" : "Row Expand")"
                         aria-expanded="@detailsExpanded"
                         @onclick="@(() => ToggleRowDetailsAsync(item))"
                         @onclick:stopPropagation="true">

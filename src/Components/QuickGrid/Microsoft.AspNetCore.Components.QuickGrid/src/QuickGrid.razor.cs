@@ -116,8 +116,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
 
     /// <summary>
-    /// Optional row details content that is rendered when a row is expanded.
-    /// If supplied, the content is displayed inside the expander cell instead of in a separate details row.
+    /// Optional template for displaying expandable row details. When supplied, the grid renders a toggle button in each row, and the expanded details content appears in a separate row below the item row.
+    /// The expanded state is tracked by <see cref="ItemKey"/>, so it remains stable across data refreshes.
     /// </summary>
     [Parameter] public RenderFragment<TGridItem>? RowDetailsTemplate { get; set; }
 
