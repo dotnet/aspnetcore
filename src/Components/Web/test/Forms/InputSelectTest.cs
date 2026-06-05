@@ -49,22 +49,6 @@ public class InputSelectTest
     }
 
     [Fact]
-    public async Task ParsesNotNullableEnumWithExactNameMatch()
-    {
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.NotNullableEnum
-        };
-        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        await inputSelectComponent.SetCurrentValueAsStringAsync("Two");
-
-        Assert.Equal(TestEnum.Two, inputSelectComponent.CurrentValue);
-    }
-
-    [Fact]
     public async Task ParsesCurrentValueWhenUsingNullableEnumWithNotEmptyValue()
     {
         // Arrange
@@ -100,22 +84,6 @@ public class InputSelectTest
 
         // Assert
         Assert.Null(inputSelectComponent.CurrentValue);
-    }
-
-    [Fact]
-    public async Task ParsesNullableEnumWithExactNameMatch()
-    {
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<TestEnum?, TestInputSelect<TestEnum?>>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.NullableEnum
-        };
-        var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        await inputSelectComponent.SetCurrentValueAsStringAsync("One");
-
-        Assert.Equal(TestEnum.One, inputSelectComponent.CurrentValue);
     }
 
     // See: https://github.com/dotnet/aspnetcore/issues/9939
@@ -258,7 +226,7 @@ public class InputSelectTest
         var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        var idAttribute = frames.Array.SingleOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
+        var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
         Assert.Equal("model_NotNullableEnum", idAttribute.AttributeValue);
     }
 
@@ -280,8 +248,17 @@ public class InputSelectTest
         Assert.Equal("custom-select-id", idAttribute.AttributeValue);
     }
 
-    [Fact]
-    public async Task ClassAttributeIsPassedThroughViaAdditionalAttributes()
+    public static IEnumerable<object[]> AdditionalAttributesTestData =>
+        new List<object[]>
+        {
+            new object[] { new Dictionary<string, object> { { "class", "custom-select-class another-class" } } },
+            new object[] { new Dictionary<string, object> { { "data-testid", "my-select" }, { "data-required", "true" }, { "data-custom-value", "some-value" } } },
+            new object[] { new Dictionary<string, object> { { "aria-label", "Select an option" }, { "aria-describedby", "help-text" }, { "aria-required", "true" } } }
+        };
+
+    [Theory]
+    [MemberData(nameof(AdditionalAttributesTestData))]
+    public async Task AdditionalAttributes_AreRenderedOnElement(Dictionary<string, object> attributes)
     {
         // Arrange
         var model = new TestModel();
@@ -289,7 +266,7 @@ public class InputSelectTest
         {
             EditContext = new EditContext(model),
             ValueExpression = () => model.NotNullableEnum,
-            AdditionalAttributes = new Dictionary<string, object> { { "class", "custom-select-class another-class" } }
+            AdditionalAttributes = attributes
         };
 
         // Act
@@ -297,92 +274,20 @@ public class InputSelectTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         // Assert
-        var classAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute &&
-            f.AttributeName == "class");
-
-        Assert.NotEqual(default, classAttribute);
-        Assert.Contains("custom-select-class another-class", classAttribute.AttributeValue.ToString());
-    }
-
-    [Fact]
-    public async Task DataAttributesArePassedThroughViaAdditionalAttributes()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
+        foreach (var kvp in attributes)
         {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.NotNullableEnum,
-            AdditionalAttributes = new Dictionary<string, object>
+            var attributeFrame = frames.Array.FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == kvp.Key);
+            Assert.NotEqual(default, attributeFrame);
+
+            if (kvp.Key == "class")
             {
-                { "data-testid", "my-select" },
-                { "data-required", "true" },
-                { "data-custom-value", "some-value" }
+                Assert.Contains(kvp.Value.ToString(), attributeFrame.AttributeValue?.ToString());
             }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        var dataTestIdAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute &&
-            f.AttributeName == "data-testid");
-        var dataRequiredAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute &&
-            f.AttributeName == "data-required");
-        var dataCustomAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute &&
-            f.AttributeName == "data-custom-value");
-
-        Assert.NotEqual(default, dataTestIdAttribute);
-        Assert.Equal("my-select", dataTestIdAttribute.AttributeValue);
-        Assert.NotEqual(default, dataRequiredAttribute);
-        Assert.Equal("true", dataRequiredAttribute.AttributeValue);
-        Assert.NotEqual(default, dataCustomAttribute);
-        Assert.Equal("some-value", dataCustomAttribute.AttributeValue);
-    }
-
-    [Fact]
-    public async Task AriaAttributesArePassedThroughViaAdditionalAttributes()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
-        {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.NotNullableEnum,
-            AdditionalAttributes = new Dictionary<string, object>
+            else
             {
-                { "aria-label", "Select an option" },
-                { "aria-describedby", "help-text" },
-                { "aria-required", "true" }
+                Assert.Equal(kvp.Value, attributeFrame.AttributeValue);
             }
-        };
-
-        // Act
-        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        var ariaLabelAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute &&
-            f.AttributeName == "aria-label");
-        var ariaDescribedByAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute &&
-            f.AttributeName == "aria-describedby");
-        var ariaRequiredAttribute = frames.Array.FirstOrDefault(f =>
-            f.FrameType == RenderTreeFrameType.Attribute &&
-            f.AttributeName == "aria-required");
-
-        Assert.NotEqual(default, ariaLabelAttribute);
-        Assert.Equal("Select an option", ariaLabelAttribute.AttributeValue);
-        Assert.NotEqual(default, ariaDescribedByAttribute);
-        Assert.Equal("help-text", ariaDescribedByAttribute.AttributeValue);
-        Assert.NotEqual(default, ariaRequiredAttribute);
-        Assert.Equal("true", ariaRequiredAttribute.AttributeValue);
+        }
     }
 
     [Fact]
@@ -535,48 +440,56 @@ public class InputSelectTest
         Assert.Null(inputSelectComponent.CurrentValue);
     }
 
-    [Fact]
-    public async Task MultiSelectWithStringArrayRendersMultipleAttribute()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task MultipleAttribute_RendersBasedOnSelectType(bool isMultiSelect)
     {
         // Arrange
-        var model = new TestModelWithArray();
-        var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
+        int componentId;
+        if (isMultiSelect)
         {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.StringArray,
-            Value = model.StringArray   // must be non-null so BindConverter doesn't throw
-        };
+            var model = new TestModelWithArray();
+            var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.StringArray,
+                Value = model.StringArray
+            };
+            componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
+        }
+        else
+        {
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.NotNullableEnum
+            };
+            componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
+        }
 
-        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
+        // Act
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         // Assert
-        var multipleAttribute = frames.Array
-            .FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "multiple");
-        Assert.NotEqual(default, multipleAttribute);
-        Assert.True((bool)multipleAttribute.AttributeValue);
-    }
-
-    [Fact]
-    public async Task SingleSelectDoesNotRenderMultipleAttribute()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
+        if (isMultiSelect)
         {
-            EditContext = new EditContext(model),
-            ValueExpression = () => model.NotNullableEnum
-        };
-
-        var componentId = await RenderAndGetInputSelectComponentIdAsync(rootComponent);
-        var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Assert
-        var hasMultiple = frames.Array
-            .Any(f => f.FrameType == RenderTreeFrameType.Attribute
-                   && f.AttributeName == "multiple"
-                   && f.AttributeValue is true);
-        Assert.False(hasMultiple);
+            // Multi-select: multiple attribute should exist and be true
+            var multipleAttribute = frames.Array
+                .FirstOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "multiple");
+            Assert.NotEqual(default, multipleAttribute);
+            Assert.True((bool)multipleAttribute.AttributeValue);
+        }
+        else
+        {
+            // Single-select: no attribute with value true
+            var hasMultipleTrue = frames.Array
+                .Any(f => f.FrameType == RenderTreeFrameType.Attribute
+                       && f.AttributeName == "multiple"
+                       && f.AttributeValue is true);
+            Assert.False(hasMultipleTrue);
+        }
     }
 
     [Fact]
@@ -598,8 +511,8 @@ public class InputSelectTest
         inputSelectComponent.CurrentValueAsString = "Two";
         Assert.Equal(TestEnum.Two, inputSelectComponent.CurrentValue);
 
-        inputSelectComponent.CurrentValueAsString = "Three";
-        Assert.Equal(TestEnum.Three, inputSelectComponent.CurrentValue);
+        inputSelectComponent.CurrentValueAsString = "Tree";
+        Assert.Equal(TestEnum.Tree, inputSelectComponent.CurrentValue);
 
         inputSelectComponent.CurrentValueAsString = "One";
         Assert.Equal(TestEnum.One, inputSelectComponent.CurrentValue);
@@ -747,7 +660,7 @@ public class InputSelectTest
     {
         One,
         Two,
-        Three
+        Tree
     }
 
     class TestModel
