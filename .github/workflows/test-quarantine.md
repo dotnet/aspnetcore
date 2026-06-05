@@ -239,6 +239,26 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `python3` with `urllib.request` to download the log and search it.
 
+   **Extract the `[FAIL]` blocks inside the `python3` script and print only those — never `print()`, `cat`, or otherwise surface the full log into your context.** The download lands in the runner; only the text you print is read back, so dumping a 10MB+ log wastes the run's token budget. For each `[FAIL]` marker, capture from the `[FAIL]` line through the end of its trailing `Error Message:` / `Stack Trace:` section (i.e., up to the next `[PASS]`/`[FAIL]`/`[SKIP]` marker), apply a per-block safety cap of ~8,000 characters, and print the blocks separated by a delimiter. Prefix the output with a one-line summary (`# {N} [FAIL] blocks, full log {size} bytes`) and cap the total printed output at ~100,000 characters. This is lossless for the quarantine decision — every `[FAIL]` and its complete error/stack section is preserved — while discarding the irrelevant build/restore/passing-test noise that makes up the bulk of the log. For example:
+
+   ```python
+   import urllib.request, re
+   data = urllib.request.urlopen(url, timeout=60).read().decode('utf-8', 'replace')
+   lines = data.splitlines()
+   blocks, i = [], 0
+   while i < len(lines):
+       if '[FAIL]' in lines[i]:
+           j = i + 1
+           while j < len(lines) and not re.search(r'\[(PASS|FAIL|SKIP)\]', lines[j]):
+               j += 1
+           blocks.append('\n'.join(lines[i:j])[:8000])
+           i = j
+       else:
+           i += 1
+   print(f"# {len(blocks)} [FAIL] blocks, full log {len(data)} bytes")
+   print('\n---\n'.join(blocks)[:100000])
+   ```
+
 ### Step 1.2 — Combine and identify quarantine candidates
 
 **IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
@@ -263,7 +283,7 @@ All of the following are true:
 
 After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
-1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
+1. For each failure in the class, extract the error message and stack trace from the Helix console log. Reuse the runner-side `[FAIL]`-block extraction from Source C step 3 — capture each `[FAIL]` line together with the lines immediately following it (the `Error Message:` and `Stack Trace:` sections) inside the `python3` script, and print only those blocks rather than surfacing the full log.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
