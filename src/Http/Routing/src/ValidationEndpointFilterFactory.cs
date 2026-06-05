@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal static class ValidationEndpointFilterFactory
 {
+    private static readonly object NullArgumentValidationContextInstance = new();
+
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
     private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string Name);
 
@@ -68,14 +70,10 @@ internal static class ValidationEndpointFilterFactory
                 }
 
                 var argument = context.Arguments[entry.Index];
-                if (argument is null)
-                {
-                    continue;
-                }
 
                 // ValidationContext.DisplayName is overwritten by ValidatableParameterInfo.ValidateAsync
                 // once the localized display name is resolved; the parameter name acts as a placeholder.
-                var validationContext = new ValidationContext(argument, entry.Name, context.HttpContext.RequestServices, items: null);
+                var validationContext = new ValidationContext(argument ?? NullArgumentValidationContextInstance, entry.Name, context.HttpContext.RequestServices, items: null);
 
                 if (validateContext == null)
                 {
