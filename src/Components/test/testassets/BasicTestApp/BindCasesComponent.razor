@@ -282,6 +282,28 @@
     <span id="textarea-initially-populated-value">@textAreaInitiallyPopulatedValue</span>
 </p>
 
+<h2>Text Area with Child Content (Issue #45951)</h2>
+<p>
+    <a id="toggle-to-method1" href="./?method=method1">Method 1</a>
+    <br />
+    <a id="toggle-to-method2" href="./?method=method2">Method 2</a>
+</p>
+<p>
+    Current method: <span id="textarea-current-method">@Method</span>
+</p>
+
+@if (!String.IsNullOrWhiteSpace(Method))
+{
+    <form>
+        <textarea id="textarea-child-content" rows="3" style="width: 350px;" @onchange="Text_OnChange">@GetData(Method)</textarea>
+        <br />
+        <input id="input-with-value" type="text" style="width: 350px;" value="@GetData(Method)" @onchange="Text_OnChange" />
+        <br />
+        <br />
+    </form>
+}
+
+
 <h2>Checkbox</h2>
 <p>
     Initially null:
@@ -473,6 +495,42 @@
 </p>
 
 @code {
+
+     // Test data for issue #45951 - TextArea with child content
+    private Dictionary<string, string> cache = new Dictionary<string, string>
+    {
+        { "method1", "Initial value for method 1" },
+        { "method2", "Method 2 initial value." },
+    };
+
+    [Parameter, SupplyParameterFromQuery(Name = "method")]
+    public string Method { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+
+    private void Text_OnChange(ChangeEventArgs e)
+    {
+        Console.WriteLine($"Text_OnChange: {e.Value}");
+
+        if (Method != null && cache.ContainsKey(Method))
+        {
+            cache[Method] = (string)e.Value!;
+        }
+    }
+
+    private string GetData(string key)
+    {
+        Console.WriteLine($"Data for {key} is: {cache[key]}");
+        return cache[key];
+    }
     string textboxInitiallyBlankValue = null;
     string textboxInitiallyPopulatedValue = "Hello";
 

@@ -1,0 +1,60 @@
+@page "/textarea-methodtest"
+@inject NavigationManager Navigation
+
+@* Links: switch via URL navigation (Blazor router / full reload) *@
+<a id="method1-link" href="@(Navigation.GetUriWithQueryParameter("method", "method1"))">Method 1</a>
+<br />
+<a id="method2-link" href="@(Navigation.GetUriWithQueryParameter("method", "method2"))">Method 2</a>
+<br />
+@* Buttons: switch via local state — triggers BrowserRenderer.ts updateText directly (WASM re-render, no navigation) *@
+<button id="method1-btn" @onclick='() => SetMethod("method1")'>Method 1 (btn)</button>
+<button id="method2-btn" @onclick='() => SetMethod("method2")'>Method 2 (btn)</button>
+
+@if (!String.IsNullOrWhiteSpace(CurrentMethod))
+{
+    <form>
+        @* In HTML, according to https://www.w3schools.com/tags/tag_textarea.asp, the text that is to be
+        displayed in the textarea should be placed between the opening and closing <textarea> tags. *@
+        <textarea id="textArea" rows="3" style="width: 350px;" @onchange="Text_OnChange">@GetData(CurrentMethod)</textarea>
+        <br />
+        <input id="textBox" type="text" style="width: 350px;" value="@GetData(CurrentMethod)" @onchange="Text_OnChange" />
+        <br />
+        <br />
+    </form>
+}
+@code
+{
+#nullable enable
+    private string? CurrentMethod;
+
+    private Dictionary<string, string> cache = new Dictionary<string, string>
+    {
+        { "method1", "Initial value for method 1" },
+        { "method2", "Method 2 initial value." },
+    };
+
+    [Parameter, SupplyParameterFromQuery(Name = "method")]
+    public string? Method { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        CurrentMethod ??= Method;
+    }
+
+    private void SetMethod(string method) => CurrentMethod = method;
+
+    private void Text_OnChange(ChangeEventArgs e)
+    {
+        Console.WriteLine($"Text_OnChange: {e.Value}");
+        if (CurrentMethod != null && cache.ContainsKey(CurrentMethod))
+        {
+            cache[CurrentMethod] = (string)e.Value!;
+        }
+    }
+
+    private string GetData(string key)
+    {
+        Console.WriteLine($"Data for {key} is: {cache[key]}");
+        return cache[key];
+    }
+}
