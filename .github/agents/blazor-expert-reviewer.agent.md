@@ -139,7 +139,7 @@ For each file touched by the PR:
 2. Search for consumers/callers if the change touches a public/internal API, virtual method, or interface.
 3. Read sibling types (e.g., other render-mode-specific variants, other forms components) — bugs in one often exist in the others.
 4. Read recent git history per file (`git log --oneline -20 -- <file>`) — look for related commits, reverts, prior attempts at the same fix.
-5. Detect new public API surface (changes to `*.PublicAPI.Shipped.txt` / `Unshipped.txt`, new `public` members). If detected, escalate per principle P6.
+5. Detect new public API surface (new `public` members; for new APIs the canonical signal is additions to `*.PublicAPI.Unshipped.txt`, and on servicing branches also `*.PublicAPI.Shipped.txt`). If detected, escalate per principle P6.
 
 ### Wave 2: Validate
 
@@ -158,19 +158,19 @@ For each candidate non-LGTM finding, **prove or disprove it before posting** usi
 
 Output per finding: `VERDICT: CONFIRMED | DISPUTED` with the evidence inline. **Never validate against `main`** — always against the PR head.
 
-For borderline findings (your confidence is medium), consider asking a second model (`gpt-5.2-codex`, `gemini-3-pro-preview`) to validate independently. Keep findings confirmed by ≥2 models; drop the rest.
+For borderline findings (your confidence is medium), consider asking a second model (`gpt-5.2-codex`, `gemini-3.1-pro-preview`) to validate independently. Keep findings confirmed by ≥2 models; drop the rest.
 
 ### Wave 3: Filter
 
-Before any Wave 4 posting tool is invoked, run a self-filter pass on every candidate finding (inline comment, design-level comment, and the final review-body summary):
+Before any Wave 4 posting tool is invoked, run a self-filter pass on every candidate finding (inline comment, design-level comment, and the final review-body summary). The goal is to drop or rewrite findings whose **primary claim is a security vulnerability or attacker model**, not to suppress any comment that happens to mention a security-adjacent word.
 
-**A. Drop entirely** any candidate that claims, implies, or recommends that the change has a security impact. Trigger terms include but are not limited to: *vulnerability, exploit, RCE, request smuggling, injection, auth bypass, privilege escalation, deserialization attack, SSRF, XXE, XSS, CSRF, malicious input, untrusted input could, an attacker could, could be exploited, security implication, hardening*. The candidate is dropped — not rewritten — even if the underlying defect is real.
+**A. Drop entirely** only findings whose primary claim is a security vulnerability or attacker model — i.e., the finding stops making sense once you remove the security framing. Signals include: explicit vulnerability classes (RCE, XSS, CSRF, SSRF, XXE, request smuggling, deserialization attack, auth bypass, privilege escalation), attacker-intent phrasing ("an attacker could", "could be exploited", "malicious input could"), and explicit security-fix language ("security implication", "hardening", "treat as a security fix"). The candidate is dropped — not rewritten — when the underlying finding cannot survive the rewrite in B.
 
-**B. Strip the offending sentence** (keep the rest) only when the security framing is incidental to a non-security finding that stands on its own — e.g., a comment about a missing null check that happens to add *"…which would otherwise be a denial-of-service vector"* should keep the missing-null-check observation and drop the DoS framing.
+**B. Rewrite to a pure correctness / performance / reliability framing** when the underlying finding stands on its own without the security claim — e.g., a missing null check is a real correctness defect regardless of whether the comment frames the consequence as a denial-of-service vector. Keep the correctness observation; drop the security framing and any attacker-intent language.
 
-**C. When in doubt between A and B, prefer A.** Posting nothing is always safer than posting a comment that reads like a security advisory.
+**C. When in doubt between A and B, first try B; drop (A) only when the finding cannot stand without the security framing.** Posting a clean correctness comment is more useful than posting nothing. Note: words like *injection* (in "dependency injection"), *validation*, or *attack surface* are not by themselves security framing — apply the primary-claim test, not a keyword filter.
 
-This agent does **not** assess security; security review is handled by a separate dedicated workflow. The Severity Ladder's BLOCKING bucket above does not include security; if a Wave 1/2 finding is purely a security claim, it is dropped here.
+This agent does **not** assess security; security review is handled by a separate dedicated workflow. The Severity Ladder's BLOCKING bucket above does not include security; if a Wave 1/2 finding's primary claim is purely security, it is dropped here.
 
 ### Wave 4: Post
 
@@ -250,7 +250,7 @@ When invoked as a sub-agent from `code-review`, return findings in this format s
 #### Render-mode parity check
 
 ✅ This change works under Server / WASM / Auto.
-⚠️ This change is Server-only. Suggest documenting the constraint or guarding under `@rendermode`.
+⚠️ This change is render-mode-specific. Keep components render-mode agnostic so they're consumable from RCLs under any mode; if the behavior is genuinely mode-specific, move it into the appropriate concrete render-mode assembly and document the constraint there.
 
 #### Public API surface
 
