@@ -26,6 +26,6 @@ public class TemplateColumn<TGridItem> : ColumnBase<TGridItem>
         => builder.AddContent(0, ChildContent(item));
 
     /// <inheritdoc />
-    protected override bool IsSortableByDefault()
+    public override bool IsSortableByDefault()
         => SortBy is not null;
 }
