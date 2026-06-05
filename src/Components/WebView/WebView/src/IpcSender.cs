@@ -116,10 +116,12 @@ internal sealed class IpcSender
             return;
         }
 
-        // Send the serialized exception to the WebView for display. Re-check _disposed
-        // inside the dispatcher delegate to close the TOCTOU window between the early
-        // return above and the delegate executing on the dispatcher thread; otherwise a
-        // Dispose() that races after the check still produces a host-crashing rethrow.
+        // Combine the send and rethrow into a single dispatcher delegate so the "disposed
+        // or not" decision is atomic at execution time. With two separate InvokeAsync calls,
+        // a disposal that races between them could produce a partial state (message sent
+        // but rethrow skipped, or vice versa). Re-check _disposed inside the delegate to
+        // close the TOCTOU window against a Dispose() that runs after the early-return
+        // check above (see dotnet/maui#34855).
         var message = IpcCommon.Serialize(IpcCommon.OutgoingMessageType.NotifyUnhandledException, exception.Message, exception.StackTrace);
         _dispatcher.InvokeAsync(() =>
         {
@@ -128,15 +130,8 @@ internal sealed class IpcSender
                 return;
             }
             _messageDispatcher(message);
-        });
 
-        // Also rethrow so the AppDomain's UnhandledException handler gets notified.
-        _dispatcher.InvokeAsync(() =>
-        {
-            if (_disposed)
-            {
-                return;
-            }
+            // Rethrow on the dispatcher so the AppDomain's UnhandledException handler gets notified.
             ExceptionDispatchInfo.Capture(exception).Throw();
         });
     }

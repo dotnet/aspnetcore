@@ -46,25 +46,20 @@ internal sealed class IpcReceiver
                 throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
             }
 
-            // If the page's JS runtime has been marked disconnected (e.g., the page is being
-            // reloaded or the WebView is shutting down), drop messages that would invoke .NET
-            // user code or fire user-registered callbacks on a disposed scope. Forwarding them
-            // would route stale JS object IDs into a disposed renderer/runtime or trigger
-            // handlers registered against scoped services that have already been disposed
-            // (see dotnet/aspnetcore#66255, dotnet/maui#34855).
+            // If the page's JS runtime has been marked disconnected (page reload or WebView
+            // shutdown in progress), drop EVERY incoming message EXCEPT EndInvokeJS. Letting
+            // OnLocationChanged through would fire LocationChanged on user subscribers that
+            // may belong to disposed components; letting OnRenderCompleted through would call
+            // into a disposed renderer's Dequeue that can throw on duplicate / error / out-of-
+            // order acks; letting BeginInvokeDotNet / ReceiveByteArrayFromJS / OnLocationChanging
+            // through would invoke .NET user code on a disposed scope.
             //
-            // EndInvokeJS, OnRenderCompleted, and OnLocationChanged are intentionally NOT
-            // dropped here:
-            //   * EndInvokeJS completes pending InvokeAsync<T> task completion sources on
-            //     the runtime. Dropping it would leave caller-awaited tasks hanging forever.
-            //   * OnRenderCompleted just completes a pending render batch TCS on the
-            //     renderer; the renderer tolerates being notified after disposal.
-            //   * OnLocationChanged updates internal NavigationManager state and fires the
-            //     LocationChanged event, both of which are benign on a disposed page.
-            if (pageContext.JSRuntime.IsDisposed && messageType is
-                IpcCommon.IncomingMessageType.BeginInvokeDotNet or
-                IpcCommon.IncomingMessageType.ReceiveByteArrayFromJS or
-                IpcCommon.IncomingMessageType.OnLocationChanging)
+            // EndInvokeJS is the lone exception: it only completes pending InvokeAsync<T> task
+            // completion sources on the runtime, so dropping it would leave caller-awaited tasks
+            // hanging indefinitely. (Tracked as the only safe pass-through under
+            // dotnet/aspnetcore#66255 / dotnet/maui#34855.)
+            if (pageContext.JSRuntime.IsDisposed &&
+                messageType != IpcCommon.IncomingMessageType.EndInvokeJS)
             {
                 return;
             }

@@ -380,6 +380,58 @@ public class WebViewManagerTests
         Assert.False(workItemRan);
     }
 
+    [Fact]
+    public async Task IpcReceiver_AllowsEndInvokeJSThroughAfterRuntimeDisposed_CompletesPendingInvocation()
+    {
+        // The refined IpcReceiver guard drops every incoming message when the page's JS
+        // runtime is marked disconnected EXCEPT EndInvokeJS — that one is the only safe
+        // pass-through because it completes pending InvokeAsync<T> task completion sources
+        // on the runtime. Without this pass-through, any in-flight JS call awaiting a JS-side
+        // reply would hang forever after page reload / WebView shutdown.
+        //
+        // To verify the pass-through end-to-end, start a real InvokeAsync<T> before disposal
+        // to register a pending tracker, capture its asyncHandle from the outbound BeginInvokeJS
+        // IPC, MarkAsDisconnected, then deliver the JS-side EndInvokeJS reply with the captured
+        // handle. The InvokeAsync<T> Task must complete with the supplied result.
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(CaptureJSRuntimeComponent), "#app", ParameterView.Empty);
+        webViewManager.ReceiveAttachPageMessage();
+
+        var capturedRuntime = (WebViewJSRuntime)services.GetRequiredService<SingletonService>().CapturedJSRuntime;
+
+        // Start a JS interop call. This sends a BeginInvokeJS IPC carrying the asyncHandle
+        // and registers a pending tracker on the runtime.
+        var pendingInvoke = capturedRuntime.InvokeAsync<string>("someJsFunction", Array.Empty<object>()).AsTask();
+        Assert.False(pendingInvoke.IsCompleted);
+
+        // Pull the asyncHandle out of the outbound BeginInvokeJS message.
+        var beginInvokeMessage = webViewManager.SentIpcMessages.Last();
+        Assert.True(IpcCommon.TryDeserializeOutgoing(beginInvokeMessage, out var outMsgType, out var outArgs));
+        Assert.Equal(IpcCommon.OutgoingMessageType.BeginInvokeJS, outMsgType);
+        var asyncHandle = outArgs[0].GetInt64();
+
+        // Now disconnect the runtime (mimicking page reload / WebView shutdown).
+        capturedRuntime.MarkAsDisconnected();
+
+        // Deliver the JS-side reply. blazor.webview.js's sendEndInvokeJSFromDotNet emits
+        // ['EndInvokeJS', asyncHandle, succeeded, argsJson] where argsJson itself encodes
+        // [asyncHandle, succeeded, value]. The C# IpcReceiver only consumes args[2] (the inner
+        // argsJson) which DotNetDispatcher.EndInvokeJS then parses.
+        var innerArgsJson = $"[{asyncHandle},true,\"result-string\"]";
+        webViewManager.ReceiveIpcMessage(
+            IpcCommon.IncomingMessageType.EndInvokeJS,
+            asyncHandle,
+            /* succeeded */ true,
+            innerArgsJson);
+
+        // The pending InvokeAsync<string> Task must now complete with the supplied result.
+        var completed = await Task.WhenAny(pendingInvoke, Task.Delay(TimeSpan.FromSeconds(5)));
+        Assert.Same(pendingInvoke, completed);
+        Assert.Equal("result-string", await pendingInvoke);
+    }
+
     private static IServiceCollection RegisterTestServices()
     {
         return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();
