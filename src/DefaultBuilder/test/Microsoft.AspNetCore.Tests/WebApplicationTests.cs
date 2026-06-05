@@ -2751,6 +2751,7 @@ public class WebApplicationTests
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddlewareInternal", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", m),
             m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMiddleware", m));
     }
@@ -2770,7 +2771,8 @@ public class WebApplicationTests
         var debugView = new WebApplication.WebApplicationDebugView(app);
 
         Assert.Collection(debugView.Middleware,
-            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m));
+            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", m));
     }
 
     [Fact]
