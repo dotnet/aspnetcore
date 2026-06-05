@@ -259,6 +259,12 @@ public abstract class WebViewManager : IAsyncDisposable
         {
             _disposed = true;
 
+            // Stop the IPC sender first so that in-flight render batches, navigation events,
+            // and unhandled-exception notifications produced while we dispose the page context
+            // can't reach a platform WebView whose underlying control is being torn down
+            // (see dotnet/maui#34855 alexdess NullReferenceException variant).
+            _ipcSender.Dispose();
+
             if (_currentPageContext != null)
             {
                 await _currentPageContext.DisposeAsync();

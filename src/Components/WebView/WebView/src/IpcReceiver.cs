@@ -46,6 +46,15 @@ internal sealed class IpcReceiver
                 throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
             }
 
+            // If the page's JS runtime has been marked disconnected (e.g., the page is being
+            // reloaded or the WebView is shutting down), drop the message. Forwarding it would
+            // route stale JS object IDs into the new page's renderer or invoke handlers on a
+            // disposed scope (see dotnet/aspnetcore#66255, dotnet/maui#34855).
+            if (pageContext.JSRuntime.IsDisposed)
+            {
+                return;
+            }
+
             switch (messageType)
             {
                 case IpcCommon.IncomingMessageType.BeginInvokeDotNet:
