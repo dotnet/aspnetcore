@@ -10,7 +10,7 @@ configuration:
   resourceManagementConfiguration:
     scheduledSearches:
     - description: '[Idle Issue Management] Close stale issues'
-      frequencies:f
+      frequencies:
       - weekday:
           day: Monday
           time: 0:0
