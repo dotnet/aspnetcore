@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -134,7 +135,7 @@ public static class Program
 
         Console.WriteLine("Preparing fuzzers ...");
 
-        List<string> exceptions = new();
+        ConcurrentQueue<string> exceptions = new();
 
         Parallel.ForEach(fuzzers, fuzzer =>
         {
@@ -144,11 +145,11 @@ public static class Program
             }
             catch (Exception ex)
             {
-                exceptions.Add($"Failed to prepare {fuzzer.Name}: {ex.Message}");
+                exceptions.Enqueue($"Failed to prepare {fuzzer.Name}: {ex.Message}");
             }
         });
 
-        if (exceptions.Count != 0)
+        if (!exceptions.IsEmpty)
         {
             Console.WriteLine(string.Join('\n', exceptions));
             throw new Exception($"Failed to prepare {exceptions.Count} fuzzers.");
@@ -244,34 +245,32 @@ public static class Program
             File.Delete(previousOriginal);
             File.Delete(previousInstrumented);
 
-            using Process sharpfuzz = new()
+            var startInfo = new ProcessStartInfo
             {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "sharpfuzz",
-                    Arguments = path,
-                    UseShellExecute = false,
-                }
+                FileName = "sharpfuzz",
+                Arguments = path,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
             };
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // https://github.com/Metalnem/sharpfuzz/blob/9e44048d8821da942d00c2c125bb59d039d55673/src/SharpFuzz/Options.cs#L37-L41
-                sharpfuzz.StartInfo.EnvironmentVariables.Add("SHARPFUZZ_INSTRUMENT_MIXED_MODE_ASSEMBLIES", "1");
+                startInfo.EnvironmentVariables.Add("SHARPFUZZ_INSTRUMENT_MIXED_MODE_ASSEMBLIES", "1");
             }
 
             // The sharpfuzz global tool may target a different runtime version than the repo's local SDK.
             // Clear DOTNET_ROOT so it can find system-installed runtimes instead of only the repo's local SDK.
-            sharpfuzz.StartInfo.EnvironmentVariables.Remove("DOTNET_ROOT");
-            sharpfuzz.StartInfo.EnvironmentVariables.Remove("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR");
-            sharpfuzz.StartInfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "1";
+            startInfo.EnvironmentVariables.Remove("DOTNET_ROOT");
+            startInfo.EnvironmentVariables.Remove("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR");
+            startInfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "1";
 
-            sharpfuzz.Start();
-            sharpfuzz.WaitForExit();
+            var processOutput = Process.RunAndCaptureText(startInfo);
 
-            if (sharpfuzz.ExitCode != 0)
+            if (processOutput.ExitStatus.ExitCode != 0)
             {
-                throw new Exception($"Failed to instrument {path}");
+                throw new Exception($"Failed to instrument {path}: {processOutput.StandardOutput}{Environment.NewLine}{processOutput.StandardError}");
             }
 
             File.WriteAllBytes(previousOriginal, current);
