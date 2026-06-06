@@ -336,10 +336,8 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         // SignOutAsync must clear the cached session key so that the subsequent SignInAsync
         // generates a fresh key via StoreAsync rather than reusing the just-removed key via RenewAsync.
         // See https://github.com/dotnet/aspnetcore/issues/47503.
-        var request = new HttpRequestMessage(HttpMethod.Get, "http://example.com/testpath?signoutfirst=1");
-        request.Headers.Add("Cookie", transaction1.CookieNameValue);
-        var response = await server.CreateClient().SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        var transaction2 = await SendAsync(server, "http://example.com/testpath?signoutfirst=1", transaction1.CookieNameValue);
+        Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
 
         var key2 = Assert.Single(sessionStore.Store.Keys);
         Assert.NotEqual(key1, key2);
