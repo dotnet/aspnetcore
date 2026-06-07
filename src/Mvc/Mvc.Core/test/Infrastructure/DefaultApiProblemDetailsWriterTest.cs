@@ -272,7 +272,7 @@ public class DefaultApiProblemDetailsWriterTest
 
         //Assert
         Assert.NotNull(capturingFormatter.LastContext);
-        Assert.Equal(typeof(ValidationProblemDetails), capturingFormatter.LastContext.ObjectType);
+        Assert.Equal(typeof(ValidationProblemDetails), capturingFormatter.LastContext!.ObjectType);
         Assert.IsType<ValidationProblemDetails>(capturingFormatter.LastContext.Object);
     }
 
@@ -398,7 +398,7 @@ public class DefaultApiProblemDetailsWriterTest
 
     private sealed class CapturingFormatter : IOutputFormatter
     {
-        public OutputFormatterWriteContext LastContext { get; private set; }
+        public OutputFormatterWriteContext? LastContext { get; private set; }
 
         public bool CanWriteResult(OutputFormatterCanWriteContext context) => true;
 
