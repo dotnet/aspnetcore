@@ -5,7 +5,6 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.set -> void
 abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? declaringType) -> string?
-abstract System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValidAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.ComponentModel.DataAnnotations.ValidationResult?>!
 Microsoft.Extensions.Validation.DisplayNameInfo
 Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext
@@ -37,10 +36,3 @@ Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.C
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatablePropertyInfo(System.Type! type, string! propertyName, out Microsoft.Extensions.Validation.IValidatableInfo? validatablePropertyInfo) -> bool
-override abstract System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext) -> System.ComponentModel.DataAnnotations.ValidationResult?
-override sealed System.ComponentModel.DataAnnotations.AsyncValidationAttribute.IsValid(object? value) -> bool
-System.ComponentModel.DataAnnotations.AsyncValidationAttribute
-System.ComponentModel.DataAnnotations.AsyncValidationAttribute.AsyncValidationAttribute() -> void
-System.ComponentModel.DataAnnotations.AsyncValidationAttribute.GetValidationResultAsync(object? value, System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.ComponentModel.DataAnnotations.ValidationResult?>!
-System.ComponentModel.DataAnnotations.IAsyncValidatableObject
-System.ComponentModel.DataAnnotations.IAsyncValidatableObject.ValidateAsync(System.ComponentModel.DataAnnotations.ValidationContext! validationContext, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Collections.Generic.IAsyncEnumerable<System.ComponentModel.DataAnnotations.ValidationResult!>!
