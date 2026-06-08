@@ -44,6 +44,8 @@
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
@@ -98,12 +100,20 @@
 
   <ItemGroup>
     <Compile Include="..\..\..\Gateway\src\BlazorGateway.cs" />
+    <Compile Include="..\..\..\Gateway\src\BlazorGatewayOptions.cs" />
+    <Compile Include="..\..\..\Gateway\src\TelemetryFilters.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Yarp.ReverseProxy" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <Reference Include="Microsoft.Extensions.Http.Resilience" />
+    <Reference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <Reference Include="OpenTelemetry.Extensions.Hosting" />
+    <Reference Include="OpenTelemetry.Instrumentation.AspNetCore" />
+    <Reference Include="OpenTelemetry.Instrumentation.Http" />
+    <Reference Include="OpenTelemetry.Instrumentation.Runtime" />
   </ItemGroup>
 
   <!-- YARP NuGet packages transitively add a FrameworkReference to Microsoft.AspNetCore.App
