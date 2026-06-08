@@ -336,6 +336,7 @@ internal sealed class OpenApiDocumentService(
             Parameters = await GetParametersAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
             RequestBody = await GetRequestBodyAsync(document, description, scopedServiceProvider, schemaTransformers, cancellationToken),
             Tags = tags,
+            Deprecated = description.ActionDescriptor.EndpointMetadata.OfType<ObsoleteAttribute>().Any(),
         };
         return operation;
     }

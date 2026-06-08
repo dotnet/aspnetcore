@@ -15,6 +15,7 @@ internal static class OpenApiConstants
     internal const string RefDefaultAnnotation = "x-ref-default";
     internal const string RefDescriptionAnnotation = "x-ref-description";
     internal const string RefExampleAnnotation = "x-ref-example";
+    internal const string RefDeprecatedAnnotation = "x-ref-deprecated";
     internal const string RefKeyword = "$ref";
     internal const string RefPrefix = "#";
     internal const string NullableProperty = "x-is-nullable-property";
