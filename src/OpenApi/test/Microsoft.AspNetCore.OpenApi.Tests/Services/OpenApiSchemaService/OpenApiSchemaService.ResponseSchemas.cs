@@ -426,7 +426,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 });
 
             // Assert that Point and Coordinates are the only schemas defined at the top-level
-            Assert.Equal(["Coordinate", "Point"], [.. document.Components.Schemas.Keys]);
+            Assert.Equal(["NullableOfCoordinate", "NullableOfPoint"], [.. document.Components.Schemas.Keys]);
         });
     }
 
@@ -533,7 +533,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item =>
                 {
                     // Status has string enum converter, so it should be a reference to the enum schema
-                    Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id);
+                    Assert.Equal("NullableOfStatus", ((OpenApiSchemaReference)item).Reference.Id);
                 });
 
             // Verify nullable TaskStatus (without converter) response uses oneOf

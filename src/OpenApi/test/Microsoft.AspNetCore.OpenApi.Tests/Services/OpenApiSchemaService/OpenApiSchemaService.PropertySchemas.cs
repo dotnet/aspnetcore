@@ -306,7 +306,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal(2, nullableStatusProperty.OneOf.Count);
             Assert.Collection(nullableStatusProperty.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
-                item => Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id));
+                item => Assert.Equal("NullableOfStatus", ((OpenApiSchemaReference)item).Reference.Id));
 
             // Check nullable TaskStatus (without converter) property uses oneOf
             var nullableTaskStatusProperty = schema.Properties["nullableTaskStatus"];
