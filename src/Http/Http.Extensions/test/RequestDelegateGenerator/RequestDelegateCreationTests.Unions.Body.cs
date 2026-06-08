@@ -177,18 +177,17 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         await endpoints.Single(e => e.RoutePattern.RawText == "/nullable-int-string").RequestDelegate(stringCtx);
         Assert.True(stringCtx.Response.StatusCode == 400, $"UnionNullableIntString body bind for {"\"hi\""} should return 400 but got {stringCtx.Response.StatusCode}.");
 
-        // TODO enable after fix https://github.com/dotnet/runtime/issues/128688
-        //var nullCtx = CreateHttpContextWithJson("null");
-        //await endpoints.Single(e => e.RoutePattern.RawText == "/nullable-int-string").RequestDelegate(nullCtx);
-        //Assert.True(nullCtx.Response.StatusCode == 400, $"UnionNullableIntString body bind for \"null\" should return 400 but got {nullCtx.Response.StatusCode}.");
+        var nullCtx = CreateHttpContextWithJson("null");
+        await endpoints.Single(e => e.RoutePattern.RawText == "/nullable-int-string").RequestDelegate(nullCtx);
+        Assert.Equal(200, nullCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(nullCtx, "null");
 
         // Classifier endpoint accepts and round-trips every token kind.
         foreach (var (payload, expected) in new[]
         {
             ("42",     "42"),
             ("\"hi\"", "\"hi\""),
-            // TODO enable after fix https://github.com/dotnet/runtime/issues/128688
-            // ("null",   "null"),
+            ("null",   "null"),
         })
         {
             var passCtx = CreateHttpContextWithJson(payload);
@@ -648,6 +647,7 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         // payload explicitly null: the union converter rejects null on read → 400
         var explicitNullCtx = CreateHttpContextWithJson("""{"correlationId":"abc","payload":null}""");
         await endpoint.RequestDelegate(explicitNullCtx);
-        Assert.Equal(400, explicitNullCtx.Response.StatusCode);
+        Assert.Equal(200, explicitNullCtx.Response.StatusCode);
+        await VerifyResponseBodyAsync(explicitNullCtx, """{"correlationId":"abc","payload":null}""");
     }
 }

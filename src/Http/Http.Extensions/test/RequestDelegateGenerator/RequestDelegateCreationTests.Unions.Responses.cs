@@ -121,10 +121,9 @@ public abstract partial class RequestDelegateCreationTests : RequestDelegateCrea
         await endpoints.Single(e => e.RoutePattern.RawText == "/int").RequestDelegate(intCtx);
         await VerifyResponseBodyAsync(intCtx, "5");
 
-        // TODO enable after fix https://github.com/dotnet/runtime/issues/128688
-        //var nullCtx = CreateHttpContext();
-        //await endpoints.Single(e => e.RoutePattern.RawText == "/null").RequestDelegate(nullCtx);
-        //await VerifyResponseBodyAsync(nullCtx, "null");
+        var nullCtx = CreateHttpContext();
+        await endpoints.Single(e => e.RoutePattern.RawText == "/null").RequestDelegate(nullCtx);
+        await VerifyResponseBodyAsync(nullCtx, "null");
 
         var stringCtx = CreateHttpContext();
         await endpoints.Single(e => e.RoutePattern.RawText == "/string").RequestDelegate(stringCtx);
