@@ -14,13 +14,14 @@ public class BindAttributeTest
     [InlineData("Password", false)]
     [InlineData("LastName", true)]
     [InlineData("MiddleName", true)]
+    // Include list contains a whitespace token; this verifies unrelated properties remain excluded.
     [InlineData("TestProperty", false)]
-    [InlineData("foo", true)]
-    [InlineData("bar", true)]
+    [InlineData("Foo", true)]
+    [InlineData("Bar", true)]
     public void BindAttribute_Include(string property, bool isIncluded)
     {
         // Arrange
-        var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,foo,bar " });
+        var bind = new BindAttribute(new string[] { "UserName", "FirstName", "LastName, MiddleName,  ,Foo,Bar " });
 
         var context = new DefaultModelBindingContext();
 
@@ -42,8 +43,8 @@ public class BindAttributeTest
         public int Password { get; set; }
         public int LastName { get; set; }
         public int MiddleName { get; set; }
-        public int foo { get; set; }
-        public int bar { get; set; }
+        public int Foo { get; set; }
+        public int Bar { get; set; }
         public int TestProperty { get; set; }
     }
 }
