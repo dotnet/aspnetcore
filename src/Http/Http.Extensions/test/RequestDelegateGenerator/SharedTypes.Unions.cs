@@ -198,11 +198,8 @@ public sealed class UnionCharIntClassifierFactory : JsonTypeClassifierFactory<Un
         };
 }
 
-// Nullable-case union with classifier. Without a classifier this is ambiguous on both the
-// String token (NumberHandling lets int? read from string) and the Null token (both cases
-// accept null). The classifier returns the underlying primitive type (typeof(int)) — STJ
-// stores the int? case using its underlying type, so typeof(int?) would be rejected with
-// "runtime type is not supported by union type".
+// Nullable-case union with classifier. The String token is ambiguous, so the classifier is needed to route String → string.
+// Number unambiguously maps to int?. Null is handled by the runtime's value-based fast-path — the classifier intentionally does not handle Null.
 [JsonUnion(TypeClassifier = typeof(UnionNullableIntStringClassifierFactory))]
 public union UnionNullableIntStringWithClassifier(int?, string);
 public sealed class UnionNullableIntStringClassifierFactory : JsonTypeClassifierFactory<UnionNullableIntStringWithClassifier>
@@ -210,9 +207,8 @@ public sealed class UnionNullableIntStringClassifierFactory : JsonTypeClassifier
     public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
         static (ref Utf8JsonReader reader) => reader.TokenType switch
         {
-            JsonTokenType.Number => typeof(int),
+            JsonTokenType.Number => typeof(int?),
             JsonTokenType.String => typeof(string),
-            JsonTokenType.Null => typeof(int),
             _ => null,
         };
 }
