@@ -239,6 +239,29 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `python3` with `urllib.request` to download the log and search it.
 
+   **Extract the `[FAIL]` blocks inside the `python3` script and print only those — never `print()`, `cat`, or otherwise surface the full log into your context.** The download lands in the runner; only the text you print is read back, so dumping a 10MB+ log wastes the run's token budget. For each `[FAIL]` marker, capture from the `[FAIL]` line through the end of its trailing `Error Message:` / `Stack Trace:` section (i.e., up to the next result marker). Detect result lines by anchoring the `[FAIL]`/`[PASS]`/`[SKIP]` token to the **end of the line** — in the xUnit console format the marker is the last token on the test-result line (`... Namespace.Class.Method [FAIL]`), whereas the same tokens can appear mid-line inside an error message or stack trace, so anchoring avoids splitting a block on those. Apply a per-block cap of ~8,000 characters and a total printed cap of ~100,000 characters, print the blocks separated by a delimiter, and prefix the output with a one-line summary (`# {N} [FAIL] blocks, full log {size} bytes`).
+
+   These caps are safety valves, not a routine trim: a failure's marker, `Error Message:`, and top stack frames sit at the head of each block and almost always fit within ~8,000 characters, and a crashing work item usually has only a handful of `[FAIL]` blocks, so the decision-relevant content is normally preserved while the build/restore/passing-test noise that makes up the bulk of the log is dropped. The caps **can** truncate, however: if a block is cut off at ~8,000 characters, or the summary reports more blocks than the ~100,000-character total could hold (so the printed list is truncated), call this out in your analysis and — when it affects the quarantine decision — re-run the extraction for that specific work item with a higher cap or filtered to the relevant test name. Do not silently drop failures. For example:
+
+   ```python
+   import urllib.request, re
+   data = urllib.request.urlopen(url, timeout=60).read().decode('utf-8', 'replace')
+   lines = data.splitlines()
+   is_marker = lambda s: re.search(r'\[(?:PASS|FAIL|SKIP)\]\s*$', s)
+   blocks, i = [], 0
+   while i < len(lines):
+       if re.search(r'\[FAIL\]\s*$', lines[i]):
+           j = i + 1
+           while j < len(lines) and not is_marker(lines[j]):
+               j += 1
+           blocks.append('\n'.join(lines[i:j])[:8000])
+           i = j
+       else:
+           i += 1
+   print(f"# {len(blocks)} [FAIL] blocks, full log {len(data)} bytes")
+   print('\n---\n'.join(blocks)[:100000])
+   ```
+
 ### Step 1.2 — Combine and identify quarantine candidates
 
 **IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
@@ -263,7 +286,7 @@ All of the following are true:
 
 After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
-1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
+1. For each failure in the class, extract the error message and stack trace from the Helix console log. Reuse the runner-side `[FAIL]`-block extraction from Source C step 3 — capture each `[FAIL]` line together with the lines immediately following it (the `Error Message:` and `Stack Trace:` sections) inside the `python3` script, and print only those blocks rather than surfacing the full log.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
