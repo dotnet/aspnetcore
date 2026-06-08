@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -20,6 +22,15 @@ internal static class SessionEstablishmentHelper
 
         if (context.Items.ContainsKey(SessionEstablishmentKey))
         {
+            if (!context.Items.ContainsKey(SessionEstablishmentWarningLoggedKey))
+            {
+                context.Items[SessionEstablishmentWarningLoggedKey] = true;
+                var loggerFactory = context.RequestServices.GetService<ILoggerFactory>();
+                if (loggerFactory is not null)
+                {
+                    Log.SessionStateNotPersistedAfterResponseStarted(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+                }
+            }
             return;
         }
         context.Items[SessionEstablishmentKey] = true;
@@ -31,5 +42,16 @@ internal static class SessionEstablishmentHelper
             session.Remove(SessionEstablishmentKey);
             return Task.CompletedTask;
         }, session);
+    }
+
+    private static readonly object SessionEstablishmentWarningLoggedKey = new();
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Warning,
+            "Session-backed state was first accessed after the response had already started, so the session cookie can no longer be issued. " +
+            "The value will not be persisted on the next request unless the session cookie was established earlier — for example by an earlier [SupplyParameterFromSession], a cascading session-storage TempData resolution, or a direct ISession.Set call before the first flush.",
+            EventName = "SessionStateNotPersistedAfterResponseStarted")]
+        public static partial void SessionStateNotPersistedAfterResponseStarted(ILogger logger);
     }
 }
