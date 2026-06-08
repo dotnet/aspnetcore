@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
 using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
@@ -12,10 +13,8 @@ namespace TestApp.E2E.Tests.Tests;
 
 // Deterministic async state control via TestLockClient.
 [TestClass]
-public class AsyncStateTests
+public class AsyncStateTests : BrowserTest
 {
-    public TestContext TestContext { get; set; } = null!;
-
     private ServerInstance _server = null!;
 
     [TestInitialize]
@@ -28,17 +27,12 @@ public class AsyncStateTests
     }
 
     [TestCleanup]
-    public void Cleanup()
-    {
-        TestContext.AttachServerOutputIfFailed(_server);
-    }
+    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task WeatherPage_ShowsLoadingThenData_WhenLockReleased()
     {
-        var context = await TestRoot.Browser.NewContextAsync(
-            new BrowserNewContextOptions().WithServerRouting(_server));
-        await using var contextScope = context;
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         var locks = await TestLockClient.CreateAsync(_server, context);
         var page = await context.NewPageAsync();
 
@@ -48,30 +42,28 @@ public class AsyncStateTests
         await using (locks.Lock("weather-data"))
         {
             var loading = page.Locator("p em", new() { HasText = "Loading..." });
-            await Assertions.Expect(loading).ToBeVisibleAsync();
+            await Expect(loading).ToBeVisibleAsync();
 
             var table = page.Locator("table.table");
-            await Assertions.Expect(table).Not.ToBeVisibleAsync();
+            await Expect(table).Not.ToBeVisibleAsync();
         }
 
         await navigationTask;
 
         var dataTable = page.Locator("table.table");
-        await Assertions.Expect(dataTable).ToBeVisibleAsync();
+        await Expect(dataTable).ToBeVisibleAsync();
 
         var sunnyCell = dataTable.Locator("td", new() { HasText = "TestSunny" });
-        await Assertions.Expect(sunnyCell).ToBeVisibleAsync();
+        await Expect(sunnyCell).ToBeVisibleAsync();
 
         var cloudyCell = dataTable.Locator("td", new() { HasText = "TestCloudy" });
-        await Assertions.Expect(cloudyCell).ToBeVisibleAsync();
+        await Expect(cloudyCell).ToBeVisibleAsync();
     }
 
     [TestMethod]
     public async Task WeatherPage_ShowsExactRowCount_AfterLockRelease()
     {
-        var context = await TestRoot.Browser.NewContextAsync(
-            new BrowserNewContextOptions().WithServerRouting(_server));
-        await using var contextScope = context;
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         var locks = await TestLockClient.CreateAsync(_server, context);
         var page = await context.NewPageAsync();
 
@@ -81,15 +73,15 @@ public class AsyncStateTests
         await using (locks.Lock("weather-data"))
         {
             var loading = page.Locator("p em", new() { HasText = "Loading..." });
-            await Assertions.Expect(loading).ToBeVisibleAsync();
+            await Expect(loading).ToBeVisibleAsync();
         }
 
         await navigationTask;
 
         var table = page.Locator("table.table");
-        await Assertions.Expect(table).ToBeVisibleAsync();
+        await Expect(table).ToBeVisibleAsync();
 
         var rows = table.Locator("tbody tr");
-        await Assertions.Expect(rows).ToHaveCountAsync(2);
+        await Expect(rows).ToHaveCountAsync(2);
     }
 }

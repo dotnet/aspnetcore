@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
 using Microsoft.Playwright;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
@@ -12,10 +13,8 @@ namespace TestApp.E2E.Tests.Tests;
 
 // Verifying prerendered content by holding blazor.web.js via ResourceLock.
 [TestClass]
-public class PrerenderingTests
+public class PrerenderingTests : BrowserTest
 {
-    public TestContext TestContext { get; set; } = null!;
-
     private ServerInstance _server = null!;
 
     [TestInitialize]
@@ -25,17 +24,12 @@ public class PrerenderingTests
     }
 
     [TestCleanup]
-    public void Cleanup()
-    {
-        TestContext.AttachServerOutputIfFailed(_server);
-    }
+    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
     [TestMethod]
     public async Task HomePage_ShowsPrerenderContent_BeforeBlazorStarts()
     {
-        var context = await TestRoot.Browser.NewContextAsync(
-            new BrowserNewContextOptions().WithServerRouting(_server));
-        await using var contextScope = context;
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         var page = await context.NewPageAsync();
 
         await using var blazorScript = await ResourceLock.CreateAsync(
@@ -46,10 +40,10 @@ public class PrerenderingTests
         await blazorScript.WaitForRequestAsync();
 
         var heading = page.Locator("h1");
-        await Assertions.Expect(heading).ToHaveTextAsync("Hello, world!");
+        await Expect(heading).ToHaveTextAsync("Hello, world!");
 
         var counterLink = page.Locator("a.nav-link", new() { HasText = "Counter" });
-        await Assertions.Expect(counterLink).ToBeVisibleAsync();
+        await Expect(counterLink).ToBeVisibleAsync();
 
         await blazorScript.ReleaseAsync();
 
@@ -65,15 +59,13 @@ public class PrerenderingTests
         var counterButton = page.GetByRole(AriaRole.Button, new() { Name = "Click me" });
         await counterButton.ClickAsync();
         var counterDisplay = page.Locator("p[role='status']");
-        await Assertions.Expect(counterDisplay).ToHaveTextAsync("Current count: 1");
+        await Expect(counterDisplay).ToHaveTextAsync("Current count: 1");
     }
 
     [TestMethod]
     public async Task WeatherPage_ShowsLoadingState_BeforeBlazorStarts()
     {
-        var context = await TestRoot.Browser.NewContextAsync(
-            new BrowserNewContextOptions().WithServerRouting(_server));
-        await using var contextScope = context;
+        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         var page = await context.NewPageAsync();
 
         await using var blazorScript = await ResourceLock.CreateAsync(
@@ -85,11 +77,11 @@ public class PrerenderingTests
         await blazorScript.WaitForRequestAsync();
 
         var heading = page.Locator("h1");
-        await Assertions.Expect(heading).ToHaveTextAsync("Weather");
+        await Expect(heading).ToHaveTextAsync("Weather");
 
         await blazorScript.ReleaseAsync();
 
         var table = page.Locator("table.table");
-        await Assertions.Expect(table).ToBeVisibleAsync();
+        await Expect(table).ToBeVisibleAsync();
     }
 }
