@@ -198,9 +198,9 @@ Each source can span dozens of builds, each returning large test-result JSON. Su
 
 1. Lists the relevant builds, following any `continuationToken` pagination **inside the script**.
 2. Loops over those builds and fetches their test results **inside the script**.
-3. Aggregates per-test-name failure counts in memory.
+3. Does the heavy processing in memory — aggregating counts, filtering, and (for Source C) extracting the relevant log sections — rather than surfacing raw data for you to process.
 4. Writes the full raw/aggregated data to a file under `/tmp/gh-aw/agent/` (e.g., `source_a.json`).
-5. Prints **only** a compact summary to your context — the per-test-name table of failures (test name + failure count + source), nothing else.
+5. Prints **only** compact, decision-relevant output to your context — for Sources A and B, the per-test-name table of failures (test name + failure count + source); for Source C, the extracted `[FAIL]` blocks (see that source for the exact format). Never the raw payload.
 
 **Do not** `print()` or `cat` raw `resultsbyBuild`, build-list, or timeline JSON into your context, and **do not** inspect builds one at a time across separate turns. Read the small per-source summary; load the written file only if you need detail for a specific candidate.
 
