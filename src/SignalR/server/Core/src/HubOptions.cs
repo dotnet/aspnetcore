@@ -60,6 +60,11 @@ public class HubOptions
     /// By default a client is only allowed to invoke a single Hub method at a time.
     /// Changing this property will allow clients to invoke multiple methods at the same time before queueing.
     /// </summary>
+    /// <remarks>
+    /// This concurrency limit does NOT apply to streaming invocations (both server-to-client streaming and client-to-server upload streaming).
+    /// Clients can spawn concurrent streaming invocations without limits. If you need to limit parallel streaming invocations,
+    /// consider using hub filters to implement custom throttling logic.
+    /// </remarks>
     public int MaximumParallelInvocationsPerClient
     {
         get => _maximumParallelInvocationsPerClient;
