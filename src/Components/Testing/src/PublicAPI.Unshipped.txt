@@ -3,6 +3,33 @@ Microsoft.AspNetCore.Components.Testing.Infrastructure.IE2EServiceOverrideResolv
 Microsoft.AspNetCore.Components.Testing.Infrastructure.IE2EServiceOverrideResolver.TryResolve(string! assemblyQualifiedTypeName, string! methodName) -> System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection!>?
 Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightAttachmentExtensions
 Microsoft.AspNetCore.Components.Testing.Infrastructure.PlaywrightExtensions
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.Browser.get -> Microsoft.Playwright.IBrowser!
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.BrowserTest() -> void
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.BrowserTestSetup() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.BrowserTestTeardown() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.EnsureBrowserAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.IBrowser!>!
+Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.NewContext(Microsoft.Playwright.BrowserNewContextOptions? options = null) -> System.Threading.Tasks.Task<Microsoft.Playwright.IBrowserContext!>!
+Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest
+Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest.Context.get -> Microsoft.Playwright.IBrowserContext!
+Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest.ContextTest() -> void
+Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest.ContextTestSetup() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Testing.Playwright.PageTest
+Microsoft.AspNetCore.Components.Testing.Playwright.PageTest.Page.get -> Microsoft.Playwright.IPage!
+Microsoft.AspNetCore.Components.Testing.Playwright.PageTest.PageTest() -> void
+Microsoft.AspNetCore.Components.Testing.Playwright.PageTest.PageTestSetup() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest
+Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Playwright.get -> Microsoft.Playwright.IPlaywright!
+Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.PlaywrightTest() -> void
+Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.TestContext.get -> Microsoft.VisualStudio.TestTools.UnitTesting.TestContext!
+Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.TestContext.set -> void
+virtual Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.BrowserName.get -> string!
+virtual Microsoft.AspNetCore.Components.Testing.Playwright.BrowserTest.GetBrowserLaunchOptions() -> Microsoft.Playwright.BrowserTypeLaunchOptions!
+virtual Microsoft.AspNetCore.Components.Testing.Playwright.ContextTest.GetContextOptions() -> Microsoft.Playwright.BrowserNewContextOptions!
+static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.EnsurePlaywrightAsync() -> System.Threading.Tasks.Task<Microsoft.Playwright.IPlaywright!>!
+static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Expect(Microsoft.Playwright.IAPIResponse! response) -> Microsoft.Playwright.IAPIResponseAssertions!
+static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Expect(Microsoft.Playwright.ILocator! locator) -> Microsoft.Playwright.ILocatorAssertions!
+static Microsoft.AspNetCore.Components.Testing.Playwright.PlaywrightTest.Expect(Microsoft.Playwright.IPage! page) -> Microsoft.Playwright.IPageAssertions!
 Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock
 Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Testing.Infrastructure.RemoteLock.ReleaseAsync() -> System.Threading.Tasks.Task!
