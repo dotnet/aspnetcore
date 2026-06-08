@@ -1,40 +1,46 @@
 ﻿@page "/"
-@using BlazorUnitedApp.Data;
+@using System.Globalization
+@rendermode InteractiveServer
 <PageTitle>Index</PageTitle>
 
-<EditForm Model="Value" method="POST" OnSubmit="DisplayCustomer" FormName="customer">  
-    <div>
-        <label>
-            <span>Name</span>
-            <InputText @bind-Value="Value!.Name" />
-        </label>
-    </div>
-    <AddressEditor @bind-Value="Value.BillingAddress" />
-    <input type="submit" value="Send" />
-</EditForm>
+<h3>BindConverter.TryConvertTo&lt;uint&gt; Issue</h3>
 
-@if (_submitted)
+<p>
+    Expected: returns <code>false</code> for invalid input.<br />
+    Actual: throws exception due to underlying <code>TypeConverter</code>.
+</p>
+
+@if (!string.IsNullOrEmpty(_output))
 {
-    <!-- Display customer data -->
-    <h3>Customer</h3>
-    <p>Name: @Value!.Name</p>
-    <p>Street: @Value.BillingAddress.Street</p>
-    <p>City: @Value.BillingAddress.City</p>
-    <p>State: @Value.BillingAddress.State</p>
-    <p>Zip: @Value.BillingAddress.Zip</p>
+    <div class="mt-3">
+        <strong>Output:</strong>
+        <pre>@_output</pre>
+    </div>
 }
 
 @code {
+    string? _output;
 
-    public void DisplayCustomer()
+    protected override void OnInitialized()
     {
-        _submitted = true;
+        RunRepro();
     }
 
-    [SupplyParameterFromForm] Customer? Value { get; set; }
+    void RunRepro()
+    {
+        try
+        {
+            var success = BindConverter.TryConvertTo<uint>(
+                "-42",
+                CultureInfo.CurrentCulture,
+                out _
+            );
 
-    protected override void OnInitialized() => Value ??= new();
-
-    bool _submitted = false;
-    public void Submit() => _submitted = true;
+            _output = $"Expecting False, was: {success}";
+        }
+        catch (Exception ex)
+        {
+            _output = $"Unexpected exception:\n{ex}";
+        }
+    }
 }
