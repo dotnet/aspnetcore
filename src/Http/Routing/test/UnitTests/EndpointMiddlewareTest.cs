@@ -346,6 +346,69 @@ public class EndpointMiddlewareTest
     }
 
     [Fact]
+    public async Task Invoke_WithEndpoint_WorksIfAntiforgeryMetadataWasFound_AndCsrfProtectionMiddlewareInvoked()
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceProvider()
+        };
+
+        var calledEndpoint = false;
+        RequestDelegate endpointFunc = (c) =>
+        {
+            calledEndpoint = true;
+            return Task.CompletedTask;
+        };
+
+        httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
+
+        httpContext.Items[MiddlewareInvokedKeys.CsrfProtection] = true;
+
+        RequestDelegate next = (c) =>
+        {
+            throw new InvalidTimeZoneException("Should not be called");
+        };
+
+        var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next, RouteOptions);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.True(calledEndpoint);
+    }
+
+    [Fact]
+    public async Task Invoke_WithEndpoint_WorksIfAntiforgeryMetadataWasFound_AndBothMiddlewaresInvoked()
+    {
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = new ServiceProvider()
+        };
+
+        var calledEndpoint = false;
+        RequestDelegate endpointFunc = (c) =>
+        {
+            calledEndpoint = true;
+            return Task.CompletedTask;
+        };
+
+        httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
+
+        httpContext.Items[MiddlewareInvokedKeys.Antiforgery] = true;
+        httpContext.Items[MiddlewareInvokedKeys.CsrfProtection] = true;
+
+        RequestDelegate next = (c) =>
+        {
+            throw new InvalidTimeZoneException("Should not be called");
+        };
+
+        var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next, RouteOptions);
+
+        await middleware.Invoke(httpContext);
+
+        Assert.True(calledEndpoint);
+    }
+
+    [Fact]
     public async Task Invoke_WithEndpoint_WorksIfAntiforgeryMetadataWasFound_AndAntiforgeryMiddlewareInvoked()
     {
         // Arrange

@@ -715,6 +715,58 @@ public class CsrfProtectionIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task CsrfProtection_SetsItemsMarker_WhenEndpointMatched()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        object? observedMarker = null;
+        app.MapPost("/probe", (HttpContext ctx) =>
+        {
+            observedMarker = ctx.Items[MiddlewareInvokedKeys.CsrfProtection];
+            return "ok";
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/probe");
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_SetsItemsMarker_EvenWhenEndpointDisabledAntiforgery()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        object? observedMarker = null;
+        app.MapPost("/exempt", (HttpContext ctx) =>
+        {
+            observedMarker = ctx.Items[MiddlewareInvokedKeys.CsrfProtection];
+            return "ok";
+        }).DisableAntiforgery();
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/exempt");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(observedMarker);
+    }
+
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
