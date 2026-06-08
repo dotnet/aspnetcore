@@ -2020,7 +2020,7 @@ public static class BindConverter
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL3050",
-            Justification = "ConvertToEnum has DynamicallyAccessedMembers(All) constraint. T is constrained to have All members, so this is safe.")]
+            Justification = "MakeGenericMethod is required here to create a BindParser<T> delegate for an unconstrained generic T when T is an enum.")]
         private static Delegate CreateEnumParser<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>()
         {
             var method = _convertToEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
@@ -2030,7 +2030,7 @@ public static class BindConverter
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL2060:MakeGenericMethod",
-            Justification = "ConvertToNullableEnum has DynamicallyAccessedMembers(PublicParameterlessConstructor) constraint on the inner type. The innerType is verified to be an enum at runtime.")]
+            Justification = "ConvertToNullableEnum<TEnum> does not impose DynamicallyAccessedMembers requirements on its generic parameter; innerType is verified to be an enum at runtime before creating the closed generic method.")]
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL2071",
@@ -2038,7 +2038,7 @@ public static class BindConverter
         [UnconditionalSuppressMessage(
             "ReflectionAnalysis",
             "IL3050",
-            Justification = "ConvertToNullableEnum is safe for the verified enum type.")]
+            Justification = "MakeGenericMethod is required here to create a BindParser<T> delegate for an unconstrained generic T when T is Nullable<TEnum>.")]
         private static Delegate CreateNullableEnumParser<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(Type innerType)
         {
             var method = _convertToNullableEnum ??= typeof(BindConverter).GetMethod(nameof(ConvertToNullableEnum), BindingFlags.NonPublic | BindingFlags.Static)!;
