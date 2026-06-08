@@ -136,35 +136,21 @@ public class Bar
 
     }
 }
-
-namespace Sample {
-
-    /// <summary>
-    /// Internal class of the target assembly which will be included.
-    /// </summary>
-    internal class Duplicate {
-    }
-}
 """;
-
-        var internalDuplicatedReferencedSource = """
-namespace Sample {
-
-    /// <summary>
-    /// Duplicated internal class which should not be included in the XML Comments because it's internal and from a referenced assembly.
-    /// </summary>
-    internal class Duplicate {
-    }
-}
-""";
-        var references = new Dictionary<string, List<string>>
-        {
-            { "InternalDuplicateLibrary1", [internalDuplicatedReferencedSource] },
-            { "InternalDuplicateLibrary2", [internalDuplicatedReferencedSource] }
-        };
 
         var generator = new XmlCommentGenerator();
-        await SnapshotTestHelper.Verify(source, generator, references, out var compilation, out var additionalAssemblies);
-        await SnapshotTestHelper.VerifyOpenApi(compilation, additionalAssemblies, Assert.NotNull);
+        await SnapshotTestHelper.Verify(source, generator, [], out var compilation, out var additionalAssemblies);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, additionalAssemblies, document =>
+        {
+            Assert.NotNull(document);
+            // Verify that GenericFoo<T> schema has the XML comment
+            var genericFooOfIntSchema = document.Components.Schemas["GenericFooOfint"];
+            Assert.Equal("Should not be duplicated. <see cref=\"!:T\" />", genericFooOfIntSchema.Description);
+
+            // Verify that Bar's FooInt property has the XML comment
+            var barSchema = document.Components.Schemas["Bar"];
+            var fooIntProperty = Assert.IsType<OpenApiSchemaReference>(barSchema.Properties["fooInt"]);
+            Assert.Equal("FooInt property xml comment.", fooIntProperty.Description);
+        });
     }
 }
