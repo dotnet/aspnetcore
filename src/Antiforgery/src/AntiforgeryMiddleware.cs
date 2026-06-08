@@ -10,16 +10,13 @@ internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDel
     private readonly RequestDelegate _next = next;
     private readonly IAntiforgery _antiforgery = antiforgery;
 
-    private const string AntiforgeryMiddlewareWithEndpointInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
-    private static readonly object AntiforgeryMiddlewareWithEndpointInvokedValue = new object();
-
     public Task Invoke(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
 
         if (endpoint is not null)
         {
-            context.Items[AntiforgeryMiddlewareWithEndpointInvokedKey] = AntiforgeryMiddlewareWithEndpointInvokedValue;
+            context.Items[MiddlewareInvokedKeys.Antiforgery] = MiddlewareInvokedKeys.Sentinel;
         }
 
         var method = context.Request.Method;

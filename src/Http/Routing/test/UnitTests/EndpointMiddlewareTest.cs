@@ -363,7 +363,7 @@ public class EndpointMiddlewareTest
 
         httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
 
-        httpContext.Items[EndpointMiddleware.AntiforgeryMiddlewareWithEndpointInvokedKey] = true;
+        httpContext.Items[MiddlewareInvokedKeys.Antiforgery] = true;
 
         RequestDelegate next = (c) =>
         {
