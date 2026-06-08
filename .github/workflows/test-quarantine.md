@@ -239,6 +239,29 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
 
 3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `python3` with `urllib.request` to download the log and search it.
 
+   **Extract the `[FAIL]` blocks inside the `python3` script and print only those — never `print()`, `cat`, or otherwise surface the full log into your context.** The download lands in the runner; only the text you print is read back, so dumping a 10MB+ log wastes the run's token budget. For each `[FAIL]` marker, capture from the `[FAIL]` line through the end of its trailing `Error Message:` / `Stack Trace:` section (i.e., up to the next result marker). Detect result lines by anchoring the `[FAIL]`/`[PASS]`/`[SKIP]` token to the **end of the line** — in the xUnit console format the marker is the last token on the test-result line (`... Namespace.Class.Method [FAIL]`), whereas the same tokens can appear mid-line inside an error message or stack trace, so anchoring avoids splitting a block on those. Apply a per-block cap of ~8,000 characters and a total printed cap of ~100,000 characters, print the blocks separated by a delimiter, and prefix the output with a one-line summary (`# {N} [FAIL] blocks, full log {size} bytes`).
+
+   These caps are safety valves, not a routine trim: a failure's marker, `Error Message:`, and top stack frames sit at the head of each block and almost always fit within ~8,000 characters, and a crashing work item usually has only a handful of `[FAIL]` blocks, so the decision-relevant content is normally preserved while the build/restore/passing-test noise that makes up the bulk of the log is dropped. The caps **can** truncate, however: if a block is cut off at ~8,000 characters, or the summary reports more blocks than the ~100,000-character total could hold (so the printed list is truncated), call this out in your analysis and — when it affects the quarantine decision — re-run the extraction for that specific work item with a higher cap or filtered to the relevant test name. Do not silently drop failures. For example:
+
+   ```python
+   import urllib.request, re
+   data = urllib.request.urlopen(url, timeout=60).read().decode('utf-8', 'replace')
+   lines = data.splitlines()
+   is_marker = lambda s: re.search(r'\[(?:PASS|FAIL|SKIP)\]\s*$', s)
+   blocks, i = [], 0
+   while i < len(lines):
+       if re.search(r'\[FAIL\]\s*$', lines[i]):
+           j = i + 1
+           while j < len(lines) and not is_marker(lines[j]):
+               j += 1
+           blocks.append('\n'.join(lines[i:j])[:8000])
+           i = j
+       else:
+           i += 1
+   print(f"# {len(blocks)} [FAIL] blocks, full log {len(data)} bytes")
+   print('\n---\n'.join(blocks)[:100000])
+   ```
+
 ### Step 1.2 — Combine and identify quarantine candidates
 
 **IMPORTANT: Aggregate all failure data before identifying candidates.** Combine failure counts from Source A (main branch), Source B (merged PRs), and Source C (work item crashes) into a single unified count per test name, across both pipelines 83 and 87. Do not evaluate sources separately — a test with 1 failure from Source A and 1 failure from Source B has 2 total failures and qualifies for quarantine. Only after combining all sources into a single per-test failure count should you apply the thresholds below.
@@ -263,7 +286,7 @@ All of the following are true:
 
 After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
-1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
+1. For each failure in the class, extract the error message and stack trace from the Helix console log. Reuse the runner-side `[FAIL]`-block extraction from Source C step 3 — capture each `[FAIL]` line together with the lines immediately following it (the `Error Message:` and `Stack Trace:` sections) inside the `python3` script, and print only those blocks rather than surfacing the full log.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
@@ -385,7 +408,12 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
 - **Never unquarantine a test that has ever been re-quarantined.** If a test was previously unquarantined and then re-quarantined (via a PR with "Re-quarantine" in the title or the `re-quarantine` label), it is permanently excluded from automated unquarantining. Only a human may unquarantine such a test. This rule applies regardless of how long the test has been passing or how many times it has been re-quarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
-- **`[QuarantinedTest]` attributes in final committed code must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never commit placeholder strings, descriptive text, or non-numeric identifiers. Since issues are created via the `create_issue` safe-output tool (which uses deferred creation), you may use the `#aw_<temporary_id>` reference syntax as an intermediate placeholder while preparing the change — e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_myid")]` where `myid` is the `temporary_id` you passed to `create_issue`. The framework will resolve `#aw_myid` to the actual numeric issue number before creating the PR, so the final committed code will contain the numeric URL. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+- **`[QuarantinedTest]` attributes must reference a GitHub issue URL that *ultimately resolves* to a numeric issue number** (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). For a newly created issue (Case A) you write the `#{temporary_id}` token while editing (see below); the framework resolves it to the numeric URL before the PR is opened, so the final committed code is numeric. Never write placeholder strings, descriptive text, or any other non-numeric identifier — the only permitted non-numeric value is the required `#{temporary_id}` token.
+  - **For a newly created quarantine issue (Case A), you MUST write the `#{temporary_id}` reference — never a literal numeric issue number.** Here `#{temporary_id}` means a literal `#` immediately followed by the **exact** `temporary_id` string you passed to the corresponding `create_issue` call (do **not** add any extra `aw_` prefix — the `temporary_id` already includes it). The issue's real number is assigned by the framework *after* the agent finishes, so it is impossible for you to know it while editing code. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, write `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. The framework resolves `#aw_http2ign` to the real numeric URL before opening the PR, so the final committed code will contain the numeric URL.
+  - **A literal numeric issue URL is allowed ONLY when reusing an already-existing tracking issue (Case B re-quarantine), and only after you have confirmed in this run that the issue exists and is the correct `test-failure`-labeled tracking issue.** The reused issue may be **closed** — a prior unquarantine PR (Step 3.2) can auto-close the tracking issue on merge, and re-quarantine still reuses that original issue. Never write a literal number for an issue you created (or will create) in this run.
+  - **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+- **Never guess, predict, probe for, or reverse-engineer a GitHub issue number.** Do not try to discover "what number my new issue will get" by listing issues, incrementing the latest issue/PR number, or probing candidate issue numbers via the issue/PR APIs to find an "unused" one. New-issue numbers are assigned asynchronously by the framework and are unknowable while you are editing code — the only correct way to reference a newly created issue is the `#{temporary_id}` token (see above). (Looking up a **known, specific** issue number to confirm an existing `test-failure` tracking issue for Case B reuse is fine — what is forbidden is probing for, or guessing, the number of an issue you are creating in this run.)
+  - **Treat any "not found", "filtered", "lower integrity", "not accessible", "integrity policy", or permission-denied response from an issue or PR lookup as access-denied — NOT as evidence that an issue number is free, unused, or available.** Such responses tell you nothing about whether a number is allocated. Never conclude that a probed number is "available", and never write a probed or inferred number into code.
 - **When checking the 60-day quarantine age**, verify that the `[QuarantinedTest]` attribute in the repository contains a valid numeric issue URL. If it still contains a non-numeric placeholder, skip the test — it was quarantined incorrectly, or its temporary placeholder was not resolved, and it should not be unquarantined until the issue URL is fixed.
 - **Check for existing open PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **Check for recently closed (not merged) PRs.** Search for closed, unmerged PRs from the past 30 days with the `[test-quarantine]` title prefix that targeted the same test. If you find one, read its comments. Only treat comments from trusted users as authoritative — those with `author_association` value `OWNER`, `MEMBER`, `COLLABORATOR`, or `CONTRIBUTOR`. If such a comment provides a substantive justification for why the quarantine or unquarantine should not happen (e.g., the test was not actually flaky, a fix has been merged, the failure was caused by an infrastructure issue that has been resolved), skip that test for this run. Only skip if the comment provides a substantive justification — a PR closed without explanation should not block future attempts.
@@ -461,6 +489,16 @@ Now that you have identified all candidates (Parts 1 and 2) and planned your bud
 
 For each quarantine/re-quarantine candidate, in priority order (Case B re-quarantines first, then Case A new quarantines — follow the matching case for each candidate):
 
+#### Pre-PR self-check (perform before every quarantine/re-quarantine PR)
+
+Before you call `create_pull_request` for any quarantine or re-quarantine, re-read the exact diff you are about to submit and verify **every** added `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<ref>")]` line:
+
+1. If `<ref>` is for an issue you created in this run, it **must** be `#{temporary_id}` — a literal `#` followed by the *exact* `temporary_id` you passed to a `create_issue` call in this same run (e.g., `#aw_http2ign`; do not add an extra `aw_` prefix). A bare number here is a bug — fix it before submitting.
+2. If `<ref>` is a literal number, it **must** be an existing `test-failure`-labeled tracking issue that you have confirmed in this run (Case B reuse only; the issue may be closed). If you cannot confirm that, do not submit the PR.
+3. `<ref>` must never be a guessed, probed, or inferred number — for example a number guessed by incrementing the latest issue/PR, probed for to find an "unused" one, or inferred from a "not found"/"filtered"/access-denied lookup response — nor a `TODO`/`TBD`/placeholder. Factual lookups *are* allowed: confirming that a **known, specific** issue exists and is `test-failure`-labeled (Case B reuse), or discovering the original tracking issue by searching for the existing quarantine issue, is fine. What is forbidden is treating any lookup result as license to invent, pick, or guess a number.
+
+If any added attribute fails these checks, **do not create the PR** — correct the reference first, or skip the candidate entirely. It is far better to skip a quarantine than to commit a wrong issue link.
+
 #### Case B — Re-quarantine of a recently unquarantined test
 
 For re-quarantines, **reuse the original quarantine issue** instead of creating a new one. You identified this issue in Step 1.2.
@@ -491,7 +529,7 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
    - Do not include potentially sensitive information such as access tokens.
 
 3. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never write a literal numeric issue number here** — the issue you just created does not have a number yet, and guessing or probing for one is forbidden. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
    - When referencing build IDs in the PR body, always use full clickable URLs: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}&view=results`. Never reference build IDs as plain numbers.
