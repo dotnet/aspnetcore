@@ -238,7 +238,7 @@ This captures two scenarios: (1) a PR that was retried and eventually passed, in
 
 #### Source C: Work item crash investigation
 
-**Run Source C only after Sources A and B are aggregated, and only for work items that already cleared the threshold.** Work-item crashes are expensive to investigate (build timeline + multi-MB Helix console log), so never explore them interactively or build-by-build. From the combined Source A + B data, select only the work items (names ending in `.WorkItemExecution`) that **failed 2 or more times** — these are the only ones worth investigating. For each such work item, run a **single batched `python3` script** that performs all of steps 1–3 below in one turn (build timeline → Helix job ID → console log → `[FAIL]` extraction) and prints **only** the extracted `[FAIL]` blocks (never any intermediate timeline or file-listing JSON):
+**Run Source C only after Sources A and B are aggregated, and only for work items that already cleared the threshold.** Work-item crashes are expensive to investigate (build timeline + multi-MB Helix console log), so never explore them interactively or build-by-build. From the combined Source A + B data, select only the work items (names ending in `.WorkItemExecution`) that **failed 1 or more times** — these are the only ones worth investigating. For each such work item, run a **single batched `python3` script** that performs all of steps 1–3 below in one turn (build timeline → Helix job ID → console log → `[FAIL]` extraction) and prints **only** the extracted `[FAIL]` blocks (never any intermediate timeline or file-listing JSON):
 
 1. Get the Helix job ID from the build timeline:
    ```
