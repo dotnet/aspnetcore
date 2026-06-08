@@ -1,27 +1,17 @@
-
 @page "/textarea-method-interactive"
 @rendermode RenderMode.InteractiveServer
-
-@* Buttons switch method via local state (no navigation) — exercises BrowserRenderer.ts updateText path
-<button id="method1-btn" @onclick='() => SetMethod("method1")'>Method 1</button>
-<button id="method2-btn" @onclick='() => SetMethod("method2")'>Method 2</button>*@
-
-@* Links switch method via URL navigation — exercises DomSync.ts path *@
 @inject NavigationManager Navigation
+
 <a id="method1-link" href="@(Navigation.GetUriWithQueryParameter("method", "method1"))">Method 1 (nav)</a>
 <br />
 <a id="method2-link" href="@(Navigation.GetUriWithQueryParameter("method", "method2"))">Method 2 (nav)</a>
 
-
 @if (!String.IsNullOrWhiteSpace(Method))
 {
     <form>
-        @* In HTML, according to https://www.w3schools.com/tags/tag_textarea.asp, the text that is to be
-        displayed in the textarea should be placed between the opening and closing <textarea> tags. *@
         <textarea id="textArea" rows="3" style="width: 350px;" @onchange="Text_OnChange">@GetData(Method)</textarea>
         <br />
         <input id="textBox" type="text" style="width: 350px;" value="@GetData(Method)" @onchange="Text_OnChange" />
-        <br />
         <br />
     </form>
 }
