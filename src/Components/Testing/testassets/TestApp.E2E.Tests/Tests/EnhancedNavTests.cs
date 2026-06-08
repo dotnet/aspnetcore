@@ -1,37 +1,44 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using TestApp.Components;
-using TestApp.E2E.Tests.Fixtures;
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
 using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using TestApp.Components;
+using TestApp.E2E.Tests.Fixtures;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Detecting enhanced navigation (DOM patching) via the Blazor 'enhancedload' event.
-[Collection(nameof(E2ECollection))]
-public class EnhancedNavTests : BrowserTest
+[TestClass]
+public class EnhancedNavTests
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
+    public TestContext TestContext { get; set; } = null!;
+
     private ServerInstance _server = null!;
+    private IBrowserContext _context = null!;
     private IPage _page = null!;
 
-    public EnhancedNavTests(ServerFixture<E2ETestAssembly> fixture)
+    [TestInitialize]
+    public async Task Init()
     {
-        _fixture = fixture;
+        _server = await TestRoot.Servers.StartServerAsync<App>();
+        _context = await TestRoot.Browser.NewContextAsync(
+            new BrowserNewContextOptions().WithServerRouting(_server));
+        _page = await _context.NewPageAsync();
     }
 
-    public override async ValueTask InitializeAsync()
+    [TestCleanup]
+    public async Task Cleanup()
     {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>();
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
-        _page = await context.NewPageAsync();
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+        }
+        TestContext.AttachServerOutputIfFailed(_server);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NavLink_TriggersEnhancedNavigation_ToCounterPage()
     {
         await _page.GotoAsync(_server.TestUrl);
@@ -42,12 +49,12 @@ public class EnhancedNavTests : BrowserTest
         await enhancedNav;
 
         var heading = _page.Locator("h1");
-        await Expect(heading).ToHaveTextAsync("Counter");
+        await Assertions.Expect(heading).ToHaveTextAsync("Counter");
 
-        Assert.Contains("/counter", _page.Url);
+        StringAssert.Contains(_page.Url, "/counter");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NavLink_TriggersEnhancedNavigation_ToWeatherPage()
     {
         await _page.GotoAsync(_server.TestUrl);
@@ -58,12 +65,12 @@ public class EnhancedNavTests : BrowserTest
         await enhancedNav;
 
         var heading = _page.Locator("h1");
-        await Expect(heading).ToHaveTextAsync("Weather");
+        await Assertions.Expect(heading).ToHaveTextAsync("Weather");
 
-        Assert.Contains("/weather", _page.Url);
+        StringAssert.Contains(_page.Url, "/weather");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SequentialEnhancedNav_PatchesDOMMultipleTimes()
     {
         await _page.GotoAsync(_server.TestUrl);
@@ -73,18 +80,18 @@ public class EnhancedNavTests : BrowserTest
         await _page.GetByRole(AriaRole.Link, new() { Name = "Counter" }).ClickAsync();
         await nav1;
 
-        await Expect(_page.Locator("h1")).ToHaveTextAsync("Counter");
+        await Assertions.Expect(_page.Locator("h1")).ToHaveTextAsync("Counter");
 
         var nav2 = _page.WaitForEnhancedNavigationAsync();
         await _page.GetByRole(AriaRole.Link, new() { Name = "Weather" }).ClickAsync();
         await nav2;
 
-        await Expect(_page.Locator("h1")).ToHaveTextAsync("Weather");
+        await Assertions.Expect(_page.Locator("h1")).ToHaveTextAsync("Weather");
 
         var nav3 = _page.WaitForEnhancedNavigationAsync();
         await _page.GetByRole(AriaRole.Link, new() { Name = "Home" }).ClickAsync();
         await nav3;
 
-        await Expect(_page.Locator("h1")).ToHaveTextAsync("Hello, world!");
+        await Assertions.Expect(_page.Locator("h1")).ToHaveTextAsync("Hello, world!");
     }
 }

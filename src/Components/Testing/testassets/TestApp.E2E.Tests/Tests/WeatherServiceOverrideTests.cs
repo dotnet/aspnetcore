@@ -2,63 +2,70 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
 using TestApp.E2E.Tests.ServiceOverrides;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Tests that run against the app with the FakeWeather service override.
-[Collection(nameof(E2ECollection))]
-public class WeatherServiceOverrideTests : BrowserTest
+[TestClass]
+public class WeatherServiceOverrideTests
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
+    public TestContext TestContext { get; set; } = null!;
+
     private ServerInstance _server = null!;
+    private IBrowserContext _context = null!;
     private IPage _page = null!;
 
-    public WeatherServiceOverrideTests(ServerFixture<E2ETestAssembly> fixture)
+    [TestInitialize]
+    public async Task Init()
     {
-        _fixture = fixture;
-    }
-
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>(options =>
+        _server = await TestRoot.Servers.StartServerAsync<App>(options =>
         {
             options.ConfigureServices<TestOverrides>(nameof(TestOverrides.FakeWeather));
         });
-        var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
-        _page = await context.NewPageAsync();
+        _context = await TestRoot.Browser.NewContextAsync(
+            new BrowserNewContextOptions().WithServerRouting(_server));
+        _page = await _context.NewPageAsync();
     }
 
-    [Fact]
+    [TestCleanup]
+    public async Task Cleanup()
+    {
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+        }
+        TestContext.AttachServerOutputIfFailed(_server);
+    }
+
+    [TestMethod]
     public async Task WeatherPage_ShowsFakeData()
     {
         await _page.GotoAsync($"{_server.TestUrl}/weather");
 
         var table = _page.Locator("table.table");
-        await Expect(table).ToBeVisibleAsync();
+        await Assertions.Expect(table).ToBeVisibleAsync();
 
         var summaryCell = table.Locator("td", new() { HasText = "TestWeather" });
-        await Expect(summaryCell).ToBeVisibleAsync();
+        await Assertions.Expect(summaryCell).ToBeVisibleAsync();
 
         var tempCell = table.Locator("td", new() { HasText = "42" });
-        await Expect(tempCell).ToBeVisibleAsync();
+        await Assertions.Expect(tempCell).ToBeVisibleAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WeatherPage_ShowsExactlyOneRow()
     {
         await _page.GotoAsync($"{_server.TestUrl}/weather");
 
         var table = _page.Locator("table.table");
-        await Expect(table).ToBeVisibleAsync();
+        await Assertions.Expect(table).ToBeVisibleAsync();
 
         var rows = table.Locator("tbody tr");
-        await Expect(rows).ToHaveCountAsync(1);
+        await Assertions.Expect(rows).ToHaveCountAsync(1);
     }
 }
