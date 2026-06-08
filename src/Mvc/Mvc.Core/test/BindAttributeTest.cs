@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
-using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -15,7 +14,7 @@ public class BindAttributeTest
     [InlineData("Password", false)]
     [InlineData("LastName", true)]
     [InlineData("MiddleName", true)]
-    [InlineData(" ", false)]
+    [InlineData("TestProperty", false)]
     [InlineData("foo", true)]
     [InlineData("bar", true)]
     public void BindAttribute_Include(string property, bool isIncluded)
@@ -25,7 +24,8 @@ public class BindAttributeTest
 
         var context = new DefaultModelBindingContext();
 
-        var identity = CreatePropertyIdentity(property);
+        var propertyInfo = typeof(TestContainer).GetProperty(property);
+        var identity = ModelMetadataIdentity.ForProperty(propertyInfo!, typeof(int), typeof(TestContainer));
         context.ModelMetadata = new Mock<ModelMetadata>(identity).Object;
 
         // Act
@@ -35,15 +35,15 @@ public class BindAttributeTest
         Assert.Equal(isIncluded, propertyFilter(context.ModelMetadata));
     }
 
-    private static ModelMetadataIdentity CreatePropertyIdentity(string propertyName)
+    private sealed class TestContainer
     {
-        var constructor = typeof(ModelMetadataIdentity).GetConstructor(
-            BindingFlags.NonPublic | BindingFlags.Instance,
-            binder: null,
-            [typeof(Type), typeof(string), typeof(Type), typeof(object), typeof(ConstructorInfo)],
-            modifiers: null);
-
-        Assert.NotNull(constructor);
-        return (ModelMetadataIdentity)constructor.Invoke([typeof(int), propertyName, typeof(string), null, null]);
+        public int UserName { get; set; }
+        public int Username { get; set; }
+        public int Password { get; set; }
+        public int LastName { get; set; }
+        public int MiddleName { get; set; }
+        public int foo { get; set; }
+        public int bar { get; set; }
+        public int TestProperty { get; set; }
     }
 }
