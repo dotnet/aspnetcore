@@ -8,15 +8,19 @@ using System.Net.Sockets;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 using Yarp.ReverseProxy.Configuration;
 
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
-/// xUnit V3 collection fixture that manages the full E2E test lifecycle:
+/// Factory + registry that manages the full E2E test lifecycle:
 /// loads the E2E manifest, runs a YARP reverse proxy on a dynamic port,
 /// and starts app instances on demand via <see cref="StartServerAsync{TApp}"/>.
+/// <para>
+/// One instance per test assembly. Owned by the consumer (typically a static field
+/// populated from an <c>[AssemblyInitialize]</c> method and disposed from
+/// <c>[AssemblyCleanup]</c>).
+/// </para>
 /// </summary>
 /// <typeparam name="TTestAssembly">
 /// A marker type defined in the test project (e.g., <c>public class E2ETestAssembly;</c>).
@@ -33,19 +37,33 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 /// <code>
 /// public class E2ETestAssembly;
 ///
-/// [CollectionDefinition(nameof(E2EAppCollection))]
-/// public class E2EAppCollection : ICollectionFixture&lt;ServerFixture&lt;E2ETestAssembly&gt;&gt;;
-///
-/// [Collection(nameof(E2EAppCollection))]
-/// public class MyTests : BrowserTest
+/// public static class TestRoot
 /// {
-///     private readonly ServerFixture&lt;E2ETestAssembly&gt; _fixture;
-///     public MyTests(ServerFixture&lt;E2ETestAssembly&gt; fixture) =&gt; _fixture = fixture;
+///     public static ServerFactory&lt;E2ETestAssembly&gt; Servers { get; private set; } = null!;
+///
+///     [AssemblyInitialize]
+///     public static async Task Init(TestContext _)
+///     {
+///         Servers = new ServerFactory&lt;E2ETestAssembly&gt;();
+///         await Servers.InitializeAsync();
+///     }
+///
+///     [AssemblyCleanup]
+///     public static Task Cleanup() =&gt; Servers.DisposeAsync().AsTask();
+/// }
+///
+/// [TestClass]
+/// public class MyTests : Microsoft.Playwright.MSTest.PageTest
+/// {
+///     private ServerInstance _server = null!;
+///
+///     [TestInitialize]
+///     public async Task Init() =&gt; _server = await TestRoot.Servers.StartServerAsync&lt;App&gt;();
 /// }
 /// </code>
 /// </para>
 /// </remarks>
-public class ServerFixture<TTestAssembly> : IAsyncLifetime where TTestAssembly : class
+public class ServerFactory<TTestAssembly> : IAsyncDisposable where TTestAssembly : class
 {
     private WebApplication? _proxyApp;
     private InMemoryConfigProvider? _configProvider;

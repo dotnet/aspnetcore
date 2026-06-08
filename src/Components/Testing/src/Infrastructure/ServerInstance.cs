@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
 /// Represents a running app instance started via
-/// <see cref="ServerFixture{TTestAssembly}.StartServerAsync{TApp}"/>.
+/// <see cref="ServerFactory{TTestAssembly}.StartServerAsync{TApp}"/>.
 /// Each instance has a unique <see cref="Id"/> used for YARP proxy routing
 /// via the <c>X-Test-Backend</c> header.
 /// </summary>
 /// <remarks>
 /// Disposing a <see cref="ServerInstance"/> kills the app process and unregisters
-/// it from the proxy. Instances are typically disposed by the <see cref="ServerFixture{TTestAssembly}"/>
+/// it from the proxy. Instances are typically disposed by the <see cref="ServerFactory{TTestAssembly}"/>
 /// when the collection is torn down, but tests can also dispose them early for
 /// explicit lifecycle control.
 /// </remarks>
@@ -173,6 +173,76 @@ public class ServerInstance : IAsyncDisposable
         }
 
         _process?.Dispose();
+    }
+
+    /// <summary>
+    /// Length (in characters) of the buffered stdout captured from the app process so far.
+    /// Useful for slicing logs across retry attempts when combined with <see cref="GetStdoutSince(int)"/>.
+    /// </summary>
+    public int StdoutBufferLength
+    {
+        get { lock (_stdoutBuffer) { return _stdoutBuffer.Length; } }
+    }
+
+    /// <summary>
+    /// Length (in characters) of the buffered stderr captured from the app process so far.
+    /// </summary>
+    public int StderrBufferLength
+    {
+        get { lock (_stderrBuffer) { return _stderrBuffer.Length; } }
+    }
+
+    /// <summary>
+    /// Returns the slice of captured stdout starting at the given character offset.
+    /// Pair with a snapshot of <see cref="StdoutBufferLength"/> at the start of a test
+    /// to attach only the output produced during that test.
+    /// </summary>
+    /// <param name="offset">Character offset into the buffer. Values past the end return an empty string.</param>
+    public string GetStdoutSince(int offset)
+    {
+        lock (_stdoutBuffer)
+        {
+            return offset < _stdoutBuffer.Length
+                ? _stdoutBuffer.ToString(offset, _stdoutBuffer.Length - offset)
+                : string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Returns the slice of captured stderr starting at the given character offset.
+    /// </summary>
+    /// <param name="offset">Character offset into the buffer. Values past the end return an empty string.</param>
+    public string GetStderrSince(int offset)
+    {
+        lock (_stderrBuffer)
+        {
+            return offset < _stderrBuffer.Length
+                ? _stderrBuffer.ToString(offset, _stderrBuffer.Length - offset)
+                : string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Writes the captured stdout and stderr buffers to two files
+    /// (<c>{AppName}-{Id}.stdout.log</c>, <c>{AppName}-{Id}.stderr.log</c>) under
+    /// <paramref name="directory"/>. The directory is created if it does not exist.
+    /// </summary>
+    /// <param name="directory">Destination directory.</param>
+    public void WriteCapturedOutputTo(string directory)
+    {
+        Directory.CreateDirectory(directory);
+        lock (_stdoutBuffer)
+        {
+            File.WriteAllText(
+                Path.Combine(directory, $"{AppName}-{Id}.stdout.log"),
+                _stdoutBuffer.ToString());
+        }
+        lock (_stderrBuffer)
+        {
+            File.WriteAllText(
+                Path.Combine(directory, $"{AppName}-{Id}.stderr.log"),
+                _stderrBuffer.ToString());
+        }
     }
 
     internal static string ComputeKey(string appName, ServerStartOptions options)

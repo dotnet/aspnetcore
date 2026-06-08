@@ -3,8 +3,6 @@
 
 using System.Linq;
 using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
@@ -29,6 +27,12 @@ public static class PlaywrightExtensions
             Environment.GetEnvironmentVariable("PLAYWRIGHT_RECORD_VIDEO"),
             "1",
             StringComparison.Ordinal);
+
+    /// <summary>
+    /// Whether Playwright video recording is enabled for this test run
+    /// (set via the <c>PLAYWRIGHT_RECORD_VIDEO=1</c> environment variable).
+    /// </summary>
+    public static bool RecordVideoEnabled => s_recordVideo;
 
     // Override the default artifact root directory via E2E_ARTIFACTS_DIR environment variable.
     // Defaults to a test-artifacts/ subdirectory next to the test assembly.
@@ -74,35 +78,39 @@ public static class PlaywrightExtensions
     /// <summary>
     /// Starts tracing on an existing browser context. Returns a <see cref="TracingSession"/>
     /// that saves or discards the trace (and video) on disposal based on the
-    /// test outcome from <see cref="TestContext.Current"/>.
+    /// outcome reported by <paramref name="test"/>.
     /// </summary>
     /// <param name="context">The browser context to trace.</param>
+    /// <param name="test">The MSTest test context for the currently running test.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
     /// <returns>A <see cref="TracingSession"/> that manages trace lifecycle.</returns>
     public static async Task<TracingSession> TraceAsync(
-        this IBrowserContext context, string artifactDir)
+        this IBrowserContext context, TestContext test, string artifactDir)
     {
-        return await TracingSession.StartAsync(context, artifactDir, s_recordVideo).ConfigureAwait(false);
+        return await TracingSession.StartAsync(context, test, artifactDir, s_recordVideo).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Creates a new browser context with server routing, artifact capture (video if enabled),
-    /// and active tracing. Returns a <see cref="TracedContext"/> that wraps the context and tracing session.
+    /// Creates a new browser context on <paramref name="browser"/> with server routing,
+    /// artifact capture (video if enabled), and active tracing. Returns a
+    /// <see cref="TracedContext"/> that wraps the context and tracing session.
     /// </summary>
-    /// <remarks>
-    /// Internally calls <see cref="BrowserTest.NewContext"/> so the context is tracked
-    /// and auto-disposed by <see cref="BrowserTest"/>'s lifecycle.
-    /// </remarks>
-    /// <param name="test">The <see cref="BrowserTest"/> instance to create the context on.</param>
+    /// <param name="browser">The Playwright browser to create the context on.</param>
+    /// <param name="test">The MSTest test context for the currently running test.</param>
     /// <param name="server">The server instance to route traffic to.</param>
     /// <param name="options">Optional browser context options. If <c>null</c>, defaults are used.</param>
     /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
     public static async Task<TracedContext> NewTracedContextAsync(
-        this BrowserTest test,
+        this IBrowser browser,
+        TestContext test,
         ServerInstance server,
         BrowserNewContextOptions? options = null)
     {
-        var testName = TestContext.Current.Test?.TestDisplayName ?? "unknown";
+        ArgumentNullException.ThrowIfNull(browser);
+        ArgumentNullException.ThrowIfNull(test);
+        ArgumentNullException.ThrowIfNull(server);
+
+        var testName = test.TestName ?? "unknown";
         var sanitized = SanitizeFileName(testName);
         var artifactDir = Path.Combine(s_artifactsRoot, sanitized);
 
@@ -111,9 +119,39 @@ public static class PlaywrightExtensions
             .WithServerRouting(server)
             .WithArtifacts(artifactDir);
 
-        var context = await test.NewContext(options).ConfigureAwait(false);
-        var session = await TracingSession.StartAsync(context, artifactDir, s_recordVideo).ConfigureAwait(false);
-        return new TracedContext(context, session);
+        var context = await browser.NewContextAsync(options).ConfigureAwait(false);
+        var session = await TracingSession.StartAsync(context, test, artifactDir, s_recordVideo).ConfigureAwait(false);
+        // ownsContext: true — the IBrowser overload created the context, so the wrapper owns disposal.
+        return new TracedContext(context, session, ownsContext: true);
+    }
+
+    /// <summary>
+    /// Variant of <see cref="NewTracedContextAsync(IBrowser, TestContext, ServerInstance, BrowserNewContextOptions?)"/>
+    /// that starts tracing on an existing <paramref name="context"/> instead of creating a
+    /// new one. Use this when you need to configure the context yourself (e.g. with
+    /// custom cookies, viewport, etc.) before tracing begins.
+    /// </summary>
+    /// <param name="context">An existing Playwright browser context. The caller owns its disposal.</param>
+    /// <param name="test">The MSTest test context for the currently running test.</param>
+    /// <param name="server">The server instance whose name is used for the artifact directory.</param>
+    /// <param name="artifactDirOverride">Optional override for the artifact directory.</param>
+    /// <returns>A <see cref="TracedContext"/> wrapping the browser context and tracing session.</returns>
+    public static async Task<TracedContext> NewTracedContextAsync(
+        IBrowserContext context,
+        TestContext test,
+        ServerInstance server,
+        string? artifactDirOverride = null)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(test);
+        ArgumentNullException.ThrowIfNull(server);
+
+        var artifactDir = artifactDirOverride
+            ?? Path.Combine(s_artifactsRoot, SanitizeFileName(test.TestName ?? "unknown"));
+
+        var session = await TracingSession.StartAsync(context, test, artifactDir, s_recordVideo).ConfigureAwait(false);
+        // ownsContext: false — caller passed the context in and is responsible for disposing it.
+        return new TracedContext(context, session, ownsContext: false);
     }
 
     /// <summary>
