@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 using System.Linq;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Core.Filters;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -34,11 +35,29 @@ internal sealed class AntiforgeryApplicationModelProvider(IOptions<MvcOptions> m
                 controllerFilterAdded = true;
             }
 
+            // Connect [IgnoreAntiforgeryToken] applied to the controller into endpoint metadata.
+            if (controllerModel.Attributes.OfType<IgnoreAntiforgeryTokenAttribute>().Any())
+            {
+                foreach (var selector in controllerModel.Selectors)
+                {
+                    selector.EndpointMetadata.Add(AntiforgeryMetadata.ValidationNotRequired);
+                }
+            }
+
             foreach (var actionModel in controllerModel.Actions)
             {
                 if (HasValidAntiforgeryMetadata(actionModel.Attributes, actionModel.Filters) && !controllerFilterAdded)
                 {
                     actionModel.Filters.Add(AntiforgeryMiddlewareAuthorizationFilter);
+                }
+
+                // Connect [IgnoreAntiforgeryToken] on an action to the endpoint metadata.
+                if (actionModel.Attributes.OfType<IgnoreAntiforgeryTokenAttribute>().Any())
+                {
+                    foreach (var selector in actionModel.Selectors)
+                    {
+                        selector.EndpointMetadata.Add(AntiforgeryMetadata.ValidationNotRequired);
+                    }
                 }
             }
         }
