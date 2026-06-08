@@ -46,6 +46,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public string? Theme { get; set; } = "default";
 
     /// <summary>
+    /// If true, the grid renders column resize handles in the header row and allows users to drag to resize columns.
+    /// </summary>
+    [Parameter] public bool ColumnResize { get; set; }
+
+    /// <summary>
     /// Defines the child components of this instance. For example, you may define columns by adding
     /// components derived from the <see cref="ColumnBase{TGridItem}"/> base class.
     /// </summary>
