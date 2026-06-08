@@ -3,37 +3,51 @@
 
 using System.Linq;
 using Microsoft.Playwright;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Testing.Infrastructure;
 
 /// <summary>
 /// Manages the lifecycle of a Playwright trace (and optionally video) for a
 /// single browser context. On disposal, saves or discards artifacts based on
-/// the test outcome reported by xUnit's <see cref="TestContext"/>.
+/// the outcome of the test captured at construction time, and attaches the
+/// surviving files to the test result via
+/// <see cref="TestContext.AddResultFile(string)"/>.
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="TestContext.Current"/> provides test state availability:
+/// The <see cref="TestContext"/> is captured at <see cref="StartAsync"/> time.
+/// Outcome-driven save/discard depends on when the session is disposed:
 /// </para>
 /// <list type="bullet">
-///   <item><description>During test method body (<c>await using</c>): <c>TestState</c> is <c>null</c> → always saves (conservative; wasteful on passing tests)</description></item>
-///   <item><description>During <c>IAsyncLifetime.DisposeAsync</c>: <c>TestState</c> is populated → conditional save on failure only</description></item>
+///   <item><description>
+///     When disposed from <c>[TestCleanup]</c> (or any code that runs after the
+///     test method body has returned), MSTest has set
+///     <see cref="TestContext.CurrentTestOutcome"/> to its final value, so traces
+///     for passing tests are correctly discarded and traces for failing tests
+///     are saved.
+///   </description></item>
+///   <item><description>
+///     When disposed via <c>await using</c> inside the test method body itself,
+///     <see cref="TestContext.CurrentTestOutcome"/> is still
+///     <see cref="UnitTestOutcome.InProgress"/>. The session conservatively
+///     saves the trace in that case so failures aren't silently lost — at the
+///     cost of also producing a <c>trace.zip</c> for passing tests. Consumers
+///     that want strictly per-failure artifacts should dispose from
+///     <c>[TestCleanup]</c> instead.
+///   </description></item>
 /// </list>
-/// <para>
-/// To avoid keeping artifacts for passing tests, dispose the <see cref="TracingSession"/>
-/// inside <c>IAsyncLifetime.DisposeAsync</c> rather than via <c>await using</c> in the test body.
-/// </para>
 /// </remarks>
 public sealed class TracingSession : IAsyncDisposable
 {
     private readonly IBrowserContext _context;
+    private readonly TestContext _test;
     private readonly string _artifactDir;
     private readonly bool _recordVideo;
 
-    TracingSession(IBrowserContext context, string artifactDir, bool recordVideo)
+    TracingSession(IBrowserContext context, TestContext test, string artifactDir, bool recordVideo)
     {
         _context = context;
+        _test = test;
         _artifactDir = artifactDir;
         _recordVideo = recordVideo;
     }
@@ -42,12 +56,17 @@ public sealed class TracingSession : IAsyncDisposable
     /// Starts tracing on the given browser context with screenshots, snapshots, and sources enabled.
     /// </summary>
     /// <param name="context">The browser context to trace.</param>
+    /// <param name="test">The MSTest test context for the currently running test.</param>
     /// <param name="artifactDir">The directory to store trace artifacts in.</param>
     /// <param name="recordVideo">Whether video recording is enabled.</param>
     /// <returns>A <see cref="TracingSession"/> managing the trace lifecycle.</returns>
     public static async Task<TracingSession> StartAsync(
-        IBrowserContext context, string artifactDir, bool recordVideo)
+        IBrowserContext context, TestContext test, string artifactDir, bool recordVideo)
     {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(test);
+        ArgumentNullException.ThrowIfNull(artifactDir);
+
         Directory.CreateDirectory(artifactDir);
 
         await context.Tracing.StartAsync(new()
@@ -57,23 +76,31 @@ public sealed class TracingSession : IAsyncDisposable
             Sources = true
         }).ConfigureAwait(false);
 
-        return new TracingSession(context, artifactDir, recordVideo);
+        return new TracingSession(context, test, artifactDir, recordVideo);
     }
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        // TestState is populated during xUnit's CleaningUp phase (DisposeAsync of the
-        // test class). When disposed via `await using` in the test method body, TestState
-        // is null — we conservatively save artifacts (correct on failure, wasteful on success).
-        var testState = TestContext.Current.TestState;
-        var shouldSave = testState is null || testState.Result == TestResult.Failed;
+        // Save the trace whenever the test is failing or whenever we don't yet know
+        // its outcome (InProgress / Unknown — typical when disposed via `await using`
+        // in the test body). Discard only when the outcome is definitively Passed
+        // (or Inconclusive). See class remarks for guidance.
+        var outcome = _test.CurrentTestOutcome;
+        var shouldSave =
+            outcome is UnitTestOutcome.Failed
+                    or UnitTestOutcome.Timeout
+                    or UnitTestOutcome.Aborted
+                    or UnitTestOutcome.Error
+                    or UnitTestOutcome.InProgress
+                    or UnitTestOutcome.Unknown;
 
         // 1. Stop tracing — save to file or discard
         var tracePath = Path.Combine(_artifactDir, "trace.zip");
         if (shouldSave)
         {
             await _context.Tracing.StopAsync(new() { Path = tracePath }).ConfigureAwait(false);
+            _test.AddResultFile(tracePath);
         }
         else
         {
@@ -86,29 +113,47 @@ public sealed class TracingSession : IAsyncDisposable
             var pages = _context.Pages.ToList();
             await _context.CloseAsync().ConfigureAwait(false); // flushes video to disk
 
-            if (!shouldSave)
+            foreach (var page in pages)
             {
-                foreach (var page in pages)
+                if (page.Video is null)
                 {
-                    if (page.Video is not null)
+                    continue;
+                }
+
+                if (shouldSave)
+                {
+                    try
                     {
-                        try { await page.Video.DeleteAsync().ConfigureAwait(false); }
-                        catch { /* video file may not exist */ }
+                        var videoPath = await page.Video.PathAsync().ConfigureAwait(false);
+                        if (!string.IsNullOrEmpty(videoPath))
+                        {
+                            _test.AddResultFile(videoPath);
+                        }
                     }
+                    catch
+                    {
+                        // video file may not be available
+                    }
+                }
+                else
+                {
+                    try { await page.Video.DeleteAsync().ConfigureAwait(false); }
+                    catch { /* video file may not exist */ }
                 }
             }
         }
 
-        // 3. Report or clean up
+        // 3. Diagnostic line — keeps the existing CI-side directory pointer for
+        //    consumers that also glob test-artifacts/** directly.
         if (shouldSave && Directory.Exists(_artifactDir))
         {
             var files = Directory.GetFiles(_artifactDir);
             if (files.Length > 0)
             {
-                Console.WriteLine($"[E2E] Test artifacts saved to: {_artifactDir}");
+                _test.WriteLine($"[E2E] Test artifacts saved to: {_artifactDir}");
                 foreach (var file in files)
                 {
-                    Console.WriteLine($"[E2E]   {Path.GetFileName(file)}");
+                    _test.WriteLine($"[E2E]   {Path.GetFileName(file)}");
                 }
             }
         }
