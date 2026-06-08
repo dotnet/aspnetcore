@@ -61,6 +61,7 @@ public partial class SystemTextJsonOutputFormatterTest
     [Theory]
     [InlineData("int", "5")]
     [InlineData("string", "\"hi\"")]
+    [InlineData("null", "null")]
     public async Task Union_ReturnType_UnionWithNullableCase_SerializesActiveCase(string kind, string expectedBody)
     {
         var response = await Client.GetAsync($"/Unions/UnionWithNullableCase/{kind}");

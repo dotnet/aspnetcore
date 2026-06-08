@@ -72,12 +72,24 @@ public partial class SystemTextJsonInputFormatterTest
     [Theory]
     [InlineData("42", "42")]
     [InlineData("\"hi\"", "\"hi\"")]
+    [InlineData("null", "null")]
     public async Task Union_Body_UnionWithNullableCase_WithClassifier_RoundTrips(string payload, string expectedBody)
     {
         var response = await Client.PostAsync("/Unions/EchoNullableIntStringWithClassifier", JsonBody(payload));
 
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         Assert.Equal(expectedBody, await response.Content.ReadAsStringAsync());
+    }
+
+    [Fact]
+    public async Task Union_Body_UnionWithNullableCase_NullPayloadWorksWithoutClassifier()
+    {
+        // Null tokens are short-circuited in the union converter before the classifier
+        // runs, so JSON null round-trips even when no classifier is registered.
+        var response = await Client.PostAsync("/Unions/EchoNullableIntString", JsonBody("null"));
+
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal("null", await response.Content.ReadAsStringAsync());
     }
 
     [Theory]
@@ -106,6 +118,16 @@ public partial class SystemTextJsonInputFormatterTest
         var response = await Client.PostAsync("/Unions/EchoEnvelope", JsonBody(payload));
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         Assert.Equal(payload, await response.Content.ReadAsStringAsync());
+    }
+
+    [Theory]
+    [InlineData("{\"correlationId\":\"abc\",\"payload\":null}")]
+    [InlineData("{\"correlationId\":\"abc\"}")]
+    public async Task Union_Body_AsPropertyOfWrappingRecord_NullOrMissingPayload_RoundTripsAsNull(string payload)
+    {
+        var response = await Client.PostAsync("/Unions/EchoEnvelope", JsonBody(payload));
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal("{\"correlationId\":\"abc\",\"payload\":null}", await response.Content.ReadAsStringAsync());
     }
 
     [Fact]

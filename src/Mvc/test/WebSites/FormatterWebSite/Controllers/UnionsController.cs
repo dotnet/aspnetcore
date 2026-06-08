@@ -126,7 +126,7 @@ public class UnionsController : ControllerBase
     [HttpGet("{kind}")]
     public UnionNullableIntString UnionWithNullableCase(string kind) => kind switch
     {
-        "int" => new UnionNullableIntString((int?)5),
+        "int" => new UnionNullableIntString(5),
         "string" => new UnionNullableIntString("hi"),
         _ => default,
     };
