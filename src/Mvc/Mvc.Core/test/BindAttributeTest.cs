@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Moq;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -24,9 +25,7 @@ public class BindAttributeTest
 
         var context = new DefaultModelBindingContext();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var identity = ModelMetadataIdentity.ForProperty(typeof(int), property, typeof(string));
-#pragma warning restore CS0618 // Type or member is obsolete
+        var identity = CreatePropertyIdentity(property);
         context.ModelMetadata = new Mock<ModelMetadata>(identity).Object;
 
         // Act
@@ -34,5 +33,17 @@ public class BindAttributeTest
 
         // Assert
         Assert.Equal(isIncluded, propertyFilter(context.ModelMetadata));
+    }
+
+    private static ModelMetadataIdentity CreatePropertyIdentity(string propertyName)
+    {
+        var constructor = typeof(ModelMetadataIdentity).GetConstructor(
+            BindingFlags.NonPublic | BindingFlags.Instance,
+            binder: null,
+            [typeof(Type), typeof(string), typeof(Type), typeof(object), typeof(ConstructorInfo)],
+            modifiers: null);
+
+        Assert.NotNull(constructor);
+        return (ModelMetadataIdentity)constructor.Invoke([typeof(int), propertyName, typeof(string), null, null]);
     }
 }
