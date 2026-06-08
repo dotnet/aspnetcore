@@ -23,6 +23,8 @@ internal sealed partial class Request
 {
     private static readonly bool AllowKeepAliveAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.AllowKeepAliveAfterCLTE", out var value) && value;
 
+    private static ReadOnlySpan<char> TrimChars => [' ', '\t', ','];
+
     private X509Certificate2? _clientCert;
     // TODO: https://github.com/aspnet/HttpSysServer/issues/231
     // private byte[] _providedTokenBindingId;
@@ -557,11 +559,10 @@ internal sealed partial class Request
             return false;
         }
 
-        // Per RFC 7230 §7, list-based headers tolerate empty list elements
+        // Per RFC 9110 §5.6.1, list-based headers tolerate empty list elements
         // (e.g. "chunked,"). Strip any trailing OWS/commas so that the
         // LastIndexOf-based check below sees the real final coding.
-        ReadOnlySpan<char> trimChars = [' ', '\t', ','];
-        var span = transferEncoding.AsSpan().TrimEnd(trimChars);
+        var span = transferEncoding.AsSpan().TrimEnd(TrimChars);
 
         var index = span.LastIndexOf(',');
         return span.Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase);

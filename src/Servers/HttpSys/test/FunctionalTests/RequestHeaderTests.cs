@@ -200,7 +200,7 @@ public class RequestHeaderTests : LoggedTest
         }, LoggerFactory))
         {
             // Trailing comma in Transfer-Encoding (https://github.com/dotnet/aspnetcore/issues/66720).
-            // Per RFC 7230, http.sys treats this as chunked; the managed layer must agree
+            // Per RFC 9110, http.sys treats this as chunked; the managed layer must agree
             // and strip Content-Length.
             var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
                 { "Transfer-Encoding", "chunked," },
