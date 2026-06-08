@@ -108,8 +108,9 @@ public sealed class UnionIntStringClassifierFactory : JsonTypeClassifierFactory<
         };
 }
 
-// Nullable-case union with classifier. Without the classifier the Null token and the
-// String token (via NumberHandling) are ambiguous between int? and string.
+// The classifier must return the exact declared case type: typeof(int?), NOT typeof(int).
+// Post-fix https://github.com/dotnet/runtime/issues/128688 behavior: the resolver keeps Foo(T) and Foo(Nullable<T>)
+// as separate cases keyed by their declared type
 [JsonUnion(TypeClassifier = typeof(UnionNullableIntStringClassifierFactory))]
 public union UnionNullableIntStringWithClassifier(int?, string);
 
@@ -118,9 +119,8 @@ public sealed class UnionNullableIntStringClassifierFactory : JsonTypeClassifier
     public override JsonTypeClassifier CreateJsonClassifier(JsonTypeClassifierContext context, JsonSerializerOptions options) =>
         static (ref Utf8JsonReader reader) => reader.TokenType switch
         {
-            JsonTokenType.Number => typeof(int),
+            JsonTokenType.Number => typeof(int?),
             JsonTokenType.String => typeof(string),
-            JsonTokenType.Null => typeof(int),
             _ => null,
         };
 }

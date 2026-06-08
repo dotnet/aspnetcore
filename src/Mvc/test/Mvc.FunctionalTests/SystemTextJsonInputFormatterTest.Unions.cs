@@ -69,17 +69,16 @@ public partial class SystemTextJsonInputFormatterTest
         await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
     }
 
-    // [Theory]
-    // [InlineData("42", "42")]
-    // [InlineData("\"hi\"", "\"hi\"")]
-    // // TODO: enable null case after https://github.com/dotnet/runtime/issues/128688 is fixed.
-    // public async Task Union_Body_UnionWithNullableCase_WithClassifier_RoundTrips(string payload, string expectedBody)
-    // {
-    //     var response = await Client.PostAsync("/Unions/EchoNullableIntStringWithClassifier", JsonBody(payload));
+    [Theory]
+    [InlineData("42", "42")]
+    [InlineData("\"hi\"", "\"hi\"")]
+    public async Task Union_Body_UnionWithNullableCase_WithClassifier_RoundTrips(string payload, string expectedBody)
+    {
+        var response = await Client.PostAsync("/Unions/EchoNullableIntStringWithClassifier", JsonBody(payload));
 
-    //     await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-    //     Assert.Equal(expectedBody, await response.Content.ReadAsStringAsync());
-    // }
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal(expectedBody, await response.Content.ReadAsStringAsync());
+    }
 
     [Theory]
     [InlineData("{\"name\":\"Whiskers\"}")]

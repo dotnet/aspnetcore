@@ -58,17 +58,16 @@ public partial class SystemTextJsonOutputFormatterTest
         Assert.Equal(expectedBody, await response.Content.ReadAsStringAsync());
     }
 
-    // [Theory]
-    // [InlineData("int", "5")]
-    // [InlineData("string", "\"hi\"")]
-    // // TODO: enable a null arm once https://github.com/dotnet/runtime/issues/128688 is fixed.
-    // public async Task Union_ReturnType_UnionWithNullableCase_SerializesActiveCase(string kind, string expectedBody)
-    // {
-    //     var response = await Client.GetAsync($"/Unions/UnionWithNullableCase/{kind}");
+    [Theory]
+    [InlineData("int", "5")]
+    [InlineData("string", "\"hi\"")]
+    public async Task Union_ReturnType_UnionWithNullableCase_SerializesActiveCase(string kind, string expectedBody)
+    {
+        var response = await Client.GetAsync($"/Unions/UnionWithNullableCase/{kind}");
 
-    //     await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-    //     Assert.Equal(expectedBody, await response.Content.ReadAsStringAsync());
-    // }
+        await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        Assert.Equal(expectedBody, await response.Content.ReadAsStringAsync());
+    }
 
     [Theory]
     [InlineData("cat", "{\"name\":\"Whiskers\"}")]
