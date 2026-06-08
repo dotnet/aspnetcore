@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -212,20 +211,4 @@ public static class MvcCoreMvcCoreBuilderExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Sets the <see cref="CompatibilityVersion"/> for ASP.NET Core MVC for the application.
-    /// </summary>
-    /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
-    /// <param name="version">The <see cref="CompatibilityVersion"/> value to configure.</param>
-    /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
-    [Obsolete("This API is obsolete and will be removed in a future version. Consider removing usages.",
-        DiagnosticId = "ASP5001",
-        UrlFormat = "https://aka.ms/aspnetcore-warnings/{0}")]
-    public static IMvcCoreBuilder SetCompatibilityVersion(this IMvcCoreBuilder builder, CompatibilityVersion version)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        builder.Services.Configure<MvcCompatibilityOptions>(o => o.CompatibilityVersion = version);
-        return builder;
-    }
 }
