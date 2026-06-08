@@ -166,6 +166,9 @@ Use the '--help' flag to see info.</value>
   <data name="Error_ProjectAndFileOptions" xml:space="preserve">
     <value>Cannot use both --file and --project options together.</value>
   </data>
+  <data name="Error_FileInvalidExtension" xml:space="preserve">
+    <value>The --file option only supports .cs file-based apps.</value>
+  </data>
   <data name="Error_InitNotSupportedForFileBasedApps" xml:space="preserve">
     <value>Init command is currently not supported for file-based apps. Please add '#:property UserSecretsId=...' manually.</value>
   </data>
