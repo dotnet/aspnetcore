@@ -108,12 +108,6 @@ internal static class JsonTypeInfoExtensions
             return $"{typeName}Of{propertyNames}";
         }
 
-        // Special handling for nullable value types
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            return type.GetGenericArguments()[0].GetSchemaReferenceId(options);
-        }
-
         // Special handling for array types whose names contain '[]', which is not
         // valid in OpenAPI schema keys (must match ^[a-zA-Z0-9._-]+$).
         if (type.IsArray)
