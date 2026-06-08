@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -164,12 +165,12 @@ public abstract class OpenApiDocumentServiceTestBase
             new ServiceProviderIsService());
     }
 
-    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null)
+    internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null, JsonNumberHandling numberHandling = JsonNumberHandling.Strict)
     {
         serviceCollection ??= new ServiceCollection();
         serviceCollection.ConfigureHttpJsonOptions(options =>
         {
-            options.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+            options.SerializerOptions.NumberHandling = numberHandling;
         });
         var serviceProvider = new TestServiceProvider();
         serviceProvider.SetInternalServiceProvider(serviceCollection);

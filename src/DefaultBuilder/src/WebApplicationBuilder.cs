@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
+    private const string CsrfProtectionMiddlewareSetKey = "__CsrfProtectionMiddlewareSet";
     private const string UseRoutingKey = "__UseRouting";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
@@ -450,6 +452,19 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             {
                 _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
                 app.UseAuthorization();
+            }
+        }
+
+        // Auto-inject cross-origin CSRF protection after auth.
+        if (!WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"]))
+        {
+            if (serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true)
+            {
+                if (!_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
+                {
+                    _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
+                    app.UseMiddleware<CsrfProtectionMiddleware>();
+                }
             }
         }
 
