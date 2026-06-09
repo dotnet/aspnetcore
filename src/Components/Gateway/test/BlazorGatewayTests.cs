@@ -24,12 +24,15 @@ public class BlazorGatewayTests
     }
 
     [Fact]
-    public async Task HealthChecks_NotMapped_InProduction()
+    public async Task HealthChecks_Liveness_AlwaysMapped_Health_OnlyInDevelopment()
     {
         await using var gateway = await StartGatewayAsync(Environments.Production);
 
+        // /alive is mapped in all environments so external orchestrators can probe
+        // a running deployment; the broader /health aggregate is dev-only because
+        // exposing it publicly leaks dependency status.
+        Assert.Equal(HttpStatusCode.OK, (await gateway.Client.GetAsync("/alive")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await gateway.Client.GetAsync("/health")).StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, (await gateway.Client.GetAsync("/alive")).StatusCode);
     }
 
     [Fact]

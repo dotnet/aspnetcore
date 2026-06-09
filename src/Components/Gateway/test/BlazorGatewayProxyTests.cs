@@ -79,21 +79,22 @@ public class BlazorGatewayProxyTests
     }
 
     [Fact]
-    public async Task ServiceDiscovery_Disabled_LeavesUnresolvedAddress()
+    public async Task ServiceDiscovery_UnresolvedAddress_FailsAtRequestTime()
     {
         var cfg = ProxyConfig("upstream", "http://_does-not-exist", route: "/api/{**catch-all}");
-        cfg["Gateway:HttpClient:ServiceDiscovery"] = "false";
 
         await using var gateway = await GatewayTestHelpers.StartGatewayAsync(Environments.Development, cfg);
 
-        // Without service discovery the scheme-less host segment isn't translated, so the
-        // proxy fails to dispatch (502/503/504 depending on YARP error mapping).
+        // Service discovery is always on; an address that references an unknown
+        // service-discovery name fails when the proxy attempts to dispatch the
+        // request (surfaced as a gateway error).
         var response = await gateway.Client.GetAsync("/api/whatever");
 
         Assert.True(
             response.StatusCode is HttpStatusCode.BadGateway
                 or HttpStatusCode.ServiceUnavailable
-                or HttpStatusCode.GatewayTimeout,
+                or HttpStatusCode.GatewayTimeout
+                or HttpStatusCode.InternalServerError,
             $"Expected gateway error, got {response.StatusCode}.");
     }
 

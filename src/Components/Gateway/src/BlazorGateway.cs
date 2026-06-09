@@ -37,18 +37,7 @@ public static class BlazorGateway
                 .AddCheck<LivenessHealthCheck>("self", tags: [options.HealthChecks.LivenessTag]);
         }
 
-        builder.Services.ConfigureHttpClientDefaults(http =>
-        {
-            if (options.HttpClient.ServiceDiscovery)
-            {
-                http.AddServiceDiscovery();
-            }
-        });
-
-        if (options.HttpClient.ServiceDiscovery)
-        {
-            builder.Services.AddServiceDiscovery();
-        }
+        builder.Services.AddServiceDiscovery();
 
         builder.WebHost.UseStaticWebAssets();
 
@@ -60,13 +49,9 @@ public static class BlazorGateway
 
         if (hasProxy)
         {
-            var proxyBuilder = builder.Services.AddReverseProxy()
-                .LoadFromConfig(proxySection);
-
-            if (options.HttpClient.ServiceDiscovery)
-            {
-                proxyBuilder.AddServiceDiscoveryDestinationResolver();
-            }
+            builder.Services.AddReverseProxy()
+                .LoadFromConfig(proxySection)
+                .AddServiceDiscoveryDestinationResolver();
         }
 
         var app = builder.Build();
@@ -102,6 +87,10 @@ public static class BlazorGateway
         if (app.Environment.IsDevelopment() && options.HealthChecks.Enabled)
         {
             app.MapHealthChecks(options.HealthChecks.Path);
+        }
+
+        if (options.HealthChecks.Enabled)
+        {
             app.MapHealthChecks(options.HealthChecks.LivenessPath, new HealthCheckOptions
             {
                 Predicate = r => r.Tags.Contains(options.HealthChecks.LivenessTag)

@@ -17,8 +17,6 @@ internal sealed class BlazorGatewayOptions
 
     public TelemetryOptions Telemetry { get; set; } = new();
 
-    public HttpClientDefaultsOptions HttpClient { get; set; } = new();
-
     internal sealed class HstsOptions
     {
         public bool Enabled { get; set; } = true;
@@ -42,10 +40,5 @@ internal sealed class BlazorGatewayOptions
         public bool Enabled { get; set; } = true;
         public List<string> ExcludePaths { get; set; } = new() { "/health", "/alive", "/_otlp/" };
         public List<string> ExcludeOutboundPaths { get; set; } = new() { "/v1/" };
-    }
-
-    internal sealed class HttpClientDefaultsOptions
-    {
-        public bool ServiceDiscovery { get; set; } = true;
     }
 }
