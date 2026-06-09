@@ -59,6 +59,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _pauseAbortController: AbortController | undefined;
 
+  private _activeStreamCount = 0;
+
+  private _streamDrainResolvers: Array<() => void> = [];
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -155,10 +159,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
+          const untrack = this.trackActiveStream();
           connection.stream('SendDotNetStreamToJS', streamId).subscribe({
             next: (chunk: Uint8Array) => controller.enqueue(chunk),
-            complete: () => controller.close(),
-            error: (err) => controller.error(err),
+            complete: () => { controller.close(); untrack(); },
+            error: (err) => { controller.error(err); untrack(); },
           });
         },
       });
@@ -329,6 +334,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const pausingPromise = this._pausingState.currentProgress();
 
     try {
+      // defer pause while DotNetStreamReference transmissions are in flight. 
+      await this.waitForActiveStreamsToDrain();
+
       this._logger.log(LogLevel.Trace, 'Pausing the circuit...');
 
       // Notify the reconnection handler that we are pausing the circuit.
@@ -527,6 +535,46 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private abortPendingPauseCallbacks(reason: string): void {
     this._pauseAbortController?.abort(reason);
     this._pauseAbortController = undefined;
+  }
+
+  private trackActiveStream(): () => void {
+    this._activeStreamCount++;
+    let untracked = false;
+    return () => {
+      if (untracked) {
+        return;
+      }
+      untracked = true;
+      this._activeStreamCount--;
+      if (this._activeStreamCount === 0) {
+        const resolvers = this._streamDrainResolvers.splice(0);
+        for (const resolve of resolvers) {
+          resolve();
+        }
+      }
+    };
+  }
+
+  private async waitForActiveStreamsToDrain(): Promise<void> {
+    if (this._activeStreamCount === 0) {
+      return;
+    }
+
+    this._logger.log(LogLevel.Information, `Pause deferred: waiting for ${this._activeStreamCount} active stream transmission(s) to complete.`);
+
+    const startedAt = Date.now();
+    await new Promise<void>(resolve => {
+      const onDrained = () => {
+        const idx = this._streamDrainResolvers.indexOf(onDrained);
+        if (idx >= 0) {
+          this._streamDrainResolvers.splice(idx, 1);
+        }
+        const elapsedMs = Date.now() - startedAt;
+        this._logger.log(LogLevel.Information, `Pause resumed: all stream transmissions completed after ${elapsedMs}ms.`);
+        resolve();
+      };
+      this._streamDrainResolvers.push(onDrained);
+    });
   }
 
   public isDisposedOrDisposing(): boolean {

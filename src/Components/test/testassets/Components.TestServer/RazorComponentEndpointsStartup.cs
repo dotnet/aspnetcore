@@ -129,6 +129,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddScoped<PauseTrackingHandler>();
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
+
+        services.AddSingleton<AutoPauseTestStreamGate>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -266,6 +268,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
             MapEnhancedNavigationEndpoints(endpoints);
+            endpoints.MapAutoPauseTestEndpoints();
         });
     }
 
