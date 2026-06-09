@@ -218,7 +218,7 @@ public class TestingInfrastructureInheritanceTests
             return base.CreateHost(builder);
         }
 
-        protected override void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
+        protected override void ConfigureHostApplicationBuilder(WebApplicationBuilder hostApplicationBuilder)
         {
             hostApplicationBuilder.Configuration.Add(new MyCustomConfigSource());
             base.ConfigureHostApplicationBuilder(hostApplicationBuilder);
