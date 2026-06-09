@@ -100,7 +100,8 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
-            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
+            if (underlyingType.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
             }
