@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.Gateway;
@@ -56,6 +57,25 @@ public class BlazorGatewayTests
         Assert.Equal(HttpStatusCode.OK, (await gateway.Client.GetAsync("/livez")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await gateway.Client.GetAsync("/health")).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await gateway.Client.GetAsync("/alive")).StatusCode);
+    }
+
+    [Fact]
+    public async Task HealthChecks_Liveness_FlipsToUnhealthy_DuringShutdown()
+    {
+        await using var gateway = await StartGatewayAsync(Environments.Development);
+
+        Assert.Equal(HttpStatusCode.OK, (await gateway.Client.GetAsync("/alive")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await gateway.Client.GetAsync("/health")).StatusCode);
+
+        var lifetime = gateway.App.Services.GetRequiredService<IHostApplicationLifetime>();
+        lifetime.StopApplication();
+
+        // The shutdown-aware "self" check is tagged "live" so it surfaces on both
+        // the liveness endpoint (/alive, predicate-filtered) and the aggregate
+        // /health endpoint (no predicate). Both should fail so orchestrators stop
+        // routing new traffic during the drain window.
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await gateway.Client.GetAsync("/alive")).StatusCode);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, (await gateway.Client.GetAsync("/health")).StatusCode);
     }
 
     [Fact]

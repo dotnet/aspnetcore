@@ -34,7 +34,7 @@ public static class BlazorGateway
         if (options.HealthChecks.Enabled)
         {
             builder.Services.AddHealthChecks()
-                .AddCheck("self", () => HealthCheckResult.Healthy(), [options.HealthChecks.LivenessTag]);
+                .AddCheck<LivenessHealthCheck>("self", tags: [options.HealthChecks.LivenessTag]);
         }
 
         builder.Services.ConfigureHttpClientDefaults(http =>
@@ -172,4 +172,15 @@ sealed class ClientAppConfiguration
     public string? EndpointsManifest { get; set; }
     public string? ConfigEndpointPath { get; set; }
     public string? ConfigResponse { get; set; }
+}
+
+// Liveness check that flips to Unhealthy as soon as the host begins shutting down,
+// so orchestrators (Kubernetes, ACA) stop routing new requests during the
+// terminationGracePeriodSeconds drain window while in-flight requests complete.
+internal sealed class LivenessHealthCheck(IHostApplicationLifetime lifetime) : IHealthCheck
+{
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken) =>
+        Task.FromResult(lifetime.ApplicationStopping.IsCancellationRequested
+            ? HealthCheckResult.Unhealthy("Application is shutting down.")
+            : HealthCheckResult.Healthy());
 }
