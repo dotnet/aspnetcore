@@ -57,6 +57,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _isFirstRender = true;
 
+  private _pauseAbortController: AbortController | undefined;
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -177,7 +179,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.RequestPause', async () => {
       try {
         if (this._options.onPauseRequested) {
-          await this._options.onPauseRequested();
+          await this.invokeOnPauseRequested();
         }
         await this.pause(true);
       } catch (error) {
@@ -187,6 +189,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+
+      // The connection is gone; no point in awaiting any pause wind-down callbacks.
+      this.abortPendingPauseCallbacks('connection closed');
 
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
@@ -504,6 +509,26 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._renderingFailed;
   }
 
+  private async invokeOnPauseRequested(): Promise<void> {
+    this._pauseAbortController?.abort('superseded by new pause request');
+
+    const controller = new AbortController();
+    this._pauseAbortController = new AbortController();
+    try {
+      await this._options.onPauseRequested!(controller.signal);
+    } finally {
+      // Prevent race condition
+      if (this._pauseAbortController === controller) {
+        this._pauseAbortController = undefined;
+      }
+    }
+  }
+
+  private abortPendingPauseCallbacks(reason: string): void {
+    this._pauseAbortController?.abort(reason);
+    this._pauseAbortController = undefined;
+  }
+
   public isDisposedOrDisposing(): boolean {
     return this._disposePromise !== undefined;
   }
@@ -529,6 +554,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
+      this.abortPendingPauseCallbacks('circuit disposed');
       return;
     }
 
@@ -537,6 +563,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
+    this.abortPendingPauseCallbacks('circuit disposed');
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone

@@ -42,6 +42,22 @@
         }
 
         function callBlazorStart() {
+            const params = new URLSearchParams(location.search);
+            const autoPauseParam = params.get('auto-pause');
+            const autoPauseDelay = parseInt(params.get('auto-pause-delay-ms') ?? '0', 10);
+            const circuitOptions = {
+                logLevel: 0
+            };
+            if (autoPauseParam === 'true') {
+                circuitOptions.autoPause = {
+                    enabled: true,
+                    hiddenDelayMilliseconds: autoPauseDelay > 0 ? autoPauseDelay : 200,
+                };
+                window.autoPauseEvents = [];
+                circuitOptions.onPauseRequested = async (signal) => {
+                    window.autoPauseEvents.push({ phase: 'onPauseRequested', aborted: signal.aborted });
+                };
+            }
             Blazor.start({
                 ssr: {
                     disableDomPreservation: suppressEnhancedNavigation,
@@ -51,9 +67,7 @@
                         return `WasmMinimal/_framework/${name}`;
                     },
                 },
-                circuit: {
-                    logLevel: 0
-                },
+                circuit: circuitOptions,
             });
         }
 
