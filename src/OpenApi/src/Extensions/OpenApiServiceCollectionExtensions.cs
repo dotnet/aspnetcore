@@ -126,12 +126,12 @@ public static class OpenApiServiceCollectionExtensions
     private static IServiceCollection AddOpenApiCore(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        services.AddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
-        services.AddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);
-        services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
+        services.TryAddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
+        services.TryAddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);
+        services.TryAddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
 
         // Required for build-time generation
-        services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
+        services.TryAddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
 
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenApiOptions>, ConfigureNamedOpenApiOptions>());
 
