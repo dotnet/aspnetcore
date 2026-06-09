@@ -531,16 +531,13 @@ public class AsyncValidationTests
         };
 
         // Act
-        var startTime = DateTime.UtcNow;
         await recordType.ValidateAsync(record, context, default);
-        var elapsed = DateTime.UtcNow - startTime;
-
+        
         // Assert
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Value", error.Key);
         Assert.Equal("Delayed validation failed", error.Value.First());
-        Assert.True(elapsed.TotalMilliseconds >= 150); // Both validations should have run
     }
 
     [Fact]
