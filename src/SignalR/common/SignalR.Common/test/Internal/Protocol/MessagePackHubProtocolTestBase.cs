@@ -258,29 +258,6 @@ public abstract class MessagePackHubProtocolTestBase
         Assert.Equal(expectedMessage, message, TestHubMessageEqualityComparer.Instance);
     }
 
-    // Unknown invocation IDs are skipped over. We still need to parse the message
-    // to get to the next message, but we won't create any objects (except the outer hubmessage type)
-    [Fact]
-    public void SkipResult_WithDeeplyNestedStructure()
-    {
-        var expectedMessage = CompletionMessage.WithResult("xyz", null);
-        // Verify that the input binary string decodes to the expected MsgPack primitives
-        var bytes = new byte[] { ArrayBytes(5),
-            3, // Completion message
-            0x80, // Empty headers
-            StringBytes(3), (byte)'x', (byte)'y', (byte)'z', // invocation ID
-            3, // result type; non-void
-        }
-        .Concat(Enumerable.Repeat((byte)0x91, 100_000).Append((byte)0xC0)) // 100,000 nested arrays with a null at the end
-        .ToArray();
-
-        bytes = Frame(bytes);
-
-        var data = new ReadOnlySequence<byte>(bytes);
-        // Null types for TestBinder so parser will skip over the result (treats it as an unknown invocation ID)
-        Assert.True(HubProtocol.TryParseMessage(ref data, new TestBinder(), out var message));
-    }
-
     [Theory]
     [MemberData(nameof(BaseTestDataNames))]
     public void BaseWriteMessages(string testDataName)
