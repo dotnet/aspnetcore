@@ -632,7 +632,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
         """,
         AddOpenApiOverloadVariant.AddOpenApiDocumentName => """
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string? documentName)
+        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
                 {
                     return services.AddOpenApi(documentName, options =>
                     {
@@ -653,7 +653,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
         """,
         AddOpenApiOverloadVariant.AddOpenApiDocumentNameConfigureOptions => """
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string? documentName, Action<OpenApiOptions> configureOptions)
+        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName, Action<OpenApiOptions> configureOptions)
                 {
                     // This overload is not intercepted.
                     return OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
