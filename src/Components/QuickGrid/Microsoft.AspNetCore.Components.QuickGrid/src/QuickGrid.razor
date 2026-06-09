@@ -32,14 +32,23 @@
                     @_renderNonVirtualizedRows
                 }
             </tbody>
-            @if (FooterTemplate is not null)
+            @if (FooterTemplate is not null || _columns.Any(col => col.FooterTemplate is not null))
             {
                 <tfoot>
-                    <tr>
-                        <td colspan="@_columns.Count" class="grid-footer-cell">
-                            @FooterTemplate
-                        </td>
-                    </tr>
+                    @if (_columns.Any(col => col.FooterTemplate is not null))
+                    {
+                        <tr>
+                            @_renderColumnFooters
+                        </tr>
+                    }
+                    @if (FooterTemplate is not null)
+                    {
+                        <tr>
+                            <td colspan="@_columns.Count" class="grid-footer-cell">
+                                @FooterTemplate
+                            </td>
+                        </tr>
+                    }
                 </tfoot>
             }
         </table>
@@ -114,6 +123,14 @@
                     <div class="col-options">@col.ColumnOptions</div>
                 }
             </th>
+        }
+    }
+
+    private void RenderColumnFooters(RenderTreeBuilder __builder)
+    {
+        foreach (var col in _columns)
+        {
+            <td class="grid-column-footer-cell @ColumnClass(col)" @key="@col">@col.FooterTemplate</td>
         }
     }
 }

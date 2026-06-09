@@ -160,6 +160,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     // Caches of method->delegate conversions
     private readonly RenderFragment _renderColumnHeaders;
+    private readonly RenderFragment _renderColumnFooters;
     private readonly RenderFragment _renderNonVirtualizedRows;
 
     // We try to minimize the number of times we query the items provider, since queries may be expensive
@@ -194,6 +195,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         _internalGridContext = new(this);
         _currentPageItemsChanged = new(EventCallback.Factory.Create<PaginationState>(this, RefreshDataCoreAsync));
         _renderColumnHeaders = RenderColumnHeaders;
+        _renderColumnFooters = RenderColumnFooters;
         _renderNonVirtualizedRows = RenderNonVirtualizedRows;
         _queryParameterValueSupplier = new();
 
