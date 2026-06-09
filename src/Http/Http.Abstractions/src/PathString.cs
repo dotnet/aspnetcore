@@ -34,9 +34,12 @@ public readonly struct PathString : IEquatable<PathString>
     /// PathString.FromUriComponent(value) if you have a path value which is in an escaped format.
     /// </summary>
     /// <param name="value">The unescaped path to be assigned to the Value property.</param>
+    /// <remarks>
+    /// The value, when non-empty, must begin with either a forward slash ('/') or a backslash ('\').
+    /// </remarks>
     public PathString(string? value)
     {
-        if (!string.IsNullOrEmpty(value) && value[0] != '/')
+        if (!string.IsNullOrEmpty(value) && value[0] is not '/' and not '\\')
         {
             throw new ArgumentException(Resources.FormatException_PathMustStartWithSlash(nameof(value)), nameof(value));
         }
@@ -217,6 +220,9 @@ public readonly struct PathString : IEquatable<PathString>
     /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
     /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
     /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a".
     /// </remarks>
     public bool StartsWithSegments(PathString other)
     {
@@ -235,6 +241,9 @@ public readonly struct PathString : IEquatable<PathString>
     /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
     /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
     /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a".
     /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType)
     {
@@ -242,7 +251,7 @@ public readonly struct PathString : IEquatable<PathString>
         var value2 = other.Value ?? string.Empty;
         if (value1.StartsWith(value2, comparisonType))
         {
-            return value1.Length == value2.Length || value1[value2.Length] == '/';
+            return value1.Length == value2.Length || value1[value2.Length] is '/' or '\\';
         }
         return false;
     }
@@ -259,6 +268,10 @@ public readonly struct PathString : IEquatable<PathString>
     /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
     /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
     /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
     /// </remarks>
     public bool StartsWithSegments(PathString other, out PathString remaining)
     {
@@ -278,6 +291,10 @@ public readonly struct PathString : IEquatable<PathString>
     /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
     /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
     /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
     /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType, out PathString remaining)
     {
@@ -285,7 +302,7 @@ public readonly struct PathString : IEquatable<PathString>
         var value2 = other.Value ?? string.Empty;
         if (value1.StartsWith(value2, comparisonType))
         {
-            if (value1.Length == value2.Length || value1[value2.Length] == '/')
+            if (value1.Length == value2.Length || value1[value2.Length] is '/' or '\\')
             {
                 remaining = new PathString(value1[value2.Length..]);
                 return true;
@@ -308,6 +325,10 @@ public readonly struct PathString : IEquatable<PathString>
     /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
     /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
     /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
     /// </remarks>
     public bool StartsWithSegments(PathString other, out PathString matched, out PathString remaining)
     {
@@ -328,6 +349,10 @@ public readonly struct PathString : IEquatable<PathString>
     /// must either exactly match or include a trailing slash. For instance, for a <see cref="PathString"/> of "/a/b",
     /// this method will return <c>true</c> for "/a", but will return <c>false</c> for "/a/".
     /// Whereas, a <see cref="PathString"/> of "/a//b/" will return <c>true</c> when compared with "/a/".
+    /// A backslash ('\') in this <see cref="PathString"/> is treated as equivalent to a forward slash ('/')
+    /// for the purpose of segment boundary detection. For example, a <see cref="PathString"/> of "/a\b"
+    /// will return <c>true</c> when compared with "/a", and <paramref name="remaining"/> will be "\b"
+    /// (the original character is preserved, not normalized).
     /// </remarks>
     public bool StartsWithSegments(PathString other, StringComparison comparisonType, out PathString matched, out PathString remaining)
     {
@@ -335,7 +360,7 @@ public readonly struct PathString : IEquatable<PathString>
         var value2 = other.Value ?? string.Empty;
         if (value1.StartsWith(value2, comparisonType))
         {
-            if (value1.Length == value2.Length || value1[value2.Length] == '/')
+            if (value1.Length == value2.Length || value1[value2.Length] is '/' or '\\')
             {
                 matched = new PathString(value1.Substring(0, value2.Length));
                 remaining = new PathString(value1[value2.Length..]);

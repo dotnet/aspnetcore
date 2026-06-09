@@ -116,6 +116,14 @@ public class PathStringTests
     [InlineData("/TEST/PATH", "/test", true)]
     [InlineData("/TEST/path", "/test/pa", false)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", true)]
+    [InlineData("/test\\path", "/test", true)]
+    [InlineData("/test\\path", "/TEST", true)]
+    [InlineData("/test\\path/more", "/test", true)]
+    [InlineData("/test/path\\more", "/test/path", true)]
+    [InlineData("/testpath", "/test", false)]
+    [InlineData("/test\\path", "/test/path", false)]
+    [InlineData("/test\\\\path", "/test", true)]
+    [InlineData("/test\\/path", "/test", true)]
     public void StartsWithSegments_DoesACaseInsensitiveMatch(string sourcePath, string testPath, bool expectedResult)
     {
         var source = new PathString(sourcePath);
@@ -148,6 +156,14 @@ public class PathStringTests
     [InlineData("/TEST/PATH", "/test", true)]
     [InlineData("/TEST/path", "/test/pa", false)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", true)]
+    [InlineData("/test\\path", "/test", true)]
+    [InlineData("/test\\path", "/TEST", true)]
+    [InlineData("/test\\path/more", "/test", true)]
+    [InlineData("/test/path\\more", "/test/path", true)]
+    [InlineData("/testpath", "/test", false)]
+    [InlineData("/test\\path", "/test/path", false)]
+    [InlineData("/test\\\\path", "/test", true)]
+    [InlineData("/test\\/path", "/test", true)]
     public void StartsWithSegmentsWithRemainder_DoesACaseInsensitiveMatch(string sourcePath, string testPath, bool expectedResult)
     {
         var source = new PathString(sourcePath);
@@ -185,6 +201,12 @@ public class PathStringTests
     [InlineData("/TEST/path", "/test/pa", StringComparison.Ordinal, false)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.OrdinalIgnoreCase, true)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.Ordinal, false)]
+    [InlineData("/test\\path", "/test", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/test\\path", "/test", StringComparison.Ordinal, true)]
+    [InlineData("/TEST\\path", "/test", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/TEST\\path", "/test", StringComparison.Ordinal, false)]
+    [InlineData("/test\\\\path", "/test", StringComparison.Ordinal, true)]
+    [InlineData("/test\\/path", "/test", StringComparison.Ordinal, true)]
     public void StartsWithSegments_DoesMatchUsingSpecifiedComparison(string sourcePath, string testPath, StringComparison comparison, bool expectedResult)
     {
         var source = new PathString(sourcePath);
@@ -227,6 +249,12 @@ public class PathStringTests
     [InlineData("/TEST/path", "/test/pa", StringComparison.Ordinal, false)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.OrdinalIgnoreCase, true)]
     [InlineData("/test/PATH/path/TEST", "/TEST/path/PATH", StringComparison.Ordinal, false)]
+    [InlineData("/test\\path", "/test", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/test\\path", "/test", StringComparison.Ordinal, true)]
+    [InlineData("/TEST\\path", "/test", StringComparison.OrdinalIgnoreCase, true)]
+    [InlineData("/TEST\\path", "/test", StringComparison.Ordinal, false)]
+    [InlineData("/test\\\\path", "/test", StringComparison.Ordinal, true)]
+    [InlineData("/test\\/path", "/test", StringComparison.Ordinal, true)]
     public void StartsWithSegmentsWithRemainder_DoesMatchUsingSpecifiedComparison(string sourcePath, string testPath, StringComparison comparison, bool expectedResult)
     {
         var source = new PathString(sourcePath);
@@ -256,6 +284,32 @@ public class PathStringTests
         var result = source.StartsWithSegments(test, comparison, out var remaining);
 
         Assert.Equal(expectedResult, result);
+    }
+
+    [Theory]
+    // Existing slash-only behavior — pins down current matched/remaining semantics.
+    [InlineData("/test/path", "/TEST", true, "/test", "/path")]
+    [InlineData("/TEST/PATH", "/test", true, "/TEST", "/PATH")]
+    [InlineData("/test/path", "/test/path", true, "/test/path", "")]
+    [InlineData("/test/pa", "/test/path", false, "", "")]
+    // Backslash treated as a segment boundary; matched preserves source casing,
+    // remaining preserves the original backslash (no normalization).
+    [InlineData("/test\\path", "/test", true, "/test", "\\path")]
+    [InlineData("/TEST\\path", "/test", true, "/TEST", "\\path")]
+    [InlineData("/test/path\\more", "/test/path", true, "/test/path", "\\more")]
+    [InlineData("/test\\path/more", "/test", true, "/test", "\\path/more")]
+    [InlineData("/test\\\\path", "/test", true, "/test", "\\\\path")]
+    [InlineData("/test\\/path", "/test", true, "/test", "\\/path")]
+    public void StartsWithSegments_ReturnsExpectedMatchedAndRemaining(string sourcePath, string testPath, bool expectedResult, string expectedMatched, string expectedRemaining)
+    {
+        var source = new PathString(sourcePath);
+        var test = new PathString(testPath);
+
+        var result = source.StartsWithSegments(test, out var matched, out var remaining);
+
+        Assert.Equal(expectedResult, result);
+        Assert.Equal(expectedMatched, matched.Value ?? string.Empty);
+        Assert.Equal(expectedRemaining, remaining.Value ?? string.Empty);
     }
 
     [Theory]
