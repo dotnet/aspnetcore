@@ -252,7 +252,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private bool GetIsConfigureHostApplicationBuilderOverridden()
     {
-        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
+        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(WebApplicationBuilder)]);
         var declaringType = method!.DeclaringType;
         if (declaringType!.IsGenericType)
         {
