@@ -296,7 +296,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         return serviceProvider;
     }
 
-    private sealed class MultiDocumentNameProvider(IEnumerable<string> documentNames) : IAdditionalOpenApiDocumentNameResolver
+    private sealed class MultiDocumentNameResolver(IEnumerable<string> documentNames) : IAdditionalOpenApiDocumentNameResolver
     {
         public IEnumerable<string> ResolveDocumentNames()
             => documentNames;
