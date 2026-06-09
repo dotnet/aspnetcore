@@ -21,10 +21,7 @@ public static class OpenApiServiceCollectionExtensions
     /// Adds OpenAPI services related to the given document name to the specified <see cref="IServiceCollection"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
-    /// <param name="documentName">
-    /// The name of the OpenAPI document associated with registered services.
-    /// Passing null will register the core services only without any document-specific services or configuration.
-    /// </param>
+    /// <param name="documentName">The name of the OpenAPI document associated with registered services.</param>
     /// <example>
     /// This method is commonly used to add OpenAPI services to the <see cref="WebApplicationBuilder.Services"/>
     /// of a <see cref="WebApplicationBuilder"/>, as shown in the following example:
@@ -36,6 +33,7 @@ public static class OpenApiServiceCollectionExtensions
     public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
     {
         ArgumentNullException.ThrowIfNull(services);
+
         return services.AddOpenApi(documentName, _ => { });
     }
 
