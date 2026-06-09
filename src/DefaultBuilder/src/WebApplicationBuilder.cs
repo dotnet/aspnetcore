@@ -50,7 +50,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             Configuration = configuration,
         });
 
-        OnHostApplicationBuilderConstructed(_hostApplicationBuilder);
+        OnHostApplicationBuilderConstructed();
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -107,7 +107,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             Configuration = configuration,
         });
 
-        OnHostApplicationBuilderConstructed(_hostApplicationBuilder);
+        OnHostApplicationBuilderConstructed();
 
         // Ensure the same behavior of the non-slim WebApplicationBuilder by adding the default "app" Configuration sources
         ApplyDefaultAppConfigurationSlim(_hostApplicationBuilder.Environment, configuration, options.Args);
@@ -172,7 +172,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             Configuration = configuration,
         });
 
-        OnHostApplicationBuilderConstructed(_hostApplicationBuilder);
+        OnHostApplicationBuilderConstructed();
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -213,13 +213,13 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     // TODO: Validate if that's reasonable.
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
         Justification = "The values being passed into Write are being consumed by the application already.")]
-    private static void OnHostApplicationBuilderConstructed(HostApplicationBuilder hostApplicationBuilder)
+    private void OnHostApplicationBuilderConstructed()
     {
         using var diagnosticListener = new DiagnosticListener("Microsoft.Extensions.Hosting");
 
         if (diagnosticListener.IsEnabled() && diagnosticListener.IsEnabled(HostApplicationBuilderConstructedEventName))
         {
-            diagnosticListener.Write(HostApplicationBuilderConstructedEventName, hostApplicationBuilder);
+            diagnosticListener.Write(HostApplicationBuilderConstructedEventName, this);
         }
     }
 
