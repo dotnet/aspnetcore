@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests;
 public partial class HubConnectionHandlerTests
 {
     [Fact]
-    public async Task UserPropertyReflectsLatestPrincipalFromConnectionUserFeature()
+    public async Task UserPropertyReflectsLatestPrincipalAfterUserUpdatedFeatureEvent()
     {
         using (StartVerifiableLog())
         {
@@ -27,6 +27,9 @@ public partial class HubConnectionHandlerTests
 
             using (var client = new TestClient())
             {
+                var feature = new TestConnectionUserUpdateFeature();
+                client.Connection.Features.Set<IConnectionUserUpdateFeature>(feature);
+
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
                 var firstNameClaim = await client.InvokeAsync(nameof(AuthRefreshHub.GetUserName)).DefaultTimeout();
@@ -39,10 +42,80 @@ public partial class HubConnectionHandlerTests
                     new Claim(ClaimTypes.Name, "refreshed-user"),
                 }, "Test"));
                 client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+                await hubObserver.RefreshedTask.DefaultTimeout();
 
                 var secondNameClaim = await client.InvokeAsync(nameof(AuthRefreshHub.GetUserName)).DefaultTimeout();
                 Assert.Null(secondNameClaim.Error);
                 Assert.Equal("refreshed-user", secondNameClaim.Result);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UserIdentifierIsAvailableBeforeAuthRefresh()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthRefreshObserver();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
+                services => services.AddSingleton(hubObserver), LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "initial-user"))
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var pair = await client.InvokeAsync(nameof(AuthRefreshHub.GetUserNameIdentifierAndUserIdentifier)).DefaultTimeout();
+                Assert.Null(pair.Error);
+                Assert.Equal("initial-user:initial-user", pair.Result);
+
+                client.Dispose();
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task UserAndUserIdentifierUpdateAtomicallyAfterRekey()
+    {
+        using (StartVerifiableLog())
+        {
+            var hubObserver = new AuthRefreshObserver();
+            var lifetimeManager = new AtomicUserStateHubLifetimeManager<AuthRefreshHub>();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSingleton(hubObserver);
+                services.AddSingleton<HubLifetimeManager<AuthRefreshHub>>(lifetimeManager);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<AuthRefreshHub>>();
+
+            using (var client = new TestClient(userIdentifier: "user-1"))
+            {
+                var feature = new TestConnectionUserUpdateFeature();
+                client.Connection.Features.Set<IConnectionUserUpdateFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "user-2"),
+                }, "Test"));
+                client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+
+                var observedDuringRekey = await lifetimeManager.ObservedDuringRekey.Task.DefaultTimeout();
+                Assert.Equal("user-1", observedDuringRekey.UserIdentifier);
+                Assert.Equal("user-1", observedDuringRekey.NameIdentifier);
+
+                await hubObserver.RefreshedTask.DefaultTimeout();
+
+                var pair = await client.InvokeAsync(nameof(AuthRefreshHub.GetUserNameIdentifierAndUserIdentifier)).DefaultTimeout();
+                Assert.Null(pair.Error);
+                Assert.Equal("user-2:user-2", pair.Result);
 
                 client.Dispose();
                 await connectionHandlerTask.DefaultTimeout();
@@ -119,6 +192,7 @@ public partial class HubConnectionHandlerTests
                 hubObserver.ReleaseHubMethod.SetResult();
                 var completion = await invokeTask.DefaultTimeout();
                 Assert.Null(completion.Error);
+                Assert.Equal(previousUser.Identity?.Name, await hubObserver.BlockedMethodUserNameAfterRelease.Task.DefaultTimeout());
 
                 var captured = await hubObserver.RefreshedTask.DefaultTimeout();
                 Assert.Equal("after", captured);
@@ -478,6 +552,23 @@ public partial class HubConnectionHandlerTests
         }
     }
 
+    private sealed class AtomicUserStateHubLifetimeManager<THub> : DefaultHubLifetimeManager<THub> where THub : Hub
+    {
+        public AtomicUserStateHubLifetimeManager()
+            : base(NullLogger<DefaultHubLifetimeManager<THub>>.Instance)
+        {
+        }
+
+        public TaskCompletionSource<(string? UserIdentifier, string? NameIdentifier)> ObservedDuringRekey { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public override Task<bool> OnUserIdentifierChangedAsync(HubConnectionContext connection, string? oldUserIdentifier, string? newUserIdentifier)
+        {
+            ObservedDuringRekey.TrySetResult((connection.UserIdentifier, connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value));
+            return base.OnUserIdentifierChangedAsync(connection, oldUserIdentifier, newUserIdentifier);
+        }
+    }
+
     private sealed class AuthRefreshObserver
     {
         private readonly TaskCompletionSource<string?> _tcs =
@@ -492,6 +583,8 @@ public partial class HubConnectionHandlerTests
         public TaskCompletionSource HubMethodStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public TaskCompletionSource ReleaseHubMethod { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource<string?> BlockedMethodUserNameAfterRelease { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public bool ThrowFromOnAuthRefreshed { get; set; }
 
@@ -547,6 +640,11 @@ public partial class HubConnectionHandlerTests
 
         public string? GetUserClaim(string type) => Context.User?.FindFirst(type)?.Value;
 
+        public string? GetUserNameIdentifierAndUserIdentifier()
+        {
+            return $"{Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value}:{Context.UserIdentifier}";
+        }
+
         [Authorize("scope-policy")]
         public string ScopeProtected() => "ok";
 
@@ -554,6 +652,7 @@ public partial class HubConnectionHandlerTests
         {
             _observer.HubMethodStarted.TrySetResult();
             await _observer.ReleaseHubMethod.Task;
+            _observer.BlockedMethodUserNameAfterRelease.TrySetResult(Context.User?.Identity?.Name);
         }
 
         public override Task OnAuthRefreshedAsync()

@@ -89,14 +89,15 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         Activity? activity = null;
         try
         {
+            var hubCallerContext = connection.HubCallerContext;
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
-            InitializeHub(hub, connection, invokeAllowed: false);
+            InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
 
             activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger, connection);
 
             if (_onConnectedMiddleware != null)
             {
-                var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                var context = new HubLifetimeContext(hubCallerContext, scope.ServiceProvider, hub);
                 await _onConnectedMiddleware(context);
             }
             else
@@ -125,13 +126,14 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         Activity? activity = null;
         try
         {
-            InitializeHub(hub, connection);
+            var hubCallerContext = connection.HubCallerContext;
+            InitializeHub(hub, connection, hubCallerContext);
 
             activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger, connection);
 
             if (_onDisconnectedMiddleware != null)
             {
-                var context = new HubLifetimeContext(connection.HubCallerContext, scope.ServiceProvider, hub);
+                var context = new HubLifetimeContext(hubCallerContext, scope.ServiceProvider, hub);
                 await _onDisconnectedMiddleware(context, exception);
             }
             else
@@ -171,7 +173,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         Activity? activity = null;
         try
         {
-            InitializeHub(hub, connection, invokeAllowed: false);
+            var hubCallerContext = connection.HubCallerContext;
+            InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
 
             activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthRefreshedAsync), headers: null, _logger);
 
@@ -371,8 +374,9 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         {
             hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
             hub = hubActivator.Create();
+            var hubCallerContext = connection.HubCallerContext;
 
-            if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection, descriptor, hubMethodInvocationMessage.Arguments, hub))
+            if (!await IsHubMethodAuthorized(scope.ServiceProvider, hubCallerContext, descriptor, hubMethodInvocationMessage.Arguments, hub))
             {
                 Log.HubMethodNotAuthorized(_logger, hubMethodInvocationMessage.Target);
                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -398,7 +402,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                     return true;
                 }
 
-                InitializeHub(hub, connection);
+                InitializeHub(hub, connection, hubCallerContext);
                 Task? invocation = null;
 
                 var arguments = hubMethodInvocationMessage.Arguments;
@@ -419,7 +423,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
                 if (isStreamResponse)
                 {
-                    _ = StreamAsync(hubMethodInvocationMessage.InvocationId!, connection, arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor);
+                    _ = StreamAsync(hubMethodInvocationMessage.InvocationId!, connection, hubCallerContext,
+                        arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor);
                 }
                 else
                 {
@@ -431,6 +436,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                                         AsyncServiceScope scope,
                                                         IHubActivator<THub> hubActivator,
                                                         HubConnectionContext connection,
+                                                        HubCallerContext hubCallerContext,
                                                         HubMethodInvocationMessage hubMethodInvocationMessage,
                                                         bool isStreamCall)
                     {
@@ -451,7 +457,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         object? result;
                         try
                         {
-                            result = await dispatcher.ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                            result = await dispatcher.ExecuteHubMethod(
+                                methodExecutor, hub, arguments, hubCallerContext, scope.ServiceProvider);
                             Log.SendingResult(logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
                         }
                         catch (Exception ex)
@@ -488,7 +495,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         }
                     }
 
-                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubMethodInvocationMessage, isStreamCall);
+                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -550,7 +557,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         return scope.DisposeAsync();
     }
 
-    private async Task StreamAsync(string invocationId, HubConnectionContext connection, object?[] arguments, AsyncServiceScope scope,
+    private async Task StreamAsync(string invocationId, HubConnectionContext connection, HubCallerContext hubCallerContext, object?[] arguments, AsyncServiceScope scope,
         IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource? streamCts, HubMethodInvocationMessage hubMethodInvocationMessage, HubMethodDescriptor descriptor)
     {
         string? error = null;
@@ -578,7 +585,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             object? result;
             try
             {
-                result = await ExecuteHubMethod(descriptor.MethodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                result = await ExecuteHubMethod(descriptor.MethodExecutor, hub, arguments, hubCallerContext, scope.ServiceProvider);
             }
             catch (Exception ex)
             {
@@ -645,11 +652,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
-    private ValueTask<object?> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object?[] arguments, HubConnectionContext connection, IServiceProvider serviceProvider)
+    private ValueTask<object?> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object?[] arguments, HubCallerContext hubCallerContext, IServiceProvider serviceProvider)
     {
         if (_invokeMiddleware != null)
         {
-            var invocationContext = new HubInvocationContext(methodExecutor, connection.HubCallerContext, serviceProvider, hub, arguments);
+            var invocationContext = new HubInvocationContext(methodExecutor, hubCallerContext, serviceProvider, hub, arguments);
             return _invokeMiddleware(invocationContext);
         }
 
@@ -697,14 +704,26 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         await connection.WriteAsync(CompletionMessage.WithError(invocationId, errorMessage));
     }
 
-    private void InitializeHub(THub hub, HubConnectionContext connection, bool invokeAllowed = true)
+    private void InitializeHub(
+        THub hub,
+        HubConnectionContext connection,
+        HubCallerContext hubCallerContext,
+        bool invokeAllowed = true)
     {
-        hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId, connection.ActiveInvocationLimit) { InvokeAllowed = invokeAllowed };
-        hub.Context = connection.HubCallerContext;
+        hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId, connection.ActiveInvocationLimit)
+        {
+            InvokeAllowed = invokeAllowed
+        };
+        hub.Context = hubCallerContext;
         hub.Groups = _hubContext.Groups;
     }
 
-    private static Task<bool> IsHubMethodAuthorized(IServiceProvider provider, HubConnectionContext hubConnectionContext, HubMethodDescriptor descriptor, object?[] hubMethodArguments, Hub hub)
+    private static Task<bool> IsHubMethodAuthorized(
+        IServiceProvider provider,
+        HubCallerContext hubCallerContext,
+        HubMethodDescriptor descriptor,
+        object?[] hubMethodArguments,
+        Hub hub)
     {
         // If there are no policies we don't need to run auth
         if (descriptor.Policies.Count == 0)
@@ -712,7 +731,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             return TaskCache.True;
         }
 
-        return IsHubMethodAuthorizedSlow(provider, hubConnectionContext.User, descriptor.Policies, new HubInvocationContext(hubConnectionContext.HubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
+        return IsHubMethodAuthorizedSlow(
+            provider,
+            hubCallerContext.User ?? new ClaimsPrincipal(),
+            descriptor.Policies,
+            new HubInvocationContext(hubCallerContext, provider, hub, descriptor.MethodExecutor.MethodInfo, hubMethodArguments));
     }
 
     private static async Task<bool> IsHubMethodAuthorizedSlow(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies, HubInvocationContext resource)

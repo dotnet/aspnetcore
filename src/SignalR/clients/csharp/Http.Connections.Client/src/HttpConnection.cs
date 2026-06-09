@@ -518,6 +518,18 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return Utils.AppendQueryString(url, $"id={connectionId}");
     }
 
+    private static Uri CreateRefreshUrl(Uri url, string connectionToken)
+    {
+        var urlBuilder = new UriBuilder(url);
+        if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
+        {
+            urlBuilder.Path += "/";
+        }
+
+        urlBuilder.Path += "refresh";
+        return Utils.AppendQueryString(urlBuilder.Uri, $"id={connectionToken}");
+    }
+
     private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat,
         CancellationToken cancellationToken, bool useStatefulReconnect)
     {
@@ -733,24 +745,15 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return negotiationResponse;
     }
 
-    /// <summary>
-    /// Sends a POST request to the /refresh endpoint to refresh the auth token on the server.
-    /// Returns the updated token lifetime in seconds (or null if not provided).
-    /// </summary>
-    public async Task<int?> RefreshAuthAsync(CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    async Task<int?> IAuthRefreshFeature.RefreshAuthAsync(CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(_connectionToken))
         {
             throw new InvalidOperationException("Cannot refresh auth before the connection is started.");
         }
 
-        var urlBuilder = new UriBuilder(_url);
-        if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
-        {
-            urlBuilder.Path += "/";
-        }
-        urlBuilder.Path += "refresh";
-        var refreshUri = Utils.AppendQueryString(urlBuilder.Uri, $"id={_connectionToken}");
+        var refreshUri = CreateRefreshUrl(_url, _connectionToken);
 
         using var request = new HttpRequestMessage(HttpMethod.Post, refreshUri);
 
@@ -770,13 +773,42 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         var responseBuffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 #pragma warning restore CA2016
         // Parse the simple JSON response: { "connectionId": "...", "tokenLifetimeSeconds": ... }
-        using var doc = System.Text.Json.JsonDocument.Parse(responseBuffer);
-        var root = doc.RootElement;
+        return ParseRefreshTokenLifetime(responseBuffer);
+    }
+
+    // Manually reads "tokenLifetimeSeconds" from the /refresh response with a Utf8JsonReader, consistent with
+    // NegotiateProtocol.ParseResponse rather than materializing a JsonDocument for a single optional value.
+    private static int? ParseRefreshTokenLifetime(ReadOnlySpan<byte> content)
+    {
+        var reader = new System.Text.Json.Utf8JsonReader(content, isFinalBlock: true, state: default);
+
+        if (!reader.Read() || reader.TokenType != System.Text.Json.JsonTokenType.StartObject)
+        {
+            throw new System.IO.InvalidDataException("Invalid refresh response JSON: expected an object.");
+        }
 
         int? tokenLifetimeSeconds = null;
-        if (root.TryGetProperty("tokenLifetimeSeconds", out var ttlElement))
+        while (reader.Read())
         {
-            tokenLifetimeSeconds = ttlElement.GetInt32();
+            switch (reader.TokenType)
+            {
+                case System.Text.Json.JsonTokenType.PropertyName:
+                    if (reader.ValueTextEquals("tokenLifetimeSeconds"u8))
+                    {
+                        reader.Read();
+                        if (reader.TokenType == System.Text.Json.JsonTokenType.Number)
+                        {
+                            tokenLifetimeSeconds = reader.GetInt32();
+                        }
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
+                    break;
+                case System.Text.Json.JsonTokenType.EndObject:
+                    return tokenLifetimeSeconds;
+            }
         }
 
         return tokenLifetimeSeconds;

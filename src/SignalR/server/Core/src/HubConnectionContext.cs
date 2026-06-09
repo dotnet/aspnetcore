@@ -51,6 +51,16 @@ public partial class HubConnectionContext
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
     private bool _useStatefulReconnect;
+    private HubCallerContext? _hubCallerContext;
+    private string? _userIdentifier;
+    // Suppresses HubCallerContext snapshot publication while a lifetime manager rekeys UserIdentifier.
+    // ApplyUserState publishes the refreshed user and identifier together after routing state is updated.
+    private bool _stagingUserStateUpdate;
+
+    // IUserIdProvider.GetUserId receives the connection, not the candidate principal. During refresh this
+    // lets that synchronous call see the pending principal without making it hub-visible yet.
+    [ThreadStatic]
+    private static UserIdProviderUserState? t_userIdProviderUserState;
 
     [MemberNotNullWhen(true, nameof(_messageBuffer))]
     internal bool UsingStatefulReconnect() => _useStatefulReconnect;
@@ -86,8 +96,6 @@ public partial class HubConnectionContext
             _closedRequestedRegistration = lifetimeNotification.ConnectionClosedRequested.Register(static (state) => ((HubConnectionContext)state!).AbortAllowReconnect(), this);
         }
 
-        HubCallerContext = new DefaultHubCallerContext(this);
-
         _lastSendTick = _timeProvider.GetTimestamp();
 
         var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
@@ -108,7 +116,14 @@ public partial class HubConnectionContext
         }
     }
 
-    internal HubCallerContext HubCallerContext { get; }
+    internal HubCallerContext HubCallerContext
+    {
+        get
+        {
+            var hubCallerContext = Volatile.Read(ref _hubCallerContext);
+            return hubCallerContext ?? InitializeHubCallerContext();
+        }
+    }
 
     internal Exception? CloseException { get; private set; }
 
@@ -130,10 +145,22 @@ public partial class HubConnectionContext
     /// Gets the user for this connection.
     /// </summary>
     /// <remarks>
-    /// The principal is read from <see cref="IConnectionUserFeature"/> on each access so that callers see
-    /// the most recent value, including updates from an out-of-band authentication refresh.
+    /// Authentication refresh updates this principal together with <see cref="UserIdentifier"/>, so hub
+    /// code does not observe a refreshed principal paired with a stale user identifier.
     /// </remarks>
-    public virtual ClaimsPrincipal User => Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
+    public virtual ClaimsPrincipal User
+    {
+        get
+        {
+            var userIdProviderState = t_userIdProviderUserState;
+            if (ReferenceEquals(userIdProviderState?.Connection, this))
+            {
+                return userIdProviderState.User;
+            }
+
+            return HubCallerContext.User ?? new ClaimsPrincipal();
+        }
+    }
 
     /// <summary>
     /// Gets the collection of features available on this connection.
@@ -154,7 +181,72 @@ public partial class HubConnectionContext
     /// <summary>
     /// Gets or sets the user identifier for this connection.
     /// </summary>
-    public string? UserIdentifier { get; set; }
+    public string? UserIdentifier
+    {
+        get => Volatile.Read(ref _userIdentifier);
+        set
+        {
+            Volatile.Write(ref _userIdentifier, value);
+            if (!Volatile.Read(ref _stagingUserStateUpdate))
+            {
+                Volatile.Write(ref _hubCallerContext,
+                    new DefaultHubCallerContext(this, HubCallerContext.User ?? new ClaimsPrincipal(), value));
+            }
+        }
+    }
+
+    private HubCallerContext InitializeHubCallerContext()
+    {
+        var hubCallerContext = new DefaultHubCallerContext(
+            this,
+            _connectionContext.Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal(),
+            UserIdentifier);
+        return Interlocked.CompareExchange(ref _hubCallerContext, hubCallerContext, null) ?? hubCallerContext;
+    }
+
+    internal string? GetUserIdentifier(ClaimsPrincipal user, IUserIdProvider userIdProvider)
+    {
+        var previousState = t_userIdProviderUserState;
+        t_userIdProviderUserState = new UserIdProviderUserState(this, user);
+        try
+        {
+            return userIdProvider.GetUserId(this);
+        }
+        finally
+        {
+            t_userIdProviderUserState = previousState;
+        }
+    }
+
+    internal void StageUserStateUpdate()
+    {
+        Volatile.Write(ref _stagingUserStateUpdate, true);
+    }
+
+    internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier)
+    {
+        Volatile.Write(ref _userIdentifier, userIdentifier);
+        Volatile.Write(ref _hubCallerContext, new DefaultHubCallerContext(this, user, userIdentifier));
+        Volatile.Write(ref _stagingUserStateUpdate, false);
+    }
+
+    internal void ClearStagedUserStateUpdate()
+    {
+        Volatile.Write(ref _stagingUserStateUpdate, false);
+    }
+
+    private sealed class UserIdProviderUserState
+    {
+        public UserIdProviderUserState(HubConnectionContext connection, ClaimsPrincipal user)
+        {
+            Connection = connection;
+            User = user;
+        }
+
+        public HubConnectionContext Connection { get; }
+
+        public ClaimsPrincipal User { get; }
+    }
 
     /// <summary>
     /// Gets the protocol used by this connection.
@@ -605,7 +697,8 @@ public partial class HubConnectionContext
 
                                 _cachedPingMessage = Protocol.GetMessageBytes(PingMessage.Instance);
 
-                                UserIdentifier = userIdProvider.GetUserId(this);
+                                var user = Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal();
+                                ApplyUserState(user, GetUserIdentifier(user, userIdProvider));
 
                                 // != true needed because it could be null (which we treat as false)
                                 if (Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive != true)

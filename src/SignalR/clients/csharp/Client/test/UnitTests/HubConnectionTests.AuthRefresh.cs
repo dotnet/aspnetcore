@@ -48,6 +48,12 @@ public partial class HubConnectionTests
             return (Timer)field.GetValue(hubConnection);
         }
 
+        private static TimeSpan GetLastAuthRefreshDelay(HubConnection hubConnection)
+        {
+            var field = typeof(HubConnection).GetField("_lastAuthRefreshDelay", BindingFlags.NonPublic | BindingFlags.Instance);
+            return (TimeSpan)field.GetValue(hubConnection);
+        }
+
         [Fact]
         public async Task RefreshAuthAsyncThrowsWhenConnectionNotActive()
         {
@@ -451,6 +457,254 @@ public partial class HubConnectionTests
                     await hubConnection.RefreshAuthAsync().DefaultTimeout();
 
                     Assert.Null(GetAuthRefreshTimer(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StartSchedulesFallbackTimerWhenNoInitialTtlButFallbackIntervalSet()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = null };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.NotNull(GetAuthRefreshTimer(hubConnection));
+                    Assert.Equal(TimeSpan.FromMinutes(20), GetLastAuthRefreshDelay(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StartIgnoresFallbackIntervalWhenServerReportsTtl()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = 3600 };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.NotNull(GetAuthRefreshTimer(hubConnection));
+                    // Server TTL (3600s) minus the default 5 minute lead time wins over the 20 minute fallback.
+                    Assert.Equal(TimeSpan.FromSeconds(3600) - TimeSpan.FromMinutes(5), GetLastAuthRefreshDelay(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StartFloorsFallbackIntervalToMinimum()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = null };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromSeconds(5));
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.NotNull(GetAuthRefreshTimer(hubConnection));
+                    Assert.Equal(TimeSpan.FromSeconds(30), GetLastAuthRefreshDelay(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StartDoesNotScheduleFallbackTimerWhenFeatureMissing()
+        {
+            using (StartVerifiableLog())
+            {
+                var connection = new TestConnection();
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StartDoesNotScheduleFallbackTimerWhenAutoRefreshDisabled()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = null };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthRefresh(o =>
+                    {
+                        o.EnableAutoRefresh = false;
+                        o.FallbackRefreshInterval = TimeSpan.FromMinutes(20);
+                    });
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RefreshReschedulesFallbackTimerWhenServerReturnsNoTtl()
+        {
+            using (StartVerifiableLog())
+            {
+                // Server never reports a token lifetime, so the fallback interval must keep the timer armed
+                // across refreshes rather than firing once and stopping.
+                var feature = new FakeAuthRefreshFeature
+                {
+                    InitialTokenLifetimeSeconds = null,
+                    NextTtlSeconds = null,
+                };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+                    var beforeTimer = GetAuthRefreshTimer(hubConnection);
+                    Assert.NotNull(beforeTimer);
+
+                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                    var afterTimer = GetAuthRefreshTimer(hubConnection);
+
+                    Assert.NotNull(afterTimer);
+                    Assert.NotSame(beforeTimer, afterTimer);
+                    Assert.Equal(TimeSpan.FromMinutes(20), GetLastAuthRefreshDelay(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RefreshDoesNotRescheduleWhenServerReturnsNoTtlAndNoFallback()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthRefreshFeature
+                {
+                    InitialTokenLifetimeSeconds = 3600,
+                    NextTtlSeconds = null,
+                };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection);
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+                    var beforeTimer = GetAuthRefreshTimer(hubConnection);
+                    Assert.NotNull(beforeTimer);
+
+                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
+
+                    // No new TTL and no fallback interval means the timer is not re-armed; the existing
+                    // one-shot timer is left in place (and will simply not fire again after it elapses).
+                    Assert.Same(beforeTimer, GetAuthRefreshTimer(hubConnection));
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().DefaultTimeout();
+                    await connection.DisposeAsync().DefaultTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RefreshUsesServerTtlOverFallbackIntervalWhenRescheduling()
+        {
+            using (StartVerifiableLog())
+            {
+                var feature = new FakeAuthRefreshFeature
+                {
+                    InitialTokenLifetimeSeconds = null,
+                    NextTtlSeconds = 7200,
+                };
+                var connection = new TestConnection();
+                connection.Features.Set<IAuthRefreshFeature>(feature);
+
+                var hubConnection = BuildHubConnection(connection, builder =>
+                {
+                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                });
+                try
+                {
+                    await hubConnection.StartAsync().DefaultTimeout();
+
+                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
+
+                    // The refresh returned a server TTL (7200s), which wins over the 20 minute fallback.
+                    Assert.Equal(TimeSpan.FromSeconds(7200) - TimeSpan.FromMinutes(5), GetLastAuthRefreshDelay(hubConnection));
                 }
                 finally
                 {

@@ -91,6 +91,8 @@ public partial class HubConnection : IAsyncDisposable
 
     // Auth refresh fields
     private Timer? _authRefreshTimer;
+    // The delay the auth-refresh timer was last armed with. Exposed for tests to assert scheduling.
+    private TimeSpan _lastAuthRefreshDelay;
     private readonly AuthRefreshOptions _authRefreshOptions;
 
     /// <summary>
@@ -553,13 +555,18 @@ public partial class HubConnection : IAsyncDisposable
         }
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
-        // Schedule automatic auth refresh if enabled and the server provided a token lifetime
+        // Schedule automatic auth refresh if enabled. The server-reported token lifetime takes
+        // precedence; when none is reported, fall back to the configured interval (if any).
         if (_authRefreshOptions.EnableAutoRefresh)
         {
             var authRefreshFeature = connection.Features.Get<IAuthRefreshFeature>();
             if (authRefreshFeature?.InitialTokenLifetimeSeconds is > 0)
             {
                 ScheduleAuthRefresh(authRefreshFeature.InitialTokenLifetimeSeconds.Value);
+            }
+            else if (authRefreshFeature is not null && _authRefreshOptions.FallbackRefreshInterval is { } fallbackInterval)
+            {
+                ScheduleAuthRefreshAt(fallbackInterval);
             }
         }
 
@@ -610,10 +617,19 @@ public partial class HubConnection : IAsyncDisposable
             throw;
         }
 
-        // Reschedule the auto-refresh timer if enabled and we got a new TTL
-        if (_authRefreshOptions.EnableAutoRefresh && newTtl is > 0)
+        // Reschedule the auto-refresh timer. The server-reported lifetime takes precedence; when the
+        // server does not report one, fall back to the configured interval (if any) so auto-refresh
+        // keeps firing.
+        if (_authRefreshOptions.EnableAutoRefresh)
         {
-            ScheduleAuthRefresh(newTtl.Value);
+            if (newTtl is > 0)
+            {
+                ScheduleAuthRefresh(newTtl.Value);
+            }
+            else if (_authRefreshOptions.FallbackRefreshInterval is { } fallbackInterval)
+            {
+                ScheduleAuthRefreshAt(fallbackInterval);
+            }
         }
 
         var refreshedCallback = _authRefreshOptions.OnRefreshed;
@@ -639,9 +655,6 @@ public partial class HubConnection : IAsyncDisposable
     /// </summary>
     internal void ScheduleAuthRefresh(int tokenLifetimeSeconds)
     {
-        // Cancel any existing timer
-        _authRefreshTimer?.Dispose();
-
         var refreshBefore = _authRefreshOptions.RefreshBeforeExpiration;
         var ttl = TimeSpan.FromSeconds(tokenLifetimeSeconds);
         TimeSpan refreshIn;
@@ -656,6 +669,18 @@ public partial class HubConnection : IAsyncDisposable
             refreshIn = ttl - refreshBefore;
         }
 
+        ScheduleAuthRefreshAt(refreshIn);
+    }
+
+    /// <summary>
+    /// Arms the one-shot auth-refresh timer to fire after <paramref name="refreshIn"/>, replacing any
+    /// existing timer. A minimum interval is enforced to avoid spamming the server.
+    /// </summary>
+    internal void ScheduleAuthRefreshAt(TimeSpan refreshIn)
+    {
+        // Cancel any existing timer
+        _authRefreshTimer?.Dispose();
+
         // Enforce a minimum interval to prevent spamming the server
         var minimumRefreshInterval = TimeSpan.FromSeconds(30);
         if (refreshIn < minimumRefreshInterval)
@@ -668,6 +693,7 @@ public partial class HubConnection : IAsyncDisposable
             this,
             refreshIn,
             Timeout.InfiniteTimeSpan); // One-shot timer
+        _lastAuthRefreshDelay = refreshIn;
     }
 
     private async Task OnAuthRefreshTimerFired()

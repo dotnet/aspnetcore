@@ -98,6 +98,25 @@ public class NegotiateProtocolTests
     }
 
     [Fact]
+    public void WriteNegotiateResponseWithNullTransferFormats()
+    {
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                AvailableTransports = new List<AvailableTransport>
+                {
+                    new AvailableTransport()
+                }
+            }, writer);
+
+            string json = Encoding.UTF8.GetString(writer.ToArray());
+
+            Assert.Equal("{\"negotiateVersion\":0,\"availableTransports\":[{\"transport\":null,\"transferFormats\":[]}]}", json);
+        }
+    }
+
+    [Fact]
     public void WriteNegotiateResponseIncludesTokenLifetimeSecondsWhenSet()
     {
         using (MemoryBufferWriter writer = new MemoryBufferWriter())
