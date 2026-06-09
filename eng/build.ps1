@@ -415,6 +415,20 @@ if ($BinaryLog) {
 # Capture MSBuild crash logs
 $env:MSBUILDDEBUGPATH = $LogDir
 
+pushd
+$patch_file1 = "../upstream-patch.diff"
+$patch_file2 = "../msgpack-fix-full.diff"
+cd $RepoRoot/src/submodules/MessagePack-CSharp
+# Only apply patches if they haven't been applied yet
+$patch_check_file = "$RepoRoot/src/submodules/MessagePack-CSharp/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackReader.cs"
+$searchWord = "TrySkipNextArray"
+$found = Select-String -Path $patch_check_file -Pattern $searchWord
+if ($found) {
+    git apply $patch_file1 -v
+    git apply $patch_file2 -v
+}
+popd
+
 $local:exit_code = $null
 try {
     # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine

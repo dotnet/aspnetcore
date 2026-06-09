@@ -430,8 +430,11 @@ internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem,
             for (var i = 0; i < pathSegment.Length; i++)
             {
                 var ch = pathSegment[i];
-                // The header parser should already be checking this
-                Debug.Assert(32 < ch && ch < 127);
+                if (ch > byte.MaxValue)
+                {
+                    ResetAndAbort(new ConnectionAbortedException(CoreStrings.FormatHttp2StreamErrorPathInvalid(RawTarget)), Http2ErrorCode.PROTOCOL_ERROR);
+                    return false;
+                }
                 pathBuffer[i] = (byte)ch;
             }
 

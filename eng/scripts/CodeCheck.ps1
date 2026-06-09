@@ -213,7 +213,7 @@ try {
 
     # Temporary: Disable check for blazor js file and nuget.config (updated automatically for
     # internal builds)
-    $changedFilesExclusions = @("src/Components/Web.JS/dist/Release/blazor.server.js", "src/Components/Web.JS/dist/Release/blazor.web.js", "NuGet.config")
+    $changedFilesExclusions = @("src/Components/Web.JS/dist/Release/blazor.server.js", "src/Components/Web.JS/dist/Release/blazor.web.js", "NuGet.config", "src/submodules/MessagePack-CSharp")
 
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
