@@ -103,9 +103,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal(nameof(UnionPet), jsonRef.Reference.Id);
 
             // Peek through the ref into the actual UnionPet component to verify the union
-            // shape (anyOf over UnionPetKitten + UnionPetPuppy) is preserved as-is. STJ
-            // names union case components by prefixing the parent union name to disambiguate
-            // from any standalone Kitten/Puppy schemas that might exist in the document.
+            // shape (anyOf over Kitten + Puppy) is preserved as-is. Union case branches
+            // are promoted to top-level components using the case type's own name (e.g. "Kitten"),
+            // not a parent-prefixed name, so a standalone Kitten endpoint can share the same component.
             Assert.True(document.Components.Schemas.TryGetValue(nameof(UnionPet), out var unionComponent));
             Assert.NotNull(unionComponent.AnyOf);
             Assert.Equal(2, unionComponent.AnyOf.Count);
@@ -113,8 +113,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 .OfType<OpenApiSchemaReference>()
                 .Select(s => s.Reference.Id)
                 .ToArray();
-            Assert.Contains(nameof(UnionPet) + nameof(Kitten), unionBranchIds);
-            Assert.Contains(nameof(UnionPet) + nameof(Puppy), unionBranchIds);
+            Assert.Contains(nameof(Kitten), unionBranchIds);
+            Assert.Contains(nameof(Puppy), unionBranchIds);
 
             // text/plain must be a direct $ref to Error — independent of the JSON branch.
             Assert.True(response.Value.Content.TryGetValue("text/plain", out var textContent));

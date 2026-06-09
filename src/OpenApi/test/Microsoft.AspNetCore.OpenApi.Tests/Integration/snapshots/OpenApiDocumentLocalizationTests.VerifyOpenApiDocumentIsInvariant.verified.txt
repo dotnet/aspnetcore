@@ -1682,6 +1682,25 @@
         }
       }
     },
+    "/unions/kitten-standalone": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kitten"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/getbyidandname/{id}/{name}": {
       "get": {
         "tags": [
@@ -2473,6 +2492,22 @@
           ]
         }
       },
+      "Kitten": {
+        "required": [
+          "name",
+          "lives"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lives": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
       "LocationContainer": {
         "required": [
           "location"
@@ -2805,6 +2840,21 @@
           }
         }
       },
+      "Puppy": {
+        "required": [
+          "name",
+          "breed"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          }
+        }
+      },
       "RefProfile": {
         "required": [
           "user"
@@ -3123,43 +3173,12 @@
         "type": "object",
         "anyOf": [
           {
-            "$ref": "#/components/schemas/UnionPetKitten"
+            "$ref": "#/components/schemas/Kitten"
           },
           {
-            "$ref": "#/components/schemas/UnionPetPuppy"
+            "$ref": "#/components/schemas/Puppy"
           }
         ]
-      },
-      "UnionPetKitten": {
-        "required": [
-          "name",
-          "lives"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "lives": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "UnionPetPuppy": {
-        "required": [
-          "name",
-          "breed"
-        ],
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "breed": {
-            "type": "string"
-          }
-        }
       },
       "WeatherForecastBase": {
         "required": [

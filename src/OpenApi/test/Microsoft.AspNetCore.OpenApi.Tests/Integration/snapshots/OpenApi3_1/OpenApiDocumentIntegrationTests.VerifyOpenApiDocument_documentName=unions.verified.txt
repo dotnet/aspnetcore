@@ -183,6 +183,25 @@
           }
         }
       }
+    },
+    "/unions/kitten-standalone": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kitten"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -202,29 +221,7 @@
           }
         }
       },
-      "UnionIntString": {
-        "anyOf": [
-          {
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "type": "string"
-          }
-        ]
-      },
-      "UnionPet": {
-        "type": "object",
-        "anyOf": [
-          {
-            "$ref": "#/components/schemas/UnionPetKitten"
-          },
-          {
-            "$ref": "#/components/schemas/UnionPetPuppy"
-          }
-        ]
-      },
-      "UnionPetKitten": {
+      "Kitten": {
         "required": [
           "name",
           "lives"
@@ -240,7 +237,7 @@
           }
         }
       },
-      "UnionPetPuppy": {
+      "Puppy": {
         "required": [
           "name",
           "breed"
@@ -254,6 +251,28 @@
             "type": "string"
           }
         }
+      },
+      "UnionIntString": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "UnionPet": {
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Kitten"
+          },
+          {
+            "$ref": "#/components/schemas/Puppy"
+          }
+        ]
       }
     }
   },

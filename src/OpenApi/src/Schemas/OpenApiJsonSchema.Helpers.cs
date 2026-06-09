@@ -341,6 +341,11 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata.Add(OpenApiConstants.SchemaId, reader.GetString() ?? string.Empty);
                 break;
+            case OpenApiConstants.SchemaIsUnion:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.SchemaIsUnion, reader.GetBoolean());
+                break;
             case OpenApiConstants.NullableProperty:
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();

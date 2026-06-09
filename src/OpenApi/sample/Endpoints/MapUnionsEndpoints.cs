@@ -40,6 +40,10 @@ public static class UnionsEndpoints
             .Produces<UnionPet>(StatusCodes.Status200OK, "application/json")
             .Produces<string>(StatusCodes.Status200OK, "text/plain");
 
+        // Standalone Kitten endpoint - demonstrates that a union case type also
+        // used directly elsewhere registers as a separate component schema.
+        unions.MapGet("/kitten-standalone", () => new Kitten("Whiskers", 9));
+
         return endpointRouteBuilder;
     }
 }

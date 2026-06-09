@@ -344,9 +344,15 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.AnyOf is { Count: > 0 })
         {
+            // For union types, do not prefix branch components with the union's name.
+            // Union case schemas are structurally identical to the standalone case type
+            // (no `$type` discriminator like polymorphism adds), so they should reuse the
+            // standalone component name (e.g. "Kitten") instead of producing a duplicate
+            // component (e.g. "UnionPetKitten") with the same content.
+            var branchPrefix = schema.IsUnion() ? null : schemaId;
             for (var i = 0; i < schema.AnyOf.Count; i++)
             {
-                schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, schemaId);
+                schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, branchPrefix);
             }
         }
 
