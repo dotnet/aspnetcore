@@ -2372,7 +2372,6 @@
       "JsonPatchDocument": {
         "type": "array",
         "items": {
-          "type": "object",
           "oneOf": [
             {
               "required": [
@@ -3075,7 +3074,6 @@
         }
       },
       "UnionIntString": {
-        "type": "object",
         "anyOf": [
           {
             "type": "integer",

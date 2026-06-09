@@ -1049,7 +1049,6 @@
       "JsonPatchDocument": {
         "type": "array",
         "items": {
-          "type": "object",
           "oneOf": [
             {
               "required": [

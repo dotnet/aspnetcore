@@ -203,7 +203,6 @@
         }
       },
       "UnionIntString": {
-        "type": "object",
         "anyOf": [
           {
             "type": "integer",
