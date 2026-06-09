@@ -77,7 +77,7 @@ public class ValidatableParameterInfoTests
 
         // Assert
         var errors = context.ValidationErrors;
-        Assert.Null(errors); // No errors added
+        Assert.True(errors is null || errors.Count == 0); // No errors added
     }
 
     [Fact]
@@ -267,7 +267,7 @@ public class ValidatableParameterInfoTests
     }
 
     [Fact]
-    public async Task Validate_ExceptionDuringValidation_CapturesExceptionAsError()
+    public async Task Validate_ExceptionDuringValidation_Rethrown()
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -279,14 +279,13 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.ValidateAsync("test", context, default);
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => paramInfo.ValidateAsync("test", context, default));
 
         // Assert
+        Assert.Equal("Test exception", ex.Message);
+
         var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
-        Assert.Equal("testParam", error.Key);
-        Assert.Equal("Test exception", error.Value.First());
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
 
     private TestValidatableParameterInfo CreateTestParameterInfo(

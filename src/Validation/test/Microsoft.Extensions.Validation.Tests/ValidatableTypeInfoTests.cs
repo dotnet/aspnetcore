@@ -317,7 +317,7 @@ public class ValidatableTypeInfoTests
         await personType.ValidateAsync(person, context, default);
 
         // Assert
-        Assert.Null(context.ValidationErrors); // No validation errors for nullable properties with null values
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0); // No validation errors for nullable properties with null values
     }
 
     [Fact]

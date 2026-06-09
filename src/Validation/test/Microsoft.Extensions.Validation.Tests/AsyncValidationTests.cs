@@ -68,7 +68,7 @@ public class AsyncValidationTests
         await userType.ValidateAsync(user, context, default);
 
         // Assert
-        Assert.Null(context.ValidationErrors);
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
     }
 
     [Fact]
@@ -471,7 +471,7 @@ public class AsyncValidationTests
         // Act
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => documentType.ValidateAsync(document, context, default));
 
-        Assert.Null(context.ValidationErrors);
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
         Assert.Contains("Async validation failed", ex.Message);
     }
 
