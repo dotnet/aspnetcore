@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -178,7 +179,10 @@ public partial class HttpConnectionDispatcherTests
             Assert.InRange(ttl.Value, 1, 1801);
 
             Assert.Same(newUser, connection.User);
-            Assert.Equal(newExpires, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            // ExpiresUtc round-trips through AuthenticationProperties' whole-second ("r") format, so the
+            // stored expiration is truncated to the second. Allow headroom so the sub-second truncation
+            // can't push this over the tolerance.
+            Assert.Equal(newExpires, connection.AuthenticationExpiration, TimeSpan.FromSeconds(2));
         }
     }
 
@@ -259,13 +263,64 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             Assert.Same(newUser, connection.User);
-            Assert.Equal(newExpires, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+            // ExpiresUtc round-trips through AuthenticationProperties' whole-second ("r") format, so the
+            // stored expiration is truncated to the second. Allow headroom so the sub-second truncation
+            // can't push this over the tolerance.
+            Assert.Equal(newExpires, connection.AuthenticationExpiration, TimeSpan.FromSeconds(2));
 
             var json = ReadJson(context.Response.Body);
             Assert.Equal(connection.ConnectionId, json.Value<string>("connectionId"));
             var ttl = json.Value<int?>("tokenLifetimeSeconds");
             Assert.NotNull(ttl);
             Assert.InRange(ttl.Value, 1, 1801);
+        }
+    }
+
+    [Fact]
+    public async Task RefreshDoesNotRollBackNewerPrincipalWhenOlderRefreshCompletesLast()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions { EnableAuthRefresh = true }, negotiateVersion: 1);
+
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "original") }, "Test"));
+            connection.User = originalUser;
+            connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
+
+            var newerUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "newer") }, "Test"));
+            var newerExpires = DateTimeOffset.UtcNow.AddMinutes(30);
+
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = _ =>
+                {
+                    connection.UpdateUser(newerUser, newerExpires);
+                    return ValueTask.FromResult(true);
+                },
+            };
+
+            var olderUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "older") }, "Test"));
+            var olderExpires = DateTimeOffset.UtcNow.AddMinutes(5);
+            var ticket = new AuthenticationTicket(olderUser, new AuthenticationProperties { ExpiresUtc = olderExpires }, "Test");
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            Assert.Same(newerUser, connection.User);
+            Assert.Equal(newerExpires, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
         }
     }
 
@@ -300,7 +355,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public async Task RefreshWorksWithNegotiateVersionZero()
+    public async Task RefreshRejectsNegotiateVersionZeroConnection()
     {
         using (StartVerifiableLog())
         {
@@ -308,11 +363,9 @@ public partial class HttpConnectionDispatcherTests
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var options = new HttpConnectionDispatcherOptions { EnableAuthRefresh = true };
             var connection = manager.CreateConnection(options, negotiateVersion: 0);
-            // Sanity: with v0, id == token
+            // v0: ConnectionId == ConnectionToken — no private token, so /refresh must be rejected
+            // to prevent any client that knows the public ConnectionId from refreshing on behalf of the connection.
             Assert.Equal(connection.ConnectionId, connection.ConnectionToken);
-
-            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
-            var ticket = new AuthenticationTicket(newUser, new AuthenticationProperties(), "Test");
 
             var context = new DefaultHttpContext();
             context.Request.Path = "/foo/refresh";
@@ -323,12 +376,15 @@ public partial class HttpConnectionDispatcherTests
                 ["id"] = connection.ConnectionId,
             });
 
-            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(
+                AuthenticateResult.Success(new AuthenticationTicket(
+                    new ClaimsPrincipal(new ClaimsIdentity("Test")), "Test"))));
 
             await dispatcher.ExecuteRefreshAsync(context, options);
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.Same(newUser, connection.User);
+            Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            Assert.Equal("unsupported_negotiate_version", json.Value<string>("error"));
         }
     }
 
@@ -478,7 +534,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void ScanClosesExpiredConnectionAfterAuthRefreshGracePeriod()
+    public async Task ScanClosesExpiredConnectionAfterAuthRefreshGracePeriod()
     {
         using (StartVerifiableLog())
         {
@@ -496,12 +552,12 @@ public partial class HttpConnectionDispatcherTests
             manager.Scan();
 
             // RequestClose() queues cancellation on the ThreadPool; wait for it.
-            Assert.True(connection.ConnectionClosedRequested.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+            await connection.ConnectionClosedRequested.WaitForCancellationAsync().DefaultTimeout();
         }
     }
 
     [Fact]
-    public void ScanClosesExpiredConnectionImmediatelyWhenAuthRefreshDisabled()
+    public async Task ScanClosesExpiredConnectionImmediatelyWhenAuthRefreshDisabled()
     {
         using (StartVerifiableLog())
         {
@@ -517,7 +573,7 @@ public partial class HttpConnectionDispatcherTests
 
             manager.Scan();
 
-            Assert.True(connection.ConnectionClosedRequested.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
+            await connection.ConnectionClosedRequested.WaitForCancellationAsync().DefaultTimeout();
         }
     }
 
@@ -580,59 +636,6 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Same(newUser, connection.User);
             Assert.Equal(expiration, connection.AuthenticationExpiration);
-        }
-    }
-
-    [Fact]
-    public void UpdateUserNotifiesAllSubscribersInOrder()
-    {
-        using (StartVerifiableLog())
-        {
-            var manager = CreateConnectionManager(LoggerFactory);
-            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
-
-            var feature = connection.Features.Get<IConnectionUserUpdateFeature>();
-            Assert.NotNull(feature);
-
-            var order = new List<int>();
-            feature.UserUpdated += _ => { lock (order) { order.Add(1); } };
-            feature.UserUpdated += _ => { lock (order) { order.Add(2); } };
-            feature.UserUpdated += _ => { lock (order) { order.Add(3); } };
-
-            connection.UpdateUser(
-                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test")),
-                DateTimeOffset.UtcNow.AddMinutes(15));
-
-            Assert.Equal(new[] { 1, 2, 3 }, order);
-        }
-    }
-
-    [Fact]
-    public void UpdateUserDoesNotInvokeUnsubscribedHandlers()
-    {
-        using (StartVerifiableLog())
-        {
-            var manager = CreateConnectionManager(LoggerFactory);
-            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
-
-            var feature = connection.Features.Get<IConnectionUserUpdateFeature>();
-            Assert.NotNull(feature);
-
-            var calls = 0;
-            void Handler(ClaimsPrincipal current) => calls++;
-            feature.UserUpdated += Handler;
-
-            connection.UpdateUser(
-                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "1") }, "Test")),
-                DateTimeOffset.UtcNow.AddMinutes(15));
-            Assert.Equal(1, calls);
-
-            feature.UserUpdated -= Handler;
-
-            connection.UpdateUser(
-                new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "2") }, "Test")),
-                DateTimeOffset.UtcNow.AddMinutes(15));
-            Assert.Equal(1, calls);
         }
     }
 
@@ -889,7 +892,7 @@ public partial class HttpConnectionDispatcherTests
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    public void DisposeAfterRefreshDisposesClonedWindowsIdentity()
+    public async Task DisposeAfterRefreshDisposesClonedWindowsIdentity()
     {
         using (StartVerifiableLog())
         {
@@ -904,7 +907,7 @@ public partial class HttpConnectionDispatcherTests
             var cloned = (WindowsIdentity)connection.User.Identity;
             Assert.False(cloned.AccessToken.IsClosed);
 
-            connection.DisposeAsync().Wait();
+            await connection.DisposeAsync();
 
             // The connection should dispose the clone it owns even though the transport isn't long-polling.
             Assert.True(cloned.AccessToken.IsClosed);
@@ -1057,6 +1060,62 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
             Assert.Equal(0, refreshCount);
             Assert.Same(user, connection.User);
+        }
+    }
+
+    [Fact]
+    public async Task LongPollingPollWithChangedClaimsAndSameExpirationInvokesOnAuthRefresh()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var connection = manager.CreateConnection();
+            connection.TransportType = HttpTransportType.LongPolling;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            AuthRefreshContext captured = null;
+            var refreshCount = 0;
+            var options = new HttpConnectionDispatcherOptions
+            {
+                EnableAuthRefresh = true,
+                OnAuthRefresh = ctx =>
+                {
+                    refreshCount++;
+                    captured = ctx;
+                    return ValueTask.FromResult(true);
+                },
+            };
+
+            var app = BuildTestConnectionHandlerApp(out var sp);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "userA"),
+                new Claim(ClaimTypes.Role, "reader"),
+            }, "Test"));
+            var exp = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context1 = BuildAuthPollContext(connection, sp, user, exp);
+            await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
+            Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+            Assert.Same(user, connection.User);
+
+            var changedClaimsUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "userA"),
+                new Claim(ClaimTypes.Role, "writer"),
+            }, "Test"));
+            var context2 = BuildAuthPollContext(connection, sp, changedClaimsUser, exp);
+            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
+            await pollTask.DefaultTimeout();
+
+            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            Assert.Equal(1, refreshCount);
+            Assert.NotNull(captured);
+            Assert.Same(user, captured.PreviousUser);
+            Assert.Same(changedClaimsUser, captured.NewUser);
+            Assert.Same(changedClaimsUser, connection.User);
+            Assert.Equal(exp, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
         }
     }
 

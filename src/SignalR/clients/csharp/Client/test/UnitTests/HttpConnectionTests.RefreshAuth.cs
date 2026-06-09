@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.InternalTesting;
@@ -63,7 +64,7 @@ public partial class HttpConnectionTests
                     {
                         await connection.StartAsync().DefaultTimeout();
                         currentToken = "new-token";
-                        await connection.RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
                     });
             }
 
@@ -126,7 +127,7 @@ public partial class HttpConnectionTests
                         await firstPollReceivedTcs.Task.DefaultTimeout();
 
                         currentToken = "new-token";
-                        await connection.RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
 
                         // Allow the next poll to be issued now that the cache should hold the refreshed token.
                         releaseFirstPollTcs.TrySetResult();
@@ -185,7 +186,7 @@ public partial class HttpConnectionTests
                     await firstPollReceivedTcs.Task.DefaultTimeout();
 
                     currentToken = "new-token";
-                    await Assert.ThrowsAsync<HttpRequestException>(() => connection.RefreshAuthAsync()).DefaultTimeout();
+                    await Assert.ThrowsAsync<HttpRequestException>(() => ((IAuthRefreshFeature)connection).RefreshAuthAsync()).DefaultTimeout();
 
                     // The rejected refresh must not have poisoned the cache; the next poll keeps the old token.
                     releaseFirstPollTcs.TrySetResult();
@@ -204,7 +205,7 @@ public partial class HttpConnectionTests
                 try
                 {
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                        () => connection.RefreshAuthAsync().DefaultTimeout());
+                        () => ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout());
                     Assert.Equal("Cannot refresh auth before the connection is started.", ex.Message);
                 }
                 finally
@@ -240,7 +241,7 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        var ttl = await connection.RefreshAuthAsync().DefaultTimeout();
+                        var ttl = await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
                         Assert.Equal(60, ttl);
                     });
             }
@@ -248,6 +249,54 @@ public partial class HttpConnectionTests
             var request = await refreshRequestTcs.Task.DefaultTimeout();
             Assert.Equal(HttpMethod.Post, request.Method);
             Assert.Equal(expectedRefreshUrl, request.RequestUri.ToString());
+        }
+
+        [Fact]
+        public async Task RefreshAuthAsyncPostsToOriginalEndpointAfterRedirect()
+        {
+            // When negotiate redirects the client (e.g. Azure SignalR Service), the transport connects to the
+            // redirected endpoint, but /refresh is part of the auth plane and must target the ORIGINAL server
+            // endpoint that owns authentication, not the redirected URL.
+            var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
+            var negotiateCount = 0;
+            testHttpHandler.OnNegotiate((request, _) =>
+            {
+                negotiateCount++;
+                if (negotiateCount == 1)
+                {
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK,
+                        "{\"url\":\"http://redirected.example/hub?existing=true\",\"accessToken\":\"redirect-token\"}");
+                }
+
+                return ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1));
+            });
+            testHttpHandler.OnLongPoll(_ => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+            testHttpHandler.OnLongPollDelete(_ => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));
+
+            var refreshRequestTcs = new TaskCompletionSource<HttpRequestMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+            OnRefresh(testHttpHandler, (request, _) =>
+            {
+                refreshRequestTcs.TrySetResult(request);
+                return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.OK, "{\"connectionId\":\"abc\",\"tokenLifetimeSeconds\":60}"));
+            });
+
+            using (var noErrorScope = new VerifyNoErrorsScope())
+            {
+                await WithConnectionAsync(
+                    CreateConnection(testHttpHandler, url: "http://original.example/hub", loggerFactory: noErrorScope.LoggerFactory),
+                    async connection =>
+                    {
+                        await connection.StartAsync().DefaultTimeout();
+                        // The transport followed the redirect to the redirected endpoint.
+                        Assert.Equal("http://redirected.example/hub", connection.RemoteEndPoint.ToString());
+
+                        var ttl = await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
+                        Assert.Equal(60, ttl);
+                    });
+            }
+            var request = await refreshRequestTcs.Task.DefaultTimeout();
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.Equal("http://original.example/hub/refresh?id=connection-token", request.RequestUri.ToString());
         }
 
         [Fact]
@@ -279,7 +328,7 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        await connection.RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
                     });
             }
 
@@ -312,7 +361,7 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        await connection.RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
                     });
             }
 
@@ -337,7 +386,7 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        var ttl = await connection.RefreshAuthAsync().DefaultTimeout();
+                        var ttl = await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
                         Assert.Null(ttl);
                     });
             }
@@ -361,7 +410,7 @@ public partial class HttpConnectionTests
                 {
                     await connection.StartAsync().DefaultTimeout();
                     await Assert.ThrowsAsync<HttpRequestException>(
-                        () => connection.RefreshAuthAsync().DefaultTimeout());
+                        () => ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout());
                 });
         }
 
@@ -380,7 +429,7 @@ public partial class HttpConnectionTests
                 {
                     await connection.StartAsync().DefaultTimeout();
                     var ex = await Assert.ThrowsAsync<HttpRequestException>(
-                        () => connection.RefreshAuthAsync().DefaultTimeout());
+                        () => ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout());
                     Assert.Equal("network down", ex.Message);
                 });
         }
@@ -407,7 +456,7 @@ public partial class HttpConnectionTests
                 {
                     await connection.StartAsync().DefaultTimeout();
                     using var cts = new CancellationTokenSource();
-                    var refreshTask = connection.RefreshAuthAsync(cts.Token);
+                    var refreshTask = ((IAuthRefreshFeature)connection).RefreshAuthAsync(cts.Token);
                     await requestReceivedTcs.Task.DefaultTimeout();
                     cts.Cancel();
                     await Assert.ThrowsAnyAsync<OperationCanceledException>(() => refreshTask.DefaultTimeout());

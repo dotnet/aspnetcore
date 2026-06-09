@@ -143,6 +143,13 @@ public class HttpConnectionDispatcherOptions
     /// Gets or sets the grace period after token expiration during which refresh requests are still accepted.
     /// Default is 5 minutes.
     /// </summary>
+    /// <remarks>
+    /// This only has an effect when <see cref="CloseOnAuthenticationExpiration"/> is <c>true</c>. That option
+    /// is what closes connections once their authentication expires; the grace period extends the close
+    /// deadline to <c>expiration + AuthRefreshGracePeriod</c> so an in-flight refresh can complete. When
+    /// <see cref="CloseOnAuthenticationExpiration"/> is <c>false</c> (the default), expired connections are
+    /// never force-closed, so this value is ignored.
+    /// </remarks>
     public TimeSpan AuthRefreshGracePeriod { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>

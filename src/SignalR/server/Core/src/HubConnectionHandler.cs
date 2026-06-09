@@ -152,7 +152,7 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         {
             // Serializes auth-refresh handling for this connection so concurrent refreshes don't race the re-key.
             var authRefreshLock = new SemaphoreSlim(1, 1);
-            userUpdatedHandler = _ => OnUserUpdated(connectionContext, authRefreshLock);
+            userUpdatedHandler = user => OnUserUpdated(connectionContext, user, authRefreshLock);
             userUpdateFeature.UserUpdated += userUpdatedHandler;
         }
 
@@ -175,23 +175,26 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
     }
 
-    private void OnUserUpdated(HubConnectionContext connection, SemaphoreSlim authRefreshLock)
+    private void OnUserUpdated(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authRefreshLock)
     {
         // Fire and forget; HandleUserUpdatedAsync serializes work per connection through authRefreshLock.
-        _ = HandleUserUpdatedAsync(connection, authRefreshLock);
+        _ = HandleUserUpdatedAsync(connection, user, authRefreshLock);
     }
 
-    private async Task HandleUserUpdatedAsync(HubConnectionContext connection, SemaphoreSlim authRefreshLock)
+    private async Task HandleUserUpdatedAsync(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authRefreshLock)
     {
         await authRefreshLock.WaitAsync();
         try
         {
             // Recompute inside the lock so a concurrent refresh observes the latest principal and identifier.
-            var newUserId = _userIdProvider.GetUserId(connection);
+            var newUserId = connection.GetUserIdentifier(user, _userIdProvider);
             if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
             {
                 var previousUserId = connection.UserIdentifier;
 
+                // Lifetime managers mutate connection.UserIdentifier while rekeying. Stage that mutation so
+                // hub-visible Context.User and Context.UserIdentifier are published atomically below.
+                connection.StageUserStateUpdate();
                 bool rekeyed;
                 try
                 {
@@ -202,6 +205,7 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                 catch (Exception ex)
                 {
                     Log.UserIdentifierRekeyFailed(_logger, previousUserId, newUserId, ex);
+                    connection.ClearStagedUserStateUpdate();
                     connection.Abort();
                     return;
                 }
@@ -211,12 +215,15 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
                     // The lifetime manager doesn't support changing a connection's user identifier, so the only
                     // safe option is to drop the connection rather than leave it reachable under a stale identifier.
                     Log.UserIdentifierChangedOnRefresh(_logger, previousUserId, newUserId);
+                    connection.ClearStagedUserStateUpdate();
                     connection.Abort();
                     return;
                 }
 
                 Log.UserIdentifierRekeyedOnRefresh(_logger, previousUserId, newUserId);
             }
+
+            connection.ApplyUserState(user, newUserId);
         }
         finally
         {

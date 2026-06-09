@@ -2037,6 +2037,9 @@ public partial class HubConnectionTests : FunctionalTestBase
                 .WithLoggerFactory(LoggerFactory)
                 .WithUrl(server.Url + "/default", options =>
                 {
+                    // /default is unauthenticated, so HeaderUserIdProvider finds no NameIdentifier claim
+                    // and falls back to this header. If /default ever gains an authenticated principal,
+                    // the provider would return the principal's NameIdentifier instead of "SuperAdmin".
                     options.Headers.Add(HeaderUserIdProvider.HeaderName, "SuperAdmin");
                 })
                 .Build();

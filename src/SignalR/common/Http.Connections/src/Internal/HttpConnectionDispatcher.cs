@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Json;
@@ -166,6 +167,16 @@ internal sealed partial class HttpConnectionDispatcher
 
         logScope.ConnectionId = connection.ConnectionId;
 
+        // Negotiate v0 connections have no private token (ConnectionId == ConnectionToken), so the
+        // caller would only need the public ConnectionId to POST to /refresh on behalf of any connection.
+        // Require v1+ (private token) to prevent unauthorized refreshes against known connection IDs.
+        if (string.Equals(connection.ConnectionId, connection.ConnectionToken, StringComparison.Ordinal))
+        {
+            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest,
+                "unsupported_negotiate_version", "Auth refresh requires negotiate version 1 or later.");
+            return;
+        }
+
         // Use the AuthenticateResult the authorization middleware already produced for this request.
         // The /refresh endpoint is stamped with the hub's authorization metadata, so the middleware
         // authenticates it against the endpoint's declared schemes and exposes the result via
@@ -195,7 +206,7 @@ internal sealed partial class HttpConnectionDispatcher
             }
         }
 
-        connection.UpdateUser(newPrincipal, newExpiration);
+        connection.UpdateUser(newPrincipal, newExpiration, requireMonotonicExpiration: true);
 
         // Compute TTL for the response
         int? tokenLifetimeSeconds = null;
@@ -209,17 +220,18 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         // Write the refresh response
+        // Don't use thread static instance here because writer is used with async
         var writer = new MemoryBufferWriter();
         try
         {
             using var jsonWriter = new Utf8JsonWriter((IBufferWriter<byte>)writer);
             jsonWriter.WriteStartObject();
-            jsonWriter.WriteString(JsonEncodedText.Encode("connectionId"), connection.ConnectionId);
-            jsonWriter.WriteString(JsonEncodedText.Encode("refreshedAt"),
+            jsonWriter.WriteString("connectionId", connection.ConnectionId);
+            jsonWriter.WriteString("refreshedAt",
                 DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
             if (tokenLifetimeSeconds.HasValue)
             {
-                jsonWriter.WriteNumber(JsonEncodedText.Encode("tokenLifetimeSeconds"), tokenLifetimeSeconds.Value);
+                jsonWriter.WriteNumber("tokenLifetimeSeconds", tokenLifetimeSeconds.Value);
             }
             jsonWriter.WriteEndObject();
             jsonWriter.Flush();
@@ -238,13 +250,14 @@ internal sealed partial class HttpConnectionDispatcher
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
 
+        // Don't use thread static instance here because writer is used with async
         var writer = new MemoryBufferWriter();
         try
         {
             using var jsonWriter = new Utf8JsonWriter((IBufferWriter<byte>)writer);
             jsonWriter.WriteStartObject();
-            jsonWriter.WriteString(JsonEncodedText.Encode("error"), error);
-            jsonWriter.WriteString(JsonEncodedText.Encode("error_description"), description);
+            jsonWriter.WriteString("error", error);
+            jsonWriter.WriteString("error_description", description);
             jsonWriter.WriteEndObject();
             jsonWriter.Flush();
 
@@ -279,6 +292,95 @@ internal sealed partial class HttpConnectionDispatcher
         }
 
         return (true, null);
+    }
+
+    private static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
+    {
+        var currentIdentities = current.Identities.ToArray();
+        var incomingIdentities = incoming.Identities.ToArray();
+        if (currentIdentities.Length != incomingIdentities.Length)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < currentIdentities.Length; i++)
+        {
+            if (!ClaimsIdentityContentEquals(currentIdentities[i], incomingIdentities[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool ClaimsIdentityContentEquals(ClaimsIdentity current, ClaimsIdentity incoming)
+    {
+        if (!string.Equals(current.AuthenticationType, incoming.AuthenticationType, StringComparison.Ordinal)
+            || !string.Equals(current.NameClaimType, incoming.NameClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.RoleClaimType, incoming.RoleClaimType, StringComparison.Ordinal)
+            || !string.Equals(current.Label, incoming.Label, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var currentClaims = current.Claims.ToArray();
+        var incomingClaims = incoming.Claims.ToArray();
+        if (currentClaims.Length != incomingClaims.Length)
+        {
+            return false;
+        }
+
+        Array.Sort(currentClaims, CompareClaims);
+        Array.Sort(incomingClaims, CompareClaims);
+
+        for (var i = 0; i < currentClaims.Length; i++)
+        {
+            if (!ClaimContentEquals(currentClaims[i], incomingClaims[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static int CompareClaims(Claim? current, Claim? incoming)
+    {
+        var result = string.CompareOrdinal(current?.Type, incoming?.Type);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        result = string.CompareOrdinal(current?.Value, incoming?.Value);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        result = string.CompareOrdinal(current?.ValueType, incoming?.ValueType);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        result = string.CompareOrdinal(current?.Issuer, incoming?.Issuer);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        return string.CompareOrdinal(current?.OriginalIssuer, incoming?.OriginalIssuer);
+    }
+
+    private static bool ClaimContentEquals(Claim current, Claim incoming)
+    {
+        return string.Equals(current.Type, incoming.Type, StringComparison.Ordinal)
+            && string.Equals(current.Value, incoming.Value, StringComparison.Ordinal)
+            && string.Equals(current.ValueType, incoming.ValueType, StringComparison.Ordinal)
+            && string.Equals(current.Issuer, incoming.Issuer, StringComparison.Ordinal)
+            && string.Equals(current.OriginalIssuer, incoming.OriginalIssuer, StringComparison.Ordinal);
     }
 
     private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
@@ -814,9 +916,10 @@ internal sealed partial class HttpConnectionDispatcher
 
         var useAuthRefreshPath = false;
         var skipUserUpdate = false;
-        if (connection.User is not null && newPrincipal is not null)
+        var currentUser = connection.User;
+        if (currentUser is not null && newPrincipal is not null)
         {
-            var originalName = connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var originalName = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var newName = newPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (originalName != newName)
             {
@@ -824,10 +927,11 @@ internal sealed partial class HttpConnectionDispatcher
                 Log.UserNameChanged(_logger, originalName, newName);
             }
 
-            // A refreshed token presents either a different subject or a different expiration; a poll that
-            // carries the same token (same subject and expiration) is not treated as a refresh so we don't
+            // A refreshed token presents either different claims or a different expiration; a poll that
+            // carries the same token (same claims and expiration) is not treated as a refresh so we don't
             // run the callback or fire UserUpdated on every poll.
-            var principalChanged = originalName != newName || newExpiration != connection.AuthenticationExpiration;
+            var principalChanged = !ClaimsPrincipalContentEquals(currentUser, newPrincipal)
+                || newExpiration != connection.AuthenticationExpiration;
 
             // A poll that arrives carrying an older token than the one already applied (e.g. a poll that raced
             // an explicit /refresh) is stale: applying it would roll the connection back to an older identity.
@@ -840,7 +944,7 @@ internal sealed partial class HttpConnectionDispatcher
             var authRefreshEligible = options.EnableAuthRefresh
                 && transportType == HttpTransportType.LongPolling
                 && newPrincipal.Identity is not WindowsIdentity
-                && connection.User.Identity is not WindowsIdentity;
+                && currentUser.Identity is not WindowsIdentity;
 
             if (authRefreshEligible)
             {
