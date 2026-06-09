@@ -5,6 +5,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformCommandLineArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --report-trx</TestingPlatformCommandLineArguments>
     <IsPackable>false</IsPackable>
     <!-- MSTest.TestAdapter must be listed as an explicit PackageReference (not Reference) so
          the version is pinned to MSTest.TestFramework; DisablePackageReferenceRestrictions
