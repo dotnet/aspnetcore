@@ -202,46 +202,10 @@ public class BlazorGatewayTests
             or HttpStatusCode.PermanentRedirect;
 
     private static Task<GatewayUnderTest> StartGatewayAsync(string environment) =>
-        StartGatewayAsync(environment, new Dictionary<string, string?>());
+        GatewayTestHelpers.StartGatewayAsync(environment);
 
-    private static async Task<GatewayUnderTest> StartGatewayAsync(
+    private static Task<GatewayUnderTest> StartGatewayAsync(
         string environment,
-        Dictionary<string, string?> configuration)
-    {
-        var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = environment,
-        });
-
-        if (configuration.Count > 0)
-        {
-            builder.Configuration.AddInMemoryCollection(configuration);
-        }
-
-        builder.WebHost.UseTestServer();
-
-        var app = BlazorGateway.BuildWebHost(builder);
-        await app.StartAsync();
-
-        return new GatewayUnderTest(app);
-    }
-
-    private sealed class GatewayUnderTest : IAsyncDisposable
-    {
-        public GatewayUnderTest(WebApplication app)
-        {
-            App = app;
-            Client = app.GetTestClient();
-        }
-
-        public WebApplication App { get; }
-
-        public HttpClient Client { get; }
-
-        public async ValueTask DisposeAsync()
-        {
-            Client.Dispose();
-            await App.DisposeAsync();
-        }
-    }
+        Dictionary<string, string?> configuration) =>
+        GatewayTestHelpers.StartGatewayAsync(environment, configuration);
 }

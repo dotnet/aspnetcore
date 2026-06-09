@@ -64,9 +64,13 @@ public static class BlazorGateway
 
         if (hasProxy)
         {
-            builder.Services.AddReverseProxy()
-                .LoadFromConfig(proxySection)
-                .AddServiceDiscoveryDestinationResolver();
+            var proxyBuilder = builder.Services.AddReverseProxy()
+                .LoadFromConfig(proxySection);
+
+            if (options.HttpClient.ServiceDiscovery)
+            {
+                proxyBuilder.AddServiceDiscoveryDestinationResolver();
+            }
         }
 
         var app = builder.Build();
