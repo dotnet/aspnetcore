@@ -8,16 +8,6 @@ ci=${ci:-false}
 # Build mode
 source_build=${source_build:-false}
 
-# Set to true to use the pipelines logger which will enable Azure logging output.
-# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
-# This flag is meant as a temporary opt-opt for the feature while validate it across
-# our consumers. It will be deleted in the future.
-if [[ "$ci" == true ]]; then
-  pipelines_log=${pipelines_log:-true}
-else
-  pipelines_log=${pipelines_log:-false}
-fi
-
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 configuration=${configuration:-'Debug'}
 
@@ -374,7 +364,7 @@ function InitializeBuildTool {
   _InitializeBuildToolCommand="msbuild"
 }
 
-function GetNuGetPackageCachePath {
+function InitializeNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
       export NUGET_PACKAGES="$HOME/.nuget/packages/"
@@ -384,7 +374,7 @@ function GetNuGetPackageCachePath {
   fi
 
   # return value
-  _GetNuGetPackageCachePath=$NUGET_PACKAGES
+  _InitializeNuGetPackageCachePath=$NUGET_PACKAGES
 }
 
 function InitializeNativeTools() {
@@ -405,8 +395,6 @@ function InitializeToolset {
   if [[ -n "${_InitializeToolset:-}" ]]; then
     return
   fi
-
-  GetNuGetPackageCachePath
 
   ReadGlobalVersion "Microsoft.DotNet.Arcade.Sdk"
 
@@ -430,7 +418,7 @@ function InitializeToolset {
     ExitWithExitCode 2
   fi
 
-  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_GetNuGetPackageCachePath")
+  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_InitializeNuGetPackageCachePath")
   local nuget_config="${NUGET_CONFIG:-}"
   if [[ -z "$nuget_config" ]]; then
     # Search for any variation of nuget.config in the RepoRoot
@@ -447,23 +435,15 @@ function InitializeToolset {
   fi
   DotNet "${download_args[@]}"
 
-  local package_dir="$_GetNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
+  local package_dir="$_InitializeNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
 
-  # TODO: Remove the tools/ check once all supported versions have the toolset folder.
-  if [[ ! -d "$package_dir/toolset" && ! -d "$package_dir/tools" ]]; then
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset or tools folder: $package_dir"
+  if [[ ! -d "$package_dir/toolset" ]]; then
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset folder: $package_dir"
     ExitWithExitCode 3
   fi
 
   mkdir -p "$toolset_tools_dir"
-
-  # Copy toolset if present at the package root (new layout), otherwise fall back to tools
-  if [[ -d "$package_dir/toolset" ]]; then
-    cp -r "$package_dir/toolset/." "$toolset_tools_dir"
-  else
-    # TODO: Remove this fallback once all supported versions have the toolset folder.
-    cp -r "$package_dir/tools/." "$toolset_tools_dir"
-  fi
+  cp -r "$package_dir/toolset/." "$toolset_tools_dir"
 
   if [[ -a "$toolset_tools_dir/Build.proj" ]]; then
     toolset_build_proj="$toolset_tools_dir/Build.proj"
@@ -511,33 +491,6 @@ function DotNet {
 }
 
 function MSBuild {
-  local args=( "$@" )
-  if [[ "$pipelines_log" == true ]]; then
-    InitializeBuildTool
-    InitializeToolset
-
-    if [[ "$ci" == true ]]; then
-      export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
-      export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
-      Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
-      Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
-    fi
-
-    local toolset_dir="${_InitializeToolset%/*}"
-    local selectedPath="$toolset_dir/net/Microsoft.DotNet.ArcadeLogging.dll"
-
-    if [[ -z "$selectedPath" ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Unable to find arcade sdk logger assembly: $selectedPath"
-      ExitWithExitCode 1
-    fi
-
-    args+=( "-logger:$selectedPath" )
-  fi
-
-  MSBuild-Core "${args[@]}"
-}
-
-function MSBuild-Core {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true && "$exclude_ci_binary_log" != true ]]; then
       Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the -noBinaryLog switch."
@@ -615,12 +568,7 @@ function GetSdkTaskProject {
     echo "$proj"
     return
   fi
-  # TODO: Remove this fallback once all supported versions use the new layout.
-  local legacyProj="$toolsetDir/SdkTasks/$taskName.proj"
-  if [[ -a "$legacyProj" ]]; then
-    echo "$legacyProj"
-    return
-  fi
+
   Write-PipelineTelemetryError -category 'Build' "Unable to find $taskName.proj in toolset at: $toolsetDir"
   ExitWithExitCode 3
 }
@@ -660,6 +608,12 @@ mkdir -p "$toolset_dir"
 mkdir -p "$temp_dir"
 mkdir -p "$log_dir"
 
+# Direct MSBuild crash diagnostics (MSB4166 failure.txt files) to a known location
+# under artifacts/log so they are captured as build artifacts in CI.
+if [[ -z "${MSBUILDDEBUGPATH:-}" ]]; then
+  export MSBUILDDEBUGPATH="$log_dir/MsbuildDebugLogs"
+fi
+
 Write-PipelineSetVariable -name "Artifacts" -value "$artifacts_dir"
 Write-PipelineSetVariable -name "Artifacts.Toolset" -value "$toolset_dir"
 Write-PipelineSetVariable -name "Artifacts.Log" -value "$log_dir"
@@ -680,3 +634,6 @@ fi
 if [[ -n "${useInstalledDotNetCli:-}" ]]; then
   use_installed_dotnet_cli="$useInstalledDotNetCli"
 fi
+
+# Initialize the nuget package cache vars
+InitializeNuGetPackageCachePath

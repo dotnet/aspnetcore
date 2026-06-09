@@ -78,13 +78,16 @@
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Session" />
     <Reference Include="Microsoft.AspNetCore.StaticAssets" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
+    <Reference Include="Microsoft.Extensions.Validation.Localization" />
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <Reference Include="Microsoft.AspNetCore.Session" />
+    <Reference Include="Microsoft.AspNetCore.Components.QuickGrid" />
   </ItemGroup>
 
   <ItemGroup>
@@ -125,7 +128,5 @@
   <PropertyGroup>
     <!-- Tests need hot reload support enabled even in Release to test HotReloadManager behavior -->
     <MetadataUpdaterSupport>true</MetadataUpdaterSupport>
-    <!-- Keep metrics support enabled on the test server (not the trimmed WASM client) -->
-    <MetricsSupport>true</MetricsSupport>
   </PropertyGroup>
 </Project>
