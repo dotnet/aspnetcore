@@ -53,11 +53,11 @@ public sealed class ValidateContext
     public required ValidationOptions ValidationOptions { get; set; }
 
     /// <summary>
-    /// Gets or sets the dictionary of validation errors collected during validation.
+    /// Gets the dictionary of validation errors collected during validation.
     /// </summary>
     /// <remarks>
-    /// Keys are property names or paths, and values are arrays of error messages.
-    /// In the default implementation, this dictionary is initialized when the first error is added.
+    /// Keys are property names or paths, and values are collection of error messages.
+    /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
     public IReadOnlyDictionary<string, IEnumerable<string>>? ValidationErrors
         => _validationErrors;
@@ -72,6 +72,7 @@ public sealed class ValidateContext
 
     /// <summary>
     /// Optional event raised when a validation error is reported.
+    /// Note that this event may be raised concurrently from different threads.
     /// </summary>
     public event Action<ValidationErrorContext>? OnValidationError;
 

@@ -60,6 +60,7 @@ internal static class ValidationHelpers
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
         CancellationToken cancellationToken)
     {
+        CancellationTokenSource? linkedCts = null;
         List<Task>? validationResultTasks = null;
 
         for (var i = 0; i < validationAttributes.Length; i++)
@@ -70,9 +71,10 @@ internal static class ValidationHelpers
                 continue;
             }
 
+            linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             validationResultTasks ??= new();
             validationResultTasks.Add(
-                GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken));
+                GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken, linkedCts.Token));
         }
 
         if (validationResultTasks is not null)
@@ -87,16 +89,25 @@ internal static class ValidationHelpers
         ValidateContext context,
         TState state,
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
-        CancellationToken cancellationToken)
+        CancellationToken originalCancellationToken,
+        CancellationToken linkedCancellationToken)
     {
-        // TODO: Discuss if we want to force yielding.
-        // await Task.CompletedTask.ConfigureAwait(ConfigureAwaitOptions.ForceYielding);
-        // The difference between that it introduces is, if the async validation attribute has some synchronous work at the beginning.
-        // Do we want those "initial" synchronous work among different async validation attributes to be run in parallel or not?
-        var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, cancellationToken);
-        if (result is not null && result != ValidationResult.Success)
+        // originalCancellationToken is the cancellation token passed to ValidateAttributesAsync.
+        // linkedCancellationToken is a LinkedCancellationToken that combines:
+        // 1. the original cancellation token, and
+        // 2. cancellation when we want to short-circuit on first error.
+        try
         {
-            onValidationError(context, result, attribute, state);
+            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, linkedCancellationToken);
+            if (result is not null && result != ValidationResult.Success)
+            {
+                onValidationError(context, result, attribute, state);
+            }
+        }
+        catch (OperationCanceledException) when (linkedCancellationToken.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
+        {
+            // If the original token wasn't cancelled, but ours is cancelled, it means we cancelled to short-circuit.
+            // In this case, we want to just ignore this cancellation.
         }
     }
 }
