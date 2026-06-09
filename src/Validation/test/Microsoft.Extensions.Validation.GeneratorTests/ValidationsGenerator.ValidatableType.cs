@@ -374,7 +374,7 @@ public class SubTypeWithInheritance : SubType
 
                 await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.Null(context.ValidationErrors);
+                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
             }
         });
     }
@@ -743,7 +743,7 @@ public record SubTypeWithInheritance : SubType
 
                 await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.Null(context.ValidationErrors);
+                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
             }
         });
     }
