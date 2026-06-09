@@ -355,20 +355,6 @@ fi
 # Capture MSBuild crash logs
 export MSBUILDDEBUGPATH="$log_dir"
 
-prev_dir=$(pwd)
-patch_file1="../upstream-patch.diff"
-patch_file2="../msgpack-fix-full.diff"
-cd $repo_root/src/submodules/MessagePack-CSharp
-if command -v git > /dev/null 2>&1; then
-    # Only apply patches if they haven't been applied yet
-    patch_check_file="$repo_root/src/submodules/MessagePack-CSharp/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackReader.cs"
-    if grep -q -- "TrySkipNextArray" "$patch_check_file"; then
-        git apply "$patch_file1" -v
-        git apply "$patch_file2" -v
-    fi
-fi
-cd "$prev_dir"
-
 # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine
 # with -norestore is not obvious about what to do to fix it. As initialization takes very little time, we think always initializing
 # the toolset is a better default behavior.
