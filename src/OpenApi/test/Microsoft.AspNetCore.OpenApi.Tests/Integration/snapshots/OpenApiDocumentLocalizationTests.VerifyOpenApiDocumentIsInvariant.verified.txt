@@ -2691,6 +2691,7 @@
         }
       },
       "PersonStudent": {
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2708,6 +2709,7 @@
         "required": [
           "subject"
         ],
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2858,6 +2860,7 @@
         }
       },
       "ShapeSquare": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2879,6 +2882,7 @@
         }
       },
       "ShapeTriangle": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -3131,6 +3135,7 @@
           "name",
           "lives"
         ],
+        "type": "object",
         "properties": {
           "name": {
             "type": "string"
@@ -3146,6 +3151,7 @@
           "name",
           "breed"
         ],
+        "type": "object",
         "properties": {
           "name": {
             "type": "string"
@@ -3184,6 +3190,7 @@
         "required": [
           "city"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -3200,6 +3207,7 @@
         "required": [
           "news"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -3216,6 +3224,7 @@
         "required": [
           "summary"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [

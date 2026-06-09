@@ -319,6 +319,16 @@ internal sealed class OpenApiSchemaService(
         OpenApiSchemaReference? resultSchemaReference = null;
         if (inputSchema is OpenApiSchema && isComponentizedSchema)
         {
+            // STJ's JsonSchemaExporter omits "type": "object" on object branches of an anyOf
+            // when EVERY branch is an object - factoring the keyword onto the parent instead.
+            //
+            // Since we lift the branch into a top-level #/components/schemas/* entry and replace it with a $ref
+            // we need to ensure the schema has an explicit "type": "object" to avoid losing that information in the translation.
+            if (schema.Type is null && schema.Properties is { Count: > 0 })
+            {
+                schema.Type = JsonSchemaType.Object;
+            }
+
             var targetReferenceId = baseSchemaId is not null
                 ? $"{baseSchemaId}{schemaId}"
                 : schemaId;

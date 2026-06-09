@@ -492,6 +492,7 @@
           "name",
           "lives"
         ],
+        "type": "object",
         "properties": {
           "name": {
             "type": "string"
@@ -507,6 +508,7 @@
           "name",
           "breed"
         ],
+        "type": "object",
         "properties": {
           "name": {
             "type": "string"
