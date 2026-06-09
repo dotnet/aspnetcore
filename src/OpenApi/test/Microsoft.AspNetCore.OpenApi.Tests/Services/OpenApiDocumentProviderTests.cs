@@ -107,11 +107,11 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GenerateAsync_WithNullDocumentName_AndAdditionalDocumentNameProvider_GeneratesDocumentsForEachName()
+    public async Task GenerateAsync_WithAddOpenApiCore_AndAdditionalDocumentNameProvider_GeneratesDocumentsForEachName()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.AddOpenApi(documentName: null, options =>
+        builder.Services.AddOpenApiCore(options =>
         {
             options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from doc transformer."));
         });
@@ -172,11 +172,11 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GenerateAsync_WithBothNullDocumentNameAndExplicitDocumentName_AndAdditionalDocumentNameProvider_GeneratesDocumentsForEachName()
+    public async Task GenerateAsync_WithAddOpenApiCoreAndExplicitDocumentName_AndAdditionalDocumentNameProvider_GeneratesDocumentsForEachName()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.AddOpenApi(documentName: null, options =>
+        builder.Services.AddOpenApiCore(options =>
         {
             options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from doc transformer."));
         });
