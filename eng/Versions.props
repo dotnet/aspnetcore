@@ -194,11 +194,11 @@
     <XunitV3Version>3.2.2</XunitV3Version>
     <XunitV3ExtensibilityCoreVersion>$(XunitV3Version)</XunitV3ExtensibilityCoreVersion>
     <!-- MSTest + MTP packages (used by Components.Testing E2E infrastructure) -->
-    <MSTestVersion>4.0.2</MSTestVersion>
+    <MSTestVersion>4.2.3</MSTestVersion>
     <MSTestTestFrameworkVersion>$(MSTestVersion)</MSTestTestFrameworkVersion>
     <MSTestTestAdapterVersion>$(MSTestVersion)</MSTestTestAdapterVersion>
-    <MicrosoftTestingPlatformMSBuildVersion>2.0.2</MicrosoftTestingPlatformMSBuildVersion>
-    <MicrosoftTestingExtensionsRetryVersion>2.0.2</MicrosoftTestingExtensionsRetryVersion>
+    <MicrosoftTestingPlatformMSBuildVersion>2.2.3</MicrosoftTestingPlatformMSBuildVersion>
+    <MicrosoftTestingExtensionsRetryVersion>2.2.3</MicrosoftTestingExtensionsRetryVersion>
     <!-- Components.Testing dependencies -->
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>

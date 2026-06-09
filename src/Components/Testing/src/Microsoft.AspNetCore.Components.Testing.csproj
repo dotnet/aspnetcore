@@ -11,12 +11,6 @@
     <NoWarn>$(NoWarn);NU5100;RS0026</NoWarn>
     <Description>Cross-render-mode E2E testing library for Blazor using Playwright, MSTest on the Microsoft Testing Platform, and YARP.</Description>
     <PackageTags>blazor;e2e;testing;playwright;mstest</PackageTags>
-    <!--
-      MSTest.TestFramework's transitive .targets injects <Reference Include="MSTest.TestFramework.Extensions"/>
-      with a HintPath. The aspnetcore custom reference resolver doesn't recognize identities outside its
-      alias list; opt out of that restriction here.
-    -->
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
 

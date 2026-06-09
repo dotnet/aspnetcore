@@ -41,7 +41,7 @@ public class EnhancedNavTests : BrowserTest
         var heading = _page.Locator("h1");
         await Expect(heading).ToHaveTextAsync("Counter");
 
-        StringAssert.Contains(_page.Url, "/counter");
+        Assert.Contains("/counter", _page.Url);
     }
 
     [TestMethod]
@@ -57,7 +57,7 @@ public class EnhancedNavTests : BrowserTest
         var heading = _page.Locator("h1");
         await Expect(heading).ToHaveTextAsync("Weather");
 
-        StringAssert.Contains(_page.Url, "/weather");
+        Assert.Contains("/weather", _page.Url);
     }
 
     [TestMethod]

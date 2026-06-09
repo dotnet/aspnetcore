@@ -243,9 +243,9 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="xunit.assert" />
     <LatestPackageReference Include="xunit.extensibility.core" />
     <LatestPackageReference Include="xunit.extensibility.execution" />
-    <!-- Components.Testing (MSTest on MTP + Playwright + YARP) -->
     <LatestPackageReference Include="xunit.v3" Version="$(XunitV3Version)" />
     <LatestPackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
+    <!-- Components.Testing (MSTest on MTP + Playwright + YARP) -->
     <LatestPackageReference Include="MSTest.TestFramework" Version="$(MSTestTestFrameworkVersion)" />
     <LatestPackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="$(MicrosoftTestingPlatformMSBuildVersion)" />
     <LatestPackageReference Include="Microsoft.Testing.Extensions.Retry" Version="$(MicrosoftTestingExtensionsRetryVersion)" />

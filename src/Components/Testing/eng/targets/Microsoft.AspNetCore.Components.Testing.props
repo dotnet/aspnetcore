@@ -12,15 +12,14 @@
       EnableMSTestRunner=false (or OutputType=Library) in their .csproj.
     -->
     <EnableMSTestRunner Condition="'$(EnableMSTestRunner)' == ''">true</EnableMSTestRunner>
-    <OutputType Condition="'$(OutputType)' == ''">Exe</OutputType>
 
     <!--
       Default MTP run arguments. Consumers can override by setting
-      MSTestRunCommandLineArguments to a custom value earlier in their .csproj,
+      TestingPlatformCommandLineArguments to a custom value earlier in their .csproj,
       or append to these defaults on the command line, for example:
-        dotnet test (separator) (separator)retry-failed-tests 2
+        dotnet test -- --retry-failed-tests 2
     -->
-    <MSTestRunCommandLineArguments Condition="'$(MSTestRunCommandLineArguments)' == ''">--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --report-trx</MSTestRunCommandLineArguments>
+    <TestingPlatformCommandLineArguments Condition="'$(TestingPlatformCommandLineArguments)' == ''">--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --report-trx</TestingPlatformCommandLineArguments>
 
     <!--
       Controls how E2E app projects are prepared at build time.
