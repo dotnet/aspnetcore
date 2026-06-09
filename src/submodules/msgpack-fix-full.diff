@@ -1,0 +1,3737 @@
+diff --git a/src/MessagePack.AspNetCoreMvcFormatter/MessagePackInputFormatter.cs b/src/MessagePack.AspNetCoreMvcFormatter/MessagePackInputFormatter.cs
+index c2038f5a..f84b4bf7 100644
+--- a/src/MessagePack.AspNetCoreMvcFormatter/MessagePackInputFormatter.cs
++++ b/src/MessagePack.AspNetCoreMvcFormatter/MessagePackInputFormatter.cs
+@@ -9,16 +9,17 @@ namespace MessagePack.AspNetCoreMvcFormatter
+     public class MessagePackInputFormatter : InputFormatter
+     {
+         private const string ContentType = "application/x-msgpack";
+-        private readonly MessagePackSerializerOptions? options;
++        private static readonly MessagePackSerializerOptions DefaultOptions = MessagePackSerializerOptions.Standard.WithSecurity(MessagePackSecurity.UntrustedData);
++        private readonly MessagePackSerializerOptions options;
+ 
+         public MessagePackInputFormatter()
+-            : this(null)
++            : this(DefaultOptions)
+         {
+         }
+ 
+         public MessagePackInputFormatter(MessagePackSerializerOptions? options)
+         {
+-            this.options = options;
++            this.options = options ?? DefaultOptions;
+ 
+             SupportedMediaTypes.Add(ContentType);
+         }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/CollectionFormatter.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/CollectionFormatter.cs
+index 29d8ca7d..02da01f9 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/CollectionFormatter.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/CollectionFormatter.cs
+@@ -765,7 +765,7 @@ namespace MessagePack.Formatters
+ 
+         protected override Dictionary<TKey, IGrouping<TKey, TElement>> Create(int count, MessagePackSerializerOptions options)
+         {
+-            return new Dictionary<TKey, IGrouping<TKey, TElement>>(count);
++            return new Dictionary<TKey, IGrouping<TKey, TElement>>(count, options.Security.GetEqualityComparer<TKey>());
+         }
+     }
+ 
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/ExpandoObjectFormatter.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/ExpandoObjectFormatter.cs
+index 2d932888..98932401 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/ExpandoObjectFormatter.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/ExpandoObjectFormatter.cs
+@@ -8,6 +8,8 @@ namespace MessagePack.Formatters
+ {
+     public class ExpandoObjectFormatter : IMessagePackFormatter<ExpandoObject?>
+     {
++        internal const int MaximumUntrustedDataMemberCount = 1024;
++
+         public static readonly IMessagePackFormatter<ExpandoObject?> Instance = new ExpandoObjectFormatter();
+ 
+         private ExpandoObjectFormatter()
+@@ -23,6 +25,7 @@ namespace MessagePack.Formatters
+ 
+             var result = new ExpandoObject();
+             int count = reader.ReadMapHeader();
++            ThrowIfMapTooLargeForUntrustedData(count, options);
+             if (count > 0)
+             {
+                 IFormatterResolver resolver = options.Resolver;
+@@ -49,6 +52,14 @@ namespace MessagePack.Formatters
+             return result;
+         }
+ 
++        internal static void ThrowIfMapTooLargeForUntrustedData(int count, MessagePackSerializerOptions options)
++        {
++            if (options.Security.HashCollisionResistant && count > MaximumUntrustedDataMemberCount)
++            {
++                throw new MessagePackSerializationException($"ExpandoObject map size exceeds the limit of {MaximumUntrustedDataMemberCount} entries allowed under untrusted data security mode.");
++            }
++        }
++
+         public void Serialize(ref MessagePackWriter writer, ExpandoObject? value, MessagePackSerializerOptions options)
+         {
+             if (value is null)
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/MultiDimensionalArrayFormatter.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/MultiDimensionalArrayFormatter.cs
+index 44812d1a..128e52e4 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/MultiDimensionalArrayFormatter.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/MultiDimensionalArrayFormatter.cs
+@@ -2,9 +2,7 @@
+ // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+ 
+ using System;
+-using System.Buffers;
+-using System.Collections.Generic;
+-using System.Text;
++using System.Diagnostics.CodeAnalysis;
+ 
+ #pragma warning disable SA1402 // File may only contain a single type
+ #pragma warning disable SA1649 // File name should match first type name
+@@ -62,6 +60,7 @@ namespace MessagePack.Formatters
+                 var iLength = reader.ReadInt32();
+                 var jLength = reader.ReadInt32();
+                 var maxLen = reader.ReadArrayHeader();
++                MultiDimensionalArrayFormatterHelper.ThrowIfLengthsDontMatch("T[,]", maxLen, iLength, jLength);
+ 
+                 var array = new T[iLength, jLength];
+ 
+@@ -148,6 +147,7 @@ namespace MessagePack.Formatters
+                 var jLength = reader.ReadInt32();
+                 var kLength = reader.ReadInt32();
+                 var maxLen = reader.ReadArrayHeader();
++                MultiDimensionalArrayFormatterHelper.ThrowIfLengthsDontMatch("T[,,]", maxLen, iLength, jLength, kLength);
+ 
+                 var array = new T[iLength, jLength, kLength];
+ 
+@@ -244,6 +244,8 @@ namespace MessagePack.Formatters
+                 var kLength = reader.ReadInt32();
+                 var lLength = reader.ReadInt32();
+                 var maxLen = reader.ReadArrayHeader();
++                MultiDimensionalArrayFormatterHelper.ThrowIfLengthsDontMatch("T[,,,]", maxLen, iLength, jLength, kLength, lLength);
++
+                 var array = new T[iLength, jLength, kLength, lLength];
+ 
+                 var i = 0;
+@@ -291,4 +293,34 @@ namespace MessagePack.Formatters
+             }
+         }
+     }
++
++    internal static class MultiDimensionalArrayFormatterHelper
++    {
++        internal static void ThrowIfLengthsDontMatch(string format, int actualLength, int firstLength, int secondLength, int thirdLength = 1, int fourthLength = 1)
++        {
++            if (firstLength < 0 || secondLength < 0 || thirdLength < 0 || fourthLength < 0)
++            {
++                ThrowInvalidFormat(format);
++            }
++
++            int expectedLength;
++            try
++            {
++                expectedLength = checked(firstLength * secondLength * thirdLength * fourthLength);
++            }
++            catch (OverflowException)
++            {
++                ThrowInvalidFormat(format);
++                return;
++            }
++
++            if (expectedLength != actualLength)
++            {
++                ThrowInvalidFormat(format);
++            }
++        }
++
++        [DoesNotReturn]
++        private static void ThrowInvalidFormat(string format) => throw new MessagePackSerializationException($"Invalid {format} format");
++    }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/StandardClassLibraryFormatter.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/StandardClassLibraryFormatter.cs
+index da2444b4..1cc840e5 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/StandardClassLibraryFormatter.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Formatters/StandardClassLibraryFormatter.cs
+@@ -649,9 +649,14 @@ namespace MessagePack.Formatters
+ 
+         public T? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+         {
+-            return reader.ReadString() is string value
+-                ? (T?)Type.GetType(value, throwOnError: true)
+-                : null;
++            if (reader.ReadString() is not string value)
++            {
++                return null;
++            }
++
++            Type type = options.LoadType(value) ?? throw new TypeLoadException(value);
++            options.ThrowIfDeserializingTypeIsDisallowed(type);
++            return (T?)type;
+         }
+     }
+ 
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/TinyJsonReader.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/TinyJsonReader.cs
+index 2d082f9f..89036c12 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/TinyJsonReader.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/TinyJsonReader.cs
+@@ -134,62 +134,64 @@ namespace MessagePack
+ 
+         private void ReadNextToken()
+         {
+-            this.SkipWhiteSpace();
+-
+-            var intChar = this.reader.Peek();
+-            if (intChar == -1)
++            while (true)
+             {
+-                this.TokenType = TinyJsonToken.None;
+-                return;
+-            }
++                this.SkipWhiteSpace();
+ 
+-            var c = (char)intChar;
+-            switch (c)
+-            {
+-                case '{':
+-                    this.TokenType = TinyJsonToken.StartObject;
+-                    return;
+-                case '}':
+-                    this.TokenType = TinyJsonToken.EndObject;
+-                    return;
+-                case '[':
+-                    this.TokenType = TinyJsonToken.StartArray;
+-                    return;
+-                case ']':
+-                    this.TokenType = TinyJsonToken.EndArray;
+-                    return;
+-                case '"':
+-                    this.TokenType = TinyJsonToken.String;
+-                    return;
+-                case '0':
+-                case '1':
+-                case '2':
+-                case '3':
+-                case '4':
+-                case '5':
+-                case '6':
+-                case '7':
+-                case '8':
+-                case '9':
+-                case '-':
+-                    this.TokenType = TinyJsonToken.Number;
+-                    return;
+-                case 't':
+-                    this.TokenType = TinyJsonToken.True;
+-                    return;
+-                case 'f':
+-                    this.TokenType = TinyJsonToken.False;
+-                    return;
+-                case 'n':
+-                    this.TokenType = TinyJsonToken.Null;
+-                    return;
+-                case ',':
+-                case ':':
+-                    this.reader.Read();
+-                    this.ReadNextToken();
++                var intChar = this.reader.Peek();
++                if (intChar == -1)
++                {
++                    this.TokenType = TinyJsonToken.None;
+                     return;
+-                default:
+-                    throw new TinyJsonException("Invalid String:" + c);
++                }
++
++                var c = (char)intChar;
++                switch (c)
++                {
++                    case '{':
++                        this.TokenType = TinyJsonToken.StartObject;
++                        return;
++                    case '}':
++                        this.TokenType = TinyJsonToken.EndObject;
++                        return;
++                    case '[':
++                        this.TokenType = TinyJsonToken.StartArray;
++                        return;
++                    case ']':
++                        this.TokenType = TinyJsonToken.EndArray;
++                        return;
++                    case '"':
++                        this.TokenType = TinyJsonToken.String;
++                        return;
++                    case '0':
++                    case '1':
++                    case '2':
++                    case '3':
++                    case '4':
++                    case '5':
++                    case '6':
++                    case '7':
++                    case '8':
++                    case '9':
++                    case '-':
++                        this.TokenType = TinyJsonToken.Number;
++                        return;
++                    case 't':
++                        this.TokenType = TinyJsonToken.True;
++                        return;
++                    case 'f':
++                        this.TokenType = TinyJsonToken.False;
++                        return;
++                    case 'n':
++                        this.TokenType = TinyJsonToken.Null;
++                        return;
++                    case ',':
++                    case ':':
++                        this.reader.Read();
++                        continue;
++                    default:
++                        throw new TinyJsonException("Invalid String:" + c);
++                }
+             }
+         }
+ 
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/UnsafeMemory.Low.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/UnsafeMemory.Low.cs
+index 1e662702..07690fd8 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/UnsafeMemory.Low.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Internal/UnsafeMemory.Low.cs
+@@ -17,12 +17,20 @@ namespace MessagePack.Internal
+         public static readonly bool Is32Bit = IntPtr.Size == 4;
+     }
+ 
++    /// <summary>
++    /// Highly tuned method for writing raw bytes to a <see cref="MessagePackWriter"/>.
++    /// </summary>
++    /// <remarks>
++    /// The methods on this class are <em>not</em> safe, in that they use pointer arithmetic
++    /// and assume that the caller has provided a <see cref="ReadOnlySpan{Byte}"/> with a length
++    /// of at least the number of bytes being written. The caller must ensure that this is the case.
++    /// </remarks>
+     public static partial class UnsafeMemory32
+     {
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw1(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(1);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -30,13 +38,13 @@ namespace MessagePack.Internal
+                 *(byte*)pDst = *(byte*)pSrc;
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(1);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw2(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(2);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -44,13 +52,13 @@ namespace MessagePack.Internal
+                 *(short*)pDst = *(short*)pSrc;
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(2);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw3(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(3);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -59,16 +67,24 @@ namespace MessagePack.Internal
+                 *(short*)(pDst + 1) = *(short*)(pSrc + 1);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(3);
+         }
+     }
+ 
++    /// <summary>
++    /// Highly tuned method for writing raw bytes to a <see cref="MessagePackWriter"/>.
++    /// </summary>
++    /// <remarks>
++    /// The methods on this class are <em>not</em> safe, in that they use pointer arithmetic
++    /// and assume that the caller has provided a <see cref="ReadOnlySpan{Byte}"/> with a length
++    /// of at least the number of bytes being written. The caller must ensure that this is the case.
++    /// </remarks>
+     public static partial class UnsafeMemory64
+     {
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw1(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(1);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -76,13 +92,13 @@ namespace MessagePack.Internal
+                 *(byte*)pDst = *(byte*)pSrc;
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(1);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw2(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(2);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -90,13 +106,13 @@ namespace MessagePack.Internal
+                 *(short*)pDst = *(short*)pSrc;
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(2);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw3(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(3);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -105,13 +121,13 @@ namespace MessagePack.Internal
+                 *(short*)(pDst + 1) = *(short*)(pSrc + 1);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(3);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw4(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(4);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -119,13 +135,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 0) = *(int*)(pSrc + 0);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(4);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw5(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(5);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -134,13 +150,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 1) = *(int*)(pSrc + 1);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(5);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw6(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(6);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -149,13 +165,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 2) = *(int*)(pSrc + 2);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(6);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw7(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(7);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -164,7 +180,7 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 3) = *(int*)(pSrc + 3);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(7);
+         }
+     }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackReader.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackReader.cs
+index d2c630d7..5a38fccd 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackReader.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackReader.cs
+@@ -154,81 +154,123 @@ namespace MessagePack
+         /// </remarks>
+         internal bool TrySkip()
+         {
+-            if (this.reader.Remaining == 0)
++            long remainingStructures = 1;
++            while (remainingStructures > 0)
+             {
+-                return false;
+-            }
++                if (this.reader.Remaining == 0)
++                {
++                    return false;
++                }
+ 
+-            byte code = this.NextCode;
+-            switch (code)
+-            {
+-                case MessagePackCode.Nil:
+-                case MessagePackCode.True:
+-                case MessagePackCode.False:
+-                    return this.reader.TryAdvance(1);
+-                case MessagePackCode.Int8:
+-                case MessagePackCode.UInt8:
+-                    return this.reader.TryAdvance(2);
+-                case MessagePackCode.Int16:
+-                case MessagePackCode.UInt16:
+-                    return this.reader.TryAdvance(3);
+-                case MessagePackCode.Int32:
+-                case MessagePackCode.UInt32:
+-                case MessagePackCode.Float32:
+-                    return this.reader.TryAdvance(5);
+-                case MessagePackCode.Int64:
+-                case MessagePackCode.UInt64:
+-                case MessagePackCode.Float64:
+-                    return this.reader.TryAdvance(9);
+-                case MessagePackCode.Map16:
+-                case MessagePackCode.Map32:
+-                    return this.TrySkipNextMap();
+-                case MessagePackCode.Array16:
+-                case MessagePackCode.Array32:
+-                    return this.TrySkipNextArray();
+-                case MessagePackCode.Str8:
+-                case MessagePackCode.Str16:
+-                case MessagePackCode.Str32:
+-                    return this.TryGetStringLengthInBytes(out int length) && this.reader.TryAdvance(length);
+-                case MessagePackCode.Bin8:
+-                case MessagePackCode.Bin16:
+-                case MessagePackCode.Bin32:
+-                    return this.TryGetBytesLength(out length) && this.reader.TryAdvance(length);
+-                case MessagePackCode.FixExt1:
+-                case MessagePackCode.FixExt2:
+-                case MessagePackCode.FixExt4:
+-                case MessagePackCode.FixExt8:
+-                case MessagePackCode.FixExt16:
+-                case MessagePackCode.Ext8:
+-                case MessagePackCode.Ext16:
+-                case MessagePackCode.Ext32:
+-                    return this.TryReadExtensionFormatHeader(out ExtensionHeader header) && this.reader.TryAdvance(header.Length);
+-                default:
+-                    if ((code >= MessagePackCode.MinNegativeFixInt && code <= MessagePackCode.MaxNegativeFixInt) ||
+-                        (code >= MessagePackCode.MinFixInt && code <= MessagePackCode.MaxFixInt))
+-                    {
+-                        return this.reader.TryAdvance(1);
+-                    }
++                remainingStructures--;
++                byte code = this.NextCode;
++                switch (code)
++                {
++                    case byte x when (x >= MessagePackCode.MinNegativeFixInt && x <= MessagePackCode.MaxNegativeFixInt) || (x >= MessagePackCode.MinFixInt && x <= MessagePackCode.MaxFixInt):
++                    case MessagePackCode.Nil:
++                    case MessagePackCode.True:
++                    case MessagePackCode.False:
++                        if (!this.reader.TryAdvance(1))
++                        {
++                            return false;
++                        }
+ 
+-                    if (code >= MessagePackCode.MinFixMap && code <= MessagePackCode.MaxFixMap)
+-                    {
+-                        return this.TrySkipNextMap();
+-                    }
++                        break;
++                    case MessagePackCode.Int8:
++                    case MessagePackCode.UInt8:
++                        if (!this.reader.TryAdvance(2))
++                        {
++                            return false;
++                        }
+ 
+-                    if (code >= MessagePackCode.MinFixArray && code <= MessagePackCode.MaxFixArray)
+-                    {
+-                        return this.TrySkipNextArray();
+-                    }
++                        break;
++                    case MessagePackCode.Int16:
++                    case MessagePackCode.UInt16:
++                        if (!this.reader.TryAdvance(3))
++                        {
++                            return false;
++                        }
+ 
+-                    if (code >= MessagePackCode.MinFixStr && code <= MessagePackCode.MaxFixStr)
+-                    {
+-                        return this.TryGetStringLengthInBytes(out length) && this.reader.TryAdvance(length);
+-                    }
++                        break;
++                    case MessagePackCode.Int32:
++                    case MessagePackCode.UInt32:
++                    case MessagePackCode.Float32:
++                        if (!this.reader.TryAdvance(5))
++                        {
++                            return false;
++                        }
+ 
+-                    // We don't actually expect to ever hit this point, since every code is supported.
+-                    Debug.Fail("Missing handler for code: " + code);
+-                    throw ThrowInvalidCode(code);
++                        break;
++                    case MessagePackCode.Int64:
++                    case MessagePackCode.UInt64:
++                    case MessagePackCode.Float64:
++                        if (!this.reader.TryAdvance(9))
++                        {
++                            return false;
++                        }
++
++                        break;
++                    case byte x when x >= MessagePackCode.MinFixMap && x <= MessagePackCode.MaxFixMap:
++                    case MessagePackCode.Map16:
++                    case MessagePackCode.Map32:
++                        if (!this.TryReadMapHeader(out int count))
++                        {
++                            return false;
++                        }
++
++                        remainingStructures = checked(remainingStructures + ((long)count * 2));
++                        break;
++                    case byte x when x >= MessagePackCode.MinFixArray && x <= MessagePackCode.MaxFixArray:
++                    case MessagePackCode.Array16:
++                    case MessagePackCode.Array32:
++                        if (!this.TryReadArrayHeader(out count))
++                        {
++                            return false;
++                        }
++
++                        remainingStructures = checked(remainingStructures + count);
++                        break;
++                    case byte x when x >= MessagePackCode.MinFixStr && x <= MessagePackCode.MaxFixStr:
++                    case MessagePackCode.Str8:
++                    case MessagePackCode.Str16:
++                    case MessagePackCode.Str32:
++                        if (!this.TryGetStringLengthInBytes(out int length) || !this.reader.TryAdvance(length))
++                        {
++                            return false;
++                        }
++
++                        break;
++                    case MessagePackCode.Bin8:
++                    case MessagePackCode.Bin16:
++                    case MessagePackCode.Bin32:
++                        if (!this.TryGetBytesLength(out length) || !this.reader.TryAdvance(length))
++                        {
++                            return false;
++                        }
++
++                        break;
++                    case MessagePackCode.FixExt1:
++                    case MessagePackCode.FixExt2:
++                    case MessagePackCode.FixExt4:
++                    case MessagePackCode.FixExt8:
++                    case MessagePackCode.FixExt16:
++                    case MessagePackCode.Ext8:
++                    case MessagePackCode.Ext16:
++                    case MessagePackCode.Ext32:
++                        if (!this.TryReadExtensionFormatHeader(out ExtensionHeader header) || !this.reader.TryAdvance(header.Length))
++                        {
++                            return false;
++                        }
++
++                        break;
++                    default:
++                        // We don't actually expect to ever hit this point, since every code is supported.
++                        Debug.Fail("Missing handler for code: " + code);
++                        throw ThrowInvalidCode(code);
++                }
+             }
++
++            return true;
+         }
+ 
+         /// <summary>
+@@ -390,7 +432,7 @@ namespace MessagePack
+             // Protect against corrupted or mischievious data that may lead to allocating way too much memory.
+             // We allow for each primitive to be the minimal 1 byte in size, and we have a key=value map, so that's 2 bytes.
+             // Formatters that know each element is larger can optionally add a stronger check.
+-            ThrowInsufficientBufferUnless(this.reader.Remaining >= count * 2);
++            ThrowInsufficientBufferUnless(this.reader.Remaining >= (long)count * 2);
+ 
+             return count;
+         }
+@@ -1130,22 +1172,5 @@ namespace MessagePack
+             ArrayPool<char>.Shared.Return(charArray);
+             return value;
+         }
+-
+-        private bool TrySkipNextArray() => this.TryReadArrayHeader(out int count) && this.TrySkip(count);
+-
+-        private bool TrySkipNextMap() => this.TryReadMapHeader(out int count) && this.TrySkip(count * 2);
+-
+-        private bool TrySkip(int count)
+-        {
+-            for (int i = 0; i < count; i++)
+-            {
+-                if (!this.TrySkip())
+-                {
+-                    return false;
+-                }
+-            }
+-
+-            return true;
+-        }
+     }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSecurity.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSecurity.cs
+index 3a671529..9d8a71d5 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSecurity.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSecurity.cs
+@@ -19,6 +19,8 @@ namespace MessagePack
+     /// </summary>
+     public class MessagePackSecurity
+     {
++        private const int DefaultUntrustedDataMaximumDecompressedSize = 64 * 1024 * 1024;
++
+         /// <summary>
+         /// Gets an instance preconfigured with settings that omit all protections. Useful for deserializing fully-trusted and valid msgpack sequences.
+         /// </summary>
+@@ -31,6 +33,7 @@ namespace MessagePack
+         {
+             HashCollisionResistant = true,
+             MaximumObjectGraphDepth = 500,
++            MaximumDecompressedSize = DefaultUntrustedDataMaximumDecompressedSize,
+         };
+ 
+         private static readonly SipHash Hash = new();
+@@ -57,6 +60,7 @@ namespace MessagePack
+ 
+             this.HashCollisionResistant = copyFrom.HashCollisionResistant;
+             this.MaximumObjectGraphDepth = copyFrom.MaximumObjectGraphDepth;
++            this.MaximumDecompressedSize = copyFrom.MaximumDecompressedSize;
+         }
+ 
+         /// <summary>
+@@ -81,6 +85,12 @@ namespace MessagePack
+         /// </remarks>
+         public int MaximumObjectGraphDepth { get; private set; } = int.MaxValue;
+ 
++        /// <summary>
++        /// Gets the maximum decompressed size in bytes allowed when deserializing compressed payloads.
++        /// </summary>
++        /// <value>The default value is <see cref="int.MaxValue"/> for <see cref="TrustedData"/> and 64MB for <see cref="UntrustedData"/>.</value>
++        public int MaximumDecompressedSize { get; private set; } = int.MaxValue;
++
+         /// <summary>
+         /// Gets a copy of these options with the <see cref="MaximumObjectGraphDepth"/> property set to a new value.
+         /// </summary>
+@@ -98,6 +108,28 @@ namespace MessagePack
+             return clone;
+         }
+ 
++        /// <summary>
++        /// Gets a copy of these options with the <see cref="MaximumDecompressedSize"/> property set to a new value.
++        /// </summary>
++        /// <param name="maximumDecompressedSize">The new value for the <see cref="MaximumDecompressedSize"/> property. Must not be negative.</param>
++        /// <returns>The new instance; or the original if the value is unchanged.</returns>
++        public MessagePackSecurity WithMaximumDecompressedSize(int maximumDecompressedSize)
++        {
++            if (this.MaximumDecompressedSize == maximumDecompressedSize)
++            {
++                return this;
++            }
++
++            if (maximumDecompressedSize < 0)
++            {
++                throw new ArgumentOutOfRangeException(nameof(maximumDecompressedSize));
++            }
++
++            var clone = this.Clone();
++            clone.MaximumDecompressedSize = maximumDecompressedSize;
++            return clone;
++        }
++
+         /// <summary>
+         /// Gets a copy of these options with the <see cref="HashCollisionResistant"/> property set to a new value.
+         /// </summary>
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.Json.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.Json.cs
+index b9d02ac6..baf8a4e9 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.Json.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.Json.cs
+@@ -89,7 +89,7 @@ namespace MessagePack
+                 {
+                     using (var scratchRental = options.SequencePool.Rent())
+                     {
+-                        if (TryDecompress(ref reader, scratchRental.Value))
++                        if (TryDecompress(ref reader, scratchRental.Value, options))
+                         {
+                             var scratchReader = new MessagePackReader(scratchRental.Value)
+                             {
+@@ -184,6 +184,11 @@ namespace MessagePack
+         }
+ 
+         private static uint FromJsonCore(TinyJsonReader jr, ref MessagePackWriter writer, MessagePackSerializerOptions options)
++        {
++            return FromJsonCore(jr, ref writer, options, 0);
++        }
++
++        private static uint FromJsonCore(TinyJsonReader jr, ref MessagePackWriter writer, MessagePackSerializerOptions options, int depth)
+         {
+             uint count = 0;
+             while (jr.Read())
+@@ -193,11 +198,13 @@ namespace MessagePack
+                     case TinyJsonToken.None:
+                         break;
+                     case TinyJsonToken.StartObject:
++                        VerifyJsonObjectGraphDepth(options, depth);
++
+                         // Set up a scratch area to serialize the collection since we don't know its length yet, which must be written first.
+                         using (var scratchRental = options.SequencePool.Rent())
+                         {
+                             MessagePackWriter scratchWriter = writer.Clone(scratchRental.Value);
+-                            var mapCount = FromJsonCore(jr, ref scratchWriter, options);
++                            var mapCount = FromJsonCore(jr, ref scratchWriter, options, depth + 1);
+                             scratchWriter.Flush();
+ 
+                             mapCount = mapCount / 2; // remove propertyname string count.
+@@ -210,11 +217,13 @@ namespace MessagePack
+                     case TinyJsonToken.EndObject:
+                         return count; // break
+                     case TinyJsonToken.StartArray:
++                        VerifyJsonObjectGraphDepth(options, depth);
++
+                         // Set up a scratch area to serialize the collection since we don't know its length yet, which must be written first.
+                         using (var scratchRental = options.SequencePool.Rent())
+                         {
+                             MessagePackWriter scratchWriter = writer.Clone(scratchRental.Value);
+-                            var arrayCount = FromJsonCore(jr, ref scratchWriter, options);
++                            var arrayCount = FromJsonCore(jr, ref scratchWriter, options, depth + 1);
+                             scratchWriter.Flush();
+ 
+                             writer.WriteArrayHeader(arrayCount);
+@@ -270,6 +279,14 @@ namespace MessagePack
+             return count;
+         }
+ 
++        private static void VerifyJsonObjectGraphDepth(MessagePackSerializerOptions options, int depth)
++        {
++            if (depth >= options.Security.MaximumObjectGraphDepth)
++            {
++                throw new InsufficientExecutionStackException($"This JSON sequence has an object graph that exceeds the maximum depth allowed of {options.Security.MaximumObjectGraphDepth}.");
++            }
++        }
++
+         private static void ToJsonCore(ref MessagePackReader reader, TextWriter writer, MessagePackSerializerOptions options)
+         {
+             MessagePackType type = reader.NextMessagePackType;
+@@ -393,46 +410,54 @@ namespace MessagePack
+ #if !UNITY_2018_3_OR_NEWER
+                     else if (extHeader.TypeCode == ThisLibraryExtensionTypeCodes.TypelessFormatter)
+                     {
+-                        // prepare type name token
+-                        var privateBuilder = new StringBuilder();
+-                        var typeNameTokenBuilder = new StringBuilder();
+-                        SequencePosition positionBeforeTypeNameRead = reader.Position;
+-                        ToJsonCore(ref reader, new StringWriter(typeNameTokenBuilder), options);
+-                        int typeNameReadSize = (int)reader.Sequence.Slice(positionBeforeTypeNameRead, reader.Position).Length;
+-                        if (extHeader.Length > typeNameReadSize)
++                        options.Security.DepthStep(ref reader);
++                        try
+                         {
+-                            // object map or array
+-                            MessagePackType typeInside = reader.NextMessagePackType;
+-                            if (typeInside != MessagePackType.Array && typeInside != MessagePackType.Map)
++                            // prepare type name token
++                            var privateBuilder = new StringBuilder();
++                            var typeNameTokenBuilder = new StringBuilder();
++                            SequencePosition positionBeforeTypeNameRead = reader.Position;
++                            ToJsonCore(ref reader, new StringWriter(typeNameTokenBuilder), options);
++                            int typeNameReadSize = (int)reader.Sequence.Slice(positionBeforeTypeNameRead, reader.Position).Length;
++                            if (extHeader.Length > typeNameReadSize)
+                             {
+-                                privateBuilder.Append("{");
+-                            }
++                                // object map or array
++                                MessagePackType typeInside = reader.NextMessagePackType;
++                                if (typeInside != MessagePackType.Array && typeInside != MessagePackType.Map)
++                                {
++                                    privateBuilder.Append("{");
++                                }
+ 
+-                            ToJsonCore(ref reader, new StringWriter(privateBuilder), options);
++                                ToJsonCore(ref reader, new StringWriter(privateBuilder), options);
+ 
+-                            // insert type name token to start of object map or array
+-                            if (typeInside != MessagePackType.Array)
+-                            {
+-                                typeNameTokenBuilder.Insert(0, "\"$type\":");
+-                            }
++                                // insert type name token to start of object map or array
++                                if (typeInside != MessagePackType.Array)
++                                {
++                                    typeNameTokenBuilder.Insert(0, "\"$type\":");
++                                }
+ 
+-                            if (typeInside != MessagePackType.Array && typeInside != MessagePackType.Map)
+-                            {
+-                                privateBuilder.Append("}");
+-                            }
++                                if (typeInside != MessagePackType.Array && typeInside != MessagePackType.Map)
++                                {
++                                    privateBuilder.Append("}");
++                                }
+ 
+-                            if (privateBuilder.Length > 2)
+-                            {
+-                                typeNameTokenBuilder.Append(",");
+-                            }
++                                if (privateBuilder.Length > 2)
++                                {
++                                    typeNameTokenBuilder.Append(",");
++                                }
+ 
+-                            privateBuilder.Insert(1, typeNameTokenBuilder.ToString());
++                                privateBuilder.Insert(1, typeNameTokenBuilder.ToString());
+ 
+-                            writer.Write(privateBuilder.ToString());
++                                writer.Write(privateBuilder.ToString());
++                            }
++                            else
++                            {
++                                writer.Write("{\"$type\":" + typeNameTokenBuilder.ToString() + "}");
++                            }
+                         }
+-                        else
++                        finally
+                         {
+-                            writer.Write("{\"$type\":" + typeNameTokenBuilder.ToString() + "}");
++                            reader.Depth--;
+                         }
+                     }
+ #endif
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.cs
+index a75917b0..8d11b312 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializer.cs
+@@ -234,7 +234,7 @@ namespace MessagePack
+                     using (var msgPackUncompressedRental = options.SequencePool.Rent())
+                     {
+                         var msgPackUncompressed = msgPackUncompressedRental.Value;
+-                        if (TryDecompress(ref reader, msgPackUncompressed))
++                        if (TryDecompress(ref reader, msgPackUncompressed, options))
+                         {
+                             MessagePackReader uncompressedReader = reader.Clone(msgPackUncompressed.AsReadOnlySequence);
+                             return options.Resolver.GetFormatterWithVerify<T>().Deserialize(ref uncompressedReader, options);
+@@ -482,7 +482,7 @@ namespace MessagePack
+             }
+         }
+ 
+-        private static bool TryDecompress(ref MessagePackReader reader, IBufferWriter<byte> writer)
++        private static bool TryDecompress(ref MessagePackReader reader, IBufferWriter<byte> writer, MessagePackSerializerOptions options)
+         {
+             if (!reader.End)
+             {
+@@ -504,6 +504,7 @@ namespace MessagePack
+                         // The rest of the payload is the compressed data itself.
+                         ReadOnlySequence<byte> compressedData = extReader.Sequence.Slice(extReader.Position);
+ 
++                        ThrowIfInvalidLz4BlockLength(uncompressedLength, options.Security.MaximumDecompressedSize);
+                         Span<byte> uncompressedSpan = writer.GetSpan(uncompressedLength).Slice(0, uncompressedLength);
+                         int actualUncompressedLength = LZ4Operation(compressedData, uncompressedSpan, LZ4CodecDecode);
+                         Debug.Assert(actualUncompressedLength == uncompressedLength, "Unexpected length of uncompressed data.");
+@@ -530,6 +531,7 @@ namespace MessagePack
+                             var uncompressedLengths = ArrayPool<int>.Shared.Rent(sequenceCount);
+                             try
+                             {
++                                long remainingMaxDecompressedSize = options.Security.MaximumDecompressedSize;
+                                 for (int i = 0; i < sequenceCount; i++)
+                                 {
+                                     uncompressedLengths[i] = reader.ReadInt32();
+@@ -539,6 +541,8 @@ namespace MessagePack
+                                 {
+                                     var uncompressedLength = uncompressedLengths[i];
+                                     ReadOnlySequence<byte> lz4Block = reader.ReadBytes() ?? throw MessagePackSerializationException.ThrowUnexpectedNilWhileDeserializing<ReadOnlySequence<byte>>();
++                                    ThrowIfInvalidLz4BlockLength(uncompressedLength, remainingMaxDecompressedSize);
++                                    remainingMaxDecompressedSize -= uncompressedLength;
+                                     Span<byte> uncompressedSpan = writer.GetSpan(uncompressedLength).Slice(0, uncompressedLength);
+                                     var actualUncompressedLength = LZ4Operation(lz4Block, uncompressedSpan, LZ4CodecDecode);
+                                     Debug.Assert(actualUncompressedLength == uncompressedLength, "Unexpected length of uncompressed data.");
+@@ -559,6 +563,14 @@ namespace MessagePack
+             return false;
+         }
+ 
++        private static void ThrowIfInvalidLz4BlockLength(int uncompressedLength, long remainingMaxDecompressedSize)
++        {
++            if (uncompressedLength < 0 || uncompressedLength > remainingMaxDecompressedSize)
++            {
++                throw new MessagePackSerializationException("LZ4 block declares a decompressed length that exceeds the configured maximum.");
++            }
++        }
++
+         private static void ToLZ4BinaryCore(in ReadOnlySequence<byte> msgpackUncompressedData, ref MessagePackWriter writer, MessagePackCompression compression, int minCompressionSize)
+         {
+             if (msgpackUncompressedData.Length < minCompressionSize)
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializerOptions.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializerOptions.cs
+index dc459823..18c197f7 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializerOptions.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/MessagePackSerializerOptions.cs
+@@ -175,16 +175,32 @@ namespace MessagePack
+         /// <param name="type">The type to be instantiated.</param>
+         /// <exception cref="TypeAccessException">Thrown if the <paramref name="type"/> is not allowed to be deserialized.</exception>
+         /// <remarks>
++        /// <para>
+         /// This method provides a means for an important security mitigation when using the Typeless formatter to prevent untrusted messagepack from
+         /// deserializing objects that may be harmful if instantiated, disposed or finalized.
+-        /// The default implementation throws for only a few known dangerous types.
++        /// The default implementation throws for only a few known dangerous types, or types that nest those dangerous types as generic type arguments or array element types.
+         /// Applications that deserialize from untrusted sources should override this method and throw if the type is not among the expected set.
++        /// </para>
++        /// <para>
++        /// This method is <see langword="virtual" /> for backward compatibility reasons.
++        /// For better security, the preferred method to override is <see cref="ThrowIfDeserializingTypeIsDisallowedCore(Type)"/>.
++        /// </para>
+         /// </remarks>
+         public virtual void ThrowIfDeserializingTypeIsDisallowed(Type type)
+         {
+-            if (type.FullName is string fullName && DisallowedTypes.Contains(fullName))
++            this.ThrowIfDeserializingTypeIsDisallowedCore(type);
++
++            if (type.HasElementType && type.GetElementType() is Type elementType)
+             {
+-                throw new MessagePackSerializationException($"Deserialization attempted to create the type {fullName} which is not allowed.");
++                this.ThrowIfDeserializingTypeIsDisallowed(elementType);
++            }
++
++            if (type.IsConstructedGenericType)
++            {
++                foreach (Type genericTypeArgument in type.GenericTypeArguments)
++                {
++                    this.ThrowIfDeserializingTypeIsDisallowed(genericTypeArgument);
++                }
+             }
+         }
+ 
+@@ -361,6 +377,31 @@ namespace MessagePack
+             return result;
+         }
+ 
++        /// <summary>
++        /// Checks whether a specific given type may be deserialized, disregarding generic type arguments or array element types.
++        /// </summary>
++        /// <param name="type">The type to be instantiated.</param>
++        /// <exception cref="TypeAccessException">Thrown if the <paramref name="type"/> is not allowed to be deserialized.</exception>
++        /// <remarks>
++        /// <para>
++        /// This method provides a means for an important security mitigation when using the Typeless formatter to prevent untrusted messagepack from
++        /// deserializing objects that may be harmful if instantiated, disposed or finalized.
++        /// The default implementation throws for only a few known dangerous types.
++        /// Applications that deserialize from untrusted sources should override this method and throw if the type is not among the expected set.
++        /// </para>
++        /// <para>
++        /// This method is called from the default implementation of <see cref="ThrowIfDeserializingTypeIsDisallowed(Type)"/>
++        /// for the top-level type and again for each generic type argument or array element type.
++        /// </para>
++        /// </remarks>
++        protected virtual void ThrowIfDeserializingTypeIsDisallowedCore(Type type)
++        {
++            if (type.FullName is string fullName && DisallowedTypes.Contains(fullName))
++            {
++                throw new MessagePackSerializationException($"Deserialization attempted to create the type {fullName} which is not allowed.");
++            }
++        }
++
+         /// <summary>
+         /// Creates a clone of this instance with the same properties set.
+         /// </summary>
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/DynamicUnionResolver.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/DynamicUnionResolver.cs
+index 7f1c436b..3f321b78 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/DynamicUnionResolver.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/DynamicUnionResolver.cs
+@@ -331,6 +331,14 @@ namespace MessagePack.Resolvers
+ 
+             il.MarkLabel(falseLabel);
+ 
++            var reader = new ArgumentField(il, 1);
++
++            // options.Security.DepthStep(ref reader);
++            il.EmitLdarg(2);
++            il.EmitCall(getSecurityFromOptions);
++            reader.EmitLdarg();
++            il.EmitCall(securityDepthStep);
++
+             // IFormatterResolver resolver = options.Resolver;
+             LocalBuilder localResolver = il.DeclareLocal(typeof(IFormatterResolver));
+             il.EmitLdarg(2);
+@@ -339,7 +347,6 @@ namespace MessagePack.Resolvers
+ 
+             // read-array header and validate, reader.ReadArrayHeader() != 2) throw;
+             Label rightLabel = il.DefineLabel();
+-            var reader = new ArgumentField(il, 1);
+             reader.EmitLdarg();
+             il.EmitCall(MessagePackReaderTypeInfo.ReadArrayHeader);
+             il.EmitLdc_I4(2);
+@@ -406,6 +413,14 @@ namespace MessagePack.Resolvers
+ 
+             il.MarkLabel(loopEnd);
+ 
++            // reader.Depth--;
++            reader.EmitLdarg();
++            il.Emit(OpCodes.Dup);
++            il.EmitCall(readerDepthGet);
++            il.Emit(OpCodes.Ldc_I4_1);
++            il.Emit(OpCodes.Sub_Ovf);
++            il.EmitCall(readerDepthSet);
++
+             il.Emit(OpCodes.Ldloc, result);
+             il.Emit(OpCodes.Ret);
+         }
+@@ -430,6 +445,10 @@ namespace MessagePack.Resolvers
+         private static readonly Type refKvp = typeof(KeyValuePair<int, int>).MakeByRefType();
+         private static readonly MethodInfo getFormatterWithVerify = typeof(FormatterResolverExtensions).GetRuntimeMethods().First(x => x.Name == "GetFormatterWithVerify");
+         private static readonly MethodInfo getResolverFromOptions = typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Resolver))!.GetMethod!;
++        private static readonly MethodInfo getSecurityFromOptions = typeof(MessagePackSerializerOptions).GetRuntimeProperty(nameof(MessagePackSerializerOptions.Security))!.GetMethod!;
++        private static readonly MethodInfo securityDepthStep = typeof(MessagePackSecurity).GetRuntimeMethod(nameof(MessagePackSecurity.DepthStep), new[] { typeof(MessagePackReader).MakeByRefType() })!;
++        private static readonly MethodInfo readerDepthGet = typeof(MessagePackReader).GetRuntimeProperty(nameof(MessagePackReader.Depth))!.GetMethod!;
++        private static readonly MethodInfo readerDepthSet = typeof(MessagePackReader).GetRuntimeProperty(nameof(MessagePackReader.Depth))!.SetMethod!;
+ 
+         private static readonly Func<Type, MethodInfo> getSerialize = t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod("Serialize", new[] { typeof(MessagePackWriter).MakeByRefType(), t, typeof(MessagePackSerializerOptions) })!;
+         private static readonly Func<Type, MethodInfo> getDeserialize = t => typeof(IMessagePackFormatter<>).MakeGenericType(t).GetRuntimeMethod("Deserialize", new[] { typeof(MessagePackReader).MakeByRefType(), typeof(MessagePackSerializerOptions) })!;
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/ExpandoObjectResolver.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/ExpandoObjectResolver.cs
+index ffc7b149..11107efa 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/ExpandoObjectResolver.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Resolvers/ExpandoObjectResolver.cs
+@@ -40,6 +40,7 @@ namespace MessagePack.Resolvers
+         {
+             protected override object DeserializeMap(ref MessagePackReader reader, int length, MessagePackSerializerOptions options)
+             {
++                ExpandoObjectFormatter.ThrowIfMapTooLargeForUntrustedData(length, options);
+                 IMessagePackFormatter<string> keyFormatter = options.Resolver.GetFormatterWithVerify<string>();
+                 IMessagePackFormatter<object>? objectFormatter = options.Resolver.GetFormatterWithVerify<object>();
+                 IDictionary<string, object?> dictionary = new ExpandoObject();
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/T4/UnsafeMemory.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/T4/UnsafeMemory.cs
+index 7956db01..9ebcd6e7 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/T4/UnsafeMemory.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/T4/UnsafeMemory.cs
+@@ -20,7 +20,7 @@ namespace MessagePack.Internal
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw4(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(4);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -28,13 +28,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 0) = *(int*)(pSrc + 0);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(4);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw5(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(5);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -43,13 +43,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 1) = *(int*)(pSrc + 1);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(5);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw6(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(6);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -58,13 +58,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 2) = *(int*)(pSrc + 2);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(6);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw7(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(7);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -73,13 +73,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 3) = *(int*)(pSrc + 3);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(7);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw8(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(8);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -88,13 +88,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 4) = *(int*)(pSrc + 4);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(8);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw9(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(9);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -104,13 +104,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 5) = *(int*)(pSrc + 5);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(9);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw10(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(10);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -120,13 +120,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 6) = *(int*)(pSrc + 6);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(10);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw11(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(11);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -136,13 +136,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 7) = *(int*)(pSrc + 7);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(11);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw12(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(12);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -152,13 +152,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 8) = *(int*)(pSrc + 8);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(12);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw13(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(13);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -169,13 +169,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 9) = *(int*)(pSrc + 9);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(13);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw14(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(14);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -186,13 +186,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 10) = *(int*)(pSrc + 10);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(14);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw15(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(15);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -203,13 +203,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 11) = *(int*)(pSrc + 11);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(15);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw16(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(16);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -220,13 +220,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 12) = *(int*)(pSrc + 12);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(16);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw17(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(17);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -238,13 +238,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 13) = *(int*)(pSrc + 13);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(17);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw18(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(18);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -256,13 +256,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 14) = *(int*)(pSrc + 14);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(18);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw19(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(19);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -274,13 +274,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 15) = *(int*)(pSrc + 15);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(19);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw20(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(20);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -292,13 +292,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 16) = *(int*)(pSrc + 16);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(20);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw21(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(21);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -311,13 +311,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 17) = *(int*)(pSrc + 17);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(21);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw22(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(22);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -330,13 +330,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 18) = *(int*)(pSrc + 18);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(22);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw23(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(23);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -349,13 +349,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 19) = *(int*)(pSrc + 19);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(23);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw24(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(24);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -368,13 +368,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 20) = *(int*)(pSrc + 20);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(24);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw25(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(25);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -388,13 +388,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 21) = *(int*)(pSrc + 21);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(25);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw26(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(26);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -408,13 +408,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 22) = *(int*)(pSrc + 22);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(26);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw27(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(27);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -428,13 +428,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 23) = *(int*)(pSrc + 23);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(27);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw28(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(28);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -448,13 +448,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 24) = *(int*)(pSrc + 24);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(28);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw29(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(29);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -469,13 +469,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 25) = *(int*)(pSrc + 25);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(29);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw30(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(30);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -490,13 +490,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 26) = *(int*)(pSrc + 26);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(30);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw31(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(31);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -511,7 +511,7 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 27) = *(int*)(pSrc + 27);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(31);
+         }
+     }
+ 
+@@ -520,7 +520,7 @@ namespace MessagePack.Internal
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw8(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(8);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -528,13 +528,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 0) = *(long*)(pSrc + 0);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(8);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw9(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(9);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -543,13 +543,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 1) = *(long*)(pSrc + 1);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(9);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw10(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(10);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -558,13 +558,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 2) = *(long*)(pSrc + 2);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(10);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw11(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(11);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -573,13 +573,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 3) = *(long*)(pSrc + 3);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(11);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw12(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(12);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -588,13 +588,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 4) = *(long*)(pSrc + 4);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(12);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw13(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(13);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -603,13 +603,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 5) = *(long*)(pSrc + 5);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(13);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw14(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(14);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -618,13 +618,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 6) = *(long*)(pSrc + 6);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(14);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw15(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(15);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -633,13 +633,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 7) = *(long*)(pSrc + 7);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(15);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw16(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(16);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -648,13 +648,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 8) = *(long*)(pSrc + 8);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(16);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw17(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(17);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -664,13 +664,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 9) = *(long*)(pSrc + 9);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(17);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw18(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(18);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -680,13 +680,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 10) = *(long*)(pSrc + 10);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(18);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw19(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(19);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -696,13 +696,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 11) = *(long*)(pSrc + 11);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(19);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw20(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(20);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -712,13 +712,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 12) = *(long*)(pSrc + 12);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(20);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw21(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(21);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -728,13 +728,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 13) = *(long*)(pSrc + 13);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(21);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw22(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(22);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -744,13 +744,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 14) = *(long*)(pSrc + 14);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(22);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw23(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(23);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -760,13 +760,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 15) = *(long*)(pSrc + 15);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(23);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw24(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(24);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -776,13 +776,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 16) = *(long*)(pSrc + 16);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(24);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw25(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(25);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -793,13 +793,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 17) = *(long*)(pSrc + 17);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(25);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw26(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(26);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -810,13 +810,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 18) = *(long*)(pSrc + 18);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(26);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw27(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(27);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -827,13 +827,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 19) = *(long*)(pSrc + 19);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(27);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw28(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(28);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -844,13 +844,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 20) = *(long*)(pSrc + 20);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(28);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw29(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(29);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -861,13 +861,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 21) = *(long*)(pSrc + 21);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(29);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw30(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(30);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -878,13 +878,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 22) = *(long*)(pSrc + 22);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(30);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw31(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(31);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -895,7 +895,7 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 23) = *(long*)(pSrc + 23);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(31);
+         }
+     }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Unity/Extension/UnsafeBlitFormatter.cs b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Unity/Extension/UnsafeBlitFormatter.cs
+index 14efd4fa..011b9199 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Unity/Extension/UnsafeBlitFormatter.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/MessagePack/Unity/Extension/UnsafeBlitFormatter.cs
+@@ -48,19 +48,26 @@ namespace MessagePack.Unity.Extension
+                 return null;
+             }
+ 
+-            ExtensionHeader header = reader.ReadExtensionFormatHeader();
+-            if (header.TypeCode != this.TypeCode)
++            ExtensionResult extension = reader.ReadExtensionFormat();
++            if (extension.TypeCode != this.TypeCode)
+             {
+                 throw new InvalidOperationException("Invalid typeCode.");
+             }
+ 
+-            var byteLength = reader.ReadInt32();
+-            var isLittleEndian = reader.ReadBoolean();
++            MessagePackReader extensionReader = reader.Clone(extension.Data);
++            var byteLength = extensionReader.ReadInt32();
++            var isLittleEndian = extensionReader.ReadBoolean();
++            int elementSize = Marshal.SizeOf<T>();
++            long remainingBytes = extensionReader.Sequence.Length - extensionReader.Consumed;
++            if (byteLength < 0 || byteLength % elementSize != 0 || byteLength != remainingBytes)
++            {
++                throw new MessagePackSerializationException("Invalid Unity blit extension length.");
++            }
+ 
+             // Allocate a T[] that we will return. We'll then cast the T[] as byte[] so we can copy the byte sequence directly into it.
+-            var result = new T[byteLength / Marshal.SizeOf<T>()];
++            var result = new T[byteLength / elementSize];
+             Span<byte> resultAsBytes = MemoryMarshal.Cast<T, byte>(result);
+-            reader.ReadRaw(byteLength).CopyTo(resultAsBytes);
++            extensionReader.ReadRaw(byteLength).CopyTo(resultAsBytes);
+ 
+             // Reverse the byte order if necessary.
+             if (isLittleEndian != BitConverter.IsLittleEndian)
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ExpandoObjectTests.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ExpandoObjectTests.cs
+index 99f3b808..9cbf63bb 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ExpandoObjectTests.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ExpandoObjectTests.cs
+@@ -3,6 +3,7 @@
+ 
+ #if !UNITY_2018_3_OR_NEWER
+ 
++using System.Collections.Generic;
+ using System.Dynamic;
+ using System.Runtime.Serialization;
+ using MessagePack.Resolvers;
+@@ -85,6 +86,24 @@ namespace MessagePack.Tests
+             Assert.Equal(expando.Other.OtherProperty, expando2.Other.OtherProperty);
+         }
+ 
++        [Fact]
++        [Trait("CWE", "407")]
++        public void ExpandoObject_UntrustedDataRejectsLargeMaps()
++        {
++            byte[] msgpack = CreateMapWithNilValues(1025);
++
++            Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<ExpandoObject>(msgpack, ExpandoObjectResolver.Options));
++        }
++
++        [Fact]
++        [Trait("CWE", "407")]
++        public void ExpandoObjectNestedMap_UntrustedDataRejectsLargeMaps()
++        {
++            byte[] msgpack = CreateMapWithNilValues(1025);
++
++            Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<object>(msgpack, ExpandoObjectResolver.Options));
++        }
++
+ #if !UNITY_2018_3_OR_NEWER
+ 
+         [Fact]
+@@ -115,6 +134,17 @@ namespace MessagePack.Tests
+             [DataMember]
+             public string OtherProperty { get; set; }
+         }
++
++        private static byte[] CreateMapWithNilValues(int count)
++        {
++            var dictionary = new Dictionary<string, object>();
++            for (int index = 0; index < count; index++)
++            {
++                dictionary.Add("k" + index.ToString(System.Globalization.CultureInfo.InvariantCulture), null);
++            }
++
++            return MessagePackSerializer.Serialize(dictionary, MessagePackSerializerOptions.Standard);
++        }
+     }
+ }
+ 
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/LZ4Test.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/LZ4Test.cs
+index 062576fc..3a75c5ac 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/LZ4Test.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/LZ4Test.cs
+@@ -1,6 +1,7 @@
+ ﻿// Copyright (c) All contributors. All rights reserved.
+ // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+ 
++using System.Buffers;
+ using System.Linq;
+ using Xunit;
+ using Xunit.Abstractions;
+@@ -22,6 +23,64 @@ namespace MessagePack.Tests
+ 
+ #endif
+ 
++        [Theory]
++        [InlineData(MessagePackCompression.Lz4Block)]
++        [InlineData(MessagePackCompression.Lz4BlockArray)]
++        [Trait("CWE", "409")]
++        public void Lz4RejectsDeclaredOutputOverMaximumBeforeAllocating(MessagePackCompression compression)
++        {
++            byte[] payload = compression == MessagePackCompression.Lz4Block
++                ? new byte[] { 0xC7, 0x06, 0x63, 0xD2, 0x7F, 0xFF, 0xFF, 0xFF, 0x00 }
++                : new byte[] { 0x92, 0xC7, 0x05, 0x62, 0xD2, 0x7F, 0xFF, 0xFF, 0xFF, 0xC4, 0x01, 0x00 };
++            var arrayPool = new ThrowingArrayPool(1024);
++            var options = MessagePackSerializerOptions.Standard
++                .WithCompression(compression)
++                .WithSecurity(MessagePackSecurity.UntrustedData)
++                .WithPool(new SequencePool(1, arrayPool));
++
++            MessagePackSerializationException ex = Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<object>(payload, options));
++
++            Assert.Contains("exceeds the configured maximum", FlattenMessages(ex));
++            Assert.Null(arrayPool.LargestRequestedLength);
++        }
++
++        [Fact]
++        [Trait("CWE", "409")]
++        public void Lz4BlockArrayRejectsTotalDeclaredOutputOverMaximum()
++        {
++            byte[] payload =
++            {
++                0x93,
++                0xC7, 0x02, 0x62, 0x04, 0x04,
++                0xC4, 0x05, 0x40, 0x20, 0x20, 0x20, 0x20,
++                0xC4, 0x05, 0x40, 0x20, 0x20, 0x20, 0x20,
++            };
++            var options = MessagePackSerializerOptions.Standard
++                .WithCompression(MessagePackCompression.Lz4BlockArray)
++                .WithSecurity(MessagePackSecurity.UntrustedData.WithMaximumDecompressedSize(7));
++
++            MessagePackSerializationException ex = Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<object>(payload, options));
++
++            Assert.Contains("exceeds the configured maximum", FlattenMessages(ex));
++        }
++
++        [Theory]
++        [InlineData(MessagePackCompression.Lz4Block)]
++        [InlineData(MessagePackCompression.Lz4BlockArray)]
++        [Trait("CWE", "409")]
++        public void Lz4AllowsHighlyCompressiblePayloadWithinMaximum(MessagePackCompression compression)
++        {
++            string data = new string(' ', 100_000);
++            var options = MessagePackSerializerOptions.Standard
++                .WithCompression(compression)
++                .WithSecurity(MessagePackSecurity.UntrustedData.WithMaximumDecompressedSize(200_000));
++
++            byte[] payload = MessagePackSerializer.Serialize(data, options);
++            string actual = MessagePackSerializer.Deserialize<string>(payload, options);
++
++            Assert.Equal(data, actual);
++        }
++
+         [Fact]
+         public void Lz4Compress()
+         {
+@@ -123,5 +182,37 @@ namespace MessagePack.Tests
+                 actual[i].Prop3.Is(expected[i].Prop3);
+             }
+         }
++
++        private static string FlattenMessages(System.Exception ex)
++        {
++            return ex.InnerException is null ? ex.Message : ex.Message + " " + FlattenMessages(ex.InnerException);
++        }
++
++        private class ThrowingArrayPool : ArrayPool<byte>
++        {
++            private readonly int maximumLength;
++
++            internal ThrowingArrayPool(int maximumLength)
++            {
++                this.maximumLength = maximumLength;
++            }
++
++            internal int? LargestRequestedLength { get; private set; }
++
++            public override byte[] Rent(int minimumLength)
++            {
++                this.LargestRequestedLength = this.LargestRequestedLength.HasValue ? System.Math.Max(this.LargestRequestedLength.Value, minimumLength) : minimumLength;
++                if (minimumLength > this.maximumLength)
++                {
++                    throw new System.InvalidOperationException("Unexpected decompression allocation request: " + minimumLength);
++                }
++
++                return new byte[minimumLength];
++            }
++
++            public override void Return(byte[] array, bool clearArray = false)
++            {
++            }
++        }
+     }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackReaderTests.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackReaderTests.cs
+index 774927d1..33c36343 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackReaderTests.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackReaderTests.cs
+@@ -101,6 +101,33 @@ namespace MessagePack.Tests
+             });
+         }
+ 
++        [Fact]
++        [Trait("CWE", "190")]
++        public void ReadMapHeader_MitigatesLargeAllocations_WhenMinimumPayloadLengthOverflowsInt32()
++        {
++            byte[] msgpack = { MessagePackCode.Map32, 0x40, 0, 0, 0 };
++
++            Assert.Throws<EndOfStreamException>(() =>
++            {
++                var reader = new MessagePackReader(msgpack);
++                reader.ReadMapHeader();
++            });
++        }
++
++        [Fact]
++        [Trait("CWE", "190")]
++        public void SkipMap_MitigatesLargeAllocations_WhenMinimumPayloadLengthOverflowsInt32()
++        {
++            byte[] msgpack = { MessagePackCode.Map32, 0x40, 0, 0, 0 };
++
++            var ex = Assert.ThrowsAny<Exception>(() =>
++            {
++                var reader = new MessagePackReader(msgpack);
++                reader.Skip();
++            });
++            Assert.True(ex is EndOfStreamException or MessagePackSerializationException or OverflowException);
++        }
++
+         [Fact]
+         public void TryReadMapHeader()
+         {
+@@ -252,6 +279,49 @@ namespace MessagePack.Tests
+             Assert.True(reader.End);
+         }
+ 
++        [Fact]
++        [Trait("CWE", "674")]
++        public void Skip_DeeplyNestedArrays_DoesNotOverflowStack()
++        {
++            const int depth = 100_000;
++            byte[] msgpack = new byte[depth + 1];
++
++            for (int i = 0; i < depth; i++)
++            {
++                msgpack[i] = MessagePackCode.MinFixArray + 1;
++            }
++
++            msgpack[msgpack.Length - 1] = MessagePackCode.Nil;
++
++            MessagePackReader reader = new(msgpack);
++
++            reader.Skip();
++
++            Assert.True(reader.End);
++        }
++
++        [Fact]
++        [Trait("CWE", "674")]
++        public void Skip_DeeplyNestedMaps_DoesNotOverflowStack()
++        {
++            const int depth = 100_000;
++            byte[] msgpack = new byte[(depth * 2) + 1];
++
++            for (int i = 0; i < depth; i++)
++            {
++                msgpack[i * 2] = MessagePackCode.MinFixMap + 1;
++                msgpack[(i * 2) + 1] = MessagePackCode.Nil;
++            }
++
++            msgpack[msgpack.Length - 1] = MessagePackCode.Nil;
++
++            MessagePackReader reader = new(msgpack);
++
++            reader.Skip();
++
++            Assert.True(reader.End);
++        }
++
+         [Fact]
+         public void Depth()
+         {
+@@ -322,6 +392,15 @@ namespace MessagePack.Tests
+             AssertIncomplete((ref MessagePackWriter writer) => writer.Write(0xff), (ref MessagePackReader reader) => reader.ReadUInt64());
+         }
+ 
++        [Fact]
++        [Trait("CWE", "789")]
++        public void ReadDateTime_RejectsInvalidExtensionLengths()
++        {
++            byte[] payload = new byte[] { MessagePackCode.Ext32, 0x00, 0x10, 0x00, 0x00, 0xff };
++
++            Assert.Throws<EndOfStreamException>(() => new MessagePackReader(new ReadOnlySequence<byte>(payload)).ReadDateTime());
++        }
++
+         [Fact]
+         public void CreatePeekReader()
+         {
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSecurityTests.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSecurityTests.cs
+index 74121e5d..ef1cd3f4 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSecurityTests.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSecurityTests.cs
+@@ -31,12 +31,14 @@ public class MessagePackSecurityTests
+     public void Untrusted()
+     {
+         Assert.True(MessagePackSecurity.UntrustedData.HashCollisionResistant);
++        Assert.Equal(64 * 1024 * 1024, MessagePackSecurity.UntrustedData.MaximumDecompressedSize);
+     }
+ 
+     [Fact]
+     public void Trusted()
+     {
+         Assert.False(MessagePackSecurity.TrustedData.HashCollisionResistant);
++        Assert.Equal(int.MaxValue, MessagePackSecurity.TrustedData.MaximumDecompressedSize);
+     }
+ 
+     [Fact]
+@@ -46,6 +48,15 @@ public class MessagePackSecurityTests
+         Assert.True(MessagePackSecurity.TrustedData.WithHashCollisionResistant(true).HashCollisionResistant);
+     }
+ 
++    [Fact]
++    [Trait("CWE", "409")]
++    public void WithMaximumDecompressedSize()
++    {
++        Assert.Same(MessagePackSecurity.UntrustedData, MessagePackSecurity.UntrustedData.WithMaximumDecompressedSize(64 * 1024 * 1024));
++        Assert.Throws<ArgumentOutOfRangeException>(() => MessagePackSecurity.UntrustedData.WithMaximumDecompressedSize(-1));
++        Assert.Equal(1024, MessagePackSecurity.UntrustedData.WithMaximumDecompressedSize(1024).MaximumDecompressedSize);
++    }
++
+     [Fact]
+     public void EqualityComparer_CollisionResistance_Int64()
+     {
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTest.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTest.cs
+index 211a3514..5157b4fa 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTest.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTest.cs
+@@ -209,6 +209,18 @@ namespace MessagePack.Tests
+             Assert.Equal(3, await MessagePackSerializer.DeserializeAsync<int>(stream));
+         }
+ 
++        [Fact]
++        [Trait("CWE", "674")]
++        public void StackDepthCheck_ConvertToJsonTypelessExtension()
++        {
++            const int maxDepth = 3;
++            byte[] msgpack = BuildNestedTypelessExtension(maxDepth + 1);
++            var options = MessagePackSerializerOptions.Standard
++                .WithSecurity(MessagePackSecurity.UntrustedData.WithMaximumObjectGraphDepth(maxDepth));
++
++            AssertConvertToJsonRecursionCheckThrows(new ReadOnlySequence<byte>(msgpack), options);
++        }
++
+         [Theory]
+         [InlineData(true)]
+         [InlineData(false)]
+@@ -275,6 +287,18 @@ namespace MessagePack.Tests
+             Assert.IsType<InsufficientExecutionStackException>(ex.InnerException);
+         }
+ 
++        [Fact]
++        [Trait("CWE", "674")]
++        public void StackDepthCheck_DynamicUnionResolver()
++        {
++            byte[] msgpack = MessagePackSerializer.Serialize<IDepthCheckedUnionNode>(new DepthCheckedUnionBranch());
++            var options = MessagePackSerializerOptions.Standard
++                .WithSecurity(MessagePackSecurity.UntrustedData.WithMaximumObjectGraphDepth(1));
++
++            var ex = Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<IDepthCheckedUnionNode>(msgpack, options));
++            Assert.IsType<InsufficientExecutionStackException>(ex.InnerException);
++        }
++
+ #endif
+ 
+         private delegate void WriterHelper(ref MessagePackWriter writer);
+@@ -318,6 +342,28 @@ namespace MessagePack.Tests
+             Assert.IsType<InsufficientExecutionStackException>(ex.InnerException);
+         }
+ 
++        private static byte[] BuildNestedTypelessExtension(int levels)
++        {
++            byte[] msgpack = new byte[(levels * 6) + 2];
++            int offset = msgpack.Length;
++            msgpack[--offset] = (byte)'x';
++            msgpack[--offset] = 0xa1;
++            int innerLength = 2;
++
++            for (int level = 0; level < levels; level++)
++            {
++                msgpack[--offset] = unchecked((byte)ThisLibraryExtensionTypeCodes.TypelessFormatter);
++                msgpack[--offset] = (byte)innerLength;
++                msgpack[--offset] = (byte)(innerLength >> 8);
++                msgpack[--offset] = (byte)(innerLength >> 16);
++                msgpack[--offset] = (byte)(innerLength >> 24);
++                msgpack[--offset] = 0xc9;
++                innerLength += 6;
++            }
++
++            return msgpack;
++        }
++
+         [DataContract]
+         public class RecursiveObjectGraph
+         {
+@@ -414,4 +460,30 @@ namespace MessagePack.Tests
+             base.Dispose(disposing);
+         }
+     }
++
++    [MessagePackObject(keyAsPropertyName: true)]
++    public class SkipUnknownMemberTarget
++    {
++        public int Known { get; set; }
++    }
++
++    [Union(0, typeof(DepthCheckedUnionLeaf))]
++    [Union(999, typeof(DepthCheckedUnionBranch))]
++    public interface IDepthCheckedUnionNode
++    {
++    }
++
++    [MessagePackObject]
++    public class DepthCheckedUnionLeaf : IDepthCheckedUnionNode
++    {
++        [Key(0)]
++        public int Value { get; set; }
++    }
++
++    [MessagePackObject]
++    public class DepthCheckedUnionBranch : IDepthCheckedUnionNode
++    {
++        [Key(0)]
++        public IDepthCheckedUnionNode Child { get; set; }
++    }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTypelessTests.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTypelessTests.cs
+index 995aaa6c..9243854f 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTypelessTests.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MessagePackSerializerTypelessTests.cs
+@@ -4,6 +4,7 @@
+ #if !UNITY_2018_3_OR_NEWER
+ 
+ using System;
++using System.Collections.Generic;
+ using System.Runtime.Serialization;
+ using MessagePack;
+ using MessagePack.Formatters;
+@@ -47,6 +48,24 @@ public class MessagePackSerializerTypelessTests
+         Assert.IsType<TypeAccessException>(ex.InnerException);
+     }
+ 
++    [Theory]
++    [MemberData(nameof(DisallowedNestedTypeData))]
++    [Trait("CWE", "502")]
++    public void SerializationOfDisallowedNestedType(object value)
++    {
++        var myOptions = new MyTypelessOptions();
++        byte[] msgpack = MessagePackSerializer.Typeless.Serialize(value, myOptions);
++        this.logger.WriteLine(MessagePackSerializer.ConvertToJson(msgpack, myOptions));
++        var ex = Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Typeless.Deserialize(msgpack, myOptions));
++        Assert.IsType<TypeAccessException>(ex.InnerException);
++    }
++
++    public static IEnumerable<object[]> DisallowedNestedTypeData()
++    {
++        yield return new object[] { new MyObject[] { new() { SomeValue = 5 } } };
++        yield return new object[] { new List<MyObject> { new() { SomeValue = 5 } } };
++    }
++
+     [Fact(Skip = "Known bug https://github.com/neuecc/MessagePack-CSharp/issues/651")]
+     public void DecimalShouldBeDeserializedAsDecimal()
+     {
+@@ -137,7 +156,7 @@ public class MessagePackSerializerTypelessTests
+         {
+         }
+ 
+-        public override void ThrowIfDeserializingTypeIsDisallowed(Type type)
++        protected override void ThrowIfDeserializingTypeIsDisallowedCore(Type type)
+         {
+             if (type == typeof(MyObject))
+             {
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MultiDimensionalArrayTest.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MultiDimensionalArrayTest.cs
+index f4a0a261..59daa7fa 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MultiDimensionalArrayTest.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/MultiDimensionalArrayTest.cs
+@@ -67,5 +67,60 @@ namespace MessagePack.Tests
+                 }
+             }
+         }
++
++        [Fact]
++        [Trait("CWE", "789")]
++        public void RejectsTwoDimensionalArrayWithMismatchedElementCount()
++        {
++            byte[] payload =
++            {
++                0x93,
++                0xCE, 0x00, 0x00, 0x07, 0xD0,
++                0xCE, 0x00, 0x00, 0x07, 0xD0,
++                0x90,
++            };
++
++            AssertRejects<byte[,]>(payload);
++        }
++
++        [Fact]
++        [Trait("CWE", "789")]
++        public void RejectsThreeDimensionalArrayWithMismatchedElementCount()
++        {
++            byte[] payload =
++            {
++                0x94,
++                0xCC, 0x80,
++                0xCC, 0x80,
++                0xCC, 0x80,
++                0x90,
++            };
++
++            AssertRejects<byte[,,]>(payload);
++        }
++
++        [Fact]
++        [Trait("CWE", "789")]
++        public void RejectsFourDimensionalArrayWithMismatchedElementCount()
++        {
++            byte[] payload =
++            {
++                0x95,
++                0x20,
++                0x20,
++                0x20,
++                0x20,
++                0x90,
++            };
++
++            AssertRejects<byte[,,,]>(payload);
++        }
++
++        private void AssertRejects<T>(byte[] payload)
++        {
++            var options = MessagePackSerializerOptions.Standard.WithSecurity(MessagePackSecurity.UntrustedData);
++
++            Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<T>(payload, options));
++        }
+     }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/StandardClassLibraryFormatterTests.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/StandardClassLibraryFormatterTests.cs
+index 35123476..c3c60cef 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/StandardClassLibraryFormatterTests.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/StandardClassLibraryFormatterTests.cs
+@@ -35,6 +35,27 @@ namespace MessagePack.Tests
+             Assert.Equal(type, type2);
+         }
+ 
++        [Fact]
++        public void SystemType_DeserializeUsesLoadType()
++        {
++            byte[] msgpack = MessagePackSerializer.Serialize(new TypeHolder { Type = typeof(Uri) }, MessagePackSerializerOptions.Standard);
++            var options = new RejectingTypeLoadOptions(typeof(Uri));
++
++            var ex = Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<TypeHolder>(msgpack, options));
++            Assert.IsType<TypeLoadException>(ex.InnerException);
++            Assert.Equal(1, options.LoadTypeCalls);
++        }
++
++        [Fact]
++        public void SystemType_DeserializeRejectsDisallowedType()
++        {
++            byte[] msgpack = MessagePackSerializer.Serialize(new TypeHolder { Type = typeof(Uri) }, MessagePackSerializerOptions.Standard);
++            var options = new DisallowingTypeOptions(typeof(Uri));
++
++            var ex = Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<TypeHolder>(msgpack, options));
++            Assert.IsType<TypeAccessException>(ex.InnerException);
++        }
++
+         [Fact]
+         public void DeserializeByteArrayFromFixArray()
+         {
+@@ -132,5 +153,68 @@ namespace MessagePack.Tests
+                 return MessagePackSerializer.Deserialize<T>(msgpack, MessagePackSerializerOptions.Standard);
+             }
+         }
++
++        [MessagePackObject]
++        public class TypeHolder
++        {
++            [Key(0)]
++            public Type Type { get; set; }
++        }
++
++        private class RejectingTypeLoadOptions : MessagePackSerializerOptions
++        {
++            private readonly Type rejectedType;
++
++            internal RejectingTypeLoadOptions(Type rejectedType)
++                : base(MessagePackSerializerOptions.Standard)
++            {
++                this.rejectedType = rejectedType;
++            }
++
++            private RejectingTypeLoadOptions(RejectingTypeLoadOptions copyFrom)
++                : base(copyFrom)
++            {
++                this.rejectedType = copyFrom.rejectedType;
++                this.LoadTypeCalls = copyFrom.LoadTypeCalls;
++            }
++
++            public int LoadTypeCalls { get; private set; }
++
++            public override Type LoadType(string typeName)
++            {
++                Type type = base.LoadType(typeName);
++                this.LoadTypeCalls++;
++                return type == this.rejectedType ? null : type;
++            }
++
++            protected override MessagePackSerializerOptions Clone() => new RejectingTypeLoadOptions(this);
++        }
++
++        private class DisallowingTypeOptions : MessagePackSerializerOptions
++        {
++            private readonly Type rejectedType;
++
++            internal DisallowingTypeOptions(Type rejectedType)
++                : base(MessagePackSerializerOptions.Standard)
++            {
++                this.rejectedType = rejectedType;
++            }
++
++            private DisallowingTypeOptions(DisallowingTypeOptions copyFrom)
++                : base(copyFrom)
++            {
++                this.rejectedType = copyFrom.rejectedType;
++            }
++
++            public override void ThrowIfDeserializingTypeIsDisallowed(Type type)
++            {
++                if (type == this.rejectedType)
++                {
++                    throw new TypeAccessException();
++                }
++            }
++
++            protected override MessagePackSerializerOptions Clone() => new DisallowingTypeOptions(this);
++        }
+     }
+ }
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ToJsonTest.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ToJsonTest.cs
+index 8069ea26..99fceee4 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ToJsonTest.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/ToJsonTest.cs
+@@ -47,6 +47,29 @@ namespace MessagePack.Tests
+             this.JsonConvert(json, LZ4Standard).Is(json);
+         }
+ 
++        [Theory]
++        [InlineData(false)]
++        [InlineData(true)]
++        [Trait("CWE", "674")]
++        public void ConvertFromJsonRejectsExcessiveNesting(bool compression)
++        {
++            var options = MessagePackSerializerOptions.Standard
++                .WithCompression(compression ? MessagePackCompression.Lz4Block : MessagePackCompression.None)
++                .WithSecurity(MessagePackSecurity.UntrustedData.WithMaximumObjectGraphDepth(3));
++
++            Assert.Throws<InsufficientExecutionStackException>(() => MessagePackSerializer.ConvertFromJson("[[[[1]]]]", options));
++        }
++
++        [Fact]
++        [Trait("CWE", "674")]
++        public void ConvertFromJsonSkipsLongSeparatorRunIteratively()
++        {
++            var json = new string(',', 200_000) + "null";
++            var msgpack = MessagePackSerializer.ConvertFromJson(json);
++
++            MessagePackSerializer.ConvertToJson(msgpack).Is("null");
++        }
++
+         [Fact]
+         public void FloatJson()
+         {
+diff --git a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/UnsafeMemoryTest.cs b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/UnsafeMemoryTest.cs
+index c9b5f023..14002930 100644
+--- a/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/UnsafeMemoryTest.cs
++++ b/src/MessagePack.UnityClient/Assets/Scripts/Tests/ShareTests/UnsafeMemoryTest.cs
+@@ -3,12 +3,7 @@
+ 
+ using System;
+ using System.Buffers;
+-using System.Collections.Generic;
+ using System.Linq;
+-using System.Reflection;
+-using System.Text;
+-using System.Threading.Tasks;
+-using MessagePack.Formatters;
+ using MessagePack.Internal;
+ using Nerdbank.Streams;
+ using Xunit;
+@@ -70,6 +65,35 @@ namespace MessagePack.Tests
+             }
+         }
+ 
++        [Fact]
++        public void WriteRaw_LargerSpan()
++        {
++            ReadOnlySpan<byte> src = new byte[MessagePackRange.MaxFixStringLength + 15];
++            Sequence<byte> dst = new();
++
++            // x86
++            for (int i = 1; i <= MessagePackRange.MaxFixStringLength; i++)
++            {
++                dst.Reset();
++                MessagePackWriter dstWriter = new(dst);
++                (typeof(UnsafeMemory32).GetMethod("WriteRaw" + i).CreateDelegate(typeof(WriteDelegate)) as WriteDelegate).Invoke(ref dstWriter, src);
++                dstWriter.Flush();
++                dst.Length.Is(i);
++                src.Slice(0, i).SequenceEqual(CodeGenHelpers.GetSpanFromSequence(dst.AsReadOnlySequence)).IsTrue();
++            }
++
++            // x64
++            for (int i = 1; i <= MessagePackRange.MaxFixStringLength; i++)
++            {
++                dst.Reset();
++                var dstWriter = new MessagePackWriter(dst);
++                (typeof(UnsafeMemory64).GetMethod("WriteRaw" + i).CreateDelegate(typeof(WriteDelegate)) as WriteDelegate).Invoke(ref dstWriter, src);
++                dstWriter.Flush();
++                dst.Length.Is(i);
++                src.Slice(0, i).SequenceEqual(CodeGenHelpers.GetSpanFromSequence(dst.AsReadOnlySequence)).IsTrue();
++            }
++        }
++
+ #endif
+     }
+ }
+diff --git a/src/MessagePack/Internal/UnsafeMemory.cs b/src/MessagePack/Internal/UnsafeMemory.cs
+index 7956db01..9ebcd6e7 100644
+--- a/src/MessagePack/Internal/UnsafeMemory.cs
++++ b/src/MessagePack/Internal/UnsafeMemory.cs
+@@ -20,7 +20,7 @@ namespace MessagePack.Internal
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw4(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(4);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -28,13 +28,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 0) = *(int*)(pSrc + 0);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(4);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw5(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(5);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -43,13 +43,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 1) = *(int*)(pSrc + 1);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(5);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw6(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(6);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -58,13 +58,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 2) = *(int*)(pSrc + 2);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(6);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw7(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(7);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -73,13 +73,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 3) = *(int*)(pSrc + 3);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(7);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw8(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(8);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -88,13 +88,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 4) = *(int*)(pSrc + 4);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(8);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw9(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(9);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -104,13 +104,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 5) = *(int*)(pSrc + 5);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(9);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw10(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(10);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -120,13 +120,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 6) = *(int*)(pSrc + 6);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(10);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw11(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(11);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -136,13 +136,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 7) = *(int*)(pSrc + 7);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(11);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw12(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(12);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -152,13 +152,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 8) = *(int*)(pSrc + 8);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(12);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw13(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(13);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -169,13 +169,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 9) = *(int*)(pSrc + 9);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(13);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw14(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(14);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -186,13 +186,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 10) = *(int*)(pSrc + 10);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(14);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw15(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(15);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -203,13 +203,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 11) = *(int*)(pSrc + 11);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(15);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw16(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(16);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -220,13 +220,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 12) = *(int*)(pSrc + 12);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(16);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw17(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(17);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -238,13 +238,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 13) = *(int*)(pSrc + 13);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(17);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw18(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(18);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -256,13 +256,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 14) = *(int*)(pSrc + 14);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(18);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw19(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(19);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -274,13 +274,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 15) = *(int*)(pSrc + 15);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(19);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw20(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(20);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -292,13 +292,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 16) = *(int*)(pSrc + 16);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(20);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw21(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(21);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -311,13 +311,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 17) = *(int*)(pSrc + 17);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(21);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw22(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(22);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -330,13 +330,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 18) = *(int*)(pSrc + 18);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(22);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw23(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(23);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -349,13 +349,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 19) = *(int*)(pSrc + 19);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(23);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw24(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(24);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -368,13 +368,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 20) = *(int*)(pSrc + 20);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(24);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw25(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(25);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -388,13 +388,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 21) = *(int*)(pSrc + 21);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(25);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw26(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(26);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -408,13 +408,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 22) = *(int*)(pSrc + 22);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(26);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw27(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(27);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -428,13 +428,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 23) = *(int*)(pSrc + 23);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(27);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw28(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(28);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -448,13 +448,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 24) = *(int*)(pSrc + 24);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(28);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw29(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(29);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -469,13 +469,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 25) = *(int*)(pSrc + 25);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(29);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw30(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(30);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -490,13 +490,13 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 26) = *(int*)(pSrc + 26);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(30);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw31(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(31);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -511,7 +511,7 @@ namespace MessagePack.Internal
+                 *(int*)(pDst + 27) = *(int*)(pSrc + 27);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(31);
+         }
+     }
+ 
+@@ -520,7 +520,7 @@ namespace MessagePack.Internal
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw8(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(8);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -528,13 +528,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 0) = *(long*)(pSrc + 0);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(8);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw9(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(9);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -543,13 +543,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 1) = *(long*)(pSrc + 1);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(9);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw10(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(10);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -558,13 +558,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 2) = *(long*)(pSrc + 2);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(10);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw11(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(11);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -573,13 +573,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 3) = *(long*)(pSrc + 3);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(11);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw12(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(12);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -588,13 +588,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 4) = *(long*)(pSrc + 4);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(12);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw13(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(13);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -603,13 +603,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 5) = *(long*)(pSrc + 5);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(13);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw14(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(14);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -618,13 +618,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 6) = *(long*)(pSrc + 6);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(14);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw15(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(15);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -633,13 +633,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 7) = *(long*)(pSrc + 7);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(15);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw16(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(16);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -648,13 +648,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 8) = *(long*)(pSrc + 8);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(16);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw17(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(17);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -664,13 +664,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 9) = *(long*)(pSrc + 9);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(17);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw18(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(18);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -680,13 +680,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 10) = *(long*)(pSrc + 10);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(18);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw19(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(19);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -696,13 +696,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 11) = *(long*)(pSrc + 11);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(19);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw20(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(20);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -712,13 +712,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 12) = *(long*)(pSrc + 12);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(20);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw21(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(21);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -728,13 +728,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 13) = *(long*)(pSrc + 13);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(21);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw22(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(22);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -744,13 +744,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 14) = *(long*)(pSrc + 14);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(22);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw23(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(23);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -760,13 +760,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 15) = *(long*)(pSrc + 15);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(23);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw24(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(24);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -776,13 +776,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 16) = *(long*)(pSrc + 16);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(24);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw25(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(25);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -793,13 +793,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 17) = *(long*)(pSrc + 17);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(25);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw26(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(26);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -810,13 +810,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 18) = *(long*)(pSrc + 18);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(26);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw27(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(27);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -827,13 +827,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 19) = *(long*)(pSrc + 19);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(27);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw28(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(28);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -844,13 +844,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 20) = *(long*)(pSrc + 20);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(28);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw29(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(29);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -861,13 +861,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 21) = *(long*)(pSrc + 21);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(29);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw30(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(30);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -878,13 +878,13 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 22) = *(long*)(pSrc + 22);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(30);
+         }
+ 
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw31(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(31);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -895,7 +895,7 @@ namespace MessagePack.Internal
+                 *(long*)(pDst + 23) = *(long*)(pSrc + 23);
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(31);
+         }
+     }
+ }
+diff --git a/src/MessagePack/Internal/UnsafeMemory.tt b/src/MessagePack/Internal/UnsafeMemory.tt
+index cace009d..6d189170 100644
+--- a/src/MessagePack/Internal/UnsafeMemory.tt
++++ b/src/MessagePack/Internal/UnsafeMemory.tt
+@@ -28,7 +28,7 @@ namespace MessagePack.Internal
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw<#= i #>(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(<#= i #>);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -41,7 +41,7 @@ namespace MessagePack.Internal
+ <# } #>
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(<#= i #>);
+         }
+ <# } #>
+     }
+@@ -52,7 +52,7 @@ namespace MessagePack.Internal
+         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+         public static unsafe void WriteRaw<#= i #>(ref MessagePackWriter writer, ReadOnlySpan<byte> src)
+         {
+-            Span<byte> dst = writer.GetSpan(src.Length);
++            Span<byte> dst = writer.GetSpan(<#= i #>);
+ 
+             fixed (byte* pSrc = &src[0])
+             fixed (byte* pDst = &dst[0])
+@@ -65,7 +65,7 @@ namespace MessagePack.Internal
+ <# } #>
+             }
+ 
+-            writer.Advance(src.Length);
++            writer.Advance(<#= i #>);
+         }
+ <# } #>
+     }
+diff --git a/src/MessagePack/net472/PublicAPI.Shipped.txt b/src/MessagePack/net472/PublicAPI.Shipped.txt
+index 2893efd8..ad5a0623 100644
+--- a/src/MessagePack/net472/PublicAPI.Shipped.txt
++++ b/src/MessagePack/net472/PublicAPI.Shipped.txt
+@@ -1177,9 +1177,12 @@ MessagePack.Formatters.StringInterningFormatter
+ MessagePack.Formatters.StringInterningFormatter.Deserialize(ref MessagePack.MessagePackReader reader, MessagePack.MessagePackSerializerOptions! options) -> string?
+ MessagePack.Formatters.StringInterningFormatter.Serialize(ref MessagePack.MessagePackWriter writer, string? value, MessagePack.MessagePackSerializerOptions! options) -> void
+ MessagePack.Formatters.StringInterningFormatter.StringInterningFormatter() -> void
++MessagePack.MessagePackSecurity.MaximumDecompressedSize.get -> int
++MessagePack.MessagePackSecurity.WithMaximumDecompressedSize(int maximumDecompressedSize) -> MessagePack.MessagePackSecurity!
+ MessagePack.MessagePackSerializerOptions.CompressionMinLength.get -> int
+ MessagePack.MessagePackSerializerOptions.SuggestedContiguousMemorySize.get -> int
+ MessagePack.MessagePackSerializerOptions.WithCompressionMinLength(int compressionMinLength) -> MessagePack.MessagePackSerializerOptions!
+ MessagePack.MessagePackSerializerOptions.WithSuggestedContiguousMemorySize(int suggestedContiguousMemorySize) -> MessagePack.MessagePackSerializerOptions!
+ static MessagePack.MessagePackWriter.GetEncodedLength(long value) -> int
+ static MessagePack.MessagePackWriter.GetEncodedLength(ulong value) -> int
++virtual MessagePack.MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowedCore(System.Type! type) -> void
+diff --git a/src/MessagePack/net6.0/PublicAPI.Shipped.txt b/src/MessagePack/net6.0/PublicAPI.Shipped.txt
+index 2c67e946..cc4cfc41 100644
+--- a/src/MessagePack/net6.0/PublicAPI.Shipped.txt
++++ b/src/MessagePack/net6.0/PublicAPI.Shipped.txt
+@@ -1189,6 +1189,8 @@ MessagePack.Formatters.StringInterningFormatter.StringInterningFormatter() -> vo
+ MessagePack.Formatters.TimeOnlyFormatter
+ MessagePack.Formatters.TimeOnlyFormatter.Deserialize(ref MessagePack.MessagePackReader reader, MessagePack.MessagePackSerializerOptions! options) -> System.TimeOnly
+ MessagePack.Formatters.TimeOnlyFormatter.Serialize(ref MessagePack.MessagePackWriter writer, System.TimeOnly value, MessagePack.MessagePackSerializerOptions! options) -> void
++MessagePack.MessagePackSecurity.MaximumDecompressedSize.get -> int
++MessagePack.MessagePackSecurity.WithMaximumDecompressedSize(int maximumDecompressedSize) -> MessagePack.MessagePackSecurity!
+ MessagePack.MessagePackSerializerOptions.CompressionMinLength.get -> int
+ MessagePack.MessagePackSerializerOptions.SuggestedContiguousMemorySize.get -> int
+ MessagePack.MessagePackSerializerOptions.WithCompressionMinLength(int compressionMinLength) -> MessagePack.MessagePackSerializerOptions!
+@@ -1197,3 +1199,4 @@ static MessagePack.MessagePackWriter.GetEncodedLength(long value) -> int
+ static MessagePack.MessagePackWriter.GetEncodedLength(ulong value) -> int
+ static readonly MessagePack.Formatters.DateOnlyFormatter.Instance -> MessagePack.Formatters.DateOnlyFormatter!
+ static readonly MessagePack.Formatters.TimeOnlyFormatter.Instance -> MessagePack.Formatters.TimeOnlyFormatter!
++virtual MessagePack.MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowedCore(System.Type! type) -> void
+diff --git a/src/MessagePack/netstandard2.0/PublicAPI.Shipped.txt b/src/MessagePack/netstandard2.0/PublicAPI.Shipped.txt
+index 2893efd8..ad5a0623 100644
+--- a/src/MessagePack/netstandard2.0/PublicAPI.Shipped.txt
++++ b/src/MessagePack/netstandard2.0/PublicAPI.Shipped.txt
+@@ -1177,9 +1177,12 @@ MessagePack.Formatters.StringInterningFormatter
+ MessagePack.Formatters.StringInterningFormatter.Deserialize(ref MessagePack.MessagePackReader reader, MessagePack.MessagePackSerializerOptions! options) -> string?
+ MessagePack.Formatters.StringInterningFormatter.Serialize(ref MessagePack.MessagePackWriter writer, string? value, MessagePack.MessagePackSerializerOptions! options) -> void
+ MessagePack.Formatters.StringInterningFormatter.StringInterningFormatter() -> void
++MessagePack.MessagePackSecurity.MaximumDecompressedSize.get -> int
++MessagePack.MessagePackSecurity.WithMaximumDecompressedSize(int maximumDecompressedSize) -> MessagePack.MessagePackSecurity!
+ MessagePack.MessagePackSerializerOptions.CompressionMinLength.get -> int
+ MessagePack.MessagePackSerializerOptions.SuggestedContiguousMemorySize.get -> int
+ MessagePack.MessagePackSerializerOptions.WithCompressionMinLength(int compressionMinLength) -> MessagePack.MessagePackSerializerOptions!
+ MessagePack.MessagePackSerializerOptions.WithSuggestedContiguousMemorySize(int suggestedContiguousMemorySize) -> MessagePack.MessagePackSerializerOptions!
+ static MessagePack.MessagePackWriter.GetEncodedLength(long value) -> int
+ static MessagePack.MessagePackWriter.GetEncodedLength(ulong value) -> int
++virtual MessagePack.MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowedCore(System.Type! type) -> void
+diff --git a/tests/MessagePack.AspNetCoreMvcFormatter.Tests/AspNetCoreMvcFormatterTest.cs b/tests/MessagePack.AspNetCoreMvcFormatter.Tests/AspNetCoreMvcFormatterTest.cs
+index 96b54b31..ed2219b1 100644
+--- a/tests/MessagePack.AspNetCoreMvcFormatter.Tests/AspNetCoreMvcFormatterTest.cs
++++ b/tests/MessagePack.AspNetCoreMvcFormatter.Tests/AspNetCoreMvcFormatterTest.cs
+@@ -2,6 +2,7 @@
+ // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+ 
+ using System;
++using System.Collections.Generic;
+ using System.IO;
+ using System.Text;
+ using System.Threading;
+@@ -195,6 +196,34 @@ namespace MessagePack.Tests.ExtensionTests
+             inputFormatter.SupportedMediaTypes.Is(MsgPackContentType);
+         }
+ 
++        [Fact]
++        public async Task MessagePackInputFormatterDefaultsToUntrustedData()
++        {
++            const long value1 = 0x100000001;
++            const long value2 = 0x200000002;
++
++            var messagePackBinary = MessagePackSerializer.Serialize(new Dictionary<long, int>
++            {
++                [value1] = 1,
++                [value2] = 2,
++            });
++
++            var httpContext = new DefaultHttpContext();
++            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
++            httpContext.Request.Body = new NonSeekableReadStream(messagePackBinary);
++            httpContext.Request.ContentType = MsgPackContentType;
++
++            InputFormatterContext inputFormatterContext = this.CreateInputFormatterContext(typeof(Dictionary<long, int>), httpContext);
++            var inputFormatter = new MessagePackInputFormatter();
++
++            InputFormatterResult result = await inputFormatter.ReadAsync(inputFormatterContext);
++
++            Assert.False(result.HasError);
++            var dictionary = Assert.IsType<Dictionary<long, int>>(result.Model);
++            Assert.Equal(EqualityComparer<long>.Default.GetHashCode(value1), EqualityComparer<long>.Default.GetHashCode(value2));
++            Assert.NotEqual(dictionary.Comparer.GetHashCode(value1), dictionary.Comparer.GetHashCode(value2));
++        }
++
+         /// <summary>
+         /// <see href="https://github.com/aspnet/Mvc/blob/master/test/Microsoft.AspNetCore.Mvc.Formatters.Json.Test/JsonOutputFormatterTests.cs#L453">JsonOutputFormatterTests.cs#L453</see>.
+         /// </summary>
+diff --git a/tests/MessagePack.Tests/ExtensionTests/UnityShimTest.cs b/tests/MessagePack.Tests/ExtensionTests/UnityShimTest.cs
+index 7e35b244..df5b1abc 100644
+--- a/tests/MessagePack.Tests/ExtensionTests/UnityShimTest.cs
++++ b/tests/MessagePack.Tests/ExtensionTests/UnityShimTest.cs
+@@ -94,6 +94,18 @@ namespace MessagePack.Tests.ExtensionTests
+             EnsureSpecCompatibility(data.Array);
+         }
+ 
++        [Fact]
++        [Trait("CWE", "789")]
++        public void BlitRejectsByteLengthThatExceedsExtensionBody()
++        {
++            MessagePackSerializerOptions options = MessagePackSerializerOptions.Standard.WithResolver(new WithUnityBlitResolver());
++            byte[] payload = { 0xC7, 0x06, unchecked((byte)ThisLibraryExtensionTypeCodes.UnityInt), 0xCE, 0x00, 0x00, 0x00, 0x08, 0xC3 };
++
++            var ex = Assert.Throws<MessagePackSerializationException>(() => MessagePackSerializer.Deserialize<int[]>(payload, options));
++            var inner = Assert.IsType<MessagePackSerializationException>(ex.InnerException);
++            Assert.Contains("Invalid Unity blit extension length", inner.Message);
++        }
++
+         public class WithUnityBlitResolver : IFormatterResolver
+         {
+             public IMessagePackFormatter<T> GetFormatter<T>()
+diff --git a/version.json b/version.json
+index d711c9c7..40602d3e 100644
+--- a/version.json
++++ b/version.json
+@@ -1,6 +1,7 @@
+ {
+   "$schema": "https://raw.githubusercontent.com/dotnet/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
+   "version": "2.5",
++  "versionHeightOffset": "95",
+   "publicReleaseRefSpec": [
+     "^refs/heads/master$",
+     "^refs/heads/v1\\.x$",
