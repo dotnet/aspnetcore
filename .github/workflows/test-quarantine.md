@@ -192,8 +192,20 @@ Query two pipelines for test failures:
 
 For each pipeline, collect failures from three sources:
 
+**Data-collection method (mandatory — applies to every source below):**
+
+Each source can span dozens of builds, each returning large test-result JSON. Surfacing that raw JSON into your context — or fetching it build-by-build across many separate turns — is the dominant cost of this workflow and is what exhausts the token budget. Every inference turn re-sends the entire conversation, so a build-by-build loop is far more expensive than one batched script. Minimizing the **number of turns** is as important as minimizing payload size. Therefore, collect each source with a **single batched `python3` script** that, in one turn:
+
+1. Lists the relevant builds, following any `continuationToken` pagination **inside the script**.
+2. Loops over those builds and fetches their test results **inside the script**.
+3. Does the heavy processing in memory — aggregating counts, filtering, and (for Source C) extracting the relevant log sections — rather than surfacing raw data for you to process.
+4. Writes the full raw/aggregated data to a file under `/tmp/gh-aw/agent/` (e.g., `source_a.json`).
+5. Prints **only** compact, decision-relevant output to your context — for Sources A and B, the per-test-name table of failures (test name + failure count + source); for Source C, the extracted `[FAIL]` blocks (see that source for the exact format). Never the raw payload.
+
+**Do not** `print()` or `cat` raw `resultsbyBuild`, build-list, or timeline JSON into your context, and **do not** inspect builds one at a time across separate turns. Read the small per-source summary; load the written file only if you need detail for a specific candidate.
+
 #### Source A: Main branch failures
-Get all completed builds on `refs/heads/main` from the last 30 days. For each build with `result` = `failed` or `partiallySucceeded`, get the failed test results:
+In a **single batched `python3` script** (per the data-collection method above): get all completed builds on `refs/heads/main` from the last 30 days, then for each build with `result` = `failed` or `partiallySucceeded`, fetch its failed test results, aggregate per-test failure counts, write the raw results to `/tmp/gh-aw/agent/source_a.json`, and print only the aggregated per-test failure table. Use:
 ```
 GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&outcomes=Failed&$top=1000&api-version=7.1-preview.1
 ```
@@ -218,12 +230,15 @@ Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use paginat
 
 4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
 
+**Run the build-listing and test-result collection (the pagination in the intro, plus steps 1, 3, and 4) inside a single batched `python3` script** (per the data-collection method above): write the qualifying failed test results to `/tmp/gh-aw/agent/source_b.json` and print only the aggregated per-test failure table. The exception is the step-2 verification, which uses the `pull_request_read` MCP tool: issue those calls together and keep their raw responses out of context — retain only each PR's `base.ref`, `merged`, and `head.sha`.
+
 **Every criterion above is mandatory — do not skip or approximate any of them.**
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
 
 #### Source C: Work item crash investigation
-For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
+
+**Run Source C only after Sources A and B are aggregated, and only for work items that already cleared the threshold.** Work-item crashes are expensive to investigate (build timeline + multi-MB Helix console log), so never explore them interactively or build-by-build. From the combined Source A + B data, select only the work items (names ending in `.WorkItemExecution`) that **failed 1 or more times** — these are the only ones worth investigating. For each such work item, run a **single batched `python3` script** that performs all of steps 1–3 below in one turn (build timeline → Helix job ID → console log → `[FAIL]` extraction) and prints **only** the extracted `[FAIL]` blocks (never any intermediate timeline or file-listing JSON):
 
 1. Get the Helix job ID from the build timeline:
    ```
