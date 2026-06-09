@@ -8,20 +8,6 @@
 
   <PropertyGroup>
     <!--
-      Make this an MTP test app by default. Consumers can opt out by setting
-      EnableMSTestRunner=false (or OutputType=Library) in their .csproj.
-    -->
-    <EnableMSTestRunner Condition="'$(EnableMSTestRunner)' == ''">true</EnableMSTestRunner>
-
-    <!--
-      Default MTP run arguments. Consumers can override by setting
-      TestingPlatformCommandLineArguments to a custom value earlier in their .csproj,
-      or append to these defaults on the command line, for example:
-        dotnet test -- --retry-failed-tests 2
-    -->
-    <TestingPlatformCommandLineArguments Condition="'$(TestingPlatformCommandLineArguments)' == ''">--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --report-trx</TestingPlatformCommandLineArguments>
-
-    <!--
       Controls how E2E app projects are prepared at build time.
         build   (default) — copies the project source so 'dotnet run' works (including after publish).
         publish           — publishes the app for faster startup (native exe / framework-dependent).
