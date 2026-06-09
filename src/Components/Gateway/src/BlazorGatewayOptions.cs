@@ -47,6 +47,5 @@ internal sealed class BlazorGatewayOptions
     internal sealed class HttpClientDefaultsOptions
     {
         public bool ServiceDiscovery { get; set; } = true;
-        public bool StandardResilience { get; set; } = true;
     }
 }

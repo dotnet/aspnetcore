@@ -21,7 +21,6 @@
     <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
     <Reference Include="Yarp.ReverseProxy" />
-    <PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />

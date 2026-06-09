@@ -39,10 +39,6 @@ public static class BlazorGateway
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            if (options.HttpClient.StandardResilience)
-            {
-                http.AddStandardResilienceHandler();
-            }
             if (options.HttpClient.ServiceDiscovery)
             {
                 http.AddServiceDiscovery();
