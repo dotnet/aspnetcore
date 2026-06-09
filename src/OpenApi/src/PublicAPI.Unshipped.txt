@@ -1,7 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.OpenApi.Extensions.IAdditionalOpenApiDocumentNameProvider
-Microsoft.AspNetCore.OpenApi.Extensions.IAdditionalOpenApiDocumentNameProvider.DocumentNames.get -> System.Collections.Generic.IEnumerable<string!>!
-static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string? documentName) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-*REMOVED*static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! documentName) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-*REMOVED*static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string! documentName, System.Action<Microsoft.AspNetCore.OpenApi.OpenApiOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, string? documentName, System.Action<Microsoft.AspNetCore.OpenApi.OpenApiOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.OpenApi.Extensions.IAdditionalOpenApiDocumentNameResolver
+Microsoft.AspNetCore.OpenApi.Extensions.IAdditionalOpenApiDocumentNameResolver.ResolveDocumentNames() -> System.Collections.Generic.IEnumerable<string!>!
+static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApiCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.OpenApi.OpenApiOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

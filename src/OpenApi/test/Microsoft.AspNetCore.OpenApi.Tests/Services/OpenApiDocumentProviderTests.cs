@@ -115,7 +115,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         {
             options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from doc transformer."));
         });
-        builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameProvider>(
+        builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameResolver>(
             new MultiDocumentNameProvider(["products", "orders"]));
 
         await using var app = builder.Build();
@@ -190,7 +190,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
             options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from v1 doc transformer."));
         });
 
-        builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameProvider>(
+        builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameResolver>(
             new MultiDocumentNameProvider(["products", "orders"]));
 
         await using var app = builder.Build();
@@ -297,7 +297,7 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
         return serviceProvider;
     }
 
-    private sealed class MultiDocumentNameProvider(IEnumerable<string> documentNames) : IAdditionalOpenApiDocumentNameProvider
+    private sealed class MultiDocumentNameProvider(IEnumerable<string> documentNames) : IAdditionalOpenApiDocumentNameResolver
     {
         public IEnumerable<string> DocumentNames => documentNames;
     }

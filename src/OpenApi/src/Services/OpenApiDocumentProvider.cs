@@ -67,9 +67,9 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         var documentServices = serviceProvider.GetServices<NamedService<OpenApiDocumentService>>();
         var documentNames = documentServices.Select(docService => docService.Name);
 
-        if (serviceProvider.GetService<IAdditionalOpenApiDocumentNameProvider>() is { } documentNamesOverride)
+        if (serviceProvider.GetService<IAdditionalOpenApiDocumentNameResolver>() is { } additionalDocumentNamesResolver)
         {
-            return documentNames.Concat(documentNamesOverride.DocumentNames);
+            return documentNames.Concat(additionalDocumentNamesResolver.ResolveDocumentNames());
         }
 
         return documentNames;
