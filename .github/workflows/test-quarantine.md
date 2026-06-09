@@ -192,8 +192,20 @@ Query two pipelines for test failures:
 
 For each pipeline, collect failures from three sources:
 
+**Data-collection method (mandatory — applies to every source below):**
+
+Each source can span dozens of builds, each returning large test-result JSON. Surfacing that raw JSON into your context — or fetching it build-by-build across many separate turns — is the dominant cost of this workflow and is what exhausts the token budget. Every inference turn re-sends the entire conversation, so a build-by-build loop is far more expensive than one batched script. Minimizing the **number of turns** is as important as minimizing payload size. Therefore, collect each source with a **single batched `python3` script** that, in one turn:
+
+1. Lists the relevant builds, following any `continuationToken` pagination **inside the script**.
+2. Loops over those builds and fetches their test results **inside the script**.
+3. Does the heavy processing in memory — aggregating counts, filtering, and (for Source C) extracting the relevant log sections — rather than surfacing raw data for you to process.
+4. Writes the full raw/aggregated data to a file under `/tmp/gh-aw/agent/` (e.g., `source_a.json`).
+5. Prints **only** compact, decision-relevant output to your context — for Sources A and B, the per-test-name table of failures (test name + failure count + source); for Source C, the extracted `[FAIL]` blocks (see that source for the exact format). Never the raw payload.
+
+**Do not** `print()` or `cat` raw `resultsbyBuild`, build-list, or timeline JSON into your context, and **do not** inspect builds one at a time across separate turns. Read the small per-source summary; load the written file only if you need detail for a specific candidate.
+
 #### Source A: Main branch failures
-Get all completed builds on `refs/heads/main` from the last 30 days. For each build with `result` = `failed` or `partiallySucceeded`, get the failed test results:
+In a **single batched `python3` script** (per the data-collection method above): get all completed builds on `refs/heads/main` from the last 30 days, then for each build with `result` = `failed` or `partiallySucceeded`, fetch its failed test results, aggregate per-test failure counts, write the raw results to `/tmp/gh-aw/agent/source_a.json`, and print only the aggregated per-test failure table. Use:
 ```
 GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&outcomes=Failed&$top=1000&api-version=7.1-preview.1
 ```
@@ -218,12 +230,15 @@ Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use paginat
 
 4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
 
+**Run the build-listing and test-result collection (the pagination in the intro, plus steps 1, 3, and 4) inside a single batched `python3` script** (per the data-collection method above): write the qualifying failed test results to `/tmp/gh-aw/agent/source_b.json` and print only the aggregated per-test failure table. The exception is the step-2 verification, which uses the `pull_request_read` MCP tool: issue those calls together and keep their raw responses out of context — retain only each PR's `base.ref`, `merged`, and `head.sha`.
+
 **Every criterion above is mandatory — do not skip or approximate any of them.**
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
 
 #### Source C: Work item crash investigation
-For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
+
+**Run Source C only after Sources A and B are aggregated, and only for work items that already cleared the threshold.** Work-item crashes are expensive to investigate (build timeline + multi-MB Helix console log), so never explore them interactively or build-by-build. From the combined Source A + B data, select only the work items (names ending in `.WorkItemExecution`) that **failed 1 or more times** — these are the only ones worth investigating. For each such work item, run a **single batched `python3` script** that performs all of steps 1–3 below in one turn (build timeline → Helix job ID → console log → `[FAIL]` extraction) and prints **only** the extracted `[FAIL]` blocks (never any intermediate timeline or file-listing JSON):
 
 1. Get the Helix job ID from the build timeline:
    ```
@@ -238,6 +253,29 @@ For work items (names ending in `.WorkItemExecution`) that failed 2+ times, inve
    Find the file starting with `console.` and download it.
 
 3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `python3` with `urllib.request` to download the log and search it.
+
+   **Extract the `[FAIL]` blocks inside the `python3` script and print only those — never `print()`, `cat`, or otherwise surface the full log into your context.** The download lands in the runner; only the text you print is read back, so dumping a 10MB+ log wastes the run's token budget. For each `[FAIL]` marker, capture from the `[FAIL]` line through the end of its trailing `Error Message:` / `Stack Trace:` section (i.e., up to the next result marker). Detect result lines by anchoring the `[FAIL]`/`[PASS]`/`[SKIP]` token to the **end of the line** — in the xUnit console format the marker is the last token on the test-result line (`... Namespace.Class.Method [FAIL]`), whereas the same tokens can appear mid-line inside an error message or stack trace, so anchoring avoids splitting a block on those. Apply a per-block cap of ~8,000 characters and a total printed cap of ~100,000 characters, print the blocks separated by a delimiter, and prefix the output with a one-line summary (`# {N} [FAIL] blocks, full log {size} bytes`).
+
+   These caps are safety valves, not a routine trim: a failure's marker, `Error Message:`, and top stack frames sit at the head of each block and almost always fit within ~8,000 characters, and a crashing work item usually has only a handful of `[FAIL]` blocks, so the decision-relevant content is normally preserved while the build/restore/passing-test noise that makes up the bulk of the log is dropped. The caps **can** truncate, however: if a block is cut off at ~8,000 characters, or the summary reports more blocks than the ~100,000-character total could hold (so the printed list is truncated), call this out in your analysis and — when it affects the quarantine decision — re-run the extraction for that specific work item with a higher cap or filtered to the relevant test name. Do not silently drop failures. For example:
+
+   ```python
+   import urllib.request, re
+   data = urllib.request.urlopen(url, timeout=60).read().decode('utf-8', 'replace')
+   lines = data.splitlines()
+   is_marker = lambda s: re.search(r'\[(?:PASS|FAIL|SKIP)\]\s*$', s)
+   blocks, i = [], 0
+   while i < len(lines):
+       if re.search(r'\[FAIL\]\s*$', lines[i]):
+           j = i + 1
+           while j < len(lines) and not is_marker(lines[j]):
+               j += 1
+           blocks.append('\n'.join(lines[i:j])[:8000])
+           i = j
+       else:
+           i += 1
+   print(f"# {len(blocks)} [FAIL] blocks, full log {len(data)} bytes")
+   print('\n---\n'.join(blocks)[:100000])
+   ```
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
@@ -263,7 +301,7 @@ All of the following are true:
 
 After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
-1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
+1. For each failure in the class, extract the error message and stack trace from the Helix console log. Reuse the runner-side `[FAIL]`-block extraction from Source C step 3 — capture each `[FAIL]` line together with the lines immediately following it (the `Error Message:` and `Stack Trace:` sections) inside the `python3` script, and print only those blocks rather than surfacing the full log.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
