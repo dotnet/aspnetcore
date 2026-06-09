@@ -20,12 +20,6 @@
     <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
     <PreReleaseVersionLabel>$(PreviewOnlyPackagePreReleaseVersionLabel)</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>$(PreviewOnlyPackagePreReleaseVersionIteration)</PreReleaseVersionIteration>
-    <!--
-      MSTest.TestFramework's transitive .targets injects <Reference Include="MSTest.TestFramework.Extensions"/>
-      with a HintPath. The aspnetcore custom reference resolver doesn't recognize identities outside its
-      alias list; opt out of that restriction here.
-    -->
-    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
 
