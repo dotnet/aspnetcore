@@ -24,7 +24,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
-        serverFixture.AdditionalArguments.AddRange("--DisableReconnectionCache", "true");
+        serverFixture.AdditionalArguments.AddRange("--DisableReconnectionCache", "true", "--AllowLargeHubMessages", "true");
     }
 
     protected override void InitializeAsyncCore()
@@ -37,6 +37,12 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     private void NavigateToUploadPage()
     {
         Navigate($"/subdir/persistent-state/auto-pause-upload?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    private void NavigateToJSInteropPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-jsinterop?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
         Browser.Exists(By.Id("render-mode-interactive"));
     }
 
@@ -98,6 +104,38 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         NavigateToUploadPage();
         RunDeferralTest("fetch-upload-button", expectDeferral: false);
+    }
+
+    [Fact]
+    // .NET awaits a JS function via JS.InvokeAsync, non-streamed
+    public void JSInterop_DotNetToJS_DoesNotPause_WhileCallInFlight()
+    {
+        NavigateToJSInteropPage();
+        RunDeferralTest("dotnet-to-js-button", expectDeferral: true);
+    }
+
+    [Fact]
+    // JS awaits a .NET method via DotNet.invokeMethodAsync, non-streamed
+    public void JSInterop_JSToDotNet_DoesNotPause_WhileCallInFlight()
+    {
+        NavigateToJSInteropPage();
+        RunDeferralTest("js-to-dotnet-button", expectDeferral: true);
+    }
+
+    [Fact]
+    // .NET to JS call with a large byte[] argument, sends a single non-streamed SignalR message
+    public void JSInterop_LargeArgumentToJS_DoesNotPause_WhileCallInFlight()
+    {
+        NavigateToJSInteropPage();
+        RunDeferralTest("large-arg-button", expectDeferral: true);
+    }
+
+    [Fact]
+    // JS to .NET call with a large byte[] argument, symmetric to LargeArgumentToJS
+    public void JSInterop_JSToDotNet_LargeArgument_DoesNotPause_WhileCallInFlight()
+    {
+        NavigateToJSInteropPage();
+        RunDeferralTest("large-arg-from-js-button", expectDeferral: true);
     }
 
     private void RunDeferralTest(string elementId, bool expectDeferral)

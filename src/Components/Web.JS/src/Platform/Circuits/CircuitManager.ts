@@ -63,6 +63,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _streamDrainResolvers: Array<() => void> = [];
 
+  private _pendingJsCallTracking = new Map<number, () => void>();
+
+  private _pendingDotNetCallTracking = new Map<string, () => void>();
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -141,8 +145,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const connection = connectionBuilder.build();
 
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
-    connection.on('JS.BeginInvokeJS', this._dispatcher.beginInvokeJSFromDotNet.bind(this._dispatcher));
-    connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
+    connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
+      if (asyncHandle !== 0) {
+        this._pendingJsCallTracking.set(asyncHandle, this.trackActiveStream());
+      }
+      (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)(asyncHandle, ...rest);
+    });
+    connection.on('JS.EndInvokeDotNet', (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string) => {
+      const untrack = this._pendingDotNetCallTracking.get(asyncCallId);
+      if (untrack) {
+        this._pendingDotNetCallTracking.delete(asyncCallId);
+        untrack();
+      }
+      this._dispatcher.endInvokeDotNetFromJS(asyncCallId, success, resultJsonOrExceptionMessage);
+    });
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
 
     connection.on('JS.SavePersistedState', (circuitId: string, components: string, applicationState: string) => {
@@ -444,12 +460,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
     this.throwIfDispatchingWhenDisposed();
+    if (callId !== 0) {
+      this._pendingDotNetCallTracking.set(callId.toString(), this.trackActiveStream());
+    }
     this._connection!.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
   }
 
   // Implements DotNet.DotNetCallDispatcher
   public endInvokeJSFromDotNet(asyncHandle: number, succeeded: boolean, argsJson: any): void {
     this.throwIfDispatchingWhenDisposed();
+    const untrack = this._pendingJsCallTracking.get(asyncHandle);
+    if (untrack) {
+      this._pendingJsCallTracking.delete(asyncHandle);
+      untrack();
+    }
     this._connection!.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
   }
 
@@ -561,7 +585,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       return;
     }
 
-    this._logger.log(LogLevel.Information, `Pause deferred: waiting for ${this._activeStreamCount} active stream transmission(s) to complete.`);
+    this._logger.log(LogLevel.Information, `Pause deferred: waiting for ${this._activeStreamCount} active circuit operation(s) to complete.`);
 
     const startedAt = Date.now();
     await new Promise<void>(resolve => {
@@ -571,7 +595,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
           this._streamDrainResolvers.splice(idx, 1);
         }
         const elapsedMs = Date.now() - startedAt;
-        this._logger.log(LogLevel.Information, `Pause resumed: all stream transmissions completed after ${elapsedMs}ms.`);
+        this._logger.log(LogLevel.Information, `Pause resumed: all circuit operations completed after ${elapsedMs}ms.`);
         resolve();
       };
       this._streamDrainResolvers.push(onDrained);

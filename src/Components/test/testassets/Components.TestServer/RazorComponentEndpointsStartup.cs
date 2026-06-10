@@ -53,6 +53,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddValidation();
         services.AddValidationLocalization();
 
+        // Increase 10 MB hub message limit (default 32 KB)
+        if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
+        {
+            services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(o =>
+            {
+                o.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+            });
+        }
+
         var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;

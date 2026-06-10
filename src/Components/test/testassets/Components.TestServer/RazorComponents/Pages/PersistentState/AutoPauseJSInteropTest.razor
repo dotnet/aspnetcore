@@ -1,0 +1,190 @@
+@page "/persistent-state/auto-pause-jsinterop"
+@rendermode RenderMode.InteractiveServer
+@using Microsoft.JSInterop
+@using TestServer
+@implements IDisposable
+@inject IJSRuntime JS
+@inject AutoPauseTestStreamGate Gate
+
+<h1>Auto-pause JS interop deferral test</h1>
+
+@* Captures Blazor console output so the E2E tests can wait for specific log messages. *@
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>Each scenario uses an in-flight JS interop call (no streaming primitives).
+The server-side gate keeps each call pending until the test releases it.</p>
+
+<hr />
+
+<h3>.NET → JS long-running call</h3>
+<button id="dotnet-to-js-button" @onclick="StartDotNetToJsLongRunning" data-token="@_dotnetToJsToken">
+    Start .NET → JS long-running interop
+</button>
+<p>Status: <span id="dotnet-to-js-status">@_dotnetToJsStatus</span></p>
+
+<hr />
+
+<h3>JS → .NET long-running call</h3>
+@* Plain HTML onclick so the call truly originates from JS. *@
+<button id="js-to-dotnet-button" onclick="AutoPauseJSInteropTest.startJsToDotNet('@_jsToDotNetToken')" data-token="@_jsToDotNetToken">
+    Start JS → .NET long-running interop
+</button>
+<p>Status: <span id="js-to-dotnet-status">@_jsToDotNetStatus</span></p>
+
+<hr />
+
+<h3>Large argument .NET → JS</h3>
+<button id="large-arg-button" @onclick="StartLargeArgumentToJs" data-token="@_largeArgToken">
+    Send large argument to JS
+</button>
+<p>Status: <span id="large-arg-status">@_largeArgStatus</span></p>
+
+<hr />
+
+<h3>JS → .NET call with large argument</h3>
+@* Plain HTML onclick so the call truly originates from JS. *@
+<button id="large-arg-from-js-button" onclick="AutoPauseJSInteropTest.startJsToDotNetLarge('@_largeArgFromJsToken')" data-token="@_largeArgFromJsToken">
+    Send large argument from JS
+</button>
+<p>Status: <span id="large-arg-from-js-status">@_largeArgFromJsStatus</span></p>
+
+<script>
+    window.AutoPauseJSInteropTest ??= {
+        // Set by OnAfterRenderAsync so the JS-initiated button can call back into .NET.
+        _dotnetRef: null,
+        setRef(ref) { this._dotnetRef = ref; },
+
+        async dotnetToJsLongRunning(token) {
+            // Blocks on the HTTP-side gate so the .NET-side InvokeAsync stays pending.
+            await fetch(`/subdir/autopause-test/js-gate/${token}`);
+        },
+        async startJsToDotNet(token) {
+            // JSInterop call into .NET that blocks on the server-side gate until the test releases it.
+            try {
+                await this._dotnetRef.invokeMethodAsync('JsToDotNetLongRunning', token);
+                document.getElementById('js-to-dotnet-status').textContent = 'complete';
+            } catch (e) {
+                document.getElementById('js-to-dotnet-status').textContent = 'failed:' + (e && e.message ? e.message : String(e));
+            }
+        },
+        async largeArgumentToJs(token, oneMbPayloadFromDotnet) {
+            await fetch(`/subdir/autopause-test/js-gate/${token}`);
+            return oneMbPayloadFromDotnet?.byteLength ?? oneMbPayloadFromDotnet?.length ?? 0;
+        },
+        async startJsToDotNetLarge(token) {
+            const oneMbPayloadFromJs = new Uint8Array(1024 * 1024);
+            try {
+                await this._dotnetRef.invokeMethodAsync('JsToDotNetLargeArgument', token, oneMbPayloadFromJs);
+                document.getElementById('large-arg-from-js-status').textContent = 'complete';
+            } catch (e) {
+                document.getElementById('large-arg-from-js-status').textContent = 'failed:' + (e && e.message ? e.message : String(e));
+            }
+        }
+    };
+</script>
+
+@code {
+    private const int PayloadSizeBytes = 1024 * 1024; // 1 MB
+
+    private readonly string _dotnetToJsToken = Guid.NewGuid().ToString("N");
+    private readonly string _jsToDotNetToken = Guid.NewGuid().ToString("N");
+    private readonly string _largeArgToken = Guid.NewGuid().ToString("N");
+    private readonly string _largeArgFromJsToken = Guid.NewGuid().ToString("N");
+
+    private string _dotnetToJsStatus = "idle";
+    private string _jsToDotNetStatus = "idle";
+    private string _largeArgStatus = "idle";
+    private string _largeArgFromJsStatus = "idle";
+
+    private DotNetObjectReference<AutoPauseJSInteropTest>? _selfRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _selfRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("AutoPauseJSInteropTest.setRef", _selfRef);
+        }
+    }
+
+    private async Task StartDotNetToJsLongRunning()
+    {
+        _dotnetToJsStatus = "running";
+        try
+        {
+            await JS.InvokeVoidAsync("AutoPauseJSInteropTest.dotnetToJsLongRunning", _dotnetToJsToken);
+            _dotnetToJsStatus = "complete";
+        }
+        catch (Exception ex)
+        {
+            _dotnetToJsStatus = $"failed:{ex.GetType().Name}";
+        }
+    }
+
+    [JSInvokable]
+    public async Task JsToDotNetLongRunning(string token)
+    {
+        _jsToDotNetStatus = "running";
+        Gate.MarkStarted(token);
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Gate.WaitAsync(token, cts.Token);
+            _jsToDotNetStatus = "complete";
+        }
+        catch (OperationCanceledException)
+        {
+            _jsToDotNetStatus = "timed-out";
+        }
+        finally
+        {
+            Gate.MarkCompleted(token);
+        }
+    }
+
+    private async Task StartLargeArgumentToJs()
+    {
+        _largeArgStatus = "sending";
+        try
+        {
+            var data = new byte[PayloadSizeBytes];
+            var received = await JS.InvokeAsync<int>("AutoPauseJSInteropTest.largeArgumentToJs", _largeArgToken, data);
+            _largeArgStatus = $"complete:{received}";
+        }
+        catch (Exception ex)
+        {
+            _largeArgStatus = $"failed:{ex.GetType().Name}";
+        }
+    }
+
+    [JSInvokable]
+    public async Task JsToDotNetLargeArgument(string token, byte[] oneMbPayloadFromJs)
+    {
+        _largeArgFromJsStatus = $"running:{oneMbPayloadFromJs.Length}";
+        Gate.MarkStarted(token);
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await Gate.WaitAsync(token, cts.Token);
+            _largeArgFromJsStatus = $"complete:{oneMbPayloadFromJs.Length}";
+        }
+        catch (OperationCanceledException)
+        {
+            _largeArgFromJsStatus = "timed-out";
+        }
+        finally
+        {
+            Gate.MarkCompleted(token);
+        }
+    }
+
+    public void Dispose()
+    {
+        _selfRef?.Dispose();
+    }
+}

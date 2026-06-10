@@ -85,5 +85,23 @@ internal static class AutoPauseTestEndpoints
             gate.MarkCompleted(token);
             return Results.Ok(new { totalRead });
         });
+
+        endpoints.MapGet("/autopause-test/js-gate/{token}", async (string token, HttpContext context, AutoPauseTestStreamGate gate) =>
+        {
+            gate.MarkStarted(token);
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                await gate.WaitAsync(token, timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                gate.MarkCompleted(token);
+                return Results.Ok(new { aborted = true });
+            }
+            gate.MarkCompleted(token);
+            return Results.Ok(new { released = true });
+        });
     }
 }
