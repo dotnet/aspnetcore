@@ -228,6 +228,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.Playwright" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
+    <LatestPackageReference Include="SharpFuzz" />
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />

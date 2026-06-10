@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -577,6 +578,31 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(content.Value.Schema.AnyOf);
             Assert.Equal(2, content.Value.Schema.AnyOf.Count);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_WithNumberAsString_ShouldSerializeWithoutErrors()
+    {
+        // Arrange
+        var builder = CreateBuilder(serviceCollection: null, numberHandling: JsonNumberHandling.WriteAsString | JsonNumberHandling.AllowReadingFromString);
+
+        // Act
+        builder.MapGet("/myapi", () => new ModelWithStringAndStringLength(string.Empty));
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/myapi"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var kvp = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", kvp.Key);
+            var schema = Assert.Single(document.Components.Schemas);
+            Assert.Equal(nameof(ModelWithStringAndStringLength), schema.Key);
+            var property = Assert.Single(schema.Value.Properties);
+            Assert.Equal("value", property.Key);
+            Assert.Equal(100, property.Value.MaxLength);
         });
     }
 }
