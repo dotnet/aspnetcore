@@ -42,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)\AntiforgeryMetadata.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)\PooledArrayBufferWriter.cs" LinkBase="Infrastructure" />
     <Compile Include="$(SharedSourceRoot)\Components\ResourceCollectionResolver.cs" LinkBase="Infrastructure" />
   </ItemGroup>
