@@ -591,7 +591,7 @@ These are the key API endpoints. All are public and require no authentication:
 Source B step 3 must verify B2/B3 for many PRs **without** calling the `pull_request_read` MCP tool per PR (one turn per PR exhausts the token budget). Use this helper inside `source_b.py` — it verifies up to ~50 PRs per single GraphQL request, is **fail-closed** (excludes any PR it cannot positively confirm) and **fail-loud** (aborts on systemic failures rather than silently excluding every PR and reporting a false "no failures"):
 
 ```python
-import os, json, urllib.request, urllib.error
+import os, re, json, urllib.request, urllib.error
 
 def verify_prs(pr_numbers, chunk=50):
     """Verify B2 (targets main) + B3 (merged) for many PRs via batched GraphQL.
@@ -632,9 +632,13 @@ def verify_prs(pr_numbers, chunk=50):
         for err in body.get("errors") or []:
             if err.get("type") == "RATE_LIMITED":
                 raise SystemExit("FATAL: GitHub GraphQL RATE_LIMITED — aborting rather than excluding all PRs")
-            path = err.get("path") or []
-            if path and isinstance(path[-1], str) and path[-1].startswith("p"):
-                errored.add(path[-1])
+            # A field/node error names its alias somewhere in the path, e.g.
+            # ["repository","p123"] or ["repository","p123","merged"]. Exclude just
+            # that PR; a path with no alias is untrustworthy for the whole chunk.
+            alias = next((p for p in (err.get("path") or [])
+                          if isinstance(p, str) and re.fullmatch(r"p\d+", p)), None)
+            if alias:
+                errored.add(alias)
             else:
                 chunk_untrusted = True
         repo = (body.get("data") or {}).get("repository")
