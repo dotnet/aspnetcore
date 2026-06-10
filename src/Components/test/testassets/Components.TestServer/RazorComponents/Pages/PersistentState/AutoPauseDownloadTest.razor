@@ -12,25 +12,7 @@
 
 @* Captures Blazor console output (info/log/warn/error) so the E2E tests
    can deterministically wait for specific log messages. *@
-<script>
-    (function () {
-        if (window.__blazorLogs) { return; }
-        window.__blazorLogs = [];
-        ['log', 'info', 'warn', 'error', 'debug'].forEach(function (level) {
-            var original = console[level].bind(console);
-            console[level] = function () {
-                try {
-                    var msg = Array.prototype.map.call(arguments, function (a) {
-                        return typeof a === 'string' ? a : JSON.stringify(a);
-                    }).join(' ');
-                    window.__blazorLogs.push({ level: level, msg: msg });
-                    if (window.__blazorLogs.length > 500) { window.__blazorLogs.shift(); }
-                } catch (e) { /* ignore */ }
-                return original.apply(console, arguments);
-            };
-        });
-    })();
-</script>
+<script src="/subdir/auto-pause-log-capture.js"></script>
 
 @if (RendererInfo.IsInteractive)
 {

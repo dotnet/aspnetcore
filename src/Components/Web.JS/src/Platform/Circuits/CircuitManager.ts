@@ -474,7 +474,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
-    return sendJSDataStream(this._connection!, data, streamId, chunkSize);
+    const untrack = this.trackActiveStream();
+    return sendJSDataStream(this._connection!, data, streamId, chunkSize, untrack);
   }
 
   public resolveElement(sequenceOrIdentifier: string): LogicalElement {

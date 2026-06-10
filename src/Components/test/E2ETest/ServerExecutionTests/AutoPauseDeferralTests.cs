@@ -34,6 +34,12 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.Id("render-mode-interactive"));
     }
 
+    private void NavigateToUploadPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-upload?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
     [Fact]
     // server streams bytes to JS over the circuit, pausing would cause exceptions
     public void DotNetStreamReference_DoesNotPause_WhileStreamInFlight()
@@ -59,11 +65,50 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         ReleaseGate(token);
     }
 
+    [Fact]
+    // client streams to server over the circuit, InputFile uses IJSStreamReference
+    public void InputFile_DoesNotPause_WhileUploadInFlight()
+    {
+        NavigateToUploadPage();
+        var input = Browser.Exists(By.Id("inputfile-upload"));
+        var token = input.GetDomAttribute("data-token")!;
+        var tempFile = Path.Combine(Path.GetTempPath(), $"autopause-upload-{Guid.NewGuid():N}.bin");
+        File.WriteAllBytes(tempFile, new byte[256 * 1024]);
+        try
+        {
+            RunDeferralTest(token, () => input.SendKeys(tempFile), expectDeferral: true);
+        }
+        finally
+        {
+            try { File.Delete(tempFile); } catch { /* best effort */ }
+        }
+    }
+
+    [Fact]
+    // direct upload via IJSStreamReference
+    public void IJSStreamReference_DoesNotPause_WhileUploadInFlight()
+    {
+        NavigateToUploadPage();
+        RunDeferralTest("streamref-upload-button", expectDeferral: true);
+    }
+
+    [Fact]
+    // pure HTTP POST, circuit not involved, pause as normal
+    public void HttpFetchPost_PausesNormally_WhileUploadInFlight()
+    {
+        NavigateToUploadPage();
+        RunDeferralTest("fetch-upload-button", expectDeferral: false);
+    }
+
     private void RunDeferralTest(string elementId, bool expectDeferral)
     {
         var token = ReadToken(elementId);
+        RunDeferralTest(token, () => Browser.Exists(By.Id(elementId)).Click(), expectDeferral);
+    }
 
-        Browser.Exists(By.Id(elementId)).Click();
+    private void RunDeferralTest(string token, Action triggerAction, bool expectDeferral)
+    {
+        triggerAction();
         WaitForStreamStarted(token);
 
         ClearBlazorLogs();

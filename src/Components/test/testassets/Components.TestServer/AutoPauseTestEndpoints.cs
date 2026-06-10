@@ -51,5 +51,39 @@ internal static class AutoPauseTestEndpoints
 
         endpoints.MapGet("/autopause-test/completed/{token}", (string token, AutoPauseTestStreamGate gate) =>
             Results.Json(new { completed = gate.IsCompleted(token) }));
+
+        endpoints.MapPost("/autopause-test/upload/{token}", async (string token, HttpContext context, AutoPauseTestStreamGate gate) =>
+        {
+            var buffer = new byte[4096];
+            var totalRead = 0;
+
+            var firstRead = await context.Request.Body.ReadAsync(buffer, context.RequestAborted);
+            if (firstRead == 0)
+            {
+                return Results.BadRequest(new { error = "empty body" });
+            }
+            totalRead += firstRead;
+            gate.MarkStarted(token);
+
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                await gate.WaitAsync(token, timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                gate.MarkCompleted(token);
+                return Results.Ok(new { totalRead, aborted = true });
+            }
+
+            int bytesRead;
+            while ((bytesRead = await context.Request.Body.ReadAsync(buffer, context.RequestAborted)) > 0)
+            {
+                totalRead += bytesRead;
+            }
+            gate.MarkCompleted(token);
+            return Results.Ok(new { totalRead });
+        });
     }
 }
