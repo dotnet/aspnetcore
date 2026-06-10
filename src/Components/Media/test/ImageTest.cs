@@ -18,9 +18,9 @@ using Microsoft.JSInterop;
 using Xunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web.Media;
+using Microsoft.AspNetCore.Components.Media;
 
-namespace Microsoft.AspNetCore.Components.Web.Media.Tests;
+namespace Microsoft.AspNetCore.Components.Media.Tests;
 
 /// <summary>
 /// Unit tests for the new Media.Image component

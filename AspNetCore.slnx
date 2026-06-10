@@ -66,6 +66,10 @@
   <Folder Name="/src/Components/CustomElements/">
     <Project Path="src/Components/CustomElements/src/Microsoft.AspNetCore.Components.CustomElements.csproj" />
   </Folder>
+  <Folder Name="/src/Components/Media/">
+    <Project Path="src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />
+    <Project Path="src/Components/Media/test/Microsoft.AspNetCore.Components.Media.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Endpoints/">
     <Project Path="src/Components/Endpoints/src/Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <Project Path="src/Components/Endpoints/test/Microsoft.AspNetCore.Components.Endpoints.Tests.csproj" />
