@@ -27,33 +27,11 @@
     <MetadataUpdaterSupport>false</MetadataUpdaterSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
+    <UseCommonLocateNativeCompilerTarget Condition="'$(OS)' != 'Windows_NT'">true</UseCommonLocateNativeCompilerTarget>
   </PropertyGroup>
 
-  <!-- Detect the available native compiler and linker for NativeAOT cross-builds.
-       The VMR cross-build containers may not have ld.bfd (the NativeAOT default for linux),
-       so we probe using arcade's init-compiler.sh and set LinkerFlavor to lld when available.
-       Pattern from runtime/eng/toolAot.targets. -->
-  <Target Name="LocateNativeCompiler"
-          Condition="'$(PublishAot)' == 'true' and '$(OS)' != 'Windows_NT'"
-          BeforeTargets="SetupOSSpecificProps">
-    <PropertyGroup>
-      <CppCompilerAndLinker Condition="'$(CppCompilerAndLinker)' == ''">clang</CppCompilerAndLinker>
-      <SysRoot Condition="'$(CrossBuild)' == 'true'">$(ROOTFS_DIR)</SysRoot>
-    </PropertyGroup>
-
-    <Exec Command="sh -c 'build_arch=&quot;$(TargetArchitecture)&quot; compiler=&quot;$(CppCompilerAndLinker)&quot; . &quot;$(RepositoryEngineeringDir)/common/native/init-compiler.sh&quot; &amp;&amp; echo &quot;$CC;$LDFLAGS&quot;' 2>/dev/null"
-          EchoOff="true"
-          ConsoleToMsBuild="true"
-          StandardOutputImportance="Low">
-      <Output TaskParameter="ConsoleOutput" PropertyName="_CC_LDFLAGS" />
-    </Exec>
-
-    <PropertyGroup>
-      <CppLinker>$(_CC_LDFLAGS.SubString(0, $(_CC_LDFLAGS.IndexOf(';'))))</CppLinker>
-      <_LDFLAGS>$(_CC_LDFLAGS.SubString($([MSBuild]::Add($(_CC_LDFLAGS.IndexOf(';')), 1))))</_LDFLAGS>
-      <LinkerFlavor Condition="$(_LDFLAGS.Contains('lld'))">lld</LinkerFlavor>
-    </PropertyGroup>
-  </Target>
+  <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
+      Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
 
   <PropertyGroup Condition=" '$(PublishAot)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true' ">
     <IlcGenerateMstatFile>true</IlcGenerateMstatFile>
