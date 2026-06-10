@@ -71,6 +71,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
+        context.ValidationInitiator ??= this;
+
         // Calculate and save the current path
         var originalPrefix = context.CurrentValidationPath;
         if (string.IsNullOrEmpty(originalPrefix))
@@ -119,7 +121,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        await ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, context, (Name, displayName, DeclaringType, value),
+        context.ValidationTasks.Add(ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, context, (Name, displayName, DeclaringType, value),
             static (context, result, attribute, state) =>
             {
                 var (name, displayName, declaringType, container) = state;
@@ -143,7 +145,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     };
                     context.AddValidationError(errorContext);
                 }
-            }, cancellationToken);
+            }, cancellationToken));
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -199,6 +201,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             // Always decrement the depth counter and restore prefix
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
+
+            if (context.ValidationInitiator == this)
+            {
+                await Task.WhenAll(context.ValidationTasks);
+            }
         }
     }
 }

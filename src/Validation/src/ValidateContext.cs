@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -13,7 +14,48 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors = new();
+    private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors;
+
+    internal ConcurrentBag<Task> ValidationTasks { get; }
+
+    internal IValidatableInfo? ValidationInitiator { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ValidateContext"/>.
+    /// </summary>
+    public ValidateContext()
+    {
+        _validationErrors = new();
+        ValidationTasks = new();
+    }
+
+    private ValidateContext(ValidateContext original)
+    {
+        _validationErrors = original._validationErrors;
+        ValidationTasks = original.ValidationTasks;
+        CurrentDepth = original.CurrentDepth;
+        CurrentValidationPath = original.CurrentValidationPath;
+        ValidationInitiator = original.ValidationInitiator;
+
+        if (original.OnValidationError?.GetInvocationList() is { } onValidationErrorDelegates)
+        {
+            foreach (var onValidationErrorDelegate in onValidationErrorDelegates)
+            {
+                OnValidationError += context => ((Action<ValidationErrorContext>)onValidationErrorDelegate).Invoke(context);
+            }
+        }
+    }
+
+    internal ValidateContext Clone()
+    {
+        var cloned = new ValidateContext(this)
+        {
+            ValidationContext = CloneValidationContext(),
+            ValidationOptions = ValidationOptions,
+        };
+
+        return cloned;
+    }
 
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
@@ -112,5 +154,18 @@ public sealed class ValidateContext
         };
 
         return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
+    }
+
+    private ValidationContext CloneValidationContext()
+    {
+        var original = ValidationContext;
+        return new ValidationContext(
+            original.ObjectInstance,
+            original.DisplayName,
+            original,
+            original.Items)
+        {
+            MemberName = original.MemberName,
+        };
     }
 }

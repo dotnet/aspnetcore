@@ -130,20 +130,22 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
+        context.ValidationInitiator ??= this;
+
         var originalPrefix = context.CurrentValidationPath;
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
         try
         {
             // First validate direct members
-            await ValidateMembersAsync(value, context, cancellationToken);
+            ValidateMembers(value, context, cancellationToken);
 
             var actualType = value.GetType();
 
             // Then validate inherited members
             foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context))
             {
-                await superTypeInfo.ValidateMembersAsync(value, context, cancellationToken);
+                superTypeInfo.ValidateMembers(value, context, cancellationToken);
             }
 
             // If any property-level validation errors were found, return early
@@ -155,7 +157,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
             // Validate type-level attributes
-            await ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
+            context.ValidationTasks.Add(ValidateTypeAttributesAsync(value, context, displayName, cancellationToken));
 
             // If any type-level attribute errors were found, return early
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
@@ -164,29 +166,24 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // Finally validate IValidatableObject if implemented
-            await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
+            context.ValidationTasks.Add(ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken));
         }
         finally
         {
+            if (context.ValidationInitiator == this)
+            {
+                await Task.WhenAll(context.ValidationTasks);
+            }
+
             context.CurrentValidationPath = originalPrefix;
         }
     }
 
-    private async Task ValidateMembersAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private void ValidateMembers(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        var originalPrefix = context.CurrentValidationPath;
-
         for (var i = 0; i < _membersCount; i++)
         {
-            try
-            {
-                await Members[i].ValidateAsync(value, context, cancellationToken);
-
-            }
-            finally
-            {
-                context.CurrentValidationPath = originalPrefix;
-            }
+            context.ValidationTasks.Add(Members[i].ValidateAsync(value, context.Clone(), cancellationToken));
         }
     }
 
