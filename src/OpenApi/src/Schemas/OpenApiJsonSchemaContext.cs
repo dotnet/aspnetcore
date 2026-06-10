@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 
 [JsonSerializable(typeof(OpenApiJsonSchema))]
 [JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(decimal))]
 [JsonSerializable(typeof(JsonNode))]
 internal sealed partial class OpenApiJsonSchemaContext : JsonSerializerContext { }
