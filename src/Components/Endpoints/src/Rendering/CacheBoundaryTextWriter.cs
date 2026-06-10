@@ -14,6 +14,7 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
     private readonly List<CacheCaptureEntry> _entries = [];
     private bool _capturing;
     private bool _hasHoles;
+    private bool _validateOnly;
 
     public CacheBoundaryTextWriter(TextWriter inner, CacheBoundaryVaryBy varyBy, RenderFragmentCapture? capture)
     {
@@ -33,7 +34,7 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
     public override void Write(char value)
     {
         _innerWriter.Write(value);
-        if (_capturing)
+        if (_capturing && !_validateOnly)
         {
             _buffer.Append(value);
         }
@@ -42,7 +43,7 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
     public override void Write(string? value)
     {
         _innerWriter.Write(value);
-        if (_capturing)
+        if (_capturing && !_validateOnly)
         {
             _buffer.Append(value);
         }
@@ -57,6 +58,12 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
     public void StartCapture()
     {
         _capturing = true;
+    }
+
+    public void StartValidation()
+    {
+        _capturing = true;
+        _validateOnly = true;
     }
 
     public void CreateHole(Type componentType, int sequence, object? componentKey, string? renderModeName)

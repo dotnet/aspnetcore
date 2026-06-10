@@ -304,6 +304,14 @@ internal partial class EndpointHtmlRenderer
                 }
                 return;
             }
+
+            if (output is not CacheBoundaryTextWriter)
+            {
+                var validationWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions(), null);
+                validationWriter.StartValidation();
+                base.WriteComponentHtml(componentId, validationWriter);
+                return;
+            }
         }
 
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
