@@ -192,8 +192,20 @@ Query two pipelines for test failures:
 
 For each pipeline, collect failures from three sources:
 
+**Data-collection method (mandatory — applies to every source below):**
+
+Each source can span dozens of builds, each returning large test-result JSON. Surfacing that raw JSON into your context — or fetching it build-by-build across many separate turns — is the dominant cost of this workflow and is what exhausts the token budget. Every inference turn re-sends the entire conversation, so a build-by-build loop is far more expensive than one batched script. Minimizing the **number of turns** is as important as minimizing payload size. Therefore, collect each source with a **single batched `python3` script** that, in one turn:
+
+1. Lists the relevant builds, following any `continuationToken` pagination **inside the script**.
+2. Loops over those builds and fetches their test results **inside the script**.
+3. Does the heavy processing in memory — aggregating counts, filtering, and (for Source C) extracting the relevant log sections — rather than surfacing raw data for you to process.
+4. Writes the full raw/aggregated data to a file under `/tmp/gh-aw/agent/` (e.g., `source_a.json`).
+5. Prints **only** compact, decision-relevant output to your context — for Sources A and B, the per-test-name table of failures (test name + failure count + source); for Source C, the extracted `[FAIL]` blocks (see that source for the exact format). Never the raw payload.
+
+**Do not** `print()` or `cat` raw `resultsbyBuild`, build-list, or timeline JSON into your context, and **do not** inspect builds one at a time across separate turns. Read the small per-source summary; load the written file only if you need detail for a specific candidate.
+
 #### Source A: Main branch failures
-Get all completed builds on `refs/heads/main` from the last 30 days. For each build with `result` = `failed` or `partiallySucceeded`, get the failed test results:
+In a **single batched `python3` script** (per the data-collection method above): get all completed builds on `refs/heads/main` from the last 30 days, then for each build with `result` = `failed` or `partiallySucceeded`, fetch its failed test results, aggregate per-test failure counts, write the raw results to `/tmp/gh-aw/agent/source_a.json`, and print only the aggregated per-test failure table. Use:
 ```
 GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&outcomes=Failed&$top=1000&api-version=7.1-preview.1
 ```
@@ -202,28 +214,29 @@ GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsby
 
 **Source B is REQUIRED — do not skip it.** It captures flaky tests that only manifest in PR builds (which run more frequently than rolling builds). Skipping it leaves significant blind spots in quarantine coverage.
 
-Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use pagination (`$top=100` + `continuationToken`) and an explicit `minTime` to ensure all builds are retrieved. **To keep this efficient, use the following approach:**
+Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use pagination (`$top=100` + `continuationToken`) and an explicit `minTime` to ensure all builds are retrieved. **Do all of the following inside a single batched `python3` script** (`source_b.py`, per the data-collection method above) — list and group the builds, pre-filter, verify PRs in one batched GraphQL request, and aggregate — so that Source B costs only a couple of turns rather than one turn per PR. **Verifying PRs one at a time via the `pull_request_read` MCP tool is the single biggest token sink in this workflow and is prohibited here.**
 
-1. **Get the unique PR numbers** — extract PR numbers from `sourceBranch` (`refs/pull/{NUMBER}/merge`) across all PR builds. Deduplicate to get the set of unique PRs.
+1. **Group PR builds by PR number** — extract PR numbers from `sourceBranch` (`refs/pull/{NUMBER}/merge`) across all PR builds, and group the builds under each PR number.
 
-2. **Verify B2 and B3 for each unique PR** — call `pull_request_read` (method `get`) once per PR number (not per build):
-   - **(B2)** The PR **targets the `main` branch** — verify `base.ref` is `main`. Exclude PRs targeting release branches or any other non-main branch.
-   - **(B3)** The PR was **merged** — verify the `merged` field is `true`. Exclude open, draft, or abandoned PRs.
+2. **(B4) Pre-filter by failed builds — do this BEFORE any GitHub call.** From the Azure DevOps build data already in hand, keep only PR numbers that have **at least one build that `failed` or `partiallySucceeded`**. Discard every other PR now. This is correctness-preserving (a PR with no failed/partial build can never qualify) and it shrinks the set you must verify against GitHub — often from dozens to a handful, which is essential to staying within the token budget.
 
-   If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+3. **(B2 + B3) Verify the surviving PRs in one batched GraphQL request** — call the `verify_prs` helper in the API Reference, which POSTs a single GraphQL query per ~50 PRs to `https://api.github.com/graphql` and returns only the PRs that:
+   - **(B2)** target `main` — `baseRefName` is `main`; and
+   - **(B3)** were merged — `merged` is `true`.
 
-3. **For each qualifying PR, find all its builds** and apply:
-   - **(B1)** Keep only builds for the **final commit** — compare each build's `pr.sourceSha` (from `triggerInfo`) to the PR's `head.sha` from the `pull_request_read` response in step 2. Only include builds whose `pr.sourceSha` matches the PR's `head.sha`.
-   - **(B4)** At least one build in the group **failed** or **partially succeeded**.
+   The helper is **fail-closed** (any PR it cannot positively verify is excluded — never default to including) and **fail-loud** on systemic failures (missing token, `401`/`403`, primary rate-limit, or every request failing), so the run aborts visibly instead of silently reporting "no failures" because verification was dead. It also returns each verified PR's `headRefOid` for B1.
 
-4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
+4. **(B1) Match builds to the merged commit** — for each verified PR, keep only builds whose `triggerInfo` `pr.sourceSha` equals that PR's `headRefOid` from step 3.
 
-**Every criterion above is mandatory — do not skip or approximate any of them.**
+5. **Collect the failed test results** from the `failed`/`partiallySucceeded` builds that survive B1, aggregate per-test failure counts, write the raw results to `/tmp/gh-aw/agent/source_b.json`, and print **only** the aggregated per-test failure table (plus the one-line verify summary). Never print raw build, test-result, or GraphQL JSON into your context.
+
+**Every criterion (B1–B4) above is mandatory — do not skip or approximate any of them.**
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
 
 #### Source C: Work item crash investigation
-For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
+
+**Run Source C only after Sources A and B are aggregated, and only for work items that already cleared the threshold.** Work-item crashes are expensive to investigate (build timeline + multi-MB Helix console log), so never explore them interactively or build-by-build. From the combined Source A + B data, select only the work items (names ending in `.WorkItemExecution`) that **failed 1 or more times** — these are the only ones worth investigating. For each such work item, run a **single batched `python3` script** that performs all of steps 1–3 below in one turn (build timeline → Helix job ID → console log → `[FAIL]` extraction) and prints **only** the extracted `[FAIL]` blocks (never any intermediate timeline or file-listing JSON):
 
 1. Get the Helix job ID from the build timeline:
    ```
@@ -572,3 +585,76 @@ These are the key API endpoints. All are public and require no authentication:
 | Helix work item files | `GET https://helix.dot.net/api/2019-06-17/jobs/{JOB_ID}/workitems/{WI_NAME}/files` |
 | Helix console log | Download the `Link` URL from the files response for the file starting with `console.` |
 | Per-test log | Download the `Link` URL for the file named `{TestClass}_{TestMethod}.log` |
+
+### Source B helper: batched PR verification (`verify_prs`)
+
+Source B step 3 must verify B2/B3 for many PRs **without** calling the `pull_request_read` MCP tool per PR (one turn per PR exhausts the token budget). Use this helper inside `source_b.py` — it verifies up to ~50 PRs per single GraphQL request, is **fail-closed** (excludes any PR it cannot positively confirm) and **fail-loud** (aborts on systemic failures rather than silently excluding every PR and reporting a false "no failures"):
+
+```python
+import os, re, json, urllib.request, urllib.error
+
+def verify_prs(pr_numbers, chunk=50):
+    """Verify B2 (targets main) + B3 (merged) for many PRs via batched GraphQL.
+    Returns {pr_number: head_sha} for PRs confirmed merged into main; every other
+    PR is excluded. Aborts (fail-loud) on systemic verification failure."""
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not token:
+        raise SystemExit("FATAL: no GITHUB_TOKEN/GH_TOKEN — refusing to silently exclude all PRs")
+    nums = sorted(set(pr_numbers))
+    verified, excluded = {}, 0
+    chunks_total = chunks_failed = 0
+    for k in range(0, len(nums), chunk):
+        batch = nums[k:k + chunk]
+        chunks_total += 1
+        aliases = "\n".join(
+            f'p{n}: pullRequest(number: {n}) {{ number baseRefName merged headRefOid }}'
+            for n in batch)
+        query = f'query {{ repository(owner: "dotnet", name: "aspnetcore") {{ {aliases} }} }}'
+        req = urllib.request.Request(
+            "https://api.github.com/graphql",
+            data=json.dumps({"query": query}).encode(),
+            headers={"Authorization": f"bearer {token}",
+                     "Content-Type": "application/json",
+                     "User-Agent": "aspnetcore-test-quarantine"})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                body = json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            if e.code in (401, 403):  # bad/expired token or abuse block = systemic
+                raise SystemExit(f"FATAL: GitHub GraphQL {e.code} — aborting rather than excluding all PRs")
+            excluded += len(batch); chunks_failed += 1; continue   # transient: exclude this chunk
+        except Exception:
+            excluded += len(batch); chunks_failed += 1; continue   # timeout/network: exclude this chunk
+        # GraphQL returns data AND errors together. Exclude any alias named in an
+        # error path; primary rate-limit is systemic; other top-level errors mean
+        # we can't trust this chunk, so exclude the whole chunk.
+        errored, chunk_untrusted = set(), False
+        for err in body.get("errors") or []:
+            if err.get("type") == "RATE_LIMITED":
+                raise SystemExit("FATAL: GitHub GraphQL RATE_LIMITED — aborting rather than excluding all PRs")
+            # A field/node error names its alias somewhere in the path, e.g.
+            # ["repository","p123"] or ["repository","p123","merged"]. Exclude just
+            # that PR; a path with no alias is untrustworthy for the whole chunk.
+            alias = next((p for p in (err.get("path") or [])
+                          if isinstance(p, str) and re.fullmatch(r"p\d+", p)), None)
+            if alias:
+                errored.add(alias)
+            else:
+                chunk_untrusted = True
+        repo = (body.get("data") or {}).get("repository")
+        if repo is None or chunk_untrusted:
+            excluded += len(batch); chunks_failed += 1; continue
+        for alias, pr in repo.items():
+            if alias in errored or not pr or not pr.get("headRefOid"):
+                excluded += 1
+            elif pr.get("baseRefName") == "main" and pr.get("merged") is True:
+                verified[pr["number"]] = pr["headRefOid"]
+            else:
+                excluded += 1
+    if chunks_total and chunks_failed == chunks_total:
+        raise SystemExit("FATAL: every GraphQL verification request failed — aborting rather than excluding all PRs")
+    print(f"# B2/B3 verify: {len(verified)} merged-into-main, {excluded} excluded of {len(nums)} candidates")
+    return verified
+```
+
+GraphQL field mapping: `baseRefName` = REST `base.ref` (B2), `merged` = REST `merged` (B3), `headRefOid` = REST `head.sha` (used for the B1 `pr.sourceSha` match). `api.github.com` is on the firewall allow-list and `GITHUB_TOKEN` is available to the agent. Lower `chunk` to 25 if you ever see query-complexity throttling.
