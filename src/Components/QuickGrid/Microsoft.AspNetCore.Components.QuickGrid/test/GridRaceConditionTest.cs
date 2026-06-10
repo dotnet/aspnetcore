@@ -97,7 +97,32 @@ public class GridRaceConditionTest
     [Fact]
     public async Task RefreshDataAsyncDoesNotThrowWhenCalledFromTimerAction()
     {
-        // Arrange
+        var testComponent = await RenderSimpleTestComponentAsync();
+        var exception = await ExecuteTimerActionAsync(() => testComponent.NotFailingGrid.RefreshDataAsync());
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task ShowColumnOptionsAsyncDoesNotThrowWhenCalledFromTimerAction()
+    {
+        var testComponent = await RenderSimpleTestComponentAsync();
+        var exception = await ExecuteTimerActionAsync(() => testComponent.NotFailingGrid.ShowColumnOptionsAsync(testComponent.NameColumn));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task HideColumnOptionsAsyncDoesNotThrowWhenCalledFromTimerAction()
+    {
+        var testComponent = await RenderSimpleTestComponentAsync();
+        var exception = await ExecuteTimerActionAsync(() => testComponent.NotFailingGrid.HideColumnOptionsAsync());
+
+        Assert.Null(exception);
+    }
+
+    private static async Task<SimpleTestComponent> RenderSimpleTestComponentAsync()
+    {
         var moduleLoadCompletion = new TaskCompletionSource();
         moduleLoadCompletion.SetResult();
         var moduleImportStarted = new TaskCompletionSource();
@@ -115,17 +140,21 @@ public class GridRaceConditionTest
         await moduleImportStarted.Task;
         await testComponent.NotFailingGrid.OnAfterRenderCompleted;
 
-        Exception exception = null;
+        return testComponent;
+    }
+
+    private static async Task<Exception> ExecuteTimerActionAsync(Func<Task> action)
+    {
+        Exception exception = null!;
         var refreshCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        // Act
         using var timer = new System.Threading.Timer(_ =>
         {
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await testComponent.NotFailingGrid.RefreshDataAsync();
+                    await action();
                 }
                 catch (Exception ex)
                 {
@@ -136,12 +165,10 @@ public class GridRaceConditionTest
                     refreshCompleted.TrySetResult();
                 }
             });
-        }, null, 0, Timeout.Infinite);
+        }, null, 0, System.Threading.Timeout.Infinite);
 
         await refreshCompleted.Task;
-
-        // Assert
-        Assert.Null(exception);
+        return exception;
     }
 }
 
@@ -159,6 +186,8 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase
     protected TGrid _grid;
     public TGrid Grid => _grid;
 
+    protected PropertyColumn<Person, string> _nameColumn = default!;
+
     private readonly List<Person> _people = [
         new() { Id = 1, Name = "John" },
         new() { Id = 2, Name = "Jane" }
@@ -170,8 +199,9 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase
         builder.AddAttribute(1, "Items", _people.AsQueryable());
         builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
         {
-            b.OpenComponent<PropertyColumn<Person, int>>(0);
-            b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
+            b.OpenComponent<PropertyColumn<Person, string>>(0);
+            b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, string>>)(p => p.Name));
+            b.AddComponentReferenceCapture(2, component => _nameColumn = (PropertyColumn<Person, string>)component);
             b.CloseComponent();
         }));
         builder.AddComponentReferenceCapture(3, component => _grid = (TGrid)component);
@@ -182,6 +212,7 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase
 internal class SimpleTestComponent : BaseTestComponent<NotFailingGrid<Person>>
 {
     public NotFailingGrid<Person> NotFailingGrid => Grid;
+    public PropertyColumn<Person, string> NameColumn => _nameColumn;
 }
 
 internal class FailingGridTestComponent : BaseTestComponent<FailingQuickGrid<Person>>

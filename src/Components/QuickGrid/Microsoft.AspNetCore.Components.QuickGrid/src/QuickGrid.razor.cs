@@ -392,7 +392,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         _displayOptionsForColumn = column;
         _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
         return Task.CompletedTask;
     }
 
@@ -402,7 +402,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     public Task HideColumnOptionsAsync()
     {
         _displayOptionsForColumn = null;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
         return Task.CompletedTask;
     }
 
