@@ -57,6 +57,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                     MetadataReference.CreateFromFile(typeof(IFormFileCollection).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(PipeReader).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.ValidationAttribute).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(System.ComponentModel.DisplayNameAttribute).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(RouteData).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IFeatureCollection).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(ValidateOptionsResult).Assembly.Location),
