@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.2",
+  "openapi": "3.2.0",
   "info": {
     "title": "Sample | localized",
     "description": "This is a localized OpenAPI document for français (France).",
@@ -1624,29 +1624,27 @@
       }
     },
     "/query": {
-      "x-oai-additionalOperations": {
-        "QUERY": {
-          "tags": [
-            "Test"
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "text/plain": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CurrentWeather"
-                  }
-                },
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CurrentWeather"
-                  }
-                },
-                "text/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CurrentWeather"
-                  }
+      "query": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
                 }
               }
             }
@@ -1655,7 +1653,7 @@
       }
     },
     "/unsupported": {
-      "x-oai-additionalOperations": {
+      "additionalOperations": {
         "FOO": {
           "tags": [
             "Test"
@@ -1686,13 +1684,39 @@
       }
     },
     "/query-with-body": {
-      "x-oai-additionalOperations": {
-        "QUERY": {
-          "tags": [
-            "Test"
-          ],
-          "requestBody": {
+      "query": {
+        "tags": [
+          "Test"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MvcTodo"
@@ -1701,34 +1725,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MvcTodo"
-                }
-              },
-              "application/*+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MvcTodo"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "text/plain": {
-                  "schema": {
-                    "$ref": "#/components/schemas/MvcTodo"
-                  }
-                },
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/MvcTodo"
-                  }
-                },
-                "text/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/MvcTodo"
-                  }
                 }
               }
             }
