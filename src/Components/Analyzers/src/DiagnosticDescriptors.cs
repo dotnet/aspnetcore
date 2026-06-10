@@ -111,4 +111,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
+
+    public static readonly DiagnosticDescriptor UnnecessaryStateHasChangedCall = new(
+        "BL0012",
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Description)));
 }
