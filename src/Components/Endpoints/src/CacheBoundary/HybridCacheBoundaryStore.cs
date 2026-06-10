@@ -23,14 +23,32 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
         _hybridCache = hybridCache;
     }
 
-    public ValueTask<string> GetOrCreateAsync(
+    public async ValueTask<string> GetOrCreateAsync(
         string key,
         Func<CancellationToken, ValueTask<string>> factory,
         CacheStoreOptions options,
         CancellationToken cancellationToken)
     {
         var hybridOptions = BuildHybridOptions(options);
-        return _hybridCache.GetOrCreateAsync(key, factory, static (state, ct) => state(ct), hybridOptions, _tags, cancellationToken);
+
+        // Loops only to re-elect a creator when the in-flight creator's render is cancelled (its
+        // request is aborted, cancelling the boundary's captureCompletion) while this caller is still
+        // alive. HybridCache removes the faulted stampede entry, so a retry re-checks the cache and,
+        // if necessary, re-elects a new creator (possibly this caller). A genuine factory exception is
+        // not an OperationCanceledException, so it still propagates.
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                return await _hybridCache.GetOrCreateAsync(key, factory, static (state, ct) => state(ct), hybridOptions, _tags, cancellationToken);
+            }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+            {
+                continue;
+            }
+        }
     }
 
     public void Clear()

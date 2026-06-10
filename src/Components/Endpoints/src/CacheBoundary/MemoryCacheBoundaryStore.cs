@@ -26,39 +26,58 @@ internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
         CacheStoreOptions options,
         CancellationToken cancellationToken)
     {
-        if (_cache.TryGetValue<string>(key, out var existing) && existing is not null)
+        // Loops only to re-elect a creator when an in-flight creator is cancelled (e.g. its request
+        // is aborted) while this caller is still alive. Each iteration either returns a cached value,
+        // observes another caller's result, or becomes the creator itself.
+        while (true)
         {
-            return existing;
-        }
+            cancellationToken.ThrowIfCancellationRequested();
 
-        var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var pending = _pending.GetOrAdd(key, tcs.Task);
-        if (!ReferenceEquals(pending, tcs.Task))
-        {
-            // Another caller is already creating this entry; observe their result.
-            return await pending.WaitAsync(cancellationToken);
-        }
+            if (_cache.TryGetValue<string>(key, out var existing) && existing is not null)
+            {
+                return existing;
+            }
 
-        try
-        {
-            var json = await factory(cancellationToken);
-            StoreEntry(key, json, options);
-            tcs.SetResult(json);
-            return json;
-        }
-        catch (Exception ex)
-        {
-            // Remove the pending entry BEFORE faulting the TCS so that any future
-            // caller (after waiters observe the exception) gets a clean slate and
-            // re-runs the factory rather than re-binding to a faulted task.
-            _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
-            tcs.SetException(ex);
-            throw;
-        }
-        finally
-        {
-            // No-op if we already removed it in the catch block.
-            _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
+            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var pending = _pending.GetOrAdd(key, tcs.Task);
+            if (!ReferenceEquals(pending, tcs.Task))
+            {
+                // Another caller is already creating this entry; observe their result.
+                try
+                {
+                    return await pending.WaitAsync(cancellationToken);
+                }
+                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                {
+                    // The creator was cancelled but this request is still alive. The creator removes
+                    // its pending entry before faulting, so loop back to re-check the cache and, if
+                    // necessary, re-elect a new creator (possibly this caller). A genuine factory
+                    // exception is not an OperationCanceledException, so it still propagates here.
+                    continue;
+                }
+            }
+
+            try
+            {
+                var json = await factory(cancellationToken);
+                StoreEntry(key, json, options);
+                tcs.SetResult(json);
+                return json;
+            }
+            catch (Exception ex)
+            {
+                // Remove the pending entry BEFORE faulting the TCS so that any future
+                // caller (after waiters observe the exception) gets a clean slate and
+                // re-runs the factory rather than re-binding to a faulted task.
+                _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
+                tcs.SetException(ex);
+                throw;
+            }
+            finally
+            {
+                // No-op if we already removed it in the catch block.
+                _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
+            }
         }
     }
 
