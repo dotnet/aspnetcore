@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 #requires -version 4
 
-# This script packages, installs and creates the blazor-wasm-servicedefaults
+# This script packages, installs and creates the blazorwasm-servicedefaults
 # template to help with rapid iteration on the template content.
 [CmdletBinding(PositionalBinding = $false)]
 param(
@@ -19,7 +19,7 @@ param(
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
-$templateArguments = @("blazor-wasm-servicedefaults");
+$templateArguments = @("blazorwasm-servicedefaults");
 
 if ($Hosted) {
     $templateArguments += "--hosted"
