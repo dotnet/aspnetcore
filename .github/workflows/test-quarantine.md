@@ -112,10 +112,168 @@ on:
         print(f"Found {len(requarantine_data)} re-quarantine PRs, wrote to step output")
         SCRIPT
 
+    - name: Verify Source B PRs
+      id: source_b_prs
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Source B looks for flaky tests in failed CI builds of PRs that were merged
+        # into main. Selecting those builds requires verifying each candidate PR
+        # (base==main, merged==true) and matching its head SHA — which needs a GitHub
+        # token. The agent sandbox has NO usable token, and its MCP search tool
+        # silently drops external-contributor PRs. So we do the ENTIRE selection here —
+        # outside the firewall, with full token access and no integrity filter — and
+        # hand the agent the exact Azure DevOps build IDs to collect results from. The
+        # agent makes ZERO GitHub calls and does NOT re-enumerate builds, which both
+        # eliminates the per-PR pull_request_read loop (the effective-token-budget
+        # sink) and avoids any snapshot skew between this step and the agent.
+        python3 << 'SCRIPT'
+        import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error
+
+        def fetch(url, data=None, headers=None, retries=3):
+            """GET (or POST if data) with small backoff. Re-raises HTTPError so the
+            caller can distinguish auth failures; retries only transient errors."""
+            hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
+            if headers:
+                hdrs.update(headers)
+            last = None
+            for attempt in range(retries):
+                try:
+                    req = urllib.request.Request(url, data=data, headers=hdrs)
+                    with urllib.request.urlopen(req, timeout=60) as r:
+                        return json.loads(r.read()), r.headers
+                except urllib.error.HTTPError as e:
+                    if e.code in (401, 403) or e.code == 404:
+                        raise
+                    last = e
+                except Exception as e:
+                    last = e
+                time.sleep(2 * (attempt + 1))
+            raise last
+
+        # --- 1. Enumerate completed PR builds from the last 7 days (Azure DevOps,
+        #        public project — no auth needed) for both CI pipelines. Record each
+        #        failed/partial build's id, PR number and the commit it ran on. ---
+        BUILDS = "https://dev.azure.com/dnceng-public/public/_apis/build/builds"
+        DEFINITIONS = [83, 87]  # 83 = aspnetcore-ci, 87 = components-e2e
+        min_time = (datetime.datetime.utcnow() - datetime.timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        failed_builds = []  # list of (build_id, pr_number, source_sha)
+        for d in DEFINITIONS:
+            token = None
+            while True:
+                params = {"definitions": d, "reasonFilter": "pullRequest",
+                          "statusFilter": "completed", "minTime": min_time,
+                          "$top": 200, "api-version": "7.1"}
+                if token:
+                    params["continuationToken"] = token
+                data, hdrs = fetch(f"{BUILDS}?{urllib.parse.urlencode(params)}")
+                # ADO returns the continuation token in a response header.
+                token = hdrs.get("x-ms-continuationtoken")
+                for b in data.get("value", []):
+                    if b.get("result") not in ("failed", "partiallySucceeded"):
+                        continue
+                    branch = b.get("sourceBranch", "")  # refs/pull/{N}/merge
+                    if not branch.startswith("refs/pull/"):
+                        continue
+                    try:
+                        pr = int(branch.split("/")[2])
+                    except (IndexError, ValueError):
+                        continue
+                    sha = (b.get("triggerInfo") or {}).get("pr.sourceSha")
+                    if sha:
+                        failed_builds.append((b["id"], pr, sha))
+                if not token:
+                    break
+
+        # (B4) Only PRs with >= 1 failed/partial build can ever yield a candidate.
+        candidates = sorted({pr for _, pr, _ in failed_builds})
+
+        # --- 2. Verify B2 (base == main) + B3 (merged) and capture head SHA via batched
+        #        GraphQL. Fail LOUD on systemic failures (auth, rate-limit, every chunk
+        #        failed, or no candidate could even be resolved) so the run aborts
+        #        visibly instead of silently emitting an empty set. ---
+        gh_token = os.environ["GH_TOKEN"]
+
+        def verify(pr_numbers, chunk=50):
+            verified = {}            # str(pr_number) -> headRefOid
+            resolved = 0             # candidate PRs we positively read a node for
+            chunks_total = chunks_failed = 0
+            for k in range(0, len(pr_numbers), chunk):
+                batch = pr_numbers[k:k + chunk]
+                chunks_total += 1
+                aliases = "\n".join(
+                    f'p{n}: pullRequest(number: {n}) {{ number baseRefName merged headRefOid }}'
+                    for n in batch)
+                query = f'query {{ repository(owner: "dotnet", name: "aspnetcore") {{ {aliases} }} }}'
+                try:
+                    body, _ = fetch(
+                        "https://api.github.com/graphql",
+                        data=json.dumps({"query": query}).encode(),
+                        headers={"Authorization": f"bearer {gh_token}",
+                                 "Content-Type": "application/json"})
+                except urllib.error.HTTPError as e:
+                    if e.code in (401, 403):
+                        sys.exit(f"FATAL: GitHub GraphQL {e.code} — aborting Source B verification")
+                    chunks_failed += 1
+                    continue
+                except Exception:
+                    chunks_failed += 1
+                    continue
+                errored, chunk_untrusted = set(), False
+                for err in body.get("errors") or []:
+                    if err.get("type") == "RATE_LIMITED":
+                        sys.exit("FATAL: GitHub GraphQL RATE_LIMITED — aborting Source B verification")
+                    alias = next((p for p in (err.get("path") or [])
+                                  if isinstance(p, str) and len(p) > 1 and p[0] == "p" and p[1:].isdigit()), None)
+                    if alias:
+                        errored.add(alias)
+                    else:
+                        chunk_untrusted = True
+                repo = (body.get("data") or {}).get("repository")
+                if repo is None or chunk_untrusted:
+                    chunks_failed += 1
+                    continue
+                for alias, pr in repo.items():
+                    if alias in errored or not pr or not pr.get("headRefOid"):
+                        continue
+                    resolved += 1
+                    if pr.get("baseRefName") == "main" and pr.get("merged") is True:
+                        verified[str(pr["number"])] = pr["headRefOid"]
+            # Fail LOUD on ANY chunk that could not be conclusively read: a partially
+            # dropped chunk would silently omit up to `chunk` real candidate PRs from
+            # Source B. fetch() already retries transient blips, so a surviving failure
+            # is a real problem worth aborting the daily run over.
+            if chunks_failed:
+                sys.exit(f"FATAL: {chunks_failed}/{chunks_total} GraphQL verification "
+                         "chunk(s) failed — aborting Source B verification")
+            if pr_numbers and resolved == 0:
+                sys.exit("FATAL: could not resolve any candidate PR via GraphQL — aborting Source B verification")
+            return verified
+
+        verified = verify(candidates) if candidates else {}
+
+        # --- 3. (B1) Keep failed/partial builds whose PR is merged into main AND whose
+        #        commit matches that PR's head SHA. Emit only those build IDs. ---
+        build_ids = sorted({bid for bid, pr, sha in failed_builds
+                            if verified.get(str(pr)) == sha})
+
+        github_output = os.environ.get("GITHUB_OUTPUT", "")
+        if not github_output:
+            print("ERROR: GITHUB_OUTPUT is not set, cannot pass data to agent", file=sys.stderr)
+            sys.exit(1)
+        json_str = json.dumps(build_ids)
+        with open(github_output, "a") as gh_out:
+            gh_out.write(f"source_b_build_ids<<SOURCE_B_EOF\n{json_str}\nSOURCE_B_EOF\n")
+        print(f"Source B: {len(failed_builds)} failed PR builds, {len(candidates)} candidate PRs, "
+              f"{len(verified)} merged-into-main, {len(build_ids)} builds selected (B1-B4), wrote to step output")
+        SCRIPT
+
 jobs:
   pre_activation:
     outputs:
       requarantine_data: ${{ steps.requarantine_prs.outputs.requarantine_data }}
+      source_b_build_ids: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
 
 description: "Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics"
 
@@ -214,25 +372,19 @@ GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsby
 
 **Source B is REQUIRED — do not skip it.** It captures flaky tests that only manifest in PR builds (which run more frequently than rolling builds). Skipping it leaves significant blind spots in quarantine coverage.
 
-Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use pagination (`$top=100` + `continuationToken`) and an explicit `minTime` to ensure all builds are retrieved. **To keep this efficient, use the following approach:**
+**Build selection has already been done for you by the deterministic `Verify Source B PRs` pre-activation step.** That step ran outside the firewall (where a GitHub token works) and, from the same Azure DevOps PR-build data, applied the full Source B filter end-to-end: it enumerated every `failed`/`partiallySucceeded` PR build in the last 7 days (B4), verified each PR targets `main` (B2) and was merged (B3), and matched each build's commit against its PR's merged head SHA (B1). Its output is the exact, already-filtered list of Azure DevOps **build IDs** you must collect failed test results from, injected here as a JSON array of integers:
 
-1. **Get the unique PR numbers** — extract PR numbers from `sourceBranch` (`refs/pull/{NUMBER}/merge`) across all PR builds. Deduplicate to get the set of unique PRs.
+```json
+${{ needs.pre_activation.outputs.source_b_build_ids }}
+```
 
-2. **Verify B2 and B3 for each unique PR** — call `pull_request_read` (method `get`) once per PR number (not per build):
-   - **(B2)** The PR **targets the `main` branch** — verify `base.ref` is `main`. Exclude PRs targeting release branches or any other non-main branch.
-   - **(B3)** The PR was **merged** — verify the `merged` field is `true`. Exclude open, draft, or abandoned PRs.
+**Do NOT make any GitHub API call for Source B** — no `pull_request_read`, no `search_pull_requests`, no raw GraphQL/`curl` to `api.github.com`. The agent sandbox has **no usable GitHub token**, and verifying PRs one at a time via the `pull_request_read` MCP tool is the single biggest token sink in this workflow and is **prohibited**. **Do NOT re-enumerate Azure DevOps builds for Source B** either — the build selection above is authoritative; re-listing builds would only reintroduce the work the pre-step already did and risks snapshot skew. Your job is solely to collect and aggregate test results for the injected build IDs.
 
-   If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
+In a **single batched `python3` script** (`source_b.py`, per the data-collection method above):
 
-3. **For each qualifying PR, find all its builds** and apply:
-   - **(B1)** Keep only builds for the **final commit** — compare each build's `pr.sourceSha` (from `triggerInfo`) to the PR's `head.sha` from the `pull_request_read` response in step 2. Only include builds whose `pr.sourceSha` matches the PR's `head.sha`.
-   - **(B4)** At least one build in the group **failed** or **partially succeeded**.
+1. **Collect the failed test results** for **exactly** the build IDs in the injected array (and no others) via `resultsbyBuild` (`outcomes=Failed`), aggregate per-test failure counts, write the raw results to `/tmp/gh-aw/agent/source_b.json`, and print **only** the aggregated per-test failure table. Never print raw build, test-result, or the injected build-ID JSON into your context.
 
-4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
-
-**Run the build-listing and test-result collection (the pagination in the intro, plus steps 1, 3, and 4) inside a single batched `python3` script** (per the data-collection method above): write the qualifying failed test results to `/tmp/gh-aw/agent/source_b.json` and print only the aggregated per-test failure table. The exception is the step-2 verification, which uses the `pull_request_read` MCP tool: issue those calls together and keep their raw responses out of context — retain only each PR's `base.ref`, `merged`, and `head.sha`.
-
-**Every criterion above is mandatory — do not skip or approximate any of them.**
+If the injected array is empty (`[]`), Source B simply contributes no candidates this run — proceed to Source C without making any GitHub calls.
 
 This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
 
