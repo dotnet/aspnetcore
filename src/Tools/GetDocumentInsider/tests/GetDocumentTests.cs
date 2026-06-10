@@ -127,6 +127,7 @@ public class GetDocumentTests(ITestOutputHelper output)
         var result = OpenApiDocument.Load(stream, "json");
         Assert.Empty(result.Diagnostic.Errors);
         Assert.Equal(OpenApiSpecVersion.OpenApi3_2, result.Diagnostic.SpecificationVersion);
+        // Document name in the title gives us a clue that the correct document was actually resolved
         Assert.Equal("GetDocumentSample | internal", result.Document.Info.Title);
     }
 
