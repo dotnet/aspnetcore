@@ -98,14 +98,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// </summary>
     [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
 
-    /// <summary>
-    /// Gets or sets a flag to indicate whether route matching should prefer exact matches
-    /// over wildcards.
-    /// <para>This property is obsolete and configuring it does nothing.</para>
-    /// </summary>
-    [Obsolete("This property is obsolete and configuring it has no effect.")]
-    [Parameter] public bool PreferExactMatches { get; set; }
-
     private RouteTable Routes { get; set; }
 
     /// <inheritdoc />
@@ -119,7 +111,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         NavigationManager.OnNotFound += OnNotFound;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearRouteCaches;
         }
@@ -187,7 +179,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
         NavigationManager.OnNotFound -= OnNotFound;
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
         }
@@ -254,7 +246,10 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+            if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
+            {
+                _renderHandle.ComponentActivitySource.StopNavigateActivity(activityHandle, null);
+            }
             return;
         }
 
@@ -309,18 +304,21 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+        if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
+        {
+            _renderHandle.ComponentActivitySource.StopNavigateActivity(activityHandle, null);
+        }
     }
 
     private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
     {
         ComponentsActivityHandle activityHandle = default;
-        if (_renderHandle.ComponentActivitySource != null)
+        if (ComponentsActivitySource.IsSupported && _renderHandle.ComponentActivitySource != null)
         {
             activityHandle = _renderHandle.ComponentActivitySource.StartNavigateActivity(componentType, template);
         }
 
-        if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
+        if (ComponentsMetrics.IsSupported && _renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
         {
             _renderHandle.ComponentMetrics.Navigation(componentType, template);
         }

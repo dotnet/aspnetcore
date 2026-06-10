@@ -30,7 +30,7 @@
 [CmdletBinding(PositionalBinding = $false)]
 param(
    [string]$NuGetExePath,
-   [string]$PackageSource = "https://api.nuget.org/v3/index.json",
+   [string]$PackageSource = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json",
    [string]$DownloadPath,
    [Parameter(ValueFromRemainingArguments = $true)]
    [string[]]$args
@@ -65,7 +65,7 @@ if ($NuGetExePath) {
         Write-Host "Downloading nuget.exe from $nugetExeUrl..."
         $ProgressPreference = 'SilentlyContinue'
         try {
-            Invoke-WebRequest $nugetExeUrl -OutFile $downloadedNuGetExe
+            Invoke-WebRequest $nugetExeUrl -UseBasicParsing -OutFile $downloadedNuGetExe
             $ProgressPreference = 'Continue'
         } catch {
             $ProgressPreference = 'Continue'

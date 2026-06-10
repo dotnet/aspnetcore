@@ -13,7 +13,7 @@ internal static class EventArgsTypeCache
 
     static EventArgsTypeCache()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += Cache.Clear;
         }

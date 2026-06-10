@@ -25,8 +25,7 @@ export async function fetchAndInvokeInitializers(options: Partial<WebAssemblySta
     let initializers : JSAsset[];
     if (!configInitializers) {
       initializers = [];
-    }
-    else if ("length" in configInitializers) {
+    } else if ('length' in configInitializers) {
       // New boot config schema.
       initializers = configInitializers;
     } else {

@@ -15,10 +15,12 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
+import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
 import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
 import { attachComponentDescriptorHandler, registerAllComponentDescriptors } from './Rendering/DomMerging/DomSync';
+import { discoverBrowserConfiguration } from './Services/ComponentDescriptorDiscovery';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
@@ -27,6 +29,7 @@ import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { createValidationService, ValidationOptions } from './Validation';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -39,6 +42,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   started = true;
   options = options || {};
   options.logLevel ??= LogLevel.Error;
+  Blazor._internal.isBlazorWeb = true;
 
   // Defined here to avoid inadvertently imported enhanced navigation
   // related APIs in WebAssembly or Blazor Server contexts.
@@ -57,6 +61,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
+      resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
       jsEventRegistry.dispatchEvent('enhancedload', {});
     },
     enhancedNavigationCompleted() {
@@ -74,6 +79,17 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   enableFocusOnNavigate(jsEventRegistry);
 
+  // Client-side validation is initialized on demand: only when the page contains
+  // SSR-rendered form fields with data-val attributes. This avoids adding document-level
+  // event listeners in interactive-only apps that never use client-side validation.
+  jsEventRegistry.addEventListener('enhancedload', () => {
+    if (Blazor.formValidation) {
+      Blazor.formValidation.scanRules();
+    } else {
+      initFormValidationIfNeeded(options?.ssr?.formValidation);
+    }
+  });
+
   // Wait until the initial page response completes before activating interactive components.
   // If stream rendering is used, this helps to ensure that only the final set of interactive
   // components produced by the stream render actually get activated for interactivity.
@@ -87,6 +103,40 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 }
 
 function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
+  // Discover server-emitted browser configuration and merge into options
+  const browserConfig = discoverBrowserConfiguration(document);
+  if (browserConfig) {
+    if (browserConfig.logLevel !== undefined) {
+      options.logLevel = browserConfig.logLevel;
+    }
+
+    // SSR options
+    if (browserConfig.ssr) {
+      options.ssr = options.ssr || {};
+      if (browserConfig.ssr.disableDomPreservation !== undefined) {
+        options.ssr.disableDomPreservation = browserConfig.ssr.disableDomPreservation;
+      }
+      if (browserConfig.ssr.circuitInactivityTimeoutMs !== undefined) {
+        options.ssr.circuitInactivityTimeoutMs = browserConfig.ssr.circuitInactivityTimeoutMs;
+      }
+    }
+
+    // Circuit/Server options
+    if (browserConfig.server) {
+      const circuitOpts = options.circuit = options.circuit || {} as any;
+      const reconnOpts = circuitOpts.reconnectionOptions = circuitOpts.reconnectionOptions || {} as any;
+      if (browserConfig.server.reconnectionMaxRetries !== undefined) {
+        reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
+      }
+      if (browserConfig.server.reconnectionRetryIntervalMilliseconds !== undefined) {
+        reconnOpts.retryIntervalMilliseconds = browserConfig.server.reconnectionRetryIntervalMilliseconds;
+      }
+      if (browserConfig.server.reconnectionDialogId !== undefined) {
+        reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
+      }
+    }
+  }
+
   // Retrieve and start invoking the initializers.
   // Blazor server options get defaults that are configured before we invoke the initializers
   // so we do the same here.
@@ -98,10 +148,36 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
   setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
+  // If BrowserConfiguration had WebAssembly server options, apply them
+  // before registering component descriptors, since registration triggers
+  // WebAssembly platform loading which captures these options.
+  if (browserConfig?.webAssembly) {
+    rootComponentManager.setWebAssemblyOptions({
+      environmentName: browserConfig.webAssembly.environmentName ?? '',
+      environmentVariables: browserConfig.webAssembly.environmentVariables ?? {},
+    });
+  }
+
   registerAllComponentDescriptors(document);
+
   rootComponentManager.onDocumentUpdated();
 
+  // Initialize client-side validation if the page has validatable fields.
+  initFormValidationIfNeeded(options?.ssr?.formValidation);
+
   callAfterStartedCallbacks(initializersPromise);
+}
+
+function initFormValidationIfNeeded(formValidation?: ValidationOptions): void {
+  if (Blazor.formValidation) {
+    return;
+  }
+  for (const form of Array.from(document.forms)) {
+    if (form.querySelector('[data-val="true"]')) {
+      Blazor.formValidation = createValidationService(formValidation);
+      return;
+    }
+  }
 }
 
 async function resolveConfiguredOptions<TOptions>(initializers: Promise<JSInitializer>, options: TOptions): Promise<TOptions> {

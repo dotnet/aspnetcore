@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
+using System;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -125,6 +125,23 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         AssertReExecutionPageRendered();
     }
 
+    [Fact]
+    public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404()
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page?useOnNavigateAsync=true");
+        AssertReExecutionPageRendered();
+    }
+
+    [Fact]
+    public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404_CanStream()
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        Navigate($"{ServerPathBase}/streaming-reexecution/not-existing-page?useOnNavigateAsync=true");
+        AssertReExecutionPageRendered();
+        Browser.Equal("Streaming completed.", () => Browser.Exists(By.Id("reexecute-streaming-status")).Text);
+    }
+
     private void AssertReExecutionPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 
@@ -192,7 +209,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     [InlineData(false, false)]
     // This tests the application subscribing to OnNotFound event and setting NotFoundEventArgs.Path, opposed to the framework doing it for the app.
-    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR (bool streaming, bool customRouter)
+    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR(bool streaming, bool customRouter)
     {
         string streamingPath = streaming ? "-streaming" : "";
         string testUrl = $"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomRouter={customRouter}&appSetsEventArgsPath=true";

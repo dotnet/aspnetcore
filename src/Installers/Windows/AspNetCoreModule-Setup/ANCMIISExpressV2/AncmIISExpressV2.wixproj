@@ -1,13 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
-
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>AspNetCoreModuleV2IISExpress</Name>
     <IsShipping>true</IsShipping>
     <ProjectGuid>17c76489-4c09-4e14-b81c-7a86cd937144</ProjectGuid>
     <OutputType>Package</OutputType>
-    <OutputName>$(Name)_$(Platform)</OutputName>
+    <OutputName>ancm_iis_express_$(Platform)_en_v2_$(_ProductVersionForInstallers)</OutputName>
     <SuppressIces>ICE03</SuppressIces>
     <DisableGuidGeneration>true</DisableGuidGeneration>
     <SchemaVersion>2.0</SchemaVersion>
@@ -15,29 +13,23 @@
     <TempPlatform Condition="'$(Platform)' == 'x86'">Win32</TempPlatform>
     <TempPlatform Condition="'$(Platform)' == 'arm64'">ARM64</TempPlatform>
     <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
+    <!-- We import D.B.T ourselves in this file -->
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <!-- False positive in ancm_iis_expressv2.wxs -->
+    <SuppressSpecificWarnings>5437</SuppressSpecificWarnings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ANCMDepProviderKey Condition="'$(Platform)' == 'x86'">IISExpress_AspNetCore_Module_V2,x86</ANCMDepProviderKey>
+    <ANCMDepProviderKey Condition="'$(Platform)' != 'x86'">IISExpress_AspNetCore_Module_V2,x64</ANCMDepProviderKey>
+    <DefineConstants>$(DefineConstants);ANCMDepProviderKey=$(ANCMDepProviderKey)</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixDependencyExtension">
-      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
-      <Name>WixDependencyExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixUIExtension">
-      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
-      <Name>WixUIExtension</Name>
-    </WixExtension>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="ancm_iis_expressv2.wxs" />
-    <Compile Include="$(IIS-Setup)iisca\wix3\iisca.wxs">
+    <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
     </Compile>
-    <EmbeddedResource Include="..\setupstrings.wxl">
+    <EmbeddedResource Include="..\LCID\1033\setupstrings.wxl">
       <Link>setupstrings.wxl</Link>
     </EmbeddedResource>
     <Content Include="$(IIS-Setup)include.wxi">
@@ -66,11 +58,12 @@
     <Copy SourceFiles="@(BuildContentForAncmHandler)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
   </Target>
 
+  <Import Project="Sdk.targets" Sdk="Microsoft.WixToolset.Sdk" />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
   <Import Project="..\build\settings.props" />
 
   <PropertyGroup>
-    <PackageFileName>ancm_iis_express_$(Platform)_en_v2_$(PackageVersion)$(TargetExt)</PackageFileName>
+    <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
     <ProductNameShort>ASP.NET Core Module IIS Express V2</ProductNameShort>
   </PropertyGroup>
 
@@ -82,7 +75,6 @@
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ProductNameShort)' ^
                       '$(MsiFullPath)' ^
-                      '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^
@@ -92,7 +84,8 @@
                       '$(AspNetCoreMinorVersion)' ^
                       '$(PackageIcon)' ^
                       '$(PackageIconFullPath)' ^
-                      '$(PackageLicenseExpression)' " />
+                      '$(PackageLicenseExpression)' ^
+                      '$(DotNetTool)' " />
   </Target>
 
   <Target Name="BeforeBuild" Condition="'$(Platform)' == 'arm64'" >

@@ -96,8 +96,20 @@ public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
         return OnChange.InvokeAsync(new InputFileChangeEventArgs(files));
     }
 
+    /// <summary>
+    /// Releases the resources used by the <see cref="InputFile"/> component.
+    /// </summary>
+    /// <param name="disposing"><see langword="true"/> if called within <see cref="IDisposable.Dispose"/>.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _jsCallbacksRelay?.Dispose();
+        }
+    }
+
     void IDisposable.Dispose()
     {
-        _jsCallbacksRelay?.Dispose();
+        Dispose(disposing: true);
     }
 }

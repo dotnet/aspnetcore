@@ -5,8 +5,8 @@ abstract Microsoft.Extensions.ObjectPool.ObjectPoolProvider.Create<T>(Microsoft.
 abstract Microsoft.Extensions.ObjectPool.PooledObjectPolicy<T>.Create() -> T
 abstract Microsoft.Extensions.ObjectPool.PooledObjectPolicy<T>.Return(T obj) -> bool
 Microsoft.Extensions.ObjectPool.DefaultObjectPool<T>
-Microsoft.Extensions.ObjectPool.DefaultObjectPool<T>.DefaultObjectPool(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T!>! policy) -> void
 Microsoft.Extensions.ObjectPool.DefaultObjectPool<T>.DefaultObjectPool(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T!>! policy, int maximumRetained) -> void
+Microsoft.Extensions.ObjectPool.DefaultObjectPool<T>.DefaultObjectPool(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T!>! policy) -> void
 Microsoft.Extensions.ObjectPool.DefaultObjectPoolProvider
 Microsoft.Extensions.ObjectPool.DefaultObjectPoolProvider.DefaultObjectPoolProvider() -> void
 Microsoft.Extensions.ObjectPool.DefaultObjectPoolProvider.MaximumRetained.get -> int
@@ -48,5 +48,5 @@ override Microsoft.Extensions.ObjectPool.LeakTrackingObjectPoolProvider.Create<T
 override Microsoft.Extensions.ObjectPool.StringBuilderPooledObjectPolicy.Create() -> System.Text.StringBuilder!
 override Microsoft.Extensions.ObjectPool.StringBuilderPooledObjectPolicy.Return(System.Text.StringBuilder! obj) -> bool
 static Microsoft.Extensions.ObjectPool.ObjectPool.Create<T>(Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<T!>? policy = null) -> Microsoft.Extensions.ObjectPool.ObjectPool<T!>!
-static Microsoft.Extensions.ObjectPool.ObjectPoolProviderExtensions.CreateStringBuilderPool(this Microsoft.Extensions.ObjectPool.ObjectPoolProvider! provider) -> Microsoft.Extensions.ObjectPool.ObjectPool<System.Text.StringBuilder!>!
 static Microsoft.Extensions.ObjectPool.ObjectPoolProviderExtensions.CreateStringBuilderPool(this Microsoft.Extensions.ObjectPool.ObjectPoolProvider! provider, int initialCapacity, int maximumRetainedCapacity) -> Microsoft.Extensions.ObjectPool.ObjectPool<System.Text.StringBuilder!>!
+static Microsoft.Extensions.ObjectPool.ObjectPoolProviderExtensions.CreateStringBuilderPool(this Microsoft.Extensions.ObjectPool.ObjectPoolProvider! provider) -> Microsoft.Extensions.ObjectPool.ObjectPool<System.Text.StringBuilder!>!

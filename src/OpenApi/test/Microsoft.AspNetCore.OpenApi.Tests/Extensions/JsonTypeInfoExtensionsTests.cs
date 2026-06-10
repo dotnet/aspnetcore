@@ -63,6 +63,10 @@ public class JsonTypeInfoExtensionsTests
         [typeof(JsonPatchDocument<Todo>), "JsonPatchDocument"],
         [typeof(Stream), "Stream"],
         [typeof(PipeReader), "PipeReader"],
+        [typeof(FileContentResult), "FileContentResult"],
+        [typeof(FileStreamResult), "FileStreamResult"],
+        [typeof(FileContentHttpResult), "FileContentHttpResult"],
+        [typeof(FileStreamHttpResult), "FileStreamHttpResult"],
         [typeof(Results<Ok<TodoWithDueDate>, Ok<Todo>>), "ResultsOfOkOfTodoWithDueDateAndOkOfTodo"],
         [typeof(Ok<Todo>), "OkOfTodo"],
         [typeof(NotFound<TodoWithDueDate>), "NotFoundOfTodoWithDueDate"],
@@ -77,6 +81,10 @@ public class JsonTypeInfoExtensionsTests
         [typeof(Dictionary<string, List<string[]>>), null],
         [typeof(Dictionary<string, IEnumerable<string[]>>), null],
         [typeof(Foo<int>.Bar<string>.Baz), "BazOfintAndstring"],
+        [typeof(Ok<string[]>), "OkOfArrayOfstring"],
+        [typeof(Ok<int[]>), "OkOfArrayOfint"],
+        [typeof(Ok<Todo[]>), "OkOfArrayOfTodo"],
+        [typeof(Ok<string[][]>), "OkOfArrayOfArrayOfstring"],
     ];
 
     [Theory]

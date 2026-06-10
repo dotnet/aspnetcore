@@ -63,11 +63,25 @@
                 document.body.append(element);
             }
 
-            Blazor.start({
-                configureRuntime: dotnet => {
-                    dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");
-                }
-            });
+            // Support both top-level and nested options format
+            // The nested format matches what blazor.web.js uses
+            const useNestedFormat = location.search.indexOf('nested-options=true') !== -1;
+            
+            if (useNestedFormat) {
+                Blazor.start({
+                    webAssembly: {
+                        configureRuntime: dotnet => {
+                            dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");
+                        }
+                    }
+                });
+            } else {
+                Blazor.start({
+                    configureRuntime: dotnet => {
+                        dotnet.withEnvironmentVariable("CONFIGURE_RUNTIME", "true");
+                    }
+                });
+            }
         })();
     </script>
 

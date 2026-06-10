@@ -1,6 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// Metadata comments are consumed during discovery and should not be part of the logical tree.
+// They include: WebAssembly options, component state, and web initializers.
+export function isMetadataComment(node: Node): boolean {
+  if (node.nodeType !== Node.COMMENT_NODE) {
+    return false;
+  }
+  const content = node.textContent || '';
+  return content.trim().startsWith('Blazor-Server-Component-State:') ||
+         content.trim().startsWith('Blazor-WebAssembly-Component-State:') ||
+         content.trim().startsWith('Blazor-Web-Initializers:') ||
+         content.trim().startsWith('Blazor-WebAssembly:') ||
+         content.trim().startsWith('Blazor-Configuration:');
+}
+
 export function discoverComponents(root: Node, type: 'webassembly' | 'server' | 'auto'): ComponentDescriptor[] {
   switch (type) {
     case 'webassembly':
@@ -16,6 +30,7 @@ const blazorServerStateCommentRegularExpression = /^\s*Blazor-Server-Component-S
 const blazorWebAssemblyStateCommentRegularExpression = /^\s*Blazor-WebAssembly-Component-State:(?<state>[a-zA-Z0-9+/=]+)$/;
 const blazorWebInitializerCommentRegularExpression = /^\s*Blazor-Web-Initializers:(?<initializers>[a-zA-Z0-9+/=]+)$/;
 const blazorWebAssemblyOptionsCommentRegularExpression = /^\s*Blazor-WebAssembly:[^{]*(?<options>.*)$/;
+const blazorConfigurationCommentRegularExpression = /^\s*Blazor-Configuration:(?<options>[a-zA-Z0-9+/=]+)$/;
 
 export function discoverWebAssemblyOptions(root: Node): WebAssemblyServerOptions | undefined {
   const optionsJson = discoverBlazorComment(root, blazorWebAssemblyOptionsCommentRegularExpression, 'options');
@@ -24,6 +39,15 @@ export function discoverWebAssemblyOptions(root: Node): WebAssemblyServerOptions
   }
   const options = JSON.parse(optionsJson);
   return options;
+}
+
+export function discoverBrowserConfiguration(root: Node): BrowserConfigurationOptions | undefined {
+  const configBase64 = discoverBlazorComment(root, blazorConfigurationCommentRegularExpression, 'options');
+  if (!configBase64) {
+    return undefined;
+  }
+  const configJson = atob(configBase64);
+  return JSON.parse(configJson);
 }
 
 export function discoverServerPersistedState(node: Node): string | null | undefined {
@@ -398,3 +422,21 @@ type WebAssemblyMarkerData = {
   parameterDefinitions: string;
   parameterValues: string;
 } & CommonMarkerData;
+
+export type BrowserConfigurationOptions = {
+  logLevel?: number;
+  webAssembly?: {
+    environmentName?: string;
+    applicationCulture?: string;
+    environmentVariables?: { [key: string]: string };
+  };
+  server?: {
+    reconnectionMaxRetries?: number;
+    reconnectionRetryIntervalMilliseconds?: number;
+    reconnectionDialogId?: string;
+  };
+  ssr?: {
+    disableDomPreservation?: boolean;
+    circuitInactivityTimeoutMs?: number;
+  };
+};

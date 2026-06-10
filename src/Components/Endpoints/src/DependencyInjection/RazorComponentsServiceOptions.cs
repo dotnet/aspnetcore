@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -83,5 +84,23 @@ public sealed class RazorComponentsServiceOptions
         }
     }
 
+    /// <summary>
+    /// Determines the settings used to create the TempData cookie.
+    /// </summary>
+    public CookieBuilder TempDataCookie { get; set; } = new()
+    {
+        Name = CookieTempDataProvider.CookieName,
+        HttpOnly = true,
+        SameSite = SameSiteMode.Lax,
+        IsEssential = false,
+        SecurePolicy = CookieSecurePolicy.SameAsRequest,
+    };
+
     internal string? JavaScriptInitializers { get; set; }
+
+    /// <summary>
+    /// Gets or sets the storage provider type for TempData.
+    /// Defaults to <see cref="TempDataProviderType.Cookie"/>.
+    /// </summary>
+    public TempDataProviderType TempDataProviderType { get; set; } = TempDataProviderType.Cookie;
 }

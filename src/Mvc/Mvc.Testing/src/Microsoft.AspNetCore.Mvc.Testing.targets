@@ -55,7 +55,12 @@
     </ItemGroup>
 
     <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
-    <Copy SourceFiles="%(_DepsFileToPublish.FullPath)" DestinationFolder="$(PublishDir)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
+    
+    <ItemGroup>
+      <_DepsFilesToPublishResolved Include="%(_DepsFileToPublish.FullPath)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(_DepsFilesToPublishResolved)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="@(_DepsFilesToPublishResolved->Count()) > 0" />
   </Target>
 
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
@@ -70,11 +75,16 @@
         <_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateSymbolicLinksMvcCopyDependencyFilesIfPossible)' == ''">$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)</_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible>
     </PropertyGroup>
 
-    <Copy SourceFiles="%(DepsFilePaths.FullPath)"
+    <ItemGroup>
+      <_DepsFilesToCopy Include="@(DepsFilePaths)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_DepsFilesToCopy)"
        DestinationFolder="$(OutDir)"
        UseHardlinksIfPossible="$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)"
        UseSymboliclinksIfPossible="$(_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible)"
-       Condition="Exists('%(DepsFilePaths.FullPath)')" />
+       SkipUnchangedFiles="true"
+       Condition="@(_DepsFilesToCopy->Count()) > 0" />
   </Target>
 
 </Project>

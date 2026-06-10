@@ -13,15 +13,18 @@ permissions:
 jobs:
   update-jquery-validate:
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.repository_owner == 'dotnet'
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.2.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Setup Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: src/Mvc/build/package-lock.json
 
       - name: Set RepoRoot
         run: echo "RepoRoot=$(pwd)" >> $GITHUB_ENV

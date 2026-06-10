@@ -1,0 +1,25 @@
+<!--
+  Microsoft.AspNetCore.Components.Testing.props
+  =========================
+  Default property values for E2E test projects that reference Microsoft.AspNetCore.Components.Testing.
+  Imported automatically via NuGet (buildTransitive) or via direct Import in dev scenarios.
+-->
+<Project>
+
+  <PropertyGroup>
+    <!--
+      Controls how E2E app projects are prepared at build time.
+        build   (default) — copies the project source so 'dotnet run' works (including after publish).
+        publish           — publishes the app for faster startup (native exe / framework-dependent).
+        all               — copies source AND publishes, producing two manifest entries per app.
+    -->
+    <E2EAppMode Condition="'$(E2EAppMode)' == ''">build</E2EAppMode>
+
+    <!--
+      Relative directory under the output root where E2E apps are placed.
+      Override this to change the folder name (e.g., 'test-apps').
+    -->
+    <E2EAppsRelativeDir Condition="'$(E2EAppsRelativeDir)' == ''">e2e-apps</E2EAppsRelativeDir>
+  </PropertyGroup>
+
+</Project>

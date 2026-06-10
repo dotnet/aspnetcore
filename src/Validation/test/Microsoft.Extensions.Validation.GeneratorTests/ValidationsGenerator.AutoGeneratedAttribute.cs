@@ -76,6 +76,7 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
     public async Task CanUseBothFrameworkAndGeneratedValidatableTypeAttributes()
     {
         var source = """
+            #pragma warning disable ASP0029
             namespace MyApp
             {
                 using Microsoft.AspNetCore.Builder;

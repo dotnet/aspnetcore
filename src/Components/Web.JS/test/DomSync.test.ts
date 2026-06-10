@@ -581,6 +581,44 @@ describe('DomSync', () => {
     expect(newNodes[0].textContent).toBe('');
     expect(newNodes[1].textContent).toBe('new content');
   });
+
+  test('should preserve attributes on elements marked as data permanent', () => {
+    // Arrange: An element with data-permanent has additional attributes that differ from the new content
+    const destination = makeExistingContent(`<div id="myelem" class="expand" data-permanent>preserved</div>`);
+    const newContent = makeNewContent(`<div id="myelem" data-permanent>other content</div>`);
+    const oldNode = toNodeArray(destination)[0] as Element;
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+    const newNode = toNodeArray(destination)[0] as Element;
+
+    // Assert: The element is the same, content is preserved, and attributes are preserved
+    expect(newNode).toBe(oldNode);
+    expect(newNode.textContent).toBe('preserved');
+    expect(newNode.getAttribute('class')).toBe('expand');
+    expect(newNode.getAttribute('id')).toBe('myelem');
+  });
+
+  test('should preserve dynamically added attributes on elements marked as data permanent', () => {
+    // Arrange: Simulates the scenario from the issue where JS mutates an element with data-permanent
+    const destination = makeExistingContent(`<div id="myelem" data-permanent></div>`);
+    const oldNode = toNodeArray(destination)[0] as Element;
+
+    // User adds a class via JS
+    oldNode.classList.add('expand');
+    expect(oldNode.classList.contains('expand')).toBe(true);
+
+    // Enhanced nav returns equivalent content
+    const newContent = makeNewContent(`<div id="myelem" data-permanent></div>`);
+
+    // Act
+    synchronizeDomContent(destination, newContent);
+    const newNode = toNodeArray(destination)[0] as Element;
+
+    // Assert: The expand class should be retained
+    expect(newNode).toBe(oldNode);
+    expect(newNode.classList.contains('expand')).toBe(true);
+  });
 });
 
 test('should remove value if neither source nor destination has one', () => {

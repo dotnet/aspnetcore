@@ -22,8 +22,8 @@ Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences()
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.FeatureReferences(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature, TState>(ref TFeature? cached, TState state, System.Func<TState, TFeature?>! factory) -> TFeature?
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Fetch<TFeature>(ref TFeature? cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection!, TFeature?>! factory) -> TFeature?
-Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection, int revision) -> void
+Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection! collection) -> void
 Microsoft.AspNetCore.Http.Features.FeatureReferences<TCache>.Revision.get -> int
 Microsoft.AspNetCore.Http.Features.IFeatureCollection
 Microsoft.AspNetCore.Http.Features.IFeatureCollection.Get<TFeature>() -> TFeature?

@@ -45,9 +45,7 @@ internal static partial class LoggerExtensions
         EventName = "ResponseContentLengthMismatchNotCached")]
     internal static partial void ResponseContentLengthMismatchNotCached(this ILogger logger);
 
-    [LoggerMessage(11, LogLevel.Debug, "The response time of the entry is {ResponseTime} and has exceeded its expiry date.",
-        EventName = "ExpirationExpiresExceeded")]
-    internal static partial void ExpirationExpiresExceeded(this ILogger logger, DateTimeOffset responseTime);
+    // EventID 11 ExpirationExpiresExceeded retired.
 
     [LoggerMessage(12, LogLevel.Error, "Unable to query output cache.", EventName = "UnableToQueryOutputCache")]
     internal static partial void UnableToQueryOutputCache(this ILogger logger, Exception exception);

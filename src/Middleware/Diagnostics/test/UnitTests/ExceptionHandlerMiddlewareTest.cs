@@ -548,6 +548,51 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     }
 
     [Fact]
+    public async Task ExceptionFeatureSetOnDeveloperExceptionPage()
+    {
+        // Arrange
+        var tcs = new TaskCompletionSource<IExceptionHandlerPathFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    app.Use(async (context, next) =>
+                    {
+                        await next();
+
+                        var exceptionHandlerFeature = context.Features.GetRequiredFeature<IExceptionHandlerPathFeature>();
+                        tcs.SetResult(exceptionHandlerFeature);
+                    });
+                    app.UseExceptionHandler(exceptionApp =>
+                    {
+                        exceptionApp.Run(context => Task.CompletedTask);
+                    });
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+
+                });
+            }).Build();
+
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/path");
+
+        var response = await server.CreateClient().SendAsync(request);
+
+        var feature = await tcs.Task;
+        Assert.NotNull(feature);
+        Assert.Equal("Test exception", feature.Error.Message);
+        Assert.Equal("/path", feature.Path);
+    }
+
+    [Fact]
     public async Task Metrics_ExceptionThrown_ErrorPathHandled_Reported()
     {
         // Arrange

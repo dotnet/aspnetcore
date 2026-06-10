@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.Extensions.CommandLineUtils;
@@ -124,16 +123,20 @@ internal sealed class Program
                 {
                     var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
 
+                    var listener = new ReporterEventListener(reporter);
                     if (verbose.HasValue())
                     {
-                        var listener = new ReporterEventListener(reporter);
                         listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Verbose);
+                    }
+                    else
+                    {
+                        listener.EnableEvents(CertificateManager.Log, System.Diagnostics.Tracing.EventLevel.Critical);
                     }
 
                     if (checkJsonOutput.HasValue())
                     {
                         if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() || clean.HasValue() ||
-                           (!import.HasValue() && password.HasValue()) || 
+                           (!import.HasValue() && password.HasValue()) ||
                            (import.HasValue() && !password.HasValue()))
                         {
                             reporter.Error(InvalidUsageErrorMessage);
@@ -364,7 +367,7 @@ internal sealed class Program
         var availableCertificates = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
 
         var certReports = availableCertificates.Select(CertificateReport.FromX509Certificate2).ToList();
-        reporter.Output(JsonSerializer.Serialize(certReports, options: new JsonSerializerOptions { WriteIndented = true }));
+        reporter.Output(JsonSerializer.Serialize(certReports, DevCertsJsonSerializerContext.Default.ListCertificateReport));
 
         return Success;
     }
@@ -490,7 +493,7 @@ internal sealed class Program
 /// <summary>
 /// A Serializable friendly version of the cert report output
 /// </summary>
-internal class CertificateReport
+internal sealed class CertificateReport
 {
     public string Thumbprint { get; init; }
     public string Subject { get; init; }
@@ -500,7 +503,7 @@ internal class CertificateReport
     public DateTime ValidityNotAfter { get; init; }
     public bool IsHttpsDevelopmentCertificate { get; init; }
     public bool IsExportable { get; init; }
-    public string TrustLevel { get; private set; }
+    public string TrustLevel { get; init; }
 
     public static CertificateReport FromX509Certificate2(X509Certificate2 cert)
     {
@@ -545,4 +548,10 @@ internal class CertificateReport
             return dnsNames;
         }
     }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(List<CertificateReport>))]
+internal sealed partial class DevCertsJsonSerializerContext : JsonSerializerContext
+{
 }

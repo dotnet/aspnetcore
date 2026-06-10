@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -175,13 +176,17 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
+        var schemaAttribute = schema.WillBeComponentized()
+            ? OpenApiConstants.RefDefaultAnnotation
+            : OpenApiSchemaKeywords.DefaultKeyword;
+
         if (defaultValue is null)
         {
-            schema[OpenApiSchemaKeywords.DefaultKeyword] = null;
+            schema[schemaAttribute] = null;
         }
         else
         {
-            schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+            schema[schemaAttribute] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
         }
     }
 
@@ -351,6 +356,52 @@ internal static class JsonNodeSchemaExtensions
             schema.ApplyRouteConstraints(constraints);
         }
 
+        // Parameters sourced from query, path, header, and form are bound via Enum.TryParse,
+        // which only accepts the original C# member names — not names transformed by a JSON
+        // naming policy (e.g. KebabCaseLower). Replace the schema's enum values and default
+        // value with the original member names so the OpenAPI spec matches what the server
+        // actually accepts.
+        if (parameterDescription.Source is { } source && IsNonBodyBindingSource(source)
+            && parameterDescription.Type is { } paramType)
+        {
+            var enumType = Nullable.GetUnderlyingType(paramType) ?? paramType;
+            if (enumType.IsEnum && schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray)
+            {
+                var memberNames = Enum.GetNames(enumType);
+                var enumArray = new JsonArray();
+                foreach (var name in memberNames)
+                {
+                    enumArray.Add((JsonNode)name);
+                }
+                schema[OpenApiSchemaKeywords.EnumKeyword] = enumArray;
+
+                // Also fix the default value — it was serialized using the naming policy
+                // (e.g. "high-priority") but should use the original member name
+                // (e.g. "HighPriority") to match what Enum.TryParse accepts. The default
+                // may be stored in "default" or "x-ref-default" depending on whether the
+                // schema was tagged for componentization.
+                var defaultKey = schema[OpenApiConstants.RefDefaultAnnotation] is not null
+                    ? OpenApiConstants.RefDefaultAnnotation
+                    : OpenApiSchemaKeywords.DefaultKeyword;
+                if (jsonTypeInfo is not null
+                    && schema[defaultKey] is JsonNode defaultNode
+                    && defaultNode.GetValueKind() == JsonValueKind.String)
+                {
+                    var defaultValue = defaultNode.GetValue<string>();
+                    foreach (var memberName in memberNames)
+                    {
+                        var enumValue = Enum.Parse(enumType, memberName);
+                        var serialized = JsonSerializer.SerializeToNode(enumValue, jsonTypeInfo);
+                        if (serialized?.GetValue<string>() == defaultValue)
+                        {
+                            schema[defaultKey] = (JsonNode)memberName;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
         if (parameterDescription.Source is { } bindingSource
             && SupportsNullableProperty(bindingSource)
             && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
@@ -362,6 +413,12 @@ internal static class JsonNodeSchemaExtensions
         // Parameters sourced from the header, query, route, and/or form cannot be nullable based on our binding
         // rules but can be optional.
         static bool SupportsNullableProperty(BindingSource bindingSource) => bindingSource == BindingSource.Header
+            || bindingSource == BindingSource.Query
+            || bindingSource == BindingSource.Path
+            || bindingSource == BindingSource.Form
+            || bindingSource == BindingSource.FormFile;
+
+        static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
             || bindingSource == BindingSource.Query
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
@@ -430,6 +487,36 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
+    /// Determines whether the specified JSON schema will be moved into the components section.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <returns><see langword="true"/> if the schema will be componentized; otherwise, <see langword="false"/>.</returns>
+    internal static bool WillBeComponentized(this JsonNode schema)
+        => schema.WillBeComponentized(out _);
+
+    /// <summary>
+    /// Determines whether the specified JSON schema node contains a componentized schema identifier.
+    /// </summary>
+    /// <param name="schema">The JSON schema node to inspect for a componentized schema identifier.</param>
+    /// <param name="schemaId">When this method returns <see langword="true"/>, contains the schema identifier found in the node; otherwise,
+    /// <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the schema will be componentized; otherwise, <see langword="false"/>.</returns>
+    internal static bool WillBeComponentized(this JsonNode schema, [NotNullWhen(true)] out string? schemaId)
+    {
+        if (schema[OpenApiConstants.SchemaId] is JsonNode schemaIdNode
+            && schemaIdNode.GetValueKind() == JsonValueKind.String)
+        {
+            schemaId = schemaIdNode.GetValue<string>();
+            if (!string.IsNullOrEmpty(schemaId))
+            {
+                return true;
+            }
+        }
+        schemaId = null;
+        return false;
+    }
+
+    /// <summary>
     /// Returns <langword ref="true" /> if the current type is a non-abstract base class that is not defined as its
     /// own derived type.
     /// </summary>
@@ -458,7 +545,7 @@ internal static class JsonNodeSchemaExtensions
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
         }
-        if (schema[OpenApiConstants.SchemaId] is not null &&
+        if (schema.WillBeComponentized() &&
             propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
         {
             schema[OpenApiConstants.NullableProperty] = true;
@@ -472,7 +559,7 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
     {
-        if (schema[OpenApiConstants.SchemaId] is not null &&
+        if (schema.WillBeComponentized() &&
                 schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
         {
             for (var i = typeArray.Count - 1; i >= 0; i--)

@@ -1,9 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Metadata.IAllowCookieRedirectMetadata
-Microsoft.AspNetCore.Http.Metadata.IDisableCookieRedirectMetadata
-Microsoft.AspNetCore.Http.Metadata.IDisableValidationMetadata
-Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
-Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
-Microsoft.AspNetCore.Http.Metadata.IProducesResponseTypeMetadata.Description.get -> string?
-static Microsoft.AspNetCore.Http.HttpMethods.IsQuery(string! method) -> bool
-static readonly Microsoft.AspNetCore.Http.HttpMethods.Query -> string!
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
+Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.IsAllowed.get -> bool
+static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
+static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Denied() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection
+Microsoft.AspNetCore.Antiforgery.ICsrfProtection.ValidateAsync(Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!>

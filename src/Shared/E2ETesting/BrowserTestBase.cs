@@ -16,6 +16,7 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 
     private ExceptionDispatchInfo _exceptionDispatchInfo;
     private IWebDriver _browser;
+    private System.Drawing.Size? _originalWindowSize;
 
     public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output)
     {
@@ -51,6 +52,19 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 
     public virtual Task DisposeAsync()
     {
+        try
+        {
+            if (_originalWindowSize.HasValue && _originalWindowSize.Value != Browser.Manage().Window.Size)
+            {
+                Browser.SetWindowSize(_originalWindowSize.Value.Width, _originalWindowSize.Value.Height);
+            }
+        }
+        catch (WebDriverException)
+        {
+            // An exception is thrown if the browser has been closed in the test.
+            // In that case we don't need to reset the window size.
+        }
+
         return Task.CompletedTask;
     }
 
@@ -77,6 +91,11 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
             var (browser, logs) = BrowserFixture.GetOrCreateBrowser(Output, isolationContext);
             _asyncBrowser.Value = browser;
             _logs.Value = logs;
+
+            if (!_originalWindowSize.HasValue)
+            {
+                _originalWindowSize = browser.Manage().Window.Size;
+            }
 
             Browser = browser;
         }

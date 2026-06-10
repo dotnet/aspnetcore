@@ -21,9 +21,9 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 }
 
 export function registerAllComponentDescriptors(root: Node) {
-  const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
   const webAssemblyOptions = discoverWebAssemblyOptions(root);
-  descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions);
+  if (webAssemblyOptions) { descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions); }
+  const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
 
   for (const descriptor of descriptors) {
     descriptorHandler?.registerComponent(descriptor);
@@ -33,6 +33,10 @@ export function registerAllComponentDescriptors(root: Node) {
 export { preprocessAndSynchronizeDomContent as synchronizeDomContent };
 
 function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | Node, newContent: Node) {
+  // Strip any WebAssembly metadata comments from the new content before building
+  // the logical tree, so they don't end up as orphaned nodes in the logical children array
+  discoverWebAssemblyOptions(newContent);
+
   // Start by recursively identifying component markers in the new content
   // and converting them into logical elements so they correctly participate
   // in logical element synchronization
@@ -185,22 +189,21 @@ function treatAsMatch(destination: Node, source: Node) {
       break;
     }
     case Node.ELEMENT_NODE: {
-      const editableElementValue = getEditableElementValue(source as Element);
-      synchronizeAttributes(destination as Element, source as Element);
-      applyAnyDeferredValue(destination as Element);
-
       if (isDataPermanentElement(destination as Element)) {
-        // The destination element's content should be retained, so we avoid recursing into it.
+        // The destination element's content and attributes should be retained.
       } else {
+        const editableElementValue = getEditableElementValue(source as Element);
+        synchronizeAttributes(destination as Element, source as Element);
+        applyAnyDeferredValue(destination as Element);
         synchronizeDomContentCore(destination as Element, source as Element);
-      }
 
-      // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
-      // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
-      // by now, so setting any "special value" property is just a matter of assigning it right now (we don't have
-      // to be concerned that it's invalid because it doesn't correspond to an <option> child or a min/max attribute).
-      if (editableElementValue !== null) {
-        ensureEditableValueSynchronized(destination as Element, editableElementValue);
+        // This is a much simpler alternative to the deferred-value-assignment logic we use in interactive rendering.
+        // Because this sync algorithm goes depth-first, we know all the attributes and descendants are fully in sync
+        // by now, so setting any "special value" property is just a matter of assigning it right now (we don't have
+        // to be concerned that it's invalid because it doesn't correspond to an <option> child or a min/max attribute).
+        if (editableElementValue !== null) {
+          ensureEditableValueSynchronized(destination as Element, editableElementValue);
+        }
       }
       break;
     }
@@ -308,11 +311,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
         return UpdateCost.Infinite;
       }
 
-      // Always treat "preloads" as new elements.
-      if (isPreloadElement(a as Element) || isPreloadElement(b as Element)) {
-        return UpdateCost.Infinite;
-      }
-
       return UpdateCost.None;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
@@ -322,10 +320,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
       return UpdateCost.Infinite;
   }
-}
-
-function isPreloadElement(el: Element): boolean {
-  return el.tagName === 'LINK' && el.attributes.getNamedItem('rel')?.value === 'preload';
 }
 
 function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDescriptor[] {

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Cryptography;
 
 namespace Microsoft.AspNetCore.DataProtection.SP800_108;
@@ -24,9 +25,9 @@ internal static unsafe class SP800_108_CTR_HMACSHA512Extensions
 
             fixed (byte* pbContextHeader = contextHeader)
             {
-                UnsafeBufferUtil.BlockCopy(from: pbContextHeader, to: pbCombinedContext, byteCount: contextHeader.Length);
+                Unsafe.CopyBlock(pbCombinedContext, pbContextHeader, (uint)contextHeader.Length);
             }
-            UnsafeBufferUtil.BlockCopy(from: pbContext, to: &pbCombinedContext[contextHeader.Length], byteCount: cbContext);
+            Unsafe.CopyBlock(&pbCombinedContext[contextHeader.Length], pbContext, cbContext);
 
             // At this point, combinedContext := { contextHeader || context }
             provider.DeriveKey(pbLabel, cbLabel, pbCombinedContext, cbCombinedContext, pbDerivedKey, cbDerivedKey);

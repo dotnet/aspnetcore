@@ -18,7 +18,7 @@ architecture=''
 runtime='dotnet'
 runtimeSourceFeed=''
 runtimeSourceFeedKey=''
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
   opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
     -version|-v)
@@ -80,7 +80,11 @@ case $cpuname in
     ;;
 esac
 
-dotnetRoot="${repo_root}.dotnet"
+if [[ -n "${DOTNET_GLOBAL_INSTALL_DIR:-}" ]]; then
+  dotnetRoot="$DOTNET_GLOBAL_INSTALL_DIR"
+else
+  dotnetRoot="${repo_root}.dotnet"
+fi
 if [[ $architecture != "" ]] && [[ $architecture != $buildarch ]]; then
   dotnetRoot="$dotnetRoot/$architecture"
 fi

@@ -40,25 +40,26 @@ public class InputSelect<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTy
     {
         builder.OpenElement(0, "select");
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttributeIfNotNullOrEmpty(2, "name", NameAttributeValue);
-        builder.AddAttributeIfNotNullOrEmpty(3, "class", CssClass);
-        builder.AddAttribute(4, "multiple", _isMultipleSelect);
+        builder.AddAttributeIfNotNullOrEmpty(2, "id", IdAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(3, "name", NameAttributeValue);
+        builder.AddAttributeIfNotNullOrEmpty(4, "class", CssClass);
+        builder.AddAttribute(5, "multiple", _isMultipleSelect);
 
         if (_isMultipleSelect)
         {
-            builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
-            builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?[]?>(this, SetCurrentValueAsStringArray, default));
+            builder.AddAttribute(6, "value", BindConverter.FormatValue(CurrentValue)?.ToString());
+            builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?[]?>(this, SetCurrentValueAsStringArray, default));
             builder.SetUpdatesAttributeName("value");
         }
         else
         {
-            builder.AddAttribute(7, "value", CurrentValueAsString);
-            builder.AddAttribute(8, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
+            builder.AddAttribute(8, "value", CurrentValueAsString);
+            builder.AddAttribute(9, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, default));
             builder.SetUpdatesAttributeName("value");
         }
 
-        builder.AddElementReferenceCapture(9, __selectReference => Element = __selectReference);
-        builder.AddContent(10, ChildContent);
+        builder.AddElementReferenceCapture(10, __selectReference => Element = __selectReference);
+        builder.AddContent(11, ChildContent);
         builder.CloseElement();
     }
 

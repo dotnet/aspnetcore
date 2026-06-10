@@ -19,6 +19,7 @@ public class NavLink : ComponentBase, IDisposable
 
     private bool _isActive;
     private string? _hrefAbsolute;
+    private string? _hrefToRender;
     private string? _class;
 
     /// <summary>
@@ -52,7 +53,16 @@ public class NavLink : ComponentBase, IDisposable
     [Parameter]
     public NavLinkMatch Match { get; set; }
 
-    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+    /// <summary>
+    /// Gets or sets whether the href should be resolved relative to the current URI.
+    /// When <c>true</c>, relative hrefs (e.g., "sibling") are resolved against the current route's
+    /// directory path and rendered as root-relative URLs (e.g., "/folder/sibling").
+    /// When <c>false</c> (default), the href is rendered as-is from the attribute value.
+    /// </summary>
+    [Parameter]
+    public bool RelativeToCurrentUri { get; set; }
+
+    [Inject] internal NavigationManager NavigationManager { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -69,6 +79,14 @@ public class NavLink : ComponentBase, IDisposable
         if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("href", out var obj))
         {
             href = Convert.ToString(obj, CultureInfo.InvariantCulture);
+        }
+
+        // Resolve relative path if RelativeToCurrentUri is true
+        _hrefToRender = null;
+        if (RelativeToCurrentUri && href != null)
+        {
+            _hrefToRender = NavigationManager.ResolveRelativeToCurrentPath(href);
+            href = _hrefToRender;
         }
 
         _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
@@ -214,12 +232,16 @@ public class NavLink : ComponentBase, IDisposable
         builder.OpenElement(0, "a");
 
         builder.AddMultipleAttributes(1, AdditionalAttributes);
-        builder.AddAttribute(2, "class", CssClass);
+        if (_hrefToRender != null)
+        {
+            builder.AddAttribute(2, "href", _hrefToRender);
+        }
+        builder.AddAttribute(3, "class", CssClass);
         if (_isActive)
         {
-            builder.AddAttribute(3, "aria-current", "page");
+            builder.AddAttribute(4, "aria-current", "page");
         }
-        builder.AddContent(4, ChildContent);
+        builder.AddContent(5, ChildContent);
 
         builder.CloseElement();
     }

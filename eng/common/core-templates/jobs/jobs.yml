@@ -43,7 +43,12 @@ parameters:
 
   artifacts: {}
   is1ESPipeline: ''
+
+  # Publishing version w/default.
+  publishingVersion: 3
+
   repositoryAlias: self
+  officialBuildId: ''
 
 # Internal resources (telemetry, microbuild) can only be accessed from non-public projects,
 # and some (Microbuild) should only be applied to non-PR cases for internal builds.
@@ -101,6 +106,7 @@ jobs:
       parameters:
         is1ESPipeline: ${{ parameters.is1ESPipeline }}
         continueOnError: ${{ parameters.continueOnError }}
+        publishingVersion: ${{ parameters.publishingVersion }}
         dependsOn:
         - ${{ if ne(parameters.publishBuildAssetsDependsOn, '') }}:
           - ${{ each job in parameters.publishBuildAssetsDependsOn }}:
@@ -116,3 +122,4 @@ jobs:
         artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
         signingValidationAdditionalParameters: ${{ parameters.signingValidationAdditionalParameters }}
         repositoryAlias: ${{ parameters.repositoryAlias }}
+        officialBuildId: ${{ parameters.officialBuildId }}

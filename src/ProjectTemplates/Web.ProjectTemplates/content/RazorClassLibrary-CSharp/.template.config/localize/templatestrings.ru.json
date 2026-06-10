@@ -3,11 +3,11 @@
   "name": "Библиотека классов Razor",
   "description": "Проект для создания библиотеки классов Razor, предназначенной для .NET",
   "symbols/Framework/description": "Целевая платформа для проекта.",
-  "symbols/Framework/choices/net10.0/description": "Целевая платформа .NET 10.0",
   "symbols/skipRestore/description": "Если установлено, автоматическое восстановление проекта при создании пропускается.",
   "symbols/SupportPagesAndViews/displayName": "Поддержка страниц и представлений",
   "symbols/SupportPagesAndViews/description": "Следует ли поддерживать добавление традиционных страниц и представлений Razor в эту библиотеку.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\"",
-  "postActions/openInEditor/description": "Открывает Areas/MyFeature/Pages/Page1.cshtml в редакторе"
+  "postActions/openPageInEditor/description": "Открывает Areas/MyFeature/Pages/Page1.cshtml в редакторе",
+  "postActions/openComponentInEditor/description": "Открывает Component1.razor в редакторе"
 }

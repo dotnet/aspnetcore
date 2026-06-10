@@ -23,7 +23,7 @@ public sealed class ValidateContext
     /// the complete set of validation scenarios.
     /// </remarks>
     /// <example>
-    /// <code>
+    /// <code language="csharp">
     /// var validationContext = new ValidationContext(objectToValidate, serviceProvider, items);
     /// var validationOptions = serviceProvider.GetService&lt;IOptions&lt;ValidationOptions&gt;&gt;()?.Value;
     /// var validateContext = new ValidateContext
@@ -37,8 +37,10 @@ public sealed class ValidateContext
 
     /// <summary>
     /// Gets or sets the prefix used to identify the current object being validated in a complex object graph.
-    /// This is used to build property paths in validation error messages (e.g., "Customer.Address.Street").
     /// </summary>
+    /// <remarks>
+    /// This prefix is used to build property paths in validation error messages (for example, "Customer.Address.Street").
+    /// </remarks>
     public string CurrentValidationPath { get; set; } = string.Empty;
 
     /// <summary>
@@ -49,15 +51,19 @@ public sealed class ValidateContext
 
     /// <summary>
     /// Gets or sets the dictionary of validation errors collected during validation.
+    /// </summary>
+    /// <remarks>
     /// Keys are property names or paths, and values are arrays of error messages.
     /// In the default implementation, this dictionary is initialized when the first error is added.
-    /// </summary>
+    /// </remarks>
     public Dictionary<string, string[]>? ValidationErrors { get; set; }
 
     /// <summary>
     /// Gets or sets the current depth in the validation hierarchy.
-    /// This is used to prevent stack overflows from circular references.
     /// </summary>
+    /// <remarks>
+    /// This value is used to prevent stack overflows from circular references.
+    /// </remarks>
     public int CurrentDepth { get; set; }
 
     /// <summary>
@@ -124,5 +130,28 @@ public sealed class ValidateContext
             Errors = [error],
             Container = container
         });
+    }
+
+    internal string? ResolveAttributeErrorMessage(
+        string memberName,
+        string displayName,
+        Type? declaringType,
+        ValidationAttribute attribute,
+        ValidationResult result)
+    {
+        if (ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
+        {
+            return result.ErrorMessage;
+        }
+
+        var context = new ErrorMessageLocalizationContext
+        {
+            MemberName = memberName,
+            DisplayName = displayName,
+            DeclaringType = declaringType,
+            Attribute = attribute,
+        };
+
+        return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
     }
 }

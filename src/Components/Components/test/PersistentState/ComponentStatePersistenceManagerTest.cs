@@ -354,6 +354,53 @@ public class ComponentStatePersistenceManagerTest
     }
 
     [Fact]
+    public async Task PersistStateAsync_InvokesAllCallbacksWhenFirstCallbackUnregistersItself()
+    {
+        // Arrange
+        var state = new Dictionary<string, byte[]>();
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+        var renderer = new TestRenderer();
+
+        var executionSequence = new List<int>();
+
+        // Register the first callback that will unregister itself - this is the key test case
+        // where the first callback removes itself from the collection during iteration
+        PersistingComponentStateSubscription firstSubscription = default;
+        firstSubscription = persistenceManager.State.RegisterOnPersisting(() =>
+        {
+            executionSequence.Add(1);
+            firstSubscription.Dispose(); // Remove itself from the collection
+            return Task.CompletedTask;
+        }, new TestRenderMode());
+
+        // Register additional callbacks to ensure they still get executed
+        persistenceManager.State.RegisterOnPersisting(() =>
+        {
+            executionSequence.Add(2);
+            return Task.CompletedTask;
+        }, new TestRenderMode());
+
+        persistenceManager.State.RegisterOnPersisting(() =>
+        {
+            executionSequence.Add(3);
+            return Task.CompletedTask;
+        }, new TestRenderMode());
+
+        // Act
+        await persistenceManager.PersistStateAsync(store, renderer);
+
+        // Assert
+        // All callbacks should be executed even though the first one removed itself
+        Assert.Contains(1, executionSequence);
+        Assert.Contains(2, executionSequence);
+        Assert.Contains(3, executionSequence);
+        Assert.Equal(3, executionSequence.Count);
+    }
+
+    [Fact]
     public async Task RestoreStateAsync_ValidatesOnlySupportUpdatesWhenRestoreContextValueUpdate()
     {
         var store = new TestStore([]);

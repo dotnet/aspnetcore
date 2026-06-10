@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using BasicTestApp;
-using BasicTestApp.ImageTest;
+using BasicTestApp.MediaTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -29,18 +29,18 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.MountTestComponent<ImageTestComponent>();
     }
 
-    private void ClearImageCache()
+    private void ClearMediaCache()
     {
         var ok = (bool)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(@"
           var done = arguments[0];
           (async () => {
             try {
               if ('caches' in window) {
-                await caches.delete('blazor-image-cache');
+                await caches.delete('blazor-media-cache');
               }
               // Reset memoized cache promise if present
               try {
-                const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+                const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
                 if (root && 'cachePromise' in root) {
                   root.cachePromise = undefined;
                 }
@@ -51,7 +51,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             }
           })();
         ");
-        Assert.True(ok, "Failed to clear image cache");
+        Assert.True(ok, "Failed to clear media cache");
     }
 
     [Fact]
@@ -166,23 +166,25 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void Image_CompletesLoad_AfterArtificialDelay()
     {
+        // Instrument setContentAsync to pause before fulfilling first image load until explicitly resolved.
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
               if (!root) return;
-              if (!window.__origSetImageAsync) {
-                window.__origSetImageAsync = root.setImageAsync;
-                root.setImageAsync = async function(...args){
+              if (!window.__origSetContentAsync) {
+                window.__origSetContentAsync = root.setContentAsync;
+                root.setContentAsync = async function(...args){
                   const getResolvers = () => {
                     if (Promise.fromResolvers) return Promise.fromResolvers();
-                    let resolve, reject;
-                    const promise = new Promise((r,j)=>{ resolve=r; reject=j; });
+                    let resolve, reject; const promise = new Promise((r,j)=>{ resolve=r; reject=j; });
                     return { promise, resolve, reject };
                   };
-                  const resolvers = getResolvers();
-                  window.__imagePromiseResolvers = resolvers;
-                  await resolvers.promise;
-                  return window.__origSetImageAsync.apply(this, args);
+                  if (!window.__imageContentDelay){
+                    const resolvers = getResolvers();
+                    window.__imageContentDelay = resolvers; // first invocation delayed
+                    await resolvers.promise;
+                  }
+                  return window.__origSetContentAsync.apply(this, args);
                 };
               }
             })();");
@@ -192,7 +194,8 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var imageElement = Browser.FindElement(By.Id("png-basic"));
         Assert.NotNull(imageElement);
 
-        ((IJavaScriptExecutor)Browser).ExecuteScript("if (window.__imagePromiseResolvers) { window.__imagePromiseResolvers.resolve(); }");
+        // Release the delayed promise so load can complete.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("if (window.__imageContentDelay) { window.__imageContentDelay.resolve(); }");
 
         Browser.True(() => {
             var src = imageElement.GetAttribute("src");
@@ -203,19 +206,19 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Restore original function and clean up instrumentation
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
-              if (root && window.__origSetImageAsync) {
-                root.setImageAsync = window.__origSetImageAsync;
-                delete window.__origSetImageAsync;
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
+              if (root && window.__origSetContentAsync) {
+                root.setContentAsync = window.__origSetContentAsync;
+                delete window.__origSetContentAsync;
               }
-              delete window.__imagePromiseResolvers;
+              delete window.__imageContentDelay;
             })();");
     }
 
     [Fact]
     public void ImageCache_PersistsAcrossPageReloads()
     {
-        ClearImageCache();
+        ClearMediaCache();
 
         Browser.FindElement(By.Id("load-cached-jpg")).Click();
         Browser.Equal("Cached JPG loaded", () => Browser.FindElement(By.Id("current-status")).Text);
@@ -231,14 +234,14 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Re‑instrument after refresh so we see cache vs stream on the second load
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
               if (!root) return;
               window.__cacheHits = 0;
               window.__streamCalls = 0;
-              if (!window.__origSetImageAsync){
-                  window.__origSetImageAsync = root.setImageAsync;
-                  root.setImageAsync = async function(...a){
-                      const result = await window.__origSetImageAsync.apply(this, a);
+              if (!window.__origSetContentAsync){
+                  window.__origSetContentAsync = root.setContentAsync;
+                  root.setContentAsync = async function(...a){
+                      const result = await window.__origSetContentAsync.apply(this, a);
                       if (result && result.fromCache) window.__cacheHits++;
                       if (result && result.success && !result.fromCache) window.__streamCalls++;
                       return result;
@@ -264,8 +267,8 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Restore
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
-              if (root && window.__origSetImageAsync){ root.setImageAsync = window.__origSetImageAsync; delete window.__origSetImageAsync; }
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
+              if (root && window.__origSetContentAsync){ root.setContentAsync = window.__origSetContentAsync; delete window.__origSetContentAsync; }
               delete window.__cacheHits;
               delete window.__streamCalls;
             })();");
@@ -367,4 +370,30 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var src = img.GetAttribute("src");
         Assert.True(string.IsNullOrEmpty(src) || src.StartsWith("blob:", StringComparison.Ordinal));
     }
+
+  [Fact]
+  public void TemplatedImage_Loads_WithContextStates()
+  {
+    Browser.FindElement(By.Id("load-templated-image")).Click();
+    Browser.Equal("Templated image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
+    var wrapper = Browser.FindElement(By.Id("templated-image-wrapper"));
+    Assert.NotNull(wrapper);
+
+    var img = Browser.FindElement(By.Id("templated-image"));
+    Browser.True(() =>
+    {
+      var src = img.GetAttribute("src");
+      return !string.IsNullOrEmpty(src) && src.StartsWith("blob:", StringComparison.Ordinal);
+    });
+
+    var status = Browser.FindElement(By.Id("templated-image-status")).Text;
+    Assert.Equal("Loaded", status);
+
+    var cls = wrapper.GetAttribute("class");
+    Assert.Contains("templated-image", cls);
+    Assert.Contains("ready", cls);
+    Assert.DoesNotContain("loading", cls);
+    Assert.DoesNotContain("error", cls);
+  }
 }

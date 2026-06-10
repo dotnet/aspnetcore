@@ -3,6 +3,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
@@ -43,44 +44,91 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         // If there are no validation attributes and this type is not a complex type
         // we don't need to validate it. Complex types without attributes are still
         // validatable because we want to run the validations on the properties.
-        if (validationAttributes.Length == 0 && !IsClass(parameterInfo.ParameterType))
+        if (validationAttributes.Length == 0 && !IsComplexType(parameterInfo.ParameterType))
         {
             validatableInfo = null;
             return false;
         }
+
+        var displayNameInfo = ResolveDisplayInfo(parameterInfo);
+
         validatableInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
-            displayName: GetDisplayName(parameterInfo),
+            displayNameInfo: displayNameInfo,
             validationAttributes: validationAttributes
         );
         return true;
     }
 
-    private static string GetDisplayName(ParameterInfo parameterInfo)
+    private static DisplayNameInfo? ResolveDisplayInfo(ParameterInfo parameterInfo)
     {
         var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute != null)
+        if (displayAttribute is { ResourceType: not null, Name: not null })
         {
-            return displayAttribute.Name ?? parameterInfo.Name!;
+            // Resource-based display name from [Display(ResourceType = ..., Name = ...)] is the
+            // canonical localized source; the IValidationLocalizer is intentionally bypassed.
+            // The DisplayAttribute instance is retained for the lifetime of the resolver, mirroring
+            // the source-generator's static accessor design.
+            return new ParameterReflectionDisplayName(displayAttribute);
         }
 
-        return parameterInfo.Name!;
+        if (displayAttribute?.Name is not null)
+        {
+            // Literal name from [Display(Name = "...")].
+            return new LiteralDisplayName(displayAttribute.Name);
+        }
+
+        var displayNameAttribute = parameterInfo.GetCustomAttribute<DisplayNameAttribute>();
+        if (displayNameAttribute is not null)
+        {
+            // Literal name from [DisplayName("...")].
+            return new LiteralDisplayName(displayNameAttribute.DisplayName);
+        }
+
+        return null;
     }
 
     internal sealed class RuntimeValidatableParameterInfo(
         Type parameterType,
         string name,
-        string displayName,
+        DisplayNameInfo? displayNameInfo,
         ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName)
+            ValidatableParameterInfo(parameterType, name, displayNameInfo)
     {
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
 
         private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
     }
 
-    private static bool IsClass(Type type)
+    private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
+    {
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+        {
+            var localizer = context.ValidationOptions.Localizer;
+            if (localizer is null)
+            {
+                return literal;
+            }
+
+            // The literal acts as both the lookup key for the localizer AND the fallback display
+            // name when the localizer can't translate.
+            return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
+            {
+                DeclaringType = declaringType,
+                DisplayName = literal,
+                MemberName = memberName,
+            }) ?? literal;
+        }
+    }
+
+    private sealed class ParameterReflectionDisplayName(DisplayAttribute attribute) : DisplayNameInfo
+    {
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+            => attribute.GetName();
+    }
+
+    private static bool IsComplexType(Type type)
     {
         // Skip primitives, enums, common built-in types, and types that are specially
         // handled by RDF/RDG that don't need validation if they don't have attributes
@@ -105,9 +153,11 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         // Check if the underlying type in a nullable is valid
         if (Nullable.GetUnderlyingType(type) is { } nullableType)
         {
-            return IsClass(nullableType);
+            return IsComplexType(nullableType);
         }
 
-        return type.IsClass;
+        // Complex types include both reference types (classes) and value types (structs, record structs)
+        // that aren't in the exclusion list above
+        return type.IsClass || type.IsValueType;
     }
 }

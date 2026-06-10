@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -24,6 +25,9 @@ public class SignInManager<TUser> where TUser : class
     private const string XsrfKey = "XsrfId";
     private const string PasskeyOperationKey = "PasskeyOperation";
     private const string PasskeyStateKey = "PasskeyState";
+
+    private static readonly bool AlwaysResetLockoutOnSuccess =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
 
     private readonly IHttpContextAccessor _contextAccessor;
     private readonly IAuthenticationSchemeProvider _schemes;
@@ -63,7 +67,8 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
-        _metrics = userManager.ServiceProvider?.GetService<SignInManagerMetrics>();
+        // SignInManagerMetrics created from constructor because of difficulties registering internal type.
+        _metrics = userManager.ServiceProvider?.GetService<IMeterFactory>() is { } factory ? new SignInManagerMetrics(factory) : null;
         _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
     }
 
@@ -473,7 +478,7 @@ public class SignInManager<TUser> where TUser : class
 
         if (await UserManager.CheckPasswordAsync(user, password))
         {
-            var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
+            var alwaysLockout = AlwaysResetLockoutOnSuccess;
             // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
             if (alwaysLockout || !await IsTwoFactorEnabledAsync(user) || await IsTwoFactorClientRememberedAsync(user))
             {
@@ -662,6 +667,12 @@ public class SignInManager<TUser> where TUser : class
         if (!assertionResult.Succeeded)
         {
             return SignInResult.Failed;
+        }
+
+        var error = await PreSignInCheck(assertionResult.User);
+        if (error != null)
+        {
+            return error;
         }
 
         // After a successful assertion, we need to update the passkey so that it has the latest

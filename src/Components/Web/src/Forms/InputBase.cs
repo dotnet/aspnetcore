@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -207,18 +208,42 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
             if (_shouldGenerateFieldNames)
             {
-                if (_formattedValueExpression is null && ValueExpression is not null)
-                {
-                    _formattedValueExpression = FieldPrefix != null ? FieldPrefix.GetFieldName(ValueExpression) :
-                        ExpressionFormatter.FormatLambda(ValueExpression);
-                }
-
-                return _formattedValueExpression ?? string.Empty;
+                return GetFieldName();
             }
 
             return string.Empty;
         }
     }
+
+    /// <summary>
+    /// Gets the value to be used for the input's "id" attribute.
+    /// </summary>
+    /// <remarks>
+    /// If an explicit "id" is provided via <see cref="AdditionalAttributes"/>, that value takes precedence.
+    /// Otherwise, the id is a sanitized version of <see cref="NameAttributeValue"/> in SSR mode; generated independently in interactive mode.
+    /// </remarks>
+    protected string IdAttributeValue
+    {
+        get
+        {
+            if (AdditionalAttributes?.TryGetValue("id", out var idAttributeValue) ?? false)
+            {
+                return Convert.ToString(idAttributeValue, CultureInfo.InvariantCulture) ?? string.Empty;
+            }
+
+            var fieldName = NameAttributeValue;
+            if (string.IsNullOrEmpty(fieldName))
+            {
+                fieldName = GetFieldName();
+            }
+
+            return FieldIdGenerator.SanitizeHtmlId(fieldName);
+        }
+    }
+
+    private string GetFieldName()
+        => _formattedValueExpression ??= FieldPrefix?.GetFieldName(ValueExpression!)
+            ?? ExpressionFormatter.FormatLambda(ValueExpression!);
 
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
@@ -265,6 +290,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
 
         UpdateAdditionalValidationAttributes();
+        MergeClientValidationAttributes();
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
         return base.SetParametersAsync(ParameterView.Empty);
@@ -361,6 +387,37 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         return newDictionaryCreated;
     }
 
+    /// <summary>
+    /// Merges client-side validation attributes (data-val-*) into AdditionalAttributes when
+    /// an IClientValidationService is available in EditContext.Properties. This is set by
+    /// DataAnnotationsValidator in static SSR mode. Uses first-wins semantics so that
+    /// developer-specified attributes in AdditionalAttributes take precedence over generated ones.
+    /// </summary>
+    private void MergeClientValidationAttributes()
+    {
+        if (EditContext?.Properties.TryGetValue(typeof(IClientValidationService), out var serviceObj) != true
+            || serviceObj is not IClientValidationService service)
+        {
+            return;
+        }
+
+        var htmlAttributes = service.GetClientValidationAttributes(FieldIdentifier);
+        if (htmlAttributes is null)
+        {
+            return;
+        }
+
+        if (ConvertToDictionary(AdditionalAttributes, out var additionalAttributes))
+        {
+            AdditionalAttributes = additionalAttributes;
+        }
+
+        foreach (var (key, value) in htmlAttributes)
+        {
+            additionalAttributes.TryAdd(key, value);
+        }
+    }
+
     /// <inheritdoc/>
     protected virtual void Dispose(bool disposing)
     {
@@ -369,10 +426,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     void IDisposable.Dispose()
     {
         // When initialization in the SetParametersAsync method fails, the EditContext property can remain equal to null
-        if (EditContext is not null)
-        {
-            EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
-        }
+        EditContext?.OnValidationStateChanged -= _validationStateChangedHandler;
 
         // Clear parsing validation messages store owned by the input when the input is disposed.
         if (_parsingValidationMessages != null)
