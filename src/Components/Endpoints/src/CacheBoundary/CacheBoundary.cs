@@ -70,6 +70,7 @@ public sealed class CacheBoundary : IComponent, IDisposable
 
     /// <summary>
     /// Gets or sets a comma-separated list of query string parameter names to vary the cache by.
+    /// Use <c>"*"</c> to vary by all query string parameters.
     /// </summary>
     [Parameter]
     public string? VaryByQuery { get; set; }

@@ -295,6 +295,59 @@ public class CacheBoundaryKeyResolverTest
         Assert.NotEqual(keyAnon, keyAuth);
     }
 
+    [Fact]
+    public void ComputeKey_VaryByQuery_NameOrderDoesNotChangeKey()
+    {
+        var componentForward = CreateComponent(varyByQuery: "page,sort");
+        var componentReversed = CreateComponent(varyByQuery: "sort,page");
+        var ctx = CreateHttpContext(queryString: "?page=1&sort=name");
+
+        var keyForward = CacheBoundaryKeyResolver.ComputeKey(componentForward, ctx);
+        var keyReversed = CacheBoundaryKeyResolver.ComputeKey(componentReversed, ctx);
+
+        Assert.Equal(keyForward, keyReversed);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByQueryWildcard_VariesByAnyParameter()
+    {
+        var component = CreateComponent(varyByQuery: "*");
+        var ctx1 = CreateHttpContext(queryString: "?sort=name");
+        var ctx2 = CreateHttpContext(queryString: "?sort=date");
+
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+
+        Assert.NotEqual(key1, key2);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByQueryWildcard_ParameterOrderDoesNotChangeKey()
+    {
+        // Whole-query keys are canonicalized by sorting param names, so reordered URLs collide.
+        var component = CreateComponent(varyByQuery: "*");
+        var ctxForward = CreateHttpContext(queryString: "?a=1&b=2");
+        var ctxReversed = CreateHttpContext(queryString: "?b=2&a=1");
+
+        var keyForward = CacheBoundaryKeyResolver.ComputeKey(component, ctxForward);
+        var keyReversed = CacheBoundaryKeyResolver.ComputeKey(component, ctxReversed);
+
+        Assert.Equal(keyForward, keyReversed);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByQueryWildcard_VariesByParameterNotInNamedSubset()
+    {
+        var component = CreateComponent(varyByQuery: "*");
+        var ctx1 = CreateHttpContext(queryString: "?page=1&extra=a");
+        var ctx2 = CreateHttpContext(queryString: "?page=1&extra=b");
+
+        var key1 = CacheBoundaryKeyResolver.ComputeKey(component, ctx1);
+        var key2 = CacheBoundaryKeyResolver.ComputeKey(component, ctx2);
+
+        Assert.NotEqual(key1, key2);
+    }
+
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
     private static CacheBoundary CreateComponent(

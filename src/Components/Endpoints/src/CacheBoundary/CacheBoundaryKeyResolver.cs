@@ -33,7 +33,14 @@ internal static class CacheBoundaryKeyResolver
 
         if (!string.IsNullOrEmpty(cacheBoundary.VaryByQuery))
         {
-            AppendDelimitedQueryValues(hash, cacheBoundary.VaryByQuery, request);
+            if (cacheBoundary.VaryByQuery.Trim() is "*")
+            {
+                AppendAllQueryValues(hash, request);
+            }
+            else
+            {
+                AppendDelimitedQueryValues(hash, cacheBoundary.VaryByQuery, request);
+            }
         }
 
         if (!string.IsNullOrEmpty(cacheBoundary.VaryByRoute))
@@ -76,14 +83,8 @@ internal static class CacheBoundaryKeyResolver
         AppendString(hash, "VaryByQuery");
         AppendString(hash, "(");
 
-        foreach (var segment in separatedValues.AsSpan().Split(','))
+        foreach (var nameString in CollectSortedNames(separatedValues))
         {
-            var name = separatedValues.AsSpan()[segment].Trim();
-            if (name.IsEmpty)
-            {
-                continue;
-            }
-            var nameString = name.ToString();
             var value = (string?)request.Query[nameString];
             if (string.IsNullOrEmpty(value))
             {
@@ -104,14 +105,8 @@ internal static class CacheBoundaryKeyResolver
         AppendString(hash, "VaryByRoute");
         AppendString(hash, "(");
 
-        foreach (var segment in separatedValues.AsSpan().Split(','))
+        foreach (var nameString in CollectSortedNames(separatedValues))
         {
-            var name = separatedValues.AsSpan()[segment].Trim();
-            if (name.IsEmpty)
-            {
-                continue;
-            }
-            var nameString = name.ToString();
             var value = request.RouteValues[nameString]?.ToString();
             if (string.IsNullOrEmpty(value))
             {
@@ -132,14 +127,8 @@ internal static class CacheBoundaryKeyResolver
         AppendString(hash, "VaryByHeader");
         AppendString(hash, "(");
 
-        foreach (var segment in separatedValues.AsSpan().Split(','))
+        foreach (var nameString in CollectSortedNames(separatedValues))
         {
-            var name = separatedValues.AsSpan()[segment].Trim();
-            if (name.IsEmpty)
-            {
-                continue;
-            }
-            var nameString = name.ToString();
             var value = (string?)request.Headers[nameString];
             if (string.IsNullOrEmpty(value))
             {
@@ -160,14 +149,8 @@ internal static class CacheBoundaryKeyResolver
         AppendString(hash, "VaryByCookie");
         AppendString(hash, "(");
 
-        foreach (var segment in separatedValues.AsSpan().Split(','))
+        foreach (var nameString in CollectSortedNames(separatedValues))
         {
-            var name = separatedValues.AsSpan()[segment].Trim();
-            if (name.IsEmpty)
-            {
-                continue;
-            }
-            var nameString = name.ToString();
             var value = request.Cookies[nameString];
             if (string.IsNullOrEmpty(value))
             {
@@ -180,6 +163,50 @@ internal static class CacheBoundaryKeyResolver
         }
 
         AppendString(hash, ")");
+    }
+
+    private static List<string> CollectSortedNames(string separatedValues)
+    {
+        var names = new List<string>();
+        foreach (var segment in separatedValues.AsSpan().Split(','))
+        {
+            var name = separatedValues.AsSpan()[segment].Trim();
+            if (!name.IsEmpty)
+            {
+                names.Add(name.ToString());
+            }
+        }
+
+        names.Sort(StringComparer.Ordinal);
+        return names;
+    }
+
+    private static void AppendAllQueryValues(IncrementalHash hash, HttpRequest request)
+    {
+        AppendString(hash, "||");
+        AppendString(hash, "VaryByQuery");
+        AppendString(hash, "(*)");
+
+        var names = new List<string>(request.Query.Count);
+        foreach (var pair in request.Query)
+        {
+            names.Add(pair.Key);
+        }
+
+        names.Sort(StringComparer.Ordinal);
+
+        foreach (var name in names)
+        {
+            var value = (string?)request.Query[name];
+            if (string.IsNullOrEmpty(value))
+            {
+                continue;
+            }
+            AppendString(hash, "||");
+            AppendString(hash, name);
+            AppendString(hash, "||");
+            AppendLengthPrefixedString(hash, value);
+        }
     }
 
     private static void AppendUserIdentity(IncrementalHash hash, ClaimsPrincipal user)
