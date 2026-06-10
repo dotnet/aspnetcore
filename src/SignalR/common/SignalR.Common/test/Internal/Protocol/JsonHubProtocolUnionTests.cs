@@ -14,23 +14,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol;
 
-/// <summary>
-/// Verifies that C# union types (a .NET 11 language feature; see dotnet/aspnetcore#64599 and #66547)
-/// work as hub method parameters, return values, and stream items when serialized through
-/// <see cref="JsonHubProtocol"/>. <see cref="JsonHubProtocol"/> forwards reads and writes to
-/// <see cref="JsonSerializer"/>, which has native union support, so these scenarios are expected
-/// to round-trip without any SignalR-side changes.
-///
-/// JsonHubProtocol read path: <c>JsonSerializer.Deserialize(ref reader, paramType, options)</c>
-/// is called with the parameter / return / stream-item <see cref="Type"/> resolved from
-/// <see cref="IInvocationBinder"/>. When that <see cref="Type"/> is a union type, the runtime's
-/// union converter handles it.
-///
-/// JsonHubProtocol write path: <c>JsonSerializer.Serialize(writer, value, options)</c> is called
-/// with no static type, so STJ dispatches by <c>value.GetType()</c>. A union value is a struct
-/// whose runtime type is the union itself, which again triggers the union converter and emits
-/// only the active case's payload (no envelope, no discriminator).
-/// </summary>
 public class JsonHubProtocolUnionTests
 {
     private readonly IHubProtocol _protocol = new JsonHubProtocol();
@@ -66,8 +49,6 @@ public class JsonHubProtocolUnionTests
     [Fact]
     public void UnionAsInvocationArgument_NullableIntCase_NullRoutesToNullableCase()
     {
-        // The runtime's value-based null fast-path deterministically dispatches JSON null to the
-        // single nullable case (int?) when one exists. See dotnet/runtime#128688.
         var json = Frame("{\"type\":1,\"target\":\"Method\",\"arguments\":[null]}");
 
         var parsed = ParseInvocation(json, paramType: typeof(UnionNullableIntString));
@@ -327,10 +308,6 @@ public class JsonHubProtocolUnionTests
 }
 
 // --- Test union types ---
-//
-// Definitions mirror the established test pattern from the Minimal API union work
-// (src/Http/Http.Extensions/test/RequestDelegateGenerator/SharedTypes.Unions.cs).
-// Kept inline here because the SignalR test surface is small.
 
 // Unambiguous primitive-paired union: int and string serialize to distinct JSON tokens
 // (Number and String), so no classifier is needed for round-tripping.
