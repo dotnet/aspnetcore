@@ -19,8 +19,7 @@ public enum VirtualizeAnchorMode
     /// <summary>
     /// Pins the viewport to the beginning of the list. When the user is
     /// at or near the top and new items arrive at the beginning, the viewport
-    /// stays at the top showing the newest items — matching standard news
-    /// feed / notification list UX.
+    /// stays at the top showing the newest items.
     /// </summary>
     Beginning = 1,
 
@@ -28,7 +27,7 @@ public enum VirtualizeAnchorMode
     /// Pins the viewport to the end of the list. When the user is at or near
     /// the bottom and new items arrive at the end, the viewport auto-scrolls
     /// to show them. If the user has scrolled away, auto-scroll disengages
-    /// until they return to the bottom — matching standard chat / log UX.
+    /// until they return to the bottom.
     /// </summary>
     End = 2,
 }
