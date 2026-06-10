@@ -643,7 +643,7 @@ T", null, null, false, null, null, null));
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Example = jsonString.Parse(schema.Type);
                 }
             }
 
@@ -669,7 +669,7 @@ T", null, null, false, null, null, null));
                         schema.Description = description;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Example = jsonString.Parse(schema.Type);
                         }
                     }
                     else
@@ -681,7 +681,7 @@ T", null, null, false, null, null, null));
                         }
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
-                            schema.Metadata["x-ref-example"] = jsonString.Parse()!;
+                            schema.Metadata["x-ref-example"] = jsonString.Parse(schema.Type)!;
                         }
                     }
                 }
@@ -693,11 +693,20 @@ T", null, null, false, null, null, null));
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class JsonNodeExtensions
     {
-        public static JsonNode? Parse(this string? json)
+        public static JsonNode? Parse(this string? json, JsonSchemaType? schemaType = null)
         {
             if (json is null)
             {
                 return null;
+            }
+
+            if (schemaType is not null && (schemaType & ~JsonSchemaType.Null) == JsonSchemaType.String)
+            {
+                var trimmedJson = json.Trim();
+                if (trimmedJson.Length < 2 || trimmedJson[0] is not '"' || trimmedJson[^1] is not '"')
+                {
+                    return JsonValue.Create(json);
+                }
             }
 
             try
