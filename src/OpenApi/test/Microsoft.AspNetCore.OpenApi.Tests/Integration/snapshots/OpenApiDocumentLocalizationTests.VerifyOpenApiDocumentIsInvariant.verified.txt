@@ -1654,6 +1654,37 @@
         }
       }
     },
+    "/unsupported": {
+      "x-oai-additionalOperations": {
+        "FOO": {
+          "tags": [
+            "Test"
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "text/plain": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                },
+                "text/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CurrentWeather"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/query-with-body": {
       "x-oai-additionalOperations": {
         "QUERY": {

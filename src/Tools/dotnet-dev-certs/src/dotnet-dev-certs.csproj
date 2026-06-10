@@ -12,6 +12,11 @@
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PublishAot>true</PublishAot>
+    <RuntimeIdentifiers>$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
