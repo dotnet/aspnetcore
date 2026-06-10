@@ -1215,4 +1215,47 @@ public class VirtualizeTest
         // capacity = OverscanCount*2 + 1 = 31 with default OverscanCount=15, so _itemsBefore = max(0, 100 - 31) = 69.
         Assert.Equal(69, renderedVirtualize._itemsBefore);
     }
+
+    [Fact]
+    public void Virtualize_OnLoadingCompleted_Property_Exists()
+    {
+        var virtualizeType = typeof(Virtualize<>);
+        var property = virtualizeType.GetProperty("OnLoadingCompleted");
+
+        Assert.NotNull(property);
+        Assert.Equal("OnLoadingCompleted", property!.Name);
+    }
+
+    [Fact]
+    public void Virtualize_OnLoadingCompleted_Is_EventCallback()
+    {
+        var virtualizeType = typeof(Virtualize<>);
+        var property = virtualizeType.GetProperty("OnLoadingCompleted");
+
+        Assert.NotNull(property);
+        Assert.Equal(typeof(EventCallback), property!.PropertyType);
+    }
+
+    [Fact]
+    public void Virtualize_OnLoadingCompleted_Has_Parameter_Attribute()
+    {
+        var virtualizeType = typeof(Virtualize<>);
+        var property = virtualizeType.GetProperty("OnLoadingCompleted");
+
+        Assert.NotNull(property);
+        var attributes = property!.GetCustomAttributes(typeof(ParameterAttribute), false);
+
+        Assert.NotEmpty(attributes);
+    }
+
+    [Fact]
+    public void Virtualize_OnLoadingCompleted_Is_Not_Generic_EventCallback()
+    {
+        var virtualizeType = typeof(Virtualize<>);
+
+        var property = virtualizeType.GetProperty("OnLoadingCompleted");
+
+        Assert.NotNull(property);
+        Assert.Equal(typeof(EventCallback), property!.PropertyType);
+    }
 }

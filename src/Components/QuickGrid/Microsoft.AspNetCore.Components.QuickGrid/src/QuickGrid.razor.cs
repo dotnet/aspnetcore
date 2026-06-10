@@ -445,12 +445,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         if (_firstRefreshDataAsync && Virtualize)
         {
             _firstRefreshDataAsync = false;
-            // For virtualization on first render, Virtualize component handles data loading.
-            // We still fire OnDataLoaded immediately for consistency with non-virtualized grids.
-            if (raiseEvents && OnDataLoaded.HasDelegate)
-            {
-                await OnDataLoaded.InvokeAsync();
-            }
             return;
         }
 
@@ -492,6 +486,18 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             {
                 await OnDataLoaded.InvokeAsync();
             }
+        }
+    }
+
+    /// <summary>
+    /// Handles the Virtualize component's loading completion callback. When Virtualize finishes loading items,
+    /// this forwards the event to the grid's OnDataLoaded callback so users get properly bracketed loading events even when using virtualization.
+    /// </summary>
+    private async Task HandleVirtualizationOnLoadingCompleted()
+    {
+        if (OnDataLoaded.HasDelegate)
+        {
+            await OnDataLoaded.InvokeAsync();
         }
     }
 

@@ -90,6 +90,8 @@ Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialInde
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialIndex.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>!
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.OnLoadingCompleted.get -> Microsoft.AspNetCore.Components.EventCallback
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.OnLoadingCompleted.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ScrollToIndexAsync(int itemIndex, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.Beginning = 1 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
