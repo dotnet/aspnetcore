@@ -100,7 +100,7 @@ public class SchemaGeneratorIntegrationTests
         schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
         OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Single(schema.Properties);
-        Assert.Equal("RecursiveMessage", OpenApiTestHelpers.GetSchemaId(schema.Properties["child"]));
+        Assert.Equal("RecursiveMessage", OpenApiTestHelpers.GetReferenceId(schema.Properties["child"]));
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class SchemaGeneratorIntegrationTests
         _ = repository.Schemas.Count;
 
         // Assert
-        Assert.Equal("Struct", OpenApiTestHelpers.GetSchemaId(schema));
+        Assert.Equal("Struct", OpenApiTestHelpers.GetReferenceId(schema));
 
         var resolvedSchema = OpenApiTestHelpers.ResolveSchema(repository, schema);
 

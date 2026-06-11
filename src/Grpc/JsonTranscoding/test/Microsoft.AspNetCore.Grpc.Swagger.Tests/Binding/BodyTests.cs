@@ -29,9 +29,9 @@ public class BodyTests
         var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Null(OpenApiTestHelpers.GetSchemaId(bodySchema));
+        Assert.Null(OpenApiTestHelpers.GetReferenceId(bodySchema));
         OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Array, bodySchema);
-        Assert.Equal("RequestBody", OpenApiTestHelpers.GetSchemaId(bodySchema.Items));
+        Assert.Equal("RequestBody", OpenApiTestHelpers.GetReferenceId(bodySchema.Items));
 
         var messageSchema = OpenApiTestHelpers.ResolveSchema(swagger, bodySchema.Items);
         Assert.NotNull(messageSchema);
@@ -48,7 +48,7 @@ public class BodyTests
         var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Null(OpenApiTestHelpers.GetSchemaId(bodySchema));
+        Assert.Null(OpenApiTestHelpers.GetReferenceId(bodySchema));
         OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, bodySchema);
         OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Integer, bodySchema.AdditionalProperties);
     }
@@ -64,7 +64,7 @@ public class BodyTests
         var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Equal("RequestBody", OpenApiTestHelpers.GetSchemaId(bodySchema));
+        Assert.Equal("RequestBody", OpenApiTestHelpers.GetReferenceId(bodySchema));
     }
 
     [Fact]
@@ -78,6 +78,6 @@ public class BodyTests
         var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Equal("RequestOne", OpenApiTestHelpers.GetSchemaId(bodySchema));
+        Assert.Equal("RequestOne", OpenApiTestHelpers.GetReferenceId(bodySchema));
     }
 }

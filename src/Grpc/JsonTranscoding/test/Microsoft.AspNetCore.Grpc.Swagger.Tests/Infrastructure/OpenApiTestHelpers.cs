@@ -58,17 +58,27 @@ internal static class OpenApiTestHelpers
         return Assert.IsType<OpenApiOperation>(operation);
     }
 
-    public static string? GetSchemaId(IOpenApiSchema schema)
+    public static string? GetReferenceId(IOpenApiSchema schema)
     {
         return schema switch
         {
             OpenApiSchemaReference reference => reference.Reference.Id,
+            OpenApiSchema => null,
+            _ => throw new InvalidOperationException($"Unable to get a schema id for schema type '{schema.GetType().FullName}'."),
+        };
+    }
+
+    public static string? GetSchemaId(IOpenApiSchema schema)
+    {
+        return schema switch
+        {
+            OpenApiSchemaReference => GetReferenceId(schema),
             OpenApiSchema openApiSchema => openApiSchema.Id,
             _ => throw new InvalidOperationException($"Unable to get a schema id for schema type '{schema.GetType().FullName}'."),
         };
     }
 
-    public static IOpenApiSchema ResolveSchema(IOpenApiSchema schema)
+    private static IOpenApiSchema GetSchemaOrReference(IOpenApiSchema schema)
     {
         return schema switch
         {
@@ -89,7 +99,7 @@ internal static class OpenApiTestHelpers
             return Assert.IsAssignableFrom<IOpenApiSchema>(resolvedSchema);
         }
 
-        return ResolveSchema(schema);
+        return GetSchemaOrReference(schema);
     }
 
     public static IOpenApiSchema ResolveSchema(SchemaRepository repository, IOpenApiSchema schema)
@@ -101,7 +111,7 @@ internal static class OpenApiTestHelpers
             return resolvedSchema;
         }
 
-        return ResolveSchema(schema);
+        return GetSchemaOrReference(schema);
     }
 
     public static void AssertSchemaType(JsonSchemaType expected, IOpenApiSchema schema)

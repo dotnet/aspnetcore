@@ -43,7 +43,7 @@ public class ResponseBodyTests
         var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.Responses["200"].Content["application/json"].Schema;
-        Assert.Null(OpenApiTestHelpers.GetSchemaId(bodySchema));
+        Assert.Null(OpenApiTestHelpers.GetReferenceId(bodySchema));
         OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Array, bodySchema);
         OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, bodySchema.Items);
     }
