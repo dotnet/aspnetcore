@@ -17,7 +17,7 @@ internal sealed class FormDataMapperOptions
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
     [RequiresUnreferencedCode(FormMappingHelpers.RequiresUnreferencedCodeMessage)]
     public FormDataMapperOptions() : this(NullLoggerFactory.Instance)
-    {        
+    {
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
@@ -67,7 +67,12 @@ internal sealed class FormDataMapperOptions
             }
         }
 
-        throw new InvalidOperationException($"No converter registered for type '{type.FullName}'.");
+        throw new InvalidOperationException(
+            $"Multiple public constructors were found for type '{type.Name}'. " +
+            "The framework cannot determine which constructor to use. " +
+            "Ensure that the type has either a single public constructor, a parameterless constructor, " +
+            "or make additional constructors non-public."
+        );
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]
