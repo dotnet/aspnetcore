@@ -2413,7 +2413,6 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ItemComparerExplicit_MarksExplicitlySet()
     {
-        // ARRANGE: Custom comparer
         var customComparer = EqualityComparer<int>.Default;
         Virtualize<int> renderedVirtualize = null;
 
@@ -2433,10 +2432,8 @@ public class VirtualizeTest
 
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
 
-        // ACT
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ASSERT
         Assert.NotNull(renderedVirtualize);
         Assert.Same(customComparer, renderedVirtualize.ItemComparer);
     }
@@ -2444,7 +2441,6 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ItemComparerWithReferenceTypes_UsesCustomLogic()
     {
-        // ARRANGE: Reference type items
         var items = new List<string> { "Alice", "Bob", "Charlie" };
         var customComparer = StringComparer.Ordinal;
 
@@ -2461,7 +2457,6 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_EmptyContent_RenderedWhenItemsAreEmpty()
     {
-        // ARRANGE: Empty items list
         Virtualize<int> renderedVirtualize = null;
 
         var rootComponent = new VirtualizeTestHostcomponent
@@ -2479,17 +2474,14 @@ public class VirtualizeTest
 
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
 
-        // ACT
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ASSERT
         Assert.NotNull(renderedVirtualize);
     }
 
     [Fact]
     public async Task Virtualize_PlaceholderContext_HasCorrectIndexAndSize()
     {
-        // ARRANGE
         ValueTask<ItemsProviderResult<int>> slowProvider(ItemsProviderRequest request)
         {
             return new ValueTask<ItemsProviderResult<int>>(
@@ -2508,7 +2500,7 @@ public class VirtualizeTest
             customProvider: slowProvider
         );
 
-        // ASSERT: Component should have valid state
+        // Component should have valid state
         Assert.NotNull(virtualize);
         Assert.Equal(50f, virtualize.ItemSize);
     }
@@ -2516,7 +2508,6 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ItemComparerCustom_DetectsPrependCorrectly()
     {
-        // ARRANGE
         var items = new List<int> { 5, 6, 7, 8, 9 };
 
         Virtualize<int> renderedVirtualize = null;
@@ -2535,16 +2526,13 @@ public class VirtualizeTest
 
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
 
-        // ACT 1: Initial render
         await testRenderer.RenderRootComponentAsync(componentId);
         var itemCountField = typeof(Virtualize<int>).GetField("_itemCount",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var initialItemCount = (int?)itemCountField?.GetValue(renderedVirtualize) ?? 0;
 
-        // ACT 2: Prepend items
         items.InsertRange(0, new[] { 1, 2, 3, 4 });
 
-        // ACT 3: Update parameters
         rootComponent.InnerContent = BuildVirtualizeWithContent(
             itemSize: 50f,
             items: items,
@@ -2552,7 +2540,6 @@ public class VirtualizeTest
         );
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ASSERT
         var newItemCount = (int?)itemCountField?.GetValue(renderedVirtualize) ?? 0;
         Assert.Equal(initialItemCount + 4, newItemCount);
     }
@@ -2560,7 +2547,6 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ScrollToIndexAsync_ConcurrentCalls_HandlesGracefully()
     {
-        // ARRANGE
         var (virtualize, renderer) = await CreateRenderedVirtualize(
             itemSize: 50f,
             totalItems: 1000
@@ -2570,7 +2556,7 @@ public class VirtualizeTest
         await renderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
-        // ACT: Fire concurrent scroll requests from within dispatcher
+        // Fire concurrent scroll requests from within dispatcher
         // The tasks are created but may not complete synchronously due to JS interop mocking
         Task scrollTask1 = null;
         Task scrollTask2 = null;
@@ -2583,7 +2569,7 @@ public class VirtualizeTest
             scrollTask3 = virtualize.ScrollToIndexAsync(300);
         });
 
-        // ASSERT: Verify tasks were created and component is still valid
+        // Verify tasks were created and component is still valid
         // We can't await completion since ScrollToIndexAsync requires real JS interop
         Assert.NotNull(scrollTask1);
         Assert.NotNull(scrollTask2);
@@ -2597,7 +2583,7 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_DisposeAsync_CompletesSuccessfully()
     {
-        // ARRANGE: Create a virtualized component
+        // Create a virtualized component
         Virtualize<int> renderedVirtualize = null;
         var rootComponent = new VirtualizeTestHostcomponent
         {
@@ -2615,28 +2601,26 @@ public class VirtualizeTest
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ACT: Dispose component
+        // Dispose component
         if (renderedVirtualize is IAsyncDisposable asyncDisposable)
         {
             // Should complete without exception
             await asyncDisposable.DisposeAsync();
         }
 
-        // ASSERT: Disposal completed successfully
+        // Disposal completed successfully
         Assert.NotNull(renderedVirtualize);
     }
 
     [Fact]
     public async Task Virtualize_RefreshException_CachedForRethrow()
     {
-        // ARRANGE
         var exceptionMessage = "Provider intentionally failed";
         var callCount = 0;
 
         ValueTask<ItemsProviderResult<int>> failingProvider(ItemsProviderRequest request)
         {
             callCount++;
-            // Always fail
             return ValueTask.FromException<ItemsProviderResult<int>>(
                 new InvalidOperationException(exceptionMessage)
             );
@@ -2648,7 +2632,7 @@ public class VirtualizeTest
             customProvider: failingProvider
         );
 
-        // ACT 1: Trigger first refresh - should throw (must be invoked within dispatcher context)
+        //Trigger first refresh - should throw (must be invoked within dispatcher context)
         var ex1 = await Record.ExceptionAsync(async () =>
             await renderer.Dispatcher.InvokeAsync(async () =>
                 await virtualize.RefreshDataAsync()
@@ -2661,14 +2645,14 @@ public class VirtualizeTest
 
         var callCountAfterFirstRefresh = callCount;
 
-        // ACT 2: Trigger second call - exception should be cached/rethrown
+        // Trigger second call - exception should be cached/rethrown
         var ex2 = await Record.ExceptionAsync(async () =>
             await renderer.Dispatcher.InvokeAsync(async () =>
                 await virtualize.RefreshDataAsync()
             )
         );
 
-        // ASSERT: Both calls should surface the exception, and provider may or may not be called again
+        // Both calls should surface the exception, and provider may or may not be called again
         Assert.NotNull(ex2);
         Assert.IsType<InvalidOperationException>(ex2);
         Assert.Contains(exceptionMessage, ex2.Message);
@@ -2677,7 +2661,7 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ItemsProvider_ReturnsZeroCount_HandledGracefully()
     {
-        // ARRANGE: Provider that returns zero items
+        // Provider that returns zero items
         ValueTask<ItemsProviderResult<int>> zeroProvider(ItemsProviderRequest request)
         {
             return ValueTask.FromResult(new ItemsProviderResult<int>(
@@ -2692,7 +2676,7 @@ public class VirtualizeTest
             customProvider: zeroProvider
         );
 
-        // ASSERT: Should handle gracefully (check via reflection for private field)
+        // Should handle gracefully (check via reflection for private field)
         var itemCountField = typeof(Virtualize<int>).GetField("_itemCount",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         var itemCount = itemCountField?.GetValue(virtualize);
@@ -2702,21 +2686,20 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_ItemSize_CanBeRetrieved()
     {
-        // ARRANGE
         var itemSize = 50f;
         var (virtualize, renderer) = await CreateRenderedVirtualize(
             itemSize: itemSize,
             totalItems: 100
         );
 
-        // ASSERT: ItemSize should match what was set
+        // ItemSize should match what was set
         Assert.Equal(itemSize, virtualize.ItemSize);
     }
 
     [Fact]
     public async Task Virtualize_InMemoryItems_HandledCorrectly()
     {
-        // ARRANGE: Items collection (not ItemsProvider)
+        // Items collection (not ItemsProvider)
         var items = new List<int>(Enumerable.Range(5, 5));
 
         Virtualize<int> renderedVirtualize = null;
@@ -2735,10 +2718,9 @@ public class VirtualizeTest
 
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
 
-        // ACT
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ASSERT: Component should handle in-memory items
+        // Component should handle in-memory items
         Assert.NotNull(renderedVirtualize);
         var itemCountField = typeof(Virtualize<int>).GetField("_itemCount",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
@@ -2749,24 +2731,23 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_AdjustForPrependAsync_Callable()
     {
-        // ARRANGE
         var (virtualize, renderer) = await CreateRenderedVirtualize(
             itemSize: 50f,
             totalItems: 100
         );
 
-        // ACT: Component should have the method available
+        // Component should have the method available
         var method = typeof(Virtualize<int>).GetMethod("AdjustForPrependAsync",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-        // ASSERT: Method should exist
+        // Method should exist
         Assert.NotNull(method);
     }
 
     [Fact]
     public async Task Virtualize_ScrollToBottom_WithEndMode()
     {
-        // ARRANGE: Create virtualize with AnchorMode.End to enable auto-scroll-to-bottom
+        // Create virtualize with AnchorMode.End to enable auto-scroll-to-bottom
         Virtualize<int> renderedVirtualize = null;
 
         var rootComponent = new VirtualizeTestHostcomponent
@@ -2791,7 +2772,7 @@ public class VirtualizeTest
 
         var callbacks = (IVirtualizeJsCallbacks)renderedVirtualize;
 
-        // ACT: Simulate scrolling to bottom
+        // Simulate scrolling to bottom
         // When at the end of list with items rendered, should set _pendingScrollToBottom
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
@@ -2800,7 +2781,7 @@ public class VirtualizeTest
         await testRenderer.Dispatcher.InvokeAsync(() =>
             callbacks.OnAfterSpacerVisible(0f, 0f, 500f)); // spacerSize=0 means at bottom
 
-        // ASSERT: Component should support auto-scroll to bottom with AnchorMode.End
+        // Component should support auto-scroll to bottom with AnchorMode.End
         Assert.NotNull(renderedVirtualize);
         Assert.Equal(50f, renderedVirtualize.ItemSize);
         // _pendingScrollToBottom may be true if conditions were met
@@ -2809,13 +2790,12 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_WindowClamping_AtCollectionEnd()
     {
-        // ARRANGE
         var (virtualize, renderer) = await CreateRenderedVirtualize(
             itemSize: 50f,
             totalItems: 100
         );
 
-        // ASSERT: Component handles large item counts without issues
+        // Component handles large item counts without issues
         Assert.NotNull(virtualize);
         Assert.Equal(50f, virtualize.ItemSize);
     }
@@ -2823,7 +2803,7 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_DistributionRefresh_Optimized()
     {
-        // ARRANGE: Track provider calls
+        // Track provider calls
         var callCount = 0;
 
         ValueTask<ItemsProviderResult<int>> provider(ItemsProviderRequest request)
@@ -2843,19 +2823,18 @@ public class VirtualizeTest
 
         var initialCallCount = callCount;
 
-        // ACT: Simulate spacer callbacks
+        // Simulate spacer callbacks
         var callbacks = (IVirtualizeJsCallbacks)virtualize;
         callbacks.OnBeforeSpacerVisible(0f, 250f, 500f);
         callbacks.OnAfterSpacerVisible(0f, 250f, 500f);
 
-        // ASSERT: Multiple callbacks shouldn't cause excessive provider calls
+        // Multiple callbacks shouldn't cause excessive provider calls
         Assert.True(callCount - initialCallCount <= 3);
     }
 
     [Fact]
     public async Task Virtualize_AnchorRestoration_AfterPrepend()
     {
-        // ARRANGE
         var items = new List<int>(Enumerable.Range(10, 50));
 
         Virtualize<int> renderedVirtualize = null;
@@ -2875,7 +2854,7 @@ public class VirtualizeTest
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ACT: Prepend items
+        // Prepend items
         items.InsertRange(0, Enumerable.Range(1, 9));
         rootComponent.InnerContent = BuildVirtualizeWithContent(
             itemSize: 50f,
@@ -2885,7 +2864,7 @@ public class VirtualizeTest
 
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ASSERT: Component should be in valid state
+        // Component should be in valid state
         Assert.NotNull(renderedVirtualize);
         Assert.Equal(50f, renderedVirtualize.ItemSize);
     }
@@ -2893,7 +2872,7 @@ public class VirtualizeTest
     [Fact]
     public async Task Virtualize_InitialIndex_AppliedCorrectly()
     {
-        // ARRANGE: Component with InitialIndex
+        // Component with InitialIndex
         var items = Enumerable.Range(1, 200).ToList();
 
         Virtualize<int> renderedVirtualize = null;
@@ -2912,17 +2891,16 @@ public class VirtualizeTest
 
         var componentId = testRenderer.AssignRootComponentId(rootComponent);
 
-        // ACT
         await testRenderer.RenderRootComponentAsync(componentId);
 
-        // ASSERT: Component should be valid
+        // Component should be valid
         Assert.NotNull(renderedVirtualize);
     }
 
     [Fact]
     public async Task Virtualize_MultipleRapidRefreshDataAsync_NoDeadlock()
     {
-        // ARRANGE: Track provider calls
+        // Track provider calls
         var refreshCount = 0;
 
         ValueTask<ItemsProviderResult<int>> trackingProvider(ItemsProviderRequest request)
@@ -2942,7 +2920,7 @@ public class VirtualizeTest
 
         var initialRefreshCount = refreshCount;
 
-        // ACT: Fire multiple RefreshDataAsync calls concurrently within dispatcher context
+        // Fire multiple RefreshDataAsync calls concurrently within dispatcher context
         // Must use renderer.Dispatcher to avoid threading issues with component state
         List<Task> refreshTasks = null;
         await renderer.Dispatcher.InvokeAsync(() =>
@@ -2952,7 +2930,7 @@ public class VirtualizeTest
                 .ToList();
         });
 
-        // ASSERT: All refresh tasks should complete without deadlock or hanging
+        // All refresh tasks should complete without deadlock or hanging
         // Use timeout to prevent test from hanging indefinitely
         var workTask = Task.WhenAll(refreshTasks);
         var completedTask = await Task.WhenAny(
