@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"4f83c8eb8df79483e57ce283e24be142ea3c1de9b1a0d1cdd9861c30b1708602","body_hash":"dd85af4721824ad9dd46525f657ef83844cd7e6121e26fda0941633bde4ae73a","compiler_version":"v0.77.5","strict":true,"agent_id":"copilot"}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"f9b8fa0490e3f08feff05233fc499d624e96cf9555cc6c57128fa2c7fe4c138a","body_hash":"03e4819e59482c16d82846426255e6a004ffc372f20617cdc085f9a5a10bf8ee","compiler_version":"v0.77.5","strict":true,"agent_id":"copilot"}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"de0fac2e4500dabe0009e67214ff5f5447ce83dd","version":"v6.0.2"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/github-script","sha":"d746ffe35508b1917358783b479e04febd2b8f71","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"3ea13c02d765410340d533515cb31a7eef2baaf0","version":"v0.77.5"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.25.58"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.25.58"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.25.58"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.22"},{"image":"ghcr.io/github/github-mcp-server:v1.1.0"},{"image":"node:lts-alpine","digest":"sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14","pinned_image":"node:lts-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -39,7 +39,7 @@
 #   - actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
 #   - actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-#   - github/gh-aw-actions/setup@73ed520ae4ecd087a485e1991605595978b32ac1 # v0.78.1
+#   - github/gh-aw-actions/setup@3ea13c02d765410340d533515cb31a7eef2baaf0 # v0.77.5
 #
 # Container images used:
 #   - ghcr.io/github/gh-aw-firewall/agent:0.25.58
@@ -161,6 +161,162 @@ on:
       # 
       # print(f"Found {len(requarantine_data)} re-quarantine PRs, wrote to step output")
       # SCRIPT
+  # - env:
+      # GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # id: source_b_prs
+    # name: Verify Source B PRs
+    # run: |
+      # # Source B looks for flaky tests in failed CI builds of PRs that were merged
+      # # into main. Selecting those builds requires verifying each candidate PR
+      # # (base==main, merged==true) and matching its head SHA — which needs a GitHub
+      # # token. The agent sandbox has NO usable token, and its MCP search tool
+      # # silently drops external-contributor PRs. So we do the ENTIRE selection here —
+      # # outside the firewall, with full token access and no integrity filter — and
+      # # hand the agent the exact Azure DevOps build IDs to collect results from. The
+      # # agent makes ZERO GitHub calls and does NOT re-enumerate builds, which both
+      # # eliminates the per-PR pull_request_read loop (the effective-token-budget
+      # # sink) and avoids any snapshot skew between this step and the agent.
+      # python3 << 'SCRIPT'
+      # import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error
+      # 
+      # def fetch(url, data=None, headers=None, retries=3):
+          # """GET (or POST if data) with small backoff. Re-raises HTTPError so the
+          # caller can distinguish auth failures; retries only transient errors."""
+          # hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
+          # if headers:
+              # hdrs.update(headers)
+          # last = None
+          # for attempt in range(retries):
+              # try:
+                  # req = urllib.request.Request(url, data=data, headers=hdrs)
+                  # with urllib.request.urlopen(req, timeout=60) as r:
+                      # return json.loads(r.read()), r.headers
+              # except urllib.error.HTTPError as e:
+                  # if e.code in (401, 403) or e.code == 404:
+                      # raise
+                  # last = e
+              # except Exception as e:
+                  # last = e
+              # time.sleep(2 * (attempt + 1))
+          # raise last
+      # 
+      # # --- 1. Enumerate completed PR builds from the last 7 days (Azure DevOps,
+      # #        public project — no auth needed) for both CI pipelines. Record each
+      # #        failed/partial build's id, PR number and the commit it ran on. ---
+      # BUILDS = "https://dev.azure.com/dnceng-public/public/_apis/build/builds"
+      # DEFINITIONS = [83, 87]  # 83 = aspnetcore-ci, 87 = components-e2e
+      # min_time = (datetime.datetime.utcnow() - datetime.timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+      # 
+      # failed_builds = []  # list of (build_id, pr_number, source_sha)
+      # for d in DEFINITIONS:
+          # token = None
+          # while True:
+              # params = {"definitions": d, "reasonFilter": "pullRequest",
+                        # "statusFilter": "completed", "minTime": min_time,
+                        # "$top": 200, "api-version": "7.1"}
+              # if token:
+                  # params["continuationToken"] = token
+              # data, hdrs = fetch(f"{BUILDS}?{urllib.parse.urlencode(params)}")
+              # # ADO returns the continuation token in a response header.
+              # token = hdrs.get("x-ms-continuationtoken")
+              # for b in data.get("value", []):
+                  # if b.get("result") not in ("failed", "partiallySucceeded"):
+                      # continue
+                  # branch = b.get("sourceBranch", "")  # refs/pull/{N}/merge
+                  # if not branch.startswith("refs/pull/"):
+                      # continue
+                  # try:
+                      # pr = int(branch.split("/")[2])
+                  # except (IndexError, ValueError):
+                      # continue
+                  # sha = (b.get("triggerInfo") or {}).get("pr.sourceSha")
+                  # if sha:
+                      # failed_builds.append((b["id"], pr, sha))
+              # if not token:
+                  # break
+      # 
+      # # (B4) Only PRs with >= 1 failed/partial build can ever yield a candidate.
+      # candidates = sorted({pr for _, pr, _ in failed_builds})
+      # 
+      # # --- 2. Verify B2 (base == main) + B3 (merged) and capture head SHA via batched
+      # #        GraphQL. Fail LOUD on systemic failures (auth, rate-limit, every chunk
+      # #        failed, or no candidate could even be resolved) so the run aborts
+      # #        visibly instead of silently emitting an empty set. ---
+      # gh_token = os.environ["GH_TOKEN"]
+      # 
+      # def verify(pr_numbers, chunk=50):
+          # verified = {}            # str(pr_number) -> headRefOid
+          # resolved = 0             # candidate PRs we positively read a node for
+          # chunks_total = chunks_failed = 0
+          # for k in range(0, len(pr_numbers), chunk):
+              # batch = pr_numbers[k:k + chunk]
+              # chunks_total += 1
+              # aliases = "\n".join(
+                  # f'p{n}: pullRequest(number: {n}) {{ number baseRefName merged headRefOid }}'
+                  # for n in batch)
+              # query = f'query {{ repository(owner: "dotnet", name: "aspnetcore") {{ {aliases} }} }}'
+              # try:
+                  # body, _ = fetch(
+                      # "https://api.github.com/graphql",
+                      # data=json.dumps({"query": query}).encode(),
+                      # headers={"Authorization": f"bearer {gh_token}",
+                               # "Content-Type": "application/json"})
+              # except urllib.error.HTTPError as e:
+                  # if e.code in (401, 403):
+                      # sys.exit(f"FATAL: GitHub GraphQL {e.code} — aborting Source B verification")
+                  # chunks_failed += 1
+                  # continue
+              # except Exception:
+                  # chunks_failed += 1
+                  # continue
+              # errored, chunk_untrusted = set(), False
+              # for err in body.get("errors") or []:
+                  # if err.get("type") == "RATE_LIMITED":
+                      # sys.exit("FATAL: GitHub GraphQL RATE_LIMITED — aborting Source B verification")
+                  # alias = next((p for p in (err.get("path") or [])
+                                # if isinstance(p, str) and len(p) > 1 and p[0] == "p" and p[1:].isdigit()), None)
+                  # if alias:
+                      # errored.add(alias)
+                  # else:
+                      # chunk_untrusted = True
+              # repo = (body.get("data") or {}).get("repository")
+              # if repo is None or chunk_untrusted:
+                  # chunks_failed += 1
+                  # continue
+              # for alias, pr in repo.items():
+                  # if alias in errored or not pr or not pr.get("headRefOid"):
+                      # continue
+                  # resolved += 1
+                  # if pr.get("baseRefName") == "main" and pr.get("merged") is True:
+                      # verified[str(pr["number"])] = pr["headRefOid"]
+          # # Fail LOUD on ANY chunk that could not be conclusively read: a partially
+          # # dropped chunk would silently omit up to `chunk` real candidate PRs from
+          # # Source B. fetch() already retries transient blips, so a surviving failure
+          # # is a real problem worth aborting the daily run over.
+          # if chunks_failed:
+              # sys.exit(f"FATAL: {chunks_failed}/{chunks_total} GraphQL verification "
+                       # "chunk(s) failed — aborting Source B verification")
+          # if pr_numbers and resolved == 0:
+              # sys.exit("FATAL: could not resolve any candidate PR via GraphQL — aborting Source B verification")
+          # return verified
+      # 
+      # verified = verify(candidates) if candidates else {}
+      # 
+      # # --- 3. (B1) Keep failed/partial builds whose PR is merged into main AND whose
+      # #        commit matches that PR's head SHA. Emit only those build IDs. ---
+      # build_ids = sorted({bid for bid, pr, sha in failed_builds
+                          # if verified.get(str(pr)) == sha})
+      # 
+      # github_output = os.environ.get("GITHUB_OUTPUT", "")
+      # if not github_output:
+          # print("ERROR: GITHUB_OUTPUT is not set, cannot pass data to agent", file=sys.stderr)
+          # sys.exit(1)
+      # json_str = json.dumps(build_ids)
+      # with open(github_output, "a") as gh_out:
+          # gh_out.write(f"source_b_build_ids<<SOURCE_B_EOF\n{json_str}\nSOURCE_B_EOF\n")
+      # print(f"Source B: {len(failed_builds)} failed PR builds, {len(candidates)} candidate PRs, "
+            # f"{len(verified)} merged-into-main, {len(build_ids)} builds selected (B1-B4), wrote to step output")
+      # SCRIPT
   workflow_dispatch:
     inputs:
       aw_context:
@@ -172,7 +328,8 @@ on:
 permissions: {}
 
 concurrency:
-  group: "gh-aw-${{ github.workflow }}-${{ github.event.issue.number || github.run_id }}"
+  group: "gh-aw-${{ github.workflow }}-${{ github.event.issue.number || github.event.pull_request.number || github.run_id }}"
+  cancel-in-progress: true
 
 run-name: "Daily Test Quarantine Management"
 
@@ -200,7 +357,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@73ed520ae4ecd087a485e1991605595978b32ac1 # v0.78.1
+        uses: github/gh-aw-actions/setup@3ea13c02d765410340d533515cb31a7eef2baaf0 # v0.77.5
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -300,27 +457,28 @@ jobs:
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: ${{ needs.pre_activation.outputs.requarantine_data }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_SOURCE_B_BUILD_IDS: ${{ needs.pre_activation.outputs.source_b_build_ids }}
         # poutine:ignore untrusted_checkout_exec
         run: |
           bash "${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh"
           {
-          cat << 'GH_AW_PROMPT_949636875e11b69f_EOF'
+          cat << 'GH_AW_PROMPT_29802859b0eb12be_EOF'
           <system>
-          GH_AW_PROMPT_949636875e11b69f_EOF
+          GH_AW_PROMPT_29802859b0eb12be_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_949636875e11b69f_EOF'
+          cat << 'GH_AW_PROMPT_29802859b0eb12be_EOF'
           <safe-output-tools>
           Tools: add_comment(max:10), create_issue(max:10), create_pull_request(max:10), add_labels, missing_tool, missing_data, noop
-          GH_AW_PROMPT_949636875e11b69f_EOF
+          GH_AW_PROMPT_29802859b0eb12be_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_create_pull_request.md"
-          cat << 'GH_AW_PROMPT_949636875e11b69f_EOF'
+          cat << 'GH_AW_PROMPT_29802859b0eb12be_EOF'
           </safe-output-tools>
-          GH_AW_PROMPT_949636875e11b69f_EOF
+          GH_AW_PROMPT_29802859b0eb12be_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/mcp_cli_tools_prompt.md"
-          cat << 'GH_AW_PROMPT_949636875e11b69f_EOF'
+          cat << 'GH_AW_PROMPT_29802859b0eb12be_EOF'
           <github-context>
           The following GitHub context information is available for this workflow:
           {{#if github.actor}}
@@ -352,12 +510,12 @@ jobs:
             - **Note**: If a branch you need is not in the list above and is not listed as an additional fetched ref, it has NOT been checked out. For private repositories you cannot fetch it without proper authentication. If the branch is required and not available, exit with an error and ask the user to add it to the `fetch:` option of the `checkout:` configuration (e.g., `fetch: ["refs/pulls/open/*"]` for all open PR refs, or `fetch: ["main", "feature/my-branch"]` for specific branches).
           </github-context>
           
-          GH_AW_PROMPT_949636875e11b69f_EOF
+          GH_AW_PROMPT_29802859b0eb12be_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_949636875e11b69f_EOF'
+          cat << 'GH_AW_PROMPT_29802859b0eb12be_EOF'
           </system>
           {{#runtime-import .github/workflows/test-quarantine.md}}
-          GH_AW_PROMPT_949636875e11b69f_EOF
+          GH_AW_PROMPT_29802859b0eb12be_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
@@ -365,6 +523,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_ENGINE_ID: "copilot"
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: ${{ needs.pre_activation.outputs.requarantine_data }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_SOURCE_B_BUILD_IDS: ${{ needs.pre_activation.outputs.source_b_build_ids }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -386,6 +545,7 @@ jobs:
           GH_AW_MCP_CLI_SERVERS_LIST: '- `safeoutputs` — run `safeoutputs --help` to see available tools'
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: ${{ needs.pre_activation.outputs.requarantine_data }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_SOURCE_B_BUILD_IDS: ${{ needs.pre_activation.outputs.source_b_build_ids }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -407,7 +567,8 @@ jobs:
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
                 GH_AW_MCP_CLI_SERVERS_LIST: process.env.GH_AW_MCP_CLI_SERVERS_LIST,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_SOURCE_B_BUILD_IDS: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_SOURCE_B_BUILD_IDS
               }
             });
       - name: Validate prompt placeholders
@@ -472,7 +633,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@73ed520ae4ecd087a485e1991605595978b32ac1 # v0.78.1
+        uses: github/gh-aw-actions/setup@3ea13c02d765410340d533515cb31a7eef2baaf0 # v0.77.5
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -573,9 +734,9 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/gh-aw/safeoutputs"
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_06ad3cde1938a4b8_EOF'
+          cat > "${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" << 'GH_AW_SAFE_OUTPUTS_CONFIG_3561a6bdf9e840d8_EOF'
           {"add_comment":{"max":10,"target":"*"},"add_labels":{"allowed":["re-quarantine"]},"create_issue":{"labels":["test-failure"],"max":10,"title_prefix":"Quarantine "},"create_pull_request":{"base_branch":"main","draft":false,"labels":["test-failure"],"max":10,"max_patch_files":100,"max_patch_size":1024,"protect_top_level_dot_folders":true,"protected_files":["package.json","bun.lockb","bunfig.toml","deno.json","deno.jsonc","deno.lock","global.json","NuGet.Config","Directory.Packages.props","mix.exs","mix.lock","go.mod","go.sum","stack.yaml","stack.yaml.lock","pom.xml","build.gradle","build.gradle.kts","settings.gradle","settings.gradle.kts","gradle.properties","package-lock.json","yarn.lock","pnpm-lock.yaml","npm-shrinkwrap.json","requirements.txt","Pipfile","Pipfile.lock","pyproject.toml","setup.py","setup.cfg","Gemfile","Gemfile.lock","uv.lock","CODEOWNERS","DESIGN.md","README.md","CONTRIBUTING.md","CHANGELOG.md","SECURITY.md","CODE_OF_CONDUCT.md","AGENTS.md","CLAUDE.md","GEMINI.md"],"protected_files_policy":"request_review","title_prefix":"[test-quarantine] "},"create_report_incomplete_issue":{},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"false"},"report_incomplete":{}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_06ad3cde1938a4b8_EOF
+          GH_AW_SAFE_OUTPUTS_CONFIG_3561a6bdf9e840d8_EOF
       - name: Generate Safe Outputs Tools
         env:
           GH_AW_TOOLS_META_JSON: |
@@ -868,7 +1029,7 @@ jobs:
           
           mkdir -p /home/runner/.copilot
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
-          cat << GH_AW_MCP_CONFIG_8024c9793795ded3_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
+          cat << GH_AW_MCP_CONFIG_593a0511aa682b06_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
             "mcpServers": {
               "github": {
@@ -909,7 +1070,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_8024c9793795ded3_EOF
+          GH_AW_MCP_CONFIG_593a0511aa682b06_EOF
       - name: Mount MCP servers as CLIs
         id: mount-mcp-clis
         continue-on-error: true
@@ -1203,7 +1364,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@73ed520ae4ecd087a485e1991605595978b32ac1 # v0.78.1
+        uses: github/gh-aw-actions/setup@3ea13c02d765410340d533515cb31a7eef2baaf0 # v0.77.5
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1350,7 +1511,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@73ed520ae4ecd087a485e1991605595978b32ac1 # v0.78.1
+        uses: github/gh-aw-actions/setup@3ea13c02d765410340d533515cb31a7eef2baaf0 # v0.77.5
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1560,10 +1721,12 @@ jobs:
       setup-parent-span-id: ${{ steps.setup.outputs.parent-span-id || steps.setup.outputs.span-id }}
       setup-span-id: ${{ steps.setup.outputs.span-id }}
       setup-trace-id: ${{ steps.setup.outputs.trace-id }}
+      source_b_build_ids: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
+      source_b_prs_result: ${{ steps.source_b_prs.outcome }}
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@73ed520ae4ecd087a485e1991605595978b32ac1 # v0.78.1
+        uses: github/gh-aw-actions/setup@3ea13c02d765410340d533515cb31a7eef2baaf0 # v0.77.5
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1692,6 +1855,162 @@ jobs:
           SCRIPT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Verify Source B PRs
+        id: source_b_prs
+        run: |
+          # Source B looks for flaky tests in failed CI builds of PRs that were merged
+          # into main. Selecting those builds requires verifying each candidate PR
+          # (base==main, merged==true) and matching its head SHA — which needs a GitHub
+          # token. The agent sandbox has NO usable token, and its MCP search tool
+          # silently drops external-contributor PRs. So we do the ENTIRE selection here —
+          # outside the firewall, with full token access and no integrity filter — and
+          # hand the agent the exact Azure DevOps build IDs to collect results from. The
+          # agent makes ZERO GitHub calls and does NOT re-enumerate builds, which both
+          # eliminates the per-PR pull_request_read loop (the effective-token-budget
+          # sink) and avoids any snapshot skew between this step and the agent.
+          python3 << 'SCRIPT'
+          import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error
+
+          def fetch(url, data=None, headers=None, retries=3):
+              """GET (or POST if data) with small backoff. Re-raises HTTPError so the
+              caller can distinguish auth failures; retries only transient errors."""
+              hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
+              if headers:
+                  hdrs.update(headers)
+              last = None
+              for attempt in range(retries):
+                  try:
+                      req = urllib.request.Request(url, data=data, headers=hdrs)
+                      with urllib.request.urlopen(req, timeout=60) as r:
+                          return json.loads(r.read()), r.headers
+                  except urllib.error.HTTPError as e:
+                      if e.code in (401, 403) or e.code == 404:
+                          raise
+                      last = e
+                  except Exception as e:
+                      last = e
+                  time.sleep(2 * (attempt + 1))
+              raise last
+
+          # --- 1. Enumerate completed PR builds from the last 7 days (Azure DevOps,
+          #        public project — no auth needed) for both CI pipelines. Record each
+          #        failed/partial build's id, PR number and the commit it ran on. ---
+          BUILDS = "https://dev.azure.com/dnceng-public/public/_apis/build/builds"
+          DEFINITIONS = [83, 87]  # 83 = aspnetcore-ci, 87 = components-e2e
+          min_time = (datetime.datetime.utcnow() - datetime.timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+          failed_builds = []  # list of (build_id, pr_number, source_sha)
+          for d in DEFINITIONS:
+              token = None
+              while True:
+                  params = {"definitions": d, "reasonFilter": "pullRequest",
+                            "statusFilter": "completed", "minTime": min_time,
+                            "$top": 200, "api-version": "7.1"}
+                  if token:
+                      params["continuationToken"] = token
+                  data, hdrs = fetch(f"{BUILDS}?{urllib.parse.urlencode(params)}")
+                  # ADO returns the continuation token in a response header.
+                  token = hdrs.get("x-ms-continuationtoken")
+                  for b in data.get("value", []):
+                      if b.get("result") not in ("failed", "partiallySucceeded"):
+                          continue
+                      branch = b.get("sourceBranch", "")  # refs/pull/{N}/merge
+                      if not branch.startswith("refs/pull/"):
+                          continue
+                      try:
+                          pr = int(branch.split("/")[2])
+                      except (IndexError, ValueError):
+                          continue
+                      sha = (b.get("triggerInfo") or {}).get("pr.sourceSha")
+                      if sha:
+                          failed_builds.append((b["id"], pr, sha))
+                  if not token:
+                      break
+
+          # (B4) Only PRs with >= 1 failed/partial build can ever yield a candidate.
+          candidates = sorted({pr for _, pr, _ in failed_builds})
+
+          # --- 2. Verify B2 (base == main) + B3 (merged) and capture head SHA via batched
+          #        GraphQL. Fail LOUD on systemic failures (auth, rate-limit, every chunk
+          #        failed, or no candidate could even be resolved) so the run aborts
+          #        visibly instead of silently emitting an empty set. ---
+          gh_token = os.environ["GH_TOKEN"]
+
+          def verify(pr_numbers, chunk=50):
+              verified = {}            # str(pr_number) -> headRefOid
+              resolved = 0             # candidate PRs we positively read a node for
+              chunks_total = chunks_failed = 0
+              for k in range(0, len(pr_numbers), chunk):
+                  batch = pr_numbers[k:k + chunk]
+                  chunks_total += 1
+                  aliases = "\n".join(
+                      f'p{n}: pullRequest(number: {n}) {{ number baseRefName merged headRefOid }}'
+                      for n in batch)
+                  query = f'query {{ repository(owner: "dotnet", name: "aspnetcore") {{ {aliases} }} }}'
+                  try:
+                      body, _ = fetch(
+                          "https://api.github.com/graphql",
+                          data=json.dumps({"query": query}).encode(),
+                          headers={"Authorization": f"bearer {gh_token}",
+                                   "Content-Type": "application/json"})
+                  except urllib.error.HTTPError as e:
+                      if e.code in (401, 403):
+                          sys.exit(f"FATAL: GitHub GraphQL {e.code} — aborting Source B verification")
+                      chunks_failed += 1
+                      continue
+                  except Exception:
+                      chunks_failed += 1
+                      continue
+                  errored, chunk_untrusted = set(), False
+                  for err in body.get("errors") or []:
+                      if err.get("type") == "RATE_LIMITED":
+                          sys.exit("FATAL: GitHub GraphQL RATE_LIMITED — aborting Source B verification")
+                      alias = next((p for p in (err.get("path") or [])
+                                    if isinstance(p, str) and len(p) > 1 and p[0] == "p" and p[1:].isdigit()), None)
+                      if alias:
+                          errored.add(alias)
+                      else:
+                          chunk_untrusted = True
+                  repo = (body.get("data") or {}).get("repository")
+                  if repo is None or chunk_untrusted:
+                      chunks_failed += 1
+                      continue
+                  for alias, pr in repo.items():
+                      if alias in errored or not pr or not pr.get("headRefOid"):
+                          continue
+                      resolved += 1
+                      if pr.get("baseRefName") == "main" and pr.get("merged") is True:
+                          verified[str(pr["number"])] = pr["headRefOid"]
+              # Fail LOUD on ANY chunk that could not be conclusively read: a partially
+              # dropped chunk would silently omit up to `chunk` real candidate PRs from
+              # Source B. fetch() already retries transient blips, so a surviving failure
+              # is a real problem worth aborting the daily run over.
+              if chunks_failed:
+                  sys.exit(f"FATAL: {chunks_failed}/{chunks_total} GraphQL verification "
+                           "chunk(s) failed — aborting Source B verification")
+              if pr_numbers and resolved == 0:
+                  sys.exit("FATAL: could not resolve any candidate PR via GraphQL — aborting Source B verification")
+              return verified
+
+          verified = verify(candidates) if candidates else {}
+
+          # --- 3. (B1) Keep failed/partial builds whose PR is merged into main AND whose
+          #        commit matches that PR's head SHA. Emit only those build IDs. ---
+          build_ids = sorted({bid for bid, pr, sha in failed_builds
+                              if verified.get(str(pr)) == sha})
+
+          github_output = os.environ.get("GITHUB_OUTPUT", "")
+          if not github_output:
+              print("ERROR: GITHUB_OUTPUT is not set, cannot pass data to agent", file=sys.stderr)
+              sys.exit(1)
+          json_str = json.dumps(build_ids)
+          with open(github_output, "a") as gh_out:
+              gh_out.write(f"source_b_build_ids<<SOURCE_B_EOF\n{json_str}\nSOURCE_B_EOF\n")
+          print(f"Source B: {len(failed_builds)} failed PR builds, {len(candidates)} candidate PRs, "
+                f"{len(verified)} merged-into-main, {len(build_ids)} builds selected (B1-B4), wrote to step output")
+          SCRIPT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   safe_outputs:
     needs:
@@ -1733,7 +2052,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@73ed520ae4ecd087a485e1991605595978b32ac1 # v0.78.1
+        uses: github/gh-aw-actions/setup@3ea13c02d765410340d533515cb31a7eef2baaf0 # v0.77.5
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}

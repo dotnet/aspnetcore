@@ -148,7 +148,7 @@
     <GrpcAuthVersion>2.64.0</GrpcAuthVersion>
     <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
-    <MessagePackVersion>2.5.187</MessagePackVersion>
+    <MessagePackVersion>2.5.302</MessagePackVersion>
     <!-- Extensions packages for Blazor WASM Service Defaults -->
     <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
     <MicrosoftIdentityWebVersion>3.15.0</MicrosoftIdentityWebVersion>
@@ -178,6 +178,7 @@
     <SeleniumWebDriverVersion>4.44.0</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
+    <SharpFuzzVersion>2.2.0</SharpFuzzVersion>
     <StackExchangeRedisVersion>2.7.27</StackExchangeRedisVersion>
     <SystemReactiveLinqVersion>5.0.0</SystemReactiveLinqVersion>
     <SwashbuckleAspNetCoreVersion>6.6.2</SwashbuckleAspNetCoreVersion>
