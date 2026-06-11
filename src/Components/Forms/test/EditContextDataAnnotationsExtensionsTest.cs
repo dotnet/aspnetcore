@@ -173,26 +173,15 @@ public class EditContextDataAnnotationsExtensionsTest
     [Fact]
     public void ValidatesHiddenPropertiesWithoutAmbiguousMatchException()
     {
-        // Arrange
-        // This test covers the case where a derived class hides a base class property using the 'new' keyword.
-        // Previously, this would throw AmbiguousMatchException when NotifyFieldChanged was called.
-        // See: https://github.com/dotnet/aspnetcore/issues/XXXXX
         var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
-        // Act/Assert 1: Full form validation should work and detect invalid value
         Assert.False(editContext.Validate());
         Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
 
-        // Act/Assert 2: Per-field validation on the hidden property should not throw AmbiguousMatchException
-        // This is where the bug occurred - NotifyFieldChanged would call TryGetValidatableProperty which
-        // would throw AmbiguousMatchException due to finding both base and derived properties
         var orderIdIdentifier = new FieldIdentifier(model, nameof(DerivedModelWithHiddenProperty.OrderID));
         editContext.NotifyFieldChanged(orderIdIdentifier);
-        // If we get here without an exception, the test passes
-
-        // Act/Assert 3: Valid value should pass validation
         model.OrderID = 50;
         editContext.NotifyFieldChanged(orderIdIdentifier);
         Assert.Empty(editContext.GetValidationMessages());
@@ -201,25 +190,17 @@ public class EditContextDataAnnotationsExtensionsTest
     [Fact]
     public void ValidatesHiddenPropertiesWithPropertyCaching()
     {
-        // Arrange
-        // This test verifies that the caching mechanism works correctly with hidden properties.
-        // The first call may trigger the AmbiguousMatchException handling, and subsequent calls
-        // should use the cached result efficiently.
         var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);
         var orderIdIdentifier = new FieldIdentifier(model, nameof(DerivedModelWithHiddenProperty.OrderID));
 
-        // Act: Call NotifyFieldChanged multiple times to test caching
         for (int i = 0; i < 5; i++)
         {
             model.OrderID = 150 + i;
-            // This should consistently handle the hidden property without exceptions
             editContext.NotifyFieldChanged(orderIdIdentifier);
         }
-
-        // Assert: Should have validation messages for all the out-of-range values
-        model.OrderID = 150; // Out of range
+        model.OrderID = 150;
         editContext.NotifyFieldChanged(orderIdIdentifier);
         Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
     }
