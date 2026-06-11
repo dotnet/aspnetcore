@@ -98,8 +98,6 @@ public class InputCheckboxTest
     [Fact]
     public async Task BindingUpdatesCheckedAttributeWhenValueChanges()
     {
-        // ISSUE #1 FIX: Strengthened to verify binding attribute structure
-        // This ensures onchange binding is properly set up for UI -> Model updates
         var model = new TestModel { BoolProperty = false };
         var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
@@ -110,14 +108,10 @@ public class InputCheckboxTest
 
         var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Verify onchange binding attribute is present for UI -> Model updates
         var onchangeAttribute = frames.Array.SingleOrDefault(f =>
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "onchange");
         Assert.NotNull(onchangeAttribute.AttributeValue);
-
-        // Verify the handler has a valid event handler ID (binding is properly set up)
         var handlerId = frames.Array
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange")
             .Select(f => f.AttributeEventHandlerId)
@@ -156,8 +150,6 @@ public class InputCheckboxTest
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
         var nameAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "name");
-        // IMPORTANT: Name uses dots (model.BoolProperty), NOT underscores
-        // (ID uses underscores: model_BoolProperty)
         Assert.Equal("model.BoolProperty", nameAttribute.AttributeValue);
     }
 
@@ -168,21 +160,17 @@ public class InputCheckboxTest
         var editContext = new EditContext(model);
         var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
-            EditContext = editContext,  // Required for CSS class validation state
+            EditContext = editContext,
             Value = false,
             ValueExpression = () => model.BoolProperty,
         };
 
         var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // ASSERT: Verify class attribute exists AND contains "valid" class
-        // ISSUE #2 FIX: Was only checking NotNull, now verifies actual validation class content
         var classAttribute = frames.Array.SingleOrDefault(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class");
         Assert.NotNull(classAttribute.AttributeValue);
         var cssClass = classAttribute.AttributeValue?.ToString();
         Assert.NotNull(cssClass);
-        // Pristine valid field should have "valid" class
         Assert.Contains("valid", cssClass);
     }
 
@@ -200,16 +188,9 @@ public class InputCheckboxTest
 
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         var initialCssClass = inputCheckboxComponent.GetCssClass();
-
-        // ASSERT INITIAL: Should NOT have "modified" class (pristine field)
-        // Should have "valid" class since field is valid and unmodified
         Assert.DoesNotContain("modified", initialCssClass ?? "");
         Assert.Contains("valid", initialCssClass ?? "");
-
-        // ACT: Change the value - this notifies EditContext
         inputCheckboxComponent.SetCurrentValue(true);
-
-        // ASSERT: Field should now include "modified" class after value change
         var updatedCssClass = inputCheckboxComponent.GetCssClass();
         Assert.Contains("modified", updatedCssClass);
     }
@@ -227,11 +208,7 @@ public class InputCheckboxTest
 
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.False(rootComponent.EditContext.IsModified(() => model.BoolProperty));
-
-        // Act - change the CurrentValue
         inputCheckboxComponent.SetCurrentValue(true);
-
-        // Assert - EditContext should be notified of the change
         Assert.True(rootComponent.EditContext.IsModified(() => model.BoolProperty));
     }
 
@@ -250,11 +227,7 @@ public class InputCheckboxTest
 
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.Empty(valueChangedCallLog);
-
-        // ACT: Change the checkbox value
         inputCheckboxComponent.SetCurrentValue(true);
-
-        // ASSERT: ValueChanged callback should be invoked exactly once with new value (true)
         Assert.Single(valueChangedCallLog);
         Assert.True(valueChangedCallLog[0]);
     }
@@ -262,56 +235,40 @@ public class InputCheckboxTest
     [Fact]
     public async Task EventDrivenBindingUpdatesModelViaDispatchEvent()
     {
-        // ISSUE #5: Event-Driven Model Update test
-        // Verifies that UI -> Model binding is properly wired via onchange event handler
         var model = new TestModel { BoolProperty = false };
         var rootComponent = new TestInputHostComponent<bool, TestInputCheckboxComponent>
         {
             EditContext = new EditContext(model),
             Value = false,
-            ValueChanged = val => { }, // Placeholder to verify binding chain exists
+            ValueChanged = val => { },
             ValueExpression = () => model.BoolProperty,
         };
-
-        // Use the same pattern as other tests for TestInputCheckboxComponent
         var componentId = await RenderAndGetTestInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // Verify onchange handler is properly registered with a valid handler ID
         var onchangeHandlerId = frames.Array
             .Where(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange")
             .Select(f => f.AttributeEventHandlerId)
             .FirstOrDefault();
-
-        // Handler ID must be non-zero for binding to work
         Assert.NotEqual(0ul, onchangeHandlerId);
-
-        // Verify model starts unchanged
         Assert.False(model.BoolProperty);
     }
 
     [Fact]
     public async Task DoesNotInvokeValueChangedIfValueUnchanged()
     {
-        // ISSUE #6: Redundancy resolved - preserved as separate edge case test
-        // This guards against callback being fired when value hasn't actually changed
         var model = new TestModel();
         var valueChangedCallLog = new List<bool>();
         var rootComponent = new TestInputHostComponent<bool, TestInputCheckboxComponent>
         {
             EditContext = new EditContext(model),
-            Value = true,  // Already true
+            Value = true,
             ValueChanged = val => valueChangedCallLog.Add(val),
             ValueExpression = () => model.BoolProperty,
         };
 
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.Empty(valueChangedCallLog);
-
-        // ACT: Set to same value (no actual change)
         inputCheckboxComponent.SetCurrentValue(true);
-
-        // ASSERT: No callback invoked since value didn't actually change
         Assert.Empty(valueChangedCallLog);
     }
 
@@ -325,15 +282,13 @@ public class InputCheckboxTest
             ValueExpression = () => model.BoolProperty,
             AdditionalAttributes = new Dictionary<string, object>
             {
-                { "data-test", "checkbox-test" },  // Custom data attribute
-                { "disabled", true }               // Standard HTML attribute
+                { "data-test", "checkbox-test" },
+                { "disabled", true }
             }
         };
 
         var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // ASSERT: Custom attributes should pass through to rendered HTML
         var dataTestAttribute = frames.Array.SingleOrDefault(f =>
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "data-test");
@@ -350,21 +305,16 @@ public class InputCheckboxTest
     [Fact]
     public async Task RendersUncheckedStateWhenValueIsFalse()
     {
-        // ISSUE #4: Missing unchecked state test
-        // FIX: Added test for when value=false (not checked)
         var model = new TestModel { BoolProperty = false };
         var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
             EditContext = new EditContext(model),
-            Value = false,  // Unchecked state
+            Value = false,
             ValueExpression = () => model.BoolProperty,
         };
 
         var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
-
-        // ASSERT: When value is false, checked attribute should NOT exist
-        // Using SingleOrDefault instead of Single for safer assertion pattern
         var checkedAttribute = frames.Array.SingleOrDefault(f =>
             f.FrameType == RenderTreeFrameType.Attribute &&
             f.AttributeName == "checked");
@@ -374,8 +324,6 @@ public class InputCheckboxTest
     [Fact]
     public async Task CssClassIncludesInvalidStateWhenValidationErrorExists()
     {
-        // ISSUE #3: Missing validation error scenario test
-        // FIX: Added test for when validation error is added - CSS should show "invalid" class
         var model = new TestModel();
         var editContext = new EditContext(model);
         var fieldIdentifier = FieldIdentifier.Create(() => model.BoolProperty);
@@ -387,17 +335,13 @@ public class InputCheckboxTest
         };
 
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        // Initially should be valid (no validation errors)
         var initialCssClass = inputCheckboxComponent.GetCssClass();
         Assert.Contains("valid", initialCssClass);
         Assert.DoesNotContain("invalid", initialCssClass);
 
-        // ACT: Add validation error message
         var messages = new ValidationMessageStore(editContext);
         messages.Add(fieldIdentifier, "Checkbox must be checked");
 
-        // ASSERT: CSS should now include "invalid" class
         var updatedCssClass = inputCheckboxComponent.GetCssClass();
         Assert.Contains("invalid", updatedCssClass);
     }
@@ -405,21 +349,15 @@ public class InputCheckboxTest
     [Fact]
     public async Task WorksWithoutEditContext()
     {
-        // ISSUE #8: Missing "No EditContext" scenario test
-        // FIX: Added test to verify component works without EditContext
-        // This is valid: <InputCheckbox @bind-Value="value" /> without EditForm
         var rootComponent = new TestInputHostComponent<bool, TestInputCheckboxComponent>
         {
-            // NO EditContext - should work without it
             Value = false,
             ValueExpression = () => new TestModel().BoolProperty,
         };
 
-        // ACT & ASSERT: Should render without throwing
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputCheckboxComponent);
 
-        // Should still be able to change value internally (bypassing EditContext)
         inputCheckboxComponent.SetCurrentValue(true);
         Assert.True(inputCheckboxComponent.GetCurrentValue());
     }
@@ -427,7 +365,6 @@ public class InputCheckboxTest
     [Fact]
     public async Task ComponentTypeAlwaysOverridesUserDefinedType()
     {
-        // InputCheckbox always renders type="checkbox", even if user provides different type
         var model = new TestModel();
         var hostComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
@@ -435,7 +372,7 @@ public class InputCheckboxTest
             ValueExpression = () => model.BoolProperty,
             AdditionalAttributes = new Dictionary<string, object>
             {
-                { "type", "text" }  // User attempts to override, but checkbox type should prevail
+                { "type", "text" }
             }
         };
 
@@ -445,21 +382,16 @@ public class InputCheckboxTest
         var typeAttributeFrame = frames.Array.Single(frame =>
             frame.FrameType == RenderTreeFrameType.Attribute &&
             frame.AttributeName == "type");
-
-        // Assert - checkbox type always takes precedence
         Assert.Equal("checkbox", typeAttributeFrame.AttributeValue);
     }
 
     [Fact]
     public async Task DisplayNameIsUsedInValidationMessages()
     {
-        // ✨ NEW TEST: Validates that validation messages are properly associated with the checkbox field
-        // This ensures EditContext correctly tracks and retrieves messages for this component's field
         var model = new TestModel();
         var editContext = new EditContext(model);
         var fieldIdentifier = FieldIdentifier.Create(() => model.BoolProperty);
 
-        // ACT: Add a validation error message to the store
         var messages = new ValidationMessageStore(editContext);
         messages.Add(fieldIdentifier, "The Checkbox must be checked");
 
@@ -472,7 +404,6 @@ public class InputCheckboxTest
 
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // ASSERT: Validation messages should be retrievable from EditContext for this field
         var fieldMessages = editContext.GetValidationMessages(fieldIdentifier);
         Assert.Single(fieldMessages);
         Assert.Equal("The Checkbox must be checked", fieldMessages.First());
@@ -481,21 +412,17 @@ public class InputCheckboxTest
     [Fact]
     public async Task RendersCorrectlyWithNullAdditionalAttributes()
     {
-        // ✨ NEW TEST: Validates component works when AdditionalAttributes is explicitly null
-        // Edge case: ensures null reference doesn't break rendering
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<bool, InputCheckbox>
         {
             EditContext = new EditContext(model),
             ValueExpression = () => model.BoolProperty,
-            AdditionalAttributes = null!  // Explicitly pass null - should not throw
+            AdditionalAttributes = null!
         };
 
-        // ACT & ASSERT: Component should render successfully without throwing NullReferenceException
         var componentId = await RenderAndGetInputCheckboxComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Verify core attributes are still rendered despite null AdditionalAttributes
         var typeAttribute = frames.Array.Single(f =>
             f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "type");
         Assert.Equal("checkbox", typeAttribute.AttributeValue);
@@ -512,8 +439,6 @@ public class InputCheckboxTest
     [Fact]
     public async Task ValueChangedCallbackInvokedCorrectlyForRapidChanges()
     {
-        // ✨ NEW TEST: Validates that callback is invoked correctly for rapid value toggling
-        // Ensures callback tracking works for multiple rapid changes, not just single change
         var model = new TestModel { BoolProperty = false };
         var valueChangedCallLog = new List<bool>();
         var rootComponent = new TestInputHostComponent<bool, TestInputCheckboxComponent>
@@ -525,27 +450,22 @@ public class InputCheckboxTest
         };
 
         var inputCheckboxComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-        Assert.Empty(valueChangedCallLog);  // Verify no callbacks yet
+        Assert.Empty(valueChangedCallLog);
 
-        // ACT: Rapid toggling - simulate user quickly changing checkbox state multiple times
         inputCheckboxComponent.SetCurrentValue(true);
         inputCheckboxComponent.SetCurrentValue(false);
         inputCheckboxComponent.SetCurrentValue(true);
         inputCheckboxComponent.SetCurrentValue(false);
 
-        // ASSERT: All 4 changes should be logged in correct order
         Assert.Equal(4, valueChangedCallLog.Count);
         Assert.Equal(new[] { true, false, true, false }, valueChangedCallLog);
 
-        // EditContext should track that field is modified
         Assert.True(rootComponent.EditContext.IsModified(() => model.BoolProperty));
     }
 
     [Fact]
     public async Task CssClassCombinesFieldValidationStateWithAdditionalClass()
     {
-        // ✨ NEW TEST: Validates that CssClass properly merges AdditionalAttributes class with validation state
-        // Ensures custom classes don't override validation classes, they combine
         var model = new TestModel();
         var editContext = new EditContext(model);
 
@@ -556,7 +476,7 @@ public class InputCheckboxTest
             ValueExpression = () => model.BoolProperty,
             AdditionalAttributes = new Dictionary<string, object>
             {
-                { "class", "my-custom-class" }  // User-provided custom class
+                { "class", "my-custom-class" }
             }
         };
 
@@ -568,10 +488,9 @@ public class InputCheckboxTest
 
         var cssClass = classAttribute.AttributeValue?.ToString();
 
-        // ASSERT: Should contain BOTH custom class AND validation state class
         Assert.NotNull(cssClass);
-        Assert.Contains("my-custom-class", cssClass);      // Custom class present
-        Assert.Contains("valid", cssClass);                 // Validation state class also present
+        Assert.Contains("my-custom-class", cssClass);
+        Assert.Contains("valid", cssClass);
     }
 
     private async Task<int> RenderAndGetInputCheckboxComponentIdAsync(TestInputHostComponent<bool, InputCheckbox> hostComponent)
