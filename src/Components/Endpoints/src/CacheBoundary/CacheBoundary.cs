@@ -21,6 +21,13 @@ public sealed class CacheBoundary : IComponent, IDisposable
     private static readonly ComponentParametersTypeCache _parametersTypeCache = new();
     private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
 
+    // HttpContext.Items key for the per-request set of cache keys that currently have an in-flight
+    // creator (a CacheBoundary that is producing the entry during this render pass). Used so that a
+    // second boundary which resolves to the same key in the same request does not wait on the first
+    // (which would deadlock, since the creator's output is only produced during later HTML emission).
+    // On a warm request there is no in-flight creator, so both boundaries simply hit the shared entry.
+    private static readonly object _inFlightCreatorKeysItemKey = new();
+
     private RenderHandle _renderHandle;
 
     /// <summary>
@@ -192,13 +199,43 @@ public sealed class CacheBoundary : IComponent, IDisposable
         if (Enabled && CacheStore is not null && HttpContext is { } httpContext)
         {
             ResolvedCacheKey = CacheBoundaryKeyResolver.ComputeKey(this, httpContext);
-            await ResolveOrBeginCreateAsync(httpContext.RequestAborted);
+
+            // Multiple CacheBoundary instances in one request can resolve to the same key (e.g. a
+            // reusable component containing a CacheBoundary used more than once, or a loop without an
+            // explicit CacheKey). They should share one cache entry. On a warm request both simply hit
+            // that entry below. On a cold request, however, the first becomes the single-flight creator
+            // and its captured output is only produced during HTML emission (after this render pass
+            // reaches quiescence). A second boundary that waited on it would therefore deadlock, so
+            // instead it renders fresh this one time; the creator still populates the shared entry and
+            // every subsequent request serves both boundaries from it.
+            var inFlightCreatorKeys = GetInFlightCreatorKeys(httpContext);
+            if (inFlightCreatorKeys.Contains(ResolvedCacheKey))
+            {
+                GetLogger()?.LogDebug(
+                    "Another CacheBoundary in the same request is currently creating cache key '{Key}'. Rendering this instance fresh to avoid waiting on the in-flight creator within a single render pass. It will share the cached entry on subsequent requests.",
+                    ResolvedCacheKey);
+            }
+            else
+            {
+                await ResolveOrBeginCreateAsync(inFlightCreatorKeys, httpContext.RequestAborted);
+            }
         }
 
         _renderHandle.Render(BuildRenderTree);
     }
 
-    private async Task ResolveOrBeginCreateAsync(CancellationToken cancellationToken)
+    private static HashSet<string> GetInFlightCreatorKeys(HttpContext httpContext)
+    {
+        if (httpContext.Items[_inFlightCreatorKeysItemKey] is not HashSet<string> keys)
+        {
+            keys = new HashSet<string>(StringComparer.Ordinal);
+            httpContext.Items[_inFlightCreatorKeysItemKey] = keys;
+        }
+
+        return keys;
+    }
+
+    private async Task ResolveOrBeginCreateAsync(HashSet<string> inFlightCreatorKeys, CancellationToken cancellationToken)
     {
         var captureCompletion = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         var factoryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -217,7 +254,11 @@ public sealed class CacheBoundary : IComponent, IDisposable
             async ct =>
             {
                 // We won the single-flight race; the renderer's live walk will produce the JSON.
+                // Mark this key as having an in-flight creator (synchronously, before this method
+                // suspends) so any same-request sibling that resolves to it renders fresh instead of
+                // waiting on us.
                 _isCreator = true;
+                inFlightCreatorKeys.Add(ResolvedCacheKey!);
                 factoryStarted.TrySetResult();
                 return await captureCompletion.Task.WaitAsync(ct);
             },

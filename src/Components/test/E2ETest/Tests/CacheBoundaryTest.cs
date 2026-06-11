@@ -135,4 +135,36 @@ public class CacheBoundaryTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         var body = Browser.FindElement(By.TagName("body")).Text;
         return int.Parse(body, CultureInfo.InvariantCulture);
     }
+
+    [Fact]
+    public void ReusableComponentWithCacheBoundary_UsedTwice_SharesOneCacheEntry()
+    {
+        // A reusable component that internally contains a CacheBoundary (no CacheKey), used twice on
+        // a page, produces two boundaries that resolve to the SAME cache key with no user error.
+        // They must share a single cache entry (and must not hang the request). On the first (cold)
+        // render the creator produces the entry and the sibling renders fresh; on every subsequent
+        // (warm) request both boundaries are served from the one shared entry.
+        Navigate($"{ServerPathBase}/cache-component");
+        Browser.Exists(By.Id("test-9"));
+        Browser.Equal(2, () => Browser.FindElement(By.Id("test-9")).FindElements(By.CssSelector(".panel-content")).Count);
+
+        // Cold render: each instance rendered its own content.
+        Assert.Equal(new[] { "alpha", "beta" }, GetPanelTexts(".panel-content"));
+        var creatorGuid = GetPanelTexts(".panel-guid")[0];
+
+        // Warm reload: both boundaries share the one cached entry, so both show the creator's cached
+        // content and the identical cached guid.
+        Navigate($"{ServerPathBase}/cache-component");
+        Browser.Exists(By.Id("test-9"));
+        Browser.Equal(2, () => Browser.FindElement(By.Id("test-9")).FindElements(By.CssSelector(".panel-content")).Count);
+
+        Browser.Equal(new[] { "alpha", "alpha" }, () => GetPanelTexts(".panel-content").ToArray());
+        Assert.Equal(new[] { creatorGuid, creatorGuid }, GetPanelTexts(".panel-guid"));
+    }
+
+    private List<string> GetPanelTexts(string selector)
+        => Browser.FindElement(By.Id("test-9"))
+            .FindElements(By.CssSelector(selector))
+            .Select(panel => panel.Text)
+            .ToList();
 }
