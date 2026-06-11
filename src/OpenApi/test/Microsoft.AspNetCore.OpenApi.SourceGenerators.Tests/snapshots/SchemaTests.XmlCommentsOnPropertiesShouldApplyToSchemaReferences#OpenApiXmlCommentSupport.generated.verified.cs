@@ -357,10 +357,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        if (parameterInfo?.ParameterType == typeof(CancellationToken))
-                        {
-                            continue;
-                        }
                         var operationParameter = GetOperationParameter(operation, parameterInfo, parameterComment);
                         if (operationParameter is not null)
                         {
@@ -372,7 +368,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                             }
                             targetOperationParameter.Deprecated = parameterComment.Deprecated;
                         }
-                        else
+                        // Only fall back to the request body when the parameter is actually bound to it.
+                        // This avoids applying documentation for parameters that aren't part of the
+                        // OpenAPI surface (e.g. a `CancellationToken`) to the request body.
+                        else if (IsRequestBodyParameter(context, parameterInfo, parameterComment))
                         {
                             var requestBody = operation.RequestBody;
                             if (requestBody is not null)
@@ -511,6 +510,23 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
 
             return null;
+        }
+
+        private static bool IsRequestBodyParameter(OpenApiOperationTransformerContext context, ParameterInfo? parameterInfo, XmlParameterComment comment)
+        {
+            var modelNames = GetModelNames(parameterInfo, parameterInfo?.Name ?? comment.Name);
+
+            foreach (var parameterDescription in context.Description.ParameterDescriptions)
+            {
+                if (parameterDescription.Source == BindingSource.Body
+                    && parameterDescription.Name is { } parameterName
+                    && modelNames.Contains(parameterName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider? attributeProvider, string? name)
