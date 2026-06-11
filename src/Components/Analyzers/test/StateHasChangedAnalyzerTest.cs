@@ -74,13 +74,11 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
         {
             protected override void OnInitialized()
             {
-                // unnecesary
                 StateHasChanged();
             }
 
             protected override void OnParametersSet()
             {
-                // unnecesary
                 StateHasChanged();
             }
         }
@@ -93,14 +91,14 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 11, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 10, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 15, 17) }
             });
     }
 
@@ -119,38 +117,32 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
             protected override async Task OnInitializedAsync()
             {
                 _refreshCount++;
-                // unnecesary
                 StateHasChanged();
 
                 await Task.Delay(1);
 
                 _refreshCount++;
-                // necesary
                 StateHasChanged();
 
                 await Task.Delay(1);
 
                 _refreshCount++;
-                // unnecesary
                 StateHasChanged();
             }
 
             protected override async Task OnParametersSetAsync()
             {
                 _refreshCount++;
-                // unnecesary
                 StateHasChanged();
 
                 await Task.Delay(1);
 
                 _refreshCount++;
-                // necesary
                 StateHasChanged();
 
                 await Task.Delay(1);
 
                 _refreshCount++;
-                // unnecesary
                 StateHasChanged();
             }
         }
@@ -163,28 +155,28 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 13, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 26, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 23, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 33, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 29, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 45, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 39, 17) }
             });
     }
 
@@ -206,19 +198,16 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
             private async Task OnRefreshClicked()
             {
                 _refreshCount++;
-                // unnecesary
                 StateHasChanged();
 
                 await Task.Delay(1);
 
                 _refreshCount++;
-                // necesary
                 StateHasChanged();
 
                 await Task.Delay(1);
 
                 _refreshCount++;
-                // unnecesary
                 StateHasChanged();
             }
         }
@@ -231,14 +220,14 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 16, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 29, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 26, 17) }
             });
     }
 }

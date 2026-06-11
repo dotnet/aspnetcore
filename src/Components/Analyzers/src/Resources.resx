@@ -228,4 +228,7 @@
   <data name="UnnecessaryStateHasChangedCall_Title" xml:space="preserve">
     <value>Unnecessary StateHasChanged call</value>
   </data>
+  <data name="UnnecessaryStateHasChangedCall_FixTitle" xml:space="preserve">
+    <value>Remove unnecessary StateHasChanged call.</value>
+  </data>
 </root>
