@@ -166,12 +166,8 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid > table"));
-
-        // Find a cell where the person has LastName starting with 'M' (e.g., Jean Martin)
-        // We look for the cell content containing "Jean Martin" in the Full Name column
-        var fullNameCells = Browser.FindElements(By.CssSelector("#grid > table tbody > tr > td:nth-child(5)"));
-        var targetCell = fullNameCells.FirstOrDefault(c => c.Text.Contains("Jean Martin"));
-        Assert.NotNull(targetCell);
-        Assert.Contains("highlight-cell", targetCell.GetDomAttribute("class"));
+        // The 6th column in the grid is a template column with a CellClass that highlights cells where the person's last name starts with "M".
+        var templateColumnCell = Browser.FindElement(By.CssSelector("#grid > table tbody > tr:nth-child(4) > td:nth-child(6)"));
+        Assert.Contains("highlight-cell", templateColumnCell.GetDomAttribute("class"));
     }
 }
