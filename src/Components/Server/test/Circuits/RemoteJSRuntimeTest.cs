@@ -151,7 +151,6 @@ public class RemoteJSRuntimeTest
 
         public DotNetInvocationResult TestCreateResult(Exception exception)
         {
-            // Use reflection to access internal constructor
             var constructor = typeof(DotNetInvocationResult).GetConstructor(
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
                 null,
