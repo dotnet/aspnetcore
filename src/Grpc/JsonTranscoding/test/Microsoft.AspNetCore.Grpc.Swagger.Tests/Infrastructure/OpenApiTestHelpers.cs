@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -51,11 +53,12 @@ internal static class OpenApiTestHelpers
 
     public static OpenApiOperation GetOperation(IOpenApiPathItem path, HttpMethod method)
     {
-        Assert.True(path.Operations.TryGetValue(method, out var operation));
-        return operation;
+        var operations = Assert.IsAssignableFrom<IDictionary<HttpMethod, OpenApiOperation>>(path.Operations);
+        Assert.True(operations.TryGetValue(method, out var operation));
+        return Assert.IsType<OpenApiOperation>(operation);
     }
 
-    public static string GetSchemaId(IOpenApiSchema schema)
+    public static string? GetSchemaId(IOpenApiSchema schema)
     {
         return schema switch
         {
@@ -79,9 +82,11 @@ internal static class OpenApiTestHelpers
     {
         var schemaId = GetSchemaId(schema);
 
-        if (schemaId is not null && document.Components.Schemas.TryGetValue(schemaId, out var resolvedSchema))
+        var schemas = document.Components?.Schemas;
+
+        if (schemaId is not null && schemas is not null && schemas.TryGetValue(schemaId, out var resolvedSchema))
         {
-            return resolvedSchema;
+            return Assert.IsAssignableFrom<IOpenApiSchema>(resolvedSchema);
         }
 
         return ResolveSchema(schema);
