@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 /// <typeparam name="TValue">The type of the field.</typeparam>
 [CacheBoundaryPolicy(Throw = true)]
-public class DisplayName<TValue> : IComponent
+public sealed class DisplayName<TValue> : IComponent
 {
 
     private RenderHandle _renderHandle;
