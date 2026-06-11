@@ -103,7 +103,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
 
     private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
     {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
         {
             var localizer = context.ValidationOptions.Localizer;
             if (localizer is null)
@@ -115,7 +115,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             // name when the localizer can't translate.
             return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
             {
-                DeclaringType = declaringType,
+                Type = null,
                 DisplayName = literal,
                 MemberName = memberName,
             }) ?? literal;
@@ -124,7 +124,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
 
     private sealed class ParameterReflectionDisplayName(DisplayAttribute attribute) : DisplayNameInfo
     {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
             => attribute.GetName();
     }
 
