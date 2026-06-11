@@ -132,7 +132,6 @@ public class EditContextDataAnnotationsExtensionsTest
     [Fact]
     public void Validate_HasNullFieldIdentifier_OnValidationStateChanged()
     {
-        // Arrange
         var model = new TestModel { IntFrom1To100 = 101 };
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);
@@ -143,10 +142,8 @@ public class EditContextDataAnnotationsExtensionsTest
             capturedFieldIdentifiers.Add(eventArgs.FieldIdentifier);
         };
 
-        // Act: Validate the entire form
         editContext.Validate();
 
-        // Assert: Form-level validation should have null FieldIdentifier
         Assert.Single(capturedFieldIdentifiers);
         Assert.False(capturedFieldIdentifiers[0].HasValue);
     }
