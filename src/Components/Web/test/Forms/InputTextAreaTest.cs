@@ -64,7 +64,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task HandlesNullValue()
     {
-        // Arrange
         var model = new TestModel { StringProperty = null };
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -72,17 +71,14 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Assert - should not throw, handle null gracefully
         Assert.NotNull(inputComponent.Element);
     }
 
     [Fact]
     public async Task HandlesEmptyStringValue()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "" };
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -90,17 +86,14 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Assert
         Assert.NotNull(inputComponent.Element);
     }
 
     [Fact]
     public async Task RendersPlaceholderAttribute()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -109,18 +102,15 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object> { { "placeholder", "Enter your text here" } }
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "placeholder" && (string)f.AttributeValue == "Enter your text here");
     }
 
     [Fact]
     public async Task RendersRowsAttribute()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -129,18 +119,15 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object> { { "rows", "5" } }
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "rows" && f.AttributeValue.ToString() == "5");
     }
 
     [Fact]
     public async Task RendersDisabledAttribute()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -149,18 +136,15 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object> { { "disabled", true } }
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "disabled");
     }
 
     [Fact]
     public async Task RendersReadOnlyAttribute()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -169,18 +153,15 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object> { { "readonly", true } }
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "readonly");
     }
 
     [Fact]
     public async Task RendersRequiredAttribute()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -189,18 +170,15 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object> { { "required", true } }
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "required");
     }
 
     [Fact]
     public async Task RendersClassAttribute()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -209,18 +187,15 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object> { { "class", "custom-textarea form-control" } }
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "class" && f.AttributeValue.ToString().Contains("custom-textarea"));
     }
 
     [Fact]
     public async Task RendersValueAttribute()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "multi-line\ntest\nvalue" };
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -228,18 +203,15 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - textarea renders value as attribute, verify the element exists with correct content
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "textarea");
     }
 
     [Fact]
     public async Task RendersMultipleCustomAttributes()
     {
-        // Arrange
         var model = new TestModel();
         var additionalAttributes = new Dictionary<string, object>
         {
@@ -258,11 +230,9 @@ public class InputTextAreaTest
             AdditionalAttributes = additionalAttributes
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - all attributes should be present
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "placeholder");
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "rows");
@@ -274,7 +244,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task HandlesSpecialCharactersInValue()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "<script>alert('xss')</script>\n&nbsp;" };
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -282,7 +251,6 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act & Assert - should not throw
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
@@ -290,7 +258,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task HandlesUnicodeCharactersInValue()
     {
-        // Arrange
         var model = new TestModel { StringProperty = "こんにちは世界\n🌍 Emoji Support" };
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -298,7 +265,6 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
@@ -306,7 +272,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task RendersCorrectElementType()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -314,18 +279,15 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - should render <textarea> element
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "textarea");
     }
 
     [Fact]
     public async Task IgnoresUnknownAdditionalAttributes()
     {
-        // Arrange - test that unknown attributes don't cause errors
         var model = new TestModel();
         var additionalAttributes = new Dictionary<string, object>
         {
@@ -339,7 +301,6 @@ public class InputTextAreaTest
             AdditionalAttributes = additionalAttributes
         };
 
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
@@ -347,7 +308,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task RendersIdWithComplexPropertyName()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -355,11 +315,9 @@ public class InputTextAreaTest
             ValueExpression = () => model.ComplexPropertyName,
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert - ID should handle complex names
         var idAttribute = frames.Array.Single(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "id");
         Assert.NotNull(idAttribute.AttributeValue);
         Assert.Contains("ComplexPropertyName", idAttribute.AttributeValue.ToString());
@@ -368,7 +326,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task EmptyAdditionalAttributesDictionary()
     {
-        // Arrange - test with empty additional attributes
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -377,7 +334,6 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object>()
         };
 
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
@@ -385,7 +341,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task NullAdditionalAttributes()
     {
-        // Arrange - test with null additional attributes
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -394,7 +349,6 @@ public class InputTextAreaTest
             AdditionalAttributes = null
         };
 
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
@@ -402,7 +356,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task LargeTextValue()
     {
-        // Arrange - test with very large text block (10,000 chars)
         var largeValue = new string('a', 10000);
         var model = new TestModel { StringProperty = largeValue };
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
@@ -411,7 +364,6 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
@@ -419,7 +371,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task HandlesMultilineContentWithVariousLineEndings()
     {
-        // Arrange - test with CRLF, LF, and mixed line endings
         var model = new TestModel { StringProperty = "Line 1\r\nLine 2\nLine 3\rLine 4" };
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -427,7 +378,6 @@ public class InputTextAreaTest
             ValueExpression = () => model.StringProperty,
         };
 
-        // Act & Assert
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
         Assert.NotNull(inputComponent.Element);
     }
@@ -435,7 +385,6 @@ public class InputTextAreaTest
     [Fact]
     public async Task RendersSpellCheckAttribute()
     {
-        // Arrange
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<string, InputTextArea>
         {
@@ -444,11 +393,9 @@ public class InputTextAreaTest
             AdditionalAttributes = new Dictionary<string, object> { { "spellcheck", "false" } }
         };
 
-        // Act
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Assert
         Assert.Contains(frames.Array, f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "spellcheck");
     }
 
@@ -497,11 +444,9 @@ public class InputTextAreaTest
         var hostComponentId = _testRenderer.AssignRootComponentId(rootComponent);
         await _testRenderer.RenderRootComponentAsync(hostComponentId);
 
-        // Act - simulate field modification
         editContext.NotifyFieldChanged(field);
         await _testRenderer.RenderRootComponentAsync(hostComponentId);
 
-        // Get latest frames using the captured component id
         var batch = _testRenderer.Batches.First();
         var inputTextAreaFrames = batch.GetComponentFrames<InputTextArea>().ToList();
         Assert.True(inputTextAreaFrames.Count > 0);
@@ -571,22 +516,18 @@ public class InputTextAreaTest
         var model = new TestModel { StringProperty = "before" };
         var rootComponent = CreateInputHostComponentBoundToModel(model);
 
-        // Render host and get input component id
         var hostComponentId = _testRenderer.AssignRootComponentId(rootComponent);
         await _testRenderer.RenderRootComponentAsync(hostComponentId);
         var batch = _testRenderer.Batches.First();
         var inputComponentId = batch.GetComponentFrames<InputTextArea>().Single().ComponentId;
 
-        // Find the onchange attribute and its event handler id
         var frames = _testRenderer.GetCurrentRenderTreeFrames(inputComponentId);
         var onchangeAttr = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
         var eventHandlerId = onchangeAttr.AttributeEventHandlerId;
         Assert.NotEqual((ulong)0, eventHandlerId);
 
-        // Dispatch change event
         await _testRenderer.DispatchEventAsync(eventHandlerId, new ChangeEventArgs { Value = "after" });
 
-        // Model should be updated
         Assert.Equal("after", model.StringProperty);
     }
 
@@ -603,9 +544,7 @@ public class InputTextAreaTest
         var componentId = await RenderAndGetInputTextAreaComponentIdAsync(rootComponent);
         var frames = _testRenderer.GetCurrentRenderTreeFrames(componentId);
 
-        // Verify textarea element renders
         AssertContainsElement(frames, "textarea");
-        // Verify binding via onchange event handler with value attribute update
         var onchange = frames.Array.First(f => f.FrameType == RenderTreeFrameType.Attribute && f.AttributeName == "onchange");
         Assert.Equal("value", onchange.AttributeEventUpdatesAttributeName);
         Assert.Equal("multi-line\ntest\nvalue", model.StringProperty);
