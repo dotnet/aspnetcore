@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Xml.XPath;
 using Grpc.AspNetCore.Server;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Internal.XmlComments;
@@ -100,7 +100,7 @@ internal sealed class GrpcXmlCommentsOperationFilter : IOperationFilter
         while (responseNodes.MoveNext())
         {
             var code = responseNodes.Current!.GetAttribute("code", "");
-            if (!operation.Responses.TryGetValue(code, out var response))
+            if (!operation.Responses!.TryGetValue(code, out var response))
             {
                 operation.Responses[code] = response = new OpenApiResponse();
             }

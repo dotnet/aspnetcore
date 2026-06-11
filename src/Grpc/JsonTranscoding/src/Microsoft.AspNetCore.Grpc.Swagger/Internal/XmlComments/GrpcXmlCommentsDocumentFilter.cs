@@ -6,7 +6,7 @@ using System.Linq;
 using System.Xml.XPath;
 using Grpc.AspNetCore.Server;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Internal.XmlComments;
@@ -62,7 +62,7 @@ internal sealed class GrpcXmlCommentsDocumentFilter : IDocumentFilter
             {
                 if (swaggerDoc.Tags == null)
                 {
-                    swaggerDoc.Tags = new List<OpenApiTag>();
+                    swaggerDoc.Tags = new HashSet<OpenApiTag>();
                 }
 
                 swaggerDoc.Tags.Add(new OpenApiTag
