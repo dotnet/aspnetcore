@@ -128,7 +128,7 @@ public class Bar
     public GenericFoo<int> FooInt { get; set; }
 
     /// <summary>
-    /// Method with GenericFoo<double> parameter.
+    /// Method with GenericFoo{double} parameter.
     /// </summary>
     /// <param name="fooDouble">The GenericFoo of double.</param>
     public void Test(GenericFoo<double> fooDouble)
