@@ -26,8 +26,10 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="System.Formats.Cbor" />
   </ItemGroup>
 
 </Project>

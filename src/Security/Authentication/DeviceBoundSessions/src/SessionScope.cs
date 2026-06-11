@@ -6,9 +6,10 @@ using System.Text.Json.Serialization;
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
 /// <summary>
-/// Represents the scope of a DBSC session.
+/// Represents the scope of a DBSC session. Corresponds to the "JSON Session Scope Instruction
+/// Format" defined in W3C Device Bound Session Credentials §9.7.
 /// </summary>
-public sealed class DeviceBoundSessionScopeConfiguration
+public sealed class SessionScope
 {
     /// <summary>
     /// Gets or sets the origin for the session scope.
@@ -27,5 +28,5 @@ public sealed class DeviceBoundSessionScopeConfiguration
     /// </summary>
     [JsonPropertyName("scope_specification")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public List<DeviceBoundSessionScopeRuleConfiguration>? ScopeSpecification { get; set; }
+    public List<SessionScopeRule>? ScopeSpecification { get; set; }
 }

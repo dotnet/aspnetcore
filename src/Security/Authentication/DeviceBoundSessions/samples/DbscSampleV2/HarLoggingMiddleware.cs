@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -119,6 +120,7 @@ public sealed class HarLoggingMiddleware
                     Wait = stopwatch.Elapsed.TotalMilliseconds,
                     Receive = 0,
                 },
+                Dbsc = BuildDbscAnnotations(requestHeaders, responseHeaders, requestBody),
             };
 
             lock (_lock)
@@ -155,6 +157,171 @@ public sealed class HarLoggingMiddleware
         var body = await reader.ReadToEndAsync();
         context.Request.Body.Position = 0;
         return body;
+    }
+
+    // === DBSC decoding helpers ===
+    // Adds a non-standard "_dbsc" object to each entry (HAR viewers ignore underscore-prefixed fields).
+    // Decodes the DBSC proof JWT (base64url JSON, no key needed), parses DBSC headers, and breaks down
+    // cookies. Auth cookie VALUES are ASP.NET Core Data Protection ciphertext, so only their names,
+    // sizes, and Set-Cookie attributes are surfaced (the plaintext requires the server keyring).
+    private static DbscAnnotations? BuildDbscAnnotations(
+        List<HarHeader> requestHeaders,
+        List<HarHeader> responseHeaders,
+        string? requestBody)
+    {
+        string? Find(List<HarHeader> headers, string name) =>
+            headers.FirstOrDefault(h => string.Equals(h.Name, name, StringComparison.OrdinalIgnoreCase))?.Value;
+
+        var annotations = new DbscAnnotations();
+
+        // Request cookies (names + lengths; values are encrypted)
+        var cookieHeader = Find(requestHeaders, "cookie");
+        if (!string.IsNullOrEmpty(cookieHeader))
+        {
+            var cookies = new List<DbscCookie>();
+            foreach (var pair in cookieHeader.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                var eq = pair.IndexOf('=');
+                if (eq <= 0)
+                {
+                    continue;
+                }
+                cookies.Add(new DbscCookie
+                {
+                    Name = pair[..eq],
+                    ValueLength = pair.Length - eq - 1,
+                });
+            }
+            annotations.RequestCookies = cookies.Count > 0 ? cookies : null;
+        }
+
+        // Set-Cookie responses (name + attributes; values are encrypted)
+        var setCookies = responseHeaders
+            .Where(h => string.Equals(h.Name, "set-cookie", StringComparison.OrdinalIgnoreCase))
+            .Select(h => ParseSetCookie(h.Value))
+            .Where(c => c is not null)
+            .Select(c => c!)
+            .ToList();
+        annotations.SetCookies = setCookies.Count > 0 ? setCookies : null;
+
+        // DBSC proof JWT: carried in the Secure-Session-Response request header (DBSC v2),
+        // with the empty POST body fallback for robustness.
+        var proofRaw = Find(requestHeaders, "secure-session-response");
+        if (string.IsNullOrEmpty(proofRaw) && requestBody is { Length: > 0 } && requestBody.Count(c => c == '.') == 2)
+        {
+            proofRaw = requestBody;
+        }
+        annotations.ProofJwt = TryDecodeJwt(proofRaw);
+
+        // DBSC negotiation headers (raw structured-field values, plus the challenge id when present)
+        annotations.RegistrationHeader = Find(responseHeaders, "secure-session-registration");
+        var challenge = Find(responseHeaders, "secure-session-challenge");
+        if (!string.IsNullOrEmpty(challenge))
+        {
+            annotations.ChallengeHeader = challenge;
+            var idIdx = challenge.IndexOf("id=", StringComparison.OrdinalIgnoreCase);
+            if (idIdx >= 0)
+            {
+                annotations.ChallengeSessionId = challenge[(idIdx + 3)..].Trim().Trim('"');
+            }
+        }
+        annotations.SessionId = Find(requestHeaders, "sec-secure-session-id")?.Trim().Trim('"');
+
+        var hasContent = annotations.RequestCookies is not null
+            || annotations.SetCookies is not null
+            || annotations.ProofJwt is not null
+            || annotations.RegistrationHeader is not null
+            || annotations.ChallengeHeader is not null
+            || annotations.SessionId is not null;
+
+        return hasContent ? annotations : null;
+    }
+
+    private static DbscSetCookie? ParseSetCookie(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return null;
+        }
+
+        var segments = value.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (segments.Length == 0)
+        {
+            return null;
+        }
+
+        var first = segments[0];
+        var eq = first.IndexOf('=');
+        if (eq <= 0)
+        {
+            return null;
+        }
+
+        var attributes = segments.Length > 1
+            ? string.Join("; ", segments[1..])
+            : null;
+
+        return new DbscSetCookie
+        {
+            Name = first[..eq],
+            ValueLength = first.Length - eq - 1,
+            Attributes = attributes,
+        };
+    }
+
+    private static DbscJwt? TryDecodeJwt(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+
+        token = token.Trim().Trim('"');
+        var parts = token.Split('.');
+        if (parts.Length is < 2 or > 3)
+        {
+            return null;
+        }
+
+        var headerBytes = TryBase64UrlDecode(parts[0]);
+        var payloadBytes = TryBase64UrlDecode(parts[1]);
+        if (headerBytes is null || payloadBytes is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return new DbscJwt
+            {
+                Header = JsonNode.Parse(headerBytes),
+                Payload = JsonNode.Parse(payloadBytes),
+                SignaturePresent = parts.Length == 3 && parts[2].Length > 0,
+            };
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static byte[]? TryBase64UrlDecode(string value)
+    {
+        var s = value.Replace('-', '+').Replace('_', '/');
+        switch (s.Length % 4)
+        {
+            case 2: s += "=="; break;
+            case 3: s += "="; break;
+            case 1: return null;
+        }
+        try
+        {
+            return Convert.FromBase64String(s);
+        }
+        catch (FormatException)
+        {
+            return null;
+        }
     }
 }
 
@@ -202,6 +369,67 @@ public sealed class HarEntry
 
     [JsonPropertyName("timings")]
     public HarTimings Timings { get; set; } = null!;
+
+    [JsonPropertyName("_dbsc")]
+    public DbscAnnotations? Dbsc { get; set; }
+}
+
+// DBSC decoding annotations (non-standard "_dbsc" HAR extension).
+public sealed class DbscAnnotations
+{
+    [JsonPropertyName("sessionId")]
+    public string? SessionId { get; set; }
+
+    [JsonPropertyName("proofJwt")]
+    public DbscJwt? ProofJwt { get; set; }
+
+    [JsonPropertyName("registrationHeader")]
+    public string? RegistrationHeader { get; set; }
+
+    [JsonPropertyName("challengeHeader")]
+    public string? ChallengeHeader { get; set; }
+
+    [JsonPropertyName("challengeSessionId")]
+    public string? ChallengeSessionId { get; set; }
+
+    [JsonPropertyName("requestCookies")]
+    public List<DbscCookie>? RequestCookies { get; set; }
+
+    [JsonPropertyName("setCookies")]
+    public List<DbscSetCookie>? SetCookies { get; set; }
+}
+
+public sealed class DbscJwt
+{
+    [JsonPropertyName("header")]
+    public JsonNode? Header { get; set; }
+
+    [JsonPropertyName("payload")]
+    public JsonNode? Payload { get; set; }
+
+    [JsonPropertyName("signaturePresent")]
+    public bool SignaturePresent { get; set; }
+}
+
+public sealed class DbscCookie
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("valueLength")]
+    public int ValueLength { get; set; }
+}
+
+public sealed class DbscSetCookie
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("valueLength")]
+    public int ValueLength { get; set; }
+
+    [JsonPropertyName("attributes")]
+    public string? Attributes { get; set; }
 }
 
 public sealed class HarRequest

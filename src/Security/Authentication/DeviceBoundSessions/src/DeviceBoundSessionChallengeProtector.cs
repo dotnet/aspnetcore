@@ -23,7 +23,7 @@ internal sealed class DeviceBoundSessionChallengeProtector
     public string GenerateRegistrationChallenge(ClaimsPrincipal principal, TimeSpan lifetime)
     {
         var claimUid = ComputeClaimUid(principal);
-        var writer = new CborWriter();
+        var writer = new CborWriter(allowMultipleRootLevelValues: true);
         writer.WriteTextString(claimUid);
         return WebEncoders.Base64UrlEncode(_protector.Protect(writer.Encode(), lifetime));
     }
@@ -31,7 +31,7 @@ internal sealed class DeviceBoundSessionChallengeProtector
     public string GenerateRefreshChallenge(ClaimsPrincipal principal, string sessionId, TimeSpan lifetime)
     {
         var claimUid = ComputeClaimUid(principal);
-        var writer = new CborWriter();
+        var writer = new CborWriter(allowMultipleRootLevelValues: true);
         writer.WriteTextString(claimUid);
         writer.WriteTextString(sessionId);
         return WebEncoders.Base64UrlEncode(_protector.Protect(writer.Encode(), lifetime));
@@ -46,7 +46,7 @@ internal sealed class DeviceBoundSessionChallengeProtector
 
         try
         {
-            var reader = new CborReader(payload);
+            var reader = new CborReader(payload, allowMultipleRootLevelValues: true);
             var storedClaimUid = reader.ReadTextString();
             return string.Equals(storedClaimUid, ComputeClaimUid(principal), StringComparison.Ordinal);
         }
@@ -65,7 +65,7 @@ internal sealed class DeviceBoundSessionChallengeProtector
 
         try
         {
-            var reader = new CborReader(payload);
+            var reader = new CborReader(payload, allowMultipleRootLevelValues: true);
             var storedClaimUid = reader.ReadTextString();
             var storedSessionId = reader.ReadTextString();
             return string.Equals(storedClaimUid, ComputeClaimUid(principal), StringComparison.Ordinal) &&
@@ -124,7 +124,7 @@ internal sealed class DeviceBoundSessionChallengeProtector
 
     private static string EncodeClaim(Claim claim)
     {
-        var writer = new CborWriter();
+        var writer = new CborWriter(allowMultipleRootLevelValues: true);
         writer.WriteTextString(claim.Type);
         writer.WriteTextString(claim.Value);
         writer.WriteTextString(claim.Issuer);
@@ -149,7 +149,7 @@ internal sealed class DeviceBoundSessionChallengeProtector
 
         allClaims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));
 
-        var writer = new CborWriter();
+        var writer = new CborWriter(allowMultipleRootLevelValues: true);
         foreach (var claim in allClaims)
         {
             writer.WriteTextString(claim.Type);

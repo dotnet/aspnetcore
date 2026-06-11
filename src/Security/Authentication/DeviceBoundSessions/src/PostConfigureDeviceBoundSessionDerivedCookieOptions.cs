@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
@@ -13,14 +14,14 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPostConfigureOptions<CookieAuthenticationOptions>
 {
     private readonly IOptions<DeviceBoundSessionSourceSchemes> _sourceSchemes;
-    private readonly IOptionsMonitor<CookieAuthenticationOptions> _cookieOptionsMonitor;
+    private readonly IServiceProvider _services;
 
     public PostConfigureDeviceBoundSessionDerivedCookieOptions(
         IOptions<DeviceBoundSessionSourceSchemes> sourceSchemes,
-        IOptionsMonitor<CookieAuthenticationOptions> cookieOptionsMonitor)
+        IServiceProvider services)
     {
         _sourceSchemes = sourceSchemes;
-        _cookieOptionsMonitor = cookieOptionsMonitor;
+        _services = services;
     }
 
     public void PostConfigure(string? name, CookieAuthenticationOptions options)
@@ -47,7 +48,7 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
 
     private void CopyFromSource(string sourceScheme, CookieAuthenticationOptions target)
     {
-        var source = _cookieOptionsMonitor.Get(sourceScheme);
+        var source = _services.GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>().Get(sourceScheme);
 
         // Copy cookie builder settings (preserving any name/path already set)
         var targetName = target.Cookie.Name;

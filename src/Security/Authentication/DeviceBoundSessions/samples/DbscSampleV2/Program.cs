@@ -3,7 +3,6 @@
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace DbscSampleV2;
 
@@ -45,22 +45,36 @@ public static class Program
 
 public class Startup
 {
-    private const string SourceScheme = "Application";
+    private readonly DbscDebugState _debug = new();
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton(_debug);
+
         services.AddAuthentication()
             // The source cookie scheme (long-lived sign-in cookie)
-            .AddCookie(SourceScheme, o =>
+            .AddCookie(DbscNames.Source, o =>
             {
-                o.Cookie.Name = ".AspNetCore.Application";
+                o.Cookie.Name = DbscNames.SourceCookie;
                 o.LoginPath = "/login";
                 o.ExpireTimeSpan = TimeSpan.FromDays(7);
             })
-            // The DBSC handler + refresh/session cookie schemes + policy scheme
-            .AddDeviceBoundSession(SourceScheme, o =>
+            // The DBSC handler + refresh/session cookie schemes + policy scheme.
+            // The session TTL is read live from the debug state so it can be changed at runtime.
+            .AddDeviceBoundSession(DbscNames.Source, o =>
             {
-                o.ShortLivedCookieExpiration = TimeSpan.FromSeconds(30);
+                o.ShortLivedCookieExpiration = _debug.SessionTtl;
+
+                // Exclude the debug dashboard's own endpoints from the DBSC session scope so that
+                // dashboard polling (/debug/state, /debug/log) is NOT treated as in-scope traffic.
+                // This keeps the browser from enforcing the bound cookie or triggering refreshes for
+                // the inspector itself, cleanly separating debugging requests from real test requests.
+                o.ScopeSpecifications.Add(new DeviceBoundSessionScopeRule
+                {
+                    Type = "exclude",
+                    Domain = "*",
+                    Path = "/debug",
+                });
             });
 
         services.AddRouting();
@@ -68,80 +82,70 @@ public class Startup
 
     public void Configure(IApplicationBuilder app)
     {
-        // Write all HTTP traffic to a HAR file
+        // Write all HTTP traffic to a HAR file (raw, for external tooling)
         var harPath = Path.Combine(AppContext.BaseDirectory, "dbsc-v2-traffic.har");
         Console.WriteLine($"[HAR] Writing traffic to: {harPath}");
         app.UseMiddleware<HarLoggingMiddleware>(harPath);
+
+        // Capture decoded exchanges for the live dashboard
+        app.UseMiddleware<DebugCaptureMiddleware>();
 
         app.UseRouting();
         app.UseAuthentication();
 
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapGet("/login", async context =>
+            endpoints.MapGet("/", async context =>
             {
-                context.Response.ContentType = "text/html";
-                await context.Response.WriteAsync("""
-                    <!DOCTYPE html>
-                    <html>
-                    <head><title>DBSC v2 Sample - Login</title></head>
-                    <body>
-                        <h1>Device Bound Session Credentials v2 - Test App</h1>
-                        <form method="post" action="/login">
-                            <label>Username: <input name="username" value="alice" /></label>
-                            <button type="submit">Sign In</button>
-                        </form>
-                    </body>
-                    </html>
-                    """);
+                context.Response.ContentType = "text/html; charset=utf-8";
+                await context.Response.WriteAsync(Dashboard.Html);
+            });
+
+            endpoints.MapGet("/login", context =>
+            {
+                context.Response.Redirect("/");
+                return Task.CompletedTask;
             });
 
             endpoints.MapPost("/login", async context =>
             {
                 var form = await context.Request.ReadFormAsync();
                 var username = form["username"].ToString();
-
                 if (string.IsNullOrEmpty(username))
                 {
-                    context.Response.Redirect("/login");
+                    context.Response.Redirect("/");
                     return;
                 }
 
-                var identity = new ClaimsIdentity(SourceScheme);
+                // Authorization gate (demo): only "alice" is allowed. Anyone else (e.g. "bob")
+                // fails login: we do NOT sign in (so no source cookie and no DBSC registration),
+                // and we redirect back to "/" so the browser stays on the dashboard, logged out.
+                if (!string.Equals(username, "alice", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.Redirect($"/?loginError={Uri.EscapeDataString(username)}");
+                    return;
+                }
+
+                // Apply a runtime-configurable session TTL before sign-in triggers registration.
+                if (int.TryParse(form["ttl"], out var ttlSeconds) && ttlSeconds is > 0 and <= 86400)
+                {
+                    _debug.SessionTtl = TimeSpan.FromSeconds(ttlSeconds);
+                    // Force the DBSC options to be rebuilt so the new TTL is picked up.
+                    context.RequestServices
+                        .GetRequiredService<IOptionsMonitorCache<DeviceBoundSessionOptions>>()
+                        .Clear();
+                }
+
+                var identity = new ClaimsIdentity(DbscNames.Source);
                 identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, username));
                 identity.AddClaim(new Claim(ClaimTypes.Name, username));
 
-                // Sign in to the source scheme.
                 await context.SignInAsync(
-                    SourceScheme,
+                    DbscNames.Source,
                     new ClaimsPrincipal(identity),
                     new AuthenticationProperties { IsPersistent = true });
 
                 context.Response.Redirect("/");
-            });
-
-            endpoints.MapGet("/", async context =>
-            {
-                if (context.User.Identity?.IsAuthenticated != true)
-                {
-                    context.Response.Redirect("/login");
-                    return;
-                }
-
-                var userName = context.User.Identity!.Name;
-                context.Response.ContentType = "text/html";
-                await context.Response.WriteAsync(
-                    "<!DOCTYPE html><html><head><title>DBSC v2</title></head><body>" +
-                    $"<h1>Welcome, {userName}!</h1>" +
-                    "<p>Authenticated with Device Bound Session Credentials (v2 architecture).</p>" +
-                    "<p><a href='/api/time'>API endpoint</a> | <a href='/signout'>Sign Out</a></p>" +
-                    "<h2>Auto-refresh (every 10s):</h2><pre id='log'></pre>" +
-                    "<script>" +
-                    "const log=document.getElementById('log');" +
-                    "async function f(){try{const r=await fetch('/api/time');const t=await r.text();" +
-                    "log.textContent+='['+new Date().toLocaleTimeString()+'] '+r.status+' - '+t+'\\n';" +
-                    "}catch(e){log.textContent+='Error: '+e.message+'\\n';}}" +
-                    "setInterval(f,10000);f();</script></body></html>");
             });
 
             endpoints.MapGet("/api/time", async context =>
@@ -152,15 +156,61 @@ public class Startup
                     await context.Response.WriteAsync("Unauthorized");
                     return;
                 }
-                await context.Response.WriteAsync($"Server time: {DateTime.UtcNow:O} | User: {context.User.Identity!.Name}");
+                await context.Response.WriteAsync($"Server time {DateTime.UtcNow:HH:mm:ss.fff} | user {context.User.Identity!.Name}");
             });
 
             endpoints.MapGet("/signout", async context =>
             {
-                // Sign out all schemes
-                await context.SignOutAsync(SourceScheme);
-                context.Response.Redirect("/login");
+                await SignOutAllAsync(context);
+                context.Response.Redirect("/");
+            });
+
+            // Full reset: delete every cookie AND clear the captured log to observe a fresh registration.
+            endpoints.MapGet("/clear", async context =>
+            {
+                await SignOutAllAsync(context);
+                _debug.ClearLog();
+                context.Response.Redirect("/");
+            });
+
+            endpoints.MapPost("/debug/clearlog", context =>
+            {
+                _debug.ClearLog();
+                context.Response.StatusCode = 204;
+                return Task.CompletedTask;
+            });
+
+            endpoints.MapGet("/debug/state", async context =>
+            {
+                var cookies = DbscDecoder.DecodeRequestCookies(context);
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    authenticated = context.User.Identity?.IsAuthenticated == true,
+                    user = context.User.Identity?.Name,
+                    ttlSeconds = _debug.SessionTtl.TotalSeconds,
+                    cookies,
+                });
+            });
+
+            endpoints.MapGet("/debug/log", async context =>
+            {
+                long since = 0;
+                if (long.TryParse(context.Request.Query["since"], out var s))
+                {
+                    since = s;
+                }
+                // Long poll: hold the request open until the log changes or ~60s elapses.
+                var (lastId, entries) = await _debug.WaitForChangesAsync(
+                    since, TimeSpan.FromSeconds(60), context.RequestAborted);
+                await context.Response.WriteAsJsonAsync(new { lastId, entries });
             });
         });
+    }
+
+    private static async Task SignOutAllAsync(HttpContext context)
+    {
+        await context.SignOutAsync(DbscNames.Source);
+        await context.SignOutAsync(DbscNames.Refresh);
+        await context.SignOutAsync(DbscNames.Session);
     }
 }

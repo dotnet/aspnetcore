@@ -6,9 +6,11 @@ using System.Text.Json.Serialization;
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
 /// <summary>
-/// Represents the DBSC session configuration returned to the browser.
+/// Represents the DBSC JSON session instructions returned to the browser during registration
+/// and (optionally) refresh. Corresponds to the "JSON Session Instruction Format" defined in
+/// W3C Device Bound Session Credentials §9.6.
 /// </summary>
-public sealed class DeviceBoundSessionConfiguration
+public sealed class SessionInstruction
 {
     /// <summary>
     /// Gets or sets the session identifier.
@@ -26,11 +28,11 @@ public sealed class DeviceBoundSessionConfiguration
     /// Gets or sets the session scope.
     /// </summary>
     [JsonPropertyName("scope")]
-    public DeviceBoundSessionScopeConfiguration? Scope { get; set; }
+    public SessionScope? Scope { get; set; }
 
     /// <summary>
     /// Gets or sets the session credentials.
     /// </summary>
     [JsonPropertyName("credentials")]
-    public List<DeviceBoundSessionCredentialConfiguration>? Credentials { get; set; }
+    public List<SessionCredential>? Credentials { get; set; }
 }

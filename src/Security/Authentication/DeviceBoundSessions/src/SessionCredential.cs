@@ -6,9 +6,10 @@ using System.Text.Json.Serialization;
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
 /// <summary>
-/// Represents a credential in the DBSC session configuration.
+/// Represents a credential in the DBSC session instructions. Corresponds to the "JSON Session
+/// Credential Format" defined in W3C Device Bound Session Credentials §9.9.
 /// </summary>
-public sealed class DeviceBoundSessionCredentialConfiguration
+public sealed class SessionCredential
 {
     /// <summary>
     /// Gets or sets the credential type (always "cookie").

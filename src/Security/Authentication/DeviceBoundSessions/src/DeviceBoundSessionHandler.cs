@@ -134,17 +134,18 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         // 3. Delete the long-lived source cookie (exchange complete)
         await Context.SignOutAsync(Options.RegistrationSourceScheme);
 
-        // Build and return session configuration JSON
-        var config = BuildSessionConfiguration(sessionId);
+        // Build and return session instructions JSON.
+        // NOTE: We intentionally do NOT emit a Secure-Session-Challenge header on this 200 response.
+        // The canonical DBSC test server (drubery/dbsc-test-server) only issues a challenge on a 403
+        // (the "demand proof" path). Pre-seeding a challenge on every success response makes Chrome
+        // proactively refresh to consume it, producing a post-registration refresh storm. The next
+        // refresh will receive its challenge via the 403 + Secure-Session-Challenge handshake instead.
+        var instructions = BuildSessionInstruction(sessionId);
 
         Response.StatusCode = StatusCodes.Status200OK;
         Response.ContentType = "application/json";
 
-        // Include a challenge for the next refresh
-        var challenge = GenerateRefreshChallenge(principal, sessionId);
-        Response.Headers["Secure-Session-Challenge"] = $"\"{challenge}\";id=\"{sessionId}\"";
-
-        await JsonSerializer.SerializeAsync(Response.Body, config, DeviceBoundSessionJsonContext.Default.DeviceBoundSessionConfiguration, Context.RequestAborted);
+        await JsonSerializer.SerializeAsync(Response.Body, instructions, DeviceBoundSessionJsonContext.Default.SessionInstruction, Context.RequestAborted);
     }
 
     private async Task HandleRefreshAsync()
@@ -212,7 +213,12 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         if (jwtResult.Challenge is null || !ValidateRefreshChallenge(jwtResult.Challenge, authResult.Principal, sessionIdHeader))
         {
             Logger.LogWarning("DBSC refresh: stale or invalid challenge for session {SessionId}.", sessionIdHeader);
+            // Re-issue a fresh challenge so the client can immediately retry with a valid proof
+            // (the DBSC 403 + Secure-Session-Challenge handshake). Without this the client would
+            // keep retrying the same stale challenge, producing a burst of 403s.
+            var retryChallenge = GenerateRefreshChallenge(authResult.Principal, sessionIdHeader);
             Response.StatusCode = StatusCodes.Status403Forbidden;
+            Response.Headers["Secure-Session-Challenge"] = $"\"{retryChallenge}\";id=\"{sessionIdHeader}\"";
             return;
         }
 
@@ -225,25 +231,28 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         };
         await Context.SignInAsync(Options.SessionScheme, authResult.Principal, sessionProperties);
 
-        // Return session configuration with new challenge
-        var config = BuildSessionConfiguration(sessionIdHeader);
-        var nextChallenge = GenerateRefreshChallenge(authResult.Principal, sessionIdHeader);
+        // NOTE: Returning the Session Instruction (config JSON) on a refresh 200 is OPTIONAL per the
+        // DBSC spec — the browser already has the instructions from registration, and we verified the
+        // session keeps working when the refresh body is empty. We currently re-send it every time for
+        // simplicity. A future optimization could omit it on the common path and only send it when the
+        // instructions actually need to change — e.g. to update scope/credentials, narrow access, or
+        // force a logout/cleanup everywhere by returning updated (or session-ending) instructions.
+        var instructions = BuildSessionInstruction(sessionIdHeader);
 
         Response.StatusCode = StatusCodes.Status200OK;
         Response.ContentType = "application/json";
-        Response.Headers["Secure-Session-Challenge"] = $"\"{nextChallenge}\";id=\"{sessionIdHeader}\"";
 
-        await JsonSerializer.SerializeAsync(Response.Body, config, DeviceBoundSessionJsonContext.Default.DeviceBoundSessionConfiguration, Context.RequestAborted);
+        await JsonSerializer.SerializeAsync(Response.Body, instructions, DeviceBoundSessionJsonContext.Default.SessionInstruction, Context.RequestAborted);
     }
 
-    private DeviceBoundSessionConfiguration BuildSessionConfiguration(string sessionId)
+    private SessionInstruction BuildSessionInstruction(string sessionId)
     {
         var origin = $"{Request.Scheme}://{Request.Host}";
 
-        List<DeviceBoundSessionScopeRuleConfiguration>? scopeRules = null;
+        List<SessionScopeRule>? scopeRules = null;
         if (Options.ScopeSpecifications.Count > 0)
         {
-            scopeRules = Options.ScopeSpecifications.Select(r => new DeviceBoundSessionScopeRuleConfiguration
+            scopeRules = Options.ScopeSpecifications.Select(r => new SessionScopeRule
             {
                 Type = r.Type,
                 Domain = r.Domain,
@@ -255,19 +264,19 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         // We need to resolve it from the cookie options for that scheme
         var sessionCookieName = ResolveSessionCookieName();
 
-        return new DeviceBoundSessionConfiguration
+        return new SessionInstruction
         {
             SessionIdentifier = sessionId,
             RefreshUrl = Options.RefreshPath.Value,
-            Scope = new DeviceBoundSessionScopeConfiguration
+            Scope = new SessionScope
             {
                 Origin = origin,
                 IncludeSite = Options.IncludeSite,
                 ScopeSpecification = scopeRules,
             },
-            Credentials = new List<DeviceBoundSessionCredentialConfiguration>
+            Credentials = new List<SessionCredential>
             {
-                new DeviceBoundSessionCredentialConfiguration
+                new SessionCredential
                 {
                     Type = "cookie",
                     Name = sessionCookieName,

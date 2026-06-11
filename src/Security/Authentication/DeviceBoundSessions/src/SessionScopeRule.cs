@@ -6,9 +6,10 @@ using System.Text.Json.Serialization;
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
 /// <summary>
-/// Represents a scope specification rule in the DBSC session configuration.
+/// Represents a scope specification rule in the DBSC session instructions. Corresponds to the
+/// "JSON Session Scope Rule Format" defined in W3C Device Bound Session Credentials §9.8.
 /// </summary>
-public sealed class DeviceBoundSessionScopeRuleConfiguration
+public sealed class SessionScopeRule
 {
     /// <summary>
     /// Gets or sets the type ("include" or "exclude").
