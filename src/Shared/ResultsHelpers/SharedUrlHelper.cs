@@ -30,6 +30,10 @@ internal static class SharedUrlHelper
         return contentPath;
     }
 
+    // SECURITY: This is the open-redirect guard used by MVC URL helpers, Results.LocalRedirect,
+    // and CookieAuthenticationHandler. Changes to the accepted/rejected shapes (control characters,
+    // "//", "/\", "~/", etc.) must be reviewed against all call sites and the existing test corpus.
+    // Do not relax any check without security review.
     internal static bool IsLocalUrl([NotNullWhen(true)] string? url)
     {
         if (string.IsNullOrEmpty(url))
