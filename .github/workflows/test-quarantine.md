@@ -517,7 +517,9 @@ on:
                 return None, 0
             raw, _ = fetch(link, raw=True, timeout=180)
             text = raw.decode("utf-8", "replace")
-            return extract_fail_blocks(text), len(text)
+            # Return the raw byte length: it feeds the byte-denominated download budget
+            # and the reported log_bytes, whereas len(text) is a decoded character count.
+            return extract_fail_blocks(text), len(raw)
 
 
         def sizeof(obj):
