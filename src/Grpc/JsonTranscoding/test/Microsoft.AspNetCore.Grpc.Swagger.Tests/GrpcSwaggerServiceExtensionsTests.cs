@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Count;
 using Greet;
 using Microsoft.AspNetCore.Builder;
@@ -45,7 +46,7 @@ public class GrpcSwaggerServiceExtensionsTests
         Assert.Single(swagger.Paths);
 
         var path = swagger.Paths["/v1/greeter/{name}"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Get);
         Assert.Equal("OK", operation.Responses["200"].Description);
         Assert.Equal("Error", operation.Responses["default"].Description);
     }
@@ -79,13 +80,13 @@ public class GrpcSwaggerServiceExtensionsTests
         // Assert 1
         var swagger = swaggerGenerator.GetSwagger("v1");
         Assert.Single(swagger.Paths);
-        Assert.True(swagger.Paths["/v1/greeter/{name}"].Operations.ContainsKey(OperationType.Get));
+        Assert.True(swagger.Paths["/v1/greeter/{name}"].Operations.ContainsKey(HttpMethod.Get));
 
         // Assert 2
         swagger = swaggerGenerator.GetSwagger("v2");
         Assert.Equal(2, swagger.Paths.Count);
-        Assert.True(swagger.Paths["/v1/greeter/{name}"].Operations.ContainsKey(OperationType.Get));
-        Assert.True(swagger.Paths["/v1/add/{value1}/{value2}"].Operations.ContainsKey(OperationType.Get));
+        Assert.True(swagger.Paths["/v1/greeter/{name}"].Operations.ContainsKey(HttpMethod.Get));
+        Assert.True(swagger.Paths["/v1/add/{value1}/{value2}"].Operations.ContainsKey(HttpMethod.Get));
     }
 
     private class GreeterService : Greeter.GreeterBase

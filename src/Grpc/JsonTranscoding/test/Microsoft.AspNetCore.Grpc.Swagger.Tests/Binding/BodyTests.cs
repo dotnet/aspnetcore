@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Services;
 using Microsoft.OpenApi;
@@ -25,14 +26,14 @@ public class BodyTests
 
         // Assert
         var path = swagger.Paths["/v1/body1"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Null(bodySchema.Reference);
-        Assert.Equal("array", bodySchema.Type);
-        Assert.Equal("RequestBody", bodySchema.Items.Reference.Id);
+        Assert.Null(OpenApiTestHelpers.GetSchemaId(bodySchema));
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Array, bodySchema);
+        Assert.Equal("RequestBody", OpenApiTestHelpers.GetSchemaId(bodySchema.Items));
 
-        var messageSchema = swagger.ResolveReference(bodySchema.Items.Reference);
+        var messageSchema = OpenApiTestHelpers.ResolveSchema(swagger, bodySchema.Items);
         Assert.NotNull(messageSchema);
     }
 
@@ -44,12 +45,12 @@ public class BodyTests
 
         // Assert
         var path = swagger.Paths["/v1/body2"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Null(bodySchema.Reference);
-        Assert.Equal("object", bodySchema.Type);
-        Assert.Equal("integer", bodySchema.AdditionalProperties.Type);
+        Assert.Null(OpenApiTestHelpers.GetSchemaId(bodySchema));
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, bodySchema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Integer, bodySchema.AdditionalProperties);
     }
 
     [Fact]
@@ -60,10 +61,10 @@ public class BodyTests
 
         // Assert
         var path = swagger.Paths["/v1/body3"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Equal("RequestBody", bodySchema.Reference.Id);
+        Assert.Equal("RequestBody", OpenApiTestHelpers.GetSchemaId(bodySchema));
     }
 
     [Fact]
@@ -74,9 +75,9 @@ public class BodyTests
 
         // Assert
         var path = swagger.Paths["/v1/body4"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.RequestBody.Content["application/json"].Schema;
-        Assert.Equal("RequestOne", bodySchema.Reference.Id);
+        Assert.Equal("RequestOne", OpenApiTestHelpers.GetSchemaId(bodySchema));
     }
 }

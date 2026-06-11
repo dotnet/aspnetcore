@@ -7,7 +7,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Shared;
 using Messages;
 using Microsoft.AspNetCore.Grpc.Swagger.Internal;
-using Microsoft.OpenApi.Any;
+using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Grpc.Swagger.Tests;
 
 public class SchemaGeneratorIntegrationTests
 {
-    private (OpenApiSchema Schema, SchemaRepository SchemaRepository) GenerateSchema(System.Type type, IDescriptor descriptor)
+    private (IOpenApiSchema Schema, SchemaRepository SchemaRepository) GenerateSchema(System.Type type, IDescriptor descriptor)
     {
         var descriptorRegistry = new DescriptorRegistry();
         descriptorRegistry.RegisterFileDescriptor(descriptor.File);
@@ -36,15 +36,15 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(EnumMessage), EnumMessage.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Single(schema.Properties);
 
-        var enumSchema = repository.Schemas[schema.Properties["enumValue"].Reference.Id];
-        Assert.Equal("string", enumSchema.Type);
+        var enumSchema = OpenApiTestHelpers.ResolveSchema(repository, schema.Properties["enumValue"]);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, enumSchema);
         Assert.Equal(5, enumSchema.Enum.Count);
 
-        var enumValues = enumSchema.Enum.Select(e => ((OpenApiString)e).Value).OrderBy(s => s).ToList();
+        var enumValues = enumSchema.Enum.Select(e => e.GetValue<string>()).OrderBy(s => s).ToList();
         Assert.Collection(enumValues,
             v => Assert.Equal("BAR", v),
             v => Assert.Equal("BAZ", v),
@@ -60,11 +60,11 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(EnumWithoutMessage), MessagesReflection.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("string", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema);
         Assert.Equal(5, schema.Enum.Count);
 
-        var enumValues = schema.Enum.Select(e => ((OpenApiString)e).Value).OrderBy(s => s).ToList();
+        var enumValues = schema.Enum.Select(e => e.GetValue<string>()).OrderBy(s => s).ToList();
         Assert.Collection(enumValues,
             v => Assert.Equal("ENUM_WITHOUT_MESSAGE_BAR", v),
             v => Assert.Equal("ENUM_WITHOUT_MESSAGE_BAZ", v),
@@ -80,14 +80,14 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(HelloReply), HelloReply.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Equal(2, schema.Properties.Count);
-        Assert.Equal("string", schema.Properties["message"].Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["message"]);
         var valuesSchema = schema.Properties["values"];
-        Assert.Equal("array", valuesSchema.Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Array, valuesSchema);
         Assert.NotNull(valuesSchema.Items);
-        Assert.Equal("string", valuesSchema.Items.Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, valuesSchema.Items);
     }
 
     [Fact]
@@ -97,10 +97,10 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(RecursiveMessage), RecursiveMessage.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Single(schema.Properties);
-        Assert.Equal("RecursiveMessage", schema.Properties["child"].Reference.Id);
+        Assert.Equal("RecursiveMessage", OpenApiTestHelpers.GetSchemaId(schema.Properties["child"]));
     }
 
     [Fact]
@@ -110,11 +110,11 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(BytesMessage), BytesMessage.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Equal(2, schema.Properties.Count);
-        Assert.Equal("string", schema.Properties["bytesValue"].Type);
-        Assert.Equal("string", schema.Properties["bytesNullableValue"].Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["bytesValue"]);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["bytesNullableValue"]);
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class SchemaGeneratorIntegrationTests
         var (schema, _) = GenerateSchema(typeof(ListValue), ListValue.Descriptor);
 
         // Assert
-        Assert.Equal("array", schema.Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Array, schema);
         Assert.NotNull(schema.Items);
         Assert.Null(schema.Items.Type);
     }
@@ -138,11 +138,11 @@ public class SchemaGeneratorIntegrationTests
         _ = repository.Schemas.Count;
 
         // Assert
-        Assert.Equal("Struct", schema.Reference.Id);
+        Assert.Equal("Struct", OpenApiTestHelpers.GetSchemaId(schema));
 
-        var resolvedSchema = repository.Schemas[schema.Reference.Id];
+        var resolvedSchema = OpenApiTestHelpers.ResolveSchema(repository, schema);
 
-        Assert.Equal("object", resolvedSchema.Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, resolvedSchema);
         Assert.Empty(resolvedSchema.Properties);
         Assert.NotNull(resolvedSchema.AdditionalProperties);
         Assert.Null(resolvedSchema.AdditionalProperties.Type);
@@ -155,12 +155,12 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(Any), Any.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.NotNull(schema.AdditionalProperties);
         Assert.Null(schema.AdditionalProperties.Type);
         Assert.Single(schema.Properties);
-        Assert.Equal("string", schema.Properties["@type"].Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["@type"]);
     }
 
     [Fact]
@@ -170,13 +170,13 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(OneOfMessage), OneOfMessage.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Equal(4, schema.Properties.Count);
-        Assert.Equal("string", schema.Properties["firstOne"].Type);
-        Assert.Equal("string", schema.Properties["firstTwo"].Type);
-        Assert.Equal("string", schema.Properties["secondOne"].Type);
-        Assert.Equal("string", schema.Properties["secondTwo"].Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["firstOne"]);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["firstTwo"]);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["secondOne"]);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["secondTwo"]);
         Assert.Null(schema.AdditionalProperties);
     }
 
@@ -187,11 +187,11 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(MapMessage), MapMessage.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Single(schema.Properties);
-        Assert.Equal("object", schema.Properties["mapValue"].Type);
-        Assert.Equal("number", schema.Properties["mapValue"].AdditionalProperties.Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema.Properties["mapValue"]);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Number, schema.Properties["mapValue"].AdditionalProperties);
         Assert.Equal("double", schema.Properties["mapValue"].AdditionalProperties.Format);
     }
 
@@ -202,9 +202,9 @@ public class SchemaGeneratorIntegrationTests
         var (schema, repository) = GenerateSchema(typeof(FieldMaskMessage), FieldMaskMessage.Descriptor);
 
         // Assert
-        schema = repository.Schemas[schema.Reference.Id];
-        Assert.Equal("object", schema.Type);
+        schema = OpenApiTestHelpers.ResolveSchema(repository, schema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, schema);
         Assert.Single(schema.Properties);
-        Assert.Equal("string", schema.Properties["fieldMaskValue"].Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, schema.Properties["fieldMaskValue"]);
     }
 }

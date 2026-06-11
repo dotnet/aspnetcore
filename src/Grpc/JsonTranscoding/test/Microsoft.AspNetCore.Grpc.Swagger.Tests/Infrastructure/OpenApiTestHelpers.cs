@@ -1,13 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Writers;
 using Swashbuckle.AspNetCore.Swagger;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 
@@ -45,5 +47,60 @@ internal static class OpenApiTestHelpers
         testOutputHelper.WriteLine(outputString.ToString());
 
         return swagger;
+    }
+
+    public static OpenApiOperation GetOperation(IOpenApiPathItem path, HttpMethod method)
+    {
+        Assert.True(path.Operations.TryGetValue(method, out var operation));
+        return operation;
+    }
+
+    public static string GetSchemaId(IOpenApiSchema schema)
+    {
+        return schema switch
+        {
+            OpenApiSchemaReference reference => reference.Reference.Id,
+            OpenApiSchema openApiSchema => openApiSchema.Id,
+            _ => null,
+        };
+    }
+
+    public static IOpenApiSchema ResolveSchema(IOpenApiSchema schema)
+    {
+        return schema switch
+        {
+            OpenApiSchemaReference reference => reference.RecursiveTarget is not null ? reference.RecursiveTarget : reference,
+            OpenApiSchema openApiSchema => openApiSchema,
+            _ => throw new InvalidOperationException($"Unable to resolve schema type '{schema.GetType().FullName}'."),
+        };
+    }
+
+    public static IOpenApiSchema ResolveSchema(OpenApiDocument document, IOpenApiSchema schema)
+    {
+        var schemaId = GetSchemaId(schema);
+
+        if (schemaId is not null && document.Components.Schemas.TryGetValue(schemaId, out var resolvedSchema))
+        {
+            return resolvedSchema;
+        }
+
+        return ResolveSchema(schema);
+    }
+
+    public static IOpenApiSchema ResolveSchema(SchemaRepository repository, IOpenApiSchema schema)
+    {
+        var schemaId = GetSchemaId(schema);
+
+        if (schemaId is not null && repository.Schemas.TryGetValue(schemaId, out var resolvedSchema))
+        {
+            return resolvedSchema;
+        }
+
+        return ResolveSchema(schema);
+    }
+
+    public static void AssertSchemaType(JsonSchemaType expected, IOpenApiSchema schema)
+    {
+        Assert.Equal(expected, schema.Type);
     }
 }
