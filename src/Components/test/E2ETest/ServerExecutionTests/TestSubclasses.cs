@@ -100,7 +100,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     {
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
