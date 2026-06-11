@@ -105,7 +105,6 @@ public class ValidationMessageStoreTest
         //    - Expression<Func<object>> requires boxing string? to object
         //    - Warns: "Possible null reference return" because the expression return type
         //      is string? but the parameter expects Func<object>
-        //
         var model = new TestModel();
         var editContext = new EditContext(model);
         var messages = new ValidationMessageStore(editContext);
@@ -133,7 +132,6 @@ public class ValidationMessageStoreTest
         //   public void Add<TField>(Expression<Func<TField>> accessor, IEnumerable<string> messages)
         //     => Add(FieldIdentifier.Create(accessor), messages);
         // TField is correctly inferred as string?, avoiding the warning.
-        //
         var model = new TestModel();
         var editContext = new EditContext(model);
         var messages = new ValidationMessageStore(editContext);
