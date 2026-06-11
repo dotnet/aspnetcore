@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-#if NET
-using System.Buffers;
-#endif
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,13 +12,8 @@ namespace Microsoft.Extensions.FileProviders.Embedded.Manifest;
 
 internal sealed class EmbeddedFilesManifest
 {
-#if NET
-    private static readonly SearchValues<char> _invalidFileNameChars = SearchValues.Create(
-        Path.GetInvalidFileNameChars().Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray());
-#else
     private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
         .Where(c => c != Path.DirectorySeparatorChar && c != Path.AltDirectorySeparatorChar).ToArray();
-#endif
 
     private static readonly char[] _separators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 
@@ -92,10 +84,5 @@ internal sealed class EmbeddedFilesManifest
         throw new InvalidOperationException($"Invalid path: '{path}'");
     }
 
-    private static bool HasInvalidPathChars(string path) =>
-#if NET
-        path.AsSpan().IndexOfAny(_invalidFileNameChars) >= 0;
-#else
-        path.IndexOfAny(_invalidFileNameChars) != -1;
-#endif
+    private static bool HasInvalidPathChars(string path) => path.IndexOfAny(_invalidFileNameChars) != -1;
 }
