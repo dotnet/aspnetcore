@@ -4,7 +4,7 @@
 using Greet;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Services;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.XmlComments;
@@ -25,8 +25,9 @@ public class XmlDocumentationIntegrationTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<XmlDocServiceWithComments>(_testOutputHelper);
 
         // Assert
-        Assert.Equal("XmlDoc", swagger.Tags[0].Name);
-        Assert.Equal("XmlDocServiceWithComments XML comment!", swagger.Tags[0].Description);
+        var tag = Assert.Single(swagger.Tags);
+        Assert.Equal("XmlDoc", tag.Name);
+        Assert.Equal("XmlDocServiceWithComments XML comment!", tag.Description);
     }
 
     [Fact]
@@ -36,8 +37,9 @@ public class XmlDocumentationIntegrationTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<XmlDocService>(_testOutputHelper);
 
         // Assert
-        Assert.Equal("XmlDoc", swagger.Tags[0].Name);
-        Assert.Equal("XmlDoc!", swagger.Tags[0].Description);
+        var tag = Assert.Single(swagger.Tags);
+        Assert.Equal("XmlDoc", tag.Name);
+        Assert.Equal("XmlDoc!", tag.Description);
     }
 
     [Fact]

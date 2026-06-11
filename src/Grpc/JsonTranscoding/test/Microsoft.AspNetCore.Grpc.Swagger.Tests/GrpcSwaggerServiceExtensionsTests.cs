@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests;

@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Services;
 using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.Binding;

@@ -8,7 +8,7 @@ using Grpc.Shared;
 using Messages;
 using Microsoft.AspNetCore.Grpc.Swagger.Internal;
 using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests;

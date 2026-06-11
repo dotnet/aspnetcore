@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Grpc.Swagger.Internal.XmlComments;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Services;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.XmlComments;
@@ -40,8 +40,8 @@ public class XmlCommentsDocumentFilterTests
 
         Subject().Apply(document, filterContext);
 
-        Assert.Single(document.Tags);
-        Assert.Equal(expectedDescription, document.Tags[0].Description);
+        var tag = Assert.Single(document.Tags);
+        Assert.Equal(expectedDescription, tag.Description);
 
         static ApiDescription CreateApiDescription(Type serviceType)
         {

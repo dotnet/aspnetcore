@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Microsoft.OpenApi.Writers;
 using Swashbuckle.AspNetCore.Swagger;
 using Xunit.Abstractions;
