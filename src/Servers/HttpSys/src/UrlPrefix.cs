@@ -105,7 +105,7 @@ public class UrlPrefix
         string path;
         var whole = prefix ?? string.Empty;
 
-        var schemeDelimiterEnd = whole.AsSpan().IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+        var schemeDelimiterEnd = whole.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
         if (schemeDelimiterEnd < 0)
         {
             throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
