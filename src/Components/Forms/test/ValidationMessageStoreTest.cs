@@ -106,15 +106,13 @@ public class ValidationMessageStoreTest
         //    - Warns: "Possible null reference return" because the expression return type
         //      is string? but the parameter expects Func<object>
         //
-        // Arrange
         var model = new TestModel();
         var editContext = new EditContext(model);
         var messages = new ValidationMessageStore(editContext);
 
-        // Act - Uses the generic Add<TField> overload which correctly infers TField as string?
+        // Uses the generic Add<TField> overload which correctly infers TField as string?
         messages.Add(() => model.Text, "This value is not valid");
 
-        // Assert
         var fieldIdentifier = FieldIdentifier.Create(() => model.Text);
         Assert.Equal(new[] { "This value is not valid" }, messages[fieldIdentifier]);
     }
@@ -136,16 +134,14 @@ public class ValidationMessageStoreTest
         //     => Add(FieldIdentifier.Create(accessor), messages);
         // TField is correctly inferred as string?, avoiding the warning.
         //
-        // Arrange
         var model = new TestModel();
         var editContext = new EditContext(model);
         var messages = new ValidationMessageStore(editContext);
         var validationMessages = new[] { "First error", "Second error" };
 
-        // Act - Uses the generic Add<TField> overload
+        // Uses the generic Add<TField> overload
         messages.Add(() => model.Text, validationMessages);
 
-        // Assert
         var fieldIdentifier = FieldIdentifier.Create(() => model.Text);
         Assert.Equal(validationMessages, messages[fieldIdentifier]);
     }
