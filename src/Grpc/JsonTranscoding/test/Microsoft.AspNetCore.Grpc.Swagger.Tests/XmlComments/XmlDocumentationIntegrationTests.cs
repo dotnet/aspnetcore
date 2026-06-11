@@ -28,6 +28,7 @@ public class XmlDocumentationIntegrationTests
         // Assert
         var tag = Assert.Single(swagger.Tags);
         Assert.Equal("XmlDoc", tag.Name);
+        // Swashbuckle 10.2.1 no longer applies service-level XML comments to the generated tag description.
         Assert.Null(tag.Description);
     }
 
@@ -40,6 +41,7 @@ public class XmlDocumentationIntegrationTests
         // Assert
         var tag = Assert.Single(swagger.Tags);
         Assert.Equal("XmlDoc", tag.Name);
+        // Swashbuckle 10.2.1 no longer applies service-level proto comments to the generated tag description.
         Assert.Null(tag.Description);
     }
 

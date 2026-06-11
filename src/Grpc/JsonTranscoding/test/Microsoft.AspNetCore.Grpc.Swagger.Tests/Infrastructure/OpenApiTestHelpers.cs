@@ -61,7 +61,7 @@ internal static class OpenApiTestHelpers
         {
             OpenApiSchemaReference reference => reference.Reference.Id,
             OpenApiSchema openApiSchema => openApiSchema.Id,
-            _ => null,
+            _ => throw new InvalidOperationException($"Unable to get a schema id for schema type '{schema.GetType().FullName}'."),
         };
     }
 
