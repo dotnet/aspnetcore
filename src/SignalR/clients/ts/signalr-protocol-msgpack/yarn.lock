@@ -29,29 +29,31 @@ eventsource@^2.0.2:
   integrity sha1-dt/MApMPsv8zlSC20pDaVzqehQg=
 
 fetch-cookie@^2.0.3:
-  version "2.1.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/fetch-cookie/-/fetch-cookie-2.1.0.tgz#6e127909912f9e527533b045aab555c06b33801b"
-  integrity sha1-bhJ5CZEvnlJ1M7BFqrVVwGszgBs=
+  version "2.2.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/fetch-cookie/-/fetch-cookie-2.2.0.tgz#01086b6b5b1c3e08f15ffd8647b02ca100377365"
+  integrity sha1-AQhra1scPgjxX/2GR7AsoQA3c2U=
   dependencies:
     set-cookie-parser "^2.4.8"
     tough-cookie "^4.0.0"
 
 node-fetch@^2.6.7:
-  version "2.6.9"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/node-fetch/-/node-fetch-2.6.9.tgz#7c7f744b5cc6eb5fd404e0c7a9fec630a55657e6"
-  integrity sha1-fH90S1zG61/UBODHqf7GMKVWV+Y=
+  version "2.7.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
+  integrity sha1-0PD6bj4twdJ+/NitmdVQvalNGH0=
   dependencies:
     whatwg-url "^5.0.0"
 
 psl@^1.1.33:
-  version "1.9.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/psl/-/psl-1.9.0.tgz#d0df2a137f00794565fcaf3b2c00cd09f8d5a5a7"
-  integrity sha1-0N8qE38AeUVl/K87LADNCfjVpac=
+  version "1.15.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/psl/-/psl-1.15.0.tgz#bdace31896f1d97cec6a79e8224898ce93d974c6"
+  integrity sha1-vazjGJbx2XzsannoIkiYzpPZdMY=
+  dependencies:
+    punycode "^2.3.1"
 
-punycode@^2.1.1:
-  version "2.3.0"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/punycode/-/punycode-2.3.0.tgz#f67fa67c94da8f4d0cfff981aee4118064199b8f"
-  integrity sha1-9n+mfJTaj00M//mBruQRgGQZm48=
+punycode@^2.1.1, punycode@^2.3.1:
+  version "2.3.1"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/punycode/-/punycode-2.3.1.tgz#027422e2faec0b25e1549c3e1bd8309b9133b6e5"
+  integrity sha1-AnQi4vrsCyXhVJw+G9gwm5EztuU=
 
 querystringify@^2.1.1:
   version "2.2.0"
@@ -64,14 +66,14 @@ requires-port@^1.0.0:
   integrity sha1-kl0mAdOaxIXgkc8NpcbmlNw9yv8=
 
 set-cookie-parser@^2.4.8:
-  version "2.5.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/set-cookie-parser/-/set-cookie-parser-2.5.1.tgz#ddd3e9a566b0e8e0862aca974a6ac0e01349430b"
-  integrity sha1-3dPppWaw6OCGKsqXSmrA4BNJQws=
+  version "2.7.2"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/set-cookie-parser/-/set-cookie-parser-2.7.2.tgz#ccd08673a9ae5d2e44ea2a2de25089e67c7edf68"
+  integrity sha1-zNCGc6muXS5E6iot4lCJ5nx+32g=
 
 tough-cookie@^4.0.0:
-  version "4.1.2"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/tough-cookie/-/tough-cookie-4.1.2.tgz#e53e84b85f24e0b65dd526f46628db6c85f6b874"
-  integrity sha1-5T6EuF8k4LZd1Sb0ZijbbIX2uHQ=
+  version "4.1.4"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/tough-cookie/-/tough-cookie-4.1.4.tgz#945f1461b45b5a8c76821c33ea49c3ac192c1b36"
+  integrity sha1-lF8UYbRbWox2ghwz6knDrBksGzY=
   dependencies:
     psl "^1.1.33"
     punycode "^2.1.1"
@@ -109,7 +111,7 @@ whatwg-url@^5.0.0:
     tr46 "~0.0.3"
     webidl-conversions "^3.0.0"
 
-ws@>=7.4.6, ws@^7.4.5:
-  version "8.12.1"
-  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-8.12.1.tgz#c51e583d79140b5e42e39be48c934131942d4a8f"
-  integrity sha1-xR5YPXkUC15C45vkjJNBMZQtSo8=
+ws@>=7.4.6, ws@^7.5.10:
+  version "8.21.0"
+  resolved "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public-npm/npm/registry/ws/-/ws-8.21.0.tgz#012e413fc07429945121b0c153158c4343086951"
+  integrity sha1-AS5BP8B0KZRRIbDBUxWMQ0MIaVE=
