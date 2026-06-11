@@ -105,19 +105,19 @@ public class UrlPrefix
         string path;
         var whole = prefix ?? string.Empty;
 
-        var schemeDelimiterEnd = whole.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+        var schemeDelimiterEnd = whole.AsSpan().IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
         if (schemeDelimiterEnd < 0)
         {
             throw new FormatException("Invalid prefix, missing scheme separator: " + prefix);
         }
         var hostDelimiterStart = schemeDelimiterEnd + Uri.SchemeDelimiter.Length;
 
-        var pathDelimiterStart = whole.IndexOf("/", hostDelimiterStart, StringComparison.Ordinal);
+        var pathDelimiterStart = whole.IndexOf('/', hostDelimiterStart);
         if (pathDelimiterStart < 0)
         {
             pathDelimiterStart = whole.Length;
         }
-        var hostDelimiterEnd = whole.LastIndexOf(":", pathDelimiterStart - 1, pathDelimiterStart - hostDelimiterStart, StringComparison.Ordinal);
+        var hostDelimiterEnd = whole.LastIndexOf(':', pathDelimiterStart - 1, pathDelimiterStart - hostDelimiterStart);
         if (hostDelimiterEnd < 0)
         {
             hostDelimiterEnd = pathDelimiterStart;

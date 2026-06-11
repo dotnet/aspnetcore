@@ -154,15 +154,15 @@ public class BindingAddress
         // A null/empty address will throw FormatException
         address = address ?? string.Empty;
 
-        var schemeDelimiterStart = address.IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
+        var schemeDelimiterStart = address.AsSpan().IndexOf(Uri.SchemeDelimiter, StringComparison.Ordinal);
         if (schemeDelimiterStart < 0)
         {
             throw new FormatException($"Invalid url: '{address}'");
         }
         var schemeDelimiterEnd = schemeDelimiterStart + Uri.SchemeDelimiter.Length;
 
-        var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
-        var isNamedPipe = address.IndexOf(NamedPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
+        var isUnixPipe = address.AsSpan(schemeDelimiterEnd).StartsWith(UnixPipeHostPrefix, StringComparison.Ordinal);
+        var isNamedPipe = address.AsSpan(schemeDelimiterEnd).StartsWith(NamedPipeHostPrefix, StringComparison.Ordinal);
 
         int pathDelimiterStart;
         int pathDelimiterEnd;

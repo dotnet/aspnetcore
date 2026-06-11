@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+#if NET
+using System.Buffers;
+#endif
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -21,8 +24,13 @@ namespace Microsoft.Extensions.FileProviders;
 /// </summary>
 public class EmbeddedFileProvider : IFileProvider
 {
+#if NET
+    private static readonly SearchValues<char> _invalidFileNameChars = SearchValues.Create(
+        Path.GetInvalidFileNameChars().Where(c => c != '/' && c != '\\').ToArray());
+#else
     private static readonly char[] _invalidFileNameChars = Path.GetInvalidFileNameChars()
         .Where(c => c != '/' && c != '\\').ToArray();
+#endif
 
     private readonly Assembly _assembly;
     private readonly string _baseNamespace;
@@ -180,7 +188,11 @@ public class EmbeddedFileProvider : IFileProvider
 
     private static bool HasInvalidPathChars(string path)
     {
+#if NET
+        return path.AsSpan().IndexOfAny(_invalidFileNameChars) >= 0;
+#else
         return path.IndexOfAny(_invalidFileNameChars) != -1;
+#endif
     }
 
     #region Helper methods
