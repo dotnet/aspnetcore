@@ -50,7 +50,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();
 
-        var emitInputs = addValidation
+        // Collect all AddValidation call sites to avoid emitting duplicate hint names
+        // when AddValidation() is called multiple times in the same project.
+        var addValidationLocations = addValidation.Collect();
+
+        var emitInputs = addValidationLocations
             .Combine(validatableTypes);
 
         // Emit the IValidatableInfo resolver injection and
