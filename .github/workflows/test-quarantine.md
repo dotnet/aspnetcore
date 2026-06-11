@@ -1,7 +1,7 @@
 ---
 on:
   schedule:
-    - cron: "0 10 * * *"
+    - cron: "0 10 */2 * *"
   workflow_dispatch:
   steps:
     - name: Fetch re-quarantine PRs
@@ -734,6 +734,12 @@ network:
 
 checkout:
   fetch-depth: 0
+
+# Per-run effective-token (ET) budget for AWF API-proxy enforcement. Raised from the
+# 25M default because the agent loop was tripping the cap mid-gathering before producing
+# any output. Run frequency is halved (every 2 days, see cron above) to keep monthly token
+# spend roughly flat. See gh-aw ADR-35286 for the precedence rules.
+max-effective-tokens: 50M
 
 timeout-minutes: 90
 ---
