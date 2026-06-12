@@ -46,12 +46,25 @@ function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): nu
   return (Number.isFinite(scale) && scale > 0) ? scale : 1;
 }
 
+function warnIfSpacerElementIsInvalid(spacerBefore: HTMLElement): void {
+  const parentTagName = spacerBefore.parentElement?.tagName;
+  const spacerTagName = spacerBefore.tagName;
+
+  if ((parentTagName === 'TBODY' || parentTagName === 'TABLE') && spacerTagName !== 'TR') {
+    console.warn('Virtualize is rendering inside <table> or <tbody>. Set SpacerElement="tr" to avoid invalid markup.');
+  } else if ((parentTagName === 'UL' || parentTagName === 'OL') && spacerTagName !== 'LI') {
+    console.warn('Virtualize is rendering inside <ul> or <ol>. Set SpacerElement="li" to avoid invalid markup.');
+  }
+}
+
 function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, anchorMode = 1, rootMargin = 50): void {
   // If the component was disposed before the JS interop call completed, the element references may be null
   // or the elements may have been disconnected from the DOM. Return early to avoid errors.
   if (!spacerBefore || !spacerAfter || !spacerBefore.isConnected || !spacerAfter.isConnected) {
     return;
   }
+
+  warnIfSpacerElementIsInvalid(spacerBefore);
 
   const scrollContainer = findClosestScrollContainer(spacerBefore);
   const scrollElement = scrollContainer || document.documentElement;
