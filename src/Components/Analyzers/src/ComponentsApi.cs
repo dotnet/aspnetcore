@@ -46,4 +46,10 @@ internal static class ComponentsApi
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
         public const string MetadataName = FullTypeName;
     }
+
+    public static class InputSelect
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Forms.InputSelect`1";
+        public const string MetadataName = FullTypeName;
+    }
 }
