@@ -50,6 +50,9 @@ internal static class HttpRuleParser
     // iso-8859-1, Western European (ISO)
     internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding("iso-8859-1");
 
+    internal static bool IsToken(StringSegment input) =>
+        !input.AsSpan().ContainsAnyExcept(TokenChars);
+
     [Pure]
     internal static int GetTokenLength(StringSegment input, int startIndex)
     {
