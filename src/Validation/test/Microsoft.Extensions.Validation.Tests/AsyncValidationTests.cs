@@ -709,6 +709,51 @@ public class AsyncValidationTests
                     .SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))));
     }
 
+    [Fact]
+    public async Task IAsyncValidatableObject_DoesNotRunInParallelWithPropertyValidation()
+    {
+        // Arrange
+        // Track when property async validation completes and when IAsyncValidatableObject starts.
+        // If they ran in parallel, the property validator (which has a delay) would not have
+        // completed by the time IAsyncValidatableObject.ValidateAsync begins.
+        var propertyValidationCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var propertyValidationWasCompleteWhenObjectValidationStarted = false;
+
+        var model = new ParallelTrackingModel(
+            onObjectValidateStarted: () =>
+            {
+                propertyValidationWasCompleteWhenObjectValidationStarted = propertyValidationCompleted.Task.IsCompletedSuccessfully;
+            })
+        {
+            Name = "test"
+        };
+
+        var modelType = new TestValidatableTypeInfo(
+            typeof(ParallelTrackingModel),
+            [
+                CreatePropertyInfo(typeof(ParallelTrackingModel), typeof(string), "Name", "Name",
+                    [new CompletionTrackingAsyncAttribute(propertyValidationCompleted)])
+            ]);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(ParallelTrackingModel), modelType }
+            }),
+            ValidationContext = new ValidationContext(model)
+        };
+
+        // Act
+        await modelType.ValidateAsync(model, context, default);
+
+        // Assert - IAsyncValidatableObject.ValidateAsync starts only after property validation completes
+        Assert.True(propertyValidationCompleted.Task.IsCompletedSuccessfully);
+        Assert.True(propertyValidationWasCompleteWhenObjectValidationStarted,
+            "IAsyncValidatableObject.ValidateAsync should not run in parallel with property validation; " +
+            "it should wait for all property validation to complete first.");
+    }
+
     // Test model classes
     private class UserWithAsyncValidation
     {
@@ -873,6 +918,32 @@ public class AsyncValidationTests
     private class DeepLeaf
     {
         public string? Value { get; set; }
+    }
+
+    private class ParallelTrackingModel : IAsyncValidatableObject
+    {
+        private readonly Action _onObjectValidateStarted;
+
+        public ParallelTrackingModel(Action onObjectValidateStarted)
+        {
+            _onObjectValidateStarted = onObjectValidateStarted;
+        }
+
+        public string? Name { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            return Array.Empty<ValidationResult>();
+        }
+
+        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
+            ValidationContext validationContext,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            _onObjectValidateStarted();
+            await Task.CompletedTask;
+            yield break;
+        }
     }
 
     // Test validation attributes
@@ -1195,6 +1266,29 @@ public class AsyncValidationTests
                     $"Expected {_expected} deep validators to run in parallel, but only {started} started before the timeout elapsed.");
             }
 
+            return ValidationResult.Success;
+        }
+    }
+
+    private class CompletionTrackingAsyncAttribute : AsyncValidationAttribute
+    {
+        private readonly TaskCompletionSource _completionTcs;
+
+        public CompletionTrackingAsyncAttribute(TaskCompletionSource completionTcs)
+        {
+            _completionTcs = completionTcs;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            => throw new UnreachableException();
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value,
+            ValidationContext validationContext,
+            CancellationToken cancellationToken)
+        {
+            await Task.Delay(50, cancellationToken);
+            _completionTcs.TrySetResult();
             return ValidationResult.Success;
         }
     }
