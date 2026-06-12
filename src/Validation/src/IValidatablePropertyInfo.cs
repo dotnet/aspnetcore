@@ -14,7 +14,7 @@ public interface IValidatablePropertyInfo
     /// <summary>
     /// Validates the property on a given object.
     /// </summary>
-    /// <param name="containingObject">The object that contains the property to validate</param>
+    /// <param name="containingObject">The object that contains the property to validate.</param>
     /// <param name="context">The validation context.</param>
     /// <param name="cancellationToken">A cancellation token to support cancellation of the validation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>

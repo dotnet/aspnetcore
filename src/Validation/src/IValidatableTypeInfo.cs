@@ -23,7 +23,7 @@ public interface IValidatableTypeInfo
     /// <summary>
     /// Retrieves the validatable property info for the specified property name.
     /// </summary>
-    /// <param name="propertyName">The name of the property to find its validatable info</param>
+    /// <param name="propertyName">The name of the property to find its validatable property info.</param>
     /// <param name="validationOptions">The validation options.</param>
     /// <returns>The validatable property info, or null if not found.</returns>
     IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions);
