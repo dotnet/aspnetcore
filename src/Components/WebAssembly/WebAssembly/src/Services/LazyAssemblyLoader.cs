@@ -75,6 +75,7 @@ public sealed partial class LazyAssemblyLoader
         // this will download the files and install them into memory
         // it would not load them into the VM until we call LoadFromAssemblyName below
         var loadedStatus = await Task.WhenAll(pendingLoads);
+        int i = 0;
 
         foreach (var loaded in loadedStatus)
         {
@@ -94,6 +95,8 @@ public sealed partial class LazyAssemblyLoader
                     // no op
                 }
             }
+
+            i++;
         }
 
         return loadedAssemblies;
