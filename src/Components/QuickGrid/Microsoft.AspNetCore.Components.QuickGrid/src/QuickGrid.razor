@@ -10,9 +10,13 @@
         @{ FinishCollectingColumns(); }
         <ColumnsCollectedNotifier TGridItem="TGridItem" />
 
-        <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @attributes="AdditionalAttributes" class="@GridClass()">
+        <table theme="@Theme" aria-rowcount="@(GetAriaBodyRowCount() + 1)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @attributes="AdditionalAttributes" class="@GridClass()">
             <thead>
                 <tr>
+                    @if (RowDetailsTemplate is not null)
+                    {
+                        <th class="row-details-toggle-header" aria-label="Row details" scope="col"></th>
+                    }
                     @_renderColumnHeaders
                 </tr>
             </thead>
@@ -66,6 +70,7 @@
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
         var rowClass = RowClass?.Invoke(item);
+        var detailsExpanded = IsRowDetailsExpanded(item);
         var combinedClass = OnRowClick.HasDelegate
             ? string.IsNullOrEmpty(rowClass) ? "row-clickable" : $"row-clickable {rowClass}"
             : rowClass;
@@ -73,13 +78,36 @@
 
         <tr @key="@(ItemKey(item))"
             aria-rowindex="@rowIndex"
-            class="@combinedClass"
+            class="@($"{combinedClass} {(detailsExpanded ? "row-details-expanded" : null)}")"
             @onclick="@rowClick">
+            @if (RowDetailsTemplate is not null)
+            {
+                <td class="row-details-toggle-cell" @key="@(GetRowDetailsKey(item))">
+                    <button class="row-details-toggle-button"
+                        type="button"
+                        aria-label="@(detailsExpanded ? "Row Collapse" : "Row Expand")"
+                        aria-expanded="@detailsExpanded"
+                        @onclick="@(() => ToggleRowDetailsAsync(item))"
+                        @onclick:stopPropagation="true">
+                    </button>
+                </td>
+            }
+
             @foreach (var col in _columns)
             {
                 <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
             }
         </tr>
+        @if (RowDetailsTemplate is not null && detailsExpanded)
+        {
+            <tr class="row-details-row" @key="@(GetRowDetailsKey(item))">
+                <td class="row-details-cell" colspan="@GetBodyColumnCount()">
+                    <div class="row-details-template">
+                        @RowDetailsTemplate(item)
+                    </div>
+                </td>
+            </tr>
+        }
     }
 
     private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)

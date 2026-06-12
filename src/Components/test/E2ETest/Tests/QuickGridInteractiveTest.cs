@@ -112,6 +112,28 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
+    public void CanToggleRowDetails()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid-details > table"));
+
+        Browser.Equal(3, () => Browser.FindElement(By.CssSelector("#grid-details > table")).FindElements(By.CssSelector("tbody > tr")).Count);
+
+        Browser.Click(By.CssSelector("#grid-details > table tbody > tr:nth-child(1) > td:nth-child(1) > button"));
+
+        Browser.Equal(4, () => Browser.FindElement(By.CssSelector("#grid-details > table")).FindElements(By.CssSelector("tbody > tr")).Count);
+        Browser.Equal(1, () => Browser.FindElement(By.CssSelector("#grid-details > table tbody > tr.row-details-row")).FindElements(By.CssSelector(".row-details-template > *")).Count);
+        Browser.Equal("Person details", () => Browser.FindElement(By.CssSelector("#grid-details > table tbody > tr.row-details-row .row-details-template > div > strong")).Text);
+        Browser.Equal("PersonId: 11203", () => Browser.FindElement(By.CssSelector("#grid-details > table tbody > tr.row-details-row .row-details-template > div > div:nth-of-type(1)")).Text);
+        Browser.Equal("FirstName: Julie", () => Browser.FindElement(By.CssSelector("#grid-details > table tbody > tr.row-details-row .row-details-template > div > div:nth-of-type(2)")).Text);
+        Browser.Equal("LastName: Smith", () => Browser.FindElement(By.CssSelector("#grid-details > table tbody > tr.row-details-row .row-details-template > div > div:nth-of-type(3)")).Text);
+
+        Browser.Click(By.CssSelector("#grid-details > table tbody > tr:nth-child(1) > td:nth-child(1) > button"));
+
+        Browser.Equal(3, () => Browser.FindElement(By.CssSelector("#grid-details > table")).FindElements(By.CssSelector("tbody > tr")).Count);
+    }
+
+    [Fact]
     public void DualPaginatorsNavigatesAndBothUpdate()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
