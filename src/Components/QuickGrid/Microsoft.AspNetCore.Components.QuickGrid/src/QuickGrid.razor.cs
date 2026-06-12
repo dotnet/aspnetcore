@@ -52,6 +52,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Optional. A template to render in the table footer area. If specified, the template will
+    /// be rendered inside a single &lt;tfoot&gt; row which spans all columns.
+    /// </summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>
     /// If true, the grid will be rendered with virtualization. This is normally used in conjunction with
     /// scrolling and causes the grid to fetch and render only the data around the current scroll viewport.
     /// This can greatly improve the performance when scrolling through large data sets.
@@ -154,6 +160,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     // Caches of method->delegate conversions
     private readonly RenderFragment _renderColumnHeaders;
+    private readonly RenderFragment _renderColumnFooters;
     private readonly RenderFragment _renderNonVirtualizedRows;
 
     // We try to minimize the number of times we query the items provider, since queries may be expensive
@@ -188,6 +195,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         _internalGridContext = new(this);
         _currentPageItemsChanged = new(EventCallback.Factory.Create<PaginationState>(this, RefreshDataCoreAsync));
         _renderColumnHeaders = RenderColumnHeaders;
+        _renderColumnFooters = RenderColumnFooters;
         _renderNonVirtualizedRows = RenderNonVirtualizedRows;
         _queryParameterValueSupplier = new();
 
