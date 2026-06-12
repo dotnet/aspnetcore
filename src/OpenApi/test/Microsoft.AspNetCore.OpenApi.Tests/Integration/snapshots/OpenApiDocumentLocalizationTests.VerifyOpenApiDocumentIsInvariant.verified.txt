@@ -1579,6 +1579,204 @@
         }
       }
     },
+    "/unions/pet": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnionPet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/value": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/clinic": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/typed-result": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/any-of": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Clinic"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/any-of-unions": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/UnionIntString"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/multi-content-type": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/kitten-standalone": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kitten"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/getbyidandname/{id}/{name}": {
       "get": {
         "tags": [
@@ -1880,6 +2078,119 @@
           }
         }
       }
+    },
+    "/union-pet": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-value": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-clinic": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-any-of": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Clinic"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1960,6 +2271,21 @@
         "properties": {
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "Clinic": {
+        "required": [
+          "address",
+          "patient"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/UnionPet"
           }
         }
       },
@@ -2172,7 +2498,6 @@
       "JsonPatchDocument": {
         "type": "array",
         "items": {
-          "type": "object",
           "oneOf": [
             {
               "required": [
@@ -2241,6 +2566,22 @@
               "additionalProperties": false
             }
           ]
+        }
+      },
+      "Kitten": {
+        "required": [
+          "name",
+          "lives"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lives": {
+            "type": "integer",
+            "format": "int32"
+          }
         }
       },
       "LocationContainer": {
@@ -2461,6 +2802,7 @@
         }
       },
       "PersonStudent": {
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2478,6 +2820,7 @@
         "required": [
           "subject"
         ],
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2573,6 +2916,21 @@
           }
         }
       },
+      "Puppy": {
+        "required": [
+          "name",
+          "breed"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          }
+        }
+      },
       "RefProfile": {
         "required": [
           "user"
@@ -2628,6 +2986,7 @@
         }
       },
       "ShapeSquare": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2649,6 +3008,7 @@
         }
       },
       "ShapeTriangle": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2874,6 +3234,28 @@
           }
         }
       },
+      "UnionIntString": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "UnionPet": {
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Kitten"
+          },
+          {
+            "$ref": "#/components/schemas/Puppy"
+          }
+        ]
+      },
       "WeatherForecastBase": {
         "required": [
           "$type"
@@ -2903,6 +3285,7 @@
         "required": [
           "city"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2919,6 +3302,7 @@
         "required": [
           "news"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2935,6 +3319,7 @@
         "required": [
           "summary"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [

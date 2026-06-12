@@ -45,6 +45,7 @@ builder.Services.AddOpenApi("responses");
 builder.Services.AddOpenApi("forms");
 builder.Services.AddOpenApi("schemas-by-ref");
 builder.Services.AddOpenApi("xml");
+builder.Services.AddOpenApi("unions");
 builder.Services.AddOpenApi("localized", options =>
 {
     options.ShouldInclude = _ => true;
@@ -70,6 +71,7 @@ app.MapV2Endpoints();
 app.MapXmlEndpoints();
 app.MapSchemasEndpoints();
 app.MapResponseEndpoints();
+app.MapUnionsEndpoints();
 
 app.MapGet("/first-doc/get1", () => "Hello, world").WithGroupName("first-doc");
 app.MapGet("/first-doc/get2", () => "Hello, world").WithGroupName("first-doc");
