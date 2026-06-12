@@ -31,8 +31,8 @@ In the SignalR protocol, the following types of messages can be sent:
 | `Completion`          | Callee, Caller | Indicates a previous `Invocation` or `StreamInvocation` has completed or a stream in an `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
 | `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
-| `Ack`                 | Caller, Callee | Sent by either party to acknowledge that messages have been received up to the provided sequence ID.                                                                |
-| `Sequence`            | Caller, Callee | Sent by either party as the first message when a connection reconnects. Specifies what sequence ID they will start sending messages starting at. Duplicate messages are possible to receive and should be ignored.                                                                    |
+| `Ack`                 | Caller, Callee | Sent by either party to acknowledge that messages have been received up to the provided sequence ID. See [Stateful Reconnect](#stateful-reconnect).                                                              |
+| `Sequence`            | Caller, Callee | Sent by either party as the first message when a connection reconnects. Specifies what sequence ID they will start sending messages starting at. Duplicate messages are possible to receive and should be ignored. See [Stateful Reconnect](#stateful-reconnect).                                                                  |
 
 After opening a connection to the server the client must send a `HandshakeRequest` message to the server as its first message. The handshake message is **always** a JSON message and contains the name of the format (protocol) as well as the version of the protocol that will be used for the duration of the connection. The server will reply with a `HandshakeResponse`, also always JSON, containing an error if the server does not support the protocol. If the server does not support the protocol requested by the client or the first message received from the client is not a `HandshakeRequest` message the server must close the connection. Both the `HandshakeRequest` and `HandshakeResponse` messages must be terminated by the ASCII character `0x1E` (record separator).
 
@@ -138,6 +138,86 @@ Keep alive behavior is achieved via the `Ping` message type. **Either endpoint**
 Ping messages do not have any payload, they are completely empty messages (aside from the encoding necessary to identify the message as a `Ping` message).
 
 The default ASP.NET Core implementation automatically pings both directions on active connections. These pings are at regular intervals, and allow detection of unexpected disconnects (for example, unplugging a server). If the client detects that the server has stopped pinging, the client will close the connection, and vice versa. If there's other traffic through the connection, keep-alive pings aren't needed. A `Ping` is only sent if the interval has elapsed without a message being sent.
+
+## Stateful Reconnect
+
+The SignalR Hub protocol supports a stateful reconnect mode in which both
+sides buffer the Hub messages they have sent and replay any that the peer
+has not acknowledged after the underlying connection is re-established.
+This makes transient disconnects transparent to the application.
+
+This section describes only the Hub-protocol behavior — the `Sequence` and
+`Ack` messages, the sequence-ID rules, and the replay obligation. How a
+particular transport signals "the same connection has been re-established"
+is out of scope for the Hub protocol; for the ASP.NET Core transports the
+opt-in and reconnect handshake are described in
+[`TransportProtocols.md`](./TransportProtocols.md#stateful-reconnect).
+
+### Trackable messages
+
+Only `HubInvocationMessage` types participate in sequence tracking:
+
+* `Invocation`
+* `StreamInvocation`
+* `StreamItem`
+* `Completion`
+* `CancelInvocation`
+
+`HandshakeRequest`, `HandshakeResponse`, `Ping`, `Close`, `Ack` and
+`Sequence` messages are **not** assigned a sequence ID and are not buffered
+for replay.
+
+### Sequence IDs
+
+Each endpoint maintains an outbound sequence counter for the trackable
+messages it sends to the peer, and an inbound sequence counter for the
+trackable messages it has received from the peer. The counters are
+independent.
+
+Sequence IDs:
+
+* Start at `1`.
+* Increment by exactly `1` for each trackable message sent.
+* Are scoped to a single Hub connection; they are not reset by a reconnect,
+  since the goal of the reconnect is to continue the same logical
+  conversation.
+
+A receiver processes incoming trackable messages in order. Any trackable
+message whose effective sequence ID is less than or equal to the highest
+ID the receiver has already processed is a duplicate and **must be
+ignored** (without being delivered to the application). Non-trackable
+messages are not subject to this rule and are processed normally.
+
+### `Ack` messages
+
+Either endpoint may periodically send an `Ack` whose `sequenceId` is the
+highest trackable inbound sequence ID it has processed so far. On receipt
+of an `Ack`, the sender may release (drop from its replay buffer) every
+buffered trackable message with a sequence ID less than or equal to the
+acknowledged value.
+
+`Ack` messages carry no other state; they may be coalesced and a fresh
+`Ack` always supersedes any previously-sent `Ack` for the same direction.
+
+### `Sequence` messages and reconnect
+
+After a reconnect each endpoint, before sending any further trackable
+messages on the re-established connection, must send a `Sequence` message
+whose `sequenceId` is the ID it will use for the **next** trackable
+message it sends. This is equivalent to one greater than the highest
+trackable ID it has previously sent, regardless of whether those messages
+were acknowledged.
+
+The receiver uses the `sequenceId` from the incoming `Sequence` message to
+align its inbound counter and discard duplicates: any subsequently
+received trackable message with an ID strictly less than the new starting
+ID is a duplicate from before the reconnect and must be ignored.
+
+After sending its `Sequence` message, an endpoint replays every buffered
+trackable message that has not yet been acknowledged by the peer, in the
+original send order. The `Sequence` message is sent even when there are
+no buffered messages to replay, so that the peer knows what sequence ID
+the next trackable message will carry.
 
 ## Example
 
