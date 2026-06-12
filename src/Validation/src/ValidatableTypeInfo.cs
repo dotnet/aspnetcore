@@ -137,15 +137,19 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 
         try
         {
+            // This allows us to add validation tasks in this list locally (i.e, not the one in ValidateContext).
+            // Then, we can do .ContinueWith on that task.
+            List<Task>? localValidationTasks = null;
+
             // First validate direct members
-            ValidateMembers(value, context, cancellationToken);
+            ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
 
             var actualType = value.GetType();
 
             // Then validate inherited members
             foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context))
             {
-                superTypeInfo.ValidateMembers(value, context, cancellationToken);
+                superTypeInfo.ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
             }
 
             // If any property-level validation errors were found, return early
@@ -157,16 +161,39 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
             // Validate type-level attributes
-            context.ValidationTasks.Add(ValidateTypeAttributesAsync(value, context, displayName, cancellationToken));
+            var typeValidationTask = ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
+            if (!typeValidationTask.IsCompleted)
+            {
+                localValidationTasks ??= new();
+                localValidationTasks.Add(typeValidationTask);
+            }
 
             // If any type-level attribute errors were found, return early
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
             {
+                if (localValidationTasks is not null)
+                {
+                    context.ValidationTasks.Add(Task.WhenAll(localValidationTasks));
+                }
+
                 return;
             }
 
             // Finally validate IValidatableObject if implemented
-            context.ValidationTasks.Add(ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken));
+            if (localValidationTasks is not null)
+            {
+                async Task GetFinalValidationTask(List<Task> localValidationTasks)
+                {
+                    await Task.WhenAll(localValidationTasks);
+                    await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
+                }
+
+                context.ValidationTasks.Add(GetFinalValidationTask(localValidationTasks));
+            }
+            else
+            {
+                context.ValidationTasks.Add(ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken));
+            }
         }
         finally
         {
@@ -179,11 +206,16 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private void ValidateMembers(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private void ValidateMembers(object? value, ValidateContext context, ref List<Task>? localValidationTasks, CancellationToken cancellationToken)
     {
         for (var i = 0; i < _membersCount; i++)
         {
-            context.ValidationTasks.Add(Members[i].ValidateAsync(value, context.Clone(), cancellationToken));
+            var task = Members[i].ValidateAsync(value, context.Clone(), cancellationToken);
+            if (!task.IsCompleted)
+            {
+                localValidationTasks ??= new();
+                localValidationTasks.Add(task);
+            }
         }
     }
 
