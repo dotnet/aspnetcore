@@ -1,0 +1,43 @@
+@page "/textarea-method-interactive"
+@rendermode RenderMode.InteractiveServer
+@inject NavigationManager Navigation
+
+<a id="method1-link" href="@(Navigation.GetUriWithQueryParameter("method", "method1"))">Method 1 (nav)</a>
+<br />
+<a id="method2-link" href="@(Navigation.GetUriWithQueryParameter("method", "method2"))">Method 2 (nav)</a>
+
+@if (!String.IsNullOrWhiteSpace(Method))
+{
+    <form>
+        <textarea id="textArea" rows="3" style="width: 350px;" @onchange="Text_OnChange">@GetData(Method)</textarea>
+        <br />
+        <input id="textBox" type="text" style="width: 350px;" value="@GetData(Method)" @onchange="Text_OnChange" />
+        <br />
+    </form>
+}
+@code
+{
+    private Dictionary<string, string> cache = new Dictionary<string, string>
+    {
+        { "method1", "Initial value for method 1" },
+        { "method2", "Method 2 initial value." },
+    };
+
+    [Parameter, SupplyParameterFromQuery(Name = "method")]
+    public string? Method { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+
+    private void Text_OnChange(ChangeEventArgs e)
+    {
+        if (Method != null && cache.ContainsKey(Method))
+        {
+            cache[Method] = (string)e.Value!;
+        }
+    }
+
+    private string GetData(string key) => cache[key];
+}
