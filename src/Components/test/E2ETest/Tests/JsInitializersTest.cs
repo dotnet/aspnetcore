@@ -39,6 +39,14 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
         {
             Browser.Exists(By.Id(callback));
         }
+
+        // Blazor WebAssembly JS Initializers bug fix verification (Issue #54358):
+        // Ensure loadBootResource set in beforeStart was actually used to download resources
+        if (_serverFixture.ExecutionMode == ExecutionMode.Client)
+        {
+            Browser.Exists(By.Id("total-requests"));
+            Browser.True(() => Browser.FindElements(By.CssSelector("#total-requests tr")).Count > 1);
+        }
     }
 
     protected virtual string[] GetExpectedCallbacks()

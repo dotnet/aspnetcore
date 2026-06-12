@@ -10,7 +10,7 @@ import { showErrorNotification } from '../../BootErrors';
 import { Platform, System_Array, Pointer, System_Object, HeapLock, PlatformApi } from '../Platform';
 import { WebAssemblyBootResourceType, WebAssemblyStartOptions } from '../WebAssemblyStartOptions';
 import { Blazor } from '../../GlobalExports';
-import { DotnetModuleConfig, MonoConfig, ModuleAPI, RuntimeAPI, GlobalizationMode } from '@microsoft/dotnet-runtime';
+import { DotnetModuleConfig, DotnetHostBuilder, MonoConfig, ModuleAPI, RuntimeAPI, GlobalizationMode } from '@microsoft/dotnet-runtime';
 import { fetchAndInvokeInitializers } from '../../JSInitializers/JSInitializers.WebAssembly';
 import { JSInitializer } from '../../JSInitializers/JSInitializers';
 
@@ -141,7 +141,8 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   return await import(/* webpackIgnore: true */ './dotnet.js');
 }
 
-function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
+/** @internal Exported for unit testing only. */
+export function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, dotnet: DotnetHostBuilder, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
@@ -166,6 +167,25 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfi
     onConfigLoadedCallback?.(loadedConfig);
 
     jsInitializer = await fetchAndInvokeInitializers(options, loadedConfig);
+
+    // Apply options AFTER beforeStart initializers have had a chance to mutate them.
+    // This ensures custom loadBootResource, environment, etc. set by JS initializers
+    // are respected when the runtime downloads resources.
+    if (options.applicationCulture) {
+      dotnet.withApplicationCulture(options.applicationCulture);
+    }
+
+    if (options.environment) {
+      dotnet.withApplicationEnvironment(options.environment);
+    }
+
+    if (options.loadBootResource) {
+      dotnet.withResourceLoader(options.loadBootResource);
+    }
+
+    if (options.configureRuntime) {
+      options.configureRuntime(dotnet);
+    }
   };
 
   const moduleConfig = (window['Module'] || {}) as any;
@@ -183,26 +203,10 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfi
 
 async function createRuntimeInstance(options: Partial<WebAssemblyStartOptions>, onConfigLoaded?: (loadedConfig: MonoConfig) => void): Promise<void> {
   const { dotnet } = await importDotnetJs(options);
-  const moduleConfig = prepareRuntimeConfig(options, onConfigLoaded);
-
-  if (options.applicationCulture) {
-    dotnet.withApplicationCulture(options.applicationCulture);
-  }
-
-  if (options.environment) {
-    dotnet.withApplicationEnvironment(options.environment);
-  }
-
-  if (options.loadBootResource) {
-    dotnet.withResourceLoader(options.loadBootResource);
-  }
+  const moduleConfig = prepareRuntimeConfig(options, dotnet, onConfigLoaded);
 
   const anyDotnet = (dotnet as any);
   anyDotnet.withModuleConfig(moduleConfig);
-
-  if (options.configureRuntime) {
-    options.configureRuntime(dotnet);
-  }
 
   runtime = await dotnet.create();
 }
