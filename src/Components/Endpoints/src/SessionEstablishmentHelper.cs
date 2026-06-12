@@ -12,21 +12,31 @@ internal static partial class SessionEstablishmentHelper
 {
     private const string SessionEstablishmentKey = "__AspNetCore.Components.Endpoints.SessionEstablishment";
 
-    private static bool HasLoggedSessionStateNotPersistedAfterResponseStarted = false;
+    internal static bool HasLoggedResponseHasStarted;
+    internal static bool HasLoggedSessionDoesNotExist;
 
     public static void TryRegisterSessionEstablishment(HttpContext context)
     {
         var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
         var session = context.Features.Get<ISessionFeature>()?.Session;
+
         if (session == null)
         {
-            Log.SessionDoesNotExist(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+            if (!HasLoggedSessionDoesNotExist)
+            {
+                Log.SessionDoesNotExist(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+            }
+            HasLoggedSessionDoesNotExist = true;
             return;
         }
+
         if (context.Response.HasStarted)
         {
-            HasLoggedSessionStateNotPersistedAfterResponseStarted = true;
-            Log.ResponseHasStarted(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+            if (!HasLoggedResponseHasStarted)
+            {
+                Log.ResponseHasStarted(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+            }
+            HasLoggedResponseHasStarted = true;
             return;
         }
 
@@ -34,8 +44,8 @@ internal static partial class SessionEstablishmentHelper
         {
             return;
         }
-        context.Items[SessionEstablishmentKey] = true;
 
+        context.Items[SessionEstablishmentKey] = true;
         context.Response.OnStarting(static state =>
         {
             var session = (ISession)state!;
