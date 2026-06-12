@@ -3,6 +3,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -116,7 +117,7 @@ public class AsyncValidationTests
     public async Task AsyncValidation_RespectsValidationOrder()
     {
         // Arrange
-        var validationOrder = new List<string>();
+        var validationOrder = new ConcurrentQueue<string>();
         var orderType = new TestValidatableTypeInfo(
             typeof(OrderWithTracking),
             [
@@ -147,10 +148,20 @@ public class AsyncValidationTests
 
         // Assert - Within each property, sync validations run before async
         Assert.Equal(4, validationOrder.Count);
-        Assert.Equal("Field1-Sync", validationOrder[0]);
-        Assert.Equal("Field1-Async", validationOrder[1]);
-        Assert.Equal("Field2-Sync", validationOrder[2]);
-        Assert.Equal("Field2-Async", validationOrder[3]);
+
+        var validationOrderArray = validationOrder.ToArray();
+        Assert.Equal("Field1-Sync", validationOrderArray[0]);
+        Assert.Equal("Field2-Sync", validationOrderArray[1]);
+
+        if (validationOrderArray[2] == "Field1-Async")
+        {
+            Assert.Equal("Field2-Async", validationOrderArray[3]);
+        }
+        else
+        {
+            Assert.Equal("Field2-Async", validationOrderArray[2]);
+            Assert.Equal("Field1-Async", validationOrderArray[3]);
+        }
     }
 
     [Fact]
@@ -268,6 +279,38 @@ public class AsyncValidationTests
             [
                 CreatePropertyInfo(typeof(Document), typeof(string), "Content", "Content",
                     [new SlowAsyncValidationAttribute()])
+            ]);
+
+        var document = new Document { Content = "test" };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Document), documentType }
+            }),
+            ValidationContext = new ValidationContext(document)
+        };
+
+        // Cancel after a short delay
+        cts.CancelAfter(100);
+
+        // Act & Assert
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await documentType.ValidateAsync(document, context, cts.Token);
+        });
+    }
+
+    [Fact]
+    public async Task MultipleAsyncValidation_WithCancellation()
+    {
+        // Arrange
+        var cts = new CancellationTokenSource();
+        var documentType = new TestValidatableTypeInfo(
+            typeof(Document),
+            [
+                CreatePropertyInfo(typeof(Document), typeof(string), "Content", "Content",
+                    [new SlowAsyncValidationAttribute(), new SlowAsyncValidationAttribute()])
             ]);
 
         var document = new Document { Content = "test" };
@@ -591,6 +634,81 @@ public class AsyncValidationTests
         Assert.Contains("Second async error", errors);
     }
 
+    [Fact]
+    public async Task AsyncValidation_DeepNestedObjects_ValidateInParallel()
+    {
+        // Arrange
+        // Build a three-level object graph (DeepRoot -> DeepBranch -> DeepInner -> DeepLeaf)
+        // with three branches. Each leaf carries the same async validator instance, gated
+        // by a CountdownEvent that requires every leaf validator to be in-flight at the
+        // same time before any of them can complete. If deep validation ran sequentially,
+        // only the first validator would reach the gate and the others would never signal,
+        // causing the WaitAsync inside the gate to time out and surface a validation error.
+        const int ExpectedParallelValidators = 3;
+
+        using var startedLatch = new CountdownEvent(ExpectedParallelValidators);
+        var allStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var gate = new ParallelGateAsyncAttribute(ExpectedParallelValidators, startedLatch, allStartedTcs);
+
+        var leafType = new TestValidatableTypeInfo(
+            typeof(DeepLeaf),
+            [
+                CreatePropertyInfo(typeof(DeepLeaf), typeof(string), "Value", "Value", [gate])
+            ]);
+
+        var innerType = new TestValidatableTypeInfo(
+            typeof(DeepInner),
+            [
+                CreatePropertyInfo(typeof(DeepInner), typeof(DeepLeaf), "Leaf", "Leaf", [])
+            ]);
+
+        var branchType = new TestValidatableTypeInfo(
+            typeof(DeepBranch),
+            [
+                CreatePropertyInfo(typeof(DeepBranch), typeof(DeepInner), "Inner", "Inner", [])
+            ]);
+
+        var rootType = new TestValidatableTypeInfo(
+            typeof(DeepRoot),
+            [
+                CreatePropertyInfo(typeof(DeepRoot), typeof(DeepBranch), "BranchA", "BranchA", []),
+                CreatePropertyInfo(typeof(DeepRoot), typeof(DeepBranch), "BranchB", "BranchB", []),
+                CreatePropertyInfo(typeof(DeepRoot), typeof(DeepBranch), "BranchC", "BranchC", [])
+            ]);
+
+        var root = new DeepRoot
+        {
+            BranchA = new DeepBranch { Inner = new DeepInner { Leaf = new DeepLeaf { Value = "a" } } },
+            BranchB = new DeepBranch { Inner = new DeepInner { Leaf = new DeepLeaf { Value = "b" } } },
+            BranchC = new DeepBranch { Inner = new DeepInner { Leaf = new DeepLeaf { Value = "c" } } }
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(DeepRoot), rootType },
+                { typeof(DeepBranch), branchType },
+                { typeof(DeepInner), innerType },
+                { typeof(DeepLeaf), leafType }
+            }),
+            ValidationContext = new ValidationContext(root)
+        };
+
+        // Act
+        await rootType.ValidateAsync(root, context, default);
+
+        // Assert
+        Assert.Equal(0, startedLatch.CurrentCount);
+        Assert.True(allStartedTcs.Task.IsCompletedSuccessfully);
+        Assert.True(
+            context.ValidationErrors is null || context.ValidationErrors.Count == 0,
+            "Deep validators did not run in parallel: " + string.Join(
+                "; ",
+                (context.ValidationErrors ?? (IReadOnlyDictionary<string, IEnumerable<string>>)new Dictionary<string, IEnumerable<string>>())
+                    .SelectMany(e => e.Value.Select(v => $"{e.Key}: {v}"))));
+    }
+
     // Test model classes
     private class UserWithAsyncValidation
     {
@@ -735,6 +853,28 @@ public class AsyncValidationTests
         public string? Value { get; set; }
     }
 
+    private class DeepRoot
+    {
+        public DeepBranch? BranchA { get; set; }
+        public DeepBranch? BranchB { get; set; }
+        public DeepBranch? BranchC { get; set; }
+    }
+
+    private class DeepBranch
+    {
+        public DeepInner? Inner { get; set; }
+    }
+
+    private class DeepInner
+    {
+        public DeepLeaf? Leaf { get; set; }
+    }
+
+    private class DeepLeaf
+    {
+        public string? Value { get; set; }
+    }
+
     // Test validation attributes
     private class EmailExistsAttribute : AsyncValidationAttribute
     {
@@ -782,10 +922,10 @@ public class AsyncValidationTests
 
     private class TrackingAsyncAttribute : AsyncValidationAttribute
     {
-        private readonly List<string> _validationOrder;
+        private readonly ConcurrentQueue<string> _validationOrder;
         private readonly string _name;
 
-        public TrackingAsyncAttribute(List<string> validationOrder, string name)
+        public TrackingAsyncAttribute(ConcurrentQueue<string> validationOrder, string name)
         {
             _validationOrder = validationOrder;
             _name = name;
@@ -802,17 +942,17 @@ public class AsyncValidationTests
             CancellationToken cancellationToken)
         {
             await Task.Delay(10, cancellationToken);
-            _validationOrder.Add(_name);
+            _validationOrder.Enqueue(_name);
             return ValidationResult.Success;
         }
     }
 
     private class TrackingSyncAttribute : ValidationAttribute
     {
-        private readonly List<string> _validationOrder;
+        private readonly ConcurrentQueue<string> _validationOrder;
         private readonly string _name;
 
-        public TrackingSyncAttribute(List<string> validationOrder, string name)
+        public TrackingSyncAttribute(ConcurrentQueue<string> validationOrder, string name)
         {
             _validationOrder = validationOrder;
             _name = name;
@@ -820,7 +960,7 @@ public class AsyncValidationTests
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            _validationOrder.Add(_name);
+            _validationOrder.Enqueue(_name);
             return ValidationResult.Success;
         }
     }
@@ -1006,6 +1146,53 @@ public class AsyncValidationTests
             if (ShouldFail)
             {
                 return new ValidationResult(ErrorMessage ?? "Validation failed");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    private class ParallelGateAsyncAttribute : AsyncValidationAttribute
+    {
+        private readonly int _expected;
+        private readonly CountdownEvent _startedLatch;
+        private readonly TaskCompletionSource _allStartedTcs;
+
+        public ParallelGateAsyncAttribute(int expected, CountdownEvent startedLatch, TaskCompletionSource allStartedTcs)
+        {
+            _expected = expected;
+            _startedLatch = startedLatch;
+            _allStartedTcs = allStartedTcs;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            => throw new UnreachableException();
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value,
+            ValidationContext validationContext,
+            CancellationToken cancellationToken)
+        {
+            // Signal that this validator has started. The last one to signal sets the TCS,
+            // releasing every validator that is already waiting on it.
+            if (_startedLatch.Signal())
+            {
+                _allStartedTcs.TrySetResult();
+            }
+
+            try
+            {
+                // Wait until every expected deep validator has also started. If deep
+                // validation does not run in parallel, only the first validator reaches
+                // this point and WaitAsync throws TimeoutException, which we translate
+                // into a clear validation error.
+                await _allStartedTcs.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+            }
+            catch (TimeoutException)
+            {
+                var started = _expected - _startedLatch.CurrentCount;
+                return new ValidationResult(
+                    $"Expected {_expected} deep validators to run in parallel, but only {started} started before the timeout elapsed.");
             }
 
             return ValidationResult.Success;
