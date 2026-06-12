@@ -2,32 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
 using TestApp.E2E.Tests.ServiceOverrides;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Tests that run against the app with the FakeWeather service override.
-[Collection(nameof(E2ECollection))]
+[TestClass]
 public class WeatherServiceOverrideTests : BrowserTest
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
     private ServerInstance _server = null!;
     private IPage _page = null!;
 
-    public WeatherServiceOverrideTests(ServerFixture<E2ETestAssembly> fixture)
+    [TestInitialize]
+    public async Task Init()
     {
-        _fixture = fixture;
-    }
-
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>(options =>
+        _server = await TestRoot.Servers.StartServerAsync<App>(options =>
         {
             options.ConfigureServices<TestOverrides>(nameof(TestOverrides.FakeWeather));
         });
@@ -35,7 +29,10 @@ public class WeatherServiceOverrideTests : BrowserTest
         _page = await context.NewPageAsync();
     }
 
-    [Fact]
+    [TestCleanup]
+    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
+
+    [TestMethod]
     public async Task WeatherPage_ShowsFakeData()
     {
         await _page.GotoAsync($"{_server.TestUrl}/weather");
@@ -50,7 +47,7 @@ public class WeatherServiceOverrideTests : BrowserTest
         await Expect(tempCell).ToBeVisibleAsync();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WeatherPage_ShowsExactlyOneRow()
     {
         await _page.GotoAsync($"{_server.TestUrl}/weather");

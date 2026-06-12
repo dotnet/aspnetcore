@@ -1,37 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
-using Microsoft.AspNetCore.Components.Testing.Infrastructure;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Detecting enhanced navigation (DOM patching) via the Blazor 'enhancedload' event.
-[Collection(nameof(E2ECollection))]
+[TestClass]
 public class EnhancedNavTests : BrowserTest
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
     private ServerInstance _server = null!;
     private IPage _page = null!;
 
-    public EnhancedNavTests(ServerFixture<E2ETestAssembly> fixture)
+    [TestInitialize]
+    public async Task Init()
     {
-        _fixture = fixture;
-    }
-
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>();
+        _server = await TestRoot.Servers.StartServerAsync<App>();
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }
 
-    [Fact]
+    [TestCleanup]
+    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
+
+    [TestMethod]
     public async Task NavLink_TriggersEnhancedNavigation_ToCounterPage()
     {
         await _page.GotoAsync(_server.TestUrl);
@@ -47,7 +44,7 @@ public class EnhancedNavTests : BrowserTest
         Assert.Contains("/counter", _page.Url);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task NavLink_TriggersEnhancedNavigation_ToWeatherPage()
     {
         await _page.GotoAsync(_server.TestUrl);
@@ -63,7 +60,7 @@ public class EnhancedNavTests : BrowserTest
         Assert.Contains("/weather", _page.Url);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SequentialEnhancedNav_PatchesDOMMultipleTimes()
     {
         await _page.GotoAsync(_server.TestUrl);
