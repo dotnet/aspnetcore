@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Internal;
@@ -37,6 +39,9 @@ public static class NavigationManagerExtensions
         [typeof(int)] = value => Format((int)value),
         [typeof(long)] = value => Format((long)value),
     };
+
+    // Cache for component route templates to avoid repeated reflection
+    private static readonly ConcurrentDictionary<Type, string[]> _componentRouteTemplates = new();
 
     private static string? Format(string? value)
         => value;
@@ -831,5 +836,90 @@ public static class NavigationManagerExtensions
             // Copy hash
             hashValue.AsSpan().CopyTo(chars[position..]);
         });
+    }
+
+    /// <summary>
+    /// Gets the URI for the specified component type with optional route parameters.
+    /// </summary>
+    /// <typeparam name="TComponent">The component type to navigate to.</typeparam>
+    /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+    /// <param name="parameters">The route parameters to include in the URI.</param>
+    /// <returns>The URI for the specified component.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the component type does not have a route attribute.</exception>
+    public static string GetUri<TComponent>(this NavigationManager navigationManager, params object[] parameters)
+    {
+        ArgumentNullException.ThrowIfNull(navigationManager);
+
+        var componentType = typeof(TComponent);
+        var routeTemplates = GetComponentRouteTemplates(componentType);
+
+        if (routeTemplates.Length == 0)
+        {
+            throw new InvalidOperationException($"Component '{componentType.FullName}' does not have a Route attribute.");
+        }
+
+        // For now, use the first route template (future enhancement: allow specifying which route to use)
+        var routeTemplate = routeTemplates[0];
+        return BindParametersToRouteTemplate(routeTemplate, parameters);
+    }
+
+    /// <summary>
+    /// Navigates to the specified component type with optional route parameters.
+    /// </summary>
+    /// <typeparam name="TComponent">The component type to navigate to.</typeparam>
+    /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+    /// <param name="parameters">The route parameters to include in the URI.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the component type does not have a route attribute.</exception>
+    public static void NavigateTo<TComponent>(this NavigationManager navigationManager, params object[] parameters)
+    {
+        ArgumentNullException.ThrowIfNull(navigationManager);
+
+        var uri = navigationManager.GetUri<TComponent>(parameters);
+        navigationManager.NavigateTo(uri);
+    }
+
+    /// <summary>
+    /// Gets the route templates for the specified component type.
+    /// </summary>
+    /// <param name="componentType">The component type.</param>
+    /// <returns>An array of route templates.</returns>
+    private static string[] GetComponentRouteTemplates(Type componentType)
+    {
+        return _componentRouteTemplates.GetOrAdd(componentType, type =>
+        {
+            var routeAttributes = type.GetCustomAttributes<RouteAttribute>(inherit: false);
+            if (routeAttributes.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var templates = new string[routeAttributes.Length];
+            for (var i = 0; i < routeAttributes.Length; i++)
+            {
+                templates[i] = routeAttributes[i].Template;
+            }
+
+            return templates;
+        });
+    }
+
+    /// <summary>
+    /// Binds parameters to a route template.
+    /// </summary>
+    /// <param name="routeTemplate">The route template.</param>
+    /// <param name="parameters">The parameters to bind.</param>
+    /// <returns>The route template with parameters bound.</returns>
+    private static string BindParametersToRouteTemplate(string routeTemplate, object[] parameters)
+    {
+        var result = routeTemplate;
+
+        // Replace parameter placeholders with actual values
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            var parameterValue = parameters[i]?.ToString() ?? string.Empty;
+            result = result.Replace($"{{{i}}}", parameterValue);
+        }
+
+        return result;
     }
 }
