@@ -12,16 +12,21 @@ internal static partial class SessionEstablishmentHelper
 {
     private const string SessionEstablishmentKey = "__AspNetCore.Components.Endpoints.SessionEstablishment";
 
+    private static bool HasLoggedSessionStateNotPersistedAfterResponseStarted = false;
+
     public static void TryRegisterSessionEstablishment(HttpContext context)
     {
+        var loggerFactory = context.RequestServices.GetRequiredService<ILoggerFactory>();
         var session = context.Features.Get<ISessionFeature>()?.Session;
-        if (session is null || context.Response.HasStarted)
+        if (session == null)
         {
-            var loggerFactory = context.RequestServices.GetService<ILoggerFactory>();
-            if (loggerFactory is not null)
-            {
-                Log.SessionStateNotPersistedAfterResponseStarted(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
-            }
+            Log.SessionDoesNotExist(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+            return;
+        }
+        if (context.Response.HasStarted)
+        {
+            HasLoggedSessionStateNotPersistedAfterResponseStarted = true;
+            Log.ResponseHasStarted(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
             return;
         }
 
@@ -43,9 +48,17 @@ internal static partial class SessionEstablishmentHelper
     private static partial class Log
     {
         [LoggerMessage(1, LogLevel.Warning,
-            "Session is not present or session-backed state was first accessed after the response had already started, so the session cookie can no longer be issued. " +
-            "The value will not be persisted on the next request unless the session cookie was established earlier — for example by an earlier [SupplyParameterFromSession], a cascading session-storage TempData resolution, or a direct ISession.Set call before the first flush.",
+            "Session state was not persisted to the next request. " +
+            "The response has already started, so the session cookie can no longer be issued. " +
+            "To avoid this, access session-backed state before the first response flush — for example by using [SupplyParameterFromSession], accessing session-backed TempData, or calling ISession.Set before any output is written.",
             EventName = "SessionStateNotPersistedAfterResponseStarted")]
-        public static partial void SessionStateNotPersistedAfterResponseStarted(ILogger logger);
+        public static partial void ResponseHasStarted(ILogger logger);
+
+        [LoggerMessage(2, LogLevel.Warning,
+            "Session state was not persisted to the next request. " +
+            "No session is available — either session middleware was not registered, or the component is running interactively where an HTTP session cannot be established. " +
+            "To fix this, add 'builder.Services.AddSession()' and 'app.UseSession()' to your app, and ensure session-backed state is first accessed during static SSR rendering.",
+            EventName = "SessionDoesNotExist")]
+        public static partial void SessionDoesNotExist(ILogger logger);
     }
 }
