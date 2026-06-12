@@ -28,6 +28,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)\TransportMultiplexedConnection.Generated.cs" Link="Internal\TransportMultiplexedConnection.Generated.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)\TransportMultiplexedConnection.FeatureCollection.cs" Link="Internal\TransportMultiplexedConnection.FeatureCollection.cs" />
     <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Internal\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)RuntimeAsync\RuntimeAsyncMethodGenerationAttribute.cs" Link="Internal\RuntimeAsyncMethodGenerationAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>
