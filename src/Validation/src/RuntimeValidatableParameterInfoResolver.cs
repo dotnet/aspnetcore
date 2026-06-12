@@ -115,7 +115,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             // name when the localizer can't translate.
             return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
             {
-                Type = null,
+                Type = type,
                 DisplayName = literal,
                 MemberName = memberName,
             }) ?? literal;
