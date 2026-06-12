@@ -248,7 +248,30 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
+        // Capture the previous value so we can detect when the parent updates the `Value`
+        // parameter directly. If the parent sets a new `Value` while the input is in a
+        // parsing-failed state, we should reset that state so the new valid value is
+        // rendered and any parsing-related validation messages are cleared.
+        var previousValue = Value;
         parameters.SetParameterProperties(this);
+
+        // If the parent updated the `Value` parameter to a different value, clear any
+        // parsing failure state so the input doesn't continue to display the rejected
+        // incoming string.
+        if (_hasInitializedParameters && !EqualityComparer<TValue>.Default.Equals(Value, previousValue))
+        {
+            if (_parsingFailed)
+            {
+                _parsingFailed = false;
+                _incomingValueBeforeParsing = null;
+
+                if (_parsingValidationMessages != null)
+                {
+                    _parsingValidationMessages.Clear();
+                    EditContext?.NotifyValidationStateChanged();
+                }
+            }
+        }
 
         if (!_hasInitializedParameters)
         {
