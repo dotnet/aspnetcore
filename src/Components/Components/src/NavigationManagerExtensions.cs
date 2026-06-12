@@ -888,15 +888,16 @@ public static class NavigationManagerExtensions
         return _componentRouteTemplates.GetOrAdd(componentType, type =>
         {
             var routeAttributes = type.GetCustomAttributes<RouteAttribute>(inherit: false);
-            if (routeAttributes.Length == 0)
+            var routeAttributesArray = routeAttributes as RouteAttribute[] ?? routeAttributes.ToArray();
+            if (routeAttributesArray.Length == 0)
             {
                 return Array.Empty<string>();
             }
 
-            var templates = new string[routeAttributes.Length];
-            for (var i = 0; i < routeAttributes.Length; i++)
+            var templates = new string[routeAttributesArray.Length];
+            for (var i = 0; i < routeAttributesArray.Length; i++)
             {
-                templates[i] = routeAttributes[i].Template;
+                templates[i] = routeAttributesArray[i].Template;
             }
 
             return templates;
