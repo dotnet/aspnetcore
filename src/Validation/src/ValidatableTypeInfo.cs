@@ -87,16 +87,10 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             return localMember;
         }
 
-        foreach (var superType in _superTypes)
+        if (Type.BaseType is { } baseType &&
+            validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeInfo))
         {
-            if (validationOptions.TryGetValidatableTypeInfo(superType, out var superInfo)
-                // TODO: We still have the type check here for FindLocalMember.
-                // Should we rename to FindLocalProperty and add to the IValidatableTypeInfo interface to avoid this?
-                && superInfo is ValidatableTypeInfo superTypeInfo
-                && superTypeInfo.FindLocalMember(propertyName) is { } inheritedMember)
-            {
-                return inheritedMember;
-            }
+            return baseTypeInfo.TryFindProperty(propertyName, validationOptions);
         }
 
         return null;
