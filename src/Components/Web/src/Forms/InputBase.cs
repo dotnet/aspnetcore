@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -267,6 +268,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 EditContext = CascadedEditContext;
                 EditContext.OnValidationStateChanged += _validationStateChangedHandler;
                 _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+
+                if (AssignedRenderMode is null)
+                {
+                    // Register the input for client-side validation if rendered in static SSR mode.
+                    RenderedFieldRegistry.GetOrCreate(EditContext).Register(FieldIdentifier, NameAttributeValue);
+                }
             }
             else
             {

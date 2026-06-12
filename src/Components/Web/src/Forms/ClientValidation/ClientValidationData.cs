@@ -13,10 +13,13 @@ namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 /// </summary>
 /// <remarks>
 /// <para>
-/// On Blazor SSR, <see cref="EditForm"/> includes one instance of this component at the end of
-/// its render tree. On Server/WebAssembly/interactive paths no <see cref="ClientValidationProvider"/>
-/// is registered, the optional service lookup returns <see langword="null"/>, and the component
-/// is a no-op.
+/// <see cref="EditForm"/> includes one instance of this component at the end of its render tree
+/// in every render mode. The component only emits the carrier element in static SSR: inputs
+/// register themselves (in <c>InputBase</c>) only when rendered statically (gated on
+/// <c>AssignedRenderMode is null</c>), so on interactive render modes - and during the interactive
+/// prerender pass - the registry is empty and this component is a no-op before it ever resolves a
+/// provider. The <see cref="ClientValidationProvider"/> lookup is additionally optional, so hosts
+/// with no provider registered (for example standalone WebAssembly) are also a no-op.
 /// </para>
 /// <para>
 /// The component renders at most once per form instance; <see cref="EditForm"/> never re-parents it,
@@ -52,12 +55,19 @@ internal sealed class ClientValidationData : IComponent
             return Task.CompletedTask;
         }
 
+        // Inputs that rendered under this EditContext registered their field + HTML name here.
+        var registry = RenderedFieldRegistry.Get(CurrentEditContext);
+        if (registry is null || registry.Fields.Count == 0)
+        {
+            return Task.CompletedTask;
+        }
+
         // Optional service: no ClientValidationProvider is registered outside Components.Endpoints,
         // so on Server / WASM / interactive paths the resolved provider is null and we render nothing.
         // Third parties that subclass ClientValidationProvider and register their own concrete are
         // picked up by the same lookup.
         var provider = Services.GetService<ClientValidationProvider>();
-        var descriptor = provider?.GetFormDescriptor(CurrentEditContext);
+        var descriptor = provider?.GetFormDescriptor(CurrentEditContext, registry.Fields);
         if (descriptor is null || descriptor.Fields.Count == 0)
         {
             return Task.CompletedTask;

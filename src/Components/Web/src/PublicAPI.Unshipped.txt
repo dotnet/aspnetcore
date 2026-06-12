@@ -1,5 +1,5 @@
 #nullable enable
-abstract Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationProvider.GetFormDescriptor(Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFormDescriptor?
+abstract Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationProvider.GetFormDescriptor(Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.Collections.Generic.IReadOnlyDictionary<Microsoft.AspNetCore.Components.Forms.FieldIdentifier, string!>! renderedFields) -> Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFormDescriptor?
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor.ClientValidationFieldDescriptor(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule!>! rules) -> void
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor.Name.get -> string!

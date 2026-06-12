@@ -17,8 +17,6 @@ public class ClientValidationDataTest
 {
     private const string CarrierElementName = "blazor-client-validation-data";
 
-    // ---- ClientValidationData decision tree ----
-
     [Fact]
     public async Task Renders_BlazorClientValidationData_WhenMarkerSetAndProviderReturnsNonNull()
     {
@@ -81,8 +79,6 @@ public class ClientValidationDataTest
 
         Assert.Null(elementName);
     }
-
-    // ---- EditForm wiring ----
 
     [Fact]
     public async Task EditForm_RendersClientValidationDataInsideEditContextCascade()
@@ -171,8 +167,6 @@ public class ClientValidationDataTest
         }
         return false;
     }
-
-    // ---- Host components / fakes ----
 
     // Standalone host: renders just <ClientValidationData /> inside a CascadingValue<EditContext>,
     // mirroring what EditForm does but without the rest of EditForm's surface.
