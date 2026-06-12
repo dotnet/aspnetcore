@@ -70,7 +70,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             }
             else
             {
-                Assert.Equal("row-clickable", row.GetDomAttribute("class"));
+                Assert.Equal("row-clickable ", row.GetDomAttribute("class"));
             }
         }
 
