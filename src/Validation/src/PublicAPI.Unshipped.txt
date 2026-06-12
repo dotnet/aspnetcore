@@ -8,6 +8,7 @@
 *REMOVED*Microsoft.Extensions.Validation.IValidatableInfoResolver.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo) -> bool
 *REMOVED*Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo) -> bool
 *REMOVED*Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableInfo? validatableTypeInfo) -> bool
+*REMOVED*virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? declaringType) -> string?
 Microsoft.Extensions.Validation.DisplayNameInfo
 Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
