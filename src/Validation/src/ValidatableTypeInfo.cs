@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableTypeInfo : IValidatableInfo
+public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 {
     private readonly int _membersCount;
     private readonly List<Type> _superTypes;
@@ -61,7 +61,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 
     /// <summary>
     /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
-    /// <paramref name="memberName"/>, including members inherited from base types or implemented
+    /// <paramref name="propertyName"/>, including members inherited from base types or implemented
     /// interfaces.
     /// </summary>
     /// <remarks>
@@ -72,26 +72,28 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </para>
     /// <para>
     /// Inherited members are resolved by looking up each super-type via
-    /// <paramref name="options"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
+    /// <paramref name="validationOptions"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
     /// are not registered with a resolver are silently skipped.
     /// </para>
     /// </remarks>
-    /// <param name="memberName">The CLR name of the member to find.</param>
-    /// <param name="options">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
+    /// <param name="propertyName">The CLR name of the property to find.</param>
+    /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
     /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
     /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
-    internal ValidatablePropertyInfo? FindMember(string memberName, ValidationOptions options)
+    public IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions)
     {
-        if (FindLocalMember(memberName) is { } localMember)
+        if (FindLocalMember(propertyName) is { } localMember)
         {
             return localMember;
         }
 
         foreach (var superType in _superTypes)
         {
-            if (options.TryGetValidatableTypeInfo(superType, out var superInfo)
+            if (validationOptions.TryGetValidatableTypeInfo(superType, out var superInfo)
+                // TODO: We still have the type check here for FindLocalMember.
+                // Should we rename to FindLocalProperty and add to the IValidatableTypeInfo interface to avoid this?
                 && superInfo is ValidatableTypeInfo superTypeInfo
-                && superTypeInfo.FindLocalMember(memberName) is { } inheritedMember)
+                && superTypeInfo.FindLocalMember(propertyName) is { } inheritedMember)
             {
                 return inheritedMember;
             }

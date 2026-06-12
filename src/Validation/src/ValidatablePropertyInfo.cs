@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a member of a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : IValidatableInfo
+public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
