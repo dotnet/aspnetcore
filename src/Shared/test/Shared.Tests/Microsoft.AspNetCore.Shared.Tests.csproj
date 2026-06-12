@@ -37,7 +37,6 @@
     <Compile Include="$(SharedSourceRoot)PropertyHelper\*.cs" Link="Shared\PropertyHelper\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" Link="Shared\SecurityHelper\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ServerInfrastructure\**\*.cs" Link="Shared\ServerInfrastructure\%(Filename)%(Extension)" />
-    <Compile Include="$(SharedSourceRoot)RuntimeAsync\RuntimeAsyncMethodGenerationAttribute.cs" Link="Shared\RuntimeAsyncMethodGenerationAttribute.cs" />
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" Link="Shared\ValueTaskExtensions\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)StackTrace\StackFrame\**\*.cs" Link="Shared\StackTrace\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)Dictionary\**\*.cs" Link="Shared\Dictionary\%(Filename)%(Extension)" />
