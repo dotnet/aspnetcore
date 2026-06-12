@@ -31,3 +31,22 @@ button.col-title {
     overflow: hidden;
     white-space: nowrap;
 }
+
+.col-options-button.col-options-active {
+/* Indicates an active filter state on the column options button.
+   Can be customized by consuming applications. */
+    color: var(--quickgrid-column-options-active-color, var(--bs-primary, #0d6efd));
+    position: relative;
+}
+
+.col-options-button.col-options-active::after {
+    content: "";
+    position: absolute;
+    top: 0.7rem;
+    left: 8.5rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background-color: currentColor;
+    pointer-events: none;
+}
