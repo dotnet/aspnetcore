@@ -46,6 +46,13 @@ internal sealed class IpcReceiver
                 throw new InvalidOperationException("Cannot receive IPC messages when no page is attached");
             }
 
+            // If the page context's JS runtime has been disposed, ignore messages
+            // for the old page since they would target stale JS object references.
+            if (pageContext.JSRuntime.IsDisposed)
+            {
+                return;
+            }
+
             switch (messageType)
             {
                 case IpcCommon.IncomingMessageType.BeginInvokeDotNet:

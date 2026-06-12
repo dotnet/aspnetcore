@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
@@ -110,6 +111,26 @@ public class WebViewManagerTests
         Assert.Equal($"There is already a root component with selector '{arbitraryComponentSelector}'.", ex.Message);
     }
 
+    [Fact]
+    public async Task AttachingToNewPage_ThrowsJSDisconnectedExceptionDuringComponentDispose()
+    {
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(PerformJSInteropOnDisposeComponent), "#app", ParameterView.Empty);
+
+        webViewManager.ReceiveAttachPageMessage();
+
+        // Simulate a page reload which disposes the old PageContext (including renderer)
+        // and creates a new one. Components with IAsyncDisposable that call JS interop
+        // should see JSDisconnectedException.
+        webViewManager.ReceiveAttachPageMessage();
+
+        var singleton = services.GetRequiredService<SingletonService>();
+        Assert.Single(singleton.DisposedComponentExceptions);
+        Assert.IsType<JSDisconnectedException>(singleton.DisposedComponentExceptions[0]);
+    }
+
     private static IServiceCollection RegisterTestServices()
     {
         return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();
@@ -166,6 +187,7 @@ public class WebViewManagerTests
     private class SingletonService
     {
         public List<ScopedService> Services { get; } = new();
+        public List<Exception> DisposedComponentExceptions { get; } = new();
 
         public void Add(ScopedService service)
         {
@@ -191,5 +213,42 @@ public class WebViewManagerTests
     public class AsyncDisposableService : IAsyncDisposable
     {
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private class PerformJSInteropOnDisposeComponent : IComponent, IAsyncDisposable
+    {
+        private RenderHandle _handle;
+
+        [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+        [Inject] public SingletonService Singleton { get; set; } = default!;
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _handle = renderHandle;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            _handle.Render(builder =>
+            {
+                builder.OpenElement(0, "p");
+                builder.AddContent(1, "Hello world!");
+                builder.CloseElement();
+            });
+
+            return Task.CompletedTask;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("SomeJsCleanupCode");
+            }
+            catch (Exception ex)
+            {
+                Singleton.DisposedComponentExceptions.Add(ex);
+            }
+        }
     }
 }
