@@ -21,21 +21,47 @@ export async function fetchAndInvokeInitializers(options: Partial<WebAssemblySta
       WebRendererId.WebAssembly
     );
 
-    const configInitializers = loadedConfig?.resources?.['libraryInitializers'];
-    let initializers : JSAsset[];
-    if (!configInitializers) {
-      initializers = [];
-    } else if ('length' in configInitializers) {
-      // New boot config schema.
-      initializers = configInitializers;
-    } else {
-      // Old boot config schema.
-      initializers = Object.keys(configInitializers).map(name => ({
-        name,
-      })) as JSAsset[];
-    }
-
+    const initializers = resolveLibraryInitializers(loadedConfig);
     await jsInitializer.importInitializersAsync(initializers, initializerArguments);
     return jsInitializer;
   }
+}
+
+type WasmResourcesWithInitializers = {
+  modulesAfterConfigLoaded?: JSAsset[];
+  modulesAfterRuntimeReady?: JSAsset[];
+  // Legacy boot config entry, only populated for pre-.NET 8 boot configs.
+  libraryInitializers?: JSAsset[] | { [name: string]: string | null };
+};
+
+// Resolves the set of Blazor JS library initializer modules ('*.lib.module.js') that Blazor is
+// responsible for importing and invoking ('beforeStart'/'afterStarted'/'before|afterWebAssembly*').
+function resolveLibraryInitializers(loadedConfig: MonoConfig): JSAsset[] {
+  const resources = loadedConfig?.resources as unknown as WasmResourcesWithInitializers | undefined;
+
+  // .NET 8+ boot config: both the Mono and CoreCLR runtime loaders expose library initializers under
+  // 'modulesAfterConfigLoaded' (modules exporting beforeStart/afterStarted) and 'modulesAfterRuntimeReady'.
+  // Their names are resolved by the runtime relative to the '_framework' folder (hence the leading '../'),
+  // whereas Blazor resolves initializer paths relative to 'document.baseURI', so strip a single leading '../'.
+  const modules = [
+    ...(resources?.modulesAfterConfigLoaded ?? []),
+    ...(resources?.modulesAfterRuntimeReady ?? []),
+  ].filter(asset => !!asset?.name);
+  if (modules.length > 0) {
+    return modules.map(asset => ({ ...asset, name: asset.name!.replace(/^\.\.\//, '') }));
+  }
+
+  // Fallback for older boot config schemas (< .NET 8) that only populate 'libraryInitializers'.
+  const configInitializers = resources?.libraryInitializers;
+  if (configInitializers) {
+    if (Array.isArray(configInitializers)) {
+      // Array form.
+      return configInitializers;
+    }
+
+    // Dictionary form (name -> hash).
+    return Object.keys(configInitializers).map(name => ({ name }));
+  }
+
+  return [];
 }

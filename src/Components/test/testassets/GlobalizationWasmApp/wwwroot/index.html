@@ -13,7 +13,15 @@
         (function(){
             const search = new window.URLSearchParams(window.location.search);
             const culture = search.get('culture');
-            Blazor.start({ applicationCulture: culture });
+            Blazor.start({
+                applicationCulture: culture,
+                // GOTCHA: Workaround until https://github.com/dotnet/runtime/pull/129221
+                configureRuntime: dotnet => {
+                    if (culture) {
+                        dotnet.withEnvironmentVariable('LANG', `${culture}.UTF-8`);
+                    }
+                }
+            });
         })();
 
     </script>
