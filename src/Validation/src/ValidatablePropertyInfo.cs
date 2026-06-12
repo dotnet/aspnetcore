@@ -169,22 +169,20 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
                 foreach (var item in enumerable)
                 {
-                    context.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                    var clonedContext = context.Clone();
+                    clonedContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
                     if (item != null)
                     {
                         var itemType = item.GetType();
-                        if (context.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        if (clonedContext.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            await validatableType.ValidateAsync(item, context, cancellationToken);
+                            await validatableType.ValidateAsync(item, clonedContext, cancellationToken);
                         }
                     }
 
                     index++;
                 }
-
-                // Restore prefix to the property name before validating the next item
-                context.CurrentValidationPath = currentPrefix;
             }
             else if (propertyValue != null)
             {
