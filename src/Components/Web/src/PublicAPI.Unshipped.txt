@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.get -> string?
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.set -> void
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
+Microsoft.AspNetCore.Components.Forms.EditForm.AllowModelChange.get -> bool
+Microsoft.AspNetCore.Components.Forms.EditForm.AllowModelChange.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void

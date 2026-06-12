@@ -95,6 +95,22 @@ public class EditForm : ComponentBase
     /// </summary>
     [Parameter] public string? FormName { get; set; }
 
+    /// <summary>
+    /// When <see langword="true"/>, allows the <see cref="Model"/> parameter to be replaced with a
+    /// new instance without destroying and recreating child components.
+    /// </summary>
+    /// <remarks>
+    /// By default, when <see cref="Model"/> changes, <see cref="EditForm"/> creates a new
+    /// <see cref="EditContext"/> and tears down the entire child subtree so that it can cascade
+    /// the new context using the <c>IsFixed=true</c> optimisation (which avoids per-component
+    /// change subscriptions). Setting <see cref="AllowModelChange"/> to <see langword="true"/>
+    /// disables that optimisation: the cascaded <see cref="EditContext"/> uses
+    /// <c>IsFixed=false</c> and child components are updated in-place. This avoids the
+    /// destruction of child components that hold local state (e.g. JS interop handles), but at
+    /// the cost of each descendant subscribing for cascading-value changes.
+    /// </remarks>
+    [Parameter] public bool AllowModelChange { get; set; }
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -132,10 +148,16 @@ public class EditForm : ComponentBase
     {
         Debug.Assert(_editContext != null);
 
-        // If _editContext changes, tear down and recreate all descendants.
-        // This is so we can safely use the IsFixed optimization on CascadingValue,
-        // optimizing for the common case where _editContext never changes.
-        builder.OpenRegion(_editContext.GetHashCode());
+        // When AllowModelChange=true the caller has opted in to paying the cost of non-fixed
+        // cascading values. We use a stable region (no key-by-hash) so child components are
+        // updated in-place rather than destroyed and recreated when the model changes.
+        // When AllowModelChange=false (the default) we keep the original behaviour: key the
+        // region on the edit context hash so that a model swap tears down descendants and
+        // lets us keep IsFixed=true for performance.
+        if (!AllowModelChange)
+        {
+            builder.OpenRegion(_editContext.GetHashCode());
+        }
 
         builder.OpenElement(0, "form");
 
@@ -165,14 +187,17 @@ public class EditForm : ComponentBase
         }
 
         builder.OpenComponent<CascadingValue<EditContext>>(7);
-        builder.AddComponentParameter(7, "IsFixed", true);
+        builder.AddComponentParameter(7, "IsFixed", !AllowModelChange);
         builder.AddComponentParameter(8, "Value", _editContext);
         builder.AddComponentParameter(9, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
 
         builder.CloseElement();
 
-        builder.CloseRegion();
+        if (!AllowModelChange)
+        {
+            builder.CloseRegion();
+        }
     }
 
     private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence)

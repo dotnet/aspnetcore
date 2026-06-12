@@ -280,13 +280,21 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
         else if (CascadedEditContext != EditContext)
         {
-            // Not the first run
+            // Not the first run — the EditContext changed (e.g. EditForm.AllowModelChange=true replaced
+            // the model). Unsubscribe from the old context, drop any parsing messages that were stored
+            // against it, and subscribe to the new one.
+            EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
+            _parsingValidationMessages = null;
 
-            // We don't support changing EditContext because it's messy to be clearing up state and event
-            // handlers for the previous one, and there's no strong use case. If a strong use case
-            // emerges, we can consider changing this.
-            throw new InvalidOperationException($"{GetType()} does not support changing the " +
-                $"{nameof(Forms.EditContext)} dynamically.");
+            EditContext = CascadedEditContext!;
+            EditContext.OnValidationStateChanged += _validationStateChangedHandler;
+            _shouldGenerateFieldNames = EditContext.ShouldUseFieldIdentifiers;
+
+            // Re-create the FieldIdentifier in case the ValueExpression points into the new model instance.
+            if (ValueExpression != null)
+            {
+                FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            }
         }
 
         UpdateAdditionalValidationAttributes();

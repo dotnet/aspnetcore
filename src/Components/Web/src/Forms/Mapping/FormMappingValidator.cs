@@ -43,10 +43,12 @@ internal class FormMappingValidator : ComponentBase, IDisposable
 
         if (CurrentEditContext != _originalEditContext)
         {
-            // While we could support this, there's no known use case presently. Since InputBase doesn't support it,
-            // it's more understandable to have the same restriction.
-            throw new InvalidOperationException($"{GetType()} does not support changing the " +
-                $"{nameof(EditContext)} dynamically.");
+            // The EditContext changed (e.g. because EditForm.AllowModelChange=true replaced the
+            // model with a new instance). Dispose the old subscriptions and re-subscribe using
+            // the new context so that form-mapping validation continues to work correctly.
+            _subscriptions?.Dispose();
+            _subscriptions = CurrentEditContext!.EnableFormMappingContextExtensions(MappingContext);
+            _originalEditContext = CurrentEditContext;
         }
     }
 
