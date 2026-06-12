@@ -626,7 +626,7 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
 
     echo "Creating versionless symlinks for shared libraries..."
     # Find all versioned .so files and create the base .so symlink
-    for lib in "$__RootfsDir/usr/lib/libc++.so."* "$__RootfsDir/usr/lib/libc++abi.so."* "$__RootfsDir/usr/lib/libpthread.so."*; do
+    for lib in "$__RootfsDir"/usr/lib/lib*.so.*; do
         if [ -f "$lib" ]; then
             # Extract the filename (e.g., libc++.so.12.0)
             VERSIONED_NAME=$(basename "$lib")
