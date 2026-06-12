@@ -70,7 +70,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         ArgumentNullException.ThrowIfNull(containingObject);
 
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
-        var propertyValue = property.GetValue(value);
+        var propertyValue = property.GetValue(containingObject);
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
@@ -105,7 +105,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
 
                 if (errorMessage is not null)
                 {
-                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], value);
+                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], containingObject);
                 }
 
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
@@ -114,7 +114,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, containingObject);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
