@@ -7,6 +7,7 @@ import { LogLevel } from './Platform/Logging/Logger';
 import { CircuitManager } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
+import { AutoPauseManager } from './Platform/Circuits/AutoPauseManager';
 import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
@@ -20,6 +21,7 @@ let options: CircuitStartOptions;
 let logger: ConsoleLogger;
 let serverStartPromise: Promise<void>;
 let circuitStarting: Promise<boolean> | undefined;
+let autoPauseManager: AutoPauseManager | undefined;
 
 export function setCircuitOptions(initializersReady: Promise<Partial<CircuitStartOptions>>) {
   if (options) {
@@ -122,12 +124,24 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   }
 
   const cleanup = () => {
+    autoPauseManager?.dispose();
+    autoPauseManager = undefined;
     circuit.sendDisconnectBeacon();
   };
 
   Blazor.disconnect = cleanup;
 
   window.addEventListener('pagehide', cleanup, { capture: false, once: true });
+
+  if (options.autoPause?.enabled) {
+    autoPauseManager = new AutoPauseManager(
+      options.autoPause,
+      options.onPauseRequested,
+      () => Blazor.pauseCircuit!(),
+      () => Blazor.resumeCircuit!(),
+      logger,
+    );
+  }
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 

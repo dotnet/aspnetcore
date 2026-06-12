@@ -20,7 +20,13 @@ export interface CircuitStartOptions {
   reconnectionHandler?: ReconnectionHandler;
   initializers : ServerInitializers;
   circuitHandlers: CircuitHandler[];
-  onPauseRequested?: () => Promise<void>;
+  autoPause: AutoPauseOptions;
+  onPauseRequested?: (signal: AbortSignal) => void | Promise<void>;
+}
+
+export interface AutoPauseOptions {
+  enabled: boolean;
+  hiddenDelayMilliseconds: number;
 }
 
 export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): CircuitStartOptions {
@@ -29,6 +35,10 @@ export function resolveOptions(userOptions?: Partial<CircuitStartOptions>): Circ
   // The spread operator can't be used for a deep merge, so do the same for subproperties
   if (userOptions && userOptions.reconnectionOptions) {
     result.reconnectionOptions = { ...defaultOptions.reconnectionOptions, ...userOptions.reconnectionOptions };
+  }
+
+  if (userOptions && userOptions.autoPause) {
+    result.autoPause = { ...defaultOptions.autoPause, ...userOptions.autoPause };
   }
 
   return result;
@@ -75,6 +85,10 @@ const defaultOptions: CircuitStartOptions = {
   logLevel: LogLevel.Warning,
   initializers: undefined!,
   circuitHandlers: [],
+  autoPause: {
+    enabled: false,
+    hiddenDelayMilliseconds: 120000,
+  },
   reconnectionOptions: {
     maxRetries: 30,
     retryIntervalMilliseconds: computeDefaultRetryInterval,

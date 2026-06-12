@@ -57,6 +57,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _isFirstRender = true;
 
+  private _pauseAbortController: AbortController | undefined;
+
+  private _activeStreamCount = 0;
+
+  private _streamDrainResolvers: Array<() => void> = [];
+
+  private _pendingJsCallTracking = new Map<number, () => void>();
+
+  private _pendingDotNetCallTracking = new Map<string, () => void>();
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -135,8 +145,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const connection = connectionBuilder.build();
 
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
-    connection.on('JS.BeginInvokeJS', this._dispatcher.beginInvokeJSFromDotNet.bind(this._dispatcher));
-    connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
+    connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
+      if (asyncHandle !== 0) {
+        this._pendingJsCallTracking.set(asyncHandle, this.trackActiveStream());
+      }
+      (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)(asyncHandle, ...rest);
+    });
+    connection.on('JS.EndInvokeDotNet', (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string) => {
+      const untrack = this._pendingDotNetCallTracking.get(asyncCallId);
+      if (untrack) {
+        this._pendingDotNetCallTracking.delete(asyncCallId);
+        untrack();
+      }
+      this._dispatcher.endInvokeDotNetFromJS(asyncCallId, success, resultJsonOrExceptionMessage);
+    });
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
 
     connection.on('JS.SavePersistedState', (circuitId: string, components: string, applicationState: string) => {
@@ -153,10 +175,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
+          const untrack = this.trackActiveStream();
           connection.stream('SendDotNetStreamToJS', streamId).subscribe({
             next: (chunk: Uint8Array) => controller.enqueue(chunk),
-            complete: () => controller.close(),
-            error: (err) => controller.error(err),
+            complete: () => { controller.close(); untrack(); },
+            error: (err) => { controller.error(err); untrack(); },
           });
         },
       });
@@ -177,7 +200,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.RequestPause', async () => {
       try {
         if (this._options.onPauseRequested) {
-          await this._options.onPauseRequested();
+          await this.invokeOnPauseRequested();
         }
         await this.pause(true);
       } catch (error) {
@@ -187,6 +210,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+
+      // The connection is gone; no point in awaiting any pause wind-down callbacks.
+      this.abortPendingPauseCallbacks('connection closed');
 
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
@@ -324,6 +350,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const pausingPromise = this._pausingState.currentProgress();
 
     try {
+      // defer pause while DotNetStreamReference transmissions are in flight. 
+      await this.waitForActiveStreamsToDrain();
+
       this._logger.log(LogLevel.Trace, 'Pausing the circuit...');
 
       // Notify the reconnection handler that we are pausing the circuit.
@@ -431,12 +460,20 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
     this.throwIfDispatchingWhenDisposed();
+    if (callId !== 0) {
+      this._pendingDotNetCallTracking.set(callId.toString(), this.trackActiveStream());
+    }
     this._connection!.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
   }
 
   // Implements DotNet.DotNetCallDispatcher
   public endInvokeJSFromDotNet(asyncHandle: number, succeeded: boolean, argsJson: any): void {
     this.throwIfDispatchingWhenDisposed();
+    const untrack = this._pendingJsCallTracking.get(asyncHandle);
+    if (untrack) {
+      this._pendingJsCallTracking.delete(asyncHandle);
+      untrack();
+    }
     this._connection!.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
   }
 
@@ -461,7 +498,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
-    return sendJSDataStream(this._connection!, data, streamId, chunkSize);
+    const untrack = this.trackActiveStream();
+    return sendJSDataStream(this._connection!, data, streamId, chunkSize, untrack);
   }
 
   public resolveElement(sequenceOrIdentifier: string): LogicalElement {
@@ -504,6 +542,66 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._renderingFailed;
   }
 
+  private async invokeOnPauseRequested(): Promise<void> {
+    this._pauseAbortController?.abort('superseded by new pause request');
+
+    const controller = new AbortController();
+    this._pauseAbortController = new AbortController();
+    try {
+      await this._options.onPauseRequested!(controller.signal);
+    } finally {
+      // Prevent race condition
+      if (this._pauseAbortController === controller) {
+        this._pauseAbortController = undefined;
+      }
+    }
+  }
+
+  private abortPendingPauseCallbacks(reason: string): void {
+    this._pauseAbortController?.abort(reason);
+    this._pauseAbortController = undefined;
+  }
+
+  private trackActiveStream(): () => void {
+    this._activeStreamCount++;
+    let untracked = false;
+    return () => {
+      if (untracked) {
+        return;
+      }
+      untracked = true;
+      this._activeStreamCount--;
+      if (this._activeStreamCount === 0) {
+        const resolvers = this._streamDrainResolvers.splice(0);
+        for (const resolve of resolvers) {
+          resolve();
+        }
+      }
+    };
+  }
+
+  private async waitForActiveStreamsToDrain(): Promise<void> {
+    if (this._activeStreamCount === 0) {
+      return;
+    }
+
+    this._logger.log(LogLevel.Information, `Pause deferred: waiting for ${this._activeStreamCount} active circuit operation(s) to complete.`);
+
+    const startedAt = Date.now();
+    await new Promise<void>(resolve => {
+      const onDrained = () => {
+        const idx = this._streamDrainResolvers.indexOf(onDrained);
+        if (idx >= 0) {
+          this._streamDrainResolvers.splice(idx, 1);
+        }
+        const elapsedMs = Date.now() - startedAt;
+        this._logger.log(LogLevel.Information, `Pause resumed: all circuit operations completed after ${elapsedMs}ms.`);
+        resolve();
+      };
+      this._streamDrainResolvers.push(onDrained);
+    });
+  }
+
   public isDisposedOrDisposing(): boolean {
     return this._disposePromise !== undefined;
   }
@@ -529,6 +627,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
+      this.abortPendingPauseCallbacks('circuit disposed');
       return;
     }
 
@@ -537,6 +636,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
+    this.abortPendingPauseCallbacks('circuit disposed');
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone

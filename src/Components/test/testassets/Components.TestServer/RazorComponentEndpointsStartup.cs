@@ -53,6 +53,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddValidation();
         services.AddValidationLocalization();
 
+        // Increase 10 MB hub message limit (default 32 KB)
+        if (Configuration.GetValue<bool>("AllowLargeHubMessages"))
+        {
+            services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(o =>
+            {
+                o.MaximumReceiveMessageSize = 10 * 1024 * 1024;
+            });
+        }
+
         var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
@@ -129,6 +138,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         services.AddScoped<PauseTrackingHandler>();
         services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
+
+        services.AddSingleton<AutoPauseTestStreamGate>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -266,6 +277,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
             MapEnhancedNavigationEndpoints(endpoints);
+            endpoints.MapAutoPauseTestEndpoints();
         });
     }
 
