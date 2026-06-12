@@ -18,6 +18,7 @@ public sealed class EditContext
     // didn't yet track any state for it, so we behave as if it's in the default state
     // (valid and unmodified).
     private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
+    private Dictionary<FieldIdentifier, string>? _activeFields;
     private bool _isFormValidationFaulted;
     private bool _isFormValidationPending;
 
@@ -94,6 +95,8 @@ public sealed class EditContext
     /// </summary>
     public EditContextProperties Properties { get; }
 
+    public IReadOnlyDictionary<FieldIdentifier, string>? ActiveFields => _activeFields;
+
     /// <summary>
     /// Gets whether field identifiers should be generated for &lt;input&gt; elements.
     /// </summary>
@@ -115,6 +118,13 @@ public sealed class EditContext
     public void NotifyValidationStateChanged()
     {
         OnValidationStateChanged?.Invoke(this, ValidationStateChangedEventArgs.Empty);
+    }
+
+    public void RegisterField(in FieldIdentifier fieldIdentifier, string renderedName)
+    {
+        ArgumentNullException.ThrowIfNull(renderedName);
+        _activeFields ??= [];
+        _activeFields[fieldIdentifier] = renderedName;
     }
 
     /// <summary>

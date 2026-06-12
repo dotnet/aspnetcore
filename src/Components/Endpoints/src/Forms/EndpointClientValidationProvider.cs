@@ -16,6 +16,8 @@ using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Forms;
 
+using FieldKey = (Type ModelType, string FieldName);
+
 /// <summary>
 /// Walks the form's model type for <see cref="ValidationAttribute"/>s and builds a typed
 /// <see cref="ClientValidationFormDescriptor"/> describing client-side validation rules.
@@ -26,8 +28,9 @@ internal sealed class EndpointClientValidationProvider : ClientValidationProvide
 {
     // Stores culture-independent reflection results. Display names and error messages are
     // resolved per call so the output respects CultureInfo.CurrentUICulture.
-    private readonly ConcurrentDictionary<Type, PropertyMetadata[]> _metadataCache = new();
-
+    private readonly ConcurrentDictionary<FieldKey, bool> _isServerValidatableCache = new();
+    private readonly ConcurrentDictionary<FieldKey, FieldMetadata?> _metadataCache = new();
+    private readonly ValidationOptions? _validationOptions;
     private readonly IValidationLocalizer? _validationLocalizer;
 
     [UnconditionalSuppressMessage("Trimming", "IL2066",
@@ -35,44 +38,95 @@ internal sealed class EndpointClientValidationProvider : ClientValidationProvide
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(ValidationOptions))]
     public EndpointClientValidationProvider(IServiceProvider serviceProvider)
     {
-        _validationLocalizer = serviceProvider.GetService<IOptions<ValidationOptions>>()?.Value?.Localizer;
+        _validationOptions = serviceProvider.GetService<IOptions<ValidationOptions>>()?.Value;
+        _validationLocalizer = _validationOptions?.Localizer;
     }
 
     public override ClientValidationFormDescriptor? GetFormDescriptor(EditContext editContext)
     {
         ArgumentNullException.ThrowIfNull(editContext);
 
-        var modelType = editContext.Model.GetType();
-        var properties = _metadataCache.GetOrAdd(modelType, static type => BuildMetadata(type));
+        var fields = editContext.ActiveFields;
 
-        if (properties.Length == 0)
+        if (fields == null || fields.Count == 0)
         {
             return null;
         }
 
-        var fields = new List<ClientValidationFieldDescriptor>(properties.Length);
+        List<ClientValidationFieldDescriptor>? fieldDescriptors = null;
 
-        foreach (var property in properties)
+        foreach (var (fieldIdentifier, renderedName) in fields)
         {
-            var displayName = ResolveDisplayName(in property);
+            var fieldModel = fieldIdentifier.Model;
+            var fieldKey = (fieldModel.GetType(), fieldIdentifier.FieldName);
+
+            var isServerValidatable = _isServerValidatableCache.GetOrAdd(
+                fieldKey,
+                key => IsServerValidatable(key, fieldModel, editContext.Model));
+
+            if (!isServerValidatable)
+            {
+                // Don't enable client-side validation for fields that would not get server-side validation
+                // to help developers avoid security mistakes.
+                continue;
+            }
+
+            var cachedMetadata = _metadataCache.GetOrAdd(
+                fieldKey,
+                key => BuildFieldMetadata(key.ModelType, key.FieldName));
+
+            if (cachedMetadata is not { } fieldMetadata)
+            {
+                continue;
+            }
+
+            var displayName = ResolveDisplayName(fieldMetadata);
             var rules = new List<ClientValidationRule>();
 
-            foreach (var attribute in property.ValidationAttributes)
+            foreach (var attribute in fieldMetadata.ValidationAttributes)
             {
-                var errorMessage = ResolveErrorMessage(attribute, property.Name, displayName, property.DeclaringType);
+                var errorMessage = ResolveErrorMessage(attribute, fieldMetadata.Name, displayName, fieldMetadata.DeclaringType);
                 AddRules(rules, attribute, errorMessage);
             }
 
-            // Skip properties whose attributes produced no client-renderable rules
-            // (e.g. RangeAttribute with a non-numeric operand type).
-            if (rules.Count > 0)
+            if (rules.Count == 0)
             {
-                fields.Add(new ClientValidationFieldDescriptor(property.Name, rules));
+                continue;
             }
+
+            (fieldDescriptors ??= []).Add(new ClientValidationFieldDescriptor(renderedName, rules));
         }
 
-        return fields.Count == 0 ? null : new ClientValidationFormDescriptor(fields);
+        return fieldDescriptors == null ? null : new ClientValidationFormDescriptor(fieldDescriptors);
     }
+
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+    private bool IsServerValidatable(FieldKey key, object fieldModel, object formModel)
+    {
+        var property = key.ModelType.GetProperty(key.FieldName, BindingFlags.Public | BindingFlags.Instance);
+
+        if (property == null)
+        {
+            return false;
+        }
+
+        // Without MEV: All top-level properties are validated, all nested properties are skipped.
+        if (_validationOptions == null)
+        {
+            return ReferenceEquals(fieldModel, formModel);
+        }
+
+        // With MEV: All properties with SkipValidation are skipped.
+        if (property.GetCustomAttribute<SkipValidationAttribute>() != null
+            || property.PropertyType.GetCustomAttribute<SkipValidationAttribute>() != null)
+        {
+            return false;
+        }
+
+        var hasValidatableInfo = _validationOptions?.TryGetValidatableTypeInfo(key.ModelType, out _) ?? false;
+        return hasValidatableInfo;
+    }
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
 
     // Maps each ValidationAttribute to one or more ClientValidationRule entries. Custom
     // attributes that implement IClientValidationAdapter contribute their own rules.
@@ -210,7 +264,7 @@ internal sealed class EndpointClientValidationProvider : ClientValidationProvide
     // Mirrors the decision tree used by the server-side validation.
     // Resource-attribute display names bypass the localizer (resource lookup is the canonical
     // localized source). Literal display names act as both lookup key and fallback for the localizer.
-    private string ResolveDisplayName(in PropertyMetadata metadata)
+    private string ResolveDisplayName(in FieldMetadata metadata)
     {
         if (metadata.ResourceDisplayAttribute is { } resourceAttribute)
         {
@@ -273,10 +327,10 @@ internal sealed class EndpointClientValidationProvider : ClientValidationProvide
         || operandType == typeof(float)
         || operandType == typeof(decimal);
 
-    // Per-property reflection results. Culture-independent; localized text is resolved per call.
+    // Per-field reflection results. Culture-independent; localized text is resolved per call.
     // At most one of ResourceDisplayAttribute and LiteralDisplayName is non-null; both null means
-    // the property has no display attribute.
-    private readonly struct PropertyMetadata(
+    // the field property has no display attribute.
+    private readonly struct FieldMetadata(
         string name,
         ValidationAttribute[] validationAttributes,
         Type? declaringType,
@@ -300,45 +354,41 @@ internal sealed class EndpointClientValidationProvider : ClientValidationProvide
     // least one ValidationAttribute. Top-level only - does NOT recurse into nested complex types.
     [UnconditionalSuppressMessage("Trimming", "IL2070",
         Justification = "Model types are application code and are preserved by default.")]
-    private static PropertyMetadata[] BuildMetadata(Type modelType)
+    private static FieldMetadata? BuildFieldMetadata(Type modelType, string fieldName)
     {
-        var properties = modelType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-        if (properties.Length == 0)
+        var property = modelType.GetProperty(fieldName, BindingFlags.Public | BindingFlags.Instance);
+
+        if (property == null)
         {
-            return [];
+            return null;
         }
 
-        var result = new List<PropertyMetadata>(properties.Length);
-        foreach (var property in properties)
+        var validationAttributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
+
+        if (validationAttributes.Length == 0)
         {
-            var validationAttributes = property.GetCustomAttributes<ValidationAttribute>(inherit: true).ToArray();
-            if (validationAttributes.Length == 0)
-            {
-                continue;
-            }
-
-            var displayAttribute = property.GetCustomAttribute<DisplayAttribute>(inherit: true);
-            DisplayAttribute? resourceDisplayAttribute = null;
-            string? literalDisplayName = null;
-
-            if (displayAttribute is { ResourceType: not null, Name: not null })
-            {
-                resourceDisplayAttribute = displayAttribute;
-            }
-            else
-            {
-                literalDisplayName = displayAttribute?.Name
-                    ?? property.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName;
-            }
-
-            result.Add(new PropertyMetadata(
-                name: property.Name,
-                validationAttributes,
-                declaringType: property.DeclaringType,
-                resourceDisplayAttribute,
-                literalDisplayName));
+            return null;
         }
 
-        return result.ToArray();
+        var displayAttribute = property.GetCustomAttribute<DisplayAttribute>(inherit: true);
+        DisplayAttribute? resourceDisplayAttribute = null;
+        string? literalDisplayName = null;
+
+        if (displayAttribute is { ResourceType: not null, Name: not null })
+        {
+            resourceDisplayAttribute = displayAttribute;
+        }
+        else
+        {
+            literalDisplayName = displayAttribute?.Name
+                ?? property.GetCustomAttribute<DisplayNameAttribute>(inherit: true)?.DisplayName;
+        }
+
+        return new FieldMetadata(
+            name: property.Name,
+            validationAttributes,
+            declaringType: property.DeclaringType,
+            resourceDisplayAttribute,
+            literalDisplayName);
     }
 }

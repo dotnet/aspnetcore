@@ -1,5 +1,7 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationMarker
+Microsoft.AspNetCore.Components.Forms.EditContext.ActiveFields.get -> System.Collections.Generic.IReadOnlyDictionary<Microsoft.AspNetCore.Components.Forms.FieldIdentifier, string!>?
+Microsoft.AspNetCore.Components.Forms.EditContext.RegisterField(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, string! renderedName) -> void
 Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.ValidationRequestedEventArgs(System.Threading.CancellationToken cancellationToken) -> void
 Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.CancellationToken.get -> System.Threading.CancellationToken
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
