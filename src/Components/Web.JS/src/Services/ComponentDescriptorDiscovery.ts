@@ -158,7 +158,8 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator, type
             return createAutoComponentComment(componentComment, candidateStart as Comment, candidateEnd);
         }
       } catch (error) {
-        throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
+        throw new Error(`Blazor hydration failed due to a malformed component marker. This can occur when the server-rendered HTML structure does not match the DOM in the browser.
+A common cause is invalid HTML markup (for example, placing block-level elements or components inside a <p> tag), which browsers may automatically correct. Ensure that your component markup follows valid HTML structure.`);
       }
     } else {
       return;
