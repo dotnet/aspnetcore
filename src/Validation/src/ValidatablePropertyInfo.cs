@@ -65,8 +65,10 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <inheritdoc />
-    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    public virtual async Task ValidateAsync(object containingObject, ValidateContext context, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(containingObject);
+
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
