@@ -101,6 +101,38 @@ public class VirtualizeTest
     }
 
     [Fact]
+    public async Task Virtualize_UsesInitialItemCapacityWhenItemsAreProvided()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(
+                itemSize: 50f,
+                items: Enumerable.Range(1, 8).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v,
+                initialItemCapacity: 3)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        Assert.NotNull(renderedVirtualize);
+
+        var renderedItemElements = testRenderer.Batches
+            .SelectMany(b => b.ReferenceFrames)
+            .Count(f => f.FrameType == RenderTreeFrameType.Element && f.ElementName == "span");
+
+        Assert.Equal(3, renderedItemElements);
+    }
+
+    [Fact]
     public async Task Virtualize_MeasurementsUpdateRunningAverage()
     {
         // Use fixed items with a template so items actually render
@@ -792,7 +824,8 @@ public class VirtualizeTest
         ICollection<int> items,
         Action<Virtualize<int>> captureRenderedVirtualize = null,
         string spacerElement = "div",
-        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning)
+        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning,
+        int initialItemCapacity = 20)
         => builder =>
     {
         builder.OpenComponent<Virtualize<int>>(0);
@@ -805,11 +838,12 @@ public class VirtualizeTest
             b.AddContent(1, item.ToString(System.Globalization.CultureInfo.InvariantCulture));
             b.CloseElement();
         }));
-        builder.AddComponentParameter(5, "AnchorMode", anchorMode);
+        builder.AddComponentParameter(5, "InitialItemCapacity", initialItemCapacity);
+        builder.AddComponentParameter(6, "AnchorMode", anchorMode);
 
         if (captureRenderedVirtualize != null)
         {
-            builder.AddComponentReferenceCapture(6, component =>
+            builder.AddComponentReferenceCapture(7, component =>
                 captureRenderedVirtualize(component as Virtualize<int>));
         }
 
@@ -1195,8 +1229,9 @@ public class VirtualizeTest
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", items as ICollection<int>);
                 builder.AddComponentParameter(3, "InitialIndex", 99999);
-                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
-                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
+                builder.AddComponentParameter(4, "InitialItemCapacity", 0);
+                builder.AddComponentParameter(5, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                builder.AddComponentReferenceCapture(6, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
             }
         };

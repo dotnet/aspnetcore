@@ -86,6 +86,8 @@ Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.set
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.SupplyParameterFromSessionAttribute() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialItemCapacity.get -> int
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialItemCapacity.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialIndex.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialIndex.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>!

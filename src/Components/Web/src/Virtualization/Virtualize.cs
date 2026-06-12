@@ -87,6 +87,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // so the viewport stays stable after a prepend or append.
     private bool _pendingAnchorRestore;
 
+    // True after the first interactive render; false during SSR/prerender.
+    private bool _isInteractive;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -164,6 +167,20 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public int MaxItemCount { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the number of items to render on initial load, before the viewport is measured.
+    ///
+    /// For SSR, this determines the initial HTML output since there's no client measurement.
+    /// The component estimates how many items fit based on <see cref="ItemSize"/> and parent height.
+    ///
+    /// For interactive modes (Blazor Server/WebAssembly), this only applies until the viewport
+    /// is measured. After that, rendering adapts to the actual container dimensions.
+    ///
+    /// Defaults to 20. Increase if you see empty space before scrolling.
+    /// </summary>
+    [Parameter]
+    public int InitialItemCapacity { get; set; } = 20;
 
     /// <summary>
     /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
@@ -402,6 +419,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _measuredItemCount = 0;
         }
 
+        // During SSR/prerender, there are no interactive measurements from JS yet.
+        // Use InitialItemCapacity to seed the first render with a reasonable estimate.
+        if (_visibleItemCapacity == 0 && !_isInteractive && InitialItemCapacity > 0)
+        {
+            _visibleItemCapacity = InitialItemCapacity;
+        }
+
         if (ItemsProvider != null)
         {
             if (Items != null)
@@ -458,6 +482,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         if (firstRender)
         {
+            _isInteractive = true;
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
             await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
             _lastRenderedAnchorMode = AnchorMode;
