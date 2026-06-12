@@ -168,7 +168,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         }
     }
 
-    private async Task ValidateMembersAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private async Task ValidateMembersAsync(object value, ValidateContext context, CancellationToken cancellationToken)
     {
         var originalPrefix = context.CurrentValidationPath;
 
