@@ -94,14 +94,20 @@
 
     private void RenderColumnHeaders(RenderTreeBuilder __builder)
     {
-        foreach (var col in _columns)
+        for (var columnIndex = 0; columnIndex < _columns.Count; columnIndex++)
         {
+            var col = _columns[columnIndex];
             <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col">
                 <div class="col-header-content">@col.HeaderContent</div>
 
                 @if (col == _displayOptionsForColumn)
                 {
                     <div class="col-options">@col.ColumnOptions</div>
+                }
+
+                @if (ColumnResize && columnIndex < _columns.Count - 1)
+                {
+                    <div class="col-width-draghandle" data-column-index="@columnIndex" aria-hidden="true"></div>
                 }
             </th>
         }

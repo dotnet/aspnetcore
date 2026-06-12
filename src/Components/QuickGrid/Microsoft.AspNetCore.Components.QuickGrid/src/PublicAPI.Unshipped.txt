@@ -1,6 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.get -> string!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ColumnResize.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ColumnResize.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.set -> void
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> void

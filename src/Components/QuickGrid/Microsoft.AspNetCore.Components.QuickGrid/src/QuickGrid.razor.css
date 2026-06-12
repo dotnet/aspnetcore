@@ -61,7 +61,9 @@ th ::deep .col-options-button {
     top: 0;
     bottom: 0;
     right: 0rem;
-    cursor: ew-resize;
+    width: 0.75rem;
+    cursor: col-resize;
+    transition: opacity 80ms linear;
 }
 
     .col-width-draghandle:after {
@@ -120,4 +122,10 @@ html[dir=rtl] .col-justify-end .col-options {
 /* Clickable rows when OnRowClick is set */
 tr.row-clickable {
     cursor: pointer;
+}
+
+.quickgrid-column-resizing,
+.quickgrid-column-resizing * {
+    cursor: col-resize;
+    user-select: none;
 }
