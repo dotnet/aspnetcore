@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
@@ -980,6 +981,69 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(headerName, pairs[0].Key);
         Assert.Equal(expectedHeaderValue, pairs[0].Value);
         Assert.True(buffer.Slice(reader.Position).IsEmpty);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void HttpParser_DefaultsToCrlfOnlyWhenSwitchNotSet()
+    {
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
+            AssertRejectsBareLineFeedHeader(parser);
+        });
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void HttpParser_RejectsLineFeedTerminatorWhenSwitchSetToTrue()
+    {
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            AppContext.SetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, true);
+
+            var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
+            AssertRejectsBareLineFeedHeader(parser);
+        });
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void HttpParser_AcceptsLineFeedTerminatorWhenSwitchSetToFalse()
+    {
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            AppContext.SetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, false);
+
+            var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
+            var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a:b\n\r\n"));
+            var requestHandler = new RequestHandler();
+            var reader = new SequenceReader<byte>(buffer);
+
+            Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+            Assert.Single(requestHandler.Headers);
+            Assert.Equal("b", requestHandler.Headers["a"]);
+        });
+    }
+
+    private static void AssertRejectsBareLineFeedHeader(HttpParser<RequestHandler> parser)
+    {
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a:b\n\r\n"));
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+
+        try
+        {
+            parser.ParseHeaders(requestHandler, ref reader);
+        }
+#pragma warning disable CS0618 // Type or member is obsolete
+        catch (BadHttpRequestException)
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            return;
+        }
+
+        Assert.Fail("Expected BadHttpRequestException for bare LF header terminator.");
     }
 
     private void VerifyRawHeaders(string rawHeaders, IEnumerable<string> expectedHeaderNames, IEnumerable<string> expectedHeaderValues, bool disableHttp1LineFeedTerminators = true)
