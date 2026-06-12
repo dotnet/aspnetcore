@@ -1,0 +1,15 @@
+@* An intermediate component that hard-codes a hole (ExcludedContent) with its own child content in
+   its own markup, rather than receiving it through a RenderFragment parameter. The hole's ChildContent
+   is therefore a raw (unwrapped) RenderFragment from the CacheBoundary's perspective. *@
+
+<div class="hardcoded-hole-panel">
+    <p class="panel-static">static-@Label</p>
+    <ExcludedContent>
+        <p class="panel-hole">@Guid.NewGuid()</p>
+    </ExcludedContent>
+</div>
+
+@code {
+    [Parameter]
+    public string Label { get; set; } = "";
+}
