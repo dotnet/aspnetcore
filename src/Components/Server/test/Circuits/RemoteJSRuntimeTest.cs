@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
@@ -97,6 +98,28 @@ public class RemoteJSRuntimeTest
         jsRuntime.TestReceiveByteArray(id: 0, new byte[5000]);
     }
 
+    [Fact]
+    public void EndInvokeDotNet_AfterCircuitDisposal_WithFailedResult()
+    {
+        var jsRuntime = CreateTestRemoteJSRuntime();
+        var singleClientProxy = Mock.Of<ISingleClientProxy>(
+            c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()) == Task.CompletedTask);
+        var clientProxy = new CircuitClientProxy(singleClientProxy, "test-connection");
+        jsRuntime.TestInitialize(clientProxy);
+
+        var invocationInfo = new DotNetInvocationInfo(
+            assemblyName: null,
+            methodIdentifier: "TestMethod",
+            dotNetObjectId: 123,
+            callId: "test-call-id");
+        var testException = new InvalidOperationException("Test error");
+        var invocationResult = jsRuntime.TestCreateResult(testException);
+
+        jsRuntime.MarkPermanentlyDisconnected();
+
+        jsRuntime.TestEndInvokeDotNet(invocationInfo, invocationResult);
+    }
+
     private static TestRemoteJSRuntime CreateTestRemoteJSRuntime(long? componentHubMaximumIncomingBytes = 32 * 1024)
     {
         var componentHubOptions = Options.Create(new HubOptions<ComponentHub>());
@@ -114,6 +137,26 @@ public class RemoteJSRuntimeTest
         public void TestReceiveByteArray(int id, byte[] data)
         {
             ReceiveByteArray(id, data);
+        }
+
+        public void TestInitialize(CircuitClientProxy clientProxy)
+        {
+            Initialize(clientProxy);
+        }
+
+        public void TestEndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
+        {
+            EndInvokeDotNet(invocationInfo, invocationResult);
+        }
+
+        public DotNetInvocationResult TestCreateResult(Exception exception)
+        {
+            var constructor = typeof(DotNetInvocationResult).GetConstructor(
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
+                null,
+                new[] { typeof(Exception), typeof(string) },
+                null);
+            return (DotNetInvocationResult)constructor!.Invoke(new object[] { exception, null });
         }
     }
 }
