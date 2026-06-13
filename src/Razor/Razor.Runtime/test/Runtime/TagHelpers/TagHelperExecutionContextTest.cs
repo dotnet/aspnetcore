@@ -85,6 +85,173 @@ public class TagHelperExecutionContextTest
     }
 
     [Fact]
+    public void Output_ContentAppendHtml_AppendsToChildContent()
+    {
+        // Arrange
+        var tagHelperContent = new DefaultTagHelperContent();
+        var executionContext = new TagHelperExecutionContext(
+            "select",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                tagHelperContent.AppendHtml("<option value=\"0\">(keine)</option>");
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => tagHelperContent);
+
+        // Act
+        executionContext.Output.Content.AppendHtml("<option value=\"1\">One</option>");
+
+        // Assert
+        Assert.Equal(
+            "<option value=\"0\">(keine)</option><option value=\"1\">One</option>",
+            executionContext.Output.Content.GetContent());
+    }
+
+    [Fact]
+    public void Output_ContentGet_DoesNotMarkContentAsModified()
+    {
+        // Arrange
+        var tagHelperContent = new DefaultTagHelperContent();
+        var executionContext = new TagHelperExecutionContext(
+            "p",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                tagHelperContent.AppendHtml("Child content");
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => tagHelperContent);
+
+        // Act
+        var content = executionContext.Output.Content;
+
+        // Assert
+        Assert.False(executionContext.Output.IsContentModified);
+        Assert.Equal("Child content", content.GetContent());
+    }
+
+    [Fact]
+    public void Output_ContentSetContent_ReplacesChildContent()
+    {
+        // Arrange
+        var tagHelperContent = new DefaultTagHelperContent();
+        var executionContext = new TagHelperExecutionContext(
+            "p",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                tagHelperContent.AppendHtml("Child content");
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => tagHelperContent);
+
+        // Act
+        executionContext.Output.Content.SetContent("Replacement content");
+
+        // Assert
+        Assert.True(executionContext.Output.IsContentModified);
+        Assert.Equal("Replacement content", executionContext.Output.Content.GetContent());
+    }
+
+    [Fact]
+    public void Output_ContentSetContent_DoesNotReadChildContent()
+    {
+        // Arrange
+        var childContentRead = false;
+        var executionContext = new TagHelperExecutionContext(
+            "p",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                childContentRead = true;
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => new DefaultTagHelperContent().AppendHtml("Child content"));
+
+        // Act
+        executionContext.Output.Content.SetContent("Replacement content");
+
+        // Assert
+        Assert.False(childContentRead);
+        Assert.Equal("Replacement content", executionContext.Output.Content.GetContent());
+    }
+
+    [Fact]
+    public void Output_ContentGetAfterSuppressOutput_DoesNotReadChildContent()
+    {
+        // Arrange
+        var childContentRead = false;
+        var executionContext = new TagHelperExecutionContext(
+            "p",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                childContentRead = true;
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => new DefaultTagHelperContent().AppendHtml("Child content"));
+
+        // Act
+        executionContext.Output.SuppressOutput();
+
+        // Assert
+        Assert.Empty(executionContext.Output.Content.GetContent());
+        Assert.False(childContentRead);
+    }
+
+    [Fact]
+    public void Output_Reinitialize_AllowsContentToReadNewChildContent()
+    {
+        // Arrange
+        var tagHelperContent = new DefaultTagHelperContent();
+        var executionContext = new TagHelperExecutionContext(
+            "p",
+            tagMode: TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                tagHelperContent.AppendHtml("Child content");
+                return Task.CompletedTask;
+            },
+            startTagHelperWritingScope: _ => { },
+            endTagHelperWritingScope: () => tagHelperContent);
+        var content = executionContext.Output.Content;
+
+        // Act
+        executionContext.Reinitialize(
+            "p",
+            TagMode.StartTagAndEndTag,
+            items: new Dictionary<object, object>(),
+            uniqueId: string.Empty,
+            executeChildContentAsync: () =>
+            {
+                tagHelperContent.SetHtmlContent("Updated child content");
+                return Task.CompletedTask;
+            });
+
+        // Assert
+        Assert.NotSame(content, executionContext.Output.Content);
+        Assert.Equal("Updated child content", executionContext.Output.Content.GetContent());
+    }
+
+    [Fact]
     public async Task ExecutionContext_Reinitialize_UpdatesTagHelperOutputAsExpected()
     {
         // Arrange
