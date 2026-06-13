@@ -124,7 +124,10 @@ internal sealed class QueryCollectionInternal : IQueryCollection
         {
             if (_notEmpty)
             {
-                ((IEnumerator)_dictionaryEnumerator).Reset();
+                // The cast causes the enumerator to be copied by value so we must cast it back to the original type after resetting.
+                var enumerator = (IEnumerator)_dictionaryEnumerator;
+                enumerator.Reset();
+                _dictionaryEnumerator = (AdaptiveCapacityDictionary<string, StringValues>.Enumerator)enumerator;
             }
         }
     }
