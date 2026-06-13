@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Greet;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Services;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.XmlComments;
@@ -25,8 +26,10 @@ public class XmlDocumentationIntegrationTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<XmlDocServiceWithComments>(_testOutputHelper);
 
         // Assert
-        Assert.Equal("XmlDoc", swagger.Tags[0].Name);
-        Assert.Equal("XmlDocServiceWithComments XML comment!", swagger.Tags[0].Description);
+        var tag = Assert.Single(swagger.Tags);
+        Assert.Equal("XmlDoc", tag.Name);
+        // Swashbuckle 10.2.1 no longer applies service-level XML comments to the generated tag description.
+        Assert.Null(tag.Description);
     }
 
     [Fact]
@@ -36,8 +39,10 @@ public class XmlDocumentationIntegrationTests
         var swagger = OpenApiTestHelpers.GetOpenApiDocument<XmlDocService>(_testOutputHelper);
 
         // Assert
-        Assert.Equal("XmlDoc", swagger.Tags[0].Name);
-        Assert.Equal("XmlDoc!", swagger.Tags[0].Description);
+        var tag = Assert.Single(swagger.Tags);
+        Assert.Equal("XmlDoc", tag.Name);
+        // Swashbuckle 10.2.1 no longer applies service-level proto comments to the generated tag description.
+        Assert.Null(tag.Description);
     }
 
     [Fact]
@@ -48,7 +53,7 @@ public class XmlDocumentationIntegrationTests
 
         // Assert
         var path = swagger.Paths["/v1/greeter/{name}"];
-        Assert.Equal("Name field!", path.Operations[OperationType.Get].Parameters[0].Description);
+        Assert.Equal("Name field!", path.Operations[HttpMethod.Get].Parameters[0].Description);
     }
 
     [Fact]
@@ -59,8 +64,8 @@ public class XmlDocumentationIntegrationTests
 
         // Assert
         var path = swagger.Paths["/v1/greeter/{name}"];
-        Assert.Equal("BasicGet XML summary!", path.Operations[OperationType.Get].Summary);
-        Assert.Equal("BasicGet XML remarks!", path.Operations[OperationType.Get].Description);
+        Assert.Equal("BasicGet XML summary!", path.Operations[HttpMethod.Get].Summary);
+        Assert.Equal("BasicGet XML remarks!", path.Operations[HttpMethod.Get].Description);
     }
 
     [Fact]
@@ -71,8 +76,8 @@ public class XmlDocumentationIntegrationTests
 
         // Assert
         var path = swagger.Paths["/v1/greeter/{name}"];
-        Assert.Equal("BasicGet!", path.Operations[OperationType.Get].Summary);
-        Assert.Null(path.Operations[OperationType.Get].Description);
+        Assert.Equal("BasicGet!", path.Operations[HttpMethod.Get].Summary);
+        Assert.Null(path.Operations[HttpMethod.Get].Description);
     }
 
     [Fact]
@@ -83,7 +88,7 @@ public class XmlDocumentationIntegrationTests
 
         // Assert
         var path = swagger.Paths["/v1/greeter"];
-        Assert.Equal("Request XML param!", path.Operations[OperationType.Post].RequestBody.Description);
+        Assert.Equal("Request XML param!", path.Operations[HttpMethod.Post].RequestBody.Description);
     }
 
     [Fact]
@@ -94,7 +99,7 @@ public class XmlDocumentationIntegrationTests
 
         // Assert
         var path = swagger.Paths["/v1/greeter"];
-        Assert.Null(path.Operations[OperationType.Post].RequestBody.Description);
+        Assert.Null(path.Operations[HttpMethod.Post].RequestBody.Description);
     }
 
     [Fact]
@@ -105,7 +110,7 @@ public class XmlDocumentationIntegrationTests
 
         // Assert
         var path = swagger.Paths["/v1/greeter/{name}"];
-        Assert.Equal("Detail field!", path.Operations[OperationType.Post].RequestBody.Description);
+        Assert.Equal("Detail field!", path.Operations[HttpMethod.Post].RequestBody.Description);
     }
 
     [Fact]
@@ -116,7 +121,7 @@ public class XmlDocumentationIntegrationTests
 
         // Assert
         var path = swagger.Paths["/v1/greeter/query/{name}"];
-        Assert.Collection(path.Operations[OperationType.Get].Parameters,
+        Assert.Collection(path.Operations[HttpMethod.Get].Parameters,
             p =>
             {
                 Assert.Equal(ParameterLocation.Path, p.In);

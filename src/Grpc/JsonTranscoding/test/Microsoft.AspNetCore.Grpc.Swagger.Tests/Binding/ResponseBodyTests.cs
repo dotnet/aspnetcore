@@ -1,10 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Infrastructure;
 using Microsoft.AspNetCore.Grpc.Swagger.Tests.Services;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Grpc.Swagger.Tests.Binding;
@@ -26,10 +26,10 @@ public class ResponseBodyTests
 
         // Assert
         var path = swagger.Paths["/v1/responsebody1"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.Responses["200"].Content["application/json"].Schema;
-        Assert.Equal("string", bodySchema.Type);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, bodySchema);
     }
 
     [Fact]
@@ -40,12 +40,12 @@ public class ResponseBodyTests
 
         // Assert
         var path = swagger.Paths["/v1/responsebody2"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.Responses["200"].Content["application/json"].Schema;
-        Assert.Null(bodySchema.Reference);
-        Assert.Equal("array", bodySchema.Type);
-        Assert.Equal("string", bodySchema.Items.Type);
+        Assert.Null(OpenApiTestHelpers.GetReferenceId(bodySchema));
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Array, bodySchema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, bodySchema.Items);
     }
 
     [Fact]
@@ -56,15 +56,15 @@ public class ResponseBodyTests
 
         // Assert
         var path = swagger.Paths["/v1/responsebody3"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.Responses["200"].Content["application/json"].Schema;
 
-        var enumSchema = (OpenApiSchema)swagger.ResolveReference(bodySchema.Reference);
-        Assert.Equal("string", enumSchema.Type);
+        var enumSchema = OpenApiTestHelpers.ResolveSchema(swagger, bodySchema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.String, enumSchema);
         Assert.Equal(5, enumSchema.Enum.Count);
 
-        var enumValues = enumSchema.Enum.Select(e => ((OpenApiString)e).Value).OrderBy(s => s).ToList();
+        var enumValues = enumSchema.Enum.Select(e => e.GetValue<string>()).OrderBy(s => s).ToList();
         Assert.Collection(enumValues,
             v => Assert.Equal("ENUM_WITHOUT_MESSAGE_BAR", v),
             v => Assert.Equal("ENUM_WITHOUT_MESSAGE_BAZ", v),
@@ -81,12 +81,12 @@ public class ResponseBodyTests
 
         // Assert
         var path = swagger.Paths["/v1/responsebody4"];
-        Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
+        var operation = OpenApiTestHelpers.GetOperation(path, HttpMethod.Post);
 
         var bodySchema = operation.Responses["200"].Content["application/json"].Schema;
 
-        var enumSchema = (OpenApiSchema)swagger.ResolveReference(bodySchema.Reference);
-        Assert.Equal("object", enumSchema.Type);
+        var enumSchema = OpenApiTestHelpers.ResolveSchema(swagger, bodySchema);
+        OpenApiTestHelpers.AssertSchemaType(JsonSchemaType.Object, enumSchema);
         Assert.False(enumSchema.AdditionalPropertiesAllowed);
     }
 }
