@@ -17,7 +17,8 @@ public class ActualApiResponseMetadataFactoryTest
     public enum ReturnOperationTestVariant
     {
         Default,
-        SwitchExpression
+        SwitchExpression,
+        ConditionalExpression
     }
 
     [Fact]
@@ -271,6 +272,58 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
     }
 
     [Fact]
+    public async Task InspectReturnExpression_ReadsBothBranchesOfConditional()
+    {
+        // Arrange & Act
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(ReturnOperationTestVariant.ConditionalExpression);
+
+        // Assert
+        Assert.Collection(
+            actualResponseMetadata,
+            metadata =>
+            {
+                Assert.NotNull(metadata);
+                Assert.Equal(404, metadata.Value.StatusCode);
+                Assert.Null(metadata.Value.ReturnType);
+            },
+            metadata =>
+            {
+                Assert.NotNull(metadata);
+                Assert.Equal(200, metadata.Value.StatusCode);
+                Assert.NotNull(metadata.Value.ReturnType);
+                Assert.Equal("TestModel", metadata.Value.ReturnType.Name);
+            });
+    }
+
+    [Fact]
+    public async Task InspectReturnExpression_ReadsNestedConditional()
+    {
+        // Arrange & Act
+        var actualResponseMetadata = await RunInspectReturnStatementSyntax(ReturnOperationTestVariant.ConditionalExpression);
+
+        // Assert
+        Assert.Collection(
+            actualResponseMetadata,
+            metadata =>
+            {
+                Assert.NotNull(metadata);
+                Assert.Equal(404, metadata.Value.StatusCode);
+            },
+            metadata =>
+            {
+                Assert.NotNull(metadata);
+                Assert.Equal(401, metadata.Value.StatusCode);
+            },
+            metadata =>
+            {
+                Assert.NotNull(metadata);
+                Assert.Equal(200, metadata.Value.StatusCode);
+                Assert.NotNull(metadata.Value.ReturnType);
+                Assert.Equal("TestModel", metadata.Value.ReturnType.Name);
+            });
+    }
+
+    [Fact]
     public async Task TryGetActualResponseMetadata_ActionWithActionResultOfTReturningOkResult()
     {
         // Arrange
@@ -432,6 +485,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         return variant switch
         {
             ReturnOperationTestVariant.SwitchExpression => "InspectReturnExpressionTestsForSwitchExpression",
+            ReturnOperationTestVariant.ConditionalExpression => "InspectReturnExpressionTestsForConditionalExpression",
             _ => "InspectReturnExpressionTests",
         };
     }
@@ -441,6 +495,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         var controllerType = variant switch
         {
             ReturnOperationTestVariant.SwitchExpression => typeof(TestFiles.InspectReturnExpressionTestsForSwitchExpression.TestController),
+            ReturnOperationTestVariant.ConditionalExpression => typeof(TestFiles.InspectReturnExpressionTestsForConditionalExpression.TestController),
             _ => typeof(TestFiles.InspectReturnExpressionTests.TestController),
         };
 
