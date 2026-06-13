@@ -1317,6 +1317,28 @@
         }
       }
     },
+    "/schemas-by-ref/favorite-shape": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shape"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
     "/responses/200-add-xml": {
       "get": {
         "tags": [
