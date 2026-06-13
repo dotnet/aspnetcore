@@ -141,6 +141,23 @@ public sealed class EditContext
     }
 
     /// <summary>
+    /// Clears any modification flag that may be tracked for fields on the specified model object.
+    /// </summary>
+    /// <param name="childObject">The model object whose field modification flags should be cleared.</param>
+    public void MarkAsUnmodified(object childObject)
+    {
+        ArgumentNullException.ThrowIfNull(childObject);
+
+        foreach (var state in _fieldStates)
+        {
+            if (ReferenceEquals(state.Key.Model, childObject))
+            {
+                state.Value.IsModified = false;
+            }
+        }
+    }
+
+    /// <summary>
     /// Determines whether any of the fields in this <see cref="EditContext"/> have been modified.
     /// </summary>
     /// <returns>True if any of the fields in this <see cref="EditContext"/> have been modified; otherwise false.</returns>
@@ -207,6 +224,28 @@ public sealed class EditContext
         => GetValidationMessages(FieldIdentifier.Create(accessor));
 
     /// <summary>
+    /// Gets the current validation messages for fields on the specified model object.    ///
+    /// This method does not perform validation itself. It only returns messages determined by previous validation actions.
+    /// </summary>
+    /// <param name="childObject">The model object whose associated field validation messages should be returned.</param>
+    /// <returns>The current validation messages for fields on the specified model object.</returns>
+    public IEnumerable<string> GetValidationMessages(object childObject)
+    {
+        ArgumentNullException.ThrowIfNull(childObject);
+
+        foreach (var state in _fieldStates)
+        {
+            if (ReferenceEquals(state.Key.Model, childObject))
+            {
+                foreach (var message in state.Value.GetValidationMessages())
+                {
+                    yield return message;
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
     /// </summary>
     /// <returns>True if the field has been modified; otherwise false.</returns>
@@ -222,6 +261,26 @@ public sealed class EditContext
     /// <returns>True if the field has been modified; otherwise false.</returns>
     public bool IsModified(Expression<Func<object>> accessor)
         => IsModified(FieldIdentifier.Create(accessor));
+
+    /// <summary>
+    /// Determines whether any fields on the specified model object have been modified.
+    /// </summary>
+    /// <param name="childObject">The model object to query for modified field state.</param>
+    /// <returns>True if any fields on the specified model object have been modified; otherwise false.</returns>
+    public bool IsModified(object childObject)
+    {
+        ArgumentNullException.ThrowIfNull(childObject);
+
+        foreach (var state in _fieldStates)
+        {
+            if (ReferenceEquals(state.Key.Model, childObject) && state.Value.IsModified)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Determines whether the specified fields in this <see cref="EditContext"/> has no associated validation messages.
