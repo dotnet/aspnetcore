@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
@@ -282,10 +283,10 @@ internal sealed partial class ResponseBody : Stream
     {
         ref var chunk = ref chunks[chunkIndex++];
         chunk.DataChunkType = HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
-        fixed (byte* ptr = bytes)
-        {
-            chunk.Anonymous.FromMemory.pBuffer = ptr;
-        }
+        // Preserve null-on-empty; GetReference may return a non-null ref for empty spans.
+        chunk.Anonymous.FromMemory.pBuffer = bytes.IsEmpty
+            ? null
+            : (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(bytes));
         chunk.Anonymous.FromMemory.BufferLength = (uint)bytes.Length;
     }
 
