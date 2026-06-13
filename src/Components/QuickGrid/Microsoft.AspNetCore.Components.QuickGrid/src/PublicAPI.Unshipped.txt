@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ThenAscending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression, System.Collections.Generic.IComparer<U>! comparer) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ThenDescending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression, System.Collections.Generic.IComparer<U>! comparer) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
+Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.Comparer.get -> System.Collections.Generic.IComparer<TProp>?
+Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.Comparer.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.get -> string!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
@@ -7,3 +11,5 @@ override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> 
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void
 *REMOVED*override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void
+static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByAscending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression, System.Collections.Generic.IComparer<U>! comparer) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
+static Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>.ByDescending<U>(System.Linq.Expressions.Expression<System.Func<TGridItem, U>!>! expression, System.Collections.Generic.IComparer<U>! comparer) -> Microsoft.AspNetCore.Components.QuickGrid.GridSort<TGridItem>!
