@@ -12,13 +12,15 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
     private readonly ServiceContext _serviceContext;
     private readonly Func<T, Task> _connectionDelegate;
     private readonly TransportConnectionManager _transportConnectionManager;
+    private readonly Func<Exception, bool>? _fatalErrorHandler;
     private readonly TaskCompletionSource _acceptLoopTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    public ConnectionDispatcher(ServiceContext serviceContext, Func<T, Task> connectionDelegate, TransportConnectionManager transportConnectionManager)
+    public ConnectionDispatcher(ServiceContext serviceContext, Func<T, Task> connectionDelegate, TransportConnectionManager transportConnectionManager, Func<Exception, bool>? fatalErrorHandler = null)
     {
         _serviceContext = serviceContext;
         _connectionDelegate = connectionDelegate;
         _transportConnectionManager = transportConnectionManager;
+        _fatalErrorHandler = fatalErrorHandler;
     }
 
     private KestrelTrace Log => _serviceContext.Log;
@@ -37,6 +39,8 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
 
         async Task AcceptConnectionsAsync()
         {
+            Exception? acceptLoopException = null;
+
             try
             {
                 while (true)
@@ -70,12 +74,27 @@ internal sealed class ConnectionDispatcher<T> where T : BaseConnectionContext
             }
             catch (Exception ex)
             {
-                // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
-                Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
+                // Any exception in the accept loop is fatal; restart the process
+                // to avoid a silent hang.
+                acceptLoopException = ex;
+
+                Log.LogCritical(0, ex, "The connection listener failed while accepting connections.");
+
+                if (_fatalErrorHandler is null || !_fatalErrorHandler(ex))
+                {
+                    Environment.FailFast("The connection listener failed while accepting connections.", ex);
+                }
             }
             finally
             {
-                _acceptLoopTcs.TrySetResult();
+                if (acceptLoopException is null)
+                {
+                    _acceptLoopTcs.TrySetResult();
+                }
+                else
+                {
+                    _acceptLoopTcs.TrySetException(acceptLoopException);
+                }
             }
         }
     }

@@ -59,9 +59,16 @@ public class ConnectionDispatcherTests : LoggedTest
     {
         var serviceContext = new TestServiceContext(LoggerFactory);
 
-        var dispatcher = new ConnectionDispatcher<ConnectionContext>(serviceContext, _ => Task.CompletedTask, new TransportConnectionManager(serviceContext.ConnectionManager));
+        var dispatcher = new ConnectionDispatcher<ConnectionContext>(
+            serviceContext,
+            _ => Task.CompletedTask,
+            new TransportConnectionManager(serviceContext.ConnectionManager),
+            fatalErrorHandler: ex => true);
 
-        await dispatcher.StartAcceptingConnections(new ThrowingListener());
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => dispatcher.StartAcceptingConnections(new ThrowingListener()));
+
+        Assert.Equal("Unexpected error listening", exception.Message);
 
         var critical = TestSink.Writes.SingleOrDefault(m => m.LogLevel == LogLevel.Critical);
         Assert.NotNull(critical);
