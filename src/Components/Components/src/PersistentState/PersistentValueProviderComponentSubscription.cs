@@ -211,6 +211,7 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         _restoringSubscription?.Dispose();
     }
 
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "MakeGenericType is safe here because the type parameter is a runtime Type that has already been verified at the call site.")]
     private IPersistentComponentStateSerializer? SerializerFactory(Type type, IServiceProvider serviceProvider)
     {
         var serializerType = typeof(PersistentComponentStateSerializer<>).MakeGenericType(type);
