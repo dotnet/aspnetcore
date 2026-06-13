@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.ExceptionServices;
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -28,6 +29,9 @@ public abstract class ErrorBoundaryBase : ComponentBase, IErrorBoundary
     /// </summary>
     [Parameter] public int MaximumErrorCount { get; set; } = 100;
 
+    /// <inheritdoc/>
+    [Parameter] public virtual bool RenderOnException { get; set; }
+
     /// <summary>
     /// Gets the current exception, or null if there is no exception.
     /// </summary>
@@ -45,6 +49,21 @@ public abstract class ErrorBoundaryBase : ComponentBase, IErrorBoundary
             CurrentException = null;
             StateHasChanged();
         }
+    }
+
+    /// <inheritdoc/>
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        // Making this ErrorBoundary available as a CascadingParameter to ComponentBase
+        builder.OpenComponent<CascadingValue<IErrorBoundary>>(0);
+        builder.AddAttribute(1, nameof(CascadingValue<>.Value), this);
+
+        builder.AddAttribute(2, nameof(CascadingValue<>.ChildContent), (RenderFragment)((builder2) =>
+        {
+            builder2.AddContent(3, ChildContent);
+        }));
+
+        builder.CloseComponent();
     }
 
     /// <summary>

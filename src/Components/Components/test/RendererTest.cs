@@ -6169,6 +6169,7 @@ public class RendererTest
         public Task ReceivedErrorTask => receivedErrorTaskCompletionSource.Task;
 
         [Parameter] public RenderFragment ChildContent { get; set; }
+        public bool RenderOnException { get; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
             => ChildContent(builder);

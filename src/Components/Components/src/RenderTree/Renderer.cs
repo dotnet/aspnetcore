@@ -1185,10 +1185,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             if (candidate.Component is IErrorBoundary errorBoundary)
             {
-                // Don't just trust the error boundary to dispose its subtree - force it to do so by
-                // making it render an empty fragment. Ensures that failed components don't continue to
-                // operate, which would be a whole new kind of edge case to support forever.
-                AddToRenderQueue(candidate.ComponentId, builder => { });
+                // Check if the error boundery do not allow to continue to render the component
+                // when one or more exceptions have been thrown
+                if (!errorBoundary.RenderOnException)
+                {
+                    // Don't just trust the error boundary to dispose its subtree - force it to do so by
+                    // making it render an empty fragment. Ensures that failed components don't continue to
+                    // operate, which would be a whole new kind of edge case to support forever.
+                    AddToRenderQueue(candidate.ComponentId, builder => { });
+                }
 
                 try
                 {
@@ -1196,6 +1201,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 }
                 catch (Exception errorBoundaryException)
                 {
+                    if (errorBoundary.RenderOnException)
+                    {
+                        AddToRenderQueue(candidate.ComponentId, builder => { });
+                    }
+
                     // If *notifying* about an exception fails, it's OK for that to be fatal
                     HandleException(errorBoundaryException);
                 }
