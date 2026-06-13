@@ -530,4 +530,64 @@ public class SummaryValueParametersClass
             Assert.Equal("Property with only value documentation.", valueOnlyParam2.Description);
         });
     }
+
+    [Fact]
+    public async Task RequestBodyDescriptionUsesFromBodyParameterCommentNotLastParameter()
+    {
+        // Regression test for issue #65805
+        // When an endpoint has [FromBody] parameter followed by other parameters like [FromServices] or CancellationToken,
+        // the request body description should use the [FromBody] parameter's XML comment, not the last parameter's.
+        var source = """
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddOpenApi();
+var app = builder.Build();
+
+app.MapPost("/test", TestEndpoint.PostData);
+app.Run();
+
+public static class TestEndpoint
+{
+    /// <summary>
+    /// Process some sample input.
+    /// </summary>
+    /// <param name="data">Sample data provided by the user.</param>
+    /// <param name="logger">Logger for diagnostics and tracing.</param>
+    /// <param name="cancellation">Injected cancellation token.</param>
+    /// <returns>The number the user supplied.</returns>
+    public static async Task<Ok<int>> PostData(
+        [FromBody] SampleData data,
+        [FromServices] ILogger<SampleData> logger,
+        CancellationToken cancellation)
+    {
+        ArgumentNullException.ThrowIfNull(data);
+        logger.LogInformation("User supplied {Number} and {Text}", data.Number, data.Text);
+        await Task.Delay(1, cancellation).ConfigureAwait(false);
+        return TypedResults.Ok(data.Number);
+    }
+}
+
+public record SampleData(int Number, string Text);
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var postOperation = document.Paths["/test"].Operations[HttpMethod.Post];
+            var requestBody = postOperation.RequestBody;
+
+            Assert.NotNull(requestBody);
+            Assert.Equal("Sample data provided by the user.", requestBody.Description);
+            Assert.NotEqual("Injected cancellation token.", requestBody.Description);
+        });
+    }
 }
