@@ -64,6 +64,76 @@ public class ComponentParametersShouldBePublicCodeFixProviderTest : CodeFixVerif
     }
 
     [Fact]
+    public void AddsDiagnosticAndFixForMultiModifierPropertiesWithParameterAttribute()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using " + typeof(ParameterAttribute).Namespace + @";
+
+        class TypeName
+        {
+            [Parameter] private protected string BadProperty1 { get; set; }
+
+            [Parameter] protected string BadProperty2 { get; set; }
+        }
+        class TypeName2 : TypeName
+        {
+            [Parameter] protected new string BadProperty2 { get; set; }
+        }
+    }" + ComponentsTestDeclarations.Source;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.BadProperty1' should be public.",
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[]
+                {
+                        new DiagnosticResultLocation("Test0.cs", 8, 50)
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName.BadProperty2' should be public.",
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[]
+                {
+                        new DiagnosticResultLocation("Test0.cs", 10, 42)
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ComponentParametersShouldBePublic.Id,
+                Message = "Component parameter 'ConsoleApplication1.TypeName2.BadProperty2' should be public.",
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[]
+                {
+                        new DiagnosticResultLocation("Test0.cs", 14, 46)
+                }
+            });
+
+        VerifyCSharpFix(test, @"
+    namespace ConsoleApplication1
+    {
+        using " + typeof(ParameterAttribute).Namespace + @";
+
+        class TypeName
+        {
+            [Parameter] public string BadProperty1 { get; set; }
+
+            [Parameter] public string BadProperty2 { get; set; }
+        }
+        class TypeName2 : TypeName
+        {
+            [Parameter] public new string BadProperty2 { get; set; }
+        }
+    }" + ComponentsTestDeclarations.Source);
+    }
+
+    [Fact]
     public void IgnoresPublicPropertiesWithNonPublicSetterWithParameterAttribute()
     {
         var test = @"

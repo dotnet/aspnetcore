@@ -219,4 +219,25 @@
   <data name="VirtualizeItemsProviderRequiresItemComparer_Title" xml:space="preserve">
     <value>Virtualize with ItemsProvider requires ItemComparer</value>
   </data>
+  <data name="JSInvokableMethodShouldBePublic_Description" xml:space="preserve">
+    <value>Methods decorated with [JSInvokable] must be public to be callable from JavaScript.</value>
+  </data>
+  <data name="JSInvokableMethodShouldBePublic_Format" xml:space="preserve">
+    <value>Method '{0}' decorated with [JSInvokable] should be public.</value>
+  </data>
+  <data name="JSInvokableMethodShouldBePublic_Title" xml:space="preserve">
+    <value>[JSInvokable] methods should be public</value>
+  </data>
+  <data name="JSInvokableMethodShouldBeStatic_Description" xml:space="preserve">
+    <value>Methods decorated with [JSInvokable] must be static to be callable from JavaScript.</value>
+  </data>
+  <data name="JSInvokableMethodShouldBeStatic_Format" xml:space="preserve">
+    <value>Method '{0}' decorated with [JSInvokable] should be static.</value>
+  </data>
+  <data name="JSInvokableMethodShouldBeStatic_Title" xml:space="preserve">
+    <value>[JSInvokable] methods should be static</value>
+  </data>
+  <data name="JSInvokableMethodShouldBePublicStatic_FixTitle" xml:space="preserve">
+    <value>Make [JSInvokable] method public static.</value>
+  </data>
 </root>
