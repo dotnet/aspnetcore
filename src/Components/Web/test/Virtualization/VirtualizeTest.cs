@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -1214,5 +1215,49 @@ public class VirtualizeTest
         // For a fixed Items collection, the seed clamps using the now-known count: max(0, Count - capacity).
         // capacity = OverscanCount*2 + 1 = 31 with default OverscanCount=15, so _itemsBefore = max(0, 100 - 31) = 69.
         Assert.Equal(69, renderedVirtualize._itemsBefore);
+    }
+
+    [Fact]
+    public async Task Virtualize_SpacersUseDataAttributeNotInlineStyle()
+    {
+        Virtualize<int> renderedVirtualize = null;
+
+        var rootComponent = new VirtualizeTestHostcomponent
+        {
+            InnerContent = BuildVirtualizeWithContent(50f, Enumerable.Range(1, 100).ToList(),
+                captureRenderedVirtualize: v => renderedVirtualize = v)
+        };
+
+        var serviceProvider = new ServiceCollection()
+            .AddTransient((sp) => Mock.Of<IJSRuntime>())
+            .BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+
+        await testRenderer.RenderRootComponentAsync(componentId);
+        Assert.NotNull(renderedVirtualize);
+
+        // Spacer elements use data-blazor-virtualize-* attributes instead of inline style.
+        // A MutationObserver on the JS side mirrors them to CSS custom properties via CSSOM.
+        var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
+
+        var heightAttributes = referenceFrames
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute
+                     && f.AttributeName == "data-blazor-virtualize-reserved-height")
+            .ToList();
+
+        Assert.Equal(2, heightAttributes.Count);
+        Assert.Equal("0", (string)heightAttributes[0].AttributeValue);
+        Assert.True(double.TryParse((string)heightAttributes[1].AttributeValue, NumberStyles.Float, CultureInfo.InvariantCulture, out _));
+
+        var inlineStyleAttributes = referenceFrames
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute
+                     && f.AttributeName == "style")
+            .ToList();
+
+        // The only inline style is the test host's scroll container; Virtualize itself emits none.
+        var hostStyle = Assert.Single(inlineStyleAttributes);
+        Assert.Equal("overflow: auto; height: 800px;", (string)hostStyle.AttributeValue);
     }
 }
