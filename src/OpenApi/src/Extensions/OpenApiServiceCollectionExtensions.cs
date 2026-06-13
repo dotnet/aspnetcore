@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.OpenApi;
@@ -63,12 +64,12 @@ public static class OpenApiServiceCollectionExtensions
         // To achieve parity with ASP.NET Core routing, which is case-insensitive, we need to ensure the document name is lowercased.
         var lowercasedDocumentName = documentName.ToLowerInvariant();
 
-        services.AddOpenApiCore(lowercasedDocumentName);
-        services.Configure<OpenApiOptions>(lowercasedDocumentName, options =>
-        {
-            options.DocumentName = lowercasedDocumentName;
-            configureOptions(options);
-        });
+        services.AddOpenApiCore();
+
+        // Required to resolve document names for build-time generation
+        services.AddSingleton(new NamedService<OpenApiDocumentService>(lowercasedDocumentName));
+
+        services.Configure<OpenApiOptions>(lowercasedDocumentName, configureOptions);
         return services;
     }
 
@@ -106,19 +107,45 @@ public static class OpenApiServiceCollectionExtensions
     public static IServiceCollection AddOpenApi(this IServiceCollection services)
         => services.AddOpenApi(OpenApiConstants.DefaultDocumentName);
 
-    private static IServiceCollection AddOpenApiCore(this IServiceCollection services, string documentName)
+    /// <summary>
+    /// Adds the core OpenAPI services, not tied to a specific document name, to the specified <see cref="IServiceCollection"/> with the specified options.
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
+    /// <param name="configureOptions">A delegate used to configure the target <see cref="OpenApiOptions"/>.</param>
+    public static IServiceCollection AddOpenApiCore(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configureOptions);
+
+        services.AddOpenApiCore();
+
+        services.Configure<OpenApiOptions>(null, configureOptions);
+        return services;
+    }
+
+    private static IServiceCollection AddOpenApiCore(this IServiceCollection services)
     {
         services.AddEndpointsApiExplorer();
-        services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
-        services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
-        services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(documentName);
+        services.TryAddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
+        services.TryAddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);
+        services.TryAddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(KeyedService.AnyKey);
 
         // Required for build-time generation
-        services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
-        // Required to resolve document names for build-time generation
-        services.AddSingleton(new NamedService<OpenApiDocumentService>(documentName));
+        services.TryAddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
+
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<OpenApiOptions>, ConfigureNamedOpenApiOptions>());
+
         // Required to support JSON serializations
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
         return services;
+    }
+
+    private sealed class ConfigureNamedOpenApiOptions : IConfigureNamedOptions<OpenApiOptions>
+    {
+        public void Configure(string? name, OpenApiOptions options)
+            => options.DocumentName = name ?? throw new UnreachableException();
+
+        public void Configure(OpenApiOptions options)
+            => throw new NotImplementedException();
     }
 }

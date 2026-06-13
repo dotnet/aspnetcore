@@ -759,13 +759,16 @@
   <Folder Name="/src/ObjectPool/">
     <Project Path="src/ObjectPool/src/Microsoft.Extensions.ObjectPool.csproj" />
   </Folder>
-  <Folder Name="/src/OpenApi/" />
+  <Folder Name="/src/OpenApi/">
+    <Project Path="src/OpenApi/src/Microsoft.AspNetCore.OpenApi.csproj" />
+  </Folder>
   <Folder Name="/src/OpenApi/gen/">
     <Project Path="src/OpenApi/gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" />
   </Folder>
   <Folder Name="/src/OpenApi/test/">
     <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Build.Tests/Microsoft.AspNetCore.OpenApi.Build.Tests.csproj" />
     <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests/Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests.csproj" />
+    <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Microsoft.AspNetCore.OpenApi.Tests.csproj" />
   </Folder>
   <Folder Name="/src/ProjectTemplates/">
     <Project Path="src/ProjectTemplates/test/Templates.Blazor.Tests/Templates.Blazor.Tests.csproj" />
@@ -1255,8 +1258,6 @@
   <Project Path="src/Mvc/samples/MvcFormSample/MvcFormSample.csproj" />
   <Project Path="src/OpenApi/perf/Microbenchmarks/Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj" />
   <Project Path="src/OpenApi/sample/Sample.csproj" />
-  <Project Path="src/OpenApi/src/Microsoft.AspNetCore.OpenApi.csproj" />
-  <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Microsoft.AspNetCore.OpenApi.Tests.csproj" />
   <Project Path="src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Auth.Tests/Templates.Blazor.WebAssembly.Auth.Tests.csproj" />
   <Project Path="src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Tests/Templates.Blazor.WebAssembly.Tests.csproj" />
   <Project Path="src/ProjectTemplates/test/Templates.Mvc.Tests/Templates.Mvc.Tests.csproj" />

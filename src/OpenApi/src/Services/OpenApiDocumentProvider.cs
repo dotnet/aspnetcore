@@ -64,6 +64,13 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
         // This type tracks registered document names.
         // See https://github.com/dotnet/runtime/issues/100105 for more info.
         var documentServices = serviceProvider.GetServices<NamedService<OpenApiDocumentService>>();
-        return documentServices.Select(docService => docService.Name);
+        var documentNames = documentServices.Select(docService => docService.Name);
+
+        if (serviceProvider.GetService<IAdditionalOpenApiDocumentNameResolver>() is { } additionalDocumentNamesResolver)
+        {
+            return documentNames.Concat(additionalDocumentNamesResolver.ResolveDocumentNames());
+        }
+
+        return documentNames;
     }
 }
