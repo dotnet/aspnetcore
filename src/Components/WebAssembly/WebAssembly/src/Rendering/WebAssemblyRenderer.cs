@@ -28,9 +28,10 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly ResourceAssetCollection _resourceCollection;
     private readonly IInternalJSImportMethods _jsMethods;
     private readonly ComponentStatePersistenceManager _componentStatePersistenceManager;
+    private readonly bool _useOutOfProcessRendering;
     private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
 
-    public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
+    public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop, bool useOutOfProcessRendering = false)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
@@ -43,6 +44,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             : new WebAssemblyDispatcher();
 
         _resourceCollection = resourceCollection;
+        _useOutOfProcessRendering = useOutOfProcessRendering;
 
         ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         DefaultWebAssemblyJSRuntime.Instance.OnUpdateRootComponents += OnUpdateRootComponents;
@@ -163,18 +165,25 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     /// <inheritdoc />
     protected override unsafe Task UpdateDisplayAsync(in RenderBatch batch)
     {
-        // This is a GC hazard - it would be ideal to pin 'batch' and all its contents to prevent
-        // it from getting moved, or pause the GC for the duration of the 'RenderBatch()' call.
-        // The key mitigation is that the JS-side code always processes renderbatches synchronously
-        // and never calls back into .NET during that process, so GC cannot run (assuming it would
-        // only run on the current thread).
-        // As an early-warning system in case we accidentally introduce bugs and violate that rule,
-        // or for edge cases where user code can be invoked during rendering (e.g., DOM mutation
-        // observers) we further enforce it on the JS side using a notion of "locking the heap"
-        // during rendering, which prevents any JS-to-.NET calls that go through Blazor APIs such
-        // as DotNet.invokeMethod or event handlers.
-        var batchCopy = batch;
-        RenderBatch(RendererId, Unsafe.AsPointer(ref batchCopy));
+        if (_useOutOfProcessRendering)
+        {
+            UpdateDisplayOutOfProcess(in batch);
+        }
+        else
+        {
+            // This is a GC hazard - it would be ideal to pin 'batch' and all its contents to prevent
+            // it from getting moved, or pause the GC for the duration of the 'RenderBatch()' call.
+            // The key mitigation is that the JS-side code always processes renderbatches synchronously
+            // and never calls back into .NET during that process, so GC cannot run (assuming it would
+            // only run on the current thread).
+            // As an early-warning system in case we accidentally introduce bugs and violate that rule,
+            // or for edge cases where user code can be invoked during rendering (e.g., DOM mutation
+            // observers) we further enforce it on the JS side using a notion of "locking the heap"
+            // during rendering, which prevents any JS-to-.NET calls that go through Blazor APIs such
+            // as DotNet.invokeMethod or event handlers.
+            var batchCopy = batch;
+            RenderBatch(RendererId, Unsafe.AsPointer(ref batchCopy));
+        }
 
         if (WebAssemblyCallQueue.HasUnstartedWork)
         {
@@ -191,6 +200,28 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             // Nothing else is pending, so we can treat the renderbatch as acknowledged synchronously.
             // This lets upstream code skip an expensive code path and avoids some allocations.
             return Task.CompletedTask;
+        }
+    }
+
+    private void UpdateDisplayOutOfProcess(in RenderBatch batch)
+    {
+        // Serialize the render batch using the same binary format as Server rendering.
+        // This creates a self-contained byte[] copy that JS can process without a heap lock.
+        var arrayBuilder = new ArrayBuilder<byte>(2048);
+        try
+        {
+            using var memoryStream = new ArrayBuilderMemoryStream(arrayBuilder);
+            using (var renderBatchWriter = new RenderBatchWriter(memoryStream, leaveOpen: false, useUtf16StringTable: true))
+            {
+                renderBatchWriter.Write(in batch);
+            }
+
+            var batchBytes = arrayBuilder.Buffer.AsSpan(0, arrayBuilder.Count).ToArray();
+            RenderBatchOOP(RendererId, batchBytes);
+        }
+        finally
+        {
+            arrayBuilder.Dispose();
         }
     }
 
@@ -237,4 +268,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
     [JSImport("Blazor._internal.renderBatch", "blazor-internal")]
     private static unsafe partial void RenderBatch(int id, void* batch);
+
+    [JSImport("Blazor._internal.renderBatchOOP", "blazor-internal")]
+    private static partial void RenderBatchOOP(int rendererId, byte[] batchData);
 }

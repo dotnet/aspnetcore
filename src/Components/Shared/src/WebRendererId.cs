@@ -11,4 +11,5 @@ internal enum WebRendererId
     Server = 1,
     WebAssembly = 2,
     WebView = 3,
+    WebAssemblyOOP = 4,
 }
