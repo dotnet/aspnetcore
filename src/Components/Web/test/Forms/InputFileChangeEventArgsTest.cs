@@ -16,6 +16,12 @@ public class InputFileChangeEventArgsTest
     }
 
     [Fact]
+    public void Constructor_ThrowsIfNull()
+    {
+        Assert.Throws<ArgumentNullException>(() => new InputFileChangeEventArgs(null!));
+    }
+
+    [Fact]
     public void File_CanSupplySingle()
     {
         var file = new BrowserFile();
