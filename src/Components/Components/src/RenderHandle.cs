@@ -101,6 +101,9 @@ public readonly struct RenderHandle
         _renderer.AddToRenderQueue(_componentId, renderFragment);
     }
 
+    internal bool TryConsumeAllowOneRender()
+        => _renderer?.TryConsumeAllowOneRender(_componentId) ?? false;
+
     /// <summary>
     /// Dispatches an <see cref="Exception"/> to the <see cref="Renderer"/>.
     /// </summary>

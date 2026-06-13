@@ -122,10 +122,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     /// </summary>
     protected void StateHasChanged()
     {
-        if (_hasPendingQueuedRender)
+        if (_hasPendingQueuedRender && !_renderHandle.TryConsumeAllowOneRender())
         {
             return;
         }
+        _hasPendingQueuedRender = false;
 
         if (_hasNeverRendered || ShouldRender() || _renderHandle.IsRenderingOnMetadataUpdate)
         {
