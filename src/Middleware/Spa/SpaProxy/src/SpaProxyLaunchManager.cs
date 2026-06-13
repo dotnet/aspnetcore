@@ -180,7 +180,11 @@ internal sealed class SpaProxyLaunchManager : IDisposable
                 // On windows we transform npm/yarn to npm.cmd/yarn.cmd so that the command
                 // can actually be found when we start the process. This is overridable if
                 // necessary by explicitly setting up the extension on the command.
-                command = $"{command}.cmd";
+                if (string.Equals(command, "npm", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(command, "yarn", StringComparison.OrdinalIgnoreCase))
+                {
+                    command = $"{command}.cmd";
+                }
             }
 
             var info = new ProcessStartInfo(command, arguments)
