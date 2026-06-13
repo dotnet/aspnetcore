@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </para>
 /// </remarks>
 /// <typeparam name="TValue">The type of the field.</typeparam>
+[CacheBoundaryPolicy(Throw = true)]
 public sealed class Label<TValue> : IComponent
 {
     private RenderHandle _renderHandle;

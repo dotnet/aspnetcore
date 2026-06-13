@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -11,12 +13,22 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
+    static EndpointHtmlRenderer()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _cachedCacheExclusions.Clear;
+        }
+    }
+
     private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
@@ -271,7 +283,49 @@ internal partial class EndpointHtmlRenderer
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
+
+        if (componentState.Component is CacheBoundary cacheBoundary)
+        {
+            if (cacheBoundary.CachedData is not null)
+            {
+                base.WriteComponentHtml(componentId, output);
+                return;
+            }
+
+            if (cacheBoundary.TryBeginCacheCapture(output, out var wrappedOutput))
+            {
+                try
+                {
+                    base.WriteComponentHtml(componentId, wrappedOutput);
+                }
+                finally
+                {
+                    cacheBoundary.EndCacheCapture();
+                }
+                return;
+            }
+
+            if (output is not CacheBoundaryTextWriter)
+            {
+                var validationWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions(), null);
+                validationWriter.StartValidation();
+                base.WriteComponentHtml(componentId, validationWriter);
+                return;
+            }
+        }
+
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
+        var captureWriter = output as CacheBoundaryTextWriter;
+        var pausedCapture = false;
+        if (captureWriter is not null && captureWriter.IsCapturing && (IsHoleComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
+        {
+            pausedCapture = true;
+            captureWriter.PauseCapture();
+            var (holeComponentType, renderModeName) = componentState.Component is SSRRenderModeBoundary boundary2
+                ? (boundary2.ComponentType, GetRenderModeNameOrThrowForCache(boundary2.RenderMode, boundary2.ComponentType))
+                : (componentState.Component.GetType(), (string?)null);
+            captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, sequenceAndKey.Key, renderModeName);
+        }
 
         ComponentEndMarker? endMarkerOrNull = default;
 
@@ -320,6 +374,73 @@ internal partial class EndpointHtmlRenderer
             output.Write(serializedEndRecord);
             output.Write("-->");
         }
+
+        if (pausedCapture)
+        {
+            captureWriter!.StartCapture();
+        }
+    }
+
+    private static readonly ConcurrentDictionary<Type, CacheBoundaryPolicyAttribute?> _cachedCacheExclusions = new();
+
+    internal static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
+    {
+        if (!_cachedCacheExclusions.TryGetValue(componentType, out var attr))
+        {
+            attr = componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
+            _cachedCacheExclusions.TryAdd(componentType, attr);
+        }
+
+        if (attr is null)
+        {
+            return false;
+        }
+
+        // A VaryBy of None means the component is never safe to include in the
+        // cached output regardless of what dimensions the boundary varies by.
+        var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
+
+        if (attr.Throw && !varyByMatches)
+        {
+            throw new InvalidOperationException(
+                $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary in its current configuration. " +
+                $"It is annotated with [CacheBoundaryPolicy(Throw = true, VaryBy = {attr.VaryBy})] " +
+                $"because its rendered output depends on per-request state that cannot be safely captured into a cache entry and replayed on later requests. " +
+                (attr.VaryBy != CacheBoundaryVaryBy.None
+                    ? $"To use it inside a CacheBoundary, configure the boundary so that it varies by all of the following dimensions: {attr.VaryBy}. "
+                    : "") +
+                $"Alternatively, move this component outside the CacheBoundary, or wrap it in a component marked with [CacheBoundaryPolicy] so that its subtree is excluded from caching.");
+        }
+
+        // If Throw is true we only reach here when varyByMatches is true (safe to cache).
+        // If Throw is false, it's a hole only when VaryBy dimensions aren't covered.
+        return !varyByMatches;
+    }
+
+    private static string? GetRenderModeNameOrThrowForCache(IComponentRenderMode? renderMode, Type componentType)
+    {
+        try
+        {
+            return RenderFragmentSerializer.GetRenderModeName(renderMode);
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new InvalidOperationException(
+                $"Component '{componentType.FullName}' uses a custom render mode of type '{renderMode?.GetType().FullName}' " +
+                $"that is not supported inside a CacheBoundary. " +
+                $"Only the built-in interactive render modes (InteractiveServer, InteractiveWebAssembly, InteractiveAuto) " +
+                $"can be replayed from a cache entry.",
+                ex);
+        }
+    }
+
+    private ILogger? _renderFragmentSerializerLogger;
+
+    private ILogger GetRenderFragmentSerializationLogger()
+    {
+        return _renderFragmentSerializerLogger ??= _httpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger(typeof(RenderFragmentSerializer).FullName!);
     }
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)

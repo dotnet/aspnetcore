@@ -6,11 +6,13 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
+using Components.TestServer.RazorComponents.Pages.CacheBoundaryTest;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
@@ -264,6 +266,23 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
             StreamingRenderingForm.MapEndpoints(endpoints);
             InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
+
+            endpoints.MapGet("cache-component/clear", (HttpContext context) =>
+            {
+                var storeType = typeof(RazorComponentsServiceOptions).Assembly
+                    .GetType("Microsoft.AspNetCore.Components.Endpoints.ICacheBoundaryStore")
+                    ?? throw new InvalidOperationException("ICacheBoundaryStore type not found. The internal type may have been renamed or moved.");
+                var store = context.RequestServices.GetService(storeType)
+                    ?? throw new InvalidOperationException("ICacheBoundaryStore is not registered in DI.");
+                var clearMethod = storeType.GetMethod("Clear")
+                    ?? throw new InvalidOperationException("ICacheBoundaryStore.Clear() method not found.");
+                clearMethod.Invoke(store, null);
+                InnerCachedComponent.ResetRenderCount();
+            });
+            endpoints.MapGet("cache-component/render-count", () =>
+            {
+                return Results.Ok(InnerCachedComponent.RenderCount);
+            });
 
             MapEnhancedNavigationEndpoints(endpoints);
         });
