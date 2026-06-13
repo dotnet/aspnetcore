@@ -1182,6 +1182,172 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         }
     }
 
+    [Fact]
+    public void ActivityListeners_QueryStringRedacted_WhenOptionsConfigured()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var redactionOptions = new UrlQueryRedactionOptions { IsEnabled = true };
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, urlQueryRedactionOptions: redactionOptions);
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost:8080" }
+            },
+            Path = "/search",
+            QueryString = "?q=laptop&token=secret123&page=2",
+            Scheme = "http",
+            Method = "GET",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.True(tags.TryGetValue("url.query", out var queryValue));
+        var query = Assert.IsType<string>(queryValue);
+        Assert.Contains("q=laptop", query);
+        Assert.Contains("page=2", query);
+        Assert.Contains("token=%5BRedacted%5D", query); // [Redacted] URL encoded
+        Assert.DoesNotContain("secret123", query);
+    }
+
+    [Fact]
+    public void ActivityListeners_QueryStringNotIncluded_WhenOptionsNotEnabled()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        // IsEnabled defaults to false
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false);
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost:8080" }
+            },
+            Path = "/search",
+            QueryString = "?q=laptop&token=secret123",
+            Scheme = "http",
+            Method = "GET",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.False(tags.ContainsKey("url.query"));
+    }
+
+    [Fact]
+    public void ActivityListeners_QueryStringWithCustomPlaceholder()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var redactionOptions = new UrlQueryRedactionOptions
+        {
+            IsEnabled = true,
+            RedactedPlaceholder = "***"
+        };
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, urlQueryRedactionOptions: redactionOptions);
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Path = "/api",
+            QueryString = "?password=mysecret",
+            Scheme = "https",
+            Method = "POST",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.True(tags.TryGetValue("url.query", out var queryValue));
+        var query = Assert.IsType<string>(queryValue);
+        Assert.Contains("password=%2A%2A%2A", query); // *** URL encoded
+        Assert.DoesNotContain("mysecret", query);
+    }
+
+    [Fact]
+    public void ActivityListeners_QueryStringWithCustomSensitiveParameters()
+    {
+        var testSource = new ActivitySource(Path.GetRandomFileName());
+        var redactionOptions = new UrlQueryRedactionOptions { IsEnabled = true };
+        redactionOptions.SensitiveQueryParameters.Clear();
+        redactionOptions.SensitiveQueryParameters.Add("credit_card");
+        redactionOptions.SensitiveQueryParameters.Add("ssn");
+
+        var hostingApplication = CreateApplication(out var features, activitySource: testSource, suppressActivityOpenTelemetryData: false, urlQueryRedactionOptions: redactionOptions);
+        var tags = new Dictionary<string, object>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity =>
+            {
+                tags = Activity.Current.TagObjects.ToDictionary();
+            }
+        };
+
+        ActivitySource.AddActivityListener(listener);
+
+        features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+        {
+            Headers = new HeaderDictionary()
+            {
+                {"host", "localhost" }
+            },
+            Path = "/checkout",
+            QueryString = "?credit_card=1234567890&ssn=123-45-6789&amount=100",
+            Scheme = "https",
+            Method = "POST",
+        });
+
+        hostingApplication.CreateContext(features);
+
+        Assert.True(tags.TryGetValue("url.query", out var queryValue));
+        var query = Assert.IsType<string>(queryValue);
+        Assert.Contains("amount=100", query);
+        Assert.Contains("credit_card=%5BRedacted%5D", query);
+        Assert.Contains("ssn=%5BRedacted%5D", query);
+        Assert.DoesNotContain("1234567890", query);
+        Assert.DoesNotContain("123-45-6789", query);
+    }
+
     [Theory]
     [InlineData("http", 80)]
     [InlineData("HTTP", 80)]
@@ -1639,8 +1805,10 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
     private static HostingApplication CreateApplication(out FeatureCollection features,
         DiagnosticListener diagnosticListener = null, ActivitySource activitySource = null, ILogger logger = null,
         Action<DefaultHttpContext> configure = null, HostingEventSource eventSource = null, IMeterFactory meterFactory = null,
-        bool? suppressActivityOpenTelemetryData = null)
+        bool? suppressActivityOpenTelemetryData = null, UrlQueryRedactionOptions urlQueryRedactionOptions = null)
     {
+        urlQueryRedactionOptions ??= new UrlQueryRedactionOptions();
+
         var httpContextFactory = new Mock<IHttpContextFactory>();
 
         features = new FeatureCollection();
@@ -1659,7 +1827,8 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             DistributedContextPropagator.CreateDefaultPropagator(),
             httpContextFactory.Object,
             eventSource ?? HostingEventSource.Log,
-            new HostingMetrics(meterFactory ?? new TestMeterFactory()));
+            new HostingMetrics(meterFactory ?? new TestMeterFactory()),
+            urlQueryRedactionOptions);
 
         if (suppressActivityOpenTelemetryData is { } suppress)
         {
