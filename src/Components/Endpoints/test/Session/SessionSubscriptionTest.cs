@@ -127,7 +127,7 @@ public class SessionSubscriptionTest
     [Fact]
     public async Task CreateSubscription_RegistersValueCallbackAndReturnsSubscription()
     {
-        var httpContext = CreateHttpContextWithSession(out var responseFeature);
+        var httpContext = CreateHttpContextWithSession();
         httpContext.Session.SetString(nameof(TestComponent.Value).ToLowerInvariant(), "\"from-session\"");
         _supplier.SetRequestContext(httpContext);
 
@@ -142,7 +142,7 @@ public class SessionSubscriptionTest
         Assert.Equal("from-session", subscription.GetCurrentValue());
 
         _component.Value = "updated";
-        await responseFeature.FireOnStartingAsync();
+        await _supplier.PersistAllValues();
         Assert.Equal("\"updated\"", httpContext.Session.GetString(nameof(TestComponent.Value).ToLowerInvariant()));
     }
 
