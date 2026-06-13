@@ -96,14 +96,13 @@ public abstract partial class ColumnBase<TGridItem>
     protected internal RenderFragment HeaderContent { get; protected set; }
 
     /// <summary>
-    /// Get a value indicating whether this column should act as sortable if no value was set for the
+    /// Gets a value indicating whether this column should act as sortable if no value was set for the
     /// <see cref="ColumnBase{TGridItem}.Sortable" /> parameter. The default behavior is not to be
     /// sortable unless <see cref="ColumnBase{TGridItem}.Sortable" /> is true.
-    ///
     /// Derived components may override this to implement alternative default sortability rules.
     /// </summary>
     /// <returns>True if the column should be sortable by default, otherwise false.</returns>
-    protected virtual bool IsSortableByDefault() => false;
+    public virtual bool IsSortableByDefault() => false;
 
     /// <summary>
     /// Constructs an instance of <see cref="ColumnBase{TGridItem}" />.
