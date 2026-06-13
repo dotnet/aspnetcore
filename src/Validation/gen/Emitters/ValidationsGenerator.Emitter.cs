@@ -98,17 +98,17 @@ namespace Microsoft.Extensions.Validation.Generated
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
-        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableInfo = null;
+            validatableTypeInfo = null;
 {{EmitTypeChecks(validatableTypes)}}
             return false;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
     }
@@ -355,7 +355,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var typeName = validatableType.TypeFQN;
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
-            cw.WriteLine($"validatableInfo = new GeneratedValidatableTypeInfo(");
+            cw.WriteLine($"validatableTypeInfo = new GeneratedValidatableTypeInfo(");
             cw.Indent++;
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
