@@ -148,7 +148,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             // We can skip the validation notification if we were previously valid and still are
             if (_parsingFailed || _previousParsingAttemptFailed)
             {
-                EditContext?.NotifyValidationStateChanged();
+                EditContext?.NotifyValidationStateChanged(FieldIdentifier);
                 _previousParsingAttemptFailed = _parsingFailed;
             }
         }
@@ -432,7 +432,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         if (_parsingValidationMessages != null)
         {
             _parsingValidationMessages.Clear();
-            EditContext!.NotifyValidationStateChanged(); // when _parsingValidationMessages is not null, EditContext is also not null.
+            EditContext!.NotifyValidationStateChanged(FieldIdentifier); // when _parsingValidationMessages is not null, EditContext is also not null.
         }
 
         Dispose(disposing: true);

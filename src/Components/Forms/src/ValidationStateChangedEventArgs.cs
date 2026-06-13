@@ -14,9 +14,27 @@ public sealed class ValidationStateChangedEventArgs : EventArgs
     public static new readonly ValidationStateChangedEventArgs Empty = new ValidationStateChangedEventArgs();
 
     /// <summary>
-    /// Creates a new instance of <see cref="ValidationStateChangedEventArgs" />
+    /// Creates a new instance of <see cref="ValidationStateChangedEventArgs" />.
     /// </summary>
     public ValidationStateChangedEventArgs()
     {
     }
+
+    /// <summary>
+    /// Creates a new instance of <see cref="ValidationStateChangedEventArgs" /> with the specified field identifier.
+    /// </summary>
+    /// <param name="fieldIdentifier">The field whose validation state changed.</param>
+    public ValidationStateChangedEventArgs(in FieldIdentifier fieldIdentifier)
+    {
+        FieldIdentifier = fieldIdentifier;
+    }
+
+    /// <summary>
+    /// Gets the <see cref="Microsoft.AspNetCore.Components.Forms.FieldIdentifier"/> whose validation state changed, if available.
+    /// </summary>
+    /// <remarks>
+    /// When this property is <c>null</c>, it indicates that the validation state change
+    /// applies to the entire form rather than a specific field.
+    /// </remarks>
+    public FieldIdentifier? FieldIdentifier { get; }
 }

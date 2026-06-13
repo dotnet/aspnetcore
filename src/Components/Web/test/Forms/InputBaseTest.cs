@@ -362,6 +362,107 @@ public class InputBaseTest
     }
 
     [Fact]
+    public async Task OnValidationStateChanged_HasFieldIdentifier_WhenParsingFails()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        FieldIdentifier? capturedFieldIdentifier = null;
+
+        rootComponent.EditContext.OnValidationStateChanged += (sender, e) =>
+        {
+            capturedFieldIdentifier = e.FieldIdentifier;
+        };
+
+        await inputComponent.SetCurrentValueAsStringAsync("not-a-date");
+
+        Assert.True(capturedFieldIdentifier.HasValue);
+        Assert.Equal(fieldIdentifier.Model, capturedFieldIdentifier.Value.Model);
+        Assert.Equal(fieldIdentifier.FieldName, capturedFieldIdentifier.Value.FieldName);
+    }
+
+    [Fact]
+    public async Task OnValidationStateChanged_HasFieldIdentifier_WhenParsingRecoversFromFailure()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var capturedFieldIdentifiers = new List<FieldIdentifier?>();
+
+        rootComponent.EditContext.OnValidationStateChanged += (sender, e) =>
+        {
+            capturedFieldIdentifiers.Add(e.FieldIdentifier);
+        };
+
+        await inputComponent.SetCurrentValueAsStringAsync("invalid-date");
+        var firstFieldId = capturedFieldIdentifiers[0];
+        Assert.True(firstFieldId.HasValue);
+        Assert.Equal(fieldIdentifier.FieldName, firstFieldId.Value.FieldName);
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/20");
+        var secondFieldId = capturedFieldIdentifiers[1];
+        Assert.True(secondFieldId.HasValue);
+        Assert.Equal(fieldIdentifier.FieldName, secondFieldId.Value.FieldName);
+    }
+
+    [Fact]
+    public async Task OnValidationStateChanged_HasFieldIdentifier_WhenDisposingWithStaleMessages()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        FieldIdentifier? capturedFieldIdentifier = null;
+
+        // Precondition: Cause a parsing failure first
+        await inputComponent.SetCurrentValueAsStringAsync("invalid-date");
+
+        rootComponent.EditContext.OnValidationStateChanged += (sender, e) =>
+        {
+            capturedFieldIdentifier = e.FieldIdentifier;
+        };
+
+        (inputComponent as IDisposable).Dispose();
+
+        Assert.True(capturedFieldIdentifier.HasValue);
+        Assert.Equal(fieldIdentifier.FieldName, capturedFieldIdentifier.Value.FieldName);
+    }
+
+    [Fact]
+    public void ValidationStateChangedEventArgs_WithFieldIdentifier_HasCorrectPropertyValues()
+    {
+        var model = new TestModel();
+        var fieldIdentifier = new FieldIdentifier(model, "DateProperty");
+
+        var eventArgs = new ValidationStateChangedEventArgs(fieldIdentifier);
+
+        Assert.True(eventArgs.FieldIdentifier.HasValue);
+        Assert.Equal(fieldIdentifier.Model, eventArgs.FieldIdentifier.Value.Model);
+        Assert.Equal(fieldIdentifier.FieldName, eventArgs.FieldIdentifier.Value.FieldName);
+    }
+
+    [Fact]
+    public void ValidationStateChangedEventArgs_WithoutFieldIdentifier_HasNullProperty()
+    {
+        var eventArgs = new ValidationStateChangedEventArgs();
+        Assert.False(eventArgs.FieldIdentifier.HasValue);
+    }
+
+    [Fact]
     public async Task RespondsToValidationStateChangeNotifications()
     {
         // Arrange
