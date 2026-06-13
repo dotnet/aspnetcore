@@ -91,11 +91,13 @@ public class ManagedAuthenticatedEncryptorTests
     {
         // Arrange
         Secret kdk = new Secret(Encoding.UTF8.GetBytes("master key"));
+        var genRandom = new SequentialGenRandom();
         ManagedAuthenticatedEncryptor encryptor = new ManagedAuthenticatedEncryptor(kdk,
             symmetricAlgorithmFactory: Aes.Create,
             symmetricAlgorithmKeySizeInBytes: 256 / 8,
             validationAlgorithmFactory: () => new HMACSHA256(),
-            genRandom: new SequentialGenRandom());
+            genRandom: genRandom);
+        genRandom.Reset();
         ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
         ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);
 
@@ -175,5 +177,22 @@ public class ManagedAuthenticatedEncryptorTests
         var unprotectedData = protector.Unprotect(protectedData, out var expiration);
         Assert.Equal(jsonPayload, unprotectedData);
         Assert.True(expiration > DateTimeOffset.UtcNow, "Expiration should be in the future");
+    }
+
+    [Fact]
+    public void Constructor_PerformsSelfTest_ConsumesRandomBytes()
+    {
+        var genRandom = new SequentialGenRandom();
+        byte initialValue = genRandom.CurrentValue;
+
+        Secret kdk = new Secret(new byte[512 / 8]);
+        _ = new ManagedAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmFactory: Aes.Create,
+            symmetricAlgorithmKeySizeInBytes: 256 / 8,
+            validationAlgorithmFactory: () => new HMACSHA256(),
+            genRandom: genRandom);
+
+        // Indirectly testing that SelfTest ran by checking that random bytes were consumed
+        Assert.NotEqual(initialValue, genRandom.CurrentValue);
     }
 }
