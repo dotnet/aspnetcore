@@ -322,7 +322,7 @@ public class InputBaseTest
         // Act/Assert 1: Transition to invalid
         await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
         Assert.Empty(valueChangedArgs);
-        Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
+        Assert.False(rootComponent.EditContext.IsModified(fieldIdentifier));
         Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
         Assert.Equal(1, numValidationStateChanges);
 
@@ -335,6 +335,27 @@ public class InputBaseTest
         Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
         Assert.Equal(2, numValidationStateChanges);
+    }
+
+    [Fact]
+    public async Task ParsesCurrentValueAsStringWhenChanged_Invalid_DoesNotNotifyFieldChanged()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.DateProperty
+        };
+        var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var numFieldChanges = 0;
+        rootComponent.EditContext.OnFieldChanged += (sender, eventArgs) => { numFieldChanges++; };
+
+        await inputComponent.SetCurrentValueAsStringAsync("1991/11/40");
+
+        Assert.False(rootComponent.EditContext.IsModified(fieldIdentifier));
+        Assert.Equal(0, numFieldChanges);
+        Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
     }
 
     [Fact]
