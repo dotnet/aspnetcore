@@ -140,10 +140,26 @@ internal static class RequestDelegateGeneratorSources
             HttpContext httpContext,
             LogOrThrowExceptionHelper logOrThrowExceptionHelper,
             string parameterTypeName,
-            string parameterName)
+            string parameterName,
+            bool allowEmpty = false)
         {
             object? formValue = null;
             var feature = httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpRequestBodyDetectionFeature>();
+
+            if (feature?.CanHaveBody == false)
+            {
+                if (!allowEmpty)
+                {
+                    logOrThrowExceptionHelper.UnexpectedRequestWithoutBody(parameterTypeName, parameterName);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return (false, null);
+                }
+
+                // When the form body is optional and the request has no body, set the form to empty
+                // so that subsequent accesses to Request.Form don't throw.
+                httpContext.Request.Form = FormCollection.Empty;
+                return (true, null);
+            }
 
             if (feature?.CanHaveBody == true)
             {
@@ -367,6 +383,23 @@ internal static class RequestDelegateGeneratorSources
 
         private static readonly Action<ILogger, string, string, Exception?> _invalidFormRequestBody =
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.InvalidFormRequestBodyEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.InvalidFormRequestBodyLogMessage, true)}});
+
+        public void UnexpectedRequestWithoutBody(string parameterTypeName, string parameterName)
+        {
+            if (_shouldThrow)
+            {
+                var message = string.Format(CultureInfo.InvariantCulture, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyExceptionMessage, true)}}, parameterTypeName, parameterName);
+                throw new BadHttpRequestException(message, StatusCodes.Status400BadRequest);
+            }
+
+            if (_rdgLogger != null)
+            {
+                _unexpectedRequestWithoutBody(_rdgLogger, parameterTypeName, parameterName, null);
+            }
+        }
+
+        private static readonly Action<ILogger, string, string, Exception?> _unexpectedRequestWithoutBody =
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId({{RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventId}}, {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyEventName, true)}}), {{SymbolDisplay.FormatLiteral(RequestDelegateCreationLogging.UnexpectedRequestWithoutBodyLogMessage, true)}});
     }
 """;
 
