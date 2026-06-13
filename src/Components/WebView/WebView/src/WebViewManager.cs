@@ -28,9 +28,28 @@ public abstract class WebViewManager : IAsyncDisposable
     private readonly JSComponentConfigurationStore _jsComponents;
     private readonly Dictionary<string, RootComponent> _rootComponentsBySelector = new();
 
-    // Each time a web page connects, we establish a new per-page context
-    private PageContext _currentPageContext;
-    private bool _disposed;
+    // Each time a web page connects, we establish a new per-page context.
+    // volatile: lifecycle writes go through _lifecycleLock, but reads from outside the
+    // lock (MessageReceived, TryDispatchAsync, AddRootComponentAsync, RemoveRootComponentAsync)
+    // need acquire/release semantics so they observe either the prior context or the new
+    // one, never a partially-initialized state.
+    private volatile PageContext _currentPageContext;
+
+    // volatile: written by DisposeAsyncCore which runs on the caller's thread (often the
+    // host UI thread, not the dispatcher), and read by MessageReceived / AttachToPageAsync
+    // / TryDispatchAsync which may run on the WebView's IPC thread or arbitrary user
+    // threads. Without acquire/release semantics the late-message / no-resurrection
+    // guards aren't reliably enforceable under the .NET memory model.
+    private volatile bool _disposed;
+
+    // Serializes AttachToPageAsync and DisposeAsyncCore so the two cannot interleave around
+    // _currentPageContext. Without serialization, AttachToPageAsync awaiting the previous
+    // context's disposal can be racing concurrent DisposeAsyncCore: both could observe the
+    // _disposed flag false at their respective checks, both could publish/dispose the same
+    // context, or AttachToPageAsync could publish a new context AFTER DisposeAsyncCore has
+    // already exited — leaking the new scope and renderer permanently. Holding the semaphore
+    // through the publish step closes the entire race class.
+    private readonly SemaphoreSlim _lifecycleLock = new(initialCount: 1, maxCount: 1);
 
     /// <summary>
     /// Constructs an instance of <see cref="WebViewManager"/>.
@@ -149,14 +168,34 @@ public abstract class WebViewManager : IAsyncDisposable
             return;
         }
 
+        if (_disposed)
+        {
+            // The WebView is shutting down. Late inbound messages (including a stale AttachPage
+            // that would otherwise resurrect the manager by creating a new PageContext) must be
+            // dropped (see dotnet/maui#34855).
+            return;
+        }
+
+        // Capture the current page context at message-receipt time. If a page reload installs
+        // a new context while this message is queued on the dispatcher, the message must still
+        // target the original page (whose JS runtime IsDisposed guard will short-circuit
+        // user-code invocations). Without this capture, stale JS object IDs / .NET-from-JS
+        // calls / location events would route to the new page's renderer (see #66255).
+        var capturedPageContext = _currentPageContext;
+
         _ = _dispatcher.InvokeAsync(async () =>
         {
+            if (_disposed)
+            {
+                return;
+            }
+
             // TODO: Verify this produces the correct exception-surfacing behaviors.
             // For example, JS interop exceptions should flow back into JS, whereas
             // renderer exceptions should be fatal.
             try
             {
-                await _ipcReceiver.OnMessageReceivedAsync(_currentPageContext, message);
+                await _ipcReceiver.OnMessageReceivedAsync(capturedPageContext, message);
             }
             catch (Exception ex)
             {
@@ -177,6 +216,11 @@ public abstract class WebViewManager : IAsyncDisposable
     {
         ArgumentNullException.ThrowIfNull(workItem);
 
+        if (_disposed)
+        {
+            return false;
+        }
+
         var capturedCurrentPageContext = _currentPageContext;
 
         if (capturedCurrentPageContext is null)
@@ -186,14 +230,16 @@ public abstract class WebViewManager : IAsyncDisposable
 
         return await capturedCurrentPageContext.Renderer.Dispatcher.InvokeAsync(() =>
         {
-            if (capturedCurrentPageContext != _currentPageContext)
+            if (_disposed || capturedCurrentPageContext != _currentPageContext)
             {
                 // If the captured context doesn't match the current context, that means that there was something like
                 // a navigation event that caused the original page to be detached and a new one attached. Thus, we
-                // cancel out of the operation and return failure.
+                // cancel out of the operation and return failure. The _disposed check covers the case where the whole
+                // WebViewManager was disposed between capture and execution (which would otherwise let workItem run
+                // against a disposed scope).
                 return false;
             }
-            workItem(_currentPageContext.ServiceProvider);
+            workItem(capturedCurrentPageContext.ServiceProvider);
             return true;
         });
     }
@@ -213,31 +259,64 @@ public abstract class WebViewManager : IAsyncDisposable
 
     internal async Task AttachToPageAsync(string baseUrl, string startUrl)
     {
-        // If there was some previous attached page, dispose all its resources. We're not eagerly disposing
-        // page contexts when the user navigates away, because we don't get notified about that. We could
-        // change this if any important reason emerges.
-        if (_currentPageContext != null)
+        if (_disposed)
         {
-            await _currentPageContext.DisposeAsync();
+            // Fast path before grabbing the lock.
+            return;
         }
 
-        var serviceScope = _provider.CreateAsyncScope();
-
-        _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, _jsComponents, baseUrl, startUrl);
-
-        // Add any root components that were registered before the page attached. We don't await any of the
-        // returned render tasks so that the components can be processed in parallel.
-        var pendingRenders = new List<Task>(_rootComponentsBySelector.Count);
-        foreach (var (selector, rootComponent) in _rootComponentsBySelector)
+        await _lifecycleLock.WaitAsync();
+        try
         {
-            rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
-                rootComponent.ComponentType, selector);
-            pendingRenders.Add(_currentPageContext.Renderer.RenderRootComponentAsync(
-                rootComponent.ComponentId.Value, rootComponent.Parameters));
-        }
+            if (_disposed)
+            {
+                // A late AttachPage IPC message arrived after the manager was disposed. Creating
+                // a new PageContext here would resurrect the WebViewManager — recreating the
+                // scoped services, the renderer, and the JS runtime against a disposed sender.
+                // See dotnet/maui#34855.
+                return;
+            }
 
-        // Now we wait for all components to finish rendering.
-        await Task.WhenAll(pendingRenders);
+            // If there was some previous attached page, detach + dispose it. Holding
+            // _lifecycleLock around this means DisposeAsyncCore can't concurrently
+            // dispose the same context.
+            var previousPageContext = _currentPageContext;
+            _currentPageContext = null;
+            if (previousPageContext != null)
+            {
+                await previousPageContext.DisposeAsync();
+            }
+
+            if (_disposed)
+            {
+                // DisposeAsyncCore can flip _disposed before we acquire the lock or while we
+                // await previousPageContext.DisposeAsync. In either case, don't publish a new
+                // context.
+                return;
+            }
+
+            var serviceScope = _provider.CreateAsyncScope();
+
+            _currentPageContext = new PageContext(_dispatcher, serviceScope, _ipcSender, _jsComponents, baseUrl, startUrl);
+
+            // Add any root components that were registered before the page attached. We don't await any of the
+            // returned render tasks so that the components can be processed in parallel.
+            var pendingRenders = new List<Task>(_rootComponentsBySelector.Count);
+            foreach (var (selector, rootComponent) in _rootComponentsBySelector)
+            {
+                rootComponent.ComponentId = _currentPageContext.Renderer.AddRootComponent(
+                    rootComponent.ComponentType, selector);
+                pendingRenders.Add(_currentPageContext.Renderer.RenderRootComponentAsync(
+                    rootComponent.ComponentId.Value, rootComponent.Parameters));
+            }
+
+            // Now we wait for all components to finish rendering.
+            await Task.WhenAll(pendingRenders);
+        }
+        finally
+        {
+            _lifecycleLock.Release();
+        }
     }
 
     private static Uri EnsureTrailingSlash(Uri uri)
@@ -255,14 +334,38 @@ public abstract class WebViewManager : IAsyncDisposable
     /// </summary>
     protected virtual async ValueTask DisposeAsyncCore()
     {
-        if (!_disposed)
+        if (_disposed)
         {
+            return;
+        }
+
+        await _lifecycleLock.WaitAsync();
+        try
+        {
+            if (_disposed)
+            {
+                return;
+            }
             _disposed = true;
 
-            if (_currentPageContext != null)
+            // Stop the IPC sender first so that in-flight render batches, navigation events,
+            // and unhandled-exception notifications produced while we dispose the page context
+            // can't reach a platform WebView whose underlying control is being torn down
+            // (see dotnet/maui#34855 alexdess NullReferenceException variant).
+            _ipcSender.Dispose();
+
+            // Detach + dispose the current page context. We hold _lifecycleLock so a
+            // concurrent AttachToPageAsync cannot also observe / dispose this same context.
+            var pageContext = _currentPageContext;
+            _currentPageContext = null;
+            if (pageContext != null)
             {
-                await _currentPageContext.DisposeAsync();
+                await pageContext.DisposeAsync();
             }
+        }
+        finally
+        {
+            _lifecycleLock.Release();
         }
     }
 
