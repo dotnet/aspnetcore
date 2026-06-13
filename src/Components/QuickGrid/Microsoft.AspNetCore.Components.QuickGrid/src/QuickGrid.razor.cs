@@ -392,7 +392,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         _displayOptionsForColumn = column;
         _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
         return Task.CompletedTask;
     }
 
@@ -402,7 +402,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     public Task HideColumnOptionsAsync()
     {
         _displayOptionsForColumn = null;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
         return Task.CompletedTask;
     }
 
@@ -414,7 +414,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     public async Task RefreshDataAsync()
     {
         await RefreshDataCoreAsync();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
     // Same as RefreshDataAsync, except without forcing a re-render. We use this from OnParametersSetAsync
