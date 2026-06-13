@@ -1076,6 +1076,34 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesFromFormWithIEnumerable()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/test", ([FromForm] IEnumerable<int> values) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Post];
+            Assert.NotNull(operation.RequestBody);
+            var content = operation.RequestBody.Content;
+            Assert.Contains("multipart/form-data", content.Keys);
+            var formSchema = content["multipart/form-data"].Schema;
+
+            Assert.Equal(JsonSchemaType.Object, formSchema.Type);
+            Assert.NotNull(formSchema.Properties);
+            Assert.Contains("values", formSchema.Properties);
+            var valuesProperty = formSchema.Properties["values"];
+            Assert.Equal(JsonSchemaType.Array, valuesProperty.Type);
+            Assert.Equal(JsonSchemaType.Integer, valuesProperty.Items.Type);
+        });
+    }
+
     [Route("/form-mixed-types")]
     private void ActionWithMixedFormTypes([FromForm] Todo todo, IFormFile formFile, [FromForm] Guid guid) { }
 
