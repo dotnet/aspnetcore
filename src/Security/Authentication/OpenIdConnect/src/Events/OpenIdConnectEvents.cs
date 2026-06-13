@@ -67,6 +67,11 @@ public class OpenIdConnectEvents : RemoteAuthenticationEvents
     public Func<PushedAuthorizationContext, Task> OnPushAuthorization { get; set; } = context => Task.CompletedTask;
 
     /// <summary>
+    /// Invoked when authorization parameters pushed using PAR result in a failure.
+    /// </summary>
+    public Func<PushedAuthorizationFailedContext, Task> OnPushAuthorizationFailed { get; set; } = context => Task.CompletedTask;
+
+    /// <summary>
     /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
     /// </summary>
     public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
@@ -125,4 +130,11 @@ public class OpenIdConnectEvents : RemoteAuthenticationEvents
     /// <param name="context"></param>
     /// <returns></returns>
     public virtual Task PushAuthorization(PushedAuthorizationContext context) => OnPushAuthorization(context);
+
+    /// <summary>
+    /// Invoked when authorization parameters pushed using PAR result in a failure.
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
+    public virtual Task PushAuthorizationFailed(PushedAuthorizationFailedContext context) => OnPushAuthorizationFailed(context);
 }
