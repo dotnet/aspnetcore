@@ -220,6 +220,16 @@ public class AuthTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         AssertExpectedLayoutUsed();
     }
 
+    [Fact]
+    public void AuthorizeRouteView_NotAuthorizedPage_DisplaysPage()
+    {
+        SignInAs(null, null);
+        var appElement = MountAndNavigateToAuthTestWithNotAuthorizedPage(PageRequiringAuthorization);
+        Browser.Equal("You are not authorized to access this resource. This is the NotAuthorizedPage component.", () =>
+            appElement.FindElement(By.CssSelector("#not-authorized-page-content")).Text);
+        AssertExpectedLayoutUsed();
+    }
+
     private void AssertExpectedLayoutUsed()
     {
         Browser.Exists(By.Id("auth-links"));
@@ -229,6 +239,15 @@ public class AuthTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
     {
         Navigate(ServerPathBase);
         var appElement = Browser.MountTestComponent<BasicTestApp.AuthTest.AuthRouter>();
+        Browser.Exists(By.Id("auth-links"));
+        appElement.FindElement(By.LinkText(authLinkText)).Click();
+        return appElement;
+    }
+
+    protected IWebElement MountAndNavigateToAuthTestWithNotAuthorizedPage(string authLinkText)
+    {
+        Navigate(ServerPathBase);
+        var appElement = Browser.MountTestComponent<BasicTestApp.AuthTest.AuthRouterWithNotAuthorizedPage>();
         Browser.Exists(By.Id("auth-links"));
         appElement.FindElement(By.LinkText(authLinkText)).Click();
         return appElement;
