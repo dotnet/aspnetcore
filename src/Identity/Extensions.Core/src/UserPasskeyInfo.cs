@@ -34,6 +34,36 @@ public sealed class UserPasskeyInfo
         bool isBackedUp,
         byte[] attestationObject,
         byte[] clientDataJson)
+        : this(credentialId, publicKey, createdAt, signCount, transports, isUserVerified, isBackupEligible, isBackedUp, attestationObject, clientDataJson, name: null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="UserPasskeyInfo"/> with a friendly name.
+    /// </summary>
+    /// <param name="credentialId">The credential ID for the passkey.</param>
+    /// <param name="publicKey">The public key for the passkey.</param>
+    /// <param name="createdAt">The time when the passkey was created.</param>
+    /// <param name="signCount">The signature counter for the passkey.</param>
+    /// <param name="transports">The transports supported by this passkey.</param>
+    /// <param name="isUserVerified">Indicates if the passkey has a verified user.</param>
+    /// <param name="isBackupEligible">Indicates if the passkey is eligible for backup.</param>
+    /// <param name="isBackedUp">Indicates if the passkey is currently backed up.</param>
+    /// <param name="attestationObject">The passkey's attestation object.</param>
+    /// <param name="clientDataJson">The passkey's client data JSON.</param>
+    /// <param name="name">An optional friendly name for the passkey.</param>
+    public UserPasskeyInfo(
+        byte[] credentialId,
+        byte[] publicKey,
+        DateTimeOffset createdAt,
+        uint signCount,
+        string[]? transports,
+        bool isUserVerified,
+        bool isBackupEligible,
+        bool isBackedUp,
+        byte[] attestationObject,
+        byte[] clientDataJson,
+        string? name)
     {
         CredentialId = credentialId;
         PublicKey = publicKey;
@@ -45,6 +75,7 @@ public sealed class UserPasskeyInfo
         IsBackedUp = isBackedUp;
         AttestationObject = attestationObject;
         ClientDataJson = clientDataJson;
+        Name = name;
     }
 
     /// <summary>
