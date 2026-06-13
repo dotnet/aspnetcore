@@ -21,6 +21,31 @@ internal static class OpenApiSchemaExtensions
         };
     }
 
+    public static bool IsOneOfNullableWrapper(this OpenApiSchema schema)
+    {
+        if (schema.OneOf is not { Count: 2 })
+        {
+            return false;
+        }
+
+        var hasNullSchema = false;
+        var hasNonNullSchema = false;
+
+        foreach (var item in schema.OneOf)
+        {
+            if (item is OpenApiSchema { Type: JsonSchemaType.Null })
+            {
+                hasNullSchema = true;
+            }
+            else
+            {
+                hasNonNullSchema = true;
+            }
+        }
+
+        return hasNullSchema && hasNonNullSchema;
+    }
+
     public static bool IsComponentizedSchema(this OpenApiSchema schema)
         => schema.IsComponentizedSchema(out _);
 
