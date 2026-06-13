@@ -101,6 +101,72 @@ public class JSRuntimeTest
     }
 
     [Fact]
+    public async Task CancellationThenEndInvokeJS_DoesNotThrowAndTaskIsCancelled()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        var runtime = new TestJSRuntime();
+
+        var task = runtime.InvokeAsync<string>("test identifier", cts.Token, Array.Empty<object>());
+        var asyncHandle = runtime.BeginInvokeCalls[0].AsyncHandle;
+
+        // Act: Cancel first, then attempt EndInvokeJS for the same taskId
+        cts.Cancel();
+        var bytes = Encoding.UTF8.GetBytes("\"result value\"");
+        var reader = new Utf8JsonReader(bytes);
+        var endInvokeResult = runtime.EndInvokeJS(asyncHandle, succeeded: true, ref reader);
+
+        // Assert: EndInvokeJS returns false (task already removed), task is cancelled
+        Assert.False(endInvokeResult);
+        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+    }
+
+    [Fact]
+    public async Task EndInvokeJSThenCancellation_PreservesSuccessfulResult()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        var runtime = new TestJSRuntime();
+
+        var task = runtime.InvokeAsync<string>("test identifier", cts.Token, Array.Empty<object>());
+        var asyncHandle = runtime.BeginInvokeCalls[0].AsyncHandle;
+
+        // Act: EndInvokeJS completes first, then cancellation fires
+        var bytes = Encoding.UTF8.GetBytes("\"result value\"");
+        var reader = new Utf8JsonReader(bytes);
+        var endInvokeResult = runtime.EndInvokeJS(asyncHandle, succeeded: true, ref reader);
+        cts.Cancel();
+
+        // Assert: No exception, task completed with the EndInvokeJS result
+        Assert.True(endInvokeResult);
+        var result = await task;
+        Assert.Equal("result value", result);
+    }
+
+    [Fact]
+    public async Task EndInvokeJSFailureThenCancellation_PreservesJSException()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        var runtime = new TestJSRuntime();
+
+        var task = runtime.InvokeAsync<string>("test identifier", cts.Token, Array.Empty<object>());
+        var asyncHandle = runtime.BeginInvokeCalls[0].AsyncHandle;
+
+        // Act: EndInvokeJS fails first, then cancellation fires
+        var bytes = Encoding.UTF8.GetBytes("\"JS error occurred\"");
+        var reader = new Utf8JsonReader(bytes);
+        reader.Read();
+        var endInvokeResult = runtime.EndInvokeJS(asyncHandle, succeeded: false, ref reader);
+        cts.Cancel();
+
+        // Assert: No exception from double-completion, task faults with JSException
+        Assert.True(endInvokeResult);
+        var exception = await Assert.ThrowsAsync<JSException>(async () => await task);
+        Assert.Equal("JS error occurred", exception.Message);
+    }
+
+    [Fact]
     public void CanCompleteAsyncCallsAsSuccess()
     {
         // Arrange
