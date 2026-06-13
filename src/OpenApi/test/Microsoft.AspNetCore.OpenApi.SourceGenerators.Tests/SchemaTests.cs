@@ -139,6 +139,8 @@ public class TypeWithExamples
     public DateOnly DateOnlyType { get; set; }
     /// <example>Hello, World!</example>
     public string StringType { get; set; }
+    /// <example>"Quoted, World!"</example>
+    public string QuotedStringType { get; set; }
     /// <example>2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d</example>
     public Guid GuidType { get; set; }
     /// <example>12:30:45</example>
@@ -240,6 +242,9 @@ internal class User : IUser
 
             var stringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["stringType"].Example);
             Assert.Equal("Hello, World!", stringTypeExample.GetValue<string>());
+
+            var quotedStringTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["quotedStringType"].Example);
+            Assert.Equal("Quoted, World!", quotedStringTypeExample.GetValue<string>());
 
             var guidTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["guidType"].Example);
             Assert.Equal("2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d", guidTypeExample.GetValue<string>());
