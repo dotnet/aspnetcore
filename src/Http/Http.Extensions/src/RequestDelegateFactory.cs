@@ -1479,6 +1479,7 @@ public static partial class RequestDelegateFactory
             var binders = factoryContext.ParameterBinders.ToArray();
             var count = binders.Length;
 
+            var allowEmptyFormBody = factoryContext.AllowEmptyFormBody;
             return async (target, httpContext) =>
             {
                 // Run these first so that they can potentially read and rewind the body
@@ -1493,7 +1494,8 @@ public static partial class RequestDelegateFactory
                     httpContext,
                     parameterTypeName,
                     parameterName,
-                    factoryContext.ThrowOnBadRequest);
+                    factoryContext.ThrowOnBadRequest,
+                    allowEmptyFormBody);
 
                 if (!successful)
                 {
@@ -1509,13 +1511,15 @@ public static partial class RequestDelegateFactory
             var continuation = Expression.Lambda<Func<object?, HttpContext, object?, Task>>(
             responseWritingMethodCall, TargetExpr, HttpContextExpr, BodyValueExpr).Compile();
 
+            var allowEmptyFormBody = factoryContext.AllowEmptyFormBody;
             return async (target, httpContext) =>
             {
                 var (formValue, successful) = await TryReadFormAsync(
                     httpContext,
                     parameterTypeName,
                     parameterName,
-                    factoryContext.ThrowOnBadRequest);
+                    factoryContext.ThrowOnBadRequest,
+                    allowEmptyFormBody);
 
                 if (!successful)
                 {
@@ -1530,13 +1534,20 @@ public static partial class RequestDelegateFactory
             HttpContext httpContext,
             string parameterTypeName,
             string parameterName,
-            bool throwOnBadRequest)
+            bool throwOnBadRequest,
+            bool allowEmptyFormBody)
         {
             object? formValue = null;
             var feature = httpContext.Features.Get<IHttpRequestBodyDetectionFeature>();
 
             if (feature?.CanHaveBody == false)
             {
+                if (allowEmptyFormBody)
+                {
+                    httpContext.Request.Form = EmptyFormCollection.Instance;
+                    return (null, true);
+                }
+
                 Log.UnexpectedRequestWithoutBody(httpContext, parameterTypeName, parameterName, throwOnBadRequest);
                 httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return (null, false);
@@ -1551,6 +1562,12 @@ public static partial class RequestDelegateFactory
 
             if (!httpContext.Request.HasFormContentType)
             {
+                if (allowEmptyFormBody)
+                {
+                    httpContext.Request.Form = EmptyFormCollection.Instance;
+                    return (null, true);
+                }
+
                 Log.UnexpectedNonFormContentType(httpContext, httpContext.Request.ContentType, throwOnBadRequest);
                 httpContext.Response.StatusCode = StatusCodes.Status415UnsupportedMediaType;
                 return (null, false);
@@ -2131,6 +2148,11 @@ public static partial class RequestDelegateFactory
         factoryContext.TrackedParameters.Add(parameter.Name!, RequestDelegateFactoryConstants.FormCollectionParameter);
         factoryContext.ReadForm = true;
 
+        if (!IsExplicitlyOptionalParameter(parameter, factoryContext))
+        {
+            factoryContext.AllowEmptyFormBody = false;
+        }
+
         return BindParameterFromExpression(
             parameter,
             FormExpr,
@@ -2148,6 +2170,11 @@ public static partial class RequestDelegateFactory
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.Add(key, RequestDelegateFactoryConstants.FormAttribute);
         factoryContext.ReadForm = true;
+
+        if (!IsExplicitlyOptionalParameter(parameter, factoryContext))
+        {
+            factoryContext.AllowEmptyFormBody = false;
+        }
 
         return BindParameterFromValue(
             parameter,
@@ -2184,6 +2211,11 @@ public static partial class RequestDelegateFactory
         factoryContext.FirstFormRequestBodyParameter ??= parameter;
         factoryContext.TrackedParameters.TryAdd(key, RequestDelegateFactoryConstants.FormBindingAttribute);
         factoryContext.ReadForm = true;
+
+        if (!IsExplicitlyOptionalParameter(parameter, factoryContext))
+        {
+            factoryContext.AllowEmptyFormBody = false;
+        }
 
         // var name_local;
         var formArgument = Expression.Variable(parameter.ParameterType, $"{parameter.Name}_local");
@@ -2321,6 +2353,11 @@ public static partial class RequestDelegateFactory
         factoryContext.ReadForm = true;
         factoryContext.ReadFormFile = true;
 
+        if (!IsExplicitlyOptionalParameter(parameter, factoryContext))
+        {
+            factoryContext.AllowEmptyFormBody = false;
+        }
+
         return BindParameterFromExpression(
             parameter,
             FormFilesExpr,
@@ -2340,6 +2377,11 @@ public static partial class RequestDelegateFactory
         factoryContext.TrackedParameters.Add(key, trackedParameterSource);
         factoryContext.ReadForm = true;
         factoryContext.ReadFormFile = true;
+
+        if (!IsExplicitlyOptionalParameter(parameter, factoryContext))
+        {
+            factoryContext.AllowEmptyFormBody = false;
+        }
 
         return BindParameterFromExpression(
             parameter,
@@ -2448,6 +2490,28 @@ public static partial class RequestDelegateFactory
         var nullabilityInfo = factoryContext.NullabilityContext.Create(parameter);
         return parameter.HasDefaultValue
             || nullabilityInfo.ReadState != NullabilityState.NotNull;
+    }
+
+    /// <summary>
+    /// Returns true only if the parameter is explicitly nullable (annotated with ?)
+    /// or has a default value. Unlike <see cref="IsOptionalParameter"/>, this treats
+    /// nullable-oblivious reference types as required, which is important for form
+    /// body optionality to preserve backward compatibility.
+    /// </summary>
+    private static bool IsExplicitlyOptionalParameter(ParameterInfo parameter, RequestDelegateFactoryContext factoryContext)
+    {
+        if (parameter is PropertyAsParameterInfo argument)
+        {
+            return argument.IsOptional;
+        }
+
+        if (parameter.HasDefaultValue)
+        {
+            return true;
+        }
+
+        var nullabilityInfo = factoryContext.NullabilityContext.Create(parameter);
+        return nullabilityInfo.ReadState is NullabilityState.Nullable;
     }
 
     private static MethodInfo GetMethodInfo<T>(Expression<T> expr)
@@ -2976,5 +3040,31 @@ public static partial class RequestDelegateFactory
     {
         public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
         public object? GetService(Type serviceType) => null;
+    }
+
+    private sealed class EmptyFormCollection : IFormCollection
+    {
+        public static readonly EmptyFormCollection Instance = new();
+        private static readonly IFormFileCollection EmptyFiles = new EmptyFormFileCollection();
+
+        public StringValues this[string key] => StringValues.Empty;
+        public int Count => 0;
+        public ICollection<string> Keys => Array.Empty<string>();
+        public IFormFileCollection Files => EmptyFiles;
+        public bool ContainsKey(string key) => false;
+        public bool TryGetValue(string key, out StringValues value) { value = default; return false; }
+        public IEnumerator<KeyValuePair<string, StringValues>> GetEnumerator() => Enumerable.Empty<KeyValuePair<string, StringValues>>().GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private sealed class EmptyFormFileCollection : IFormFileCollection
+        {
+            public IFormFile? this[string name] => null;
+            public IFormFile this[int index] => throw new ArgumentOutOfRangeException(nameof(index));
+            public int Count => 0;
+            public IFormFile? GetFile(string name) => null;
+            public IReadOnlyList<IFormFile> GetFiles(string name) => Array.Empty<IFormFile>();
+            public IEnumerator<IFormFile> GetEnumerator() => Enumerable.Empty<IFormFile>().GetEnumerator();
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+        }
     }
 }

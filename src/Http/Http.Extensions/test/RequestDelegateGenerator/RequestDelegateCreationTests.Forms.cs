@@ -1032,4 +1032,100 @@ app.MapPost("/", TestAction);
 
         await VerifyAgainstBaselineUsingFile(compilation);
     }
+
+#nullable enable
+    [Fact]
+    public async Task RequestDelegateHandlesNonFormContentTypeWithOptionalFormFileCollection()
+    {
+        var source = """app.MapPost("/", (IFormFileCollection? formFiles, HttpContext httpContext) => httpContext.Items["formFiles"] = formFiles);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/xml";
+        httpContext.Request.Headers["Content-Length"] = "1";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, IFormFileCollection? formFiles) =>
+        {
+            context.Items["formFiles"] = formFiles;
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var result = Assert.IsAssignableFrom<IFormFileCollection>(httpContext.Items["formFiles"]);
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesNonFormContentTypeWithOptionalFormFile()
+    {
+        var source = """app.MapPost("/", (IFormFile? file, HttpContext httpContext) => httpContext.Items["file"] = file);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/xml";
+        httpContext.Request.Headers["Content-Length"] = "1";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, IFormFile? file) =>
+        {
+            context.Items["file"] = file;
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Null(httpContext.Items["file"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesNoBodyWithOptionalFormFileCollection()
+    {
+        var source = """app.MapPost("/", (IFormFileCollection? formFiles, HttpContext httpContext) => httpContext.Items["formFiles"] = formFiles);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, IFormFileCollection? formFiles) =>
+        {
+            context.Items["formFiles"] = formFiles;
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var result = Assert.IsAssignableFrom<IFormFileCollection>(httpContext.Items["formFiles"]);
+        Assert.Empty(result);
+    }
+#nullable restore
+
+    [Fact]
+    public async Task RequestDelegateStillRejectsNonFormContentTypeWithRequiredFormFile()
+    {
+        var source = """app.MapPost("/", (IFormFile file, HttpContext httpContext) => httpContext.Items["formFiles"] = file);""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: CreateServiceProvider());
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/xml";
+        httpContext.Request.Headers["Content-Length"] = "1";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+
+        var factoryResult = RequestDelegateFactory.Create((HttpContext context, IFormFile file) =>
+        {
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(415, httpContext.Response.StatusCode);
+    }
 }
