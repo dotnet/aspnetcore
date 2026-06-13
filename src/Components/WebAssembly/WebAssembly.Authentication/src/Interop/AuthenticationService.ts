@@ -272,7 +272,10 @@ class OidcAuthorizeService implements AuthorizeService {
                 return this.operationCompleted();
             }
 
-            return this.error('There was an error signing in.');
+            const rawMessage = this.getExceptionMessage(error);
+            const errorCode = this.getUrlParameter(url, 'error');
+            this.debug(`Complete sign in error '${rawMessage}'`);
+            return this.error(this.getSafeErrorMessage(error, errorCode));
         }
     }
 
@@ -326,8 +329,41 @@ class OidcAuthorizeService implements AuthorizeService {
         }
     }
 
+    // Maps known OIDC callback error codes (RFC 6749 §4.1.2.1 + OpenID Connect Core §3.1.2.6)
+    // to safe user-facing messages. Unknown codes and non-OIDC exceptions return a generic
+    // message; the original error is still written to the debug log for diagnostics.
+    private getSafeErrorMessage(error: any, fallbackCode?: string | null): string {
+        const genericMessage = 'There was an error signing in.';
+        const code: string | undefined = error && typeof error.error === 'string' ? error.error : fallbackCode ?? undefined;
+        if (!code) {
+            return genericMessage;
+        }
+        switch (code) {
+            case 'access_denied': return 'Access was denied during sign-in.';
+            case 'login_required': return 'Sign-in is required to continue.';
+            case 'consent_required': return 'User consent is required to continue.';
+            case 'interaction_required': return 'User interaction is required to complete sign-in.';
+            case 'account_selection_required': return 'Please select an account to continue.';
+            case 'invalid_request':
+            case 'invalid_request_uri':
+            case 'invalid_request_object':
+            case 'invalid_scope':
+            case 'unauthorized_client':
+            case 'unsupported_response_type':
+            case 'request_not_supported':
+            case 'request_uri_not_supported':
+            case 'registration_not_supported':
+                return 'The sign-in request was not valid.';
+            case 'server_error':
+            case 'temporarily_unavailable':
+                return 'The sign-in service is temporarily unavailable. Please try again.';
+            default:
+                return genericMessage;
+        }
+    }
+
     private async stateExists(url: string) {
-        const stateParam = new URLSearchParams(new URL(url).search).get('state');
+        const stateParam = this.getUrlParameter(url, 'state');
         if (stateParam && this._userManager.settings.stateStore) {
             return await this._userManager.settings.stateStore.get(stateParam);
         } else {
@@ -336,13 +372,23 @@ class OidcAuthorizeService implements AuthorizeService {
     }
 
     private async loginRequired(url: string) {
-        const errorParameter = new URLSearchParams(new URL(url).search).get('error');
+        const errorParameter = this.getUrlParameter(url, 'error');
         if (errorParameter && this._userManager.settings.stateStore) {
             const error = await this._userManager.settings.stateStore.get(errorParameter);
             return error === 'login_required';
         } else {
             return false;
         }
+    }
+
+    private getUrlParameter(url: string, parameterName: string): string | null {
+        const parsedUrl = new URL(url);
+        const hashContent = parsedUrl.hash.substring(1);
+        // Only parse fragment as OIDC params if it doesn't look like a router path
+        const fromHash = hashContent && !hashContent.startsWith('/')
+            ? new URLSearchParams(hashContent).get(parameterName)
+            : null;
+        return fromHash ?? new URLSearchParams(parsedUrl.search).get(parameterName);
     }
 
     private createArguments(state: unknown, interactiveRequest: InteractiveAuthenticationRequest | undefined) {
