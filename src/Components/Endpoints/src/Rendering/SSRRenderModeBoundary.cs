@@ -112,21 +112,21 @@ internal class SSRRenderModeBoundary : IComponent
 
         ValidateParameters(_latestParameters);
 
-        if (_prerender)
+        // Replace each top-level RenderFragment parameter with a capture wrapper
+        // so that when the component invokes the fragment during rendering,
+        // the output frames are captured for later serialization.
+        var parametersDict = (Dictionary<string, object?>)_latestParameters;
+        foreach (var name in parametersDict.Keys.ToArray())
         {
-            // Replace each top-level RenderFragment parameter with a capture wrapper
-            // so that when the component invokes the fragment during prerendering,
-            // the output frames are captured for later serialization.
-            var parametersDict = (Dictionary<string, object?>)_latestParameters;
-            foreach (var name in parametersDict.Keys.ToArray())
+            if (parametersDict[name] is RenderFragment rf)
             {
-                if (parametersDict[name] is RenderFragment rf)
+                var capture = new RenderFragmentCapture(rf)
                 {
-                    var capture = new RenderFragmentCapture(rf);
-                    _topLevelCaptures ??= new();
-                    _topLevelCaptures[name] = capture;
-                    parametersDict[name] = (RenderFragment)capture.Invoke;
-                }
+                    HasSerializationExecutionPolicy = RenderFragmentSerializer.HasSerializationExecutionPolicy(_componentType, name)
+                };
+                _topLevelCaptures ??= new();
+                _topLevelCaptures[name] = capture;
+                parametersDict[name] = (RenderFragment)capture.Invoke;
             }
         }
 
@@ -242,14 +242,25 @@ internal class SSRRenderModeBoundary : IComponent
         var dict = new Dictionary<string, object?>(latestParameters.Count);
         foreach (var (name, value) in latestParameters)
         {
-            if (value is RenderFragment)
+            if (value is RenderFragment rf)
             {
-                if (_topLevelCaptures is null || !_topLevelCaptures.TryGetValue(name, out var capture))
+                var capture = _topLevelCaptures?.GetValueOrDefault(name) ?? new RenderFragmentCapture(rf)
                 {
-                    // If we didn't wrap the RenderFragment in a capture, it means prerendering is disabled.
-                    // If the capture is null, then fragment was conditionally rendered and didn't execute. In either case we can't serialize it.
-                    throw new InvalidOperationException(
-                        $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}', because the RenderFragment was not executed. It can be due to disabled prerendering or conditional rendering.");
+                    HasSerializationExecutionPolicy = RenderFragmentSerializer.HasSerializationExecutionPolicy(_componentType, name)
+                };
+
+                if (!capture.HasCapturedFrames)
+                {
+                    if (capture.HasSerializationExecutionPolicy)
+                    {
+                        capture.EnsureCaptured();
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(
+                            $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}', because the RenderFragment was not executed during prerendering. " +
+                            $"Apply [SerializationExecutionPolicy] to the '{name}' property if the fragment should be serialized regardless of conditional rendering.");
+                    }
                 }
 
                 dict[name] = new SerializedRenderFragment

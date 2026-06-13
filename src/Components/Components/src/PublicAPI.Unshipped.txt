@@ -4,6 +4,8 @@ abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurre
 Microsoft.AspNetCore.Components.CascadingParameterSubscription
 Microsoft.AspNetCore.Components.CascadingParameterSubscription.CascadingParameterSubscription() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int frameIndex, object? value) -> void
+Microsoft.AspNetCore.Components.SerializationExecutionPolicyAttribute
+Microsoft.AspNetCore.Components.SerializationExecutionPolicyAttribute.SerializationExecutionPolicyAttribute() -> void
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithHash(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! hash) -> string!
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
