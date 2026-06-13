@@ -245,13 +245,14 @@ public class IISDeployer : IISDeployerBase
         RetryServerManagerAction(serverManager =>
         {
             var site = FindSite(serverManager, contentRoot);
-            IISDeploymentParameters.SiteName = site.Name;
 
             if (site == null)
             {
                 PreserveConfigFiles("nositetostart");
                 throw new InvalidOperationException($"Can't find site for: {contentRoot} to start.");
             }
+
+            IISDeploymentParameters.SiteName = site.Name;
 
             var appPool = serverManager.ApplicationPools.Single();
             _appPoolName = appPool.Name;

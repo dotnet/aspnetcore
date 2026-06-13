@@ -1448,6 +1448,41 @@ public class StartupTests : IISFunctionalTestBase
         Assert.Equal(true, response.Headers.ConnectionClose);
     }
 
+    [ConditionalFact]
+    public async Task InProcessHostlifetime()
+    {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
+
+        Assert.Equal("IISHostLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
+    }
+
+    [ConditionalFact]
+    public async Task OutOfProcessHostlifetime()
+    {
+        if (DeployerSelector.IsNewShimTest)
+        {
+            // NewShim tests use 2.2 IIS packages which don't have the host lifetime
+            return;
+        }
+
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+        deploymentParameters.TransformArguments((a, _) => $"{a} HostBuilder");
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            return;
+        }
+
+        Assert.Equal("ConsoleLifetime", await GetStringAsync(deploymentParameters, "GetHostLifetime"));
+    }
+
     public static int GetNextSSLPort(int avoid = 0)
     {
         var next = 44300;
