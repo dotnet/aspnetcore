@@ -127,14 +127,14 @@ public class TestService
                 Assert.Collection(problemDetails.Errors,
                     error =>
                     {
-                        Assert.Equal("Value2", error.Key);
-                        Assert.Collection(error.Value,
-                            msg => Assert.Equal("The Value2 field is required.", msg));
+                        Assert.Equal("SubType.RequiredProperty", error.Key);
+                        Assert.Equal("The RequiredProperty field is required.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("SubType.RequiredProperty", error.Key);
-                        Assert.Equal("The RequiredProperty field is required.", error.Value.Single());
+                        Assert.Equal("Value2", error.Key);
+                        Assert.Collection(error.Value,
+                            msg => Assert.Equal("The Value2 field is required.", msg));
                     });
             }
 

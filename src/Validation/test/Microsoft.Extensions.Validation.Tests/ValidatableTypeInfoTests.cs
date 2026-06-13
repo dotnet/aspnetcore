@@ -64,16 +64,6 @@ public class ValidatableTypeInfoTests
         Assert.Collection(context.ValidationErrors,
             kvp =>
             {
-                Assert.Equal("Name", kvp.Key);
-                Assert.Equal("The Name field is required.", kvp.Value.First());
-            },
-            kvp =>
-            {
-                Assert.Equal("Age", kvp.Key);
-                Assert.Equal("The field Age must be between 0 and 120.", kvp.Value.First());
-            },
-            kvp =>
-            {
                 Assert.Equal("Address.Street", kvp.Key);
                 Assert.Equal("The Street field is required.", kvp.Value.First());
             },
@@ -81,6 +71,16 @@ public class ValidatableTypeInfoTests
             {
                 Assert.Equal("Address.City", kvp.Key);
                 Assert.Equal("The City field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Age", kvp.Key);
+                Assert.Equal("The field Age must be between 0 and 120.", kvp.Value.First());
             });
 
         Assert.Collection(validationErrors,
@@ -206,8 +206,8 @@ public class ValidatableTypeInfoTests
         Assert.Collection(context.ValidationErrors,
             kvp =>
             {
-                Assert.Equal("Doors", kvp.Key);
-                Assert.Equal("The field Doors must be between 2 and 5.", kvp.Value.First());
+                Assert.Equal("Model", kvp.Key);
+                Assert.Equal("The Model field is required.", kvp.Value.First());
             },
             kvp =>
             {
@@ -216,8 +216,8 @@ public class ValidatableTypeInfoTests
             },
             kvp =>
             {
-                Assert.Equal("Model", kvp.Key);
-                Assert.Equal("The Model field is required.", kvp.Value.First());
+                Assert.Equal("Doors", kvp.Key);
+                Assert.Equal("The field Doors must be between 2 and 5.", kvp.Value.First());
             });
     }
 
@@ -271,17 +271,17 @@ public class ValidatableTypeInfoTests
         Assert.Collection(context.ValidationErrors,
             kvp =>
             {
+                Assert.Equal("Items[2].Quantity", kvp.Key);
+                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+            },
+            kvp =>
+            {
                 Assert.Equal("Items[1].ProductName", kvp.Key);
                 Assert.Equal("The ProductName field is required.", kvp.Value.First());
             },
             kvp =>
             {
                 Assert.Equal("Items[1].Quantity", kvp.Key);
-                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
-            },
-            kvp =>
-            {
-                Assert.Equal("Items[2].Quantity", kvp.Key);
                 Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
             });
     }
@@ -317,7 +317,7 @@ public class ValidatableTypeInfoTests
         await personType.ValidateAsync(person, context, default);
 
         // Assert
-        Assert.Null(context.ValidationErrors); // No validation errors for nullable properties with null values
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0); // No validation errors for nullable properties with null values
     }
 
     [Fact]
@@ -363,7 +363,6 @@ public class ValidatableTypeInfoTests
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationErrors = [],
             ValidationContext = new ValidationContext(rootNode)
         };
 
@@ -437,9 +436,10 @@ public class ValidatableTypeInfoTests
         // Assert
         Assert.NotNull(context.ValidationErrors);
         Assert.Single(context.ValidationErrors.Keys); // Only the "Password" key
-        Assert.Equal(2, context.ValidationErrors["Password"].Length); // But with 2 errors
-        Assert.Contains("Password must be at least 8 characters.", context.ValidationErrors["Password"]);
-        Assert.Contains("Password must contain at least one number and one special character.", context.ValidationErrors["Password"]);
+        var passwordErrors = context.ValidationErrors["Password"].ToArray();
+        Assert.Equal(2, passwordErrors.Length); // But with 2 errors
+        Assert.Contains("Password must be at least 8 characters.", passwordErrors);
+        Assert.Contains("Password must contain at least one number and one special character.", passwordErrors);
     }
 
     [Fact]
@@ -488,13 +488,13 @@ public class ValidatableTypeInfoTests
         Assert.Collection(context.ValidationErrors,
             kvp =>
             {
-                Assert.Equal("Name", kvp.Key);
-                Assert.Equal("The Name field is required.", kvp.Value.First());
+                Assert.Equal("CreatedAt", kvp.Key);
+                Assert.Equal("Date must be in the past.", kvp.Value.First());
             },
             kvp =>
             {
-                Assert.Equal("CreatedAt", kvp.Key);
-                Assert.Equal("Date must be in the past.", kvp.Value.First());
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
             });
     }
 
@@ -561,14 +561,16 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
             ]);
 
-        context.ValidationErrors = [];
-        context.ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-        {
-            { typeof(MultiMemberErrorObject), multiType }
-        });
-
         var multiErrorInstance = new MultiMemberErrorObject { FirstName = "", LastName = "" };
-        context.ValidationContext = new ValidationContext(multiErrorInstance);
+
+        context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(MultiMemberErrorObject), multiType }
+            }),
+            ValidationContext = new ValidationContext(multiErrorInstance),
+        };
 
         await multiType.ValidateAsync(multiErrorInstance, context, default);
 
@@ -576,12 +578,12 @@ public class ValidatableTypeInfoTests
         Assert.Collection(context.ValidationErrors,
             kvp =>
             {
-                Assert.Equal("FirstName", kvp.Key);
+                Assert.Equal("LastName", kvp.Key);
                 Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
             },
             kvp =>
             {
-                Assert.Equal("LastName", kvp.Key);
+                Assert.Equal("FirstName", kvp.Key);
                 Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
             });
     }
@@ -625,8 +627,11 @@ public class ValidatableTypeInfoTests
 
         // Second case:
         testTypeInstance.Value = 5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions,
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 
@@ -637,8 +642,11 @@ public class ValidatableTypeInfoTests
 
         // Third case:
         testTypeInstance.Value = -5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 

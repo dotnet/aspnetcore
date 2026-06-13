@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
@@ -12,6 +13,49 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors;
+
+    internal ConcurrentBag<Task> ValidationTasks { get; }
+
+    internal IValidatableInfo? ValidationInitiator { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="ValidateContext"/>.
+    /// </summary>
+    public ValidateContext()
+    {
+        _validationErrors = new();
+        ValidationTasks = new();
+    }
+
+    private ValidateContext(ValidateContext original)
+    {
+        _validationErrors = original._validationErrors;
+        ValidationTasks = original.ValidationTasks;
+        CurrentDepth = original.CurrentDepth;
+        CurrentValidationPath = original.CurrentValidationPath;
+        ValidationInitiator = original.ValidationInitiator;
+
+        if (original.OnValidationError?.GetInvocationList() is { } onValidationErrorDelegates)
+        {
+            foreach (var onValidationErrorDelegate in onValidationErrorDelegates)
+            {
+                OnValidationError += context => ((Action<ValidationErrorContext>)onValidationErrorDelegate).Invoke(context);
+            }
+        }
+    }
+
+    internal ValidateContext Clone()
+    {
+        var cloned = new ValidateContext(this)
+        {
+            ValidationContext = CloneValidationContext(),
+            ValidationOptions = ValidationOptions,
+        };
+
+        return cloned;
+    }
+
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -50,13 +94,14 @@ public sealed class ValidateContext
     public required ValidationOptions ValidationOptions { get; set; }
 
     /// <summary>
-    /// Gets or sets the dictionary of validation errors collected during validation.
+    /// Gets the dictionary of validation errors collected during validation.
     /// </summary>
     /// <remarks>
-    /// Keys are property names or paths, and values are arrays of error messages.
-    /// In the default implementation, this dictionary is initialized when the first error is added.
+    /// Keys are property names or paths, and values are collection of error messages.
+    /// There are no guarantees whether or not this dictionary is lazy. Usages should treat null and empty dictionary the same.
     /// </remarks>
-    public Dictionary<string, string[]>? ValidationErrors { get; set; }
+    public IReadOnlyDictionary<string, IEnumerable<string>>? ValidationErrors
+        => _validationErrors;
 
     /// <summary>
     /// Gets or sets the current depth in the validation hierarchy.
@@ -68,68 +113,23 @@ public sealed class ValidateContext
 
     /// <summary>
     /// Optional event raised when a validation error is reported.
+    /// Note that this event may be raised concurrently from different threads.
     /// </summary>
     public event Action<ValidationErrorContext>? OnValidationError;
 
-    internal void AddValidationError(string propertyName, string key, string[] error, object? container)
+    /// <summary>
+    /// Adds a validation error to <see cref="ValidationErrors"/> and raises the <see cref="OnValidationError"/> event.
+    /// </summary>
+    /// <param name="validationErrorContext"></param>
+    public void AddValidationError(ValidationErrorContext validationErrorContext)
     {
-        ValidationErrors ??= [];
-
-        ValidationErrors[key] = error;
-        OnValidationError?.Invoke(new ValidationErrorContext
+        var existingErrors = (ConcurrentQueue<string>)_validationErrors.GetOrAdd(validationErrorContext.Path, static _ => new ConcurrentQueue<string>());
+        foreach (var error in validationErrorContext.Errors)
         {
-            Name = propertyName,
-            Path = key,
-            Errors = error,
-            Container = container
-        });
-    }
-
-    internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
-    {
-        ValidationErrors ??= [];
-
-        if (ValidationErrors.TryGetValue(key, out var existingErrors))
-        {
-            var newErrors = new string[existingErrors.Length + errors.Length];
-            existingErrors.CopyTo(newErrors, 0);
-            errors.CopyTo(newErrors, existingErrors.Length);
-            ValidationErrors[key] = newErrors;
-        }
-        else
-        {
-            ValidationErrors[key] = errors;
+            existingErrors.Enqueue(error);
         }
 
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = propertyName,
-            Path = key,
-            Errors = errors,
-            Container = container
-        });
-    }
-
-    internal void AddOrExtendValidationError(string name, string key, string error, object? container)
-    {
-        ValidationErrors ??= [];
-
-        if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
-        {
-            ValidationErrors[key] = [.. existingErrors, error];
-        }
-        else
-        {
-            ValidationErrors[key] = [error];
-        }
-
-        OnValidationError?.Invoke(new ValidationErrorContext
-        {
-            Name = name,
-            Path = key,
-            Errors = [error],
-            Container = container
-        });
+        OnValidationError?.Invoke(validationErrorContext);
     }
 
     internal string? ResolveAttributeErrorMessage(
@@ -153,5 +153,18 @@ public sealed class ValidateContext
         };
 
         return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
+    }
+
+    private ValidationContext CloneValidationContext()
+    {
+        var original = ValidationContext;
+        return new ValidationContext(
+            original.ObjectInstance,
+            original.DisplayName,
+            original,
+            original.Items)
+        {
+            MemberName = original.MemberName,
+        };
     }
 }

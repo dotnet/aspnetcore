@@ -71,6 +71,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
+        context.ValidationInitiator ??= this;
+
         // Calculate and save the current path
         var originalPrefix = context.CurrentValidationPath;
         if (string.IsNullOrEmpty(originalPrefix))
@@ -103,7 +105,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
                 if (errorMessage is not null)
                 {
-                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], value);
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = Name,
+                        Path = context.CurrentValidationPath,
+                        Errors = [errorMessage],
+                        Container = value,
+                    };
+                    context.AddValidationError(errorContext);
                 }
 
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
@@ -112,7 +121,31 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        context.ValidationTasks.Add(ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, context, (Name, displayName, DeclaringType, value),
+            static (context, result, attribute, state) =>
+            {
+                var (name, displayName, declaringType, container) = state;
+                var errorMessage = context.ResolveAttributeErrorMessage(
+                    memberName: name,
+                    displayName,
+                    declaringType: declaringType,
+                    attribute,
+                    result);
+
+                if (errorMessage is not null)
+                {
+                    var errorPrefix = context.CurrentValidationPath;
+                    var key = errorPrefix.TrimStart('.');
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = name,
+                        Path = key,
+                        Errors = [errorMessage],
+                        Container = container,
+                    };
+                    context.AddValidationError(errorContext);
+                }
+            }, cancellationToken));
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -136,22 +169,20 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
                 foreach (var item in enumerable)
                 {
-                    context.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                    var clonedContext = context.Clone();
+                    clonedContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
                     if (item != null)
                     {
                         var itemType = item.GetType();
-                        if (context.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        if (clonedContext.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            await validatableType.ValidateAsync(item, context, cancellationToken);
+                            await validatableType.ValidateAsync(item, clonedContext, cancellationToken);
                         }
                     }
 
                     index++;
                 }
-
-                // Restore prefix to the property name before validating the next item
-                context.CurrentValidationPath = currentPrefix;
             }
             else if (propertyValue != null)
             {
@@ -168,37 +199,10 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             // Always decrement the depth counter and restore prefix
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
-        }
 
-        void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
-        {
-            for (var i = 0; i < validationAttributes.Length; i++)
+            if (context.ValidationInitiator == this)
             {
-                var attribute = validationAttributes[i];
-                try
-                {
-                    var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success)
-                    {
-                        var errorMessage = context.ResolveAttributeErrorMessage(
-                            memberName: Name,
-                            displayName,
-                            declaringType: DeclaringType,
-                            attribute,
-                            result);
-
-                        if (errorMessage is not null)
-                        {
-                            var key = errorPrefix.TrimStart('.');
-                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
-                }
+                await Task.WhenAll(context.ValidationTasks);
             }
         }
     }

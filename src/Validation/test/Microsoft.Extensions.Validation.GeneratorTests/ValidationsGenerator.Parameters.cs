@@ -67,11 +67,6 @@ public class TestService
             Assert.Collection(problemDetails.Errors,
                 error =>
                 {
-                    Assert.Equal("value1", error.Key);
-                    Assert.Equal("The field value1 must be between 10 and 100.", error.Value.Single());
-                },
-                error =>
-                {
                     Assert.Equal("value2", error.Key);
                     Assert.Equal("The field Valid identifier must be between 10 and 100.", error.Value.Single());
                 },
@@ -96,6 +91,11 @@ public class TestService
                     {
                         Assert.Equal("The field value5 must be between 10 and 100.", error);
                     });
+                },
+                error =>
+                {
+                    Assert.Equal("value1", error.Key);
+                    Assert.Equal("The field value1 must be between 10 and 100.", error.Value.Single());
                 });
         });
     }

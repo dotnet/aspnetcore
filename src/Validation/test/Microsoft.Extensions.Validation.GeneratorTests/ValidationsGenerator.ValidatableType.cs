@@ -199,11 +199,6 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
                     {
-                        Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
-                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
-                    },
-                    kvp =>
-                    {
                         Assert.Equal("PropertyWithInheritance.RequiredProperty", kvp.Key);
                         Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
                     },
@@ -211,6 +206,11 @@ public class SubTypeWithInheritance : SubType
                     {
                         Assert.Equal("PropertyWithInheritance.StringWithLength", kvp.Key);
                         Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                    },
+                    kvp =>
+                    {
+                        Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
+                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
                     });
             }
 
@@ -251,8 +251,8 @@ public class SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
                     {
-                        Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                     },
                     kvp =>
                     {
@@ -261,8 +261,8 @@ public class SubTypeWithInheritance : SubType
                     },
                     kvp =>
                     {
-                        Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
                     });
             }
 
@@ -374,7 +374,7 @@ public class SubTypeWithInheritance : SubType
 
                 await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.Null(context.ValidationErrors);
+                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
             }
         });
     }
@@ -568,11 +568,6 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
                     {
-                        Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
-                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
-                    },
-                    kvp =>
-                    {
                         Assert.Equal("PropertyWithInheritance.RequiredProperty", kvp.Key);
                         Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
                     },
@@ -580,6 +575,11 @@ public record SubTypeWithInheritance : SubType
                     {
                         Assert.Equal("PropertyWithInheritance.StringWithLength", kvp.Key);
                         Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                    },
+                    kvp =>
+                    {
+                        Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
+                        Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
                     });
             }
 
@@ -620,8 +620,8 @@ public record SubTypeWithInheritance : SubType
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
                     {
-                        Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
-                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                        Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
+                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                     },
                     kvp =>
                     {
@@ -630,8 +630,8 @@ public record SubTypeWithInheritance : SubType
                     },
                     kvp =>
                     {
-                        Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
-                        Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                        Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
+                        Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
                     });
             }
 
@@ -743,7 +743,7 @@ public record SubTypeWithInheritance : SubType
 
                 await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.Null(context.ValidationErrors);
+                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
             }
         });
     }

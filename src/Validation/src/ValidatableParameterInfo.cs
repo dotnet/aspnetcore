@@ -68,6 +68,8 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
+        context.ValidationInitiator ??= this;
+
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
@@ -91,7 +93,14 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
                 if (errorMessage is not null)
                 {
                     var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    context.AddValidationError(Name, key, [errorMessage], null);
+                    var errorContext = new ValidationErrorContext()
+                    {
+                        Name = Name,
+                        Path = key,
+                        Errors = [errorMessage],
+                        Container = null,
+                    };
+                    context.AddValidationError(errorContext);
                 }
 
                 return;
@@ -99,34 +108,37 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
         }
 
         // Validate against validation attributes
-        for (var i = 0; i < validationAttributes.Length; i++)
+        Action<ValidateContext, ValidationResult, ValidationAttribute, (string displayName, string Name)> onValidationError = static (context, result, attribute, state) =>
         {
-            var attribute = validationAttributes[i];
-            try
-            {
-                var result = attribute.GetValidationResult(value, context.ValidationContext);
-                if (result is not null && result != ValidationResult.Success)
-                {
-                    var errorMessage = context.ResolveAttributeErrorMessage(
-                        memberName: Name,
-                        displayName,
-                        declaringType: null,
-                        attribute,
-                        result);
+            var (displayName, name) = state;
+            var errorMessage = context.ResolveAttributeErrorMessage(
+                memberName: name,
+                displayName,
+                declaringType: null,
+                attribute,
+                result);
 
-                    if (errorMessage is not null)
-                    {
-                        var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                        context.AddOrExtendValidationErrors(Name, key, [errorMessage], null);
-                    }
-                }
-            }
-            catch (Exception ex)
+            if (errorMessage is not null)
             {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                context.AddValidationError(Name, key, [ex.Message], null);
+                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? name : $"{context.CurrentValidationPath}.{name}";
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = name,
+                    Path = key,
+                    Errors = [errorMessage],
+                    Container = null,
+                };
+                context.AddValidationError(errorContext);
             }
-        }
+        };
+
+        context.ValidationTasks.Add(ValidationHelpers.ValidateAttributesAsync(
+            validationAttributes,
+            value,
+            context,
+            (displayName, Name),
+            onValidationError,
+            cancellationToken));
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
@@ -138,19 +150,18 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             {
                 if (item != null)
                 {
-                    context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                    var clonedContext = context.Clone();
+                    clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                         ? $"{Name}[{index}]"
                         : $"{currentPrefix}.{Name}[{index}]";
 
-                    if (context.ValidationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                    if (clonedContext.ValidationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        await validatableType.ValidateAsync(item, context, cancellationToken);
+                        context.ValidationTasks.Add(validatableType.ValidateAsync(item, clonedContext, cancellationToken));
                     }
                 }
                 index++;
             }
-
-            context.CurrentValidationPath = currentPrefix;
         }
         // If not enumerable, validate the single value
         else if (value != null)
@@ -158,8 +169,13 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             var valueType = value.GetType();
             if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
             {
-                await validatableType.ValidateAsync(value, context, cancellationToken);
+                context.ValidationTasks.Add(validatableType.ValidateAsync(value, context, cancellationToken));
             }
+        }
+
+        if (context.ValidationInitiator == this)
+        {
+            await Task.WhenAll(context.ValidationTasks);
         }
     }
 }

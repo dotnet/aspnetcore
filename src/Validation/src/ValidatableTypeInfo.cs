@@ -130,20 +130,26 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
+        context.ValidationInitiator ??= this;
+
         var originalPrefix = context.CurrentValidationPath;
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
         try
         {
+            // This allows us to add validation tasks in this list locally (i.e, not the one in ValidateContext).
+            // Then, we can do .ContinueWith on that task.
+            List<Task>? localValidationTasks = null;
+
             // First validate direct members
-            await ValidateMembersAsync(value, context, cancellationToken);
+            ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
 
             var actualType = value.GetType();
 
             // Then validate inherited members
             foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context))
             {
-                await superTypeInfo.ValidateMembersAsync(value, context, cancellationToken);
+                superTypeInfo.ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
             }
 
             // If any property-level validation errors were found, return early
@@ -155,42 +161,65 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
             // Validate type-level attributes
-            ValidateTypeAttributes(value, context, displayName);
+            var typeValidationTask = ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
+            if (!typeValidationTask.IsCompleted)
+            {
+                localValidationTasks ??= new();
+                localValidationTasks.Add(typeValidationTask);
+            }
 
             // If any type-level attribute errors were found, return early
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
             {
+                if (localValidationTasks is not null)
+                {
+                    context.ValidationTasks.Add(Task.WhenAll(localValidationTasks));
+                }
+
                 return;
             }
 
             // Finally validate IValidatableObject if implemented
-            ValidateValidatableObjectInterface(value, context, displayName);
+            if (localValidationTasks is not null)
+            {
+                async Task GetFinalValidationTask(List<Task> localValidationTasks)
+                {
+                    await Task.WhenAll(localValidationTasks);
+                    await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
+                }
+
+                context.ValidationTasks.Add(GetFinalValidationTask(localValidationTasks));
+            }
+            else
+            {
+                context.ValidationTasks.Add(ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken));
+            }
         }
         finally
         {
+            if (context.ValidationInitiator == this)
+            {
+                await Task.WhenAll(context.ValidationTasks);
+            }
+
             context.CurrentValidationPath = originalPrefix;
         }
     }
 
-    private async Task ValidateMembersAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private void ValidateMembers(object? value, ValidateContext context, ref List<Task>? localValidationTasks, CancellationToken cancellationToken)
     {
-        var originalPrefix = context.CurrentValidationPath;
-
         for (var i = 0; i < _membersCount; i++)
         {
-            try
+            var task = Members[i].ValidateAsync(value, context.Clone(), cancellationToken);
+            if (!task.IsCompleted)
             {
-                await Members[i].ValidateAsync(value, context, cancellationToken);
-
-            }
-            finally
-            {
-                context.CurrentValidationPath = originalPrefix;
+                localValidationTasks ??= new();
+                localValidationTasks.Add(task);
             }
         }
     }
 
-    private void ValidateTypeAttributes(object? value, ValidateContext context, string displayName)
+    private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
@@ -198,55 +227,72 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         var originalDisplayName = context.ValidationContext.DisplayName;
         var originalMemberName = context.ValidationContext.MemberName;
 
-        context.ValidationContext.DisplayName = displayName;
-        context.ValidationContext.MemberName = null;
-
-        for (var i = 0; i < validationAttributes.Length; i++)
+        try
         {
-            var attribute = validationAttributes[i];
-            var result = attribute.GetValidationResult(value, context.ValidationContext);
-            if (result is not null && result != ValidationResult.Success)
-            {
-                foreach (var memberName in result.MemberNames)
+            context.ValidationContext.DisplayName = displayName;
+            context.ValidationContext.MemberName = null;
+
+            await ValidationHelpers.ValidateAttributesAsync(validationAttributes, value, context, (displayName, Type, errorPrefix, value),
+                onValidationError: static (context, result, attribute, state) =>
                 {
-                    // Create a validation error for each member name that is provided
-                    var errorMessage = context.ResolveAttributeErrorMessage(
-                        memberName,
-                        displayName,
-                        declaringType: Type,
-                        attribute,
-                        result);
-
-                    if (errorMessage is not null)
+                    var (displayName, type, errorPrefix, value) = state;
+                    foreach (var memberName in result.MemberNames)
                     {
-                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                        context.AddOrExtendValidationError(memberName, key, errorMessage, value);
+                        // Create a validation error for each member name that is provided
+                        var errorMessage = context.ResolveAttributeErrorMessage(
+                            memberName,
+                            displayName,
+                            declaringType: type,
+                            attribute,
+                            result);
+
+                        if (errorMessage is not null)
+                        {
+                            var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                            var errorContext = new ValidationErrorContext()
+                            {
+                                Name = memberName,
+                                Path = key,
+                                Errors = [errorMessage],
+                                Container = value,
+                            };
+                            context.AddValidationError(errorContext);
+                        }
                     }
-                }
 
-                if (!result.MemberNames.Any())
-                {
-                    // If no member names are specified, then treat this as a top-level error
-                    var errorMessage = context.ResolveAttributeErrorMessage(
-                        memberName: Type.Name,
-                        displayName,
-                        declaringType: Type,
-                        attribute,
-                        result);
-
-                    if (errorMessage is not null)
+                    if (!result.MemberNames.Any())
                     {
-                        context.AddOrExtendValidationError(string.Empty, errorPrefix, errorMessage, value);
+                        // If no member names are specified, then treat this as a top-level error
+                        var errorMessage = context.ResolveAttributeErrorMessage(
+                            memberName: type.Name,
+                            displayName,
+                            declaringType: type,
+                            attribute,
+                            result);
+
+                        if (errorMessage is not null)
+                        {
+                            var errorContext = new ValidationErrorContext()
+                            {
+                                Name = string.Empty,
+                                Path = errorPrefix,
+                                Errors = [errorMessage],
+                                Container = value,
+                            };
+                            context.AddValidationError(errorContext);
+                        }
                     }
-                }
-            }
+                },
+                cancellationToken);
         }
-
-        context.ValidationContext.DisplayName = originalDisplayName;
-        context.ValidationContext.MemberName = originalMemberName;
+        finally
+        {
+            context.ValidationContext.DisplayName = originalDisplayName;
+            context.ValidationContext.MemberName = originalMemberName;
+        }
     }
 
-    private void ValidateValidatableObjectInterface(object? value, ValidateContext context, string displayName)
+    private async Task ValidateValidatableObjectInterfaceAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)
     {
         if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
@@ -256,11 +302,34 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             var originalMemberName = context.ValidationContext.MemberName;
             var errorPrefix = context.CurrentValidationPath;
 
-            context.ValidationContext.DisplayName = displayName;
-            context.ValidationContext.MemberName = null;
+            try
+            {
+                context.ValidationContext.DisplayName = displayName;
+                context.ValidationContext.MemberName = null;
 
-            var validationResults = validatable.Validate(context.ValidationContext);
-            foreach (var validationResult in validationResults)
+                if (value is IAsyncValidatableObject asyncValidatable)
+                {
+                    await foreach (var validationResult in asyncValidatable.ValidateAsync(context.ValidationContext, cancellationToken))
+                    {
+                        HandleValidationResult(validationResult);
+                    }
+                }
+                else
+                {
+                    foreach (var validationResult in validatable.Validate(context.ValidationContext))
+                    {
+                        HandleValidationResult(validationResult);
+                    }
+                }
+            }
+            finally
+            {
+                // Restore the original validation context properties
+                context.ValidationContext.DisplayName = originalDisplayName;
+                context.ValidationContext.MemberName = originalMemberName;
+            }
+
+            void HandleValidationResult(ValidationResult validationResult)
             {
                 if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
                 {
@@ -269,20 +338,30 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                     foreach (var memberName in validationResult.MemberNames)
                     {
                         var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                        context.AddOrExtendValidationError(memberName, key, validationResult.ErrorMessage, value);
+                        var errorContext = new ValidationErrorContext()
+                        {
+                            Name = memberName,
+                            Path = key,
+                            Errors = [validationResult.ErrorMessage],
+                            Container = value,
+                        };
+                        context.AddValidationError(errorContext);
                     }
 
                     if (!validationResult.MemberNames.Any())
                     {
                         // If no member names are specified, then treat this as a top-level error
-                        context.AddOrExtendValidationError(string.Empty, string.Empty, validationResult.ErrorMessage, value);
+                        var errorContext = new ValidationErrorContext()
+                        {
+                            Name = string.Empty,
+                            Path = string.Empty,
+                            Errors = [validationResult.ErrorMessage],
+                            Container = value,
+                        };
+                        context.AddValidationError(errorContext);
                     }
                 }
             }
-
-            // Restore the original validation context properties
-            context.ValidationContext.DisplayName = originalDisplayName;
-            context.ValidationContext.MemberName = originalMemberName;
         }
     }
 
