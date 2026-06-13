@@ -185,7 +185,23 @@ void Environment::CopyToDirectoryInner(const std::filesystem::path& source, cons
     auto destinationDirEntry = std::filesystem::directory_entry(destination);
     if (!destinationDirEntry.exists())
     {
-        CreateDirectory(destination.wstring().c_str(), nullptr);
+        auto ret = CreateDirectory(destination.wstring().c_str(), nullptr);
+        if (!ret)
+        {
+            // TODO: macro this or not?
+            std::string msg = format("Failed to create destination directory: %s (source: %s)",
+                                      destination.string().c_str(),
+                                      source.string().c_str());
+            auto ex = std::system_error(GetLastError(), std::system_category(), msg);
+            try {
+                throw ex;
+            }
+            catch (...)
+            {
+                OBSERVE_CAUGHT_EXCEPTION();
+                throw;
+            }
+        }
     }
 
     for (auto& path : std::filesystem::directory_iterator(source))
@@ -204,13 +220,29 @@ void Environment::CopyToDirectoryInner(const std::filesystem::path& source, cons
                     continue;
                 }
             }
-
+            auto sourcePathString = path.path().wstring();
+            auto destinationPathString = destinationPath.wstring();
+            auto ret = CopyFile(sourcePathString.c_str(), destinationPathString.c_str(), FALSE);
+            if (!ret)
+            {
+                std::string msg = format("Failed to copy file %s to %s",
+                                         sourcePathString.c_str(),
+                                         destinationPathString.c_str());
+                auto ex = std::system_error(GetLastError(), std::system_category(), msg);
+                try {
+                    throw ex;
+                }
+                catch (...)
+                {
+                    OBSERVE_CAUGHT_EXCEPTION();
+                    throw;
+                }
+            }
             copiedFileCount++;
-            CopyFile(path.path().wstring().c_str(), destinationPath.wstring().c_str(), FALSE);
         }
         else if (path.is_directory())
         {
-            auto sourceInnerDirectory = path.path();
+            auto& sourceInnerDirectory = path.path();
 
             if (sourceInnerDirectory.wstring().rfind(directoryToIgnore, 0) != 0)
             {
