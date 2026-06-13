@@ -29,7 +29,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [(string id) => {}, JsonSchemaType.String, null],
         [(char id) => {}, JsonSchemaType.String, "char"],
         [(byte id) => {}, JsonSchemaType.Integer, "uint8"],
-        [(byte[] id) => {}, JsonSchemaType.String, "byte"],
         [(short id) => {}, JsonSchemaType.Integer, "int16"],
         [(ushort id) => {}, JsonSchemaType.Integer, "uint16"],
         [(uint id) => {}, JsonSchemaType.Integer, "uint32"],
@@ -46,7 +45,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [(string? id) => {}, JsonSchemaType.String, null],
         [(char? id) => {}, JsonSchemaType.String, "char"],
         [(byte? id) => {}, JsonSchemaType.Integer, "uint8"],
-        [(byte[]? id) => {}, JsonSchemaType.String, "byte"],
         [(short? id) => {}, JsonSchemaType.Integer, "int16"],
         [(ushort? id) => {}, JsonSchemaType.Integer, "uint16"],
         [(uint? id) => {}, JsonSchemaType.Integer, "uint32"],
@@ -72,6 +70,68 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Path, parameter.In);
+            Assert.Equal(schemaType, parameter.Schema.Type);
+            Assert.Equal(schemaFormat, parameter.Schema.Format);
+        });
+    }
+
+#nullable enable
+    public static object?[][] QueryParametersWithPrimitiveTypes =>
+    [
+        [(int query) => {}, JsonSchemaType.Integer, "int32"],
+        [(long query) => {}, JsonSchemaType.Integer, "int64"],
+        [(float query) => {}, JsonSchemaType.Number, "float"],
+        [(double query) => {}, JsonSchemaType.Number, "double"],
+        [(decimal query) => {}, JsonSchemaType.Number, "double"],
+        [(bool query) => {}, JsonSchemaType.Boolean, null],
+        [(string query) => {}, JsonSchemaType.String, null],
+        [(char query) => {}, JsonSchemaType.String, "char"],
+        [(byte query) => {}, JsonSchemaType.Integer, "uint8"],
+        [(byte[] query) => {}, JsonSchemaType.String, "byte"],
+        [(short query) => {}, JsonSchemaType.Integer, "int16"],
+        [(ushort query) => {}, JsonSchemaType.Integer, "uint16"],
+        [(uint query) => {}, JsonSchemaType.Integer, "uint32"],
+        [(ulong query) => {}, JsonSchemaType.Integer, "uint64"],
+        [(Uri query) => {}, JsonSchemaType.String, "uri"],
+        [(TimeOnly query) => {}, JsonSchemaType.String, "time"],
+        [(DateOnly query) => {}, JsonSchemaType.String, "date"],
+        [(int? query) => {}, JsonSchemaType.Integer, "int32"],
+        [(long? query) => {}, JsonSchemaType.Integer, "int64"],
+        [(float? query) => {}, JsonSchemaType.Number, "float"],
+        [(double? query) => {}, JsonSchemaType.Number, "double"],
+        [(decimal? query) => {}, JsonSchemaType.Number, "double"],
+        [(bool? query) => {}, JsonSchemaType.Boolean, null],
+        [(string? query) => {}, JsonSchemaType.String, null],
+        [(char? query) => {}, JsonSchemaType.String, "char"],
+        [(byte? query) => {}, JsonSchemaType.Integer, "uint8"],
+        [(byte[]? query) => {}, JsonSchemaType.String, "byte"],
+        [(short? query) => {}, JsonSchemaType.Integer, "int16"],
+        [(ushort? query) => {}, JsonSchemaType.Integer, "uint16"],
+        [(uint? query) => {}, JsonSchemaType.Integer, "uint32"],
+        [(ulong? query) => {}, JsonSchemaType.Integer, "uint64"],
+        [(Uri? query) => {}, JsonSchemaType.String, "uri"],
+        [(TimeOnly? query) => {}, JsonSchemaType.String, "time"],
+        [(DateOnly? query) => {}, JsonSchemaType.String, "date"]
+    ];
+#nullable restore
+
+    [Theory]
+    [MemberData(nameof(QueryParametersWithPrimitiveTypes))]
+    public async Task GetOpenApiParameters_HandlesQueryParameterWithPrimitiveType(Delegate requestHandler, JsonSchemaType schemaType, string schemaFormat)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
             Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
         });
@@ -100,6 +160,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Path, parameter.In);
             Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
         });
@@ -144,6 +205,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = path.Value.Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(type, parameter.Schema.Type);
+            Assert.Equal(ParameterLocation.Path, parameter.In);
             Assert.Equal(format, parameter.Schema.Format);
             Assert.Equal(minimum?.ToString(CultureInfo.InvariantCulture), parameter.Schema.Minimum);
             Assert.Equal(maximum?.ToString(CultureInfo.InvariantCulture), parameter.Schema.Maximum);
@@ -160,21 +222,21 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [(float id = 3f) => { }, (JsonNode defaultValue) => Assert.Equal(3, defaultValue.GetValue<int>())],
         [(string id = "test") => { }, (JsonNode defaultValue) => Assert.Equal("test", defaultValue.GetValue<string>())],
         [(bool id = true) => { }, (JsonNode defaultValue) => Assert.True(defaultValue.GetValue<bool>())],
-        [(TaskStatus status = TaskStatus.Canceled) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
+        [(TaskStatus id = TaskStatus.Canceled) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
         // Default value for enums is serialized as string when a converter is registered.
-        [(Status status = Status.Pending) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
+        [(Status id = Status.Pending) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
         [([DefaultValue(2)] int id) => { }, (JsonNode defaultValue) => Assert.Equal(2, defaultValue.GetValue<int>())],
         [([DefaultValue(3f)] float id) => { }, (JsonNode defaultValue) => Assert.Equal(3, defaultValue.GetValue<int>())],
         [([DefaultValue("test")] string id) => { }, (JsonNode defaultValue) => Assert.Equal("test", defaultValue.GetValue<string>())],
         [([DefaultValue(true)] bool id) => { }, (JsonNode defaultValue) => Assert.True(defaultValue.GetValue<bool>())],
-        [([DefaultValue(TaskStatus.Canceled)] TaskStatus status) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
-        [([DefaultValue(Status.Pending)] Status status) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
+        [([DefaultValue(TaskStatus.Canceled)] TaskStatus id) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
+        [([DefaultValue(Status.Pending)] Status id) => { }, (JsonNode defaultValue) => Assert.Equal("Pending", defaultValue.GetValue<string>())],
         [([DefaultValue(null)] int? id) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
         [([DefaultValue(2)] int? id) => { }, (JsonNode defaultValue) => Assert.Equal(2, defaultValue.GetValue<int>())],
         [([DefaultValue(null)] string? id) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
         [([DefaultValue("foo")] string? id) => { }, (JsonNode defaultValue) => Assert.Equal("foo", defaultValue.GetValue<string>())],
-        [([DefaultValue(null)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
-        [([DefaultValue(TaskStatus.Canceled)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
+        [([DefaultValue(null)] TaskStatus? id) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
+        [([DefaultValue(TaskStatus.Canceled)] TaskStatus? id) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
     ];
 
     [Theory]
@@ -192,6 +254,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths!["/api/{id}"].Operations![HttpMethod.Post];
             var parameter = Assert.Single(operation.Parameters ?? []);
+            Assert.Equal(ParameterLocation.Path, parameter.In);
             var openApiDefault = parameter.Schema!.Default;
             assert(openApiDefault!);
         });
@@ -213,6 +276,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
             Assert.Equal(JsonSchemaType.Integer, parameter.Schema.Type);
             Assert.Null(parameter.Schema.Enum);
         });
@@ -233,6 +297,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
             Assert.Null(parameter.Schema.Type);
             Assert.Collection(parameter.Schema.Enum,
             value =>
@@ -292,12 +357,14 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             {
                 Assert.Equal("Id", parameter.Name);
                 Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
+                Assert.Equal(ParameterLocation.Path, parameter.In);
                 Assert.Equal("uuid", parameter.Schema.Format);
             },
             parameter =>
             {
                 Assert.Equal("Date", parameter.Name);
                 Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
+                Assert.Equal(ParameterLocation.Path, parameter.In);
                 Assert.Equal("date-time", parameter.Schema.Format);
             });
         });
@@ -317,12 +384,14 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             {
                 Assert.Equal("Id", parameter.Name);
                 Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
+                Assert.Equal(ParameterLocation.Path, parameter.In);
                 Assert.Equal("uuid", parameter.Schema.Format);
             },
             parameter =>
             {
                 Assert.Equal("Name", parameter.Name);
                 Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
+                Assert.Equal(ParameterLocation.Path, parameter.In);
                 Assert.Equal(5, parameter.Schema.MaxLength);
             });
         });
@@ -332,19 +401,17 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     [
         [([MaxLength(5)] string id) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxLength)],
         [([MinLength(2)] string id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinLength)],
-        [([MaxLength(5)] int[] ids) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxItems)],
-        [([MinLength(2)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinItems)],
-        [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
+        [([Length(4, 8)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinLength); Assert.Equal(8, schema.MaxLength); }],
         [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("4", schema.Minimum); Assert.Equal("8", schema.Maximum); }],
         [([Range(1234, 5678)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234", schema.Minimum); Assert.Equal("5678", schema.Maximum); }],
         [([Range(1234.56, 7891.1)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234.56", schema.Minimum); Assert.Equal("7891.1", schema.Maximum); }],
         [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
-        [([StringLength(10)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
-        [([StringLength(10, MinimumLength = 5)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
-        [([Url] string url) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); }],
+        [([StringLength(10)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
+        [([StringLength(10, MinimumLength = 5)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
+        [([Url] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); }],
         // Check that multiple attributes get applied correctly
-        [([Url][StringLength(10)] string url) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); Assert.Equal(10, schema.MaxLength); }],
-        [([Base64String] string base64string) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("byte", schema.Format); }],
+        [([Url][StringLength(10)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); Assert.Equal(10, schema.MaxLength); }],
+        [([Base64String] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("byte", schema.Format); }],
     ];
 
     [Theory]
@@ -362,6 +429,48 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Path, parameter.In);
+            var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
+            verifySchema(schema);
+        });
+    }
+
+    public static object[][] QueryParametersWithValidationAttributes =>
+    [
+        [([MaxLength(5)] string id) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxLength)],
+        [([MinLength(2)] string id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinLength)],
+        [([Length(4, 8)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinLength); Assert.Equal(8, schema.MaxLength); }],
+        [([MaxLength(5)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxItems)],
+        [([MinLength(2)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinItems)],
+        [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
+        [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("4", schema.Minimum); Assert.Equal("8", schema.Maximum); }],
+        [([Range(1234, 5678)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234", schema.Minimum); Assert.Equal("5678", schema.Maximum); }],
+        [([Range(1234.56, 7891.1)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234.56", schema.Minimum); Assert.Equal("7891.1", schema.Maximum); }],
+        [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([StringLength(10)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
+        [([StringLength(10, MinimumLength = 5)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
+        [([Url] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); }],
+        // Check that multiple attributes get applied correctly
+        [([Url][StringLength(10)] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("uri", schema.Format); Assert.Equal(10, schema.MaxLength); }],
+        [([Base64String] string id) => {}, (OpenApiSchema schema) => { Assert.Equal(JsonSchemaType.String, schema.Type); Assert.Equal("byte", schema.Format); }],
+    ];
+
+    [Theory]
+    [MemberData(nameof(QueryParametersWithValidationAttributes))]
+    public async Task GetOpenApiParameters_HandlesQueryParameterWithValidationAttributes(Delegate requestHandler, Action<OpenApiSchema> verifySchema)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
             var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
             verifySchema(schema);
         });
@@ -392,6 +501,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Path, parameter.In);
             var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
             verifySchema(schema);
         });
@@ -492,7 +602,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // When the element type is not nullable (int[] ints), the binding
             // will produce [1, 2, 0, 4]
             Assert.Equal(JsonSchemaType.Array, parameter.Schema.Type);
-
+            Assert.Equal(ParameterLocation.Query, parameter.In);
             Assert.True(parameter.Schema.Items.Type?.HasFlag(innerSchemaType));
             Assert.Equal(isNullable, parameter.Schema.Items.Type?.HasFlag(JsonSchemaType.Null));
         });
@@ -512,6 +622,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal(ParameterLocation.Query, parameter.In);
             Assert.Equal("The ID of the entity", parameter.Description);
         });
     }
