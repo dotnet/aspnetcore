@@ -2382,14 +2382,14 @@
                 "type": "null"
               },
               {
-                "$ref": "#/components/schemas/TestEnum"
+                "$ref": "#/components/schemas/NullableOfTestEnum"
               }
             ]
           },
           "listOfNullableEnums": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TestEnum"
+              "$ref": "#/components/schemas/NullableOfTestEnum"
             }
           }
         }
@@ -2626,6 +2626,9 @@
             }
           }
         }
+      },
+      "NullableOfTestEnum": {
+        "type": "integer"
       },
       "NullableRequestModel": {
         "required": [

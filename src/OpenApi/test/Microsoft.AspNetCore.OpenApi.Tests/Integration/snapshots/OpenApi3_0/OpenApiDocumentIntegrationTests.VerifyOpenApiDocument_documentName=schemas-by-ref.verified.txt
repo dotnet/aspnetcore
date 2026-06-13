@@ -998,7 +998,7 @@
             "type": "integer",
             "oneOf": [
               {
-                "$ref": "#/components/schemas/TestEnum"
+                "$ref": "#/components/schemas/NullableOfTestEnum"
               }
             ],
             "nullable": true
@@ -1006,7 +1006,7 @@
           "listOfNullableEnums": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TestEnum"
+              "$ref": "#/components/schemas/NullableOfTestEnum"
             }
           }
         }
@@ -1189,6 +1189,9 @@
             "nullable": true
           }
         }
+      },
+      "NullableOfTestEnum": {
+        "type": "integer"
       },
       "NullableRequestModel": {
         "required": [

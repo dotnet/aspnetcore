@@ -566,7 +566,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                         });
                 });
 
-            Assert.Equal(["Point", "Todo"], [.. document.Components.Schemas.Keys]);
+            Assert.Equal(["NullableOfPoint", "Todo"], [.. document.Components.Schemas.Keys]);
             Assert.Collection(document.Components.Schemas.Values,
                 item => Assert.Equal(JsonSchemaType.Object, item.Type),
                 item => Assert.Equal(JsonSchemaType.Object, item.Type));
