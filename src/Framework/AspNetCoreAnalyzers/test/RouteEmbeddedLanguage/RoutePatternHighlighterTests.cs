@@ -450,6 +450,58 @@ class Program
 ");
     }
 
+    // https://github.com/dotnet/aspnetcore/issues/64398
+    //
+    // When the route mapping and the handler method are in different files
+    // (e.g. two parts of the same partial class), RoutePatternHighlighter
+    // used to throw `ArgumentException: Syntax node is not within syntax tree`
+    // because it called GetSymbolInfo with the route file's SemanticModel on
+    // identifier nodes that live in the handler file's tree.
+    //
+    // AspNetCoreDocumentHighlights cannot carry a Document reference, so any
+    // highlight spans must belong to the active document. The expected
+    // behavior in the cross-file case is: highlight only the route literal
+    // span; do not emit any spans pointing into the handler file (those would
+    // be mis-mapped into the active document).
+    [Fact]
+    public async Task InParameterName_MatchingMethodInPartialClassAcrossFiles_HighlightsOnlyRouteLiteral()
+    {
+        var mapSource = @"
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+
+public static partial class XEndpoints
+{
+    public static void MapXEndpoints(this IEndpointRouteBuilder app)
+    {
+        app.MapPost(""/organizations/{$$[|organizationId|]}/y/{yId}/z/{zId}/w/{wId}/load"", LoadAsync);
+    }
+}
+";
+
+        var handlerSource = @"
+public static partial class XEndpoints
+{
+    public static string LoadAsync(string organizationId, string yId, string zId, string wId)
+    {
+        return organizationId;
+    }
+}
+";
+
+        MarkupTestFile.GetPositionAndSpans(mapSource, out var output, out int cursorPosition, out var spans);
+        var routeSpan = Assert.Single(spans);
+
+        // Act - this used to throw ArgumentException ("Syntax node is not within syntax tree").
+        var highlightSpans = await Runner.GetHighlightingAsync(cursorPosition, output, handlerSource);
+
+        // Assert - the route literal is highlighted, and nothing else.
+        // Anything else would be a span from the handler file mis-mapped
+        // into the active document (the route file).
+        var highlight = Assert.Single(highlightSpans);
+        Assert.Equal(routeSpan, highlight.TextSpan);
+    }
+
     private async Task TestHighlightingAsync(string source)
     {
         MarkupTestFile.GetPositionAndSpans(source, out var output, out int cursorPosition, out var spans);
