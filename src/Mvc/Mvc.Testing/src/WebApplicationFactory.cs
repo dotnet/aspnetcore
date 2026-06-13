@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -249,6 +250,18 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
     }
 
+    private bool GetIsConfigureHostApplicationBuilderOverridden()
+    {
+        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(WebApplicationBuilder)]);
+        var declaringType = method!.DeclaringType;
+        if (declaringType!.IsGenericType)
+        {
+            declaringType = declaringType.GetGenericTypeDefinition();
+        }
+
+        return declaringType != typeof(WebApplicationFactory<>);
+    }
+
     /// <summary>
     /// Initializes the instance by configurating the host builder.
     /// </summary>
@@ -259,6 +272,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             return;
         }
+
+        var receivedBuilderConstructed = false;
+        var isOverridden = GetIsConfigureHostApplicationBuilderOverridden();
 
         EnsureDepsFile();
 
@@ -285,11 +301,31 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 });
             });
             // This helper call does the hard work to determine if we can fallback to diagnostic source events to get the host instance
+
+            var arbitraryActions = new Dictionary<string, Action<object?>>(capacity: 1)
+            {
+                { "HostApplicationBuilderConstructed", hostApplicationBuilder =>
+                    {
+                        receivedBuilderConstructed = true;
+                        ConfigureHostApplicationBuilder((WebApplicationBuilder)hostApplicationBuilder!);
+                    }
+                }
+            };
+
             var factory = HostFactoryResolver.ResolveHostFactory(
                 typeof(TEntryPoint).Assembly,
                 stopApplication: false,
                 configureHostBuilder: deferredHostBuilder.ConfigureHostBuilder,
-                entrypointCompleted: deferredHostBuilder.EntryPointCompleted);
+                entrypointCompleted: ex =>
+                    {
+                        if (isOverridden && !receivedBuilderConstructed)
+                        {
+                            ex = new InvalidOperationException("Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.");
+                        }
+
+                        deferredHostBuilder.EntryPointCompleted(ex);
+                    },
+                arbitraryActions: arbitraryActions);
 
             if (factory is not null)
             {
@@ -626,6 +662,15 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// </summary>
     /// <param name="builder">The <see cref="IWebHostBuilder"/> for the application.</param>
     protected virtual void ConfigureWebHost(IWebHostBuilder builder)
+    {
+    }
+
+    /// <summary>
+    /// Gives a fixture an opportunity to configure the application builder.
+    /// This method will be called very early, during the entrypoint's call to WebApplication.CreateBuilder.
+    /// </summary>
+    /// <param name="hostApplicationBuilder">The host application builder to configure.</param>
+    protected virtual void ConfigureHostApplicationBuilder(WebApplicationBuilder hostApplicationBuilder)
     {
     }
 

@@ -28,6 +28,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string CsrfProtectionMiddlewareSetKey = "__CsrfProtectionMiddlewareSet";
     private const string UseRoutingKey = "__UseRouting";
 
+    private const string HostApplicationBuilderConstructedEventName = "HostApplicationBuilderConstructed";
+
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
 
@@ -47,6 +49,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+
+        OnHostApplicationBuilderConstructed();
 
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
@@ -102,6 +106,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
+
+        OnHostApplicationBuilderConstructed();
 
         // Ensure the same behavior of the non-slim WebApplicationBuilder by adding the default "app" Configuration sources
         ApplyDefaultAppConfigurationSlim(_hostApplicationBuilder.Environment, configuration, options.Args);
@@ -166,6 +172,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             Configuration = configuration,
         });
 
+        OnHostApplicationBuilderConstructed();
+
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
         {
@@ -200,6 +208,19 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+    }
+
+    // TODO: Validate if that's reasonable.
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
+        Justification = "The values being passed into Write are being consumed by the application already.")]
+    private void OnHostApplicationBuilderConstructed()
+    {
+        using var diagnosticListener = new DiagnosticListener("Microsoft.Extensions.Hosting");
+
+        if (diagnosticListener.IsEnabled() && diagnosticListener.IsEnabled(HostApplicationBuilderConstructedEventName))
+        {
+            diagnosticListener.Write(HostApplicationBuilderConstructedEventName, this);
+        }
     }
 
     [MemberNotNull(nameof(Environment), nameof(Host), nameof(WebHost))]
