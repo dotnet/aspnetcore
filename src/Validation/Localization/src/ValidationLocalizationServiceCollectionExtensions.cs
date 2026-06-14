@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
 /// Extension methods for registering the default <see cref="IStringLocalizer"/>-based validation
-/// localizer (<see cref="DefaultValidationLocalizer"/>).
+/// localizer.
 /// </summary>
 public static class ValidationLocalizationServiceCollectionExtensions
 {
@@ -24,7 +24,7 @@ public static class ValidationLocalizationServiceCollectionExtensions
     /// Internally calls <see cref="LocalizationServiceCollectionExtensions.AddLocalization(IServiceCollection)"/>
     /// to ensure an <see cref="IStringLocalizerFactory"/> is registered, and registers an
     /// <see cref="IConfigureOptions{TOptions}"/> bridge that sets
-    /// <see cref="ValidationOptions.Localizer"/> to a <see cref="DefaultValidationLocalizer"/>
+    /// <see cref="ValidationOptions.Localizer"/> to a default
     /// instance (only when <see cref="ValidationOptions.Localizer"/> has not already been set).
     /// </para>
     /// <para>
