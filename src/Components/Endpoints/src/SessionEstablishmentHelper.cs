@@ -11,9 +11,8 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal static partial class SessionEstablishmentHelper
 {
     private const string SessionEstablishmentKey = "__AspNetCore.Components.Endpoints.SessionEstablishment";
-
-    internal static bool HasLoggedResponseHasStarted;
-    internal static bool HasLoggedSessionDoesNotExist;
+    private const string LoggedResponseHasStartedKey = "__AspNetCore.Components.Endpoints.SessionEstablishment.LoggedResponseHasStarted";
+    private const string LoggedSessionDoesNotExistKey = "__AspNetCore.Components.Endpoints.SessionEstablishment.LoggedSessionDoesNotExist";
 
     public static void TryRegisterSessionEstablishment(HttpContext context)
     {
@@ -22,21 +21,21 @@ internal static partial class SessionEstablishmentHelper
 
         if (session == null)
         {
-            if (!HasLoggedSessionDoesNotExist)
+            if (!context.Items.ContainsKey(LoggedSessionDoesNotExistKey))
             {
                 Log.SessionDoesNotExist(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+                context.Items[LoggedSessionDoesNotExistKey] = true;
             }
-            HasLoggedSessionDoesNotExist = true;
             return;
         }
 
         if (context.Response.HasStarted)
         {
-            if (!HasLoggedResponseHasStarted)
+            if (!context.Items.ContainsKey(LoggedResponseHasStartedKey))
             {
                 Log.ResponseHasStarted(loggerFactory.CreateLogger(typeof(SessionEstablishmentHelper).FullName!));
+                context.Items[LoggedResponseHasStartedKey] = true;
             }
-            HasLoggedResponseHasStarted = true;
             return;
         }
 
@@ -60,7 +59,7 @@ internal static partial class SessionEstablishmentHelper
         [LoggerMessage(1, LogLevel.Warning,
             "Session state was not persisted to the next request. " +
             "The response has already started, so the session cookie can no longer be issued. " +
-            "To avoid this, place at least one [SupplyParameterFromSession] (or other session-backed state access) before any await that triggers the first response flush — that establishes the session cookie in time for the remaining state to persist.",
+            "To avoid this, place at least one [SupplyParameterFromSession] (or use Session.Set directly) before any await that triggers the first response flush.",
             EventName = "SessionStateNotPersistedAfterResponseStarted")]
         public static partial void ResponseHasStarted(ILogger logger);
 

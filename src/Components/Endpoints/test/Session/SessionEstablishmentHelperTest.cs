@@ -13,13 +13,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class SessionEstablishmentHelperTest
 {
-    public SessionEstablishmentHelperTest()
-    {
-        // The helper guards each warning with a static "log once per process" flag.
-        // Reset that state so each test observes logging deterministically.
-        ResetLogGuards();
-    }
-
     [Fact]
     public void TryRegisterSessionEstablishment_LogsSessionDoesNotExist_WhenNoSessionFeature()
     {
@@ -58,7 +51,20 @@ public class SessionEstablishmentHelperTest
     }
 
     [Fact]
-    public void TryRegisterSessionEstablishment_LogsSessionDoesNotExistOnlyOnce_AcrossRequests()
+    public void TryRegisterSessionEstablishment_LogsSessionDoesNotExistOncePerRequest()
+    {
+        var sink = new TestSink();
+        var httpContext = CreateHttpContext(sink, session: null, responseHasStarted: false);
+
+        SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
+        SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
+
+        var write = Assert.Single(sink.Writes);
+        Assert.Equal("SessionDoesNotExist", write.EventId.Name);
+    }
+
+    [Fact]
+    public void TryRegisterSessionEstablishment_LogsSessionDoesNotExistOncePerEachRequest()
     {
         var sink = new TestSink();
         var first = CreateHttpContext(sink, session: null, responseHasStarted: false);
@@ -67,12 +73,25 @@ public class SessionEstablishmentHelperTest
         SessionEstablishmentHelper.TryRegisterSessionEstablishment(first);
         SessionEstablishmentHelper.TryRegisterSessionEstablishment(second);
 
-        var write = Assert.Single(sink.Writes);
-        Assert.Equal("SessionDoesNotExist", write.EventId.Name);
+        Assert.Equal(2, sink.Writes.Count);
+        Assert.All(sink.Writes, write => Assert.Equal("SessionDoesNotExist", write.EventId.Name));
     }
 
     [Fact]
-    public void TryRegisterSessionEstablishment_LogsResponseHasStartedOnlyOnce_AcrossRequests()
+    public void TryRegisterSessionEstablishment_LogsResponseHasStartedOncePerRequest()
+    {
+        var sink = new TestSink();
+        var httpContext = CreateHttpContext(sink, session: new TestSession(), responseHasStarted: true);
+
+        SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
+        SessionEstablishmentHelper.TryRegisterSessionEstablishment(httpContext);
+
+        var write = Assert.Single(sink.Writes);
+        Assert.Equal("SessionStateNotPersistedAfterResponseStarted", write.EventId.Name);
+    }
+
+    [Fact]
+    public void TryRegisterSessionEstablishment_LogsResponseHasStartedOncePerEachRequest()
     {
         var sink = new TestSink();
         var first = CreateHttpContext(sink, session: new TestSession(), responseHasStarted: true);
@@ -81,8 +100,8 @@ public class SessionEstablishmentHelperTest
         SessionEstablishmentHelper.TryRegisterSessionEstablishment(first);
         SessionEstablishmentHelper.TryRegisterSessionEstablishment(second);
 
-        var write = Assert.Single(sink.Writes);
-        Assert.Equal("SessionStateNotPersistedAfterResponseStarted", write.EventId.Name);
+        Assert.Equal(2, sink.Writes.Count);
+        Assert.All(sink.Writes, write => Assert.Equal("SessionStateNotPersistedAfterResponseStarted", write.EventId.Name));
     }
 
     private static DefaultHttpContext CreateHttpContext(TestSink sink, ISession? session, bool responseHasStarted)
@@ -108,12 +127,6 @@ public class SessionEstablishmentHelperTest
 
         httpContext.Features.Set<IHttpResponseFeature>(responseFeature);
         return httpContext;
-    }
-
-    private static void ResetLogGuards()
-    {
-        SessionEstablishmentHelper.HasLoggedResponseHasStarted = false;
-        SessionEstablishmentHelper.HasLoggedSessionDoesNotExist = false;
     }
 
     private sealed class TestSession : ISession
