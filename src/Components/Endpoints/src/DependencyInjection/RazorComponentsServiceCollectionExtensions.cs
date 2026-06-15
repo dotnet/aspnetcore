@@ -74,7 +74,10 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
-        services.TryAddSingleton<ICacheBoundaryStore, MemoryCacheBoundaryStore>();
+        services.TryAddSingleton<ICacheBoundaryStore>(static sp =>
+            sp.GetRequiredService<IOptions<CacheBoundaryStoreOptions>>().Value.UseHybridCache
+                ? ActivatorUtilities.CreateInstance<HybridCacheBoundaryStore>(sp)
+                : ActivatorUtilities.CreateInstance<MemoryCacheBoundaryStore>(sp));
         services.TryAddScoped<TempDataCascadingValueSupplier>();
         services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
             sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 /// <summary>
-/// An <see cref="ICacheBoundaryStore"/> backed by <see cref="HybridCache"/>.
+/// An <see cref="ICacheBoundaryStore"/> that uses <see cref="HybridCache"/>.
 /// Delegates single-flight, stampede protection, local/distributed tiering, and
 /// serialization to <c>HybridCache</c>; the factory is invoked once per key across
 /// concurrent requests.
@@ -66,7 +66,7 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
             // LocalCacheExpiration would change the meaning (it's an absolute local TTL, not sliding),
             // so we fail fast instead of producing wrong behavior.
             throw new NotSupportedException(
-                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.ExpiresSliding)} is not supported when the cache boundary store is backed by HybridCache. " +
+                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.ExpiresSliding)} is not supported when the cache boundary store uses HybridCache. " +
                 $"Use {nameof(CacheBoundary.ExpiresAfter)} or {nameof(CacheBoundary.ExpiresOn)} for absolute expiration.");
         }
 
@@ -76,7 +76,7 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
             // user-supplied Priority (e.g. NeverRemove) would hide the fact that the eviction
             // policy is not honored. Fail fast for the same reason as ExpiresSliding.
             throw new NotSupportedException(
-                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.Priority)} is not supported when the cache boundary store is backed by HybridCache. " +
+                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.Priority)} is not supported when the cache boundary store uses HybridCache. " +
                 $"Remove the {nameof(CacheBoundary.Priority)} parameter or switch to the in-memory cache boundary store.");
         }
 

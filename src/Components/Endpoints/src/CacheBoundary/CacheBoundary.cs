@@ -63,14 +63,14 @@ public sealed class CacheBoundary : IComponent, IDisposable
 
     /// <summary>
     /// Gets or sets how long after last access the cache entry should be evicted.
-    /// Not supported when the cache boundary store is backed by <c>HybridCache</c>.
+    /// Not supported when the cache boundary store uses <c>HybridCache</c>.
     /// </summary>
     [Parameter]
     public TimeSpan? ExpiresSliding { get; set; }
 
     /// <summary>
     /// Gets or sets the <see cref="CacheItemPriority"/> policy for the cache entry.
-    /// Not supported when the cache boundary store is backed by <c>HybridCache</c>.
+    /// Not supported when the cache boundary store uses <c>HybridCache</c>.
     /// </summary>
     [Parameter]
     public CacheItemPriority? Priority { get; set; }

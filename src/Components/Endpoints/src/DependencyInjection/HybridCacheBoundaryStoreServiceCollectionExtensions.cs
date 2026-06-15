@@ -3,26 +3,27 @@
 
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Extensions for configuring an <see cref="HybridCache"/>-backed
-/// <c>CacheBoundary</c> store.
+/// Extensions for configuring a <c>CacheBoundary</c> store that uses
+/// <see cref="HybridCache"/>.
 /// </summary>
 public static class HybridCacheBoundaryStoreServiceCollectionExtensions
 {
     /// <summary>
-    /// Replaces the default in-memory cache boundary store with one backed by <see cref="HybridCache"/>.
-    /// <see cref="HybridCache"/> must be registered separately (typically via <c>AddHybridCache</c>).
+    /// Selects a <c>CacheBoundary</c> store that uses <see cref="HybridCache"/> instead of the
+    /// default store that uses <see cref="Microsoft.Extensions.Caching.Memory.IMemoryCache"/>.
+    /// <see cref="HybridCache"/> must be registered separately. The selection is applied additively and is independent of the
+    /// order in which services are registered.
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
     /// <returns>The same <see cref="IRazorComponentsBuilder"/> for chaining.</returns>
     public static IRazorComponentsBuilder AddHybridCacheBoundaryStore(this IRazorComponentsBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        builder.Services.Replace(ServiceDescriptor.Singleton<ICacheBoundaryStore, HybridCacheBoundaryStore>());
+        builder.Services.Configure<CacheBoundaryStoreOptions>(static options => options.UseHybridCache = true);
         return builder;
     }
 }
