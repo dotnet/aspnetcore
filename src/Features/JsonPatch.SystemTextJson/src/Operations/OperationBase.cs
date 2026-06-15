@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Shared;
+
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 
 public class OperationBase
@@ -8,7 +12,7 @@ public class OperationBase
 	private string _op;
 	private OperationType _operationType;
 
-	[System.Text.Json.Serialization.JsonIgnore]
+	[JsonIgnore]
 	public OperationType OperationType
 	{
 		get
@@ -17,10 +21,10 @@ public class OperationBase
 		}
 	}
 
-	[System.Text.Json.Serialization.JsonPropertyName(nameof(path))]
+	[JsonPropertyName(nameof(path))]
 	public string path { get; set; }
 
-	[System.Text.Json.Serialization.JsonPropertyName(nameof(op))]
+	[JsonPropertyName(nameof(op))]
 	public string op
 	{
 		get
@@ -30,7 +34,7 @@ public class OperationBase
 		set
 		{
 			OperationType result;
-			if (!System.Enum.TryParse(value, ignoreCase: true, result: out result))
+			if (!Enum.TryParse(value, ignoreCase: true, result: out result))
 			{
 				result = OperationType.Invalid;
 			}
@@ -39,8 +43,8 @@ public class OperationBase
 		}
 	}
 
-	[System.Text.Json.Serialization.JsonPropertyName(nameof(from))]
-	[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+	[JsonPropertyName(nameof(from))]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string from { get; set; }
 
 	public OperationBase()
@@ -49,8 +53,8 @@ public class OperationBase
 
 	public OperationBase(string op, string path, string from)
 	{
-		Microsoft.AspNetCore.Shared.ArgumentNullThrowHelper.ThrowIfNull(op);
-		Microsoft.AspNetCore.Shared.ArgumentNullThrowHelper.ThrowIfNull(path);
+		ArgumentNullThrowHelper.ThrowIfNull(op);
+		ArgumentNullThrowHelper.ThrowIfNull(path);
 
 		this.op = op;
 		this.path = path;
