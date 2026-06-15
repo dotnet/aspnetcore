@@ -1060,7 +1060,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var paths = Assert.Single(document.Paths.Values);
             var operation = paths.Operations[HttpMethod.Post];
 
-            var modelSchema = document.Components.Schemas["SampleEnum"];
+            var modelSchema = document.Components.Schemas["NullableOfSampleEnum"];
             Assert.Equal("Enum: SampleEnum", modelSchema.Description);
         });
     }
