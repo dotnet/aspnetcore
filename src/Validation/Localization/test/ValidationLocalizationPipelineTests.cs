@@ -467,7 +467,7 @@ public class ValidationLocalizationPipelineTests
             // Literal acts as both lookup key and fallback display name when the localizer doesn't translate.
             return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
             {
-                DeclaringType = declaringType,
+                Type = declaringType,
                 DisplayName = literal,
                 MemberName = memberName,
             }) ?? literal;

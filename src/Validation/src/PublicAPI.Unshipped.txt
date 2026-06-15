@@ -4,17 +4,17 @@
 *REMOVED*Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members) -> void
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?
 *REMOVED*Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.set -> void
-abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? declaringType) -> string?
+abstract Microsoft.Extensions.Validation.DisplayNameInfo.GetDisplayName(Microsoft.Extensions.Validation.ValidateContext! context, string! memberName, System.Type? type) -> string?
 Microsoft.Extensions.Validation.DisplayNameInfo
 Microsoft.Extensions.Validation.DisplayNameInfo.DisplayNameInfo() -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext
-Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DeclaringType.get -> System.Type?
-Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DeclaringType.init -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DisplayName.get -> string?
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DisplayName.init -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.DisplayNameLocalizationContext() -> void
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.MemberName.get -> string!
 Microsoft.Extensions.Validation.DisplayNameLocalizationContext.MemberName.init -> void
+Microsoft.Extensions.Validation.DisplayNameLocalizationContext.Type.get -> System.Type?
+Microsoft.Extensions.Validation.DisplayNameLocalizationContext.Type.init -> void
 Microsoft.Extensions.Validation.ErrorMessageLocalizationContext
 Microsoft.Extensions.Validation.ErrorMessageLocalizationContext.Attribute.get -> System.ComponentModel.DataAnnotations.ValidationAttribute!
 Microsoft.Extensions.Validation.ErrorMessageLocalizationContext.Attribute.init -> void

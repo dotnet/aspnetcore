@@ -269,7 +269,7 @@ public class ValidatableTypeInfoBenchmark
 
     private class MockDisplayNameInfo(string displayName) : DisplayNameInfo
     {
-        public override string GetDisplayName(ValidateContext context, string memberName, Type declaringType)
+        public override string GetDisplayName(ValidateContext context, string memberName, Type type)
             => displayName;
     }
 

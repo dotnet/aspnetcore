@@ -20,7 +20,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// <param name="displayNameInfo">An optional strategy that resolves the
     /// display name for the parameter at validation time. When <see langword="null"/>, the
     /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatableParameterInfo(
@@ -70,7 +70,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
 
         context.ValidationInitiator ??= this;
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

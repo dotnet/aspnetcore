@@ -16,6 +16,11 @@
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <PublishAot>true</PublishAot>
     <RuntimeIdentifiers>$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
+    <!--
+      Enable control flow guard
+      https://github.com/dotnet/docs/blob/main/docs/core/deploying/native-aot/security.md#control-flow-guard
+    -->
+    <ControlFlowGuard>Guard</ControlFlowGuard>
   </PropertyGroup>
 
   <ItemGroup>

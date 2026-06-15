@@ -20,7 +20,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
     /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
     /// <param name="name">The property name.</param>
-    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// <param name="displayNameInfo">An optional strategy that resolves the
     /// display name for the property at validation time. When <see langword="null"/>, the
     /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatablePropertyInfo(
