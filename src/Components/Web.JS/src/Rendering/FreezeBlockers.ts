@@ -10,3 +10,7 @@ export function isMediaPlaying(): boolean {
   }
   return false;
 }
+
+export function isPictureInPictureActive(): boolean {
+  return (document as Document & { pictureInPictureElement?: Element | null }).pictureInPictureElement != null;
+}

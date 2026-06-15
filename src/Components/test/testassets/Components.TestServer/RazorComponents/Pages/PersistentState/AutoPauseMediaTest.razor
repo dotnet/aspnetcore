@@ -11,13 +11,16 @@
 }
 
 <p>Verifies that auto-pause is vetoed while an <code>&lt;audio&gt;</code> or
-    <code>&lt;video&gt;</code> element is playing audibly. Muted playback is
-    not a freeze blocker (matches Chromium's heuristic).</p>
+    <code>&lt;video&gt;</code> element is playing audibly, or while a
+    Picture-in-Picture session is open.</p>
 
 <video id="media-video" loop style="width:120px;height:80px;background:#222;"></video>
 
 <button id="start-video" type="button">Start playback</button>
 <button id="mute-video" type="button">Mute</button>
+<button id="pause-video" type="button">Pause</button>
+<button id="pip-enter" type="button">Enter PiP</button>
+<button id="pip-exit" type="button">Exit PiP</button>
 
 <script>
     window.autoPauseMedia = (function () {
@@ -44,7 +47,27 @@
             document.getElementById('media-video').muted = true;
         }
 
-        return { startCanvasCapture: startCanvasCapture, mute: mute };
+        function pauseVideo() {
+            document.getElementById('media-video').pause();
+        }
+
+        async function enterPip() {
+            await document.getElementById('media-video').requestPictureInPicture();
+        }
+
+        async function exitPip() {
+            if (document.pictureInPictureElement) {
+                await document.exitPictureInPicture();
+            }
+        }
+
+        return {
+            startCanvasCapture: startCanvasCapture,
+            mute: mute,
+            pauseVideo: pauseVideo,
+            enterPip: enterPip,
+            exitPip: exitPip,
+        };
     })();
 
     document.getElementById('start-video').addEventListener('click', function () {
@@ -52,5 +75,14 @@
     });
     document.getElementById('mute-video').addEventListener('click', function () {
         window.autoPauseMedia.mute();
+    });
+    document.getElementById('pause-video').addEventListener('click', function () {
+        window.autoPauseMedia.pauseVideo();
+    });
+    document.getElementById('pip-enter').addEventListener('click', function () {
+        window.autoPauseMedia.enterPip();
+    });
+    document.getElementById('pip-exit').addEventListener('click', function () {
+        window.autoPauseMedia.exitPip();
     });
 </script>

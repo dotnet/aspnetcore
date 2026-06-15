@@ -454,6 +454,73 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         RunMediaDeferralTest(expectDeferral: false);
     }
 
+    [Fact]
+    public void PictureInPicture_Active_DefersAutoPause()
+    {
+        NavigateToMediaPage();
+        StartPlaybackAndWaitForMetadata();
+        EnterPictureInPicture();
+        Browser.Exists(By.Id("pause-video")).Click();
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "var v = document.getElementById('media-video'); return v && v.paused;"));
+        RunPictureInPictureDeferralTest();
+    }
+
+    [Fact]
+    public void PictureInPicture_ClosedWhileHidden_PausesAfterDefer()
+    {
+        NavigateToMediaPage();
+        StartPlaybackAndWaitForMetadata();
+        EnterPictureInPicture();
+        Browser.Exists(By.Id("pause-video")).Click();
+
+        ClearBlazorLogs();
+        SetVisibility("hidden");
+        try
+        {
+            WaitForBlazorLog("Pause deferred: picture-in-picture active.");
+            Browser.Exists(By.Id("pip-exit")).Click();
+            WaitForPausedUI();
+        }
+        finally
+        {
+            SetVisibility("visible");
+            WaitForResumedUI();
+        }
+    }
+
+    private void StartPlaybackAndWaitForMetadata()
+    {
+        Browser.Exists(By.Id("start-video")).Click();
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "var v = document.getElementById('media-video'); return v && !v.paused && v.readyState >= 1 && v.videoWidth > 0;"));
+    }
+
+    private void EnterPictureInPicture()
+    {
+        Browser.Exists(By.Id("pip-enter")).Click();
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "var v = document.getElementById('media-video'); return document.pictureInPictureElement === v;"));
+    }
+
+    private void RunPictureInPictureDeferralTest()
+    {
+        ClearBlazorLogs();
+        SetVisibility("hidden");
+        try
+        {
+            WaitForBlazorLog("Pause deferred: picture-in-picture active.");
+            Assert.False(IsReconnectModalShown(),
+                "Deferral was logged but the reconnect modal is showing — pause should be held while picture-in-picture is active.");
+        }
+        finally
+        {
+            SetVisibility("visible");
+            WaitForBlazorLog("Pause resumed: tab became visible before picture-in-picture closed.");
+            WaitForResumedUI();
+        }
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();

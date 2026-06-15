@@ -4,7 +4,7 @@
 import { Logger, LogLevel } from '../Logging/Logger';
 import { AutoPauseOptions, CircuitStartOptions } from './CircuitStartOptions';
 import { isFocusedElementEdited } from '../../Rendering/DomFocus';
-import { isMediaPlaying } from '../../Rendering/FreezeBlockers';
+import { isMediaPlaying, isPictureInPictureActive } from '../../Rendering/FreezeBlockers';
 
 export class AutoPauseManager {
   private readonly _options: AutoPauseOptions;
@@ -123,6 +123,18 @@ export class AutoPauseManager {
         return;
       }
 
+      if (!(await this.deferIfBlocked(
+        controller, isPictureInPictureActive,
+        'Pause deferred: picture-in-picture active.',
+        'Pause resumed: tab became visible before picture-in-picture closed.',
+        notify => {
+          const handler = () => notify();
+          document.addEventListener('leavepictureinpicture', handler, true);
+          return () => document.removeEventListener('leavepictureinpicture', handler, true);
+        }))) {
+        return;
+      }
+
       if (this._onPauseRequested) {
         await this._onPauseRequested(controller.signal);
       }
@@ -163,6 +175,7 @@ export class AutoPauseManager {
     isBlocked: () => boolean,
     deferLog: string,
     resumeLog: string,
+    subscribeClearEvent?: (notify: () => void) => () => void,
   ): Promise<boolean> {
     if (controller.signal.aborted || !isBlocked()) {
       return !controller.signal.aborted;
@@ -170,15 +183,24 @@ export class AutoPauseManager {
 
     this._logger.log(LogLevel.Information, deferLog);
 
-    await new Promise<void>(resolve => {
-      const onAbort = () => {
+    const cleared = await new Promise<boolean>(resolve => {
+      const cleanup = (didClear: boolean) => {
         controller.signal.removeEventListener('abort', onAbort);
+        unsubscribe?.();
+        resolve(didClear);
+      };
+      const onAbort = () => {
         this._logger.log(LogLevel.Information, resumeLog);
-        resolve();
+        cleanup(false);
       };
       controller.signal.addEventListener('abort', onAbort);
+      const unsubscribe = subscribeClearEvent?.(() => {
+        if (!isBlocked()) {
+          cleanup(true);
+        }
+      });
     });
 
-    return false;
+    return cleared;
   }
 }
