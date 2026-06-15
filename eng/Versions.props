@@ -143,7 +143,7 @@
     <GrpcAuthVersion>2.64.0</GrpcAuthVersion>
     <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
     <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
-    <MessagePackVersion>2.5.187</MessagePackVersion>
+    <MessagePackVersion>2.5.302</MessagePackVersion>
     <MicrosoftIdentityWebVersion>3.15.1</MicrosoftIdentityWebVersion>
     <MicrosoftIdentityWebGraphServiceClientVersion>3.15.1</MicrosoftIdentityWebGraphServiceClientVersion>
     <MicrosoftIdentityWebUIVersion>3.15.1</MicrosoftIdentityWebUIVersion>

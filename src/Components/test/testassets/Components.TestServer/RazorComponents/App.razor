@@ -3,11 +3,21 @@
 @using Components.WasmMinimal.Pages.NotFound
 @using TestContentPackage.NotFound
 @using Components.TestServer.RazorComponents
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Endpoints
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using System.Threading.Tasks
 
 @code {
     [Parameter]
     [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
     public string? UseCustomNotFoundPage { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useAuthorizedNotFoundPage")]
+    public string? UseAuthorizedNotFoundPage { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery(Name = "useCustomRouter")]
@@ -49,7 +59,11 @@
 
     protected override void OnParametersSet()
     {
-        if (string.Equals(UseCustomNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(UseAuthorizedNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
+        {
+            NotFoundPageType = typeof(AuthorizedNotFoundPage);
+        }
+        else if (string.Equals(UseCustomNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
         {
             NotFoundPageType = typeof(CustomNotFoundPage);
         }
@@ -88,6 +102,19 @@
                 <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
             </Found>
         </CustomRouter>
+    }
+    else if (string.Equals(UseAuthorizedNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
+    {
+        <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData">
+                    <NotAuthorized>
+                        <p id="not-authorized-content">Not authorized to view this page.</p>
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+            </Found>
+        </Router>
     }
     else
     {

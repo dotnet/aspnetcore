@@ -339,14 +339,7 @@ public class RouterTest
         // Assert
         var lastBatch = testRenderer.Batches.Last();
         var renderedFrame = lastBatch.ReferenceFrames.First();
-        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
-        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
-
-        // Verify that the RouteData contains the NotFoundTestComponent
-        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
-        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
-        var routeData = (RouteData)routeViewFrame.AttributeValue;
-        Assert.Equal(typeof(NotFoundTestComponent), routeData.PageType);
+        Assert.Equal($"Rendering route matching {typeof(NotFoundTestComponent)}", renderedFrame.TextContent);
     }
 
     [Fact]
