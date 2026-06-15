@@ -912,15 +912,51 @@ public static class NavigationManagerExtensions
     /// <returns>The route template with parameters bound.</returns>
     private static string BindParametersToRouteTemplate(string routeTemplate, object[] parameters)
     {
-        var result = routeTemplate;
-
-        // Replace parameter placeholders with actual values
-        for (var i = 0; i < parameters.Length; i++)
+        if (parameters == null || parameters.Length == 0)
         {
-            var parameterValue = parameters[i]?.ToString() ?? string.Empty;
-            result = result.Replace($"{{{i}}}", parameterValue);
+            return routeTemplate;
         }
 
-        return result;
+        var sb = new StringBuilder(capacity: routeTemplate.Length + parameters.Length * 8);
+        var pos = 0;
+        var paramIndex = 0;
+
+        while (pos < routeTemplate.Length)
+        {
+            var open = routeTemplate.IndexOf('{', pos);
+            if (open < 0)
+            {
+                // No more placeholders
+                sb.Append(routeTemplate.AsSpan(pos));
+                break;
+            }
+
+            // Append literal text before the placeholder
+            sb.Append(routeTemplate.AsSpan(pos, open - pos));
+
+            var close = routeTemplate.IndexOf('}', open + 1);
+            if (close < 0)
+            {
+                // Malformed template; append rest and break
+                sb.Append(routeTemplate.AsSpan(open));
+                break;
+            }
+
+            // If no more parameter values provided, leave placeholder as-is
+            if (paramIndex >= parameters.Length)
+            {
+                sb.Append(routeTemplate.AsSpan(open, close - open + 1));
+            }
+            else
+            {
+                var parameterValue = parameters[paramIndex]?.ToString() ?? string.Empty;
+                sb.Append(parameterValue);
+                paramIndex++;
+            }
+
+            pos = close + 1;
+        }
+
+        return sb.ToString();
     }
 }
