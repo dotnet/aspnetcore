@@ -53,7 +53,6 @@ public static partial class EditContextDataAnnotationsExtensions
         private readonly IValidatableInfo? _validatorTypeInfo;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private readonly Dictionary<string, FieldIdentifier> _validationPathToFieldIdentifierMapping = new();
-        private readonly object _validationPathMappingLock = new();
 
         [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         public DataAnnotationsEventSubscriptions(EditContext editContext, IServiceProvider serviceProvider)
@@ -166,16 +165,10 @@ public static partial class EditContextDataAnnotationsExtensions
 
                 if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
                 {
-                    // Iterate the mapping (which preserves insertion order) rather than the
-                    // ConcurrentDictionary so that the validation summary renders messages in
-                    // field-declaration order. ValidateAsync has fully completed at this point
-                    // so no more concurrent AddMapping calls can occur.
-                    foreach (var (fieldKey, fieldIdentifier) in _validationPathToFieldIdentifierMapping)
+                    foreach (var (fieldKey, messages) in validationErrors)
                     {
-                        if (validationErrors.TryGetValue(fieldKey, out var messages))
-                        {
-                            _messages.Add(fieldIdentifier, messages);
-                        }
+                        var fieldIdentifier = _validationPathToFieldIdentifierMapping[fieldKey];
+                        _messages.Add(fieldIdentifier, messages);
                     }
                 }
             }
@@ -250,11 +243,8 @@ public static partial class EditContextDataAnnotationsExtensions
 
         private void AddMapping(ValidationErrorContext context)
         {
-            var fieldIdentifier = new FieldIdentifier(context.Container ?? _editContext.Model, context.Name);
-            lock (_validationPathMappingLock)
-            {
-                _validationPathToFieldIdentifierMapping[context.Path] = fieldIdentifier;
-            }
+            _validationPathToFieldIdentifierMapping[context.Path] =
+                new FieldIdentifier(context.Container ?? _editContext.Model, context.Name);
         }
 
         public void Dispose()
