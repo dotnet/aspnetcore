@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components;
@@ -96,7 +98,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
         // Act
@@ -115,7 +117,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
         // Act
@@ -153,7 +155,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
         // Act & Assert
@@ -204,7 +206,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
         // Act
@@ -223,7 +225,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
         // Act
@@ -261,7 +263,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
         // Act & Assert
@@ -330,7 +332,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback<EventArgs>(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
         // Act
@@ -349,7 +351,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback<EventArgs>(component, (Action<EventArgs>)((e) => { arg = e; runCount++; }));
 
         // Act
@@ -357,6 +359,44 @@ public class EventCallbackTest
 
         // Assert
         Assert.NotNull(arg);
+        Assert.Equal(1, runCount);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public async Task EventCallbackOfT_InvokeAsync_NonNullableReferenceArg()
+    {
+        // Arrange
+        var component = new EventCountingComponent();
+
+        int runCount = 0;
+        string arg = null!;
+        var callback = new EventCallback<string>(component, (Action<string>)((e) => { arg = e; runCount++; }));
+
+        // Act
+        await callback.InvokeAsync("test");
+
+        // Assert
+        Assert.Equal("test", arg);
+        Assert.Equal(1, runCount);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public async Task EventCallbackOfT_InvokeAsync_NullableReferenceArg()
+    {
+        // Arrange
+        var component = new EventCountingComponent();
+
+        int runCount = 0;
+        string? arg = "initial";
+        var callback = new EventCallback<string?>(component, (Action<string?>)((e) => { arg = e; runCount++; }));
+
+        // Act
+        await callback.InvokeAsync(null);
+
+        // Assert
+        Assert.Null(arg);
         Assert.Equal(1, runCount);
         Assert.Equal(1, component.Count);
     }
@@ -402,7 +442,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback<EventArgs>(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
         // Act
@@ -421,7 +461,7 @@ public class EventCallbackTest
         var component = new EventCountingComponent();
 
         int runCount = 0;
-        EventArgs arg = null;
+        EventArgs? arg = null;
         var callback = new EventCallback<EventArgs>(component, (Func<EventArgs, Task>)((e) => { arg = e; runCount++; return Task.CompletedTask; }));
 
         // Act
@@ -455,7 +495,7 @@ public class EventCallbackTest
     {
         public int Count;
 
-        public Task HandleEventAsync(EventCallbackWorkItem item, object arg)
+        public Task HandleEventAsync(EventCallbackWorkItem item, object? arg)
         {
             Count++;
             return item.InvokeAsync(arg);

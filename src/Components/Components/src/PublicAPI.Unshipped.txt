@@ -45,3 +45,5 @@ Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.get ->
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentName.set -> void
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentVariables.get -> System.Collections.Generic.Dictionary<string!, string!>!
 Microsoft.AspNetCore.Components.WebAssemblyBrowserOptions.EnvironmentVariables.set -> void
+*REMOVED*Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue? arg) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.EventCallback<TValue>.InvokeAsync(TValue arg) -> System.Threading.Tasks.Task!
