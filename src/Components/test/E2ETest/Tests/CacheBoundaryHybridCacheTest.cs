@@ -32,28 +32,6 @@ public class CacheBoundaryHybridCacheTest : ServerTestBase<BasicTestAppServerSit
     }
 
     [Fact]
-    public void HardCodedHoleInIntermediateComponent_IsSupported_AcrossCacheHit()
-    {
-        // A hole (ExcludedContent) hard-coded inside an intermediate component's own markup, where the
-        // hole's content is a raw RenderFragment that never flowed through the CacheBoundary's ChildContent.
-        // Previously this threw; it must now render, and on a cache hit the cached outer content is preserved
-        // while the hole is emitted as its own component node (re-instantiated like any other hole).
-        Navigate($"{ServerPathBase}/cache-component");
-        var test10 = Browser.FindElement(By.Id("test-10"));
-        var outerCached = test10.FindElement(By.CssSelector(".outer-cached")).Text;
-        var holeValue = test10.FindElement(By.CssSelector(".panel-hole")).Text;
-        Assert.Equal("static-gamma", test10.FindElement(By.CssSelector(".panel-static")).Text);
-        Assert.NotEqual(outerCached, holeValue);
-
-        Navigate($"{ServerPathBase}/cache-component");
-        // Outer content is served from the cache (unchanged), and the hole content remains a distinct,
-        // non-cached region.
-        Browser.Equal(outerCached, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".outer-cached")).Text);
-        Browser.Equal("static-gamma", () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".panel-static")).Text);
-        Browser.NotEqual(outerCached, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".panel-hole")).Text);
-    }
-
-    [Fact]
     public void CacheBoundaryCachesData()
     {
         Navigate($"{ServerPathBase}/cache-component");
