@@ -65,8 +65,8 @@ internal static partial class SessionEstablishmentHelper
 
         [LoggerMessage(2, LogLevel.Warning,
             "Session state was not persisted to the next request. " +
-            "No session is available — either session middleware was not registered, or the component is running interactively where an HTTP session cannot be established. " +
-            "To fix this, add 'builder.Services.AddSession()' and 'app.UseSession()' to your app, and ensure session-backed state is first accessed during static SSR rendering.",
+            "No session is available session middleware was not registered. " +
+            "To fix this, add 'builder.Services.AddSession()' and 'app.UseSession()' to your app, and ensure the session middleware runs before the Razor Components endpoint.",
             EventName = "SessionDoesNotExist")]
         public static partial void SessionDoesNotExist(ILogger logger);
     }
