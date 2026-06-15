@@ -1,0 +1,27 @@
+﻿@implements IDisposable
+
+<span id="@Id">@_instanceId</span>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = string.Empty;
+    [Parameter] public Action<string>? OnLifecycleEvent { get; set; }
+
+    private string _instanceId = string.Empty;
+
+    // Assign a fresh GUID on every OnInitialized call. During SSR pre-render one GUID is
+    // written into the HTML. When the interactive circuit connects, Blazor creates fresh
+    // component instances and calls OnInitialized again, writing a *different* GUID that
+    // updates the DOM. Tests can therefore detect that the circuit is live by waiting for
+    // the span to differ from the value in the original SSR HTML — or by waiting for the
+    // parent page's 'is-interactive' element to become 'True' (which is the preferred signal).
+    protected override void OnInitialized()
+    {
+        _instanceId = Guid.NewGuid().ToString("N")[..8];
+        OnLifecycleEvent?.Invoke($"[{Id}] OnInitialized ({_instanceId})");
+    }
+
+    public void Dispose()
+    {
+        OnLifecycleEvent?.Invoke($"[{Id}] Dispose ({_instanceId})");
+    }
+}

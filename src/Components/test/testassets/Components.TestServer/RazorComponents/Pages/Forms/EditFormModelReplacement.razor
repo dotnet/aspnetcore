@@ -1,65 +1,43 @@
 ﻿@page "/forms/editform-model-replacement"
+@rendermode RenderMode.InteractiveServer
 @using Microsoft.AspNetCore.Components.Forms
+@using Components.TestServer.RazorComponents.Shared
 
 <h2 id="page-title">EditForm model replacement</h2>
 
-<p id="outside-lifecycle">outside: @string.Join(", ", _outsideEvents)</p>
-<p id="inside-lifecycle">inside: @string.Join(", ", _insideEvents)</p>
+<p id="is-interactive">@RendererInfo.IsInteractive</p>
 
-<EditForm Model="@_model" OnSubmit="@(_ => { })">
-    <LifecycleReporter Id="inside-reporter" OnLifecycleEvent="@(e => _insideEvents.Add(e))" />
-</EditForm>
+<div>
+    <EditForm Model="@_allowModelChangeModel" AllowModelChange="true" OnSubmit="@(_ => { })">
+        <LifecycleReporter Id="allow-model-change-reporter" OnLifecycleEvent="AppendAllowModelChangeLog" />
+        <div>
+            <label>Name: <InputText id="allow-model-change-name-input" @bind-Value="_allowModelChangeModel.Name" /></label>
+        </div>
+    </EditForm>
 
-<LifecycleReporter Id="outside-reporter" OnLifecycleEvent="@(e => _outsideEvents.Add(e))" />
-
-<button id="replace-model" @onclick="ReplaceModel">Replace model</button>
-<p id="swap-count">Swaps: @_swapCount</p>
+    <button id="replace-allow-model-change-model" @onclick="ReplaceAllowModelChangeModel">Replace model (AllowModelChange=true)</button>
+    <p id="allow-model-change-swap-count">Swaps: @_allowModelChangeSwapCount</p>
+    <ul id="allow-model-change-log">
+        @foreach (var entry in _allowModelChangeLog) { <li>@entry</li> }
+    </ul>
+</div>
 
 @code {
-    private FormModel _model = new();
-    private int _swapCount;
-    private readonly List<string> _insideEvents = new();
-    private readonly List<string> _outsideEvents = new();
+    private FormModel _allowModelChangeModel = new();
+    private int _allowModelChangeSwapCount;
+    private readonly List<string> _allowModelChangeLog = [];
 
-    private void ReplaceModel()
+    private void ReplaceAllowModelChangeModel()
     {
-        _model = new FormModel();
-        _swapCount++;
+        _allowModelChangeModel = new FormModel { Name = $"New model #{++_allowModelChangeSwapCount}" };
+        _allowModelChangeLog.Add($"── swap #{_allowModelChangeSwapCount} ──");
     }
 
+    private void AppendAllowModelChangeLog(string msg) => _allowModelChangeLog.Add(msg);
+
+    // ── Model types ──────────────────────────────────────────────────────────
     private sealed class FormModel
     {
         public string Name { get; set; } = string.Empty;
-    }
-
-    private sealed class LifecycleReporter : ComponentBase, IDisposable
-    {
-        [Parameter, EditorRequired] public string Id { get; set; } = string.Empty;
-        [Parameter] public Action<string>? OnLifecycleEvent { get; set; }
-
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
-        {
-            builder.OpenElement(0, "span");
-            builder.AddAttribute(1, "id", Id);
-            builder.AddContent(2, Id);
-            builder.CloseElement();
-        }
-
-        protected override void OnInitialized()
-        {
-            OnLifecycleEvent?.Invoke("init");
-            base.OnInitialized();
-        }
-
-        protected override void OnParametersSet()
-        {
-            OnLifecycleEvent?.Invoke("params");
-            base.OnParametersSet();
-        }
-
-        public void Dispose()
-        {
-            OnLifecycleEvent?.Invoke("dispose");
-        }
     }
 }

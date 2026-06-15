@@ -11,12 +11,15 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.FormHandlingTests;
 
-// Regression test for https://github.com/dotnet/aspnetcore/issues/41621
-// Replacing the EditForm.Model causes a new EditContext to be created, which (by design) keys
-// the child region on the EditContext hash. This causes all child components to be destroyed and
-// recreated. The tests here document the current behavior and will need updating if/when the
-// framework adds an opt-in mechanism (e.g. AllowModelChange) to preserve child state across model
-// swaps.
+// Regression tests for https://github.com/dotnet/aspnetcore/issues/41621
+//
+// When EditForm.Model is replaced, EditForm.BuildRenderTree calls builder.OpenRegion(editContext.GetHashCode()).
+// A new model → new EditContext → different hash → the entire child subtree is destroyed and recreated.
+// The fix adds AllowModelChange="true", which suppresses the keyed region and cascades the EditContext with
+// IsFixed=false, so children are updated in place instead of being destroyed.
+//
+// LifecycleReporter renders a per-instance GUID (set in OnInitialized). Comparing the GUID before and after a
+// model swap proves whether the same component instance was preserved (fix) or a new one was created (bug).
 [CollectionDefinition(nameof(EditFormModelReplacementTest), DisableParallelization = true)]
 public class EditFormModelReplacementTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
@@ -31,70 +34,36 @@ public class EditFormModelReplacementTest : ServerTestBase<BasicTestAppServerSit
     public override Task InitializeAsync()
         => InitializeAsync(BrowserFixture.StreamingContext);
 
+    // Proper regression test: it FAILS on the buggy framework (child is destroyed → GUID changes) and
+    // PASSES once AllowModelChange is honored (same instance preserved → GUID unchanged).
     [Fact]
-    public void ReplacingModel_DestroysAndRecreatesChildComponents()
+    public void AllowModelChange_ReplacingModel_PreservesChildComponentInstance()
     {
         Navigate($"{ServerPathBase}/forms/editform-model-replacement");
 
-        // Wait for interactive rendering to be active.
-        Browser.Exists(By.Id("replace-model"));
+        // Wait for the interactive circuit: RendererInfo.IsInteractive flips to "True"
+        // once the circuit re-renders the page interactively.
+        Browser.Equal("True", () => Browser.FindElement(By.Id("is-interactive")).Text);
 
-        // After initial render, both the inside and outside reporters should have been
-        // initialised exactly once and received their first OnParametersSet call.
-        // The inside reporter emits: init, params
-        Browser.Contains("init, params", () => Browser.FindElement(By.Id("inside-lifecycle")).Text);
-        Browser.Contains("init, params", () => Browser.FindElement(By.Id("outside-lifecycle")).Text);
+        // Capture the child component's instance GUID before swapping the model.
+        var idBeforeSwap = Browser.FindElement(By.Id("allow-model-change-reporter")).Text;
+        Assert.NotEmpty(idBeforeSwap);
 
-        // Replace the model — this creates a new EditContext instance.
-        Browser.Click(By.Id("replace-model"));
-        Browser.Equal("Swaps: 1", () => Browser.FindElement(By.Id("swap-count")).Text);
+        // Replace the EditForm.Model with a brand-new instance.
+        Browser.Click(By.Id("replace-allow-model-change-model"));
+        Browser.Equal("Swaps: 1", () => Browser.FindElement(By.Id("allow-model-change-swap-count")).Text);
 
-        // Bug (by design): the inside component is disposed and recreated because EditForm keys
-        // its child region on the EditContext instance hash. Each swap appends dispose+init+params.
-        Browser.Contains("dispose", () => Browser.FindElement(By.Id("inside-lifecycle")).Text);
-        Browser.Contains("init, params, dispose, init, params", () => Browser.FindElement(By.Id("inside-lifecycle")).Text);
+        // The InputText reflects the new model's value — confirming the model really changed.
+        Browser.Equal("New model #1", () => Browser.FindElement(By.Id("allow-model-change-name-input")).GetAttribute("value"));
 
-        // The outside component — not a descendant of EditForm — is NOT destroyed; it only
-        // receives an additional OnParametersSet call on each render.
-        var outsideText = Browser.FindElement(By.Id("outside-lifecycle")).Text;
-        Assert.DoesNotContain("dispose", outsideText);
-    }
+        // The fix: with AllowModelChange="true", the child is updated in place, so its instance
+        // GUID is UNCHANGED. Without the fix, the keyed region destroys and recreates the child,
+        // producing a different GUID and failing this assertion.
+        Browser.Equal(idBeforeSwap, () => Browser.FindElement(By.Id("allow-model-change-reporter")).Text);
 
-    [Fact]
-    public void ReplacingModel_MultipleSwaps_EachSwapDestroysAndRecreatesChildComponent()
-    {
-        Navigate($"{ServerPathBase}/forms/editform-model-replacement");
-
-        Browser.Exists(By.Id("replace-model"));
-
-        // Perform two model swaps.
-        Browser.Click(By.Id("replace-model"));
-        Browser.Equal("Swaps: 1", () => Browser.FindElement(By.Id("swap-count")).Text);
-
-        Browser.Click(By.Id("replace-model"));
-        Browser.Equal("Swaps: 2", () => Browser.FindElement(By.Id("swap-count")).Text);
-
-        // After two swaps the inside reporter has been disposed twice.
-        var insideText = Browser.FindElement(By.Id("inside-lifecycle")).Text;
-
-        // Count the number of "dispose" occurrences.
-        var disposeCount = CountOccurrences(insideText, "dispose");
-        Assert.Equal(2, disposeCount);
-
-        // Count the number of "init" occurrences (initial + one per swap).
-        var initCount = CountOccurrences(insideText, "init");
-        Assert.Equal(3, initCount);
-    }
-
-    private static int CountOccurrences(string source, string value)
-    {
-        var count = 0;
-        var index = 0;
-        while ((index = source.IndexOf(value, index, StringComparison.Ordinal)) >= 0)
-        {
-            count++;
-            index += value.Length;
-        }
-        return count;
+        // The lifecycle log must NOT contain a Dispose for the child — the instance was preserved.
+        var log = Browser.FindElements(By.CssSelector("#allow-model-change-log li")).Select(e => e.Text).ToList();
+        Assert.Contains("── swap #1 ──", log);
+        Assert.DoesNotContain(log, e => e.Contains("[allow-model-change-reporter] Dispose"));
     }
 }
