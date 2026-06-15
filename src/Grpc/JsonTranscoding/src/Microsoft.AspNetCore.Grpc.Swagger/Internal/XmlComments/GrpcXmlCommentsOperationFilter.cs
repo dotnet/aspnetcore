@@ -100,7 +100,12 @@ internal sealed class GrpcXmlCommentsOperationFilter : IOperationFilter
         while (responseNodes.MoveNext())
         {
             var code = responseNodes.Current!.GetAttribute("code", "");
-            if (!operation.Responses!.TryGetValue(code, out var response))
+            if (operation.Responses is null)
+            {
+                operation.Responses = [];
+                operation.Responses[code] = response = new OpenApiResponse();
+            }
+            else if (!operation.Responses.TryGetValue(code, out var response))
             {
                 operation.Responses[code] = response = new OpenApiResponse();
             }
