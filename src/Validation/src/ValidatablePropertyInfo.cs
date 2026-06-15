@@ -123,7 +123,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        context.ValidationTasks.Add(ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, context, (Name, displayName, DeclaringType, value),
+        clonedContext.ValidationTasks.Add(ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, clonedContext, (Name, displayName, DeclaringType, value),
             static (context, result, attribute, state) =>
             {
                 var (name, displayName, declaringType, container) = state;
@@ -150,16 +150,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             }, cancellationToken));
 
         // Check if we've reached the maximum depth before validating complex properties
-        if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
+        if (clonedContext.CurrentDepth >= clonedContext.ValidationOptions.MaxDepth)
         {
             throw new InvalidOperationException(
-                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
+                $"Maximum validation depth of {clonedContext.ValidationOptions.MaxDepth} exceeded at '{clonedContext.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
         // Increment depth counter
-        context.CurrentDepth++;
+        clonedContext.CurrentDepth++;
 
         try
         {
@@ -167,7 +167,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
-                var currentPrefix = context.CurrentValidationPath;
+                var currentPrefix = clonedContext.CurrentValidationPath;
 
                 foreach (var item in enumerable)
                 {
@@ -198,9 +198,9 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
         finally
         {
-            if (context.ValidationInitiator == this)
+            if (clonedContext.ValidationInitiator == this)
             {
-                await Task.WhenAll(context.ValidationTasks);
+                await Task.WhenAll(clonedContext.ValidationTasks);
             }
         }
     }
