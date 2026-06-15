@@ -17,3 +17,11 @@
         };
     });
 })();
+
+// Helper used by the auto-pause test page to read a <input type=file> filename
+window.autoPauseTest = window.autoPauseTest || {
+    getFileName: function (id) {
+        var el = document.getElementById(id);
+        return (el && el.files && el.files[0]) ? el.files[0].name : '';
+    }
+};

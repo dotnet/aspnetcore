@@ -46,6 +46,12 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.Id("render-mode-interactive"));
     }
 
+    private void NavigateToTypingPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-typing?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
     [Fact]
     // server streams bytes to JS over the circuit, pausing would cause exceptions
     public void DotNetStreamReference_DoesNotPause_WhileStreamInFlight()
@@ -138,10 +144,370 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         RunDeferralTest("large-arg-from-js-button", expectDeferral: true);
     }
 
+    [Fact]
+    // No Blazor binding, so no preservation, deferring the pause instead.
+    public void Typing_NativeInputFocused_DefersAutoPause()
+    {
+        NavigateToTypingPage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                FocusElement("native-input");
+                TypeInto("native-input", "abc");
+            },
+            expectDeferral: true);
+    }
+
+    [Fact]
+    // No Blazor binding, so no preservation, deferring the pause instead.
+    public void Typing_NativeTextareaFocused_DefersAutoPause()
+    {
+        NavigateToTypingPage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                FocusElement("native-textarea");
+                TypeInto("native-textarea", "abc");
+            },
+            expectDeferral: true);
+    }
+
+    [Fact]
+    // No Blazor binding, so no preservation, deferring the pause instead.
+    public void Typing_ContentEditableFocused_DefersAutoPause()
+    {
+        NavigateToTypingPage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                FocusElement("content-editable");
+                TypeInto("content-editable", "abc");
+            },
+            expectDeferral: true);
+    }
+
+    [Fact]
+    public void Typing_PrefilledContentEditableFocusedNotEdited_PausesNormally()
+    {
+        NavigateToTypingPage();
+        RunTypingDeferralTest(
+            setup: () => FocusElement("content-editable"),
+            expectDeferral: false);
+    }
+
+    [Fact]
+    // Blazor's <InputText> component goes through the InputBase/EditContext
+    // pipeline rather than a raw <input> with @bind.
+    public void Typing_BlazorInputTextFocused_DefersAutoPause()
+    {
+        NavigateToTypingPage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                FocusElement("blazor-input-text");
+                TypeInto("blazor-input-text", "abc");
+            },
+            expectDeferral: true);
+    }
+
+    [Theory]
+    [InlineData("changed-value", true)]   // user typed something different from server default
+    [InlineData("server-value", false)]   // user typed and ended up back at the server-provided value
+    public void Typing_ServerProvidedDefaultInput_DefersOnlyWhenDirty(string finalValue, bool expectDeferral)
+    {
+        NavigateToTypingPage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                FocusElement("server-default-input");
+                SetValueAndCommit("server-default-input", finalValue);
+            },
+            expectDeferral: expectDeferral);
+    }
+
+    [Fact]
+    // <button> has focus but is not editable
+    public void Typing_FocusedNonEditableButton_PausesNormally()
+    {
+        NavigateToTypingPage();
+        RunTypingDeferralTest(
+            setup: () => FocusElement("focusable-button"),
+            expectDeferral: false);
+    }
+
+    [Fact]
+    // Blur fires the change event.
+    public void Pause_PreservesNativeInputValue_WhenBlurred()
+    {
+        NavigateToTypingPage();
+        RunPauseResumePreservationTest(
+            setup: () =>
+            {
+                TypeInto("native-input", "abc");
+                BlurElement("native-input");
+            },
+            verifyPreservation: () => AssertElementValueEquals("native-input", "abc"));
+    }
+
+    [Fact]
+    // Focus is irrelevant: `change` fires on click.
+    public void Pause_PreservesRadioSelection_AcrossResume()
+    {
+        NavigateToTypingPage();
+        RunPauseResumePreservationTest(
+            setup: () => ClickElement("radio-a"),
+            verifyPreservation: () =>
+                Assert.True(Browser.Exists(By.Id("radio-a")).Selected,
+                    "Radio selection should survive pause/resume."));
+    }
+
+    [Fact]
+    // Focus is irrelevant: `change` fires on click.
+    public void Pause_PreservesCheckboxState_AcrossResume()
+    {
+        NavigateToTypingPage();
+        RunPauseResumePreservationTest(
+            setup: () => ClickElement("checkbox"),
+            verifyPreservation: () =>
+                Assert.True(Browser.Exists(By.Id("checkbox")).Selected,
+                    "Checkbox state should survive pause/resume."));
+    }
+
+    [Fact]
+    // Focus is irrelevant for <select>: `change` fires when an option is picked.
+    public void Pause_PreservesSelectChoice_AcrossResume()
+    {
+        NavigateToTypingPage();
+        RunPauseResumePreservationTest(
+            setup: () => SetValueAndCommit("select", "y"),
+            verifyPreservation: () => AssertElementValueEquals("select", "y"));
+    }
+
+    [Fact]
+    // Focus is irrelevant: `change` fires when the user releases the pointer after dragging.
+    public void Pause_PreservesSliderValue_AcrossResume()
+    {
+        NavigateToTypingPage();
+        RunPauseResumePreservationTest(
+            setup: () => SetValueAndCommit("range", "75"),
+            verifyPreservation: () => AssertElementValueEquals("range", "75"));
+    }
+    [Fact]
+    public void Pause_PreservesUploadFilename_WithPersistentState()
+    {
+        NavigateToTypingPage();
+        var tempFile = Path.Combine(Path.GetTempPath(), $"autopause-upload-{Guid.NewGuid():N}.txt");
+        File.WriteAllText(tempFile, "x");
+        var expectedName = Path.GetFileName(tempFile);
+        try
+        {
+            RunPauseResumePreservationTest(
+                setup: () => Browser.Exists(By.Id("persist-upload")).SendKeys(tempFile),
+                verifyPreservation: () =>
+                {
+                    Assert.Equal(expectedName, Browser.Exists(By.Id("persist-upload-label")).Text);
+                });
+        }
+        finally
+        {
+            try { File.Delete(tempFile); } catch { /* best effort */ }
+        }
+    }
+
+    [Fact]
+    // Documents a not-supported usage: @bind + [PersistentState] on a native <input type=file>.
+    public void Pause_BindWithPersistentStateOnFileInput_ThrowsInvalidStateError()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-file-bind-with-persistent-state?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+
+        var tempFile = Path.Combine(Path.GetTempPath(), $"autopause-bug-{Guid.NewGuid():N}.txt");
+        File.WriteAllText(tempFile, "x");
+        try
+        {
+            Browser.Exists(By.Id("broken-file")).SendKeys(tempFile);
+            // Confirm the bound field actually captured something pre-pause (browser-masked path).
+            Browser.NotEqual("", () => Browser.Exists(By.Id("broken-file-value")).Text);
+
+            ClearBlazorLogs();
+            SetVisibility("hidden");
+            try
+            {
+                WaitForPausedUI();
+                // On resume the framework tries to write the persisted data back into input.value,
+                // which the browser rejects. The exception surfaces.
+                SetVisibility("visible");
+                WaitForBlazorLog("InvalidStateError");
+                WaitForBlazorLog("may only be programmatically set to the empty string");
+            }
+            finally
+            {
+                try { SetVisibility("visible"); } catch { /* ignore */ }
+            }
+        }
+        finally
+        {
+            try { File.Delete(tempFile); } catch { /* best effort */ }
+        }
+    }
+
+    [Fact]
+    // Focus is irrelevant: `change` fires when the dialog closes.
+    public void Pause_PreservesColorValue_AcrossResume()
+    {
+        NavigateToTypingPage();
+        RunPauseResumePreservationTest(
+            setup: () => SetValueAndCommit("color", "#ff0000"),
+            verifyPreservation: () => AssertElementValueEquals("color", "#ff0000"));
+    }
+
+    [Fact]
+    // Focus is irrelevant: `change` fires when the picker closes.
+    public void Pause_PreservesDateValue_AcrossResume()
+    {
+        NavigateToTypingPage();
+        RunPauseResumePreservationTest(
+            setup: () => SetValueAndCommit("date", "2024-01-15"),
+            verifyPreservation: () => AssertElementValueEquals("date", "2024-01-15"));
+    }
+
+    private void NavigateToAdvancedEditablePage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-advanced-editable?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    [Fact]
+    public void Typing_CustomElementShadowDomInputFocused_DefersAutoPause()
+    {
+        NavigateToAdvancedEditablePage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                var js = (IJavaScriptExecutor)Browser;
+                js.ExecuteScript("autoPauseAdvanced.focusShadowInput();");
+                js.ExecuteScript("var i = document.getElementById('shadow-host').shadowRoot.getElementById('shadow-input'); i.value = 'abc'; i.dispatchEvent(new Event('input', { bubbles: true }));");
+            },
+            expectDeferral: true);
+    }
+
+    [Fact]
+    public void Typing_SameOriginIframeContentEditableFocused_DefersAutoPause()
+    {
+        NavigateToAdvancedEditablePage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                var js = (IJavaScriptExecutor)Browser;
+                js.ExecuteScript("autoPauseAdvanced.focusIframeEditable();");
+                js.ExecuteScript("var d = document.getElementById('editable-iframe').contentDocument.getElementById('inner'); d.textContent = 'changed'; d.dispatchEvent(new Event('input', { bubbles: true }));");
+            },
+            expectDeferral: true);
+    }
+
+    [Fact]
+    public void Typing_PrefilledIframeContentEditableClearedByUser_DefersAutoPause()
+    {
+        NavigateToAdvancedEditablePage();
+        RunTypingDeferralTest(
+            setup: () =>
+            {
+                var js = (IJavaScriptExecutor)Browser;
+                js.ExecuteScript("autoPauseAdvanced.focusIframeEditable();");
+                js.ExecuteScript("var d = document.getElementById('editable-iframe').contentDocument.getElementById('inner'); d.textContent = ''; d.dispatchEvent(new Event('input', { bubbles: true }));");
+            },
+            expectDeferral: true);
+    }
+
     private void RunDeferralTest(string elementId, bool expectDeferral)
     {
         var token = ReadToken(elementId);
         RunDeferralTest(token, () => Browser.Exists(By.Id(elementId)).Click(), expectDeferral);
+    }
+
+    private void RunTypingDeferralTest(Action setup, bool expectDeferral, Action verifyPreservation = null)
+    {
+        setup();
+        ClearBlazorLogs();
+        SetVisibility("hidden");
+        try
+        {
+            if (expectDeferral)
+            {
+                WaitForBlazorLog("Pause deferred:");
+                Assert.False(IsReconnectModalShown(),
+                    "Deferral was logged but the reconnect modal is showing — pause should be held while editable focus is active.");
+            }
+            else
+            {
+                WaitForPausedUI();
+            }
+        }
+        finally
+        {
+            SetVisibility("visible");
+            if (expectDeferral)
+            {
+                WaitForBlazorLog("Pause resumed: tab became visible before focus cleared.");
+            }
+            WaitForResumedUI();
+        }
+        verifyPreservation?.Invoke();
+    }
+
+    private void RunPauseResumePreservationTest(Action setup, Action verifyPreservation)
+    {
+        setup();
+        SetVisibility("hidden");
+        try
+        {
+            WaitForPausedUI();
+        }
+        finally
+        {
+            SetVisibility("visible");
+            WaitForResumedUI();
+        }
+        verifyPreservation();
+    }
+
+    private void AssertElementValueEquals(string elementId, string expected)
+    {
+        var actual = Browser.Exists(By.Id(elementId)).GetDomProperty("value");
+        Assert.Equal(expected, actual);
+    }
+
+    private void FocusElement(string elementId)
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "document.getElementById(arguments[0]).focus();", elementId);
+    }
+
+    private void BlurElement(string elementId)
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "document.getElementById(arguments[0]).blur();", elementId);
+    }
+
+    private void TypeInto(string elementId, string text)
+    {
+        var element = Browser.Exists(By.Id(elementId));
+        element.SendKeys(text);
+    }
+
+    private void ClickElement(string elementId)
+    {
+        Browser.Exists(By.Id(elementId)).Click();
+    }
+
+    private void SetValueAndCommit(string elementId, string value)
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            var el = document.getElementById(arguments[0]);
+            el.value = arguments[1];
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        ", elementId, value);
     }
 
     private void RunDeferralTest(string token, Action triggerAction, bool expectDeferral)
