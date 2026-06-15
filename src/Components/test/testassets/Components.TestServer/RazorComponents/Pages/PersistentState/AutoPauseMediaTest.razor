@@ -1,0 +1,56 @@
+@page "/persistent-state/auto-pause-media"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause veto — media playback</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>Verifies that auto-pause is vetoed while an <code>&lt;audio&gt;</code> or
+    <code>&lt;video&gt;</code> element is playing audibly. Muted playback is
+    not a freeze blocker (matches Chromium's heuristic).</p>
+
+<video id="media-video" loop style="width:120px;height:80px;background:#222;"></video>
+
+<button id="start-video" type="button">Start playback</button>
+<button id="mute-video" type="button">Mute</button>
+
+<script>
+    window.autoPauseMedia = (function () {
+        var streamInterval = null;
+
+        function startCanvasCapture() {
+            var video = document.getElementById('media-video');
+            if (video.srcObject) {
+                return video.play();
+            }
+            var canvas = document.createElement('canvas');
+            canvas.width = 2;
+            canvas.height = 2;
+            var ctx = canvas.getContext('2d');
+            streamInterval = setInterval(function () {
+                ctx.fillStyle = '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+                ctx.fillRect(0, 0, 2, 2);
+            }, 100);
+            video.srcObject = canvas.captureStream();
+            return video.play();
+        }
+
+        function mute() {
+            document.getElementById('media-video').muted = true;
+        }
+
+        return { startCanvasCapture: startCanvasCapture, mute: mute };
+    })();
+
+    document.getElementById('start-video').addEventListener('click', function () {
+        window.autoPauseMedia.startCanvasCapture();
+    });
+    document.getElementById('mute-video').addEventListener('click', function () {
+        window.autoPauseMedia.mute();
+    });
+</script>

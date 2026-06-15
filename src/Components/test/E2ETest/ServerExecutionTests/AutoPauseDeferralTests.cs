@@ -419,6 +419,69 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             expectDeferral: true);
     }
 
+    private void NavigateToMediaPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-media?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    [Fact]
+    public void Media_AudibleVideoPlaying_DefersAutoPause()
+    {
+        NavigateToMediaPage();
+        Browser.Exists(By.Id("start-video")).Click();
+        // Wait until the element actually reports playback so we don't race the pause check.
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "var v = document.getElementById('media-video'); return v && !v.paused;"));
+        RunMediaDeferralTest(expectDeferral: true);
+    }
+
+    [Fact]
+    public void Media_NothingPlaying_PausesNormally()
+    {
+        NavigateToMediaPage();
+        RunMediaDeferralTest(expectDeferral: false);
+    }
+
+    [Fact]
+    public void Media_MutedVideoPlaying_PausesNormally()
+    {
+        NavigateToMediaPage();
+        Browser.Exists(By.Id("start-video")).Click();
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "var v = document.getElementById('media-video'); return v && !v.paused;"));
+        Browser.Exists(By.Id("mute-video")).Click();
+        RunMediaDeferralTest(expectDeferral: false);
+    }
+
+    private void RunMediaDeferralTest(bool expectDeferral)
+    {
+        ClearBlazorLogs();
+        SetVisibility("hidden");
+        try
+        {
+            if (expectDeferral)
+            {
+                WaitForBlazorLog("Pause deferred: media playing.");
+                Assert.False(IsReconnectModalShown(),
+                    "Deferral was logged but the reconnect modal is showing — pause should be held while media is playing.");
+            }
+            else
+            {
+                WaitForPausedUI();
+            }
+        }
+        finally
+        {
+            SetVisibility("visible");
+            if (expectDeferral)
+            {
+                WaitForBlazorLog("Pause resumed: tab became visible before media stopped.");
+            }
+            WaitForResumedUI();
+        }
+    }
+
     private void RunDeferralTest(string elementId, bool expectDeferral)
     {
         var token = ReadToken(elementId);

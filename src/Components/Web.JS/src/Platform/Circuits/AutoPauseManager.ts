@@ -4,6 +4,7 @@
 import { Logger, LogLevel } from '../Logging/Logger';
 import { AutoPauseOptions, CircuitStartOptions } from './CircuitStartOptions';
 import { isFocusedElementEdited } from '../../Rendering/DomFocus';
+import { isMediaPlaying } from '../../Rendering/FreezeBlockers';
 
 export class AutoPauseManager {
   private readonly _options: AutoPauseOptions;
@@ -112,6 +113,13 @@ export class AutoPauseManager {
         controller, isFocusedElementEdited,
         'Pause deferred: waiting for edited element to lose focus.',
         'Pause resumed: tab became visible before focus cleared.'))) {
+        return;
+      }
+
+      if (!(await this.deferIfBlocked(
+        controller, isMediaPlaying,
+        'Pause deferred: media playing.',
+        'Pause resumed: tab became visible before media stopped.'))) {
         return;
       }
 
