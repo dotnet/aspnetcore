@@ -188,9 +188,10 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             {
                 // Validate as a complex object
                 var valueType = propertyValue.GetType();
-                if (clonedContext.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                var clonedForComplexObject = clonedContext.Clone(withNewInitiator: null);
+                if (clonedForComplexObject.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
                 {
-                    await validatableType.ValidateAsync(propertyValue, clonedContext, cancellationToken);
+                    await validatableType.ValidateAsync(propertyValue, clonedForComplexObject, cancellationToken);
                 }
             }
         }

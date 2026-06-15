@@ -754,7 +754,157 @@ public class AsyncValidationTests
             "it should wait for all property validation to complete first.");
     }
 
+    [Fact]
+    public async Task ValidateMembers_PropertyGetterThrows_ExceptionShouldPropagate()
+    {
+        var typeInfo = new TestValidatableTypeInfo(
+            typeof(TypeWithThrowingGetter),
+            [
+                CreatePropertyInfo(typeof(TypeWithThrowingGetter), typeof(string), "ThrowingProp", "Throwing Prop",
+                    [new RequiredAttribute()])
+            ]);
+
+        var instance = new TypeWithThrowingGetter();
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(TypeWithThrowingGetter), typeInfo }
+            }),
+            ValidationContext = new ValidationContext(instance)
+        };
+
+        var ex = await Assert.ThrowsAsync<System.Reflection.TargetInvocationException>(
+            () => typeInfo.ValidateAsync(instance, context, default));
+
+        Assert.IsType<InvalidOperationException>(ex.InnerException);
+        Assert.Equal("Getter throws", ex.InnerException.Message);
+    }
+
+    [Fact]
+    public async Task AsyncAttributeOnProperty_WithComplexValue_SeesCorrectDisplayName()
+    {
+        using var typeValidationStarted = new SemaphoreSlim(0, 1);
+        var capturedDisplayNames = new ConcurrentBag<string>();
+
+        var innerType = new TestValidatableTypeInfo(
+            typeof(InnerComplexType),
+            [
+                CreatePropertyInfo(typeof(InnerComplexType), typeof(string), "Data", "Data", [])
+            ],
+            [new SignalingAsyncTypeLevelAttribute(typeValidationStarted)]);
+
+        // The outer type has a property "Inner" whose display name is "Shipping Address".
+        // The property carries an async attribute that waits for the type-level validation
+        // to start (ensuring DisplayName has been changed), then captures whatever
+        // DisplayName it sees on the ValidationContext.
+        var outerType = new TestValidatableTypeInfo(
+            typeof(OuterWithComplexProp),
+            [
+                new TestValidatablePropertyInfo(
+                    typeof(OuterWithComplexProp),
+                    typeof(InnerComplexType),
+                    "Inner",
+                    "Shipping Address",
+                    [new DisplayNameCapturingAsyncAttribute(typeValidationStarted, capturedDisplayNames)])
+            ]);
+
+        var instance = new OuterWithComplexProp
+        {
+            Inner = new InnerComplexType { Data = "test" }
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(OuterWithComplexProp), outerType },
+                { typeof(InnerComplexType), innerType }
+            }),
+            ValidationContext = new ValidationContext(instance)
+        };
+
+        await outerType.ValidateAsync(instance, context, default);
+
+        // The async attribute on the property should see the property's display name
+        // ("Shipping Address"), not the type's display name ("InnerComplexType").
+        var captured = Assert.Single(capturedDisplayNames);
+        Assert.Equal("Shipping Address", captured);
+    }
+
     // Test model classes
+    private class TypeWithThrowingGetter
+    {
+        public string ThrowingProp => throw new InvalidOperationException("Getter throws");
+    }
+
+    private class InnerComplexType
+    {
+        public string? Data { get; set; }
+    }
+
+    private class OuterWithComplexProp
+    {
+        public InnerComplexType? Inner { get; set; }
+    }
+
+    /// <summary>
+    /// Type-level async attribute that signals a semaphore when it starts running,
+    /// then delays to hold the ValidationContext in a modified state.
+    /// </summary>
+    private class SignalingAsyncTypeLevelAttribute : AsyncValidationAttribute
+    {
+        private readonly SemaphoreSlim _signal;
+
+        public SignalingAsyncTypeLevelAttribute(SemaphoreSlim signal) => _signal = signal;
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            => ValidationResult.Success;
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            // Signal that type-level validation has started (DisplayName is now the type name)
+            _signal.Release();
+            await Task.Delay(200, cancellationToken);
+            return ValidationResult.Success;
+        }
+    }
+
+    /// <summary>
+    /// Async attribute that waits for a signal, then captures validationContext.DisplayName.
+    /// Used to observe what DisplayName the property's async attribute sees when a
+    /// concurrent type-level validation is modifying the shared ValidationContext.
+    /// </summary>
+    private class DisplayNameCapturingAsyncAttribute : AsyncValidationAttribute
+    {
+        private readonly SemaphoreSlim _waitForSignal;
+        private readonly System.Collections.Concurrent.ConcurrentBag<string> _capturedNames;
+
+        public DisplayNameCapturingAsyncAttribute(
+            SemaphoreSlim waitForSignal,
+            System.Collections.Concurrent.ConcurrentBag<string> capturedNames)
+        {
+            _waitForSignal = waitForSignal;
+            _capturedNames = capturedNames;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            => ValidationResult.Success;
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            // Wait for the type-level validation to start (which changes DisplayName)
+            await _waitForSignal.WaitAsync(cancellationToken);
+            // Small delay to ensure we read AFTER the type modifies DisplayName
+            await Task.Delay(10, cancellationToken);
+            // Capture whatever DisplayName is on the context right now
+            _capturedNames.Add(validationContext.DisplayName);
+            return ValidationResult.Success;
+        }
+    }
+
     private class UserWithAsyncValidation
     {
         public string? Email { get; set; }

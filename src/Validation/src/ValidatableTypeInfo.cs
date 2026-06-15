@@ -229,6 +229,11 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 localValidationTasks ??= new();
                 localValidationTasks.Add(task);
             }
+            else
+            {
+                // If the task completed as faulted, we want to ensure the exception isn't swallowed.
+                task.GetAwaiter().GetResult();
+            }
         }
     }
 
