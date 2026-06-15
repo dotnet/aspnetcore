@@ -63,13 +63,6 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        // This is currently never reachable, as minimal API validation filter will always pass non-null value.
-        // See https://github.com/dotnet/aspnetcore/issues/67033
-        if (value == null)
-        {
-            throw new UnreachableException();
-        }
-
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
