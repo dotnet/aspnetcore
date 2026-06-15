@@ -3,6 +3,7 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
@@ -62,10 +63,11 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        // Skip validation if value is null and parameter is optional
-        if (value == null && ParameterType.IsNullable())
+        // This is currently never reachable, as minimal API validation filter will always pass non-null value.
+        // See https://github.com/dotnet/aspnetcore/issues/67033
+        if (value == null)
         {
-            return;
+            throw new UnreachableException();
         }
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
