@@ -550,6 +550,35 @@ public class AsyncValidationTests
     }
 
     [Fact]
+    public async Task AsyncValidation_PropertyWithAsyncFailure_CanRunInParallelWithTypeLevelAttribute()
+    {
+        var typeLevelValidated = false;
+        var entityType = new TestValidatableTypeInfo(
+            typeof(UserWithAsyncValidation),
+            [
+                CreatePropertyInfo(typeof(UserWithAsyncValidation), typeof(string), "Email", "Email",
+                    [new EmailExistsAttribute()])
+            ],
+            [new TrackingTypeLevelAttribute(() => typeLevelValidated = true)]);
+
+        var user = new UserWithAsyncValidation { Email = "duplicate@example.com" };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(UserWithAsyncValidation), entityType }
+            }),
+            ValidationContext = new ValidationContext(user)
+        };
+
+        await entityType.ValidateAsync(user, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Contains("Email", context.ValidationErrors.Keys);
+        Assert.True(typeLevelValidated);
+    }
+
+    [Fact]
     public async Task AsyncValidation_WithDelayedValidation()
     {
         // Arrange
