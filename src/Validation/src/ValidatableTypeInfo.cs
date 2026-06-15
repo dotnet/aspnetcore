@@ -152,8 +152,14 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // If any property-level validation errors were found, return early
+            // TODO: Count check here might not be correct when parallelizing.
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
             {
+                if (localValidationTasks is not null)
+                {
+                    context.ValidationTasks.Add(Task.WhenAll(localValidationTasks));
+                }
+
                 return;
             }
 
@@ -168,6 +174,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // If any type-level attribute errors were found, return early
+            // TODO: Count check here might not be correct when parallelizing.
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
             {
                 if (localValidationTasks is not null)
@@ -184,6 +191,15 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 async Task GetFinalValidationTask(List<Task> localValidationTasks)
                 {
                     await Task.WhenAll(localValidationTasks);
+
+                    // After async property/type-level validations complete, skip IValidatableObject
+                    // if any errors were found (mirrors the sync early-return checks above).
+                    // TODO: Count check here might not be correct when parallelizing.
+                    if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
+                    {
+                        return;
+                    }
+
                     await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
                 }
 
