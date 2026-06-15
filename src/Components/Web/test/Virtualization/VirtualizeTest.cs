@@ -1239,7 +1239,7 @@ public class VirtualizeTest
         Assert.NotNull(renderedVirtualize);
 
         // Spacer elements use data-blazor-virtualize-* attributes instead of inline style.
-        // A MutationObserver on the JS side mirrors them to CSS custom properties via CSSOM.
+        // A MutationObserver on the JS side mirrors them to element styles via CSSOM.
         var referenceFrames = testRenderer.Batches.SelectMany(b => b.ReferenceFrames).ToList();
 
         var heightAttributes = referenceFrames
