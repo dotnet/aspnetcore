@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using static Microsoft.AspNetCore.Components.Endpoints.SessionCascadingValueSupplierTest;
 
@@ -128,6 +129,7 @@ public class SessionSubscriptionTest
     public async Task CreateSubscription_RegistersValueCallbackAndReturnsSubscription()
     {
         var httpContext = CreateHttpContextWithSession();
+        httpContext.RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider();
         httpContext.Session.SetString(nameof(TestComponent.Value).ToLowerInvariant(), "\"from-session\"");
         _supplier.SetRequestContext(httpContext);
 
