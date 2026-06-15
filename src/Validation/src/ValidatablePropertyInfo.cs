@@ -75,28 +75,31 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
         // Calculate and save the current path
         var originalPrefix = context.CurrentValidationPath;
+
+        var clonedContext = context.Clone();
+
         if (string.IsNullOrEmpty(originalPrefix))
         {
-            context.CurrentValidationPath = Name;
+            clonedContext.CurrentValidationPath = Name;
         }
         else
         {
-            context.CurrentValidationPath = $"{originalPrefix}.{Name}";
+            clonedContext.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(clonedContext, Name, DeclaringType) ?? Name;
 
-        context.ValidationContext.DisplayName = displayName;
-        context.ValidationContext.MemberName = Name;
+        clonedContext.ValidationContext.DisplayName = displayName;
+        clonedContext.ValidationContext.MemberName = Name;
 
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
+            var result = _requiredAttribute.GetValidationResult(propertyValue, clonedContext.ValidationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = context.ResolveAttributeErrorMessage(
+                var errorMessage = clonedContext.ResolveAttributeErrorMessage(
                     memberName: Name,
                     displayName,
                     declaringType: DeclaringType,
@@ -108,14 +111,13 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var errorContext = new ValidationErrorContext()
                     {
                         Name = Name,
-                        Path = context.CurrentValidationPath,
+                        Path = clonedContext.CurrentValidationPath,
                         Errors = [errorMessage],
                         Container = value,
                     };
-                    context.AddValidationError(errorContext);
+                    clonedContext.AddValidationError(errorContext);
                 }
 
-                context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
         }
@@ -169,15 +171,15 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
                 foreach (var item in enumerable)
                 {
-                    var clonedContext = context.Clone();
-                    clonedContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                    var clonedContextForEnumerable = clonedContext.Clone();
+                    clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
                     if (item != null)
                     {
                         var itemType = item.GetType();
-                        if (clonedContext.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        if (clonedContextForEnumerable.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            await validatableType.ValidateAsync(item, clonedContext, cancellationToken);
+                            await validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
                         }
                     }
 
@@ -188,18 +190,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             {
                 // Validate as a complex object
                 var valueType = propertyValue.GetType();
-                if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                if (clonedContext.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
                 {
-                    await validatableType.ValidateAsync(propertyValue, context, cancellationToken);
+                    await validatableType.ValidateAsync(propertyValue, clonedContext, cancellationToken);
                 }
             }
         }
         finally
         {
-            // Always decrement the depth counter and restore prefix
-            context.CurrentDepth--;
-            context.CurrentValidationPath = originalPrefix;
-
             if (context.ValidationInitiator == this)
             {
                 await Task.WhenAll(context.ValidationTasks);
