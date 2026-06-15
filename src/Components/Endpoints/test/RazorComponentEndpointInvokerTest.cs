@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.Text;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -195,13 +197,13 @@ public class RazorComponentEndpointInvokerTest
     private sealed class InvalidAntiforgeryValidationFeature : IAntiforgeryValidationFeature
     {
         public bool IsValid => false;
-        public Exception Error { get; } = new AntiforgeryValidationException("invalid");
+        public Exception? Error { get; } = new AntiforgeryValidationException("invalid");
     }
 
     private sealed class ValidAntiforgeryValidationFeature : IAntiforgeryValidationFeature
     {
         public bool IsValid => true;
-        public Exception Error => null;
+        public Exception? Error => null;
     }
 
     private class TestWebHostEnvironment : IWebHostEnvironment

@@ -222,9 +222,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                 }
             }
 
-            // Relying on AntiforgeryMiddleware (should have run by now) to set IAntiforgeryValidationFeature { IsValid = false }.
-            // No neccessity to call Antiforgery validation here, because we would lose a way to avoid Antiforgery (and use CSRF instead)
-            if (context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false })
+            // If AntiforgeryMiddleware ran and rejected the token, IAntiforgeryValidationFeature.IsValid is false; short-circuit with 400.
+            // If the feature is absent (AntiforgeryMiddleware was not in the pipeline), defer to CsrfProtectionMiddleware (already ran)
+            // and skip token validation here so applications can opt out of token-based antiforgery while still being CSRF-protected.
+            var antiforgeryValidationFeature = context.Features.Get<IAntiforgeryValidationFeature>();
+            if (antiforgeryValidationFeature is { IsValid: false })
             {
                 Log.MiddlewareAntiforgeryValidationFailed(_logger);
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -236,7 +238,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
                 return RequestValidationState.InvalidPostRequest;
             }
 
-            Log.MiddlewareAntiforgeryValidationSucceeded(_logger);
+            if (antiforgeryValidationFeature is { IsValid: true })
+            {
+                Log.MiddlewareAntiforgeryValidationSucceeded(_logger);
+            }
 
             await context.Request.ReadFormAsync();
 
