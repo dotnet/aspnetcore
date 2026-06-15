@@ -21,7 +21,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
-    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// <param name="displayNameInfo">An optional strategy that resolves the
     /// display name for the type at validation time. When <see langword="null"/>, the validation
     /// pipeline uses <see cref="System.Reflection.MemberInfo.Name"/> of <paramref name="type"/>
     /// as the display name.</param>

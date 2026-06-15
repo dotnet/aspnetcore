@@ -30,6 +30,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
             testCases.Add("forms", version);
             testCases.Add("schemas-by-ref", version);
             testCases.Add("xml", version);
+            testCases.Add("unions", version);
         }
 
         return testCases;
