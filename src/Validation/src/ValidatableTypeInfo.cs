@@ -132,7 +132,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 
         context.ValidationInitiator ??= this;
 
-        var originalPrefix = context.CurrentValidationPath;
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
         try
@@ -201,8 +200,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             {
                 await Task.WhenAll(context.ValidationTasks);
             }
-
-            context.CurrentValidationPath = originalPrefix;
         }
     }
 

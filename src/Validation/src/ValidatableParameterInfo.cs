@@ -150,7 +150,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             {
                 if (item != null)
                 {
-                    var clonedContext = context.Clone();
+                    var clonedContext = context.Clone(withNewInitiator: null);
                     clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                         ? $"{Name}[{index}]"
                         : $"{currentPrefix}.{Name}[{index}]";

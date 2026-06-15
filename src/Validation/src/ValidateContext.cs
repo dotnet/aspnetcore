@@ -17,7 +17,7 @@ public sealed class ValidateContext
 
     internal ConcurrentBag<Task> ValidationTasks { get; }
 
-    internal IValidatableInfo? ValidationInitiator { get; set; }
+    internal object? ValidationInitiator { get; set; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -28,13 +28,13 @@ public sealed class ValidateContext
         ValidationTasks = new();
     }
 
-    private ValidateContext(ValidateContext original)
+    private ValidateContext(ValidateContext original, object? withNewInitiator)
     {
         _validationErrors = original._validationErrors;
-        ValidationTasks = original.ValidationTasks;
+        ValidationTasks = withNewInitiator is not null ? new ConcurrentBag<Task>() : original.ValidationTasks;
         CurrentDepth = original.CurrentDepth;
         CurrentValidationPath = original.CurrentValidationPath;
-        ValidationInitiator = original.ValidationInitiator;
+        ValidationInitiator = withNewInitiator ?? original.ValidationInitiator;
 
         if (original.OnValidationError?.GetInvocationList() is { } onValidationErrorDelegates)
         {
@@ -45,9 +45,9 @@ public sealed class ValidateContext
         }
     }
 
-    internal ValidateContext Clone()
+    internal ValidateContext Clone(object? withNewInitiator)
     {
-        var cloned = new ValidateContext(this)
+        var cloned = new ValidateContext(this, withNewInitiator)
         {
             ValidationContext = CloneValidationContext(),
             ValidationOptions = ValidationOptions,

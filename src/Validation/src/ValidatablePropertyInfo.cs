@@ -71,12 +71,10 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
-        context.ValidationInitiator ??= this;
+        var clonedContext = context.Clone(withNewInitiator: this);
 
         // Calculate and save the current path
         var originalPrefix = context.CurrentValidationPath;
-
-        var clonedContext = context.Clone();
 
         if (string.IsNullOrEmpty(originalPrefix))
         {
@@ -171,7 +169,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
                 foreach (var item in enumerable)
                 {
-                    var clonedContextForEnumerable = clonedContext.Clone();
+                    var clonedContextForEnumerable = clonedContext.Clone(withNewInitiator: null);
                     clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
                     if (item != null)
