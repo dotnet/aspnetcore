@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _literal = literal;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
         {
             var localizer = context.ValidationOptions.Localizer;
             if (localizer is null)
@@ -221,7 +221,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
             {
-                DeclaringType = declaringType,
+                Type = type,
                 DisplayName = _literal,
                 MemberName = memberName,
             }) ?? _literal;
@@ -244,7 +244,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _propertyName = propertyName;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
             => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
     }
 
@@ -261,7 +261,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _type = type;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
             => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
     }
 

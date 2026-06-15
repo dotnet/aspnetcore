@@ -68,7 +68,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             return;
         }
 
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
