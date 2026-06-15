@@ -20,7 +20,7 @@ internal static class ValidationHelpers
         if (ValidateSynchronousOnly(validationAttributes, value, context, state, onValidationError))
         {
             // Only validate async attributes if synchronous validation passed.
-            await ValidateAsynchronousOnlyAsync(validationAttributes, value, context.Clone(), state, onValidationError, cancellationToken);
+            await ValidateAsynchronousOnlyAsync(validationAttributes, value, context, state, onValidationError, cancellationToken);
         }
     }
 

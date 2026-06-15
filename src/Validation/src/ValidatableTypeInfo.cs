@@ -210,7 +210,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     {
         for (var i = 0; i < _membersCount; i++)
         {
-            var task = Members[i].ValidateAsync(value, context.Clone(), cancellationToken);
+            var task = Members[i].ValidateAsync(value, context, cancellationToken);
             if (!task.IsCompleted)
             {
                 localValidationTasks ??= new();
