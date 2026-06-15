@@ -38,8 +38,6 @@ public static class NavigationManagerExtensions
         [typeof(long)] = value => Format((long)value),
     };
 
-    
-
     private static string? Format(string? value)
         => value;
 
@@ -834,5 +832,4 @@ public static class NavigationManagerExtensions
             hashValue.AsSpan().CopyTo(chars[position..]);
         });
     }
-    
 }
