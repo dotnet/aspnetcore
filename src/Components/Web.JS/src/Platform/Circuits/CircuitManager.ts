@@ -10,7 +10,7 @@ import { RootComponentManager } from '../../Services/RootComponentManager';
 import { CircuitStartOptions } from './CircuitStartOptions';
 import { attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
 import { WebRendererId } from '../../Rendering/WebRendererId';
-import { isFocusedElementEdited, initEditedTracking } from '../../Rendering/DomFocus';
+import { initEditedTracking } from '../../Rendering/DomFocus';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { ConsoleLogger } from '../Logging/Loggers';
@@ -352,11 +352,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const pausingPromise = this._pausingState.currentProgress();
 
     try {
-      if (!(await this.waitUntilNoFocusedEditedElement())) {
-        this._pausingState.complete(false);
-        return pausingPromise;
-      }
-
       // defer pause while DotNetStreamReference transmissions are in flight. 
       await this.waitForActiveStreamsToDrain();
 
@@ -567,27 +562,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private abortPendingPauseCallbacks(reason: string): void {
     this._pauseAbortController?.abort(reason);
     this._pauseAbortController = undefined;
-  }
-
-  private async waitUntilNoFocusedEditedElement(): Promise<boolean> {
-    if (!isFocusedElementEdited()) {
-      return true;
-    }
-
-    this._logger.log(LogLevel.Information, 'Pause deferred: waiting for edited element to lose focus.');
-
-    await new Promise<void>(resolve => {
-      const onVisibility = () => {
-        if (document.visibilityState === 'visible') {
-          document.removeEventListener('visibilitychange', onVisibility, true);
-          this._logger.log(LogLevel.Information, 'Pause resumed: tab became visible before focus cleared.');
-          resolve();
-        }
-      };
-      document.addEventListener('visibilitychange', onVisibility, true);
-    });
-
-    return false;
   }
 
   private trackActiveStream(): () => void {

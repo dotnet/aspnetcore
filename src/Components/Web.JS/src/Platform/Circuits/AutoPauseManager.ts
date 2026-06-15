@@ -3,6 +3,7 @@
 
 import { Logger, LogLevel } from '../Logging/Logger';
 import { AutoPauseOptions, CircuitStartOptions } from './CircuitStartOptions';
+import { isFocusedElementEdited } from '../../Rendering/DomFocus';
 
 export class AutoPauseManager {
   private readonly _options: AutoPauseOptions;
@@ -107,6 +108,13 @@ export class AutoPauseManager {
     this._pauseInFlight = true;
 
     try {
+      if (!(await this.deferIfBlocked(
+        controller, isFocusedElementEdited,
+        'Pause deferred: waiting for edited element to lose focus.',
+        'Pause resumed: tab became visible before focus cleared.'))) {
+        return;
+      }
+
       if (this._onPauseRequested) {
         await this._onPauseRequested(controller.signal);
       }
@@ -140,5 +148,29 @@ export class AutoPauseManager {
     } catch (error) {
       this._logger.log(LogLevel.Error, `Auto-pause: failed to resume circuit: ${error}`);
     }
+  }
+
+  private async deferIfBlocked(
+    controller: AbortController,
+    isBlocked: () => boolean,
+    deferLog: string,
+    resumeLog: string,
+  ): Promise<boolean> {
+    if (controller.signal.aborted || !isBlocked()) {
+      return !controller.signal.aborted;
+    }
+
+    this._logger.log(LogLevel.Information, deferLog);
+
+    await new Promise<void>(resolve => {
+      const onAbort = () => {
+        controller.signal.removeEventListener('abort', onAbort);
+        this._logger.log(LogLevel.Information, resumeLog);
+        resolve();
+      };
+      controller.signal.addEventListener('abort', onAbort);
+    });
+
+    return false;
   }
 }
