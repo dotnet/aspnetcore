@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 /// </summary>
 /// <typeparam name="TGridItem">The type of data represented by each row in the grid.</typeparam>
 [CascadingTypeParameter(nameof(TGridItem))]
-[CacheBoundaryPolicy(Throw = true, VaryBy = CacheBoundaryVaryBy.Query)]
+[CacheBoundaryPolicy(Disallow = true, VaryBy = CacheBoundaryVaryBy.Query)]
 public partial class QuickGrid<TGridItem> : IAsyncDisposable
 {
     /// <summary>

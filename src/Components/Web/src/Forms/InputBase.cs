@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// integrates with an <see cref="Forms.EditContext"/>, which must be supplied
 /// as a cascading parameter.
 /// </summary>
-[CacheBoundaryPolicy(Throw = true)]
+[CacheBoundaryPolicy(Disallow = true)]
 public abstract class InputBase<TValue> : ComponentBase, IDisposable
 {
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;

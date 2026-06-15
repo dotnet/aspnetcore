@@ -131,6 +131,7 @@ internal static partial class RenderFragmentSerializer
                         if (inner.FrameType is RenderTreeFrameType.ComponentRenderMode)
                         {
                             node.RenderModeName = GetRenderModeName(inner.ComponentRenderMode);
+                            node.Prerender = GetRenderModePrerender(inner.ComponentRenderMode);
                             break;
                         }
                         position++;
@@ -245,6 +246,19 @@ internal static partial class RenderFragmentSerializer
         };
     }
 
+    // Captures the prerender flag so a custom render-mode instantiation
+    // (e.g. new InteractiveWebAssemblyRenderMode(prerender: false)) round-trips correctly.
+    internal static bool GetRenderModePrerender(IComponentRenderMode? renderMode)
+    {
+        return renderMode switch
+        {
+            InteractiveServerRenderMode m => m.Prerender,
+            InteractiveWebAssemblyRenderMode m => m.Prerender,
+            InteractiveAutoRenderMode m => m.Prerender,
+            _ => true,
+        };
+    }
+
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
     private static void DeserializeNodes(RenderTreeBuilder builder, List<RenderTreeNode> nodes, JsonSerializerOptions? jsonOptions, ComponentParametersTypeCache typeCache)
     {
@@ -289,11 +303,12 @@ internal static partial class RenderFragmentSerializer
                     DeserializeComponentParameters(builder, node.ComponentParameters, jsonOptions, typeCache);
                     if (node.RenderModeName is { } renderModeName)
                     {
+                        var prerender = node.Prerender ?? true;
                         builder.AddComponentRenderMode(renderModeName switch
                         {
-                            "InteractiveServer" => Web.RenderMode.InteractiveServer,
-                            "InteractiveWebAssembly" => Web.RenderMode.InteractiveWebAssembly,
-                            "InteractiveAuto" => Web.RenderMode.InteractiveAuto,
+                            "InteractiveServer" => prerender ? Web.RenderMode.InteractiveServer : new InteractiveServerRenderMode(prerender: false),
+                            "InteractiveWebAssembly" => prerender ? Web.RenderMode.InteractiveWebAssembly : new InteractiveWebAssemblyRenderMode(prerender: false),
+                            "InteractiveAuto" => prerender ? Web.RenderMode.InteractiveAuto : new InteractiveAutoRenderMode(prerender: false),
                             _ => throw new InvalidOperationException($"Unknown render mode name '{renderModeName}'."),
                         });
                     }
@@ -439,6 +454,9 @@ internal sealed class RenderTreeNode
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? RenderModeName { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? Prerender { get; set; }
 }
 
 internal sealed class RenderTreeAttribute

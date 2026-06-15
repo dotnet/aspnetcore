@@ -21,7 +21,7 @@ public sealed class CacheBoundaryPolicyAttribute : Attribute
 {
     /// <summary>
     /// Gets or sets a value indicating whether encountering this component inside
-    /// a cache boundary should throw an <see cref="InvalidOperationException"/>.
+    /// a cache boundary is disallowed and should throw an <see cref="InvalidOperationException"/>.
     /// Use this for components whose parameters (delegates, expressions, or complex
     /// objects) would not behave correctly if captured once and replayed on later
     /// requests; for example because they close over per-request state or
@@ -30,7 +30,7 @@ public sealed class CacheBoundaryPolicyAttribute : Attribute
     /// of the dimensions specified by <see cref="VaryBy"/>.
     /// Defaults to <see langword="false"/>.
     /// </summary>
-    public bool Throw { get; set; }
+    public bool Disallow { get; set; }
 
     /// <summary>
     /// Gets or sets the vary-by dimensions that, when all active on the enclosing
@@ -39,7 +39,7 @@ public sealed class CacheBoundaryPolicyAttribute : Attribute
     /// child content are stored in the cache entry and replayed on cache hits),
     /// and the cache key already distinguishes the values of those dimensions so
     /// the replay is correct. When not lifted, the component is treated as a hole
-    /// (or throws, when <see cref="Throw"/> is <see langword="true"/>).
+    /// (or throws, when <see cref="Disallow"/> is <see langword="true"/>).
     /// Defaults to <see cref="CacheBoundaryVaryBy.None"/>.
     /// </summary>
     public CacheBoundaryVaryBy VaryBy { get; set; }

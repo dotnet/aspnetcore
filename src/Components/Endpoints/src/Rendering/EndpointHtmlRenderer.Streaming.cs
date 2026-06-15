@@ -321,10 +321,10 @@ internal partial class EndpointHtmlRenderer
         {
             pausedCapture = true;
             captureWriter.PauseCapture();
-            var (holeComponentType, renderModeName) = componentState.Component is SSRRenderModeBoundary boundary2
-                ? (boundary2.ComponentType, GetRenderModeNameOrThrowForCache(boundary2.RenderMode, boundary2.ComponentType))
-                : (componentState.Component.GetType(), (string?)null);
-            captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, sequenceAndKey.Key, renderModeName);
+            var (holeComponentType, renderModeName, renderModePrerender) = componentState.Component is SSRRenderModeBoundary boundary2
+                ? (boundary2.ComponentType, GetRenderModeNameOrThrowForCache(boundary2.RenderMode, boundary2.ComponentType), RenderFragmentSerializer.GetRenderModePrerender(boundary2.RenderMode))
+                : (componentState.Component.GetType(), (string?)null, true);
+            captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, sequenceAndKey.Key, renderModeName, renderModePrerender);
         }
 
         ComponentEndMarker? endMarkerOrNull = default;
@@ -385,11 +385,9 @@ internal partial class EndpointHtmlRenderer
 
     internal static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
     {
-        if (!_cachedCacheExclusions.TryGetValue(componentType, out var attr))
-        {
-            attr = componentType.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true);
-            _cachedCacheExclusions.TryAdd(componentType, attr);
-        }
+        var attr = _cachedCacheExclusions.GetOrAdd(
+            componentType,
+            static type => type.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true));
 
         if (attr is null)
         {
@@ -400,11 +398,11 @@ internal partial class EndpointHtmlRenderer
         // cached output regardless of what dimensions the boundary varies by.
         var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
 
-        if (attr.Throw && !varyByMatches)
+        if (attr.Disallow && !varyByMatches)
         {
             throw new InvalidOperationException(
                 $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary in its current configuration. " +
-                $"It is annotated with [CacheBoundaryPolicy(Throw = true, VaryBy = {attr.VaryBy})] " +
+                $"It is annotated with [CacheBoundaryPolicy(Disallow = true, VaryBy = {attr.VaryBy})] " +
                 $"because its rendered output depends on per-request state that cannot be safely captured into a cache entry and replayed on later requests. " +
                 (attr.VaryBy != CacheBoundaryVaryBy.None
                     ? $"To use it inside a CacheBoundary, configure the boundary so that it varies by all of the following dimensions: {attr.VaryBy}. "
@@ -412,8 +410,8 @@ internal partial class EndpointHtmlRenderer
                 $"Alternatively, move this component outside the CacheBoundary, or wrap it in a component marked with [CacheBoundaryPolicy] so that its subtree is excluded from caching.");
         }
 
-        // If Throw is true we only reach here when varyByMatches is true (safe to cache).
-        // If Throw is false, it's a hole only when VaryBy dimensions aren't covered.
+        // If Disallow is true we only reach here when varyByMatches is true (safe to cache).
+        // If Disallow is false, it's a hole only when VaryBy dimensions aren't covered.
         return !varyByMatches;
     }
 

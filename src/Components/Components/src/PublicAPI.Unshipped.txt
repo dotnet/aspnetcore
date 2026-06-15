@@ -1,8 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute
 Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.CacheBoundaryPolicyAttribute() -> void
-Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.Throw.get -> bool
-Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.Throw.set -> void
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.Disallow.get -> bool
+Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.Disallow.set -> void
 Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.VaryBy.get -> Microsoft.AspNetCore.Components.CacheBoundaryVaryBy
 Microsoft.AspNetCore.Components.CacheBoundaryPolicyAttribute.VaryBy.set -> void
 Microsoft.AspNetCore.Components.CacheBoundaryVaryBy

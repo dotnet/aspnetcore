@@ -59,7 +59,7 @@ public class IsHoleComponentTest
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
     }
 
-    [CacheBoundaryPolicy(Throw = true)]
+    [CacheBoundaryPolicy(Disallow = true)]
     private class ThrowingComponent : ComponentBase
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }

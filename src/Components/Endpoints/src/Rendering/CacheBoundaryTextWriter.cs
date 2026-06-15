@@ -66,9 +66,9 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         _validateOnly = true;
     }
 
-    public void CreateHole(Type componentType, int sequence, object? componentKey, string? renderModeName)
+    public void CreateHole(Type componentType, int sequence, object? componentKey, string? renderModeName, bool renderModePrerender = true)
     {
-        _entries.Add(CacheCaptureEntry.Hole(componentType, sequence, componentKey, renderModeName));
+        _entries.Add(CacheCaptureEntry.Hole(componentType, sequence, componentKey, renderModeName, renderModePrerender));
         _hasHoles = true;
     }
 
@@ -124,6 +124,7 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
             if (entry.RenderModeName is not null && componentNode.RenderModeName is null)
             {
                 componentNode.RenderModeName = entry.RenderModeName;
+                componentNode.Prerender = entry.RenderModePrerender;
             }
 
             nodes.Add(componentNode);
@@ -199,8 +200,9 @@ internal readonly struct CacheCaptureEntry
     public int Sequence { get; }
     public object? ComponentKey { get; }
     public string? RenderModeName { get; }
+    public bool RenderModePrerender { get; }
 
-    private CacheCaptureEntry(bool isHole, string? markup, Type? componentType, int sequence, object? componentKey, string? renderModeName)
+    private CacheCaptureEntry(bool isHole, string? markup, Type? componentType, int sequence, object? componentKey, string? renderModeName, bool renderModePrerender)
     {
         IsHole = isHole;
         Markup = markup;
@@ -208,11 +210,12 @@ internal readonly struct CacheCaptureEntry
         Sequence = sequence;
         ComponentKey = componentKey;
         RenderModeName = renderModeName;
+        RenderModePrerender = renderModePrerender;
     }
 
     public static CacheCaptureEntry MarkupEntry(string markup)
-        => new(isHole: false, markup, componentType: null, sequence: 0, componentKey: null, renderModeName: null);
+        => new(isHole: false, markup, componentType: null, sequence: 0, componentKey: null, renderModeName: null, renderModePrerender: true);
 
-    public static CacheCaptureEntry Hole(Type componentType, int sequence, object? componentKey, string? renderModeName)
-        => new(isHole: true, markup: null, componentType, sequence, componentKey, renderModeName);
+    public static CacheCaptureEntry Hole(Type componentType, int sequence, object? componentKey, string? renderModeName, bool renderModePrerender)
+        => new(isHole: true, markup: null, componentType, sequence, componentKey, renderModeName, renderModePrerender);
 }
