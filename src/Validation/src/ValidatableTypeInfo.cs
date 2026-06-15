@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 {
     private readonly int _membersCount;
-    private readonly List<Type> _superTypes;
+    private readonly Type[] _implementedInterfaces;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -34,7 +34,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         Members = members;
         DisplayNameInfo = displayNameInfo;
         _membersCount = members.Count;
-        _superTypes = type.GetAllImplementedTypes();
+        _implementedInterfaces = type.GetInterfaces();
     }
 
     /// <summary>
@@ -87,10 +87,24 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             return localMember;
         }
 
-        if (Type.BaseType is { } baseType &&
-            validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeInfo))
+        foreach (var @interface in _implementedInterfaces)
         {
-            return baseTypeInfo.TryFindProperty(propertyName, validationOptions);
+            if (validationOptions.TryGetValidatableTypeInfo(@interface, out var interfaceTypeInfo) &&
+                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions) is { } interfaceProperty)
+            {
+                return interfaceProperty;
+            }
+        }
+
+        var baseType = Type.BaseType;
+        while (baseType is not null)
+        {
+            if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
+            {
+                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions);
+            }
+
+            baseType = baseType.BaseType;
         }
 
         return null;
@@ -284,13 +298,35 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 
     private IEnumerable<ValidatableTypeInfo> GetSuperTypeInfos(Type actualType, ValidateContext context)
     {
-        foreach (var superType in _superTypes.Where(t => t.IsAssignableFrom(actualType)))
+        foreach (var @interface in _implementedInterfaces)
         {
-            if (context.ValidationOptions.TryGetValidatableTypeInfo(superType, out var found)
-                && found is ValidatableTypeInfo superTypeInfo)
+            if (TryGetValidatableTypeInfo(@interface, actualType, context.ValidationOptions) is { } superTypeInfo)
             {
                 yield return superTypeInfo;
             }
+        }
+
+        var baseType = Type.BaseType;
+        while (baseType is not null)
+        {
+            if (TryGetValidatableTypeInfo(baseType, actualType, context.ValidationOptions) is { } superTypeInfo)
+            {
+                yield return superTypeInfo;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        static ValidatableTypeInfo? TryGetValidatableTypeInfo(Type superType, Type actualType, ValidationOptions options)
+        {
+            if (superType.IsAssignableFrom(actualType) &&
+                options.TryGetValidatableTypeInfo(superType, out var found)
+                && found is ValidatableTypeInfo superTypeInfo)
+            {
+                return superTypeInfo;
+            }
+
+            return null;
         }
     }
 }
