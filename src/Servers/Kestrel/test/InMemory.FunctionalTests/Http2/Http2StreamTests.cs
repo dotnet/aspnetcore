@@ -791,6 +791,31 @@ public class Http2StreamTests : Http2TestBase
         await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
 
+    [Theory]
+    [InlineData("/\u0161")]
+    [InlineData("/a\u0161")]
+    [InlineData("/\u0161a")]
+    [InlineData("/a\u0161a")]
+    public async Task HEADERS_Received_CharacterLargerThanByte_Reset(string path)
+    {
+        var pathBytes = Encoding.UTF8.GetBytes(path);
+        var headerBlock = new byte[4 + pathBytes.Length];
+        headerBlock[0] = 0x82; // Indexed: :method GET (HPACK static index 2)
+        headerBlock[1] = 0x86; // Indexed: :scheme http (HPACK static index 6)
+        headerBlock[2] = 0x44; // Literal incremental indexing, name index 4 (:path)
+        headerBlock[3] = (byte)pathBytes.Length; // Value length, no Huffman
+        pathBytes.CopyTo(headerBlock.AsSpan(4));
+
+        await InitializeConnectionAsync(_noopApplication);
+
+        await StartStreamAsync(1, headerBlock, endStream: true);
+
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.PROTOCOL_ERROR,
+            CoreStrings.FormatHttp2StreamErrorPathInvalid(path));
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+    }
+
     [Fact]
     public async Task HEADERS_Received_MaxRequestHeadersTotalSize_431()
     {
@@ -5544,7 +5569,7 @@ public class Http2StreamTests : Http2TestBase
                 // Http2FrameWriter sets Trailers.IsReadOnly to true, but since it's a background task we have to wait for something to indicate it ran
                 // That something is the client side receiving the trailers.
                 await trailersTcs.Task;
-                
+
                 Assert.True(context.Features.Get<IHttpResponseTrailersFeature>().Trailers.IsReadOnly);
 
                 // RequestAborted will no longer fire after CompleteAsync.

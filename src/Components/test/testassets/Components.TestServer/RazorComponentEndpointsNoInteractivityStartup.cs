@@ -31,6 +31,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
             options.MaxFormMappingCollectionSize = 100;
         });
         services.AddHttpContextAccessor();
+        services.AddAuthorizationCore();
         services.AddCascadingAuthenticationState();
     }
 

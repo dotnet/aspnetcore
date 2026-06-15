@@ -448,10 +448,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             if (NotFoundPage != null)
             {
-                builder.OpenComponent<RouteView>(0);
-                builder.AddAttribute(1, nameof(RouteView.RouteData),
-                    new RouteData(NotFoundPage, _emptyParametersDictionary));
-                builder.CloseComponent();
+                Found(new RouteData(NotFoundPage, _emptyParametersDictionary))(builder);
             }
 #pragma warning disable CS0618 // Type or member is obsolete
             else if (NotFound != null)
