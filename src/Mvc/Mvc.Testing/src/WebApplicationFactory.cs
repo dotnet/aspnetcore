@@ -41,6 +41,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     private IWebHost? _webHost;
 #pragma warning restore ASPDEPR008 // IWebHost is obsolete
     private Uri? _webHostAddress;
+
+    // Guards _clients and _derivedFactories, which can be mutated and enumerated
+    // concurrently (parallel CreateClient/WithWebHostBuilder calls plus disposal).
+    private readonly object _syncRoot = new();
     private readonly List<HttpClient> _clients = new();
     private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
 
@@ -126,7 +130,16 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// by further customizing the <see cref="IWebHostBuilder"/> when calling
     /// <see cref="WebApplicationFactory{TEntryPoint}.WithWebHostBuilder(Action{IWebHostBuilder})"/>.
     /// </summary>
-    public IReadOnlyList<WebApplicationFactory<TEntryPoint>> Factories => _derivedFactories.AsReadOnly();
+    public IReadOnlyList<WebApplicationFactory<TEntryPoint>> Factories
+    {
+        get
+        {
+            lock (_syncRoot)
+            {
+                return _derivedFactories.ToArray();
+            }
+        }
+    }
 
     /// <summary>
     /// Gets the <see cref="WebApplicationFactoryClientOptions"/> used by <see cref="CreateClient()"/>.
@@ -163,7 +176,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 configuration(builder);
             });
 
-        _derivedFactories.Add(factory);
+        lock (_syncRoot)
+        {
+            _derivedFactories.Add(factory);
+        }
 
         return factory;
     }
@@ -700,7 +716,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             client = new HttpClient(handlers[0]);
         }
 
-        _clients.Add(client);
+        lock (_syncRoot)
+        {
+            _clients.Add(client);
+        }
 
         ConfigureClient(client);
 
@@ -810,12 +829,21 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             return;
         }
 
-        foreach (var client in _clients)
+        // Snapshot under the lock, then dispose outside it (don't hold the lock across async work).
+        HttpClient[] clients;
+        WebApplicationFactory<TEntryPoint>[] derivedFactories;
+        lock (_syncRoot)
+        {
+            clients = _clients.ToArray();
+            derivedFactories = _derivedFactories.ToArray();
+        }
+
+        foreach (var client in clients)
         {
             client.Dispose();
         }
 
-        foreach (var factory in _derivedFactories)
+        foreach (var factory in derivedFactories)
         {
             await ((IAsyncDisposable)factory).DisposeAsync().ConfigureAwait(false);
         }
