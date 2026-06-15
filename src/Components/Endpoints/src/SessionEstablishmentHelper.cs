@@ -60,7 +60,7 @@ internal static partial class SessionEstablishmentHelper
         [LoggerMessage(1, LogLevel.Warning,
             "Session state was not persisted to the next request. " +
             "The response has already started, so the session cookie can no longer be issued. " +
-            "To avoid this, access session-backed state before the first response flush — for example by using [SupplyParameterFromSession], accessing session-backed TempData, or calling ISession.Set before any output is written.",
+            "To avoid this, place at least one [SupplyParameterFromSession] (or other session-backed state access) before any await that triggers the first response flush — that establishes the session cookie in time for the remaining state to persist.",
             EventName = "SessionStateNotPersistedAfterResponseStarted")]
         public static partial void ResponseHasStarted(ILogger logger);
 
