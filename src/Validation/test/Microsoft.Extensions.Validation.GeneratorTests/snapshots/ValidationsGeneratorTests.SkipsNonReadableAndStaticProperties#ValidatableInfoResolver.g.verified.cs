@@ -69,12 +69,12 @@ namespace Microsoft.Extensions.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
-        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableInfo)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableInfo = null;
+            validatableTypeInfo = null;
             if (type == typeof(global::Address))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new GeneratedValidatableTypeInfo(
                     type: typeof(global::Address),
                     members: [
                         new GeneratedValidatablePropertyInfo(
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             if (type == typeof(global::Order))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new GeneratedValidatableTypeInfo(
                     type: typeof(global::Order),
                     members: [
                         new GeneratedValidatablePropertyInfo(
@@ -115,9 +115,9 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
     }
