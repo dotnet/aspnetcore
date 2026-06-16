@@ -10,10 +10,9 @@ namespace Microsoft.AspNetCore.Http;
 public class PathStringTests
 {
     [Fact]
-    public void CtorThrows_IfPathDoesNotHaveLeadingSlash()
+    public void CtorThrows_IfPathDoesNotHaveLeadingSlashOrBackslash()
     {
-        // Act and Assert
-        ExceptionAssert.ThrowsArgument(() => new PathString("hello"), "value", "The path in 'value' must start with '/'.");
+        ExceptionAssert.ThrowsArgument(() => new PathString("hello"), "value", "The path in 'value' must start with '/' or '\\'.");
     }
 
     [Fact]

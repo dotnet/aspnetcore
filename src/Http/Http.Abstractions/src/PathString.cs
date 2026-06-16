@@ -41,7 +41,7 @@ public readonly struct PathString : IEquatable<PathString>
     {
         if (!string.IsNullOrEmpty(value) && value[0] is not '/' and not '\\')
         {
-            throw new ArgumentException(Resources.FormatException_PathMustStartWithSlash(nameof(value)), nameof(value));
+            throw new ArgumentException(Resources.FormatException_PathMustStartWithSlashOrBackslash(nameof(value)), nameof(value));
         }
         Value = value;
     }
