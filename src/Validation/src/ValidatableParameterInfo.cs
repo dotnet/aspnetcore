@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a parameter.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableParameterInfo : IValidatableInfo
+public abstract class ValidatableParameterInfo : IValidatableParameterInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
