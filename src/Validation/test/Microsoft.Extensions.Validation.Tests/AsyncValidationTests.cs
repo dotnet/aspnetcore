@@ -939,7 +939,7 @@ public class AsyncValidationTests
         public SignalingAsyncTypeLevelAttribute(SemaphoreSlim signal) => _signal = signal;
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => ValidationResult.Success;
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value, ValidationContext validationContext, CancellationToken cancellationToken)
@@ -970,7 +970,7 @@ public class AsyncValidationTests
         }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => ValidationResult.Success;
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value, ValidationContext validationContext, CancellationToken cancellationToken)
@@ -1201,9 +1201,7 @@ public class AsyncValidationTests
     private class SkuValidationAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1233,9 +1231,7 @@ public class AsyncValidationTests
         }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1269,9 +1265,7 @@ public class AsyncValidationTests
     private class ZipCodeExistsAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1292,9 +1286,7 @@ public class AsyncValidationTests
     private class SlowAsyncValidationAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1309,9 +1301,7 @@ public class AsyncValidationTests
     private class UsernameAvailableAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1332,9 +1322,7 @@ public class AsyncValidationTests
     private class OrderTotalValidationAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1358,9 +1346,7 @@ public class AsyncValidationTests
     private class ItemCodeExistsAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1393,9 +1379,7 @@ public class AsyncValidationTests
         }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
@@ -1424,9 +1408,7 @@ public class AsyncValidationTests
     private class ThrowingAsyncValidationAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-        {
-            return ValidationResult.Success;
-        }
+            => throw new UnreachableException();
 
         protected override async Task<ValidationResult?> IsValidAsync(
             object? value,
