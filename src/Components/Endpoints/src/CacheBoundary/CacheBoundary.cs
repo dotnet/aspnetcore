@@ -196,7 +196,10 @@ public sealed class CacheBoundary : IComponent, IDisposable
         _captureCompletion = null;
         _pendingCacheStoreTask = null;
 
-        if (Enabled && CacheStore is not null && HttpContext is { } httpContext)
+        // Never serve cached content for a POST. Form submissions render live; the cache is neither
+        // read nor written on a POST.
+        if (Enabled && CacheStore is not null && HttpContext is { } httpContext
+            && !HttpMethods.IsPost(httpContext.Request.Method))
         {
             ResolvedCacheKey = CacheBoundaryKeyResolver.ComputeKey(this, httpContext);
 

@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// or <see cref="DisplayNameAttribute"/> if present, or falling back to the property name.
 /// </summary>
 /// <typeparam name="TValue">The type of the field.</typeparam>
-[CacheBoundaryPolicy(Disallow = true)]
 public sealed class DisplayName<TValue> : IComponent
 {
 

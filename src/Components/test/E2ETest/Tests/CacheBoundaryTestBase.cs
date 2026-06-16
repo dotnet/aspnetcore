@@ -80,6 +80,27 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
+    public void EditFormWithFormComponents_CachesStaticContent_AndFormStillSubmits()
+    {
+        Navigate($"{ServerPathBase}/cache-component-form");
+        var cachedGuid = Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-cached-guid")).Text;
+        // The DisplayName form component rendered inside the cache.
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-display-name")).Text);
+        Browser.Equal("never", () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.Id("cached-form-message")).Text);
+
+        // Warm reload: the cached form content (static guid + form components) is served from the cache.
+        Navigate($"{ServerPathBase}/cache-component-form");
+        Browser.Equal(cachedGuid, () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-cached-guid")).Text);
+        Browser.Equal("Message", () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-display-name")).Text);
+
+        // The form still submits: the POST renders live and dispatches to OnValidSubmit.
+        var form = Browser.FindElement(By.Id("test-form-in-cache"));
+        form.FindElement(By.Id("cached-form-input")).SendKeys("hello");
+        form.FindElement(By.Id("cached-form-submit")).Click();
+        Browser.Equal("hello", () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.Id("cached-form-message")).Text);
+    }
+
+    [Fact]
     public void NestedCacheBoundaryDoesNotExecuteOnOuterCacheHit()
     {
         Navigate($"{ServerPathBase}/cache-component");
@@ -138,11 +159,6 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void ReusableComponentWithCacheBoundary_UsedTwice_SharesOneCacheEntry()
     {
-        // A reusable component that internally contains a CacheBoundary (no CacheKey), used twice on
-        // a page, produces two boundaries that resolve to the SAME cache key with no user error.
-        // They must share a single cache entry (and must not hang the request). On the first (cold)
-        // render the creator produces the entry and the sibling renders fresh; on every subsequent
-        // (warm) request both boundaries are served from the one shared entry.
         Navigate($"{ServerPathBase}/cache-component");
         Browser.Exists(By.Id("test-9"));
         Browser.Equal(2, () => Browser.FindElement(By.Id("test-9")).FindElements(By.CssSelector(".panel-content")).Count);

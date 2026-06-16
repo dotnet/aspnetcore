@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Renders a form element that cascades an <see cref="EditContext"/> to descendants.
 /// </summary>
-[CacheBoundaryPolicy(Disallow = true)]
 public class EditForm : ComponentBase
 {
     private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations

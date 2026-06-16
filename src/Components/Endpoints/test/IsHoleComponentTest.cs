@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -50,7 +48,7 @@ public class IsHoleComponentTest
     public void Attribute_Inherited_AppliesToSubclass()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            EndpointHtmlRenderer.IsHoleComponent(typeof(CustomInput), CacheBoundaryVaryBy.None));
+            EndpointHtmlRenderer.IsHoleComponent(typeof(DerivedThrowingComponent), CacheBoundaryVaryBy.None));
     }
 
     [CacheBoundaryPolicy]
@@ -65,6 +63,8 @@ public class IsHoleComponentTest
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
     }
 
+    private sealed class DerivedThrowingComponent : ThrowingComponent { }
+
     [CacheBoundaryPolicy(VaryBy = CacheBoundaryVaryBy.User)]
     private class ConditionalHole : ComponentBase
     {
@@ -76,6 +76,4 @@ public class IsHoleComponentTest
     {
         protected override void BuildRenderTree(RenderTreeBuilder builder) { }
     }
-
-    private class CustomInput : InputText { }
 }
