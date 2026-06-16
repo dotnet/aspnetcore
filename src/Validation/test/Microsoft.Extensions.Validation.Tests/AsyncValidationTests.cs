@@ -861,6 +861,52 @@ public class AsyncValidationTests
         Assert.Equal("Shipping Address", captured);
     }
 
+    [Fact]
+    public async Task AsyncValidation_OnParameterCollection_AwaitsAsyncValidatorsOnItems()
+    {
+        // Arrange
+        // Validates that Clone(null) in ValidatableParameterInfo for enumerable items
+        // keeps async tasks in the parameter's shared bag so they are properly awaited.
+        // If Clone(this) were used instead, item-level async validation tasks would be
+        // orphaned in a separate bag and errors would not be reported.
+        var completionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var itemType = new TestValidatableTypeInfo(
+            typeof(ItemWithAsyncValidation),
+            [
+                CreatePropertyInfo(typeof(ItemWithAsyncValidation), typeof(string), "Code", "Code",
+                    [new CompletionTrackingAsyncAttribute(completionTcs) { ErrorMessage = "async error" }])
+            ]);
+
+        var paramInfo = new TestValidatableParameterInfo(
+            parameterType: typeof(IEnumerable<ItemWithAsyncValidation>),
+            name: "items",
+            displayNameInfo: new TestLiteralDisplayName("Items"),
+            validationAttributes: []);
+
+        var items = new List<ItemWithAsyncValidation>
+        {
+            new() { Code = "test" }
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(ItemWithAsyncValidation), itemType }
+            }),
+            ValidationContext = new ValidationContext(items)
+        };
+
+        // Act
+        await paramInfo.ValidateAsync(items, context, default);
+
+        // Assert — the async validator must have been awaited before ValidateAsync returned
+        Assert.True(completionTcs.Task.IsCompletedSuccessfully,
+            "Async validation on parameter collection items must be awaited. " +
+            "If Clone(null) were changed to Clone(this), the async task would be orphaned.");
+    }
+
     // Test model classes
     private class TypeWithThrowingGetter
     {
@@ -1499,6 +1545,23 @@ public class AsyncValidationTests
             string displayName,
             ValidationAttribute[] validationAttributes)
             : base(containingType, propertyType, name, new TestLiteralDisplayName(displayName))
+        {
+            _validationAttributes = validationAttributes;
+        }
+
+        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+    }
+
+    private class TestValidatableParameterInfo : ValidatableParameterInfo
+    {
+        private readonly ValidationAttribute[] _validationAttributes;
+
+        public TestValidatableParameterInfo(
+            Type parameterType,
+            string name,
+            DisplayNameInfo? displayNameInfo,
+            ValidationAttribute[] validationAttributes)
+            : base(parameterType, name, displayNameInfo)
         {
             _validationAttributes = validationAttributes;
         }
