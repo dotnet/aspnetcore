@@ -17,7 +17,7 @@ internal sealed partial class CsrfProtectionMiddleware
     private readonly ICsrfProtection _csrfProtection;
     private readonly ILogger<CsrfProtectionMiddleware> _logger;
 
-    private static readonly AntiforgeryValidationException ValidationFailedException
+    private static readonly CsrfValidationException ValidationFailedException
         = new("Cross-site request forgery validation via Fetch Metadata headers failed");
 
     public CsrfProtectionMiddleware(
