@@ -123,6 +123,48 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         return null;
     }
 
+    internal bool IsGuaranteedToBeSynchronous(object? value, ValidationOptions options)
+    {
+        if (value is null)
+        {
+            // IMPORTANT: Ensure that any potential changes in ValidateAsync are correctly reflected here.
+            return true;
+        }
+
+        for (var i = 0; i < _membersCount; i++)
+        {
+            if (!Members[i].IsGuaranteedToBeSynchronous())
+            {
+                return false;
+            }
+        }
+
+        var actualType = value.GetType();
+
+        // Then validate inherited members
+        foreach (var superTypeInfo in GetSuperTypeInfos(actualType, options))
+        {
+            for (var i = 0; i < superTypeInfo._membersCount; i++)
+            {
+                if (!superTypeInfo.Members[i].IsGuaranteedToBeSynchronous())
+                {
+                    return false;
+                }
+            }
+        }
+
+        var typeValidationAttributes = GetValidationAttributes();
+        foreach (var typeValidationAttribute in typeValidationAttributes)
+        {
+            if (typeValidationAttribute is AsyncValidationAttribute)
+            {
+                return false;
+            }
+        }
+
+        return Type.ImplementsInterface(typeof(IValidatableObject)) && value is IAsyncValidatableObject;
+    }
+
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
@@ -156,7 +198,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             var actualType = value.GetType();
 
             // Then validate inherited members
-            foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context))
+            foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
             {
                 superTypeInfo.ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
             }
@@ -393,11 +435,11 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         }
     }
 
-    private IEnumerable<ValidatableTypeInfo> GetSuperTypeInfos(Type actualType, ValidateContext context)
+    private IEnumerable<ValidatableTypeInfo> GetSuperTypeInfos(Type actualType, ValidationOptions options)
     {
         foreach (var @interface in _implementedInterfaces)
         {
-            if (TryGetValidatableTypeInfo(@interface, actualType, context.ValidationOptions) is { } superTypeInfo)
+            if (TryGetValidatableTypeInfo(@interface, actualType, options) is { } superTypeInfo)
             {
                 yield return superTypeInfo;
             }
@@ -406,7 +448,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         var baseType = Type.BaseType;
         while (baseType is not null)
         {
-            if (TryGetValidatableTypeInfo(baseType, actualType, context.ValidationOptions) is { } superTypeInfo)
+            if (TryGetValidatableTypeInfo(baseType, actualType, options) is { } superTypeInfo)
             {
                 yield return superTypeInfo;
             }

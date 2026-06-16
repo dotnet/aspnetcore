@@ -199,10 +199,12 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
         finally
         {
-            if (clonedContext.ValidationInitiator == this)
-            {
-                await Task.WhenAll(clonedContext.ValidationTasks);
-            }
+            await Task.WhenAll(clonedContext.ValidationTasks);
         }
+    }
+
+    internal bool IsGuaranteedToBeSynchronous()
+    {
+        return false; // TODO
     }
 }

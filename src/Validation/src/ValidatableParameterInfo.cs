@@ -140,18 +140,37 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             var index = 0;
             var currentPrefix = context.CurrentValidationPath;
 
+            // Note: cloning preserves the same validation options instance.
+            var validationOptions = context.ValidationOptions;
+
             foreach (var item in enumerable)
             {
                 if (item != null)
                 {
-                    var clonedContext = context.Clone(withNewInitiator: null);
-                    clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                        ? $"{Name}[{index}]"
-                        : $"{currentPrefix}.{Name}[{index}]";
-
-                    if (clonedContext.ValidationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                    if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        context.ValidationTasks.Add(validatableType.ValidateAsync(item, clonedContext, cancellationToken));
+                        // Perf optimization, avoid cloning the context when we know we will completely synchronously.
+                        if (validatableType is ValidatableTypeInfo builtInValidatableTypeInfo &&
+                            builtInValidatableTypeInfo.IsGuaranteedToBeSynchronous(item, validationOptions))
+                        {
+                            builtInValidatableTypeInfo.ValidateAsync(item, context, cancellationToken).GetAwaiter().GetResult();
+                        }
+                        else
+                        {
+                            var clonedContext = context.Clone(withNewInitiator: null);
+                            clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{index}]"
+                                : $"{currentPrefix}.{Name}[{index}]";
+                            var enumItemTask = validatableType.ValidateAsync(item, clonedContext, cancellationToken);
+                            if (enumItemTask.IsCompleted)
+                            {
+                                enumItemTask.GetAwaiter().GetResult();
+                            }
+                            else
+                            {
+                                context.ValidationTasks.Add(enumItemTask);
+                            }
+                        }
                     }
                 }
                 index++;
