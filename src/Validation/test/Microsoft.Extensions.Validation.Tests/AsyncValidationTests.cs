@@ -446,12 +446,18 @@ public class AsyncValidationTests
     [Fact]
     public async Task AsyncValidation_InCollection()
     {
-        // Arrange
+        const int itemCount = 3;
+        var allEnteredSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var attribute = new ParallelBarrierAsyncValidationAttribute(allEnteredSignal, itemCount)
+        {
+            ErrorMessage = "Item code exists"
+        };
+
         var itemType = new TestValidatableTypeInfo(
             typeof(ItemWithAsyncValidation),
             [
-                CreatePropertyInfo(typeof(ItemWithAsyncValidation), typeof(string), "Code", "Code",
-                    [new ItemCodeExistsAttribute { ErrorMessage = "Item code exists" }])
+                CreatePropertyInfo(typeof(ItemWithAsyncValidation), typeof(string), "Code", "Code", [attribute])
             ]);
 
         var listType = new TestValidatableTypeInfo(
@@ -480,10 +486,9 @@ public class AsyncValidationTests
             ValidationContext = new ValidationContext(list)
         };
 
-        // Act
-        await listType.ValidateAsync(list, context, default);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await listType.ValidateAsync(list, context, cts.Token);
 
-        // Assert
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Items[1].Code", error.Key);
@@ -1363,6 +1368,49 @@ public class AsyncValidationTests
             CancellationToken cancellationToken)
         {
             await Task.Delay(20, cancellationToken);
+
+            if (value is string code && code == "DUPLICATE")
+            {
+                return new ValidationResult(ErrorMessage ?? "Item code exists");
+            }
+
+            return ValidationResult.Success;
+        }
+    }
+
+    private class ParallelBarrierAsyncValidationAttribute : AsyncValidationAttribute
+    {
+        private readonly TaskCompletionSource _allEnteredSignal;
+        private readonly int _expectedCount;
+        private int _enteredCount;
+
+        public ParallelBarrierAsyncValidationAttribute(
+            TaskCompletionSource allEnteredSignal,
+            int expectedCount)
+        {
+            _allEnteredSignal = allEnteredSignal;
+            _expectedCount = expectedCount;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+        {
+            return ValidationResult.Success;
+        }
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value,
+            ValidationContext validationContext,
+            CancellationToken cancellationToken)
+        {
+            // Signal that this item has entered validation.
+            // When all items have entered, signal completion.
+            if (Interlocked.Increment(ref _enteredCount) == _expectedCount)
+            {
+                _allEnteredSignal.SetResult();
+            }
+
+            // Wait until all items have entered - this will deadlock/timeout if run sequentially.
+            await _allEnteredSignal.Task.WaitAsync(cancellationToken);
 
             if (value is string code && code == "DUPLICATE")
             {
