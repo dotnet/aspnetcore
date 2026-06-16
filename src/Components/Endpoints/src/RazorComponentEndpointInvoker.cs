@@ -173,6 +173,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             _renderer.EmitInitializersIfNecessary(context, bufferWriter);
         }
 
+        // Persist TempData and Session values after all components (including streaming)
+        // have finished rendering, so that values modified during async rendering are captured.
+        if (context.RequestServices.GetService<SessionCascadingValueSupplier>() is { } sessionSupplier)
+        {
+            await sessionSupplier.PersistAllValues();
+        }
+        context.RequestServices.GetRequiredService<TempDataService>().Persist(context);
+
         // Emit comment containing state.
         if (!isErrorHandlerOrReExecuted)
         {
