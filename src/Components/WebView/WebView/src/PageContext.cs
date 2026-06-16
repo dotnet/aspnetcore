@@ -54,6 +54,14 @@ internal sealed class PageContext : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        // Mark the JS runtime disconnected before disposing the renderer so that any
+        // IJSObjectReference.DisposeAsync (or other JS interop) invoked from components'
+        // IAsyncDisposable handlers throws JSDisconnectedException (which JSObjectReference
+        // already swallows) instead of queueing IPC traffic to a page that's gone.
+        // Mirrors CircuitHost.DisposeAsync's call to RemoteJSRuntime.MarkPermanentlyDisconnected
+        // in Blazor Server (see dotnet/aspnetcore#32901, #66255).
+        JSRuntime.MarkAsDisconnected();
+
         await Renderer.DisposeAsync();
         await _serviceScope.DisposeAsync();
     }

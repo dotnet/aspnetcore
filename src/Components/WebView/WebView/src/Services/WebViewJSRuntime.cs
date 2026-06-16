@@ -11,7 +11,20 @@ internal sealed class WebViewJSRuntime : JSRuntime
 {
     private IpcSender _ipcSender;
 
+    // volatile: written from disposal paths (potentially off the dispatcher thread) and read
+    // from every JS-interop call and incoming-message processor. Acquire/release semantics
+    // ensure cross-thread visibility of the disconnect flip.
+    private volatile bool _isDisposed;
+
     public ElementReferenceContext ElementReferenceContext { get; }
+
+    /// <summary>
+    /// Whether <see cref="MarkAsDisconnected"/> has been called. Once true, subsequent JS interop
+    /// calls through <see cref="BeginInvokeJS(in JSInvocationInfo)"/> throw <see cref="JSDisconnectedException"/>
+    /// and the runtime no longer forwards .NET-from-JS replies or byte-array transfers to the
+    /// <see cref="IpcSender"/>.
+    /// </summary>
+    internal bool IsDisposed => _isDisposed;
 
     public WebViewJSRuntime()
     {
@@ -24,6 +37,18 @@ internal sealed class WebViewJSRuntime : JSRuntime
     public void AttachToWebView(IpcSender ipcSender)
     {
         _ipcSender = ipcSender;
+    }
+
+    /// <summary>
+    /// Marks the runtime as disconnected from its <see cref="IpcSender"/>. After this call,
+    /// <see cref="BeginInvokeJS(in JSInvocationInfo)"/> throws <see cref="JSDisconnectedException"/>
+    /// (matching <c>RemoteJSRuntime.MarkPermanentlyDisconnected</c> in Blazor Server) so that
+    /// components performing JS interop during <c>DisposeAsync</c> see a recoverable exception
+    /// rather than queueing IPC traffic to a defunct page.
+    /// </summary>
+    internal void MarkAsDisconnected()
+    {
+        _isDisposed = true;
     }
 
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
@@ -45,6 +70,13 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
+        if (_isDisposed)
+        {
+            throw new JSDisconnectedException(
+                "JavaScript interop calls cannot be issued at this time. This is because the WebView page " +
+                "has been disposed (for example, the page navigated away or the WebView itself is being disposed).");
+        }
+
         if (_ipcSender is null)
         {
             throw new InvalidOperationException("Cannot invoke JavaScript outside of a WebView context.");
@@ -55,6 +87,14 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
     {
+        if (_isDisposed)
+        {
+            // The JS side that initiated this call is gone; dropping the reply is the only
+            // safe action. Surfacing an exception here would propagate into user code that
+            // completed a .NET handler after the page was already torn down.
+            return;
+        }
+
         var resultJsonOrErrorMessage = invocationResult.Success
             ? invocationResult.ResultJson
             : invocationResult.Exception.ToString();
@@ -63,6 +103,12 @@ internal sealed class WebViewJSRuntime : JSRuntime
 
     protected override void SendByteArray(int id, byte[] data)
     {
+        if (_isDisposed)
+        {
+            // The receiving JS context is gone; drop the chunk silently.
+            return;
+        }
+
         _ipcSender.SendByteArray(id, data);
     }
 
