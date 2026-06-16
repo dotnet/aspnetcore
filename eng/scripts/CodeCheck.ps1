@@ -217,7 +217,7 @@ try {
         # Only enforce changelog rule if there are relevant TS changes
         if ($tsChanges.Count -gt 0 -and -not $changelogChanged) {
             # Check if the override marker exists in recent commit messages
-            $hasOverride = git log origin/$targetBranch..HEAD --pretty=%B | Select-String -Pattern $signalrChangelogOverrideMarker -Quiet
+            $hasOverride = git log origin/$targetBranch..HEAD --pretty=%B | Select-String -Pattern $signalrChangelogOverrideMarker -Quiet -SimpleMatch
 
             if (-not $hasOverride) {
                 LogError "Changes were made to 'src/SignalR/clients/ts/', but no update to 'CHANGELOG.md' was found."

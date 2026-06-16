@@ -1,5 +1,9 @@
 Change log contains changes for both @microsoft/signalr and @microsoft/signalr-protocol-msgpack.
 
+## v11.0.0-preview.6
+
+- Don't send a redirect-scoped Azure SignalR Service access token obtained from a negotiate redirect to the original app server on subsequent start/reconnect. [#65638](https://github.com/dotnet/aspnetcore/pull/65638)
+
 ## v10.0.0-rc.1
 
 - Implemented fix for correctly reporting retries in the SignalR TS client. [#62812](https://github.com/dotnet/aspnetcore/pull/62812)
