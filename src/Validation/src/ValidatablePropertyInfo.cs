@@ -203,7 +203,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
     }
 
+#pragma warning disable CA1822 // Mark members as static - TODO
     internal bool IsGuaranteedToBeSynchronous()
+#pragma warning restore CA1822 // Mark members as static
     {
         return false; // TODO
     }
