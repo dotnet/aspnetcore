@@ -189,6 +189,19 @@ public class EditForm : ComponentBase
         builder.CloseRegion();
     }
 
+    /// <summary>
+    /// Submits the form asynchronously by invoking the internal submit handler.
+    /// This method acts as a public wrapper around <see cref="HandleSubmitAsync"/>
+    /// to allow external callers to trigger the form submission process.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Task"/> that represents the asynchronous operation.
+    /// </returns>
+    public async Task FormSubmitAsync()
+    {
+        await HandleSubmitAsync();
+    }
+
     private async Task HandleSubmitAsync()
     {
         Debug.Assert(_editContext != null);
