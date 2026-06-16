@@ -78,7 +78,7 @@ public class ValidationLocalizationIntegrationTests
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
         Assert.Equal("Customer Name", displayCall.DisplayName);
         Assert.Equal("Name", displayCall.MemberName);
-        Assert.Equal(typeof(SimpleModel), displayCall.DeclaringType);
+        Assert.Equal(typeof(SimpleModel), displayCall.Type);
 
         // ResolveErrorMessage called with the resolved display name (passed back into context)
         var errorCall = Assert.Single(localizer.ErrorMessageCalls);
@@ -289,7 +289,7 @@ public class ValidationLocalizationIntegrationTests
         await paramInfo.ValidateAsync(null, context, default);
 
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
-        Assert.Null(displayCall.DeclaringType);
+        Assert.Null(displayCall.Type);
         Assert.Equal("Display Param", displayCall.DisplayName);
         Assert.Equal("myParam", displayCall.MemberName);
 
