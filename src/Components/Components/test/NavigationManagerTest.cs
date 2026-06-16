@@ -1109,6 +1109,98 @@ public class NavigationManagerTest
             testNavManager.ResolveRelativeToCurrentPath(null!));
     }
 
+    // Type-safe navigation tests (valid when type-safe APIs from the PR are present)
+    [Fact]
+    public void GetUri_Type_NoParameters_ReturnsExpectedAbsoluteUri()
+    {
+        var nav = new TestNavigationManager("http://example.com/");
+
+        var uri = nav.GetUri<ListSampleComponent>();
+
+        Assert.Equal("/list", uri);
+    }
+
+    [Fact]
+    public void GetUri_Type_SingleParameter_ReturnsExpectedAbsoluteUri()
+    {
+        var nav = new TestNavigationManager("http://example.com/");
+
+        var uri = nav.GetUri<UserSampleComponent>("123");
+
+        Assert.Equal("/user/123", uri);
+    }
+
+    [Fact]
+    public void GetUri_Type_MultipleParameters_ReturnsExpectedAbsoluteUri()
+    {
+        var nav = new TestNavigationManager("http://example.com/");
+
+        var uri = nav.GetUri<ProductSampleComponent>("p1", "books");
+
+        Assert.Equal("/product/p1/books", uri);
+    }
+
+    [Fact]
+    public void NavigateTo_Generic_InvokesNavigateToCore_WithResolvedUri()
+    {
+        var nav = new TestNavigationManagerWithNavigationTracking("http://example.com/");
+
+        nav.NavigateTo<ListSampleComponent>();
+
+        Assert.Single(nav.Navigations);
+        Assert.Equal("/list", nav.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void NavigateTo_Generic_WithParameters_InvokesNavigateToCore_WithResolvedUri()
+    {
+        var nav = new TestNavigationManagerWithNavigationTracking("http://example.com/");
+
+        nav.NavigateTo<UserSampleComponent>("123");
+
+        Assert.Single(nav.Navigations);
+        Assert.Equal("/user/123", nav.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void GetUri_WithoutRoute_ThrowsInvalidOperationException()
+    {
+        var nav = new TestNavigationManager("http://example.com/");
+
+        var ex = Assert.Throws<InvalidOperationException>(() => nav.GetUri<NoRouteComponent>());
+
+        Assert.Contains("route", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Sample component types used for type-safe navigation tests
+    [Route("/list")]
+    private class ListSampleComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) { }
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
+    [Route("/user/{userId}")]
+    private class UserSampleComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) { }
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
+    [Route("/product/{productId}/{category}")]
+    private class ProductSampleComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) { }
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
+    // Component with no route attribute to assert negative behavior
+    private class NoRouteComponent : IComponent
+    {
+        public void Attach(RenderHandle renderHandle) { }
+        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+    }
+
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
@@ -1130,7 +1222,7 @@ public class NavigationManagerTest
 
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
-            throw new System.NotImplementedException();
+            base.NavigateToCore(uri, forceLoad);
         }
 
         protected override void SetNavigationLockState(bool value)
