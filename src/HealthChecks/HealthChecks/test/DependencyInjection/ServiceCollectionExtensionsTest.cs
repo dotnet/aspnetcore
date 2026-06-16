@@ -80,6 +80,32 @@ public class ServiceCollectionExtensionsTest
             });
     }
 
+    [Fact]
+    public void AddHealthChecks_WithConfigureOptions_UsesOptionsConfiguration()
+    {
+        var services = new ServiceCollection();
+
+        services.AddHealthChecks(options => { });
+
+        Assert.Collection(services.OrderBy(s => s.ServiceType.FullName),
+            actual =>
+            {
+                Assert.Equal(ServiceLifetime.Singleton, actual.Lifetime);
+                Assert.Equal(typeof(HealthCheckService), actual.ServiceType);
+                Assert.Equal(typeof(DefaultHealthCheckService), actual.ImplementationType);
+                Assert.Null(actual.ImplementationInstance);
+                Assert.Null(actual.ImplementationFactory);
+            },
+            actual =>
+            {
+                Assert.Equal(ServiceLifetime.Singleton, actual.Lifetime);
+                Assert.Equal(typeof(IHostedService), actual.ServiceType);
+                Assert.Equal(typeof(HealthCheckPublisherHostedService), actual.ImplementationType);
+                Assert.Null(actual.ImplementationInstance);
+                Assert.Null(actual.ImplementationFactory);
+            });
+    }
+
     private class DummyHostedService : IHostedService
     {
         public Task StartAsync(CancellationToken cancellationToken)

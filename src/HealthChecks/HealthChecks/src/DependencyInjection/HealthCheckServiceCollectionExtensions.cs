@@ -29,4 +29,10 @@ public static class HealthCheckServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HealthCheckPublisherHostedService>());
         return new HealthChecksBuilder(services);
     }
+
+    public static IHealthChecksBuilder AddHealthChecks(this IServiceCollection services, Action<HealthCheckServiceOptions> configure)
+    {
+        services.Configure(configure);
+        return services.AddHealthChecks();
+    }
 }
