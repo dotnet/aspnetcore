@@ -1,7 +1,7 @@
 ---
 on:
   schedule:
-    - cron: "0 10 * * *"
+    - cron: "0 10 */2 * *"
   workflow_dispatch:
   steps:
     - name: Fetch re-quarantine PRs
@@ -112,10 +112,580 @@ on:
         print(f"Found {len(requarantine_data)} re-quarantine PRs, wrote to step output")
         SCRIPT
 
+    - name: Verify Source B PRs
+      id: source_b_prs
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Source B looks for flaky tests in failed CI builds of PRs that were merged
+        # into main. Selecting those builds requires verifying each candidate PR
+        # (base==main, merged==true) and matching its head SHA — which needs a GitHub
+        # token. The agent sandbox has NO usable token, and its MCP search tool
+        # silently drops external-contributor PRs. So we do the ENTIRE selection here —
+        # outside the firewall, with full token access and no integrity filter — and
+        # hand the agent the exact Azure DevOps build IDs to collect results from. The
+        # agent makes ZERO GitHub calls and does NOT re-enumerate builds, which both
+        # eliminates the per-PR pull_request_read loop (the effective-token-budget
+        # sink) and avoids any snapshot skew between this step and the agent.
+        python3 << 'SCRIPT'
+        import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error
+
+        def fetch(url, data=None, headers=None, retries=3):
+            """GET (or POST if data) with small backoff. Re-raises HTTPError so the
+            caller can distinguish auth failures; retries only transient errors."""
+            hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
+            if headers:
+                hdrs.update(headers)
+            last = None
+            for attempt in range(retries):
+                try:
+                    req = urllib.request.Request(url, data=data, headers=hdrs)
+                    with urllib.request.urlopen(req, timeout=60) as r:
+                        return json.loads(r.read()), r.headers
+                except urllib.error.HTTPError as e:
+                    if e.code in (401, 403) or e.code == 404:
+                        raise
+                    last = e
+                except Exception as e:
+                    last = e
+                time.sleep(2 * (attempt + 1))
+            raise last
+
+        # --- 1. Enumerate completed PR builds from the last 7 days (Azure DevOps,
+        #        public project — no auth needed) for both CI pipelines. Record each
+        #        failed/partial build's id, PR number and the commit it ran on. ---
+        BUILDS = "https://dev.azure.com/dnceng-public/public/_apis/build/builds"
+        DEFINITIONS = [83, 87]  # 83 = aspnetcore-ci, 87 = components-e2e
+        min_time = (datetime.datetime.utcnow() - datetime.timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        failed_builds = []  # list of (build_id, pr_number, source_sha)
+        for d in DEFINITIONS:
+            token = None
+            while True:
+                params = {"definitions": d, "reasonFilter": "pullRequest",
+                          "statusFilter": "completed", "minTime": min_time,
+                          "$top": 200, "api-version": "7.1"}
+                if token:
+                    params["continuationToken"] = token
+                data, hdrs = fetch(f"{BUILDS}?{urllib.parse.urlencode(params)}")
+                # ADO returns the continuation token in a response header.
+                token = hdrs.get("x-ms-continuationtoken")
+                for b in data.get("value", []):
+                    if b.get("result") not in ("failed", "partiallySucceeded"):
+                        continue
+                    branch = b.get("sourceBranch", "")  # refs/pull/{N}/merge
+                    if not branch.startswith("refs/pull/"):
+                        continue
+                    try:
+                        pr = int(branch.split("/")[2])
+                    except (IndexError, ValueError):
+                        continue
+                    sha = (b.get("triggerInfo") or {}).get("pr.sourceSha")
+                    if sha:
+                        failed_builds.append((b["id"], pr, sha))
+                if not token:
+                    break
+
+        # (B4) Only PRs with >= 1 failed/partial build can ever yield a candidate.
+        candidates = sorted({pr for _, pr, _ in failed_builds})
+
+        # --- 2. Verify B2 (base == main) + B3 (merged) and capture head SHA via batched
+        #        GraphQL. Fail LOUD on systemic failures (auth, rate-limit, every chunk
+        #        failed, or no candidate could even be resolved) so the run aborts
+        #        visibly instead of silently emitting an empty set. ---
+        gh_token = os.environ["GH_TOKEN"]
+
+        def verify(pr_numbers, chunk=50):
+            verified = {}            # str(pr_number) -> headRefOid
+            resolved = 0             # candidate PRs we positively read a node for
+            chunks_total = chunks_failed = 0
+            for k in range(0, len(pr_numbers), chunk):
+                batch = pr_numbers[k:k + chunk]
+                chunks_total += 1
+                aliases = "\n".join(
+                    f'p{n}: pullRequest(number: {n}) {{ number baseRefName merged headRefOid }}'
+                    for n in batch)
+                query = f'query {{ repository(owner: "dotnet", name: "aspnetcore") {{ {aliases} }} }}'
+                try:
+                    body, _ = fetch(
+                        "https://api.github.com/graphql",
+                        data=json.dumps({"query": query}).encode(),
+                        headers={"Authorization": f"bearer {gh_token}",
+                                 "Content-Type": "application/json"})
+                except urllib.error.HTTPError as e:
+                    if e.code in (401, 403):
+                        sys.exit(f"FATAL: GitHub GraphQL {e.code} — aborting Source B verification")
+                    chunks_failed += 1
+                    continue
+                except Exception:
+                    chunks_failed += 1
+                    continue
+                errored, chunk_untrusted = set(), False
+                for err in body.get("errors") or []:
+                    if err.get("type") == "RATE_LIMITED":
+                        sys.exit("FATAL: GitHub GraphQL RATE_LIMITED — aborting Source B verification")
+                    alias = next((p for p in (err.get("path") or [])
+                                  if isinstance(p, str) and len(p) > 1 and p[0] == "p" and p[1:].isdigit()), None)
+                    if alias:
+                        errored.add(alias)
+                    else:
+                        chunk_untrusted = True
+                repo = (body.get("data") or {}).get("repository")
+                if repo is None or chunk_untrusted:
+                    chunks_failed += 1
+                    continue
+                for alias, pr in repo.items():
+                    if alias in errored or not pr or not pr.get("headRefOid"):
+                        continue
+                    resolved += 1
+                    if pr.get("baseRefName") == "main" and pr.get("merged") is True:
+                        verified[str(pr["number"])] = pr["headRefOid"]
+            # Fail LOUD on ANY chunk that could not be conclusively read: a partially
+            # dropped chunk would silently omit up to `chunk` real candidate PRs from
+            # Source B. fetch() already retries transient blips, so a surviving failure
+            # is a real problem worth aborting the daily run over.
+            if chunks_failed:
+                sys.exit(f"FATAL: {chunks_failed}/{chunks_total} GraphQL verification "
+                         "chunk(s) failed — aborting Source B verification")
+            if pr_numbers and resolved == 0:
+                sys.exit("FATAL: could not resolve any candidate PR via GraphQL — aborting Source B verification")
+            return verified
+
+        verified = verify(candidates) if candidates else {}
+
+        # --- 3. (B1) Keep failed/partial builds whose PR is merged into main AND whose
+        #        commit matches that PR's head SHA. Emit only those build IDs. ---
+        build_ids = sorted({bid for bid, pr, sha in failed_builds
+                            if verified.get(str(pr)) == sha})
+
+        github_output = os.environ.get("GITHUB_OUTPUT", "")
+        if not github_output:
+            print("ERROR: GITHUB_OUTPUT is not set, cannot pass data to agent", file=sys.stderr)
+            sys.exit(1)
+        json_str = json.dumps(build_ids)
+        with open(github_output, "a") as gh_out:
+            gh_out.write(f"source_b_build_ids<<SOURCE_B_EOF\n{json_str}\nSOURCE_B_EOF\n")
+        print(f"Source B: {len(failed_builds)} failed PR builds, {len(candidates)} candidate PRs, "
+              f"{len(verified)} merged-into-main, {len(build_ids)} builds selected (B1-B4), wrote to step output")
+        SCRIPT
+
+    - name: Aggregate Part 1 failures
+      id: part1_aggregate
+      env:
+        SOURCE_B_BUILD_IDS: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
+      run: |
+        # Part 1 (Sources A/B/C) failure gathering is the dominant token sink of this
+        # workflow: it spans ~200 builds, many resultsbyBuild calls, and multi-MB Helix
+        # console logs. Surfacing that data into the metered agent loop is what exhausted
+        # the per-run effective-token budget mid-gathering -- the run repeatedly died
+        # before creating any output. Do ALL of it here, in the pre-activation job that
+        # runs OUTSIDE the firewall at zero effective-token cost, and inject a single
+        # compact JSON blob the agent consumes directly. The agent makes ZERO AzDO/Helix
+        # calls for Part 1.
+        #   Source A: defs 83+87, refs/heads/main, failed/partial builds in the last 30
+        #             days -> resultsbyBuild(Failed) -> per-test failure counts (+assembly,
+        #             up to 3 example build ids).
+        #   Source B: resultsbyBuild(Failed) for the already-selected source_b_build_ids
+        #             (the Verify Source B PRs step did the full B1-B4 selection).
+        #   builds:   compact metadata map (def, startedUtc, finishedUtc, sourceVersion,
+        #             pr) for every referenced build, so the agent can do the Case B
+        #             "failure after the unquarantine landed" timing check and the
+        #             Source B "PR modified its own test" exclusion WITHOUT any AzDO call.
+        #   Enrichment: each failing test is enriched from its representative result's
+        #             detail with the Helix job id + work-item name (parsed from the result
+        #             `comment` field -- reliable, no fragile build-timeline parsing) and,
+        #             for individual tests, the real errorMessage/stackTrace (capped).
+        #   Source C: for work items (names ending .WorkItemExecution) use those Helix
+        #             coords to download the console log and extract only the [FAIL] blocks
+        #             (capped), probing multiple builds until a [FAIL] block is found and
+        #             bounded by a global download budget. Turns multi-MB logs into a few KB.
+        # emit() guarantees the output stays under the 1MB GITHUB_OUTPUT limit by shedding
+        # optional enrichment (never the per-test counts) and fails loud rather than letting
+        # GitHub silently truncate into corrupt JSON. Validated ~170KB on 30 days of data.
+        python3 << 'SCRIPT'
+        import json, os, sys, time, datetime, urllib.parse, urllib.request, urllib.error, re
+
+        ADO = "https://dev.azure.com/dnceng-public/public/_apis"
+        VSTMR = "https://vstmr.dev.azure.com/dnceng-public/public/_apis"
+        HELIX = "https://helix.dot.net/api/2019-06-17"
+        DEFS = [83, 87]
+        DAYS = 30
+        WI_SUFFIX = ".WorkItemExecution"
+
+        ERROR_CAP = 1200
+        STACK_CAP = 900
+        OCC_CAP = 2                  # occurrences tracked per test (for Source C multi-probe)
+
+        BLOCK_CAP = 8000
+        WORKITEM_CAP = 40000
+        SOURCE_C_GLOBAL_CAP = 300000
+        SAFE_OUTPUT = 950000         # hard ceiling under the 1MB GITHUB_OUTPUT limit
+        # Safety valve: cap total Helix console-log bytes downloaded. The first occurrence of
+        # every work item is always fetched; extra occurrences are only probed while under this
+        # budget. Stops a regression spell (dozens of multi-MB macOS-hang logs) from making the
+        # pre-activation step download gigabytes / run unbounded.
+        SOURCE_C_DOWNLOAD_BUDGET = 300_000_000
+
+        _ANSI = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
+
+
+        def fetch(url, headers=None, retries=3, raw=False, timeout=120):
+            hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
+            if headers:
+                hdrs.update(headers)
+            last = None
+            for attempt in range(retries):
+                try:
+                    req = urllib.request.Request(url, headers=hdrs)
+                    with urllib.request.urlopen(req, timeout=timeout) as r:
+                        data = r.read()
+                        return (data if raw else json.loads(data)), r.headers
+                except urllib.error.HTTPError as e:
+                    if e.code in (401, 403, 404):
+                        raise
+                    last = e
+                except Exception as e:
+                    last = e
+                time.sleep(2 * (attempt + 1))
+            raise last
+
+
+        def list_failed_builds(definition, branch=None):
+            """Return the failed/partial build objects (not just ids) so we can record metadata."""
+            mt = (datetime.datetime.utcnow() - datetime.timedelta(days=DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
+            tok, out = None, []
+            while True:
+                p = {"definitions": definition, "statusFilter": "completed",
+                     "resultFilter": "failed,partiallySucceeded", "$top": 200,
+                     "minTime": mt, "api-version": "7.1"}
+                if branch:
+                    p["branchName"] = branch
+                if tok:
+                    p["continuationToken"] = tok
+                data, h = fetch(f"{ADO}/build/builds?{urllib.parse.urlencode(p)}")
+                out += data.get("value", [])
+                tok = h.get("x-ms-continuationtoken")
+                if not tok:
+                    break
+            return out
+
+
+        def builds_by_ids(ids):
+            out = []
+            for k in range(0, len(ids), 100):
+                chunk = ",".join(str(i) for i in ids[k:k + 100])
+                data, _ = fetch(f"{ADO}/build/builds?buildIds={chunk}&api-version=7.1")
+                out += data.get("value", [])
+            return out
+
+
+        def pr_of(build):
+            br = build.get("sourceBranch", "") or ""
+            if br.startswith("refs/pull/"):
+                try:
+                    return int(br.split("/")[2])
+                except (IndexError, ValueError):
+                    return None
+            return None
+
+
+        def build_meta(build):
+            return {"def": (build.get("definition") or {}).get("id"),
+                    "startedUtc": build.get("startTime"),
+                    "finishedUtc": build.get("finishTime"),
+                    "sourceVersion": build.get("sourceVersion"),
+                    "pr": pr_of(build)}
+
+
+        def failed_results(build_id):
+            tok = None
+            while True:
+                p = {"buildId": build_id, "outcomes": "Failed", "$top": 1000, "api-version": "7.1-preview.1"}
+                if tok:
+                    p["continuationToken"] = tok
+                data, h = fetch(f"{VSTMR}/testresults/resultsbyBuild?{urllib.parse.urlencode(p)}")
+                for t in data.get("value", []):
+                    yield t
+                tok = h.get("x-ms-continuationtoken")
+                if not tok:
+                    break
+
+
+        def norm_name(t):
+            name = t.get("automatedTestName") or ""
+            if not name:
+                # testCaseTitle can carry parameterized args; strip them for stable dedup.
+                name = (t.get("testCaseTitle") or "").split("(")[0].strip()
+            return name
+
+
+        def aggregate(build_ids):
+            agg = {}
+            for bid in build_ids:
+                for t in failed_results(bid):
+                    name = norm_name(t)
+                    if not name:
+                        continue
+                    e = agg.setdefault(name, {"count": 0, "assembly": t.get("automatedTestStorage", ""),
+                                              "builds": [], "occ": []})
+                    e["count"] += 1
+                    if bid not in e["builds"]:
+                        e["builds"].append(bid)
+                    if t.get("runId") and t.get("id") and len(e["occ"]) < OCC_CAP:
+                        e["occ"].append({"runId": t["runId"], "resultId": t["id"], "build": bid})
+            return agg
+
+
+        def parse_helix(comment):
+            if not comment:
+                return None, None
+            try:
+                c = json.loads(comment)
+            except (json.JSONDecodeError, TypeError):
+                return None, None
+            return c.get("HelixJobId"), c.get("HelixWorkItemName")
+
+
+        def result_detail(run_id, result_id):
+            data, _ = fetch(f"{VSTMR}/testresults/runs/{run_id}/results/{result_id}?api-version=7.1-preview.1")
+            return data
+
+
+        def enrich(agg):
+            """Attach Helix coords (job+workitem, only when BOTH present) and, for individual
+            tests, real error/stack from the representative result detail. For work items, also
+            collect candidate (job, workitem, build) probes from every tracked occurrence so
+            Source C can try more than just the first build."""
+            for name, e in agg.items():
+                is_wi = name.endswith(WI_SUFFIX)
+                probes = []
+                for idx, occ in enumerate(e.get("occ", [])):
+                    # Individual tests only need the first occurrence (error/stack + coords).
+                    if not is_wi and idx > 0:
+                        break
+                    try:
+                        det = result_detail(occ["runId"], occ["resultId"])
+                    except Exception as ex:
+                        if idx == 0:
+                            e["detail_note"] = f"detail fetch failed: {type(ex).__name__}"
+                        continue
+                    job, wi_name = parse_helix(det.get("comment"))
+                    if idx == 0 and job and wi_name:
+                        e["helix"] = {"job": job, "workitem": wi_name}
+                    if is_wi and job and wi_name:
+                        probes.append({"job": job, "workitem": wi_name, "build": occ["build"]})
+                    if idx == 0 and not is_wi:
+                        em, st = det.get("errorMessage"), det.get("stackTrace")
+                        if em:
+                            e["error"] = em[:ERROR_CAP]
+                        if st:
+                            e["stack"] = st[:STACK_CAP]
+                if is_wi:
+                    e["probes"] = probes
+            return agg
+
+
+        _MARKER = re.compile(r'\[(?:PASS|FAIL|SKIP)\]\s*$')
+        _FAIL = re.compile(r'\[FAIL\]\s*$')
+
+
+        def extract_fail_blocks(text):
+            lines = [_ANSI.sub("", ln) for ln in text.splitlines()]
+            blocks, i = [], 0
+            while i < len(lines):
+                if _FAIL.search(lines[i]):
+                    j = i + 1
+                    while j < len(lines) and not _MARKER.search(lines[j]):
+                        j += 1
+                    blocks.append("\n".join(lines[i:j])[:BLOCK_CAP])
+                    i = j
+                else:
+                    i += 1
+            return blocks
+
+
+        def helix_console_blocks(job_id, wi_name):
+            files, _ = fetch(f"{HELIX}/jobs/{job_id}/workitems/{urllib.parse.quote(wi_name)}/files")
+            seq = files if isinstance(files, list) else files.get("Files", files.get("files", []))
+            link = None
+            for f in seq:
+                nm = f.get("Name") or f.get("name") or ""
+                if nm.startswith("console."):
+                    link = f.get("Link") or f.get("link")
+                    break
+            if not link:
+                return None, 0
+            raw, _ = fetch(link, raw=True, timeout=180)
+            text = raw.decode("utf-8", "replace")
+            # Return the raw byte length: it feeds the byte-denominated download budget
+            # and the reported log_bytes, whereas len(text) is a decoded character count.
+            return extract_fail_blocks(text), len(raw)
+
+
+        def sizeof(obj):
+            return len(json.dumps(obj, separators=(",", ":")))
+
+
+        def emit(out):
+            """Serialize, but guarantee the result stays under SAFE_OUTPUT by progressively
+            shedding the largest optional payloads (never the core per-test counts). Fail loud
+            if even the trimmed core is too big, rather than letting GITHUB_OUTPUT silently
+            truncate into corrupt JSON."""
+            if sizeof(out) <= SAFE_OUTPUT:
+                return json.dumps(out, separators=(",", ":"))
+            out["trim"] = []
+            for src in ("source_a", "source_b"):
+                for e in out[src].values():
+                    e.pop("stack", None)
+            out["trim"].append("stack_dropped")
+            if sizeof(out) <= SAFE_OUTPUT:
+                return json.dumps(out, separators=(",", ":"))
+            for src in ("source_a", "source_b"):
+                for e in out[src].values():
+                    e.pop("error", None)
+            out["trim"].append("error_dropped")
+            if sizeof(out) <= SAFE_OUTPUT:
+                return json.dumps(out, separators=(",", ":"))
+            for c in out["source_c"]:
+                if "fail_blocks" in c:
+                    c["fail_blocks"] = c["fail_blocks"][:2000]
+            out["trim"].append("source_c_blocks_trimmed")
+            js = json.dumps(out, separators=(",", ":"))
+            if len(js) > SAFE_OUTPUT:
+                sys.exit(f"FATAL: part1_data is {len(js)} bytes after trimming, exceeds the "
+                         f"{SAFE_OUTPUT}-byte safe limit — aborting rather than emitting truncated JSON")
+            return js
+
+
+        def main():
+            # Source A: failed/partial builds on main, both pipelines, last 30 days.
+            a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
+            bmeta = {}
+            for b in a_builds:
+                bmeta[str(b["id"])] = build_meta(b)
+            source_a = enrich(aggregate([b["id"] for b in a_builds]))
+
+            # Source B: preselected merged-PR build ids (env from the Verify Source B PRs step).
+            raw_ids = os.environ.get("SOURCE_B_BUILD_IDS", "").strip()
+            if not raw_ids:
+                b_ids = []
+            else:
+                try:
+                    b_ids = json.loads(raw_ids)
+                    if not isinstance(b_ids, list):
+                        raise ValueError("not a list")
+                except (json.JSONDecodeError, ValueError) as ex:
+                    sys.exit(f"FATAL: SOURCE_B_BUILD_IDS is set but not a valid JSON array ({ex}) — aborting")
+            if b_ids:
+                for b in builds_by_ids(b_ids):
+                    bmeta[str(b["id"])] = build_meta(b)
+            source_b = enrich(aggregate(b_ids))
+
+            # Source C: work items (combined A+B) -> Helix console [FAIL] blocks. Probe each
+            # tracked occurrence until one yields [FAIL] blocks (the first build is often a
+            # macOS hang with none, while a later build has the real failure).
+            wi = {}
+            for src in (source_a, source_b):
+                for name, e in src.items():
+                    if name.endswith(WI_SUFFIX) and e.get("probes"):
+                        lst = wi.setdefault(name, [])
+                        seen = {(p["job"], p["workitem"], p["build"]) for p in lst}
+                        for p in e["probes"]:
+                            k = (p["job"], p["workitem"], p["build"])
+                            if k not in seen:
+                                seen.add(k)
+                                lst.append(p)
+
+            source_c = []
+            truncated = False
+            total = 0
+            downloaded = [0]  # mutable: total Helix log bytes pulled across all probes
+
+            def probe(pr):
+                blocks, log_size = helix_console_blocks(pr["job"], pr["workitem"])
+                downloaded[0] += log_size
+                return blocks, log_size
+
+            for name in sorted(wi):
+                probes = wi[name]
+                if truncated:
+                    source_c.append({"workitem": name, "build": probes[0]["build"], "job": probes[0]["job"],
+                                     "note": "omitted: Source C global size cap reached"})
+                    continue
+                chosen = None
+                last_err = None
+                for idx, pr in enumerate(probes):
+                    # Always fetch the first occurrence; only probe further while under the
+                    # download budget (degrades to first-occurrence-only during big regressions).
+                    if idx > 0 and downloaded[0] >= SOURCE_C_DOWNLOAD_BUDGET:
+                        break
+                    try:
+                        blocks, log_size = probe(pr)
+                    except Exception as ex:
+                        last_err = type(ex).__name__
+                        continue
+                    if blocks is None:
+                        chosen = chosen or {"build": pr["build"], "job": pr["job"], "blocks": None, "log": 0}
+                        continue
+                    chosen = {"build": pr["build"], "job": pr["job"], "blocks": blocks, "log": log_size}
+                    if blocks:
+                        break  # found real [FAIL] content; stop probing
+                if chosen is None:
+                    source_c.append({"workitem": name, "build": probes[0]["build"], "job": probes[0]["job"],
+                                     "note": f"investigation error: {last_err}" if last_err else "no probe succeeded"})
+                    continue
+                if chosen["blocks"] is None:
+                    source_c.append({"workitem": name, "build": chosen["build"], "job": chosen["job"],
+                                     "note": "no console log file found"})
+                    continue
+                joined = "\n---\n".join(chosen["blocks"])[:WORKITEM_CAP]
+                if total + len(joined) > SOURCE_C_GLOBAL_CAP:
+                    truncated = True
+                    source_c.append({"workitem": name, "build": chosen["build"], "job": chosen["job"],
+                                     "note": "omitted: Source C global size cap reached"})
+                    continue
+                total += len(joined)
+                source_c.append({"workitem": name, "build": chosen["build"], "job": chosen["job"],
+                                 "log_bytes": chosen["log"], "fail_block_count": len(chosen["blocks"]),
+                                 "fail_blocks": joined})
+
+            # Drop internal-only fields from the per-test payload.
+            for src in (source_a, source_b):
+                for e in src.values():
+                    e.pop("occ", None)
+                    e.pop("probes", None)
+
+            out = {
+                "generated_utc": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "builds": bmeta,
+                "source_a": source_a,
+                "source_b": source_b,
+                "source_c": source_c,
+                "source_c_truncated": truncated,
+            }
+            js = emit(out)
+            sys.stderr.write(f"part1: A={len(source_a)} tests, B={len(source_b)} tests, "
+                             f"C={len(source_c)} work items, builds={len(bmeta)}, "
+                             f"output {len(js)/1024:.0f} KB, source_c_truncated={truncated}, "
+                             f"trim={out.get('trim')}\n")
+            return js
+
+
+        if __name__ == "__main__":
+            js = main()
+            gh_out = os.environ.get("GITHUB_OUTPUT")
+            if not gh_out:
+                sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
+            with open(gh_out, "a") as f:
+                f.write(f"part1_data<<PART1_EOF\n{js}\nPART1_EOF\n")
+        SCRIPT
+
 jobs:
   pre_activation:
     outputs:
       requarantine_data: ${{ steps.requarantine_prs.outputs.requarantine_data }}
+      source_b_build_ids: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
+      part1_data: ${{ steps.part1_aggregate.outputs.part1_data }}
 
 description: "Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics"
 
@@ -165,6 +735,12 @@ network:
 checkout:
   fetch-depth: 0
 
+# Per-run AI Credits budget for AWF API-proxy enforcement. Raised to 2x the 1000-credit
+# default because the agent loop was tripping the cap mid-gathering before producing any
+# output (1000 credits == the former 25M effective-token default). Run frequency is halved
+# (every 2 days, see cron above) to keep monthly token spend roughly flat.
+max-ai-credits: 2000
+
 timeout-minutes: 90
 ---
 
@@ -183,61 +759,29 @@ Also check for recently closed (not merged) `[test-quarantine]` PRs from the pas
 
 ## Part 1: Quarantine Flaky Tests
 
-### Step 1.1 — Gather failure data from CI pipelines
+### Step 1.1 — Failure data (precomputed and injected)
 
-Query two pipelines for test failures:
+**All Part 1 failure data has already been gathered for you** by the deterministic `Aggregate Part 1 failures` pre-activation step, which ran outside the firewall at zero token cost. It queried both CI pipelines — **aspnetcore-ci** (definition **83**, the main CI pipeline) and **components-e2e** (definition **87**, which runs both quarantined and non-quarantined tests) — and assembled Sources A, B and C below into a single JSON object, injected here:
 
-- **aspnetcore-ci** (definition ID **83**) — the main CI pipeline
-- **components-e2e** (definition ID **87**) — runs both quarantined and non-quarantined tests
-
-For each pipeline, collect failures from three sources:
-
-#### Source A: Main branch failures
-Get all completed builds on `refs/heads/main` from the last 30 days. For each build with `result` = `failed` or `partiallySucceeded`, get the failed test results:
-```
-GET https://vstmr.dev.azure.com/dnceng-public/public/_apis/testresults/resultsbyBuild?buildId={BUILD_ID}&outcomes=Failed&$top=1000&api-version=7.1-preview.1
+```json
+${{ needs.pre_activation.outputs.part1_data }}
 ```
 
-#### Source B: Merged PR failures
+**Do NOT call Azure DevOps or Helix for Part 1.** No `resultsbyBuild`, no build list, no build timeline, and no Helix `files`/console-log download for any source below. Re-gathering this data inside the agent loop is the single biggest token sink in this workflow and is exactly what exhausted the per-run token budget before any output was ever created — it is **prohibited**. Everything you need to identify quarantine candidates is already in the injected object; simply parse and analyze it.
 
-**Source B is REQUIRED — do not skip it.** It captures flaky tests that only manifest in PR builds (which run more frequently than rolling builds). Skipping it leaves significant blind spots in quarantine coverage.
+The injected object has this shape:
 
-Get all PR builds (`reasonFilter=pullRequest`) from the last 7 days. Use pagination (`$top=100` + `continuationToken`) and an explicit `minTime` to ensure all builds are retrieved. **To keep this efficient, use the following approach:**
+- `generated_utc` — when the data was collected.
+- `builds` — a compact metadata map keyed by build ID (as a string), covering every build referenced below. Each value has `def` (83 or 87), `startedUtc`/`finishedUtc`, `sourceVersion` (the commit the build ran), and `pr` (the PR number for a merged-PR build, or `null` for a `main` build). Use it for the time- and PR-based checks in Step 1.2 (below) so you never need an AzDO call.
+- `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net11.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `error` and `stack` (the real failure message and stack trace, capped).
+- `source_b` — **merged-PR failures**: same shape as `source_a`, computed from the already-selected merged-into-`main` PR builds (the `Verify Source B PRs` step did the full B1–B4 selection). It may be empty (`{}`) if no qualifying PR builds failed this run. Source B captures flaky tests that only manifest in PR builds: (1) a PR retried until it passed, and (2) a PR merged on red because the only failures were unrelated flaky tests.
+- `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
+- `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
+- `trim` — present only if the whole payload approached the 1MB injection limit and optional enrichment had to be shed (e.g. `stack_dropped`, `error_dropped`). The per-test failure counts are never dropped; if you see this, error/stack for some tests may be missing and you can fetch them for a final candidate via its `helix` coordinates (Part 3).
 
-1. **Get the unique PR numbers** — extract PR numbers from `sourceBranch` (`refs/pull/{NUMBER}/merge`) across all PR builds. Deduplicate to get the set of unique PRs.
+**Names ending in `.WorkItemExecution` are work-item (whole-assembly) crashes, not individual tests.** Use `source_c` `fail_blocks` to find the specific `[FAIL]` test inside a crashed work item; an individual test only becomes a quarantine candidate under the rules in Step 1.2.
 
-2. **Verify B2 and B3 for each unique PR** — call `pull_request_read` (method `get`) once per PR number (not per build):
-   - **(B2)** The PR **targets the `main` branch** — verify `base.ref` is `main`. Exclude PRs targeting release branches or any other non-main branch.
-   - **(B3)** The PR was **merged** — verify the `merged` field is `true`. Exclude open, draft, or abandoned PRs.
-
-   If you cannot verify a PR's status (e.g., rate limits), exclude it — never default to including it.
-
-3. **For each qualifying PR, find all its builds** and apply:
-   - **(B1)** Keep only builds for the **final commit** — compare each build's `pr.sourceSha` (from `triggerInfo`) to the PR's `head.sha` from the `pull_request_read` response in step 2. Only include builds whose `pr.sourceSha` matches the PR's `head.sha`.
-   - **(B4)** At least one build in the group **failed** or **partially succeeded**.
-
-4. **Get the failed test results** from the failed/partially-succeeded builds in qualifying groups.
-
-**Every criterion above is mandatory — do not skip or approximate any of them.**
-
-This captures two scenarios: (1) a PR that was retried and eventually passed, indicating flaky test failures on the earlier attempt, and (2) a PR that was merged on red because the only failures were flaky tests — engineers sometimes do this when the failures are clearly unrelated to their changes.
-
-#### Source C: Work item crash investigation
-For work items (names ending in `.WorkItemExecution`) that failed 2+ times, investigate the Helix console logs to find the individual test(s) that caused the crash:
-
-1. Get the Helix job ID from the build timeline:
-   ```
-   GET https://dev.azure.com/dnceng-public/public/_apis/build/builds/{BUILD_ID}/timeline?api-version=7.1
-   ```
-   Look for `issues` in records containing the work item name and extract the job ID from `"job {JOB_ID}"`.
-
-2. Get the console log file from Helix:
-   ```
-   GET https://helix.dot.net/api/2019-06-17/jobs/{JOB_ID}/workitems/{WI_NAME}/files
-   ```
-   Find the file starting with `console.` and download it.
-
-3. Search the console log (which can be 10MB+) for `[FAIL]` markers to find the specific test that caused the crash. Use `python3` with `urllib.request` to download the log and search it.
+If you later need the per-test `.log` file for a **final** candidate when writing its issue (Part 3), the `helix` `{job, workitem}` coordinates in its `source_a` / `source_b` entry let you fetch it directly (see the API Reference) — but do this only for the handful of confirmed candidates, never as part of Part 1 gathering.
 
 ### Step 1.2 — Combine and identify quarantine candidates
 
@@ -251,19 +795,19 @@ All of the following are true:
 - It is an **individual test case** (not a `.WorkItemExecution`)
 - It has failed **2 or more times** total across all sources
 - It is **not already quarantined** (check the source code for existing `[QuarantinedTest]` attributes)
-- The failures are **not** from a PR that modified the test itself (check if the PR's changed files include the test file)
+- The failures are **not** from a PR that modified the test itself. For a Source B failure, map each of its `builds` IDs to `builds[<id>].pr` / `builds[<id>].sourceVersion` and, using the checked-out repo, check whether that change touched the test's file; exclude the failure if so.
 
 **Case B – Re-quarantine of a recently unquarantined test**
 
 All of the following are true:
 - The test was **recently unquarantined** (had its `[QuarantinedTest]` attribute removed within the past 14 days, detectable via `git log --since="14 days ago" -G 'QuarantinedTest' -- '*.cs'`)
-- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time. Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, find the original quarantine issue (title prefix "Quarantine" referencing the test name) so it can be reused in Step&nbsp;3.1 — do not create a new issue.
+- It has **at least one failure that occurred AFTER the unquarantine change landed on `main`**. Use the PR merge time when available, or otherwise use the **committer date of the first-parent commit on `main`** that introduced the removal of the `[QuarantinedTest]` attribute. Do **not** use the timestamp of the underlying topic-branch commit if it differs. Only count failures from builds that started after that `main`-branch landing time — compare the landing time against `builds[<id>].startedUtc` for each build in the test's `builds` list (no AzDO call needed). Failures from before the unquarantine do not count — they are from when the test was still quarantined. For these tests, find the original quarantine issue (title prefix "Quarantine" referencing the test name) so it can be reused in Step&nbsp;3.1 — do not create a new issue.
 
 **Class-level quarantine (applies to both Case A and Case B)**
 
 After identifying individual quarantine candidates from either case above, also check for **class-level quarantine** opportunities. If a **test class** has more than 3 total failures across multiple methods, you **must** investigate the error messages before deciding:
 
-1. For each failure in the class, extract the error message and stack trace from the Helix console log. When searching the console log for `[FAIL]`, also capture the lines immediately following it — these contain the `Error Message:` and `Stack Trace:` sections.
+1. For each failure in the class, read the error message and stack trace **from the injected Part 1 data** — the per-test `error`/`stack` fields in `source_a`/`source_b` for individual methods, and the `fail_blocks` in `source_c` for any crashed work item. Do not download the Helix console log; the relevant `[FAIL]` content is already extracted for you.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
 3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
 4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
@@ -385,7 +929,12 @@ Group the unquarantine candidates by their associated GitHub issue number. Extra
 - **Always exclude** `AlwaysTestTests.SuccessfulTests.GuaranteedQuarantinedTest` from all analysis. This test must never be unquarantined.
 - **Never unquarantine a test that has ever been re-quarantined.** If a test was previously unquarantined and then re-quarantined (via a PR with "Re-quarantine" in the title or the `re-quarantine` label), it is permanently excluded from automated unquarantining. Only a human may unquarantine such a test. This rule applies regardless of how long the test has been passing or how many times it has been re-quarantined.
 - **Always exclude** tests under `Microsoft.AspNetCore.SignalR.Specification.Tests` from all analysis. These are abstract base classes inherited by other test projects — there is no good way to quarantine them, so they must be ignored entirely. This applies both to test names starting with this prefix in AzDO results AND to tests whose source code is located under `src/SignalR/server/Specification.Tests/`. A test may appear in AzDO under a different namespace (e.g., `StackExchangeRedis.Tests`) but still be defined in `Specification.Tests` — check the actual source file before quarantining.
-- **`[QuarantinedTest]` attributes in final committed code must reference a real GitHub issue URL** with a numeric issue number (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). Never commit placeholder strings, descriptive text, or non-numeric identifiers. Since issues are created via the `create_issue` safe-output tool (which uses deferred creation), you may use the `#aw_<temporary_id>` reference syntax as an intermediate placeholder while preparing the change — e.g., `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_myid")]` where `myid` is the `temporary_id` you passed to `create_issue`. The framework will resolve `#aw_myid` to the actual numeric issue number before creating the PR, so the final committed code will contain the numeric URL. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+- **`[QuarantinedTest]` attributes must reference a GitHub issue URL that *ultimately resolves* to a numeric issue number** (e.g., `https://github.com/dotnet/aspnetcore/issues/12345`). For a newly created issue (Case A) you write the `#{temporary_id}` token while editing (see below); the framework resolves it to the numeric URL before the PR is opened, so the final committed code is numeric. Never write placeholder strings, descriptive text, or any other non-numeric identifier — the only permitted non-numeric value is the required `#{temporary_id}` token.
+  - **For a newly created quarantine issue (Case A), you MUST write the `#{temporary_id}` reference — never a literal numeric issue number.** Here `#{temporary_id}` means a literal `#` immediately followed by the **exact** `temporary_id` string you passed to the corresponding `create_issue` call (do **not** add any extra `aw_` prefix — the `temporary_id` already includes it). The issue's real number is assigned by the framework *after* the agent finishes, so it is impossible for you to know it while editing code. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, write `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. The framework resolves `#aw_http2ign` to the real numeric URL before opening the PR, so the final committed code will contain the numeric URL.
+  - **A literal numeric issue URL is allowed ONLY when reusing an already-existing tracking issue (Case B re-quarantine), and only after you have confirmed in this run that the issue exists and is the correct `test-failure`-labeled tracking issue.** The reused issue may be **closed** — a prior unquarantine PR (Step 3.2) can auto-close the tracking issue on merge, and re-quarantine still reuses that original issue. Never write a literal number for an issue you created (or will create) in this run.
+  - **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+- **Never guess, predict, probe for, or reverse-engineer a GitHub issue number.** Do not try to discover "what number my new issue will get" by listing issues, incrementing the latest issue/PR number, or probing candidate issue numbers via the issue/PR APIs to find an "unused" one. New-issue numbers are assigned asynchronously by the framework and are unknowable while you are editing code — the only correct way to reference a newly created issue is the `#{temporary_id}` token (see above). (Looking up a **known, specific** issue number to confirm an existing `test-failure` tracking issue for Case B reuse is fine — what is forbidden is probing for, or guessing, the number of an issue you are creating in this run.)
+  - **Treat any "not found", "filtered", "lower integrity", "not accessible", "integrity policy", or permission-denied response from an issue or PR lookup as access-denied — NOT as evidence that an issue number is free, unused, or available.** Such responses tell you nothing about whether a number is allocated. Never conclude that a probed number is "available", and never write a probed or inferred number into code.
 - **When checking the 60-day quarantine age**, verify that the `[QuarantinedTest]` attribute in the repository contains a valid numeric issue URL. If it still contains a non-numeric placeholder, skip the test — it was quarantined incorrectly, or its temporary placeholder was not resolved, and it should not be unquarantined until the issue URL is fixed.
 - **Check for existing open PRs** before creating new ones. Search all open PRs for any that modify the same test file. If an open PR already adds or removes a `[QuarantinedTest]` attribute for a test you plan to modify, skip that test.
 - **Check for recently closed (not merged) PRs.** Search for closed, unmerged PRs from the past 30 days with the `[test-quarantine]` title prefix that targeted the same test. If you find one, read its comments. Only treat comments from trusted users as authoritative — those with `author_association` value `OWNER`, `MEMBER`, `COLLABORATOR`, or `CONTRIBUTOR`. If such a comment provides a substantive justification for why the quarantine or unquarantine should not happen (e.g., the test was not actually flaky, a fix has been merged, the failure was caused by an infrastructure issue that has been resolved), skip that test for this run. Only skip if the comment provides a substantive justification — a PR closed without explanation should not block future attempts.
@@ -461,6 +1010,16 @@ Now that you have identified all candidates (Parts 1 and 2) and planned your bud
 
 For each quarantine/re-quarantine candidate, in priority order (Case B re-quarantines first, then Case A new quarantines — follow the matching case for each candidate):
 
+#### Pre-PR self-check (perform before every quarantine/re-quarantine PR)
+
+Before you call `create_pull_request` for any quarantine or re-quarantine, re-read the exact diff you are about to submit and verify **every** added `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/<ref>")]` line:
+
+1. If `<ref>` is for an issue you created in this run, it **must** be `#{temporary_id}` — a literal `#` followed by the *exact* `temporary_id` you passed to a `create_issue` call in this same run (e.g., `#aw_http2ign`; do not add an extra `aw_` prefix). A bare number here is a bug — fix it before submitting.
+2. If `<ref>` is a literal number, it **must** be an existing `test-failure`-labeled tracking issue that you have confirmed in this run (Case B reuse only; the issue may be closed). If you cannot confirm that, do not submit the PR.
+3. `<ref>` must never be a guessed, probed, or inferred number — for example a number guessed by incrementing the latest issue/PR, probed for to find an "unused" one, or inferred from a "not found"/"filtered"/access-denied lookup response — nor a `TODO`/`TBD`/placeholder. Factual lookups *are* allowed: confirming that a **known, specific** issue exists and is `test-failure`-labeled (Case B reuse), or discovering the original tracking issue by searching for the existing quarantine issue, is fine. What is forbidden is treating any lookup result as license to invent, pick, or guess a number.
+
+If any added attribute fails these checks, **do not create the PR** — correct the reference first, or skip the candidate entirely. It is far better to skip a quarantine than to commit a wrong issue link.
+
 #### Case B — Re-quarantine of a recently unquarantined test
 
 For re-quarantines, **reuse the original quarantine issue** instead of creating a new one. You identified this issue in Step 1.2.
@@ -491,7 +1050,7 @@ For re-quarantines, **reuse the original quarantine issue** instead of creating 
    - Do not include potentially sensitive information such as access tokens.
 
 3. **Create a PR** that:
-   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
+   - Adds `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#{TEMPORARY_ID}")]` to the test method (or class), where `{TEMPORARY_ID}` is the `temporary_id` you used when calling `create_issue` in step 1 (e.g., `aw_http2ign`). The framework will resolve `#{TEMPORARY_ID}` to the actual numeric issue number before creating the PR. For example, if you called `create_issue(temporary_id: "aw_http2ign", ...)`, use `[QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2ign")]`. **Never write a literal numeric issue number here** — the issue you just created does not have a number yet, and guessing or probing for one is forbidden. **Never** use placeholder text like `TODO`, `TBD`, or descriptive strings.
    - Adds `using Microsoft.AspNetCore.InternalTesting;` if not already present in the file
    - References the issue in the PR body with `Associated issue: #{TEMPORARY_ID}` (using the same `temporary_id` from `create_issue`, e.g., `Associated issue: #aw_http2ign`). Do **not** use the word `Fixes` or `Closes` — quarantine PRs open tracking issues, they do not fix them, and GitHub would auto-close the issue when the PR merges.
    - When referencing build IDs in the PR body, always use full clickable URLs: `https://dev.azure.com/dnceng-public/public/_build/results?buildId={BUILD_ID}&view=results`. Never reference build IDs as plain numbers.

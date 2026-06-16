@@ -37,4 +37,9 @@ internal static class OpenApiSchemaExtensions
         schemaId = null;
         return false;
     }
+
+    public static bool IsUnion(this OpenApiSchema schema)
+        => schema.Metadata is not null
+            && schema.Metadata.TryGetValue(OpenApiConstants.SchemaIsUnion, out var isUnion)
+            && isUnion is true;
 }
