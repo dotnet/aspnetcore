@@ -77,6 +77,11 @@ public class PathStringTests
     [InlineData("/", "/test", "/test")]
     [InlineData("/myapp/", "/test/bar", "/myapp/test/bar")]
     [InlineData("/myapp/", "/test/bar/", "/myapp/test/bar/")]
+    // Backslash separators collapse only with another backslash; mixed separators are preserved.
+    [InlineData("/myapp\\", "\\test", "/myapp\\test")]
+    [InlineData("/myapp/", "\\test", "/myapp/\\test")]
+    [InlineData("/myapp\\", "/test", "/myapp\\/test")]
+    [InlineData("/myapp", "\\test", "/myapp\\test")]
     public void AddPathString_HandlesLeadingAndTrailingSlashes(string appString, string? concatString, string expected)
     {
         // Arrange

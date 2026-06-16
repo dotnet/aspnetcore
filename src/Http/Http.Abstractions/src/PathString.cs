@@ -376,14 +376,21 @@ public readonly struct PathString : IEquatable<PathString>
     /// Adds two PathString instances into a combined PathString value.
     /// </summary>
     /// <returns>The combined PathString value</returns>
+    /// <remarks>
+    /// If this <see cref="PathString"/> ends with a separator ('/' or '\') and <paramref name="other"/>
+    /// begins with the same separator, one of them is trimmed to avoid duplicating the boundary.
+    /// Mixed separators (e.g. trailing '/' followed by leading '\') are preserved as-is so that the
+    /// original characters are not silently normalized away.
+    /// </remarks>
     public PathString Add(PathString other)
     {
         if (HasValue &&
             other.HasValue &&
-            Value[^1] == '/')
+            Value[^1] is '/' or '\\' &&
+            Value[^1] == other.Value[0])
         {
-            // If the path string has a trailing slash and the other string has a leading slash, we need
-            // to trim one of them.
+            // If the path string has a trailing separator and the other string has a leading
+            // separator of the same kind, we need to trim one of them.
             var combined = string.Concat(Value.AsSpan(), other.Value.AsSpan(1));
             return new PathString(combined);
         }
