@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 internal static class ValidationEndpointFilterFactory
 {
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
-    private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string Name);
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableParameterInfo Parameter, string Name);
 
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {

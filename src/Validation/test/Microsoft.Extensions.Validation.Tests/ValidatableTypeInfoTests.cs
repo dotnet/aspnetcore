@@ -1075,7 +1075,7 @@ public class ValidatableTypeInfoTests
                 _typeInfoMappings = typeInfoMappings;
             }
 
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableInfo)
             {
                 if (_typeInfoMappings.TryGetValue(type, out var info))
                 {
@@ -1086,7 +1086,7 @@ public class ValidatableTypeInfoTests
                 return false;
             }
 
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
             {
                 validatableInfo = null;
                 return false;

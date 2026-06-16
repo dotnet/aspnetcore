@@ -16,13 +16,13 @@ namespace Microsoft.Extensions.Validation;
 internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
 {
     // TODO: the implementation currently relies on static discovery of types.
-    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
     {
-        validatableInfo = null;
+        validatableTypeInfo = null;
         return false;
     }
 
-    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
     {
         if (parameterInfo.Name == null)
         {
@@ -33,7 +33,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         if (parameterInfo.GetCustomAttribute<SkipValidationAttribute>() != null ||
             parameterInfo.ParameterType.GetCustomAttribute<SkipValidationAttribute>() != null)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
 
@@ -46,13 +46,13 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         // validatable because we want to run the validations on the properties.
         if (validationAttributes.Length == 0 && !IsComplexType(parameterInfo.ParameterType))
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
 
         var displayNameInfo = ResolveDisplayInfo(parameterInfo);
 
-        validatableInfo = new RuntimeValidatableParameterInfo(
+        validatableParameterInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
             displayNameInfo: displayNameInfo,
