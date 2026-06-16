@@ -34,6 +34,7 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/31734")]
     public void InputDateInteractsWithEditContext_NonNullableDateTime()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -66,6 +67,7 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67243")]
     public void InputDateInteractsWithEditContext_NullableDateTimeOffset()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
@@ -89,6 +91,7 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/35018")]
     public void InputDateInteractsWithEditContext_TimeInput()
     {
         var appElement = Browser.MountTestComponent<TypicalValidationComponent>();
