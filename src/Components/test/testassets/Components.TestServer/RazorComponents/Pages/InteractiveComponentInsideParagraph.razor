@@ -1,0 +1,16 @@
+﻿@page "/hydration-error"
+@using Microsoft.AspNetCore.Components.Web
+
+<p>
+    <InteractiveCounter @rendermode="RenderMode.InteractiveServer" @key="1" />
+</p>
+
+
+<script>
+    window.__e2eErrors = [];
+
+    window.onerror = function (message) {
+        window.__e2eErrors.push(message);
+    };
+</script>
+
