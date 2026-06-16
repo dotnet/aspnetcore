@@ -4,6 +4,7 @@
 #nullable enable
 
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -18,10 +19,11 @@ public class ClientValidationDataTest
     private const string CarrierElementName = "blazor-client-validation-data";
 
     [Fact]
-    public async Task Renders_BlazorClientValidationData_WhenMarkerSetAndProviderReturnsNonNull()
+    public async Task Renders_BlazorClientValidationData_WhenMarkerSetRegistryPopulatedAndProviderReturnsNonNull()
     {
         var editContext = new EditContext(new object());
         editContext.Properties[typeof(ClientValidationMarker)] = true; // any non-null value satisfies the marker contract
+        RegisterField(editContext, "F");
 
         var renderer = CreateRenderer(provider: new FakeProvider(SampleDescriptor()));
 
@@ -35,6 +37,23 @@ public class ClientValidationDataTest
     {
         var editContext = new EditContext(new object());
         // Marker deliberately not written.
+        RegisterField(editContext, "F");
+
+        var renderer = CreateRenderer(provider: new FakeProvider(SampleDescriptor()));
+
+        var elementName = await RenderClientValidationDataAndGetCarrierElementName(renderer, editContext);
+
+        Assert.Null(elementName);
+    }
+
+    [Fact]
+    public async Task NoOp_WhenNoFieldsRegistered()
+    {
+        // Marker is set and the provider would return a descriptor, but no input registered a
+        // field (e.g. interactive render modes, where InputBase does not register). The component
+        // short-circuits at the registry check before resolving the provider.
+        var editContext = new EditContext(new object());
+        editContext.Properties[typeof(ClientValidationMarker)] = true;
 
         var renderer = CreateRenderer(provider: new FakeProvider(SampleDescriptor()));
 
@@ -51,6 +70,7 @@ public class ClientValidationDataTest
         // returns null and the component renders nothing.
         var editContext = new EditContext(new object());
         editContext.Properties[typeof(ClientValidationMarker)] = true; // any non-null value satisfies the marker contract
+        RegisterField(editContext, "F");
 
         var renderer = CreateRenderer(provider: null);
 
@@ -68,6 +88,7 @@ public class ClientValidationDataTest
         // so no <blazor-client-validation-data> element is emitted.
         var editContext = new EditContext(new object());
         editContext.Properties[typeof(ClientValidationMarker)] = true; // any non-null value satisfies the marker contract
+        RegisterField(editContext, "F");
 
         var descriptor = providerReturnsNull
             ? null
@@ -113,6 +134,9 @@ public class ClientValidationDataTest
     }
 
     // ---- Helpers ----
+
+    private static void RegisterField(EditContext editContext, string name)
+        => RenderedFieldRegistry.GetOrCreate(editContext).Register(editContext.Field(name), name);
 
     private static ClientValidationFormDescriptor SampleDescriptor()
         => new(new List<ClientValidationFieldDescriptor>
@@ -190,7 +214,7 @@ public class ClientValidationDataTest
 
     private sealed class EditFormHostComponent : ComponentBase
     {
-        public object Model { get; set; } = default!;
+        public EditFormTestModel Model { get; set; } = default!;
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -199,6 +223,14 @@ public class ClientValidationDataTest
             builder.AddComponentParameter(2, "ChildContent", (RenderFragment<EditContext>)(_ => childBuilder =>
             {
                 childBuilder.OpenComponent<DataAnnotationsValidator>(0);
+                childBuilder.CloseComponent();
+
+                // A real input registers its field on the EditContext (gated on AssignedRenderMode
+                // is null, which holds in the test renderer), populating the registry that
+                // ClientValidationData reads before emitting the carrier.
+                childBuilder.OpenComponent<InputText>(1);
+                childBuilder.AddComponentParameter(2, "Value", Model.Name);
+                childBuilder.AddComponentParameter(3, "ValueExpression", (Expression<Func<string>>)(() => Model.Name));
                 childBuilder.CloseComponent();
             }));
             builder.CloseComponent();
@@ -214,7 +246,9 @@ public class ClientValidationDataTest
     {
         private readonly ClientValidationFormDescriptor? _descriptor;
         public FakeProvider(ClientValidationFormDescriptor? descriptor) => _descriptor = descriptor;
-        public override ClientValidationFormDescriptor? GetFormDescriptor(EditContext editContext) => _descriptor;
+        public override ClientValidationFormDescriptor? GetFormDescriptor(
+            EditContext editContext,
+            IReadOnlyDictionary<FieldIdentifier, string> renderedFields) => _descriptor;
     }
 
     private sealed class NullFormValueMapper : IFormValueMapper
