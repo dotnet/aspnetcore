@@ -62,12 +62,6 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        // Skip validation if value is null and parameter is optional
-        if (value == null && ParameterType.IsNullable())
-        {
-            return;
-        }
-
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
