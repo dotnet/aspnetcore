@@ -15,6 +15,12 @@ public class EndpointMiddlewareTest
 {
     private readonly IOptions<RouteOptions> RouteOptions = Options.Create(new RouteOptions());
 
+    // This test project sees internals of both Microsoft.AspNetCore.Http and Microsoft.AspNetCore.Routing,
+    // which each embed an internal copy of the shared MiddlewareInvokedKeys, so the symbolic name is
+    // ambiguous here. Pinning the literal values keeps the test compiling and guards the wire contract.
+    private const string AntiforgeryInvokedKey = "__AntiforgeryMiddlewareWithEndpointInvoked";
+    private const string CsrfProtectionInvokedKey = "__CsrfProtectionMiddlewareWithEndpointInvoked";
+
     [Fact]
     public async Task Invoke_NoFeature_NoOps()
     {
@@ -362,7 +368,7 @@ public class EndpointMiddlewareTest
 
         httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
 
-        httpContext.Items[MiddlewareInvokedKeys.CsrfProtection] = true;
+        httpContext.Items[CsrfProtectionInvokedKey] = true;
 
         RequestDelegate next = (c) =>
         {
@@ -393,8 +399,8 @@ public class EndpointMiddlewareTest
 
         httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
 
-        httpContext.Items[MiddlewareInvokedKeys.Antiforgery] = true;
-        httpContext.Items[MiddlewareInvokedKeys.CsrfProtection] = true;
+        httpContext.Items[AntiforgeryInvokedKey] = true;
+        httpContext.Items[CsrfProtectionInvokedKey] = true;
 
         RequestDelegate next = (c) =>
         {
@@ -426,7 +432,7 @@ public class EndpointMiddlewareTest
 
         httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(AntiforgeryMetadata.ValidationRequired), "Test"));
 
-        httpContext.Items[MiddlewareInvokedKeys.Antiforgery] = true;
+        httpContext.Items[AntiforgeryInvokedKey] = true;
 
         RequestDelegate next = (c) =>
         {

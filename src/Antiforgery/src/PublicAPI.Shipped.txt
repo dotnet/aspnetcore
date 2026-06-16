@@ -17,9 +17,6 @@ Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.CookieToken.get -> string?
 Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.FormFieldName.get -> string!
 Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.HeaderName.get -> string?
 Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet.RequestToken.get -> string?
-Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException
-Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException.AntiforgeryValidationException(string! message, System.Exception? innerException) -> void
-Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException.AntiforgeryValidationException(string! message) -> void
 Microsoft.AspNetCore.Antiforgery.IAntiforgery
 Microsoft.AspNetCore.Antiforgery.IAntiforgery.GetAndStoreTokens(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet!
 Microsoft.AspNetCore.Antiforgery.IAntiforgery.GetTokens(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet!

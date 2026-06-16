@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException
+Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException.AntiforgeryValidationException(string! message, System.Exception? innerException) -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException.AntiforgeryValidationException(string! message) -> void
 Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult
 Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.IsAllowed.get -> bool
 static Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult.Allowed() -> Microsoft.AspNetCore.Antiforgery.CsrfProtectionResult!

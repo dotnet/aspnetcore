@@ -360,7 +360,11 @@ public class FormFeature : IFormFeature
         {
             return false;
         }
-        var hasInvokedMiddleware = _request.HttpContext.Items.ContainsKey("__AntiforgeryMiddlewareWithEndpointInvoked");
+
+        // Set by the antiforgery and the CSRF protection middleware respectively. Either marker means a
+        // middleware ran and recorded its verdict on IAntiforgeryValidationFeature.
+        var hasInvokedMiddleware = _request.HttpContext.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery)
+                                || _request.HttpContext.Items.ContainsKey(MiddlewareInvokedKeys.CsrfProtection);
         var hasInvalidToken = _request.HttpContext.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false };
         return hasInvokedMiddleware && hasInvalidToken;
     }

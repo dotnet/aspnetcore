@@ -35,6 +35,11 @@ internal sealed class AntiforgeryMiddleware(IAntiforgery antiforgery, RequestDel
 
     public async Task InvokeAwaited(HttpContext context)
     {
+        // An earlier middleware (e.g. the auto-injected CSRF protection) may have already recorded a verdict on
+        // IAntiforgeryValidationFeature. Token validation here is authoritative and overrides that verdict, so we
+        // clear any prior result first. This also prevents the FormFeature antiforgery backstop from blocking this
+        // middleware's own read of the form while it looks for the request token.
+        context.Features.Set<IAntiforgeryValidationFeature?>(null);
         try
         {
             await _antiforgery.ValidateRequestAsync(context);
