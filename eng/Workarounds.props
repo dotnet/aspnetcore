@@ -23,6 +23,11 @@
     <!-- We use the compiler toolset that comes from NuGet Packages rather than the SDK built-in.
     This one sets UseSharedCompilation to false by default. -->
     <UseSharedCompilation>true</UseSharedCompilation>
+    <!-- Experiment for https://github.com/dotnet/runtime/issues/128955: the long-lived macOS shared-compilation
+         server (VBCSCompiler) is the process spinning in the VSD DispatchCache self-loop hang. Disable shared
+         compilation when building on macOS so each csc runs as a fresh, short-lived process and cannot accumulate
+         into the corrupted dispatch cache. Non-macOS builds keep shared compilation for speed. -->
+    <UseSharedCompilation Condition="$([MSBuild]::IsOSPlatform('OSX'))">false</UseSharedCompilation>
   </PropertyGroup>
 
   <PropertyGroup>
