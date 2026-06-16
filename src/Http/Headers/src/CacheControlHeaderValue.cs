@@ -507,7 +507,7 @@ public class CacheControlHeaderValue
     {
         var index = 0;
         // Cache-Control is unusual because there are no required values so the parser will succeed for an empty string, but still return null.
-        if (Parser.TryParseValue(input, ref index, out parsedValue) && parsedValue != null)
+        if (Parser.TryParseValue(input, index, out _, out parsedValue) && parsedValue != null)
         {
             return true;
         }
@@ -532,10 +532,12 @@ public class CacheControlHeaderValue
         var nameValueList = new List<NameValueHeaderValue>();
         while (current < input.Length)
         {
-            if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, ref current, out var nameValue))
+            if (!NameValueHeaderValue.MultipleValueParser.TryParseValue(input, current, out var consumed, out var nameValue))
             {
                 return 0;
             }
+
+            current += consumed;
 
             if (nameValue != null)
             {

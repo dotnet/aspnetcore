@@ -735,11 +735,11 @@ network:
 checkout:
   fetch-depth: 0
 
-# Per-run effective-token (ET) budget for AWF API-proxy enforcement. Raised from the
-# 25M default because the agent loop was tripping the cap mid-gathering before producing
-# any output. Run frequency is halved (every 2 days, see cron above) to keep monthly token
-# spend roughly flat. See gh-aw ADR-35286 for the precedence rules.
-max-effective-tokens: 50M
+# Per-run AI Credits budget for AWF API-proxy enforcement. Raised to 2x the 1000-credit
+# default because the agent loop was tripping the cap mid-gathering before producing any
+# output (1000 credits == the former 25M effective-token default). Run frequency is halved
+# (every 2 days, see cron above) to keep monthly token spend roughly flat.
+max-ai-credits: 2000
 
 timeout-minutes: 90
 ---
