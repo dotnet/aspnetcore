@@ -84,6 +84,9 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             if (hasChanged)
             {
                 _parsingFailed = false;
+                _incomingValueBeforeParsing = null;
+
+                _parsingValidationMessages?.Clear();
 
                 // If we don't do this, then when the user edits from A to B, we'd:
                 // - Do a render that changes back to A
@@ -321,9 +324,12 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
     {
-        UpdateAdditionalValidationAttributes();
-
-        StateHasChanged();
+        _ = InvokeAsync(() =>
+        {
+            UpdateAdditionalValidationAttributes();
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
     }
 
     private void UpdateAdditionalValidationAttributes()
