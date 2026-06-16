@@ -5,6 +5,8 @@ Microsoft.AspNetCore.Components.CascadingParameterSubscription
 Microsoft.AspNetCore.Components.CascadingParameterSubscription.CascadingParameterSubscription() -> void
 Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int frameIndex, object? value) -> void
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithHash(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string! hash) -> string!
+Microsoft.AspNetCore.Components.NavigationManager.GetUri<TComponent>(params object![]! parameters) -> string!
+Microsoft.AspNetCore.Components.NavigationManager.NavigateTo<TComponent>(params object![]! parameters) -> void
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void
 Microsoft.AspNetCore.Components.IComponentPropertyActivator
