@@ -4,7 +4,7 @@
 import { Logger, LogLevel } from '../Logging/Logger';
 import { AutoPauseOptions, CircuitStartOptions } from './CircuitStartOptions';
 import { isFocusedElementEdited } from '../../Rendering/DomFocus';
-import { isMediaPlaying, isPictureInPictureActive } from '../../Rendering/FreezeBlockers';
+import { isMediaPlaying, isPictureInPictureActive, queryWebLockHeld } from '../../Rendering/FreezeBlockers';
 
 export class AutoPauseManager {
   private readonly _options: AutoPauseOptions;
@@ -135,6 +135,13 @@ export class AutoPauseManager {
         return;
       }
 
+      if (!(await this.deferIfBlocked(
+        controller, queryWebLockHeld,
+        'Pause deferred: web lock held.',
+        'Pause resumed: tab became visible before web lock released.'))) {
+        return;
+      }
+
       if (this._onPauseRequested) {
         await this._onPauseRequested(controller.signal);
       }
@@ -172,21 +179,31 @@ export class AutoPauseManager {
 
   private async deferIfBlocked(
     controller: AbortController,
-    isBlocked: () => boolean,
+    isBlocked: () => boolean | Promise<boolean>,
     deferLog: string,
     resumeLog: string,
     subscribeClearEvent?: (notify: () => void) => () => void,
   ): Promise<boolean> {
-    if (controller.signal.aborted || !isBlocked()) {
+    if (controller.signal.aborted) {
+      return false;
+    }
+    if (!(await isBlocked())) {
       return !controller.signal.aborted;
     }
 
     this._logger.log(LogLevel.Information, deferLog);
 
     const cleared = await new Promise<boolean>(resolve => {
+      const pollIntervalMs = 500;
+      let pollId: ReturnType<typeof setInterval> | undefined;
+      let unsubscribe: (() => void) | undefined;
+
       const cleanup = (didClear: boolean) => {
         controller.signal.removeEventListener('abort', onAbort);
         unsubscribe?.();
+        if (pollId !== undefined) {
+          clearInterval(pollId);
+        }
         resolve(didClear);
       };
       const onAbort = () => {
@@ -194,11 +211,18 @@ export class AutoPauseManager {
         cleanup(false);
       };
       controller.signal.addEventListener('abort', onAbort);
-      const unsubscribe = subscribeClearEvent?.(() => {
-        if (!isBlocked()) {
+
+      const checkAndResolve = async () => {
+        if (!(await isBlocked())) {
           cleanup(true);
         }
-      });
+      };
+
+      if (subscribeClearEvent) {
+        unsubscribe = subscribeClearEvent(() => { checkAndResolve(); });
+      } else {
+        pollId = setInterval(() => { checkAndResolve(); }, pollIntervalMs);
+      }
     });
 
     return cleared;

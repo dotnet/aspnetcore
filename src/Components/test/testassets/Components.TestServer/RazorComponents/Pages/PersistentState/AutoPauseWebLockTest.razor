@@ -1,0 +1,39 @@
+@page "/persistent-state/auto-pause-weblock"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause veto — Web Lock</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<p>Verifies that auto-pause is vetoed while a Web Lock is held.</p>
+
+<span id="lock-status">idle</span>
+
+<button id="acquire-lock-1s" type="button">Acquire lock (1s)</button>
+
+<script>
+    window.autoPauseWebLock = (function () {
+        function acquireFor(durationMs) {
+            navigator.locks.request('test-lock', function () {
+                document.getElementById('lock-status').textContent = 'held';
+                return new Promise(function (resolve) {
+                    setTimeout(function () {
+                        document.getElementById('lock-status').textContent = 'released';
+                        resolve();
+                    }, durationMs);
+                });
+            });
+        }
+
+        return { acquireFor: acquireFor };
+    })();
+
+    document.getElementById('acquire-lock-1s').addEventListener('click', function () {
+        window.autoPauseWebLock.acquireFor(1000);
+    });
+</script>

@@ -521,6 +521,33 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    private void NavigateToWebLockPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-weblock?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    [Fact]
+    public void WebLock_HeldThenReleased_DefersAndPauses()
+    {
+        NavigateToWebLockPage();
+        Browser.Exists(By.Id("acquire-lock-1s")).Click();
+        Browser.True(() => Browser.FindElement(By.Id("lock-status")).Text == "held");
+
+        ClearBlazorLogs();
+        SetVisibility("hidden");
+        try
+        {
+            WaitForBlazorLog("Pause deferred: web lock held.");
+            WaitForPausedUI();
+        }
+        finally
+        {
+            SetVisibility("visible");
+            WaitForResumedUI();
+        }
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();

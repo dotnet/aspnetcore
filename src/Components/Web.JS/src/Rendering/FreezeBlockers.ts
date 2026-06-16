@@ -14,3 +14,15 @@ export function isMediaPlaying(): boolean {
 export function isPictureInPictureActive(): boolean {
   return (document as Document & { pictureInPictureElement?: Element | null }).pictureInPictureElement != null;
 }
+
+export async function queryWebLockHeld(): Promise<boolean> {
+  if (!navigator.locks) {
+    return false;
+  }
+  try {
+    const state = await navigator.locks.query();
+    return (state.held?.length ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
