@@ -13,7 +13,7 @@ internal static class DiagnosticEmitter
     {
         if (response.ResponseType is IErrorTypeSymbol)
         {
-            diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveMethod, location));
+            diagnostics.Add(Diagnostic.Create(DiagnosticDescriptors.UnableToResolveReturnType, location));
             return;
         }
 
