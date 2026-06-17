@@ -791,6 +791,18 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             expectedWhenMitigated: "immersive-vr,visible,false");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Notification_ActiveState_PreservedOnlyWithMitigation(bool useMitigation)
+    {
+        RunRiskMitigationTest(
+            useMitigation,
+            page: "auto-pause-notification-risk",
+            savedVar: "__savedNotificationState",
+            expectedWhenMitigated: "msg-1,reminder-2");
+    }
+
     private void RunRiskMitigationTest(
         bool useMitigation,
         string savedVar,
