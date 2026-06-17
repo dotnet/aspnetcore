@@ -478,10 +478,6 @@ internal static class JsonNodeSchemaExtensions
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
         }
-        if (context.TypeInfo.Kind == JsonTypeInfoKind.Union)
-        {
-            schema[OpenApiConstants.SchemaIsUnion] = true;
-        }
         // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
         if (context.BaseTypeInfo == context.TypeInfo &&
             IsNonAbstractTypeWithoutDerivedTypeReference(context))

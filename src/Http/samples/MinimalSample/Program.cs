@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -93,107 +91,12 @@ app.MapGet("/problem/{problemType}", (string problemType) => problemType switch
 
     });
 
-app.MapPost("/weather", (Weather weather) => weather);
-
 app.MapPost("/todos", (TodoBindable todo) => todo);
 app.MapGet("/todos", () => new Todo[] { new Todo(1, "Walk the dog"), new Todo(2, "Come back home") });
-
-// GET /union/echo?value=42  → 42 wrapped in UnionIntStringWithClassifier, serialized as 42
-// GET /union/echo?value=hi  → "hi"
-app.MapGet("/union/echo", ([FromQuery] string value) =>
-    int.TryParse(value, out var n)
-        ? new UnionIntStringWithClassifier(n)
-        : new UnionIntStringWithClassifier(value));
-
-// POST /union/parse  body: 42   → "got int: 42"
-// POST /union/parse  body: "hi" → "got string: hi"
-app.MapPost("/union/parse", (UnionIntStringWithClassifier u) => u.Value switch
-{
-    int i => $"got int: {i}",
-    string s => $"got string: {s}",
-    _ => throw new NotImplementedException()
-});
-
-// POST /union/envelope body: {"correlationId":"abc","payload":42}
-//                          or {"correlationId":"abc","payload":"hi"}
-app.MapPost("/union/envelope", (UnionEnvelopeWithClassifier e) => e);
-
-// POST /union/pet body: {"name":"Whiskers"}  → Cat
-//                       {"breed":"Husky"}    → Dog
-app.MapPost("/union/pet", (UnionPetWithClassifier pet) => pet.Value switch
-{
-    Cat c => $"cat: {c.Name}",
-    Dog d => $"dog: {d.Breed}",
-    _     => "unknown",
-});
 
 app.Run();
 
 internal record Todo(int Id, string Title);
-
-[JsonUnion(TypeClassifier = typeof(UnionIntStringClassifierFactory))]
-public union UnionIntStringWithClassifier(int, string);
-
-public sealed class UnionIntStringClassifierFactory
-    : JsonTypeClassifierFactory<UnionIntStringWithClassifier>
-{
-    public override JsonTypeClassifier CreateJsonClassifier(
-        JsonTypeClassifierContext context,
-        JsonSerializerOptions options) =>
-        static (ref Utf8JsonReader reader) => reader.TokenType switch
-        {
-            JsonTokenType.Number => typeof(int),
-            JsonTokenType.String => typeof(string),
-            _ => null,
-        };
-}
-
-public record UnionEnvelopeWithClassifier(string CorrelationId, UnionIntStringWithClassifier Payload);
-
-public record Cat(string Name);
-public record Dog(string Breed);
-
-[JsonUnion(TypeClassifier = typeof(UnionPetClassifierFactory))]
-public union UnionPetWithClassifier(Cat, Dog);
-
-public sealed class UnionPetClassifierFactory : JsonTypeClassifierFactory<UnionPetWithClassifier>
-{
-    public override JsonTypeClassifier CreateJsonClassifier(
-        JsonTypeClassifierContext context,
-        JsonSerializerOptions options) =>
-        static (ref Utf8JsonReader reader) =>
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                return null;
-            }
-
-            var clone = reader;
-            clone.Read();
-            while (clone.TokenType == JsonTokenType.PropertyName)
-            {
-                if (clone.ValueTextEquals("name") || clone.ValueTextEquals("Name"))
-                {
-                    return typeof(Cat);
-                }
-                if (clone.ValueTextEquals("breed") || clone.ValueTextEquals("Breed"))
-                {
-                    return typeof(Dog);
-                }
-                clone.Read();
-                clone.Skip();
-                clone.Read();
-            }
-            return null;
-        };
-}
-
-public class Weather
-{
-    public int TemperatureC { get; set; }
-    public string? Summary { get; set; }
-}
-
 public class TodoBindable : IBindableFromHttpContext<TodoBindable>
 {
     public int Id { get; set; }
