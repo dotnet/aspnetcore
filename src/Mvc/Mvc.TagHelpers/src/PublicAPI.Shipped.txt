@@ -123,6 +123,9 @@
 ~Microsoft.AspNetCore.Mvc.TagHelpers.GlobbingUrlBuilder.Cache.get -> Microsoft.Extensions.Caching.Memory.IMemoryCache
 ~Microsoft.AspNetCore.Mvc.TagHelpers.GlobbingUrlBuilder.FileProvider.get -> Microsoft.Extensions.FileProviders.IFileProvider
 ~Microsoft.AspNetCore.Mvc.TagHelpers.GlobbingUrlBuilder.GlobbingUrlBuilder(Microsoft.Extensions.FileProviders.IFileProvider fileProvider, Microsoft.Extensions.Caching.Memory.IMemoryCache cache, Microsoft.AspNetCore.Http.PathString requestPathBase) -> void
+~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.Cache.get -> Microsoft.Extensions.Caching.Memory.IMemoryCache
+~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.HostingEnvironment.get -> Microsoft.AspNetCore.Hosting.IWebHostEnvironment
+~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.ImageTagHelper(Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, Microsoft.AspNetCore.Mvc.Razor.Infrastructure.TagHelperMemoryCacheProvider cacheProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider fileVersionProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.ImageTagHelper(Microsoft.AspNetCore.Mvc.ViewFeatures.IFileVersionProvider fileVersionProvider, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) -> void
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.Src.get -> string
 ~Microsoft.AspNetCore.Mvc.TagHelpers.ImageTagHelper.Src.set -> void

@@ -13,3 +13,6 @@
 *REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions.CompatibilityVersion.get -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
 *REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions.CompatibilityVersion.set -> void
 *REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions.MvcCompatibilityOptions() -> void
+*REMOVED*static Microsoft.Extensions.DependencyInjection.MvcCoreMvcBuilderExtensions.SetCompatibilityVersion(this Microsoft.Extensions.DependencyInjection.IMvcBuilder! builder, Microsoft.AspNetCore.Mvc.CompatibilityVersion version) -> Microsoft.Extensions.DependencyInjection.IMvcBuilder!
+*REMOVED*static Microsoft.Extensions.DependencyInjection.MvcCoreMvcCoreBuilderExtensions.SetCompatibilityVersion(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder! builder, Microsoft.AspNetCore.Mvc.CompatibilityVersion version) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder!
+*REMOVED*virtual Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.PostConfigure(string? name, TOptions! options) -> void
