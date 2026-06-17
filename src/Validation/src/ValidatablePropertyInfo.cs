@@ -124,6 +124,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                     potentiallyClonedContext.AddValidationError(errorContext);
                 }
 
+                // Restore the validation path mutated above before returning early so that sibling
+                // members validated with the same (shared) context observe the original prefix.
+                potentiallyClonedContext.CurrentValidationPath = originalPrefix;
                 return;
             }
         }
@@ -237,6 +240,12 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         finally
         {
             await Task.WhenAll(potentiallyClonedContext.ValidationTasks);
+
+            if (!hasAsync)
+            {
+                potentiallyClonedContext.CurrentDepth--;
+                potentiallyClonedContext.CurrentValidationPath = originalPrefix;
+            }
         }
     }
 
