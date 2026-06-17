@@ -153,7 +153,11 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
                         if (validatableType is ValidatableTypeInfo builtInValidatableTypeInfo &&
                             builtInValidatableTypeInfo.IsGuaranteedToBeSynchronous(item, validationOptions, context.CurrentDepth))
                         {
+                            context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                                ? $"{Name}[{index}]"
+                                : $"{currentPrefix}.{Name}[{index}]";
                             builtInValidatableTypeInfo.ValidateAsync(item, context, cancellationToken).GetAwaiter().GetResult();
+                            context.CurrentValidationPath = currentPrefix;
                         }
                         else
                         {

@@ -171,7 +171,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             }
         }
 
-        return Type.ImplementsInterface(typeof(IValidatableObject)) && value is IAsyncValidatableObject;
+        return !(Type.ImplementsInterface(typeof(IValidatableObject)) && value is IAsyncValidatableObject);
     }
 
     /// <inheritdoc />

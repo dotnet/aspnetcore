@@ -270,6 +270,106 @@ public class AsyncValidationTests
     }
 
     [Fact]
+    public async Task AsyncValidation_OnNestedIAsyncValidatableObjectProperty()
+    {
+        // Arrange
+        // A property whose value implements IAsyncValidatableObject must be routed through the
+        // asynchronous validation path (it is not "guaranteed to be synchronous"). This guards
+        // against IsGuaranteedToBeSynchronous incorrectly treating an IAsyncValidatableObject as
+        // synchronous, which would block on async work via sync-over-async.
+        var profileType = new TestValidatableTypeInfo(typeof(AsyncValidatableProfile), []);
+
+        var customerType = new TestValidatableTypeInfo(
+            typeof(CustomerWithAsyncProfile),
+            [
+                CreatePropertyInfo(typeof(CustomerWithAsyncProfile), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(CustomerWithAsyncProfile), typeof(AsyncValidatableProfile), "Profile", "Profile", [])
+            ]);
+
+        var customer = new CustomerWithAsyncProfile
+        {
+            Name = "John Doe",
+            Profile = new AsyncValidatableProfile { Bio = "short" }
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(CustomerWithAsyncProfile), customerType },
+                { typeof(AsyncValidatableProfile), profileType }
+            }),
+            ValidationContext = new ValidationContext(customer)
+        };
+
+        // Act
+        await customerType.ValidateAsync(customer, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Profile.Bio", error.Key);
+        Assert.Equal("Bio must be at least 10 characters", error.Value.First());
+    }
+
+    [Fact]
+    public async Task AsyncValidation_OnNestedIAsyncValidatableObjectProperty_UsesIsolatedContext()
+    {
+        // Arrange
+        // A nested IAsyncValidatableObject must be validated on an isolated (cloned) context so that
+        // its asynchronous validation - which runs in parallel with sibling members - never observes
+        // mutations made to the ValidationContext by those siblings. If the nested async object were
+        // wrongly treated as "guaranteed synchronous", it would be validated on the shared context
+        // and would observe the sibling 'Name' property overwriting ValidationContext.MemberName.
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var profile = new GatedAsyncValidatableProfile { Gate = gate.Task };
+
+        var profileType = new TestValidatableTypeInfo(typeof(GatedAsyncValidatableProfile), []);
+        var customerType = new TestValidatableTypeInfo(
+            typeof(CustomerWithGatedAsyncProfile),
+            [
+                // Profile is validated first and parks on the gate; Name runs afterwards and mutates
+                // ValidationContext.MemberName on the shared context while the gate is still closed.
+                CreatePropertyInfo(typeof(CustomerWithGatedAsyncProfile), typeof(GatedAsyncValidatableProfile), "Profile", "Profile", []),
+                CreatePropertyInfo(typeof(CustomerWithGatedAsyncProfile), typeof(string), "Name", "Name",
+                    [new StringLengthAttribute(100)])
+            ]);
+
+        var customer = new CustomerWithGatedAsyncProfile
+        {
+            Profile = profile,
+            Name = "John Doe"
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(CustomerWithGatedAsyncProfile), customerType },
+                { typeof(GatedAsyncValidatableProfile), profileType }
+            }),
+            ValidationContext = new ValidationContext(customer)
+        };
+
+        // Act
+        var validationTask = customerType.ValidateAsync(customer, context, default);
+
+        // All synchronous member validation has run by now (Name has set MemberName on its context).
+        // Releasing the gate lets the nested async validation resume and capture the MemberName.
+        gate.SetResult();
+
+        await validationTask.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Assert - the nested async object must not have observed the sibling's MemberName mutation.
+        Assert.NotEqual("Name", profile.CapturedMemberName);
+
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Profile.Bio", error.Key);
+    }
+
+    [Fact]
     public async Task AsyncValidation_WithCancellation()
     {
         // Arrange
@@ -1066,6 +1166,64 @@ public class AsyncValidationTests
     {
         public string? Name { get; set; }
         public AddressWithAsyncValidation? Address { get; set; }
+    }
+
+    private class CustomerWithAsyncProfile
+    {
+        public string? Name { get; set; }
+        public AsyncValidatableProfile? Profile { get; set; }
+    }
+
+    private class AsyncValidatableProfile : IAsyncValidatableObject
+    {
+        public string? Bio { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            => Array.Empty<ValidationResult>();
+
+        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
+            ValidationContext validationContext,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(10, cancellationToken);
+
+            if (Bio is null || Bio.Length < 10)
+            {
+                yield return new ValidationResult("Bio must be at least 10 characters", [nameof(Bio)]);
+            }
+        }
+    }
+
+    private class CustomerWithGatedAsyncProfile
+    {
+        public string? Name { get; set; }
+
+        public GatedAsyncValidatableProfile? Profile { get; set; }
+    }
+
+    private class GatedAsyncValidatableProfile : IAsyncValidatableObject
+    {
+        public Task Gate { get; set; } = Task.CompletedTask;
+
+        public string? Bio { get; set; }
+
+        public string? CapturedMemberName { get; private set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+            => Array.Empty<ValidationResult>();
+
+        public async IAsyncEnumerable<ValidationResult> ValidateAsync(
+            ValidationContext validationContext,
+            [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            await Gate.WaitAsync(cancellationToken);
+
+            // Capture the MemberName after resuming. When validated on an isolated (cloned) context
+            // this reflects only this object's validation; on a shared context it leaks sibling state.
+            CapturedMemberName = validationContext.MemberName;
+
+            yield return new ValidationResult("Bio must be at least 10 characters", [nameof(Bio)]);
+        }
     }
 
     private class Document
