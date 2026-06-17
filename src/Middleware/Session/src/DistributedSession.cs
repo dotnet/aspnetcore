@@ -64,12 +64,7 @@ public class DistributedSession : ISession
         bool isNewSessionKey)
     {
         ArgumentNullException.ThrowIfNull(cache);
-
-        if (string.IsNullOrEmpty(sessionKey))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(sessionKey));
-        }
-
+        ArgumentException.ThrowIfNullOrEmpty(sessionKey);
         ArgumentNullException.ThrowIfNull(tryEstablishSession);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
@@ -218,9 +213,9 @@ public class DistributedSession : ISession
         // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
         if (!_loaded)
         {
-            using (var timeout = new CancellationTokenSource(_ioTimeout))
+            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
             {
-                var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+                cts.CancelAfter(_ioTimeout);
                 try
                 {
                     cts.Token.ThrowIfCancellationRequested();
@@ -234,14 +229,10 @@ public class DistributedSession : ISession
                         _logger.AccessingExpiredSession(_sessionKey);
                     }
                 }
-                catch (OperationCanceledException oex)
+                catch (OperationCanceledException oex) when (!cancellationToken.IsCancellationRequested && cts.IsCancellationRequested)
                 {
-                    if (timeout.Token.IsCancellationRequested)
-                    {
-                        _logger.SessionLoadingTimeout();
-                        throw new OperationCanceledException("Timed out loading the session.", oex, timeout.Token);
-                    }
-                    throw;
+                    _logger.SessionLoadingTimeout();
+                    throw new OperationCanceledException("Timed out loading the session.", oex, cts.Token);
                 }
             }
             _isAvailable = true;
@@ -252,9 +243,9 @@ public class DistributedSession : ISession
     /// <inheritdoc />
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
-        using (var timeout = new CancellationTokenSource(_ioTimeout))
+        using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
         {
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+            cts.CancelAfter(_ioTimeout);
             if (_isModified)
             {
                 if (_logger.IsEnabled(LogLevel.Information))
@@ -293,14 +284,10 @@ public class DistributedSession : ISession
                     _isModified = false;
                     _logger.SessionStored(_sessionKey, Id, _store.Count);
                 }
-                catch (OperationCanceledException oex)
+                catch (OperationCanceledException oex) when (!cancellationToken.IsCancellationRequested && cts.IsCancellationRequested)
                 {
-                    if (timeout.Token.IsCancellationRequested)
-                    {
-                        _logger.SessionCommitTimeout();
-                        throw new OperationCanceledException("Timed out committing the session.", oex, timeout.Token);
-                    }
-                    throw;
+                    _logger.SessionCommitTimeout();
+                    throw new OperationCanceledException("Timed out committing the session.", oex, cts.Token);
                 }
             }
             else
@@ -309,14 +296,10 @@ public class DistributedSession : ISession
                 {
                     await _cache.RefreshAsync(_sessionKey, cts.Token);
                 }
-                catch (OperationCanceledException oex)
+                catch (OperationCanceledException oex) when (!cancellationToken.IsCancellationRequested && cts.IsCancellationRequested)
                 {
-                    if (timeout.Token.IsCancellationRequested)
-                    {
-                        _logger.SessionRefreshTimeout();
-                        throw new OperationCanceledException("Timed out refreshing the session.", oex, timeout.Token);
-                    }
-                    throw;
+                    _logger.SessionRefreshTimeout();
+                    throw new OperationCanceledException("Timed out refreshing the session.", oex, cts.Token);
                 }
             }
         }

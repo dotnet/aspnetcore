@@ -56,13 +56,13 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
 
         // Prerendered output can't use JSInterop
         Browser.Equal("No value yet", () => Browser.Exists(By.Id("val-get-by-interop")).Text);
-        Browser.Equal(string.Empty, () => Browser.Exists(By.Id("val-set-by-interop")).GetAttribute("value"));
+        Browser.Equal(string.Empty, () => Browser.Exists(By.Id("val-set-by-interop")).GetDomProperty("value"));
 
         BeginInteractivity();
 
         // Once connected, we can
         Browser.Equal("Hello from interop call", () => Browser.Exists(By.Id("val-get-by-interop")).Text);
-        Browser.Equal("Hello from interop call", () => Browser.Exists(By.Id("val-set-by-interop")).GetAttribute("value"));
+        Browser.Equal("Hello from interop call", () => Browser.Exists(By.Id("val-set-by-interop")).GetDomProperty("value"));
     }
 
     [Fact]
@@ -95,24 +95,6 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
         Browser.Equal(
             _serverFixture.RootUri + url,
             () => Browser.Exists(By.TagName("strong")).Text);
-    }
-
-    [Theory]
-    [InlineData("base/relative", "prerendered/base/relative")]
-    [InlineData("/root/relative", "/root/relative")]
-    [InlineData("http://absolute/url", "http://absolute/url")]
-    public async Task CanRedirectDuringPrerendering(string destinationParam, string expectedRedirectionLocation)
-    {
-        var requestUri = new Uri(
-            _serverFixture.RootUri,
-            "prerendered/prerendered-redirection?destination=" + destinationParam);
-
-        var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-        var response = await httpClient.GetAsync(requestUri);
-
-        var expectedUri = new Uri(_serverFixture.RootUri, expectedRedirectionLocation);
-        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-        Assert.Equal(expectedUri, response.Headers.Location);
     }
 
     [Theory]

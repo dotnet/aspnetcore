@@ -27,7 +27,7 @@ public static class IdentityServiceCollectionExtensions
     /// <typeparam name="TRole">The type representing a Role in the system.</typeparam>
     /// <param name="services">The services available in the application.</param>
     /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
-    [RequiresUnreferencedCode("Identity middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Identity middleware does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IdentityBuilder AddIdentity<TUser, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>(
         this IServiceCollection services)
         where TUser : class
@@ -42,7 +42,7 @@ public static class IdentityServiceCollectionExtensions
     /// <param name="services">The services available in the application.</param>
     /// <param name="setupAction">An action to configure the <see cref="IdentityOptions"/>.</param>
     /// <returns>An <see cref="IdentityBuilder"/> for creating and configuring the identity system.</returns>
-    [RequiresUnreferencedCode("Identity middleware does not currently support native AOT.", Url = "https://aka.ms/aspnet/nativeaot")]
+    [RequiresUnreferencedCode("Identity middleware does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static IdentityBuilder AddIdentity<TUser, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TRole>(
         this IServiceCollection services,
         Action<IdentityOptions> setupAction)
@@ -89,6 +89,7 @@ public static class IdentityServiceCollectionExtensions
 
         // Hosting doesn't add IHttpContextAccessor by default
         services.AddHttpContextAccessor();
+        services.AddMetrics();
         // Identity services
         services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();
         services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
@@ -102,6 +103,7 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
+        services.TryAddScoped<IPasskeyHandler<TUser>, PasskeyHandler<TUser>>();
         services.TryAddScoped<UserManager<TUser>>();
         services.TryAddScoped<SignInManager<TUser>>();
         services.TryAddScoped<RoleManager<TRole>>();
@@ -144,14 +146,10 @@ public static class IdentityServiceCollectionExtensions
                 compositeOptions.ForwardDefault = IdentityConstants.BearerScheme;
                 compositeOptions.ForwardAuthenticate = IdentityConstants.BearerAndApplicationScheme;
             })
-            .AddIdentityBearerToken<TUser>()
+            .AddBearerToken(IdentityConstants.BearerScheme)
             .AddIdentityCookies();
 
-        return services.AddIdentityCore<TUser>(o =>
-            {
-                o.Stores.MaxLengthForKeys = 128;
-                configure(o);
-            })
+        return services.AddIdentityCore<TUser>(configure)
             .AddApiEndpoints();
     }
 
@@ -175,12 +173,14 @@ public static class IdentityServiceCollectionExtensions
 
     private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
     {
-        public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)
+        public PostConfigureSecurityStampValidatorOptions(TimeProvider? timeProvider = null)
         {
+            // We could assign this to "timeProvider ?? TimeProvider.System", but
+            // SecurityStampValidator already has system clock fallback logic.
             TimeProvider = timeProvider;
         }
 
-        private TimeProvider TimeProvider { get; }
+        private TimeProvider? TimeProvider { get; }
 
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
         {

@@ -9,13 +9,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-[DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(HttpHeadersDebugView))]
+[DebuggerDisplay("{DebuggerToString(),nq}")]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 internal abstract partial class HttpHeaders : IHeaderDictionary
 {
     protected long _bits;
@@ -115,7 +116,7 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
 
     bool ICollection<KeyValuePair<string, StringValues>>.IsReadOnly => _isReadOnly;
 
-    ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToList();
+    ICollection<string> IDictionary<string, StringValues>.Keys => ((IDictionary<string, StringValues>)this).Select(pair => pair.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     ICollection<StringValues> IDictionary<string, StringValues>.Values => ((IDictionary<string, StringValues>)this).Select(pair => pair.Value).ToList();
 
@@ -261,6 +262,16 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     bool IDictionary<string, StringValues>.TryGetValue(string key, out StringValues value)
     {
         return TryGetValueFast(key, out value);
+    }
+
+    internal string DebuggerToString()
+    {
+        var debugText = $"Count = {Count}";
+        if (_isReadOnly)
+        {
+            debugText += ", IsReadOnly = true";
+        }
+        return debugText;
     }
 
     public static void ValidateHeaderValueCharacters(string headerName, StringValues headerValues, Func<string, Encoding?> encodingSelector)
@@ -678,13 +689,5 @@ internal abstract partial class HttpHeaders : IHeaderDictionary
     private static void ThrowInvalidEmptyHeaderName()
     {
         throw new InvalidOperationException(CoreStrings.InvalidEmptyHeaderName);
-    }
-
-    private sealed class HttpHeadersDebugView(HttpHeaders headers)
-    {
-        private readonly HttpHeaders _headers = headers;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _headers.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

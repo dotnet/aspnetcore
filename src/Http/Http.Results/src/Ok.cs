@@ -50,6 +50,7 @@ public sealed class Ok : IResult, IEndpointMetadataProvider, IStatusCodeHttpResu
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status200OK));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(void)));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

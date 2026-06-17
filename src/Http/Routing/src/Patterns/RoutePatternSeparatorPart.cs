@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -27,7 +27,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 /// </para>
 /// </remarks>
 [DebuggerDisplay("{DebuggerToString()}")]
+#if !COMPONENTS
 public sealed class RoutePatternSeparatorPart : RoutePatternPart
+#else
+internal sealed class RoutePatternSeparatorPart : RoutePatternPart
+#endif
 {
     internal RoutePatternSeparatorPart(string content)
         : base(RoutePatternPartKind.Separator)

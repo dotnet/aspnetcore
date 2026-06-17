@@ -16,6 +16,7 @@ internal enum RequestRejectionReason
     UnexpectedEndOfRequestContent,
     BadChunkSuffix,
     BadChunkSizeData,
+    BadChunkExtension,
     ChunkedRequestIncomplete,
     InvalidRequestTarget,
     InvalidCharactersInHeaderName,
@@ -32,5 +33,4 @@ internal enum RequestRejectionReason
     MissingHostHeader,
     MultipleHostHeaders,
     InvalidHostHeader,
-    RequestBodyExceedsContentLength
 }

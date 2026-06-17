@@ -3,12 +3,16 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Connections;
 
 /// <summary>
 /// The items associated with a given connection.
 /// </summary>
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<object, object?>))]
 public class ConnectionItems : IDictionary<object, object?>
 {
     /// <summary>

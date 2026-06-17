@@ -52,15 +52,11 @@ public class LocalizationServiceCollectionExtensionsTest
 
         if (matches.Length == 0)
         {
-            Assert.True(
-                false,
-                $"Could not find an instance of {implementationType} registered as {serviceType}");
+            Assert.Fail($"Could not find an instance of {implementationType} registered as {serviceType}");
         }
         else if (matches.Length > 1)
         {
-            Assert.True(
-                false,
-                $"Found multiple instances of {implementationType} registered as {serviceType}");
+            Assert.Fail($"Found multiple instances of {implementationType} registered as {serviceType}");
         }
     }
 }

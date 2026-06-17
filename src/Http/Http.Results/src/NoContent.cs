@@ -51,6 +51,7 @@ public class NoContent : IResult, IEndpointMetadataProvider, IStatusCodeHttpResu
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status204NoContent));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status204NoContent, typeof(void)));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

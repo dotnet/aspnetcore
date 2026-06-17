@@ -14,7 +14,11 @@ public static class EndpointHttpContextExtensions
     /// Extension method for getting the <see cref="Endpoint"/> for the current request.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> context.</param>
-    /// <returns>The <see cref="Endpoint"/>.</returns>
+    /// <returns>The <see cref="Endpoint"/> or <c>null</c> if the request doesn't have an endpoint.</returns>
+    /// <remarks>
+    /// The endpoint for a request is typically set by routing middleware. A request might not have
+    /// an endpoint if routing middleware hasn't run yet, or the request didn't match a route.
+    /// </remarks>
     public static Endpoint? GetEndpoint(this HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -26,7 +30,7 @@ public static class EndpointHttpContextExtensions
     /// Extension method for setting the <see cref="Endpoint"/> for the current request.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/> context.</param>
-    /// <param name="endpoint">The <see cref="Endpoint"/>.</param>
+    /// <param name="endpoint">The <see cref="Endpoint"/>. A <c>null</c> value clears the endpoint for the current request.</param>
     public static void SetEndpoint(this HttpContext context, Endpoint? endpoint)
     {
         ArgumentNullException.ThrowIfNull(context);

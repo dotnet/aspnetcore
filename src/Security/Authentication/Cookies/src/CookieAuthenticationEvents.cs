@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
@@ -11,6 +12,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies;
 /// </summary>
 public class CookieAuthenticationEvents
 {
+    private static readonly bool _ignoreCookieRedirectMetadata = AppContext.TryGetSwitch("Microsoft.AspNetCore.Authentication.Cookies.IgnoreRedirectMetadata", out var isEnabled) && isEnabled;
+
     /// <summary>
     /// Invoked to validate the principal.
     /// </summary>
@@ -41,7 +44,7 @@ public class CookieAuthenticationEvents
     /// </summary>
     public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToLogin { get; set; } = context =>
     {
-        if (IsAjaxRequest(context.Request))
+        if (IsAjaxRequest(context.Request) || IsCookieRedirectDisabledByMetadata(context.HttpContext))
         {
             context.Response.Headers.Location = context.RedirectUri;
             context.Response.StatusCode = 401;
@@ -58,7 +61,7 @@ public class CookieAuthenticationEvents
     /// </summary>
     public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToAccessDenied { get; set; } = context =>
     {
-        if (IsAjaxRequest(context.Request))
+        if (IsAjaxRequest(context.Request) || IsCookieRedirectDisabledByMetadata(context.HttpContext))
         {
             context.Response.Headers.Location = context.RedirectUri;
             context.Response.StatusCode = 403;
@@ -106,6 +109,18 @@ public class CookieAuthenticationEvents
     {
         return string.Equals(request.Query[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal) ||
             string.Equals(request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.Ordinal);
+    }
+
+    private static bool IsCookieRedirectDisabledByMetadata(HttpContext context)
+    {
+        if (_ignoreCookieRedirectMetadata)
+        {
+            return false;
+        }
+
+        var endpoint = context.GetEndpoint();
+        return endpoint?.Metadata.GetMetadata<IDisableCookieRedirectMetadata>() is not null &&
+            endpoint?.Metadata.GetMetadata<IAllowCookieRedirectMetadata>() is null;
     }
 
     /// <summary>

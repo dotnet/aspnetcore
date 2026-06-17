@@ -43,6 +43,9 @@ public static class RoutingServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        // Required for IMeterFactory dependency.
+        services.AddMetrics();
+
         services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
         services.TryAddTransient<ObjectPoolProvider, DefaultObjectPoolProvider>();
         services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
@@ -102,6 +105,7 @@ public static class RoutingServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HostMatcherPolicy>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, AcceptsMatcherPolicy>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ContentEncodingNegotiationMatcherPolicy>());
 
         //
         // Misc infrastructure

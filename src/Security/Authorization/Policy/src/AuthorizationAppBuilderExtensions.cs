@@ -30,7 +30,7 @@ public static class AuthorizationAppBuilderExtensions
         VerifyServicesRegistered(app);
 
         app.Properties[AuthorizationMiddlewareSetKey] = true;
-        return app.UseMiddleware<AuthorizationMiddleware>();
+        return app.UseMiddleware<AuthorizationMiddlewareInternal>();
     }
 
     private static void VerifyServicesRegistered(IApplicationBuilder app)

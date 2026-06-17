@@ -15,7 +15,18 @@ internal sealed partial class QuicStreamContext :
     IStreamAbortFeature,
     IStreamClosedFeature
 {
-    private readonly record struct OnCloseRegistration(Action<object?> Callback, object? State);
+    private readonly struct OnCloseRegistration
+    {
+        public Action<object?> Callback { get; }
+        
+        public object? State { get; }
+
+        public OnCloseRegistration(Action<object?> callback, object? state)
+        {
+            Callback = callback;
+            State = state;
+        }
+    }
 
     private IDictionary<object, object?>? _persistentState;
     private long? _error;
@@ -27,7 +38,11 @@ internal sealed partial class QuicStreamContext :
     public long Error
     {
         get => _error ?? -1;
-        set => _error = value;
+        set
+        {
+            QuicTransportOptions.ValidateErrorCode(value);
+            _error = value;
+        }
     }
 
     public long StreamId { get; private set; }
@@ -43,6 +58,8 @@ internal sealed partial class QuicStreamContext :
 
     public void AbortRead(long errorCode, ConnectionAbortedException abortReason)
     {
+        QuicTransportOptions.ValidateErrorCode(errorCode);
+
         lock (_shutdownLock)
         {
             if (_stream != null)
@@ -63,6 +80,8 @@ internal sealed partial class QuicStreamContext :
 
     public void AbortWrite(long errorCode, ConnectionAbortedException abortReason)
     {
+        QuicTransportOptions.ValidateErrorCode(errorCode);
+
         lock (_shutdownLock)
         {
             if (_stream != null)

@@ -128,7 +128,7 @@ public readonly struct FragmentString : IEquatable<FragmentString>
         {
             return !HasValue;
         }
-        return obj is FragmentString && Equals((FragmentString)obj);
+        return obj is FragmentString value && Equals(value);
     }
 
     /// <summary>

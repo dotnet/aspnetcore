@@ -3,7 +3,7 @@
 
 using System.Buffers;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.WebUtilities;
 

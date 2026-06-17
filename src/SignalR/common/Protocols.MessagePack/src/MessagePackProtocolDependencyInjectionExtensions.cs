@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,6 +22,7 @@ public static class MessagePackProtocolDependencyInjectionExtensions
     /// </remarks>
     /// <param name="builder">The <see cref="ISignalRBuilder"/> representing the SignalR server to add MessagePack protocol support to.</param>
     /// <returns>The value of <paramref name="builder"/></returns>
+    [RequiresUnreferencedCode("MessagePack does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static TBuilder AddMessagePackProtocol<TBuilder>(this TBuilder builder) where TBuilder : ISignalRBuilder
         => AddMessagePackProtocol(builder, _ => { });
 
@@ -33,6 +35,7 @@ public static class MessagePackProtocolDependencyInjectionExtensions
     /// <param name="builder">The <see cref="ISignalRBuilder"/> representing the SignalR server to add MessagePack protocol support to.</param>
     /// <param name="configure">A delegate that can be used to configure the <see cref="MessagePackHubProtocolOptions"/></param>
     /// <returns>The value of <paramref name="builder"/></returns>
+    [RequiresUnreferencedCode("MessagePack does not currently support trimming or native AOT.", Url = "https://aka.ms/aspnet/trimming")]
     public static TBuilder AddMessagePackProtocol<TBuilder>(this TBuilder builder, Action<MessagePackHubProtocolOptions> configure) where TBuilder : ISignalRBuilder
     {
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, MessagePackHubProtocol>());

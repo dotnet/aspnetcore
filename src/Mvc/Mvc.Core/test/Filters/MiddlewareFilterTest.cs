@@ -379,7 +379,7 @@ public class MiddlewareFilterTest
         {
             if (CreateCalled && !ReleaseCalled)
             {
-                Assert.False(true, "ReleaseController should have been called.");
+                Assert.Fail("ReleaseController should have been called.");
             }
         }
     }
@@ -398,7 +398,9 @@ public class MiddlewareFilterTest
             : base(
                   logger,
                   diagnosticListener,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
                   ActionContextAccessor.Null,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
                   mapper,
                   CreateControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
                   CreateCacheEntry((ControllerActionDescriptor)actionContext.ActionDescriptor, controllerFactory),

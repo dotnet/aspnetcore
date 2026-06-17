@@ -23,6 +23,8 @@ internal static class JsonRequestHelpers
     public const string JsonContentType = "application/json";
     public const string JsonContentTypeWithCharset = "application/json; charset=utf-8";
 
+    public const string StatusDetailsTrailerName = "grpc-status-details-bin";
+
     public static bool HasJsonContentType(HttpRequest request, out StringSegment charset)
     {
         ArgumentNullException.ThrowIfNull(request);
@@ -82,7 +84,7 @@ internal static class JsonRequestHelpers
         }
     }
 
-    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Status status, JsonSerializerOptions options)
+    public static async ValueTask SendErrorResponse(HttpResponse response, Encoding encoding, Metadata trailers, Status status, JsonSerializerOptions options)
     {
         if (!response.HasStarted)
         {
@@ -90,13 +92,31 @@ internal static class JsonRequestHelpers
             response.ContentType = MediaType.ReplaceEncoding("application/json", encoding);
         }
 
-        var e = new Google.Rpc.Status
+        var e = GetStatusDetails(trailers) ?? new Google.Rpc.Status
         {
             Message = status.Detail,
             Code = (int)status.StatusCode
         };
 
         await WriteResponseMessage(response, encoding, e, options, CancellationToken.None);
+
+        static Google.Rpc.Status? GetStatusDetails(Metadata trailers)
+        {
+            var statusDetails = trailers.Get(StatusDetailsTrailerName);
+            if (statusDetails?.IsBinary == true)
+            {
+                try
+                {
+                    return Google.Rpc.Status.Parser.ParseFrom(statusDetails.ValueBytes);
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException($"Error when parsing the '{StatusDetailsTrailerName}' trailer.", ex);
+                }
+            }
+
+            return null;
+        }
     }
 
     public static int MapStatusCodeToHttpStatus(StatusCode statusCode)
@@ -341,11 +361,18 @@ internal static class JsonRequestHelpers
 
     private static List<FieldDescriptor>? GetPathDescriptors(JsonTranscodingServerCallContext serverCallContext, IMessage requestMessage, string path)
     {
-        return serverCallContext.DescriptorInfo.PathDescriptorsCache.GetOrAdd(path, p =>
+        // Must not add null values for paths that don't resolve to a descriptor
+        var cache = serverCallContext.DescriptorInfo.PathDescriptorsCache;
+        if (cache.TryGetValue(path, out var pathDescriptors))
         {
-            ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, p.Split('.'), allowJsonName: true, out var pathDescriptors);
             return pathDescriptors;
-        });
+        }
+        if (ServiceDescriptorHelpers.TryResolveDescriptors(requestMessage.Descriptor, path.Split('.'), allowJsonName: true, out pathDescriptors))
+        {
+            cache.TryAdd(path, pathDescriptors);
+            return pathDescriptors;
+        }
+        return null;
     }
 
     public static async ValueTask SendMessage<TResponse>(JsonTranscodingServerCallContext serverCallContext, JsonSerializerOptions serializerOptions, TResponse message, CancellationToken cancellationToken) where TResponse : class
@@ -388,24 +415,25 @@ internal static class JsonRequestHelpers
     {
         if (serverCallContext.DescriptorInfo.BodyDescriptor != null)
         {
-            var bodyFieldName = serverCallContext.DescriptorInfo.BodyFieldDescriptor?.Name;
+            var bodyFieldDescriptor = serverCallContext.DescriptorInfo.BodyFieldDescriptor;
 
-            // Null field name indicates "*" which means the entire message is bound to the body.
-            if (bodyFieldName == null)
+            // Null field descriptor indicates "*" which means the entire message is bound to the body.
+            if (bodyFieldDescriptor?.Name is null)
             {
                 return false;
             }
 
-            // Exact match
-            if (variable == bodyFieldName)
+            var bodyFieldName = bodyFieldDescriptor.Name;
+            var bodyFieldJsonName = bodyFieldDescriptor.JsonName;
+
+            // Exact match (proto name or JSON name)
+            if (variable == bodyFieldName || variable == bodyFieldJsonName)
             {
                 return false;
             }
 
-            // Nested field of field name.
-            if (bodyFieldName.Length + 1 < variable.Length &&
-                variable.StartsWith(bodyFieldName, StringComparison.Ordinal) &&
-                variable[bodyFieldName.Length] == '.')
+            // Nested field of body field (proto name prefix or JSON name prefix).
+            if (IsNestedBodyField(variable, bodyFieldName) || IsNestedBodyField(variable, bodyFieldJsonName))
             {
                 return false;
             }
@@ -416,6 +444,20 @@ internal static class JsonRequestHelpers
             return false;
         }
 
+        // Also check JSON name aliases. Route parameter keys use proto names (e.g. "user_id"),
+        // but query parameters can use JSON names (e.g. "userId") which resolve to the same field.
+        if (serverCallContext.DescriptorInfo.RouteParameterJsonPaths.Contains(variable))
+        {
+            return false;
+        }
+
         return true;
+    }
+
+    private static bool IsNestedBodyField(string variable, string bodyFieldName)
+    {
+        return bodyFieldName.Length + 1 < variable.Length &&
+            variable.StartsWith(bodyFieldName, StringComparison.Ordinal) &&
+            variable[bodyFieldName.Length] == '.';
     }
 }

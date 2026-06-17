@@ -3,9 +3,14 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -29,7 +34,7 @@ internal sealed partial class HttpSysListener : IDisposable
     // 0.5 seconds per request.  Respond with a 400 Bad Request.
     private const int UnknownHeaderLimit = 1000;
 
-    internal MemoryPool<byte> MemoryPool { get; } = PinnedBlockMemoryPoolFactory.Create();
+    internal MemoryPool<byte> MemoryPool { get; }
 
     private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 
@@ -40,17 +45,17 @@ internal sealed partial class HttpSysListener : IDisposable
 
     private readonly object _internalLock;
 
-    public HttpSysListener(HttpSysOptions options, ILoggerFactory loggerFactory)
+    public HttpSysListener(HttpSysOptions options, IMemoryPoolFactory<byte> memoryPoolFactory, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
 
         if (!HttpApi.Supported)
         {
-            throw new PlatformNotSupportedException();
+            throw CreateHttpInitializeFailureException(HttpApi.HttpInitializeStatusCode);
         }
 
-        Debug.Assert(HttpApi.ApiVersion == HttpApiTypes.HTTP_API_VERSION.Version20, "Invalid Http api version");
+        MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
 
         Options = options;
 
@@ -69,11 +74,9 @@ internal sealed partial class HttpSysListener : IDisposable
         try
         {
             _serverSession = new ServerSession();
-
-            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
-
+            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode,
+                options.RequestQueueSecurityDescriptor, Logger);
             _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
-
             _disconnectListener = new DisconnectListener(_requestQueue, Logger);
         }
         catch (Exception exception)
@@ -96,20 +99,9 @@ internal sealed partial class HttpSysListener : IDisposable
 
     internal ILogger Logger { get; private set; }
 
-    internal UrlGroup UrlGroup
-    {
-        get { return _urlGroup; }
-    }
-
-    internal RequestQueue RequestQueue
-    {
-        get { return _requestQueue; }
-    }
-
-    internal DisconnectListener DisconnectListener
-    {
-        get { return _disconnectListener; }
-    }
+    internal UrlGroup UrlGroup => _urlGroup;
+    internal RequestQueue RequestQueue => _requestQueue;
+    internal DisconnectListener DisconnectListener => _disconnectListener;
 
     public HttpSysOptions Options { get; }
 
@@ -264,6 +256,19 @@ internal sealed partial class HttpSysListener : IDisposable
         _serverSession.Dispose();
     }
 
+    internal static Exception CreateHttpInitializeFailureException(uint httpInitializeStatusCode)
+    {
+        if (httpInitializeStatusCode == ErrorCodes.ERROR_SUCCESS)
+        {
+            // Keep the existing PlatformNotSupportedException behavior when no specific native error is available.
+            return new PlatformNotSupportedException();
+        }
+
+        return new HttpSysException(
+            (int)httpInitializeStatusCode,
+            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8}.");
+    }
+
     /// <summary>
     /// Accept a request from the incoming request queue.
     /// </summary>
@@ -304,10 +309,12 @@ internal sealed partial class HttpSysListener : IDisposable
 
     internal unsafe void SendError(ulong requestId, int httpStatusCode, IList<string>? authChallenges = null)
     {
-        HttpApiTypes.HTTP_RESPONSE_V2 httpResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
-        httpResponse.Response_V1.Version = new HttpApiTypes.HTTP_VERSION();
-        httpResponse.Response_V1.Version.MajorVersion = (ushort)1;
-        httpResponse.Response_V1.Version.MinorVersion = (ushort)1;
+        var httpResponse = new HTTP_RESPONSE_V2();
+        httpResponse.Base.Version = new()
+        {
+            MajorVersion = 1,
+            MinorVersion = 1
+        };
 
         using UnmanagedBufferAllocator allocator = new();
 
@@ -317,29 +324,29 @@ internal sealed partial class HttpSysListener : IDisposable
         // Copied from the multi-value headers section of SerializeHeaders
         if (authChallenges != null && authChallenges.Count > 0)
         {
-            HttpApiTypes.HTTP_RESPONSE_INFO* knownHeaderInfo = allocator.AllocAsPointer<HttpApiTypes.HTTP_RESPONSE_INFO>(1);
+            var knownHeaderInfo = allocator.AllocAsPointer<HTTP_RESPONSE_INFO>(1);
             httpResponse.pResponseInfo = knownHeaderInfo;
 
-            knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HttpApiTypes.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
+            knownHeaderInfo[httpResponse.ResponseInfoCount].Type = HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
             knownHeaderInfo[httpResponse.ResponseInfoCount].Length =
-                (uint)sizeof(HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS);
+                (uint)sizeof(HTTP_MULTIPLE_KNOWN_HEADERS);
 
-            HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS* header = allocator.AllocAsPointer<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>(1);
+            var header = allocator.AllocAsPointer<HTTP_MULTIPLE_KNOWN_HEADERS>(1);
 
-            header->HeaderId = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum.HttpHeaderWwwAuthenticate;
-            header->Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // The docs say this is for www-auth only.
+            header->HeaderId = HTTP_HEADER_ID.HttpHeaderWwwAuthenticate;
+            header->Flags = PInvoke.HTTP_RESPONSE_INFO_FLAGS_PRESERVE_ORDER; // The docs say this is for www-auth only.
             header->KnownHeaderCount = 0;
 
-            HttpApiTypes.HTTP_KNOWN_HEADER* nativeHeaderValues = allocator.AllocAsPointer<HttpApiTypes.HTTP_KNOWN_HEADER>(authChallenges.Count);
+            var nativeHeaderValues = allocator.AllocAsPointer<HTTP_KNOWN_HEADER>(authChallenges.Count);
             header->KnownHeaders = nativeHeaderValues;
 
-            for (int headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
+            for (var headerValueIndex = 0; headerValueIndex < authChallenges.Count; headerValueIndex++)
             {
                 // Add Value
-                string headerValue = authChallenges[headerValueIndex];
+                var headerValue = authChallenges[headerValueIndex];
                 bytes = allocator.GetHeaderEncodedBytes(headerValue, out bytesLength);
                 nativeHeaderValues[header->KnownHeaderCount].RawValueLength = checked((ushort)bytesLength);
-                nativeHeaderValues[header->KnownHeaderCount].pRawValue = bytes;
+                nativeHeaderValues[header->KnownHeaderCount].pRawValue = (PCSTR)bytes;
                 header->KnownHeaderCount++;
             }
 
@@ -348,40 +355,37 @@ internal sealed partial class HttpSysListener : IDisposable
             httpResponse.ResponseInfoCount = 1;
         }
 
-        httpResponse.Response_V1.StatusCode = checked((ushort)httpStatusCode);
-        string statusDescription = HttpReasonPhrase.Get(httpStatusCode) ?? string.Empty;
-        uint dataWritten = 0;
+        httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
+        var statusDescription = ReasonPhrases.GetReasonPhrase(httpStatusCode);
         uint statusCode;
 
         bytes = allocator.GetHeaderEncodedBytes(statusDescription, out bytesLength);
-        httpResponse.Response_V1.pReason = bytes;
-        httpResponse.Response_V1.ReasonLength = checked((ushort)bytesLength);
+        httpResponse.Base.pReason = (PCSTR)bytes;
+        httpResponse.Base.ReasonLength = checked((ushort)bytesLength);
 
         const int contentLengthLength = 1;
-        byte* pContentLength = allocator.AllocAsPointer<byte>(contentLengthLength + 1);
+        var pContentLength = allocator.AllocAsPointer<byte>(contentLengthLength + 1);
         pContentLength[0] = (byte)'0';
         pContentLength[1] = 0; // null terminator
 
-        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].pRawValue = pContentLength;
-        (&httpResponse.Response_V1.Headers.KnownHeaders)[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
-        httpResponse.Response_V1.Headers.UnknownHeaderCount = 0;
+        var knownHeaders = httpResponse.Base.Headers.KnownHeaders.AsSpan();
+        knownHeaders[(int)HttpSysResponseHeader.ContentLength].pRawValue = (PCSTR)pContentLength;
+        knownHeaders[(int)HttpSysResponseHeader.ContentLength].RawValueLength = contentLengthLength;
+        httpResponse.Base.Headers.UnknownHeaderCount = 0;
 
-        statusCode =
-            HttpApi.HttpSendHttpResponse(
-                _requestQueue.Handle,
-                requestId,
-                0,
-                &httpResponse,
-                null,
-                &dataWritten,
-                IntPtr.Zero,
-                0,
-                SafeNativeOverlapped.Zero,
-                IntPtr.Zero);
-        if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+        statusCode = PInvoke.HttpSendHttpResponse(
+            _requestQueue.Handle,
+            requestId,
+            0,
+            httpResponse,
+            null,
+            out _,
+            null,
+            null);
+        if (statusCode != ErrorCodes.ERROR_SUCCESS)
         {
             // if we fail to send a 401 something's seriously wrong, abort the request
-            HttpApi.HttpCancelHttpRequest(_requestQueue.Handle, requestId, IntPtr.Zero);
+            PInvoke.HttpCancelHttpRequest(_requestQueue.Handle, requestId, default);
         }
     }
 

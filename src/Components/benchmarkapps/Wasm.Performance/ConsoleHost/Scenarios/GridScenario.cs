@@ -20,8 +20,8 @@ internal sealed class GridScenario : ComponentRenderingScenarioBase
     protected override async Task ExecuteAsync(ConsoleHostRenderer renderer, int numCycles)
     {
         var gridType = _gridTypeOption.HasValue()
-            ? (GridRendering.RenderMode)Enum.Parse(typeof(GridRendering.RenderMode), _gridTypeOption.Value(), true)
-            : GridRendering.RenderMode.FastGrid;
+            ? (GridRendering.GridRenderMode)Enum.Parse(typeof(GridRendering.GridRenderMode), _gridTypeOption.Value(), true)
+            : GridRendering.GridRenderMode.FastGrid;
 
         for (var i = 0; i < numCycles; i++)
         {

@@ -11,6 +11,7 @@ internal interface IHttpResponseControl
     Memory<byte> GetMemory(int sizeHint = 0);
     Span<byte> GetSpan(int sizeHint = 0);
     void Advance(int bytes);
+    long UnflushedBytes { get; }
     ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken);
     ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken);
     void CancelPendingFlush();

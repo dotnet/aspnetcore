@@ -18,9 +18,22 @@
     <Content Include="$(KestrelRoot)Core\src\Internal\Infrastructure\HttpUtilities.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelSharedSourceRoot)\TransportConnection.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelSharedSourceRoot)\TransportMultiplexedConnection.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\NamedPipesSupportedAttribute.cs" Link="shared\TransportTestHelpers\NamedPipesSupportedAttribute.cs" />
 
     <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 
 </Project>

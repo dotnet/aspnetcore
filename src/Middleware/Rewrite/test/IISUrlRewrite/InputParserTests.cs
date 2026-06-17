@@ -18,7 +18,7 @@ public class InputParserTests
     {
         var testString = "hello/hey/what";
         var result = new InputParser().ParseInputString(testString, UriMatchPart.Path);
-        Assert.Equal(1, result.PatternSegments.Count);
+        Assert.Single(result.PatternSegments);
     }
 
     [Theory]
@@ -146,7 +146,7 @@ public class InputParserTests
 
         var inputString = $"{{{expectedMapName}:{{R:1}}}}";
         var pattern = new InputParser(maps, false).ParseInputString(inputString, UriMatchPart.Path);
-        Assert.Equal(1, pattern.PatternSegments.Count);
+        Assert.Single(pattern.PatternSegments);
 
         var segment = pattern.PatternSegments.Single();
         var rewriteMapSegment = segment as RewriteMapSegment;

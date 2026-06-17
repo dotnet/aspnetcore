@@ -132,46 +132,89 @@ public static class HeaderDictionaryTypeExtensions
         }
     }
 
-    private static readonly Dictionary<Type, object> KnownParsers = new()
-    {
-        { typeof(CacheControlHeaderValue), new Func<string, CacheControlHeaderValue?>(value => { return CacheControlHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(ContentDispositionHeaderValue), new Func<string, ContentDispositionHeaderValue?>(value => { return ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(ContentRangeHeaderValue), new Func<string, ContentRangeHeaderValue?>(value => { return ContentRangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(MediaTypeHeaderValue), new Func<string, MediaTypeHeaderValue?>(value => { return MediaTypeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(RangeConditionHeaderValue), new Func<string, RangeConditionHeaderValue?>(value => { return RangeConditionHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(RangeHeaderValue), new Func<string, RangeHeaderValue?>(value => { return RangeHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(EntityTagHeaderValue), new Func<string, EntityTagHeaderValue?>(value => { return EntityTagHeaderValue.TryParse(value, out var result) ? result : null; }) },
-        { typeof(DateTimeOffset?), new Func<string, DateTimeOffset?>(value => { return HeaderUtilities.TryParseDate(value, out var result) ? result : null; }) },
-        { typeof(long?), new Func<string, long?>(value => { return HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null; }) },
-    };
+    private static CacheControlHeaderValue? ParseCacheControlHeaderValue(string value) => CacheControlHeaderValue.TryParse(value, out var result) ? result : null;
 
-    private static readonly Dictionary<Type, object> KnownListParsers = new()
-    {
-        { typeof(MediaTypeHeaderValue), new Func<IList<string>, IList<MediaTypeHeaderValue>>(value => { return MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>(); }) },
-        { typeof(StringWithQualityHeaderValue), new Func<IList<string>, IList<StringWithQualityHeaderValue>>(value => { return StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>(); }) },
-        { typeof(CookieHeaderValue), new Func<IList<string>, IList<CookieHeaderValue>>(value => { return CookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<CookieHeaderValue>(); }) },
-        { typeof(EntityTagHeaderValue), new Func<IList<string>, IList<EntityTagHeaderValue>>(value => { return EntityTagHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<EntityTagHeaderValue>(); }) },
-        { typeof(SetCookieHeaderValue), new Func<IList<string>, IList<SetCookieHeaderValue>>(value => { return SetCookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<SetCookieHeaderValue>(); }) },
-    };
+    private static ContentDispositionHeaderValue? ParseCacheContentDispositionHeaderValue(string value) => ContentDispositionHeaderValue.TryParse(value, out var result) ? result : null;
+
+    private static ContentRangeHeaderValue? ParseCacheContentRangeHeaderValue(string value) => ContentRangeHeaderValue.TryParse(value, out var result) ? result : null;
+
+    private static MediaTypeHeaderValue? ParseCacheMediaTypeHeaderValue(string value) => MediaTypeHeaderValue.TryParse(value, out var result) ? result : null;
+
+    private static RangeConditionHeaderValue? ParseCacheRangeConditionHeaderValue(string value) => RangeConditionHeaderValue.TryParse(value, out var result) ? result : null;
+
+    private static RangeHeaderValue? ParseCacheRangeHeaderValue(string value) => RangeHeaderValue.TryParse(value, out var result) ? result : null;
+
+    private static EntityTagHeaderValue? ParseCacheEntityTagHeaderValue(string value) => EntityTagHeaderValue.TryParse(value, out var result) ? result : null;
+
+    private static DateTimeOffset? ParseCacheDateTimeOffset(string value) => HeaderUtilities.TryParseDate(value, out var result) ? result : null;
+
+    private static long? ParseCacheInt64(string value) => HeaderUtilities.TryParseNonNegativeInt64(value, out var result) ? result : null;
+
+    private static IList<MediaTypeHeaderValue> ParseMediaTypeHeaderValue(IList<string> value) =>
+        MediaTypeHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<MediaTypeHeaderValue>();
+
+    private static IList<StringWithQualityHeaderValue> ParseStringWithQualityHeaderValue(IList<string> value) =>
+        StringWithQualityHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<StringWithQualityHeaderValue>();
+
+    private static IList<CookieHeaderValue> ParseCookieHeaderValue(IList<string> value) =>
+        CookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<CookieHeaderValue>();
+
+    private static IList<EntityTagHeaderValue> ParseEntityTagHeaderValue(IList<string> value) =>
+        EntityTagHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<EntityTagHeaderValue>();
+
+    private static IList<SetCookieHeaderValue> ParseSetCookieHeaderValue(IList<string> value) =>
+        SetCookieHeaderValue.TryParseList(value, out var result) ? result : Array.Empty<SetCookieHeaderValue>();
 
     internal static T? Get<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
     {
         ArgumentNullException.ThrowIfNull(headers);
+        var headerValue = headers[name];
 
-        var value = headers[name];
-
-        if (StringValues.IsNullOrEmpty(value))
+        if (StringValues.IsNullOrEmpty(headerValue))
         {
             return default(T);
         }
+        var value = headerValue.ToString();
 
-        if (KnownParsers.TryGetValue(typeof(T), out var temp))
+        // Comparison of typeof(T) is optimized by JIT.
+        if (typeof(T) == typeof(CacheControlHeaderValue))
         {
-            var func = (Func<string, T>)temp;
-            return func(value.ToString());
+            return (T?)(object?)ParseCacheControlHeaderValue(value);
+        }
+        else if (typeof(T) == typeof(ContentDispositionHeaderValue))
+        {
+            return (T?)(object?)ParseCacheContentDispositionHeaderValue(value);
+        }
+        else if (typeof(T) == typeof(ContentRangeHeaderValue))
+        {
+            return (T?)(object?)ParseCacheContentRangeHeaderValue(value);
+        }
+        else if (typeof(T) == typeof(MediaTypeHeaderValue))
+        {
+            return (T?)(object?)ParseCacheMediaTypeHeaderValue(value);
+        }
+        else if (typeof(T) == typeof(RangeConditionHeaderValue))
+        {
+            return (T?)(object?)ParseCacheRangeConditionHeaderValue(value);
+        }
+        else if (typeof(T) == typeof(RangeHeaderValue))
+        {
+            return (T?)(object?)ParseCacheRangeHeaderValue(value);
+        }
+        else if (typeof(T) == typeof(EntityTagHeaderValue))
+        {
+            return (T?)(object?)ParseCacheEntityTagHeaderValue(value);
+        }
+        else if (typeof(T) == typeof(DateTimeOffset?))
+        {
+            return (T?)(object?)ParseCacheDateTimeOffset(value);
+        }
+        else if (typeof(T) == typeof(long?))
+        {
+            return (T?)(object?)ParseCacheInt64(value);
         }
 
-        return GetViaReflection<T>(value.ToString());
+        return GetViaReflection<T>(value);
     }
 
     internal static IList<T> GetList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IHeaderDictionary headers, string name)
@@ -190,10 +233,26 @@ public static class HeaderDictionaryTypeExtensions
             return Array.Empty<T>();
         }
 
-        if (KnownListParsers.TryGetValue(typeof(T), out var temp))
+        // Comparison of typeof(T) is optimized by JIT.
+        if (typeof(T) == typeof(MediaTypeHeaderValue))
         {
-            var func = (Func<IList<string>, IList<T>>)temp;
-            return func(values);
+            return (IList<T>)ParseMediaTypeHeaderValue(values);
+        }
+        else if (typeof(T) == typeof(StringWithQualityHeaderValue))
+        {
+            return (IList<T>)ParseStringWithQualityHeaderValue(values);
+        }
+        else if (typeof(T) == typeof(CookieHeaderValue))
+        {
+            return (IList<T>)ParseCookieHeaderValue(values);
+        }
+        else if (typeof(T) == typeof(EntityTagHeaderValue))
+        {
+            return (IList<T>)ParseEntityTagHeaderValue(values);
+        }
+        else if (typeof(T) == typeof(SetCookieHeaderValue))
+        {
+            return (IList<T>)ParseSetCookieHeaderValue(values);
         }
 
         return GetListViaReflection<T>(values);

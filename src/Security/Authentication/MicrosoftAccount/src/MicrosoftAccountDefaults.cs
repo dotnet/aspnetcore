@@ -22,7 +22,7 @@ public static class MicrosoftAccountDefaults
     /// The default endpoint used to perform Microsoft account authentication.
     /// </summary>
     /// <remarks>
-    /// For more details about this endpoint, see <see href="https://learn.microsoft.com/en-us/graph/auth-v2-user"/>.
+    /// For more details about this endpoint, see <see href="https://learn.microsoft.com/graph/auth-v2-user"/>.
     /// </remarks>
     public static readonly string AuthorizationEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
 

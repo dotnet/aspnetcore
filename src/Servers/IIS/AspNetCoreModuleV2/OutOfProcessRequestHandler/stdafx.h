@@ -109,7 +109,6 @@ inline bool IsSpace(char ch)
 extern BOOL       g_fAsyncDisconnectAvailable;
 extern BOOL       g_fWinHttpNonBlockingCallbackAvailable;
 extern BOOL       g_fWebSocketStaticInitialize;
-extern BOOL       g_fNsiApiNotSupported;
 extern BOOL       g_fEnableReferenceCountTracing;
 extern BOOL       g_fProcessDetach;
 extern DWORD      g_dwActiveServerProcesses;

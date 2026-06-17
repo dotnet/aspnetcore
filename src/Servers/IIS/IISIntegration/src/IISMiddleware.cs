@@ -77,10 +77,7 @@ public class IISMiddleware
         ArgumentNullException.ThrowIfNull(loggerFactory);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(applicationLifetime);
-        if (string.IsNullOrEmpty(pairingToken))
-        {
-            throw new ArgumentException("Missing or empty pairing token.");
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pairingToken);
 
         _next = next;
         _options = options.Value;

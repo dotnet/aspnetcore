@@ -31,7 +31,7 @@ public class RedirectHandler : DelegatingHandler
     /// equal or greater than 0.</param>
     public RedirectHandler(int maxRedirects)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxRedirects);
+        ArgumentOutOfRangeException.ThrowIfNegative(maxRedirects);
 
         MaxRedirects = maxRedirects;
     }
@@ -61,7 +61,7 @@ public class RedirectHandler : DelegatingHandler
     }
 
     private static bool HasBody(HttpRequestMessage request) =>
-        request.Method == HttpMethod.Post || request.Method == HttpMethod.Put;
+        request.Method == HttpMethod.Post || request.Method == HttpMethod.Put || request.Method == HttpMethod.Patch;
 
     private static async Task<HttpContent?> DuplicateRequestContent(HttpRequestMessage request)
     {

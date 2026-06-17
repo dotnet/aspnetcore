@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Provides access to contextual information about the running tests. Get access by

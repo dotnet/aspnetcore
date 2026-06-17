@@ -445,7 +445,8 @@ public class HubConnection implements AutoCloseable {
         CompletableSubject subject = CompletableSubject.create();
         startTask.onErrorComplete().subscribe(() ->
         {
-            Completable stop = connectionState.transport.stop();
+            Transport transport = connectionState.transport;
+            Completable stop = (transport != null) ? transport.stop() : Completable.complete();
             stop.subscribe(() -> subject.onComplete(), e -> subject.onError(e));
         });
 
@@ -482,6 +483,11 @@ public class HubConnection implements AutoCloseable {
                         sendHubMessageWithLock(new CompletionMessage(null, msg.getInvocationId(),
                             null, "Client failed to parse argument(s)."));
                     }
+                    break;
+                case STREAM_BINDING_FAILURE:
+                    // The server can't receive a response, so we just drop the message and log
+                    StreamBindingFailureMessage streamError = (StreamBindingFailureMessage)message;
+                    logger.error("Failed to bind argument received in stream '{}'.", streamError.getInvocationId(), streamError.getException());
                     break;
                 case INVOCATION:
                     InvocationMessage invocationMessage = (InvocationMessage) message;

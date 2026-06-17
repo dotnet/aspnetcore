@@ -25,7 +25,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
     }
 
     [Fact]
@@ -222,7 +222,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 
             // Send keys to whatever has focus
             new Actions(Browser).SendKeys(nextChar).Perform();
-            Browser.Equal(expectedTextTyped, () => textboxFinder().GetAttribute("value"));
+            Browser.Equal(expectedTextTyped, () => textboxFinder().GetDomProperty("value"));
 
             // We delay between typings to ensure the events aren't all collapsed into one.
             await Task.Delay(50);
@@ -235,7 +235,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
             By.CssSelector(".incomplete-items .item-1 input[type=checkbox]")).Click();
         Browser.Equal(expectedTextTyped, () => appElem
             .FindElement(By.CssSelector(".complete-items .item-1 input[type=text]"))
-            .GetAttribute("value"));
+            .GetDomProperty("value"));
     }
 
     [Fact]
@@ -324,7 +324,7 @@ public class KeyTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript(
-            $"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.Serialize(value, TestJsonSerializerOptionsProvider.Options)}");
+            $"document.getElementById('{textAreaElementWithId.GetDomAttribute("id")}').value = {JsonSerializer.Serialize(value, TestJsonSerializerOptionsProvider.Options)}");
         textAreaElementWithId.SendKeys(" "); // So it fires the change event
     }
 

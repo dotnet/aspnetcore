@@ -32,6 +32,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
 
+  <PropertyGroup>
+     <CodeAnalysisRuleSet>..\DefaultRules.ruleset</CodeAnalysisRuleSet>
+     <RunCodeAnalysis Condition="'$(VCToolsRedistVersion)' != '' AND '$(VCToolsRedistVersion)' >= 14.15.26706">true</RunCodeAnalysis>
+     <EnablePREfast>$(RunCodeAnalysis)</EnablePREfast>
+   </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>

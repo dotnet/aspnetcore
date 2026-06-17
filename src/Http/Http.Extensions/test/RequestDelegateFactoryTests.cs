@@ -28,7 +28,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -681,6 +682,34 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(httpContext.Items["query"]);
         Assert.Null(httpContext.Items["headers"]);
         Assert.Null(httpContext.Items["form"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateHandlesFromFormStringArrayParameter()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["form"] = new(new[] { "1", "2", "3" })
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(
+            (HttpContext context, [FromForm(Name = "form")] string[] formValues) =>
+        {
+            context.Items["form"] = formValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var parameterBindingMetadata = factoryResult.EndpointMetadata
+            .FirstOrDefault(e => e is ParameterBindingMetadata metadata &&
+                metadata.Name == "formValues") as ParameterBindingMetadata;
+
+        Assert.NotNull(parameterBindingMetadata);
+        Assert.Equal(typeof(string[]), parameterBindingMetadata.ParameterInfo.ParameterType);
+        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["form"]!);
     }
 
     [Fact]
@@ -1420,10 +1449,12 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             CustomResult TestAction() => new CustomResult(resultString);
             Task<CustomResult> TaskTestAction() => Task.FromResult(new CustomResult(resultString));
             ValueTask<CustomResult> ValueTaskTestAction() => ValueTask.FromResult(new CustomResult(resultString));
+            FSharp.Control.FSharpAsync<CustomResult> FSharpAsyncTestAction() => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new CustomResult(resultString));
 
             static CustomResult StaticTestAction() => new CustomResult("Still not enough tests!");
             static Task<CustomResult> StaticTaskTestAction() => Task.FromResult(new CustomResult("Still not enough tests!"));
             static ValueTask<CustomResult> StaticValueTaskTestAction() => ValueTask.FromResult(new CustomResult("Still not enough tests!"));
+            static FSharp.Control.FSharpAsync<CustomResult> StaticFSharpAsyncTestAction() => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new CustomResult("Still not enough tests!"));
 
             // Object return type where the object is IResult
             static object StaticResultAsObject() => new CustomResult("Still not enough tests!");
@@ -1431,28 +1462,35 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             // Task<object> return type
             static Task<object> StaticTaskOfIResultAsObject() => Task.FromResult<object>(new CustomResult("Still not enough tests!"));
             static ValueTask<object> StaticValueTaskOfIResultAsObject() => ValueTask.FromResult<object>(new CustomResult("Still not enough tests!"));
+            static FSharp.Control.FSharpAsync<object> StaticFSharpAsyncOfIResultAsObject() => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return<object>(new CustomResult("Still not enough tests!"));
 
             StructResult TestStructAction() => new StructResult(resultString);
             Task<StructResult> TaskTestStructAction() => Task.FromResult(new StructResult(resultString));
             ValueTask<StructResult> ValueTaskTestStructAction() => ValueTask.FromResult(new StructResult(resultString));
+            FSharp.Control.FSharpAsync<StructResult> FSharpAsyncTestStructAction() => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new StructResult(resultString));
 
             return new List<object[]>
                 {
                     new object[] { (Func<CustomResult>)TestAction },
                     new object[] { (Func<Task<CustomResult>>)TaskTestAction},
                     new object[] { (Func<ValueTask<CustomResult>>)ValueTaskTestAction},
+                    new object[] { (Func<FSharp.Control.FSharpAsync<CustomResult>>)FSharpAsyncTestAction },
+
                     new object[] { (Func<CustomResult>)StaticTestAction},
                     new object[] { (Func<Task<CustomResult>>)StaticTaskTestAction},
                     new object[] { (Func<ValueTask<CustomResult>>)StaticValueTaskTestAction},
+                    new object[] { (Func<FSharp.Control.FSharpAsync<CustomResult>>)StaticFSharpAsyncTestAction },
 
                     new object[] { (Func<object>)StaticResultAsObject},
 
                     new object[] { (Func<Task<object>>)StaticTaskOfIResultAsObject},
                     new object[] { (Func<ValueTask<object>>)StaticValueTaskOfIResultAsObject},
+                    new object[] { (Func<FSharp.Control.FSharpAsync<object>>)StaticFSharpAsyncOfIResultAsObject},
 
                     new object[] { (Func<StructResult>)TestStructAction },
                     new object[] { (Func<Task<StructResult>>)TaskTestStructAction },
                     new object[] { (Func<ValueTask<StructResult>>)ValueTaskTestStructAction },
+                    new object[] { (Func<FSharp.Control.FSharpAsync<StructResult>>)FSharpAsyncTestStructAction },
                 };
         }
     }
@@ -2218,6 +2256,169 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal("Hello, TestName!", decodedResponseBody);
     }
 
+    public static object[][] FSharpAsyncOfTMethods
+    {
+        get
+        {
+            FSharp.Control.FSharpAsync<string> FSharpAsyncOfTMethod()
+            {
+                return FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return("foo");
+            }
+
+            FSharp.Control.FSharpAsync<string> FSharpAsyncOfTWithYieldMethod()
+            {
+                return FSharp.Control.FSharpAsync.AwaitTask(Yield());
+
+                async Task<string> Yield()
+                {
+                    await Task.Yield();
+                    return "foo";
+                }
+            }
+
+            FSharp.Control.FSharpAsync<object> FSharpAsyncOfObjectWithYieldMethod()
+            {
+                return FSharp.Control.FSharpAsync.AwaitTask(Yield());
+
+                async Task<object> Yield()
+                {
+                    await Task.Yield();
+                    return "foo";
+                }
+            }
+
+            return new object[][]
+            {
+                new object[] { (Func<FSharp.Control.FSharpAsync<string>>)FSharpAsyncOfTMethod },
+                new object[] { (Func<FSharp.Control.FSharpAsync<string>>)FSharpAsyncOfTWithYieldMethod },
+                new object[] { (Func<FSharp.Control.FSharpAsync<object>>)FSharpAsyncOfObjectWithYieldMethod }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(FSharpAsyncOfTMethods))]
+    public async Task CanInvokeFilter_OnFSharpAsyncOfTReturningHandler(Delegate @delegate)
+    {
+        // Arrange
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }),
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal("foo", decodedResponseBody);
+    }
+
+    public static object[][] VoidReturningMethods
+    {
+        get
+        {
+            void VoidMethod() { }
+
+            ValueTask ValueTaskMethod()
+            {
+                return ValueTask.CompletedTask;
+            }
+
+            ValueTask<FSharp.Core.Unit> ValueTaskOfUnitMethod()
+            {
+                return ValueTask.FromResult(default(FSharp.Core.Unit)!);
+            }
+
+            Task TaskMethod()
+            {
+                return Task.CompletedTask;
+            }
+
+            Task<FSharp.Core.Unit> TaskOfUnitMethod()
+            {
+                return Task.FromResult(default(FSharp.Core.Unit)!);
+            }
+
+            FSharp.Control.FSharpAsync<FSharp.Core.Unit> FSharpAsyncOfUnitMethod()
+            {
+                return FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(default(FSharp.Core.Unit)!);
+            }
+
+            async ValueTask ValueTaskWithYieldMethod()
+            {
+                await Task.Yield();
+            }
+
+            async Task TaskWithYieldMethod()
+            {
+                await Task.Yield();
+            }
+
+            FSharp.Control.FSharpAsync<FSharp.Core.Unit> FSharpAsyncOfUnitWithYieldMethod()
+            {
+                return FSharp.Control.FSharpAsync.AwaitTask(Yield());
+
+                async Task<FSharp.Core.Unit> Yield()
+                {
+                    await Task.Yield();
+                    return default!;
+                }
+            }
+
+            return new object[][]
+            {
+                new object[] { (Action)VoidMethod },
+                new object[] { (Func<ValueTask>)ValueTaskMethod },
+                new object[] { (Func<ValueTask<FSharp.Core.Unit>>)ValueTaskOfUnitMethod },
+                new object[] { (Func<Task>)TaskMethod },
+                new object[] { (Func<Task<FSharp.Core.Unit>>)TaskOfUnitMethod },
+                new object[] { (Func<FSharp.Control.FSharpAsync<FSharp.Core.Unit>>)FSharpAsyncOfUnitMethod },
+                new object[] { (Func<ValueTask>)ValueTaskWithYieldMethod },
+                new object[] { (Func<Task>)TaskWithYieldMethod},
+                new object[] { (Func<FSharp.Control.FSharpAsync<FSharp.Core.Unit>>)FSharpAsyncOfUnitWithYieldMethod }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(VoidReturningMethods))]
+    public async Task CanInvokeFilter_OnVoidReturningHandler(Delegate @delegate)
+    {
+        // Arrange
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }),
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var decodedResponseBody = Encoding.UTF8.GetString(responseBodyStream.ToArray());
+        Assert.Equal(String.Empty, decodedResponseBody);
+    }
+
     [Fact]
     public async Task CanInvokeFilter_OnTaskModifyingHttpContext()
     {
@@ -2255,6 +2456,91 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(string.Empty, decodedResponseBody);
     }
 
+    public static object[][] TasksOfTypesMethods
+    {
+        get
+        {
+            ValueTask<TodoStruct> ValueTaskOfStructMethod()
+            {
+                return ValueTask.FromResult(new TodoStruct { Name = "Test todo" });
+            }
+
+            async ValueTask<TodoStruct> ValueTaskOfStructWithYieldMethod()
+            {
+                await Task.Yield();
+                return new TodoStruct { Name = "Test todo" };
+            }
+
+            Task<TodoStruct> TaskOfStructMethod()
+            {
+                return Task.FromResult(new TodoStruct { Name = "Test todo" });
+            }
+
+            async Task<TodoStruct> TaskOfStructWithYieldMethod()
+            {
+                await Task.Yield();
+                return new TodoStruct { Name = "Test todo" };
+            }
+
+            FSharp.Control.FSharpAsync<TodoStruct> FSharpAsyncOfStructMethod()
+            {
+                return FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new TodoStruct { Name = "Test todo" });
+            }
+
+            FSharp.Control.FSharpAsync<TodoStruct> FSharpAsyncOfStructWithYieldMethod()
+            {
+                return FSharp.Control.FSharpAsync.AwaitTask(Yield());
+
+                async Task<TodoStruct> Yield()
+                {
+                    await Task.Yield();
+                    return new TodoStruct { Name = "Test todo" };
+                }
+            }
+
+            return new object[][]
+            {
+                new object[] { (Func<ValueTask<TodoStruct>>)ValueTaskOfStructMethod },
+                new object[] { (Func<ValueTask<TodoStruct>>)ValueTaskOfStructWithYieldMethod },
+                new object[] { (Func<Task<TodoStruct>>)TaskOfStructMethod },
+                new object[] { (Func<Task<TodoStruct>>)TaskOfStructWithYieldMethod },
+                new object[] { (Func<FSharp.Control.FSharpAsync<TodoStruct>>)FSharpAsyncOfStructMethod },
+                new object[] { (Func<FSharp.Control.FSharpAsync<TodoStruct>>)FSharpAsyncOfStructWithYieldMethod }
+            };
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(TasksOfTypesMethods))]
+    public async Task CanInvokeFilter_OnHandlerReturningTasksOfStruct(Delegate @delegate)
+    {
+        // Arrange
+        var responseBodyStream = new MemoryStream();
+        var httpContext = CreateHttpContext();
+        httpContext.Response.Body = responseBodyStream;
+
+        // Act
+        var factoryResult = RequestDelegateFactory.Create(@delegate, new RequestDelegateFactoryOptions()
+        {
+            EndpointBuilder = CreateEndpointBuilderFromFilterFactories(new List<Func<EndpointFilterFactoryContext, EndpointFilterDelegate, EndpointFilterDelegate>>()
+            {
+                (routeHandlerContext, next) => async (context) =>
+                {
+                    return await next(context);
+                }
+            }),
+        });
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        var deserializedResponseBody = JsonSerializer.Deserialize<TodoStruct>(responseBodyStream.ToArray(), new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+        Assert.Equal("Test todo", deserializedResponseBody.Name);
+    }
+
     [Fact]
     public void Create_DoesNotAddDelegateMethodInfo_AsMetadata()
     {
@@ -2275,7 +2561,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => new object();
         var result = RequestDelegateFactory.Create(@delegate);
 
-        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+        var responseMetadata = Assert.Single(result.EndpointMetadata.OfType<IProducesResponseTypeMetadata>());
 
         Assert.Equal("application/json", Assert.Single(responseMetadata.ContentTypes));
         Assert.Equal(typeof(object), responseMetadata.Type);
@@ -2287,10 +2573,10 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => "Hello";
         var result = RequestDelegateFactory.Create(@delegate);
 
-        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+        var responseMetadata = Assert.Single(result.EndpointMetadata.OfType<IProducesResponseTypeMetadata>());
 
         Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
-        Assert.Null(responseMetadata.Type);
+        Assert.Equal(typeof(string), responseMetadata.Type);
     }
 
     [Fact]
@@ -2309,6 +2595,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         // but we just specified our CustomEndpointMetadata in this test.
         Assert.Collection(result.EndpointMetadata,
             m => Assert.Same(customMetadata, m),
+            m => Assert.True(m is IParameterBindingMetadata { HasBindAsync : true }),
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }));
     }
@@ -2394,6 +2681,19 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public void Create_DiscoversEndpointMetadata_FromFSharpAsyncWrappedReturnTypeImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = () => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new AddsCustomEndpointMetadataResult());
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.ReturnType });
+    }
+
+    [Fact]
     public void Create_CombinesDefaultMetadata_AndMetadataFromReturnTypesImplementingIEndpointMetadataProvider()
     {
         // Arrange
@@ -2411,6 +2711,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2433,6 +2734,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2455,6 +2757,30 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
+        // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
+    }
+
+    [Fact]
+    public void Create_CombinesDefaultMetadata_AndMetadataFromFSharpAsyncWrappedReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = () => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new CountsDefaultEndpointMetadataResult());
+        var options = new RequestDelegateFactoryOptions
+        {
+            EndpointBuilder = CreateEndpointBuilder(new List<object>
+            {
+                new CustomEndpointMetadata { Source = MetadataSource.Caller }
+            }),
+        };
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate, options);
+
+        // Assert
+        Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2525,14 +2851,18 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Caller }),
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
+            // Inferred ParameterBinding metadata
+            m => Assert.True(m is IParameterBindingMetadata { Name: "param1" }),
+            // Inferred IDisableCookieRedirectMetadata from RDF for complex request and response type
+            m => Assert.True(m is IDisableCookieRedirectMetadata),
+            // Inferred ProducesResponseTypeMetadata from RDF for complex type
             m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is MetadataCountMetadata { Count: 5 }));
+            m => Assert.True(m is MetadataCountMetadata { Count: 7 }));
     }
 
     [Fact]
@@ -2585,7 +2915,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var result = RequestDelegateFactory.Create(@delegate, options, metadataResult);
 
         // Assert
-        Assert.Empty(result.EndpointMetadata);
+        Assert.Contains(result.EndpointMetadata, m => m is IParameterBindingMetadata { Name: "param1" });
         Assert.Same(options.EndpointBuilder.Metadata, result.EndpointMetadata);
 
         // Make extra sure things are running as expected, as this non-InferMetadata path is no longer exercised by RouteEndpointDataSource,
@@ -2663,6 +2993,19 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     {
         // Arrange
         var @delegate = (Todo todo) => ValueTask.FromResult(new RemovesAcceptsMetadataResult());
+
+        // Act
+        var result = RequestDelegateFactory.Create(@delegate);
+
+        // Assert
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IAcceptsMetadata);
+    }
+
+    [Fact]
+    public void Create_AllowsRemovalOfDefaultMetadata_ByFSharpAsyncWrappedReturnTypesImplementingIEndpointMetadataProvider()
+    {
+        // Arrange
+        var @delegate = (Todo todo) => FSharp.Core.ExtraTopLevelOperators.DefaultAsyncBuilder.Return(new RemovesAcceptsMetadataResult());
 
         // Act
         var result = RequestDelegateFactory.Create(@delegate);
@@ -2844,6 +3187,55 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Null(httpContext.Items["RequiredHeaderParam"]);
     }
 
+    private class ParameterListFromHeaderCommaSeparatedValues
+    {
+        [FromHeader(Name = "q")]
+        public required StringValues? BoundToStringValues { get; set; }
+
+        [FromHeader(Name = "q")]
+        public string? BoundToString { get; set; }
+
+        [FromHeader(Name = "q")]
+        public string[]? BoundToStringArray { get; set; }
+
+        [FromHeader(Name = "q")]
+        public int[]? BoundToIntArray { get; set; }
+    }
+
+    [Theory]
+    [InlineData("", new string[] { }, new int[] {})]
+    [InlineData(" ", new string[] { }, new int[] { })]
+    [InlineData(",", new string[] { }, new int[] { })]
+    [InlineData("100", new string[] { "100" }, new int[] { 100 })]
+    [InlineData("1,2", new string[] { "1", "2" }, new int[] { 1, 2 })]
+    [InlineData("1, 2 ,  3", new string[] { "1", "2", "3" }, new int[] { 1, 2, 3 })]
+    public async Task RequestDelegateFactory_FromHeader_CommaSeparatedValues(string headerValue, string[] expectedStringArray, int[] expectedIntArray)
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["q"] = headerValue;
+
+        void TestAction([AsParameters] ParameterListFromHeaderCommaSeparatedValues args)
+        {
+            httpContext.Items[nameof(args.BoundToStringValues)] = args.BoundToStringValues;
+            httpContext.Items[nameof(args.BoundToString)] = args.BoundToString;
+            httpContext.Items[nameof(args.BoundToStringArray)] = args.BoundToStringArray;
+            httpContext.Items[nameof(args.BoundToIntArray)] = args.BoundToIntArray;
+        }
+
+        var factoryResult = RequestDelegateFactory.Create(TestAction);
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        // Act
+        await requestDelegate(httpContext);
+
+        // Assert
+        Assert.Equal(headerValue, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToString)]);
+        Assert.Equal(new StringValues(headerValue), httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToStringValues)]);
+        Assert.Equal(expectedStringArray, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToStringArray)]);
+        Assert.Equal(expectedIntArray, httpContext.Items[nameof(ParameterListFromHeaderCommaSeparatedValues.BoundToIntArray)]);
+    }
+
 #nullable disable
     private class ParameterListMixedRequiredStringsFromDifferentSources
     {
@@ -2902,6 +3294,44 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         Assert.Equal(@"Required parameter ""string RequiredHeaderParam"" was not provided from header.", logs[2].Message);
     }
 #nullable enable
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void RequestDelegateFactory_WhenJsonIsReflectionEnabledByDefaultFalse()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", false.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Arrange
+            var @delegate = (string task) => new Todo();
+
+            // IsReflectionEnabledByDefault defaults to `false` when `PublishTrimmed=true`. For these scenarios, we
+            // expect users to configure JSON source generation as instructed in the `NotSupportedException` message.
+            var exception = Assert.Throws<NotSupportedException>(() => RequestDelegateFactory.Create(@delegate));
+            Assert.Contains("Microsoft.AspNetCore.Routing.Internal.RequestDelegateFactoryTests+Todo", exception.Message);
+            Assert.Contains("JsonSerializableAttribute", exception.Message);
+        }, options);
+    }
+
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void RequestDelegateFactory_WhenJsonIsReflectionEnabledByDefaultTrue()
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", true.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Arrange
+            var @delegate = (string task) => new Todo();
+
+            // Assert
+            var exception = Record.Exception(() => RequestDelegateFactory.Create(@delegate));
+            Assert.Null(exception);
+        }, options);
+    }
 
     private DefaultHttpContext CreateHttpContext()
     {

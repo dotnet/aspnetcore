@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
     /// <param name="pattern">The route pattern.</param>
     /// <returns>An <see cref="ConnectionEndpointRouteBuilder"/> for endpoints associated with the connections.</returns>
-    public static ConnectionEndpointRouteBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern) where TConnectionHandler : ConnectionHandler
+    public static ConnectionEndpointRouteBuilder MapConnectionHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConnectionHandler>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern) where TConnectionHandler : ConnectionHandler
     {
         return endpoints.MapConnectionHandler<TConnectionHandler>(pattern, configureOptions: null);
     }
@@ -48,7 +49,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
     /// <param name="pattern">The route pattern.</param>
     /// <param name="configureOptions">A callback to configure dispatcher options.</param>
     /// <returns>An <see cref="ConnectionEndpointRouteBuilder"/> for endpoints associated with the connections.</returns>
-    public static ConnectionEndpointRouteBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, Action<HttpConnectionDispatcherOptions>? configureOptions) where TConnectionHandler : ConnectionHandler
+    public static ConnectionEndpointRouteBuilder MapConnectionHandler<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TConnectionHandler>(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern, Action<HttpConnectionDispatcherOptions>? configureOptions) where TConnectionHandler : ConnectionHandler
     {
         var options = new HttpConnectionDispatcherOptions();
         configureOptions?.Invoke(options);
@@ -125,6 +126,9 @@ public static class ConnectionEndpointRouteBuilderExtensions
             {
                 e.Metadata.Add(data);
             }
+
+            // Add IDisableCookieRedirectMetadata to indicate this is a non-browser endpoint (SignalR)
+            e.Metadata.Add(DisableCookieRedirectMetadata.Instance);
         });
 
         return new ConnectionEndpointRouteBuilder(compositeConventionBuilder);
@@ -154,5 +158,10 @@ public static class ConnectionEndpointRouteBuilderExtensions
                 endpointConventionBuilder.Finally(finalConvention);
             }
         }
+    }
+
+    private sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
+    {
+        public static DisableCookieRedirectMetadata Instance { get; } = new();
     }
 }

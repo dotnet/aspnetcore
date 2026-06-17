@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Time.Testing;
 using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
@@ -12,12 +12,12 @@ public class TimeoutControlTests
 {
     private readonly Mock<ITimeoutHandler> _mockTimeoutHandler;
     private readonly TimeoutControl _timeoutControl;
-    private readonly MockTimeProvider _timeProvider;
+    private readonly FakeTimeProvider _timeProvider;
 
     public TimeoutControlTests()
     {
         _mockTimeoutHandler = new Mock<ITimeoutHandler>();
-        _timeProvider = new MockTimeProvider();
+        _timeProvider = new FakeTimeProvider();
         _timeoutControl = new TimeoutControl(_mockTimeoutHandler.Object, _timeProvider);
     }
 
@@ -527,7 +527,7 @@ public class TimeoutControlTests
             _timeoutControl.Tick(_timeProvider.GetTimestamp());
         }
 
-        _timeProvider.AdvanceTo(endTime);
+        _timeProvider.Advance(_timeProvider.GetElapsedTime(_timeProvider.GetTimestamp(), endTime));
         _timeoutControl.Tick(_timeProvider.GetTimestamp());
     }
 }

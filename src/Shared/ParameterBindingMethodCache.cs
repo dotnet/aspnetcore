@@ -26,6 +26,12 @@ internal sealed class ParameterBindingMethodCache
     private static readonly MethodInfo BindAsyncMethod = typeof(ParameterBindingMethodCache).GetMethod(nameof(BindAsync), BindingFlags.NonPublic | BindingFlags.Static)!;
     private static readonly MethodInfo UriTryCreateMethod = typeof(Uri).GetMethod(nameof(Uri.TryCreate), BindingFlags.Public | BindingFlags.Static, new[] { typeof(string), typeof(UriKind), typeof(Uri).MakeByRefType() })!;
 
+    // Thread-safe singletons for ParameterBindingMethodCache
+    private static readonly Lazy<ParameterBindingMethodCache> _instance = new(() => new ParameterBindingMethodCache());
+    public static ParameterBindingMethodCache Instance = _instance.Value;
+    private static readonly Lazy<ParameterBindingMethodCache> _nonThrowingInstance = new(() => new ParameterBindingMethodCache(throwOnInvalidMethod: false));
+    public static ParameterBindingMethodCache NonThrowingInstance = _nonThrowingInstance.Value;
+
     // work around https://github.com/dotnet/runtime/issues/81864 by splitting these into a separate class.
     internal static class SharedExpressions
     {
@@ -79,6 +85,11 @@ internal sealed class ParameterBindingMethodCache
         Func<ParameterExpression, Expression, Expression>? Finder(Type type)
         {
             MethodInfo? methodInfo;
+
+            if (TryGetExplicitIParsableTryParseMethod(type, out var explicitIParsableTryParseMethod))
+            {
+                return (expression, formatProvider) => Expression.Call(explicitIParsableTryParseMethod, TempSourceStringExpr, formatProvider, expression);
+            }
 
             if (type.IsEnum)
             {
@@ -414,6 +425,17 @@ internal sealed class ParameterBindingMethodCache
         where TValue : class?, IBindableFromHttpContext<TValue>
     {
         return TValue.BindAsync(httpContext, parameter);
+    }
+
+    [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]
+    private static bool TryGetExplicitIParsableTryParseMethod(Type type, out MethodInfo methodInfo)
+    {
+        // Nested types by default use + as the delimeter between the containing type and the
+        // inner type. However when doing a method search this '+' symbol needs to be a '.' symbol.
+        var typeName = TypeNameHelper.GetTypeDisplayName(type, fullName: true, nestedTypeDelimiter: '.');
+        var name = $"System.IParsable<{typeName}>.TryParse";
+        methodInfo = type.GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic)!;
+        return methodInfo is not null;
     }
 
     [RequiresUnreferencedCode("Performs reflection on type hierarchy. This cannot be statically analyzed.")]

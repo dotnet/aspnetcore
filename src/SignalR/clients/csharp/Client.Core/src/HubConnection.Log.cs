@@ -334,5 +334,11 @@ public partial class HubConnection
 
         [LoggerMessage(92, LogLevel.Trace, "Received SequenceMessage with Sequence ID '{SequenceId}'.", EventName = "ReceivedSequenceMessage")]
         public static partial void ReceivedSequenceMessage(ILogger logger, long sequenceId);
+
+        [LoggerMessage(93, LogLevel.Debug, "HubProtocol '{Protocol} v{Version}' does not support Stateful Reconnect. Disabling the feature.", EventName = "DisablingReconnect")]
+        public static partial void DisablingReconnect(ILogger logger, string protocol, int version);
+
+        [LoggerMessage(94, LogLevel.Error, "Failed to bind argument received in stream '{StreamId}'.", EventName = "StreamBindingFailure")]
+        public static partial void StreamBindingFailure(ILogger logger, string? streamId, Exception exception);
     }
 }

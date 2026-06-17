@@ -70,10 +70,10 @@ public static class HtmlHelperComponentExtensions
     internal static IComponentRenderMode MapRenderMode(RenderMode renderMode) => renderMode switch
     {
         RenderMode.Static => null,
-        RenderMode.Server => new ServerRenderMode(prerender: false),
-        RenderMode.ServerPrerendered => Components.Web.RenderMode.Server,
-        RenderMode.WebAssembly => new WebAssemblyRenderMode(prerender: false),
-        RenderMode.WebAssemblyPrerendered => Components.Web.RenderMode.WebAssembly,
+        RenderMode.Server => new InteractiveServerRenderMode(prerender: false),
+        RenderMode.ServerPrerendered => Components.Web.RenderMode.InteractiveServer,
+        RenderMode.WebAssembly => new InteractiveWebAssemblyRenderMode(prerender: false),
+        RenderMode.WebAssemblyPrerendered => Components.Web.RenderMode.InteractiveWebAssembly,
         _ => throw new ArgumentException($"Unsupported render mode {renderMode}", nameof(renderMode)),
     };
 }

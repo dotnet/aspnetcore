@@ -4,24 +4,36 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 // These tests verify the behavior of MVC when responding to a client that simulates a disconnect.
 // See https://github.com/dotnet/aspnetcore/issues/13333
-public class ReadFromDisconnectedClientTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWhereReadingRequestBodyThrows>>
+public class ReadFromDisconnectedClientTest : LoggedTest
 {
-    public ReadFromDisconnectedClientTest(MvcTestFixture<BasicWebSite.StartupWhereReadingRequestBodyThrows> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<BasicWebSite.StartupWhereReadingRequestBodyThrows>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.StartupWhereReadingRequestBodyThrows>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<BasicWebSite.StartupWhereReadingRequestBodyThrows> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task ActionWithAntiforgery_Returns400_WhenReadingBodyThrows()

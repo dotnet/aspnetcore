@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -100,7 +100,7 @@ public class WebSocketsTests : VerifiableLoggedTest
                 await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
                 await transport;
 
-                Assert.Equal(1, clientSummary.Received.Count);
+                Assert.Single(clientSummary.Received);
                 Assert.True(clientSummary.Received[0].EndOfMessage);
                 Assert.Equal((WebSocketMessageType)Enum.Parse(typeof(WebSocketMessageType), expectedMessageType), clientSummary.Received[0].MessageType);
                 Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Buffer));
@@ -111,7 +111,7 @@ public class WebSocketsTests : VerifiableLoggedTest
     private HttpConnectionContext CreateHttpConnectionContext(DuplexPipe.DuplexPipePair pair, string loggerName = null)
     {
         return new HttpConnectionContext("foo", connectionToken: null, LoggerFactory.CreateLogger(loggerName ?? nameof(HttpConnectionContext)),
-            metricsContext: default, pair.Transport, pair.Application, new(), useAcks: false);
+            metricsContext: default, pair.Transport, pair.Application, new(), useStatefulReconnect: false);
     }
 
     [Fact]

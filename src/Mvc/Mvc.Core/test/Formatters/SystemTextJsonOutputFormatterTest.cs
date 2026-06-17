@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -86,7 +88,7 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
     {
         // Arrange
         var expected = new MemoryStream();
-        await JsonSerializer.SerializeAsync(expected, LargeAsync(), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await JsonSerializer.SerializeAsync(expected, LargeAsync(), JsonSerializerOptions.Web);
         var formatter = GetOutputFormatter();
         var mediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
         var encoding = CreateOrGetSupportedEncoding(formatter, "utf-8", isDefaultEncoding: true);
@@ -254,13 +256,39 @@ public partial class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTest
     }
 
     [Fact]
-    public void WriteResponseBodyAsync_Throws_WhenTypeResolverIsNull()
+    public void WriteResponseBodyAsync_Works_WhenTypeResolverIsNull()
     {
         // Arrange
         var jsonOptions = new JsonOptions();
         jsonOptions.JsonSerializerOptions.TypeInfoResolver = null;
 
-        Assert.Throws<InvalidOperationException>(() => SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
+        var exception = Assert.Throws<InvalidOperationException>(() => SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions));
+        Assert.Equal("JsonSerializerOptions instance must specify a TypeInfoResolver setting before being marked as read-only.", exception.Message);
+    }
+
+    [ConditionalTheory]
+    [RemoteExecutionSupported]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void STJOutputFormatter_UsesEmptyResolver_WhenJsonIsReflectionEnabledByDefaultFalse(bool isReflectionEnabledByDefault)
+    {
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", isReflectionEnabledByDefault.ToString());
+
+        using var remoteHandle = RemoteExecutor.Invoke(static () =>
+        {
+            // Arrange
+            var jsonOptions = new JsonOptions();
+
+            // Assert
+            var stjOutputFormatter = SystemTextJsonOutputFormatter.CreateFormatter(jsonOptions);
+            Assert.IsAssignableFrom<IJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
+            // Use default resolver if reflection is enabled instead of empty one
+            if (JsonSerializer.IsReflectionEnabledByDefault)
+            {
+                Assert.IsType<DefaultJsonTypeInfoResolver>(stjOutputFormatter.SerializerOptions.TypeInfoResolver);
+            }
+        }, options);
     }
 
     private class Person

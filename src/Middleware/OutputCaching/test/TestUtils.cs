@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
-using System;
+using System.Buffers;
+using System.IO.Pipelines;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -77,6 +78,16 @@ internal class TestUtils
         return Task.CompletedTask;
     }
 
+    internal static async Task TestRequestDelegatePipeWriteAsync(HttpContext context)
+    {
+        var uniqueId = Guid.NewGuid().ToString();
+        if (TestRequestDelegate(context, uniqueId))
+        {
+            Encoding.UTF8.GetBytes(uniqueId, context.Response.BodyWriter);
+            await context.Response.BodyWriter.FlushAsync();
+        }
+    }
+
     internal static IOutputCacheKeyProvider CreateTestKeyProvider()
     {
         return CreateTestKeyProvider(new OutputCacheOptions());
@@ -109,6 +120,11 @@ internal class TestUtils
                 contextAction?.Invoke(context);
                 return TestRequestDelegateSendFileAsync(context);
             },
+            context =>
+            {
+                contextAction?.Invoke(context);
+                return TestRequestDelegatePipeWriteAsync(context);
+            },
         });
     }
 
@@ -125,8 +141,9 @@ internal class TestUtils
         {
             requestDelegates = new RequestDelegate[]
             {
-                    TestRequestDelegateWriteAsync,
-                    TestRequestDelegateWrite
+                TestRequestDelegateWriteAsync,
+                TestRequestDelegateWrite,
+                TestRequestDelegatePipeWriteAsync,
             };
         }
 
@@ -142,6 +159,7 @@ internal class TestUtils
                     {
                         services.AddOutputCache(outputCachingOptions =>
                         {
+                            Assert.NotNull(outputCachingOptions.ApplicationServices);
                             if (options != null)
                             {
                                 outputCachingOptions.MaximumBodySize = options.MaximumBodySize;
@@ -173,7 +191,8 @@ internal class TestUtils
         IOutputCacheStore? cache = null,
         OutputCacheOptions? options = null,
         TestSink? testSink = null,
-        IOutputCacheKeyProvider? keyProvider = null
+        IOutputCacheKeyProvider? keyProvider = null,
+        IOutputCachePolicyProvider? policyProvider = null
         )
     {
         if (next == null)
@@ -182,7 +201,7 @@ internal class TestUtils
         }
         if (cache == null)
         {
-            cache = new TestOutputCache();
+            cache = new SimpleTestOutputCache();
         }
         if (options == null)
         {
@@ -192,21 +211,28 @@ internal class TestUtils
         {
             keyProvider = new OutputCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
         }
+        if (policyProvider == null)
+        {
+            policyProvider = new DefaultOutputCachePolicyProvider(Options.Create(options));
+        }
 
         return new OutputCacheMiddleware(
             next,
             Options.Create(options),
             testSink == null ? NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
             cache,
+            policyProvider,
             keyProvider);
     }
 
     internal static OutputCacheContext CreateTestContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
+        var actualOptions = options ?? new OutputCacheOptions();
         var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new TestOutputCache());
-        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new SimpleTestOutputCache());
+        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(actualOptions));
         serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCachePolicyProvider))).Returns(new DefaultOutputCachePolicyProvider(Options.Create(actualOptions)));
 
         httpContext ??= new DefaultHttpContext();
         httpContext.RequestServices = serviceProvider.Object;
@@ -223,10 +249,12 @@ internal class TestUtils
 
     internal static OutputCacheContext CreateUninitializedContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
+        var actualOptions = options ?? new OutputCacheOptions();
         var serviceProvider = new Mock<IServiceProvider>();
-        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new TestOutputCache());
-        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new SimpleTestOutputCache());
+        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(actualOptions));
         serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCachePolicyProvider))).Returns(new DefaultOutputCachePolicyProvider(Options.Create(actualOptions)));
 
         httpContext ??= new DefaultHttpContext();
         httpContext.RequestServices = serviceProvider.Object;
@@ -278,7 +306,6 @@ internal class LoggedMessage
     internal static LoggedMessage ResponseCached => new LoggedMessage(8, LogLevel.Information);
     internal static LoggedMessage ResponseNotCached => new LoggedMessage(9, LogLevel.Information);
     internal static LoggedMessage ResponseContentLengthMismatchNotCached => new LoggedMessage(10, LogLevel.Warning);
-    internal static LoggedMessage ExpirationExpiresExceeded => new LoggedMessage(11, LogLevel.Debug);
 
     private LoggedMessage(int evenId, LogLevel logLevel)
     {
@@ -305,7 +332,7 @@ internal class TestResponseCachingKeyProvider : IOutputCacheKeyProvider
     }
 }
 
-internal class TestOutputCache : IOutputCacheStore
+internal class SimpleTestOutputCache : ITestOutputCacheStore
 {
     private readonly Dictionary<string, byte[]?> _storage = new();
     public int GetCount { get; private set; }
@@ -347,6 +374,23 @@ internal class TestOutputCache : IOutputCacheStore
     }
 }
 
+internal class BufferTestOutputCache : SimpleTestOutputCache, IOutputCacheBufferStore
+{
+    ValueTask IOutputCacheBufferStore.SetAsync(string key, ReadOnlySequence<byte> value, ReadOnlyMemory<string> tags, TimeSpan validFor, CancellationToken cancellationToken)
+        => SetAsync(key, value.ToArray(), tags.ToArray(), validFor, cancellationToken);
+
+    async ValueTask<bool> IOutputCacheBufferStore.TryGetAsync(string key, PipeWriter destination, CancellationToken cancellationToken)
+    {
+        var data = await GetAsync(key, cancellationToken); // in reality we expect this to be sync, but: meh
+        if (data is null)
+        {
+            return false;
+        }
+        await destination.WriteAsync(data, cancellationToken);
+        return true;
+    }
+}
+
 internal class AllowTestPolicy : IOutputCachePolicy
 {
     public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
@@ -365,4 +409,10 @@ internal class AllowTestPolicy : IOutputCachePolicy
     {
         return ValueTask.CompletedTask;
     }
+}
+
+public interface ITestOutputCacheStore : IOutputCacheStore
+{
+    int GetCount { get; }
+    int SetCount { get; }
 }

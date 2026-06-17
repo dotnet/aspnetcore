@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Net.ServerSentEvents;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -352,7 +353,7 @@ public static class TypedResults
     /// </remarks>
     /// <param name="fileStream">The <see cref="System.IO.Stream"/> with the contents of the file.</param>
     /// <param name="contentType">The Content-Type of the file.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -393,7 +394,7 @@ public static class TypedResults
     /// </remarks>
     /// <param name="stream">The <see cref="System.IO.Stream"/> to write to the response.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -431,7 +432,7 @@ public static class TypedResults
     /// </remarks>
     /// <param name="pipeReader">The <see cref="System.IO.Pipelines.PipeReader"/> to write to the response.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -459,14 +460,10 @@ public static class TypedResults
 
     /// <summary>
     /// Allows writing directly to the response body.
-    /// <para>
-    /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
-    /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
-    /// </para>
     /// </summary>
     /// <param name="streamWriterCallback">The callback that allows users to write directly to the response body.</param>
     /// <param name="contentType">The <c>Content-Type</c> of the response. Defaults to <c>application/octet-stream</c>.</param>
-    /// <param name="fileDownloadName">The the file name to be used in the <c>Content-Disposition</c> header.</param>
+    /// <param name="fileDownloadName">The file name to be used in the <c>Content-Disposition</c> header.</param>
     /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.
     /// Used to configure the <c>Last-Modified</c> response header and perform conditional range requests.</param>
     /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> to be configure the <c>ETag</c> response header
@@ -511,10 +508,7 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         return new(path, contentType)
         {
@@ -547,10 +541,7 @@ public static class TypedResults
         EntityTagHeaderValue? entityTag = null,
         bool enableRangeProcessing = false)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(path));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(path);
 
         return new(path, contentType)
         {
@@ -576,10 +567,7 @@ public static class TypedResults
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
     public static RedirectHttpResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url, bool permanent = false, bool preserveMethod = false)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new(url, permanent, preserveMethod);
     }
@@ -599,10 +587,7 @@ public static class TypedResults
     /// <returns>The created <see cref="RedirectHttpResult"/> for the response.</returns>
     public static RedirectHttpResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl, bool permanent = false, bool preserveMethod = false)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException("Argument cannot be null or empty", nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new(localUrl, acceptLocalUrlOnly: true, permanent, preserveMethod);
     }
@@ -747,6 +732,20 @@ public static class TypedResults
     public static UnprocessableEntity<TValue> UnprocessableEntity<TValue>(TValue? error) => new(error);
 
     /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <returns>The created <see cref="HttpResults.InternalServerError"/> for the response.</returns>
+    public static InternalServerError InternalServerError() => ResultsCache.InternalServerError;
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status500InternalServerError"/> response.
+    /// </summary>
+    /// <typeparam name="TValue">The type of error object that will be JSON serialized to the response body.</typeparam>
+    /// <param name="error">The value to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="HttpResults.InternalServerError{TValue}"/> for the response.</returns>
+    public static InternalServerError<TValue> InternalServerError<TValue>(TValue? error) => new(error);
+
+    /// <summary>
     /// Produces a <see cref="ProblemDetails"/> response.
     /// </summary>
     /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
@@ -757,12 +756,35 @@ public static class TypedResults
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
     public static ProblemHttpResult Problem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return Problem(detail, instance, statusCode, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="ProblemHttpResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static ProblemHttpResult Problem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         var problemDetails = new ProblemDetails
         {
@@ -776,17 +798,6 @@ public static class TypedResults
         CopyExtensions(extensions, problemDetails);
 
         return new(problemDetails);
-    }
-
-    private static void CopyExtensions(IDictionary<string, object?>? extensions, ProblemDetails problemDetails)
-    {
-        if (extensions is not null)
-        {
-            foreach (var extension in extensions)
-            {
-                problemDetails.Extensions.Add(extension);
-            }
-        }
     }
 
     /// <summary>
@@ -813,11 +824,34 @@ public static class TypedResults
     /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
     public static ValidationProblem ValidationProblem(
         IDictionary<string, string[]> errors,
+        string? detail,
+        string? instance,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return ValidationProblem(errors, detail, instance, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response with an <see cref="HttpValidationProblemDetails"/> value.
+    /// </summary>
+    /// <param name="errors">One or more validation errors.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="HttpResults.ValidationProblem"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static ValidationProblem ValidationProblem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
         ArgumentNullException.ThrowIfNull(errors);
 
@@ -835,9 +869,20 @@ public static class TypedResults
         return new(problemDetails);
     }
 
+    private static void CopyExtensions(IEnumerable<KeyValuePair<string, object?>>? extensions, ProblemDetails problemDetails)
+    {
+        if (extensions is not null)
+        {
+            foreach (var extension in extensions)
+            {
+                problemDetails.Extensions.Add(extension);
+            }
+        }
+    }
+
     /// <summary>
     /// Produces a <see cref="StatusCodes.Status201Created"/> response.
-    /// </summary>   
+    /// </summary>
     /// <returns>The created <see cref="HttpResults.Created"/> for the response.</returns>
     public static Created Created()
     {
@@ -1025,9 +1070,52 @@ public static class TypedResults
         => new(routeName, routeValues, value);
 
     /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{TValue}"/> response.
+    /// </summary>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{TValue}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static ServerSentEventsResult<string> ServerSentEvents(IAsyncEnumerable<string> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static ServerSentEventsResult<T> ServerSentEvents<T>(IAsyncEnumerable<T> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+    public static ServerSentEventsResult<T> ServerSentEvents<T>(IAsyncEnumerable<SseItem<T>> values)
+        => new(values);
+
+    /// <summary>
     /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
-    public static EmptyHttpResult Empty { get; } = EmptyHttpResult.Instance;
+    public static EmptyHttpResult Empty => EmptyHttpResult.Instance;
 
     /// <summary>
     /// Provides a container for external libraries to extend

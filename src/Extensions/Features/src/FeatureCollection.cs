@@ -161,6 +161,6 @@ public class FeatureCollection : IFeatureCollection
         private readonly FeatureCollection _features = features;
 
         [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, object>[] Items => _features.Select(pair => new KeyValuePair<string, object>(pair.Key.FullName ?? string.Empty, pair.Value)).ToArray();
+        public DictionaryItemDebugView<Type, object>[] Items => _features.Select(pair => new DictionaryItemDebugView<Type, object>(pair)).ToArray();
     }
 }

@@ -64,23 +64,6 @@ public class RemoteAuthenticationService<
     /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
     /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
     /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
-    [Obsolete("Use the constructor RemoteAuthenticationService(IJSRuntime,IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>>,NavigationManager,AccountClaimsPrincipalFactory<TAccount>,ILogger<RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>>) instead.")]
-    public RemoteAuthenticationService(
-        IJSRuntime jsRuntime,
-        IOptionsSnapshot<RemoteAuthenticationOptions<TProviderOptions>> options,
-        NavigationManager navigation,
-        AccountClaimsPrincipalFactory<TAccount> accountClaimsPrincipalFactory)
-        : this(jsRuntime, options, navigation, accountClaimsPrincipalFactory, null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance.
-    /// </summary>
-    /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for performing JavaScript interop operations.</param>
-    /// <param name="options">The options to be passed down to the underlying JavaScript library handling the authentication operations.</param>
-    /// <param name="navigation">The <see cref="NavigationManager"/> used to generate URLs.</param>
-    /// <param name="accountClaimsPrincipalFactory">The <see cref="AccountClaimsPrincipalFactory{TAccount}"/> used to generate the <see cref="ClaimsPrincipal"/> for the user.</param>
     /// <param name="logger">The logger to use for login authentication operations.</param>
     public RemoteAuthenticationService(
         IJSRuntime jsRuntime,
@@ -108,7 +91,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context);
+        var result = await JSInvokeWithContextAsync<RemoteAuthenticationContext<TRemoteAuthenticationState>, RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signIn", context);
         await UpdateUserOnSuccess(result);
 
         return result;
@@ -130,7 +113,7 @@ public class RemoteAuthenticationService<
         RemoteAuthenticationContext<TRemoteAuthenticationState> context)
     {
         await EnsureAuthService();
-        var result = await JsRuntime.InvokeAsync<RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context);
+        var result = await JSInvokeWithContextAsync<RemoteAuthenticationContext<TRemoteAuthenticationState>, RemoteAuthenticationResult<TRemoteAuthenticationState>>("AuthenticationService.signOut", context);
         await UpdateUserOnSuccess(result);
 
         return result;
@@ -186,6 +169,11 @@ public class RemoteAuthenticationService<
                 Scopes = options.Scopes ?? Array.Empty<string>(),
             } : null);
     }
+
+    // JSRuntime.InvokeAsync does not properly annotate all arguments with DynamicallyAccessedMembersAttribute. https://github.com/dotnet/aspnetcore/issues/39839
+    // Calling JsRuntime.InvokeAsync directly results allows the RemoteAuthenticationContext.State getter to be trimmed. https://github.com/dotnet/aspnetcore/issues/49956
+    private ValueTask<TResult> JSInvokeWithContextAsync<[DynamicallyAccessedMembers(JsonSerialized)] TContext, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(
+        string identifier, TContext context) => JsRuntime.InvokeAsync<TResult>(identifier, context);
 
     private string GetReturnUrl(string? customReturnUrl) =>
         customReturnUrl != null ? Navigation.ToAbsoluteUri(customReturnUrl).AbsoluteUri : Navigation.Uri;
@@ -255,4 +243,16 @@ internal class RemoteAuthenticationServiceJavaScriptLoggingOptions
 }
 
 // Internal for testing purposes
-internal record struct InternalAccessTokenResult([property: JsonConverter(typeof(JsonStringEnumConverter<AccessTokenResultStatus>))] AccessTokenResultStatus Status, AccessToken Token);
+internal readonly struct InternalAccessTokenResult
+{
+    [JsonConverter(typeof(JsonStringEnumConverter<AccessTokenResultStatus>))]
+    public AccessTokenResultStatus Status { get; init; }
+
+    public AccessToken Token { get; init; }
+
+    public InternalAccessTokenResult(AccessTokenResultStatus status, AccessToken token)
+    {
+        Status = status;
+        Token = token;
+    }
+}

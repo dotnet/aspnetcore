@@ -67,7 +67,7 @@ public abstract class VirtualFileResultTestBase
         Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
         Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
         Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.Equal(contentLength, httpResponse.ContentLength);
         Assert.Equal(path, sendFileFeature.Name);
         Assert.Equal(startResult, sendFileFeature.Offset);
@@ -205,8 +205,8 @@ public abstract class VirtualFileResultTestBase
         // Assert
         var httpResponse = httpContext.Response;
         Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-        Assert.Empty(httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.Equal(0, httpResponse.Headers.ContentRange.Count);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.Equal(path, sendFileFeature.Name);
         Assert.Equal(0, sendFileFeature.Offset);
         Assert.Null(sendFileFeature.Length);
@@ -240,12 +240,12 @@ public abstract class VirtualFileResultTestBase
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         var contentRange = new ContentRangeHeaderValue(33);
         Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
         Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
         Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.Equal(0, httpResponse.ContentLength);
         Assert.Empty(body);
     }
@@ -276,8 +276,8 @@ public abstract class VirtualFileResultTestBase
         var httpResponse = httpContext.Response;
         Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
         Assert.Null(httpResponse.ContentLength);
-        Assert.Empty(httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.Equal(0, httpResponse.Headers.ContentRange.Count);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.Null(sendFileFeature.Name); // Not called
     }
 
@@ -307,8 +307,8 @@ public abstract class VirtualFileResultTestBase
         var httpResponse = httpContext.Response;
         Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
         Assert.Null(httpResponse.ContentLength);
-        Assert.Empty(httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.Equal(0, httpResponse.Headers.ContentRange.Count);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
         Assert.Null(sendFileFeature.Name); // Not called
     }
@@ -350,7 +350,7 @@ public abstract class VirtualFileResultTestBase
         Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
         Assert.Equal("bytes", httpResponse.Headers.AcceptRanges);
         Assert.Equal(contentRange.ToString(), httpResponse.Headers.ContentRange);
-        Assert.NotEmpty(httpResponse.Headers.LastModified);
+        Assert.NotEqual(0, httpResponse.Headers.LastModified.Count);
         Assert.Equal(contentLength, httpResponse.ContentLength);
     }
 

@@ -1,0 +1,24 @@
+﻿@page "/persist-server-state"
+@rendermode RenderMode.InteractiveServer
+
+<p>Server Persist State Component</p>
+
+@if (!destroyAndRecreate)
+{
+    <TestContentPackage.PersistStateComponent KeyName="server" />
+}
+else
+{
+    <TestContentPackage.PersistStateComponent KeyName="server" />
+}
+
+<button id="destroy-and-recreate" @onclick="DestroyAndRecreate">Destroy and recreate</button>
+
+@code {
+    private bool destroyAndRecreate = false;
+
+    private void DestroyAndRecreate()
+    {
+        destroyAndRecreate = true;
+    }
+}

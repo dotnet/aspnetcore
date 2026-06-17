@@ -1,27 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests;
 
-public class UserJwtsTestFixture : IDisposable
+public sealed class UserJwtsTestFixture : IDisposable
 {
-    private Stack<Action> _disposables = new Stack<Action>();
-    internal string TestSecretsId;
+    private readonly Stack<Action> _disposables = new();
+    internal string TestSecretsId { get; private set; }
 
     private const string ProjectTemplate = @"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 </Project>";
+
+    private const string FileBasedAppTemplate = @"#:sdk Microsoft.NET.Sdk.Web
+#:property TargetFramework=net11.0
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+app.MapGet(""/"", () => ""Hello world!"");
+app.Run();
+";
 
     private const string LaunchSettingsTemplate = @"
 {
@@ -62,7 +69,22 @@ public class UserJwtsTestFixture : IDisposable
   }
 }";
 
-    public string CreateProject(bool hasSecret = true)
+    private const string FileBasedAppLaunchSettingsTemplate = @"
+{
+  ""profiles"": {
+    ""https"": {
+      ""commandName"": ""Project"",
+      ""dotnetRunMessages"": true,
+      ""launchBrowser"": true,
+      ""applicationUrl"": ""https://localhost:7001;http://localhost:7000"",
+      ""environmentVariables"": {
+        ""ASPNETCORE_ENVIRONMENT"": ""Development""
+      }
+    }
+  }
+}";
+
+    public string CreateProject(bool hasSecret = true, bool createAppSettings = true)
     {
         var projectPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
         Directory.CreateDirectory(Path.Combine(projectPath.FullName, "Properties"));
@@ -80,8 +102,15 @@ public class UserJwtsTestFixture : IDisposable
         File.WriteAllText(Path.Combine(projectPath.FullName, "Properties", "launchSettings.json"),
             LaunchSettingsTemplate);
 
+        if (createAppSettings)
+        {
+            File.WriteAllText(
+                Path.Combine(projectPath.FullName, "appsettings.Development.json"),
+                "{}");
+        }
+
         File.WriteAllText(
-            Path.Combine(projectPath.FullName, "appsettings.Development.json"),
+            Path.Combine(projectPath.FullName, "appsettings.Local.json"),
             "{}");
 
         if (hasSecret)
@@ -100,6 +129,30 @@ public class UserJwtsTestFixture : IDisposable
         _disposables.Push(() => TryDelete(projectPath.FullName));
 
         return projectPath.FullName;
+    }
+
+    public string CreateFileBasedApp(bool createProjectLaunchSettings = false, bool createAppSettings = false)
+    {
+        var appDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "userjwtstest", Guid.NewGuid().ToString()));
+        var appFile = Path.Combine(appDirectory.FullName, "app.cs");
+
+        File.WriteAllText(appFile, FileBasedAppTemplate);
+        File.WriteAllText(Path.Combine(appDirectory.FullName, "app.run.json"), FileBasedAppLaunchSettingsTemplate);
+        if (createProjectLaunchSettings)
+        {
+            Directory.CreateDirectory(Path.Combine(appDirectory.FullName, "Properties"));
+            File.WriteAllText(Path.Combine(appDirectory.FullName, "Properties", "launchSettings.json"), LaunchSettingsTemplate);
+        }
+        if (createAppSettings)
+        {
+            File.WriteAllText(
+                Path.Combine(appDirectory.FullName, "appsettings.Development.json"),
+                "{}");
+        }
+
+        _disposables.Push(() => TryDelete(appDirectory.FullName));
+
+        return appFile;
     }
 
     private static void TryDelete(string directory)

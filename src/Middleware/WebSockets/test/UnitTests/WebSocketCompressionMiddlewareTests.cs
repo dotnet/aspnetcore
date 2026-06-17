@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.WebSockets.Test;

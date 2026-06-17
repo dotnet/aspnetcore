@@ -47,8 +47,7 @@ internal static class ResultsOfTHelper
             }
         }
 
-        // TODO: Remove IL3050 suppress when https://github.com/dotnet/linker/issues/2715 is complete.
-        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Validated with IsDynamicCodeSupported check.")]
+        [RequiresDynamicCode("The native code for the PopulateMetadata<TTarget> instantiation might not be available at runtime.")]
         [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2060:MakeGenericMethod",
             Justification = "The call to MakeGenericMethod is safe due to the fact that  PopulateMetadata<TTarget> does not have a DynamicallyAccessMembers attribute and TTarget is annotated to preserve all methods to preserve the PopulateMetadata method.")]
         static void InvokeGenericPopulateMetadata(object[] parameters)

@@ -266,7 +266,7 @@ internal sealed class DefaultAntiforgery : IAntiforgery
     private static IAntiforgeryFeature GetAntiforgeryFeature(HttpContext httpContext)
     {
         var antiforgeryFeature = httpContext.Features.Get<IAntiforgeryFeature>();
-        if (antiforgeryFeature == null)
+        if (antiforgeryFeature is null)
         {
             antiforgeryFeature = new AntiforgeryFeature();
             httpContext.Features.Set(antiforgeryFeature);

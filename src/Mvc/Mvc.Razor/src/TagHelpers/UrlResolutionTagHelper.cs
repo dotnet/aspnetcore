@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -49,8 +52,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 public class UrlResolutionTagHelper : TagHelper
 {
     // Valid whitespace characters defined by the HTML5 spec.
-    private static readonly char[] ValidAttributeWhitespaceChars =
-        new[] { '\t', '\n', '\u000C', '\r', ' ' };
+    private static readonly SearchValues<char> ValidAttributeWhitespaceChars = SearchValues.Create("\t\n\u000C\r ");
+
     private static readonly Dictionary<string, string[]> ElementAttributeLookups =
         new(StringComparer.OrdinalIgnoreCase)
         {
@@ -215,13 +218,12 @@ public class UrlResolutionTagHelper : TagHelper
     protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, out string? resolvedUrl)
     {
         resolvedUrl = null;
-        var start = FindRelativeStart(url);
-        if (start == -1)
+        if (!TryCreateTrimmedString(url, out var trimmedUrl))
         {
             return false;
         }
 
-        var trimmedUrl = CreateTrimmedString(url, start);
+        trimmedUrl = GetVersionedResourceUrl(trimmedUrl);
 
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         resolvedUrl = urlHelper.Content(trimmedUrl);
@@ -241,13 +243,12 @@ public class UrlResolutionTagHelper : TagHelper
     protected bool TryResolveUrl([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string url, [NotNullWhen(true)] out IHtmlContent? resolvedUrl)
     {
         resolvedUrl = null;
-        var start = FindRelativeStart(url);
-        if (start == -1)
+        if (!TryCreateTrimmedString(url, out var trimmedUrl))
         {
             return false;
         }
 
-        var trimmedUrl = CreateTrimmedString(url, start);
+        trimmedUrl = GetVersionedResourceUrl(trimmedUrl);
 
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         var appRelativeUrl = urlHelper.Content(trimmedUrl);
@@ -273,58 +274,70 @@ public class UrlResolutionTagHelper : TagHelper
         return true;
     }
 
-    private static int FindRelativeStart(string url)
+    private static bool TryCreateTrimmedString(string input, [NotNullWhen(true)] out string? trimmed)
     {
-        if (url == null || url.Length < 2)
+        trimmed = null;
+        if (input == null)
         {
-            return -1;
+            return false;
         }
 
-        var maxTestLength = url.Length - 2;
-
-        var start = 0;
-        for (; start < url.Length; start++)
+        var url = input.AsSpan();
+        var start = url.IndexOfAnyExcept(ValidAttributeWhitespaceChars);
+        if (start < 0)
         {
-            if (start > maxTestLength)
-            {
-                return -1;
-            }
-
-            if (!IsCharWhitespace(url[start]))
-            {
-                break;
-            }
+            return false;
         }
+
+        // Url without leading whitespace.
+        url = url.Slice(start);
 
         // Before doing more work, ensure that the URL we're looking at is app-relative.
-        if (url[start] != '~' || url[start + 1] != '/')
+        if (!url.StartsWith("~/"))
         {
-            return -1;
+            return false;
         }
 
-        return start;
+        var remainingLength = url.LastIndexOfAnyExcept(ValidAttributeWhitespaceChars) + 1;
+
+        // Substring returns same string if start == 0 && len == Length
+        trimmed = input.Substring(start, remainingLength);
+        return true;
     }
 
-    private static string CreateTrimmedString(string input, int start)
+    private string GetVersionedResourceUrl(string value)
     {
-        var end = input.Length - 1;
-        for (; end >= start; end--)
+        var assetCollection = GetAssetCollection();
+        if (assetCollection != null)
         {
-            if (!IsCharWhitespace(input[end]))
+            var (key, remainder) = ExtractKeyAndRest(value);
+
+            var src = assetCollection[key];
+            if (!string.Equals(src, key, StringComparison.Ordinal))
             {
-                break;
+                return $"~/{src}{value[remainder..]}";
             }
         }
 
-        var len = end - start + 1;
+        return value;
 
-        // Substring returns same string if start == 0 && len == Length
-        return input.Substring(start, len);
+        static (string key, int rest) ExtractKeyAndRest(string value)
+        {
+            var lastNonWhitespaceChar = value.AsSpan().TrimEnd().LastIndexOfAnyExcept(ValidAttributeWhitespaceChars);
+            var keyEnd = lastNonWhitespaceChar > -1 ? lastNonWhitespaceChar + 1 : value.Length;
+            var key = value.AsSpan();
+            if (key.StartsWith("~/", StringComparison.Ordinal))
+            {
+                key = value.AsSpan()[2..keyEnd].Trim();
+            }
+
+            return (key.ToString(), keyEnd);
+        }
     }
 
-    private static bool IsCharWhitespace(char ch)
+    private ResourceAssetCollection? GetAssetCollection()
     {
-        return ValidAttributeWhitespaceChars.AsSpan().IndexOf(ch) != -1;
+        return ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
     }
 
     private sealed class EncodeFirstSegmentContent : IHtmlContent

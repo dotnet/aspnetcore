@@ -3,8 +3,9 @@
 
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
+using Grpc.Shared;
+using Grpc.Shared.Server;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -28,6 +29,7 @@ public static class GrpcJsonTranscodingServiceExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton(typeof(IServiceMethodProvider<>), typeof(JsonTranscodingServiceMethodProvider<>)));
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<GrpcJsonTranscodingOptions>, GrpcJsonTranscodingOptionsSetup>());
         builder.Services.TryAddSingleton<DescriptorRegistry>();
+        builder.Services.TryAddSingleton<InterceptorActivators>();
 
         return builder;
     }

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// </para>
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-[DebuggerDisplay("ServiceFilter: Type={ServiceType} Order={Order}")]
+[DebuggerDisplay("Type = {ServiceType}, Order = {Order}")]
 public class ServiceFilterAttribute : Attribute, IFilterFactory, IOrderedFilter
 {
     /// <summary>

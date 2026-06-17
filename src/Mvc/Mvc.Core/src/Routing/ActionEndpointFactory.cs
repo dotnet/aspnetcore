@@ -47,14 +47,14 @@ internal sealed class ActionEndpointFactory
         bool createInertEndpoints,
         RoutePattern? groupPrefix = null)
     {
-        ArgumentNullException.ThrowIfNull(nameof(endpoints));
-        ArgumentNullException.ThrowIfNull(nameof(routeNames));
-        ArgumentNullException.ThrowIfNull(nameof(action));
-        ArgumentNullException.ThrowIfNull(nameof(routes));
-        ArgumentNullException.ThrowIfNull(nameof(conventions));
-        ArgumentNullException.ThrowIfNull(nameof(groupConventions));
-        ArgumentNullException.ThrowIfNull(nameof(finallyConventions));
-        ArgumentNullException.ThrowIfNull(nameof(groupFinallyConventions));
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(routeNames);
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(routes);
+        ArgumentNullException.ThrowIfNull(conventions);
+        ArgumentNullException.ThrowIfNull(groupConventions);
+        ArgumentNullException.ThrowIfNull(finallyConventions);
+        ArgumentNullException.ThrowIfNull(groupFinallyConventions);
 
         if (createInertEndpoints)
         {
@@ -542,13 +542,5 @@ internal sealed class ActionEndpointFactory
             var invoker = invokerFactory.CreateInvoker(actionContext);
             return invoker!.InvokeAsync();
         };
-    }
-
-    private sealed class InertEndpointBuilder : EndpointBuilder
-    {
-        public override Endpoint Build()
-        {
-            return new Endpoint(RequestDelegate, new EndpointMetadataCollection(Metadata), DisplayName);
-        }
     }
 }

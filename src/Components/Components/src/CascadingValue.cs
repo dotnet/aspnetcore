@@ -140,7 +140,7 @@ public class CascadingValue<TValue> : ICascadingValueSupplier, IComponent
             || string.Equals(requestedName, Name, StringComparison.OrdinalIgnoreCase); // Also match on name
     }
 
-    object? ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    object? ICascadingValueSupplier.GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         return Value;
     }

@@ -7,6 +7,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 internal static class Utils
 {
+    public static Uri CreateEndPointUri(Uri url)
+    {
+        // The EndPoint URI shouldn't have querystring or target.
+        var uriBuilder = new UriBuilder
+        {
+            Scheme = url.Scheme,
+            Host = url.Host,
+            Port = url.Port,
+            Path = url.AbsolutePath
+        };
+        return uriBuilder.Uri;
+    }
+
     public static Uri AppendPath(Uri url, string path)
     {
         var builder = new UriBuilder(url);

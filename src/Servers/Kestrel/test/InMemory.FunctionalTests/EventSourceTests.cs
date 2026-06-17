@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
@@ -423,7 +423,7 @@ public class EventSourceTests : LoggedTest
         private readonly ConcurrentQueue<EventSnapshot> _events = new ConcurrentQueue<EventSnapshot>();
         private readonly ILogger _logger;
 
-        private readonly object _disposeLock = new object();
+        private readonly Lock _disposeLock = new();
         private bool _disposed;
 
         public TestEventListener()

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// <summary>
 /// Associates a model object with it's corresponding <see cref="ModelMetadata"/>.
 /// </summary>
-[DebuggerDisplay("DeclaredType={Metadata.ModelType.Name} PropertyName={Metadata.PropertyName}")]
+[DebuggerDisplay("DeclaredType = {Metadata.ModelType.Name}, PropertyName = {Metadata.PropertyName}")]
 public class ModelExplorer
 {
     private readonly IModelMetadataProvider _metadataProvider;

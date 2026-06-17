@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -21,7 +22,10 @@ public static class EndpointMetadataApiExplorerServiceCollectionExtensions
     {
         // Try to add default services in case MVC services aren't added.
         services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
-        services.TryAddSingleton<IApiDescriptionGroupCollectionProvider, ApiDescriptionGroupCollectionProvider>();
+        services.TryAddSingleton<IApiDescriptionGroupCollectionProvider>(sp => new ApiDescriptionGroupCollectionProvider(
+            sp.GetRequiredService<IActionDescriptorCollectionProvider>(),
+            sp.GetServices<IApiDescriptionProvider>(),
+            sp.GetRequiredService<ILoggerFactory>()));
 
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IApiDescriptionProvider, EndpointMetadataApiDescriptionProvider>());

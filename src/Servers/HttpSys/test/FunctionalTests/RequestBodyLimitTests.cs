@@ -9,12 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class RequestBodyLimitTests
+public class RequestBodyLimitTests : LoggedTest
 {
     [ConditionalFact]
     public async Task ContentLengthEqualsLimit_ReadSync_Success()
@@ -32,7 +32,7 @@ public class RequestBodyLimitTests
             httpContext.Response.ContentLength = read;
             httpContext.Response.Body.Write(input, 0, read);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -54,7 +54,7 @@ public class RequestBodyLimitTests
             int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
             httpContext.Response.ContentLength = read;
             await httpContext.Response.Body.WriteAsync(input, 0, read);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -76,7 +76,7 @@ public class RequestBodyLimitTests
             httpContext.Response.ContentLength = read;
             httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(input, 0, read, null, null));
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -99,7 +99,7 @@ public class RequestBodyLimitTests
             httpContext.Response.ContentLength = read;
             httpContext.Response.Body.Write(input, 0, read);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World", chunked: true);
             Assert.Equal("Hello World", response);
@@ -121,7 +121,7 @@ public class RequestBodyLimitTests
             int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
             httpContext.Response.ContentLength = read;
             await httpContext.Response.Body.WriteAsync(input, 0, read);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World", chunked: true);
             Assert.Equal("Hello World", response);
@@ -143,7 +143,7 @@ public class RequestBodyLimitTests
             httpContext.Response.ContentLength = read;
             httpContext.Response.Body.EndWrite(httpContext.Response.Body.BeginWrite(input, 0, read, null, null));
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World", chunked: true);
             Assert.Equal("Hello World", response);
@@ -169,7 +169,7 @@ public class RequestBodyLimitTests
             Assert.Equal("The request's Content-Length 11 is larger than the request body size limit 10.", ex.Message);
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World");
             Assert.Equal(string.Empty, response);
@@ -194,7 +194,7 @@ public class RequestBodyLimitTests
             Assert.Equal("The request's Content-Length 11 is larger than the request body size limit 10.", ex.Message);
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World");
             Assert.Equal(string.Empty, response);
@@ -219,7 +219,7 @@ public class RequestBodyLimitTests
             Assert.Equal("The request's Content-Length 11 is larger than the request body size limit 10.", ex.Message);
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World");
             Assert.Equal(string.Empty, response);
@@ -245,7 +245,7 @@ public class RequestBodyLimitTests
             Assert.Equal("The total number of bytes read 11 has exceeded the request body size limit 10.", ex.Message);
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World", chunked: true);
             Assert.Equal(string.Empty, response);
@@ -269,7 +269,7 @@ public class RequestBodyLimitTests
             ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => httpContext.Request.Body.ReadAsync(input, 0, input.Length));
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
             Assert.Equal("The total number of bytes read 11 has exceeded the request body size limit 10.", ex.Message);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World", chunked: true);
             Assert.Equal(string.Empty, response);
@@ -295,7 +295,7 @@ public class RequestBodyLimitTests
             Assert.Equal("The total number of bytes read 11 has exceeded the request body size limit 10.", ex.Message);
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World", chunked: true);
             Assert.Equal(string.Empty, response);
@@ -322,7 +322,7 @@ public class RequestBodyLimitTests
             Assert.Equal("The total number of bytes read 20 has exceeded the request body size limit 10.", ex.Message);
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
             return Task.FromResult(0);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             string response = await SendRequestAsync(address, content, chunked: true);
             Assert.Equal(string.Empty, response);
@@ -347,7 +347,7 @@ public class RequestBodyLimitTests
             var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => httpContext.Request.Body.ReadAsync(input, 0, input.Length));
             Assert.Equal("The total number of bytes read 20 has exceeded the request body size limit 10.", ex.Message);
             Assert.Equal(StatusCodes.Status413PayloadTooLarge, ex.StatusCode);
-        }, options => options.MaxRequestBodySize = 10))
+        }, options => options.MaxRequestBodySize = 10, LoggerFactory))
         {
             string response = await SendRequestAsync(address, content, chunked: true);
             Assert.Equal(string.Empty, response);
@@ -371,7 +371,7 @@ public class RequestBodyLimitTests
             Assert.True(feature.IsReadOnly);
             httpContext.Response.ContentLength = read;
             await httpContext.Response.Body.WriteAsync(input, 0, read);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World!");
             Assert.Equal("Hello World!", response);
@@ -395,7 +395,7 @@ public class RequestBodyLimitTests
             Assert.True(feature.IsReadOnly);
             httpContext.Response.ContentLength = read;
             await httpContext.Response.Body.WriteAsync(input, 0, read);
-        }, options => options.MaxRequestBodySize = 11))
+        }, options => options.MaxRequestBodySize = 11, LoggerFactory))
         {
             var response = await SendRequestAsync(address, "Hello World!", chunked: true);
             Assert.Equal("Hello World!", response);

@@ -73,4 +73,11 @@ export interface IHttpConnectionOptions {
      * This will not apply to Long Polling poll requests, EventSource, or WebSockets.
      */
     timeout?: number;
+
+    // Internal, should be set by {@link @microsoft/signalr.HubConnectionBuilder.withStatefulReconnect}
+    /** Specifies that the client should use Stateful Reconnect. It will try to reconnect with the same connection token.
+     *
+     * @internal
+     */
+    _useStatefulReconnect?: boolean;
 }

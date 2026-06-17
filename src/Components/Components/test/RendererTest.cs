@@ -4,13 +4,15 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.CompilerServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -1460,7 +1462,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
     }
 
     [Fact]
@@ -1492,7 +1494,7 @@ public class RendererTest
 
         // Assert
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
     }
 
     [Fact]
@@ -1528,7 +1530,7 @@ public class RendererTest
         // Assert
         Assert.NotNull(arg);
         Assert.Equal(TaskStatus.Canceled, task.Status);
-        await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
     }
 
     [Fact]
@@ -2242,7 +2244,7 @@ public class RendererTest
             .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
             .Select(frame => frame.ComponentId)
             .ToList();
-        var childComponent3 = batch.ReferenceFrames.Where(f => f.ComponentId == 3)
+        var childComponent3 = batch.ReferenceFrames.Where(f => f.FrameType == RenderTreeFrameType.Component && f.ComponentId == 3)
             .Single().Component;
         Assert.Equal(new[] { 1, 2 }, childComponentIds);
         Assert.IsType<FakeComponent>(childComponent3);
@@ -2617,6 +2619,56 @@ public class RendererTest
         Assert.Equal(1, count4);
         Assert.Equal(1, count5);
         Assert.True(component.Disposed);
+    }
+
+    [Fact]
+    public async Task DoesNotDispatchEventsAfterOwnerComponentIsDisposed()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var eventCount = 0;
+        Action<EventArgs> origEventHandler = args => { eventCount++; };
+        var component = new ConditionalParentComponent<EventComponent>
+        {
+            IncludeChild = true,
+            ChildParameters = new Dictionary<string, object>
+            {
+                { nameof(EventComponent.OnTest), origEventHandler }
+            }
+        };
+        var rootComponentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+        var batch = renderer.Batches.Single();
+        var rootComponentDiff = batch.DiffsByComponentId[rootComponentId].Single();
+        var rootComponentFrame = batch.ReferenceFrames[0];
+        var childComponentFrame = rootComponentDiff.Edits
+            .Select(e => batch.ReferenceFrames[e.ReferenceFrameIndex])
+            .Where(f => f.FrameType == RenderTreeFrameType.Component)
+            .Single();
+        var childComponentId = childComponentFrame.ComponentId;
+        var childComponentDiff = batch.DiffsByComponentId[childComponentFrame.ComponentId].Single();
+        var eventHandlerId = batch.ReferenceFrames
+            .Skip(childComponentDiff.Edits[0].ReferenceFrameIndex) // Search from where the child component frames start
+            .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
+            .Single(f => f.AttributeEventHandlerId != 0)
+            .AttributeEventHandlerId;
+
+        // Act/Assert 1: Event handler fires when we trigger it
+        Assert.Equal(0, eventCount);
+        var renderTask = renderer.DispatchEventAsync(eventHandlerId, args: null);
+        Assert.True(renderTask.IsCompletedSuccessfully);
+        Assert.Equal(1, eventCount);
+        await renderTask;
+
+        // Now remove the EventComponent, but without ever acknowledging the renderbatch, so the event handler doesn't get disposed
+        var disposalBatchAcknowledgementTcs = new TaskCompletionSource();
+        component.IncludeChild = false;
+        renderer.NextRenderResultTask = disposalBatchAcknowledgementTcs.Task;
+        component.TriggerRender();
+
+        // Act/Assert 2: Can no longer fire the original event. It's not an error but the delegate was not invoked.
+        await renderer.DispatchEventAsync(eventHandlerId, args: null);
+        Assert.Equal(1, eventCount);
     }
 
     [Fact]
@@ -2999,7 +3051,7 @@ public class RendererTest
         component.TriggerRender();
         var childComponentId = renderer.Batches.Single()
             .ReferenceFrames
-            .Where(f => f.ComponentId != 0)
+            .Where(f => f.FrameType == RenderTreeFrameType.Component && f.ComponentId != 0)
             .Single()
             .ComponentId;
         var origEventHandlerId = renderer.Batches.Single()
@@ -3015,8 +3067,8 @@ public class RendererTest
         // Assert: correct render result
         Assert.True(renderTask.IsCompletedSuccessfully);
         var newBatch = renderer.Batches.Skip(1).Single();
-        Assert.Equal(1, newBatch.DisposedComponentIDs.Count);
-        Assert.Equal(1, newBatch.DiffsByComponentId.Count);
+        Assert.Single(newBatch.DisposedComponentIDs);
+        Assert.Single(newBatch.DiffsByComponentId);
         Assert.Collection(newBatch.DiffsByComponentId[componentId].Single().Edits,
             edit =>
             {
@@ -3383,7 +3435,7 @@ public class RendererTest
         // Assert: Only the re-rendered component was notified of "after render"
         var batch2 = renderer.Batches.Skip(1).Single();
         Assert.Equal(2, batch2.DiffsInOrder.Count); // Parent and first child
-        Assert.Equal(1, batch2.DisposedComponentIDs.Count); // Third child
+        Assert.Single(batch2.DisposedComponentIDs); // Third child
         Assert.Equal(2, childComponents[0].OnAfterRenderCallCount); // Retained and re-rendered
         Assert.Equal(1, childComponents[1].OnAfterRenderCallCount); // Retained and not re-rendered
         Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed
@@ -3639,7 +3691,7 @@ public class RendererTest
         // Act
         renderer.AssignRootComponentId(component);
         await component.ExternalExceptionDispatch(exception);
-        
+
         // Assert
         Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
     }
@@ -4930,34 +4982,43 @@ public class RendererTest
         Assert.True(wasOnSyncContext);
     }
 
-    [Fact]
-    public async Task NoHotReloadListenersAreRegistered_WhenMetadataUpdatesAreNotSupported()
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void NoHotReloadListenersAreRegistered_WhenHotReloadIsDisabled()
     {
-        // Arrange
-        await using var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = false };
-        renderer.HotReloadManager = hotReloadManager;
-        var component = new TestComponent(builder =>
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Reflection.Metadata.MetadataUpdater.IsSupported", "false");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
-            builder.OpenElement(0, "h2");
-            builder.AddContent(1, "some text");
-            builder.CloseElement();
-        });
+            // Set the switch before any code triggers HotReloadManager type initialization.
+            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
 
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-        Assert.False(hotReloadManager.IsSubscribedTo);
+            await using var renderer = new TestRenderer();
+            var hotReloadManager = new HotReloadManager();
+            renderer.HotReloadManager = hotReloadManager;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "h2");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
 
-        await renderer.DisposeAsync();
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            Assert.False(hotReloadManager.IsSubscribedTo);
+
+            await renderer.DisposeAsync();
+        }, options);
     }
 
     [Fact]
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
         // Arrange
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
         var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+        var hotReloadManager = new HotReloadManager();
         renderer.HotReloadManager = hotReloadManager;
         var component = new TestComponent(builder =>
         {
@@ -4978,241 +5039,38 @@ public class RendererTest
     }
 
     [Fact]
-    public void DoesNotTrackNamedEventHandlersWhenNotEnabled()
+    public async Task HotReload_ReRenderPreservesAsyncLocalValues()
     {
-        // Arrange
-        var renderer = new TestRenderer();
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
 
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-        });
+        await using var renderer = new TestRenderer();
 
-        // Act
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+
+        var component = new AsyncLocalCaptureComponent();
+
+        // Establish AsyncLocal value before registering hot reload handler / rendering.
+        ServiceAccessor.TestAsyncLocal.Value = "AmbientValue";
+
         var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId));
 
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            });
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
+        // Sanity: initial render should not have captured a hot-reload value yet.
+        Assert.Null(component.HotReloadValue);
 
-        Assert.Empty(namedEvents);
-    }
-
-    [Fact]
-    public void CanCreateNamedEventHandlers()
-    {
-        // Arrange
-        var renderer = new TestRenderer
+        // Simulate hot reload delta applied from a fresh thread (different ExecutionContext) so the AsyncLocal value is lost.
+        var expected = ServiceAccessor.TestAsyncLocal.Value;
+        var thread = new Thread(() =>
         {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
+            // Simulate environment where the ambient value is not present on the hot reload thread.
+            ServiceAccessor.TestAsyncLocal.Value = null;
+            hotReloadManager.TriggerOnDeltaApplied();
         });
+        thread.Start();
+        thread.Join();
 
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        var evt = Assert.Single(namedEvents);
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            });
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
-        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, evt.eventHandlerId);
-        Assert.Equal("MyFormSubmit", evt.eventHandlerName);
-        Assert.Equal(componentId, evt.componentId);
-    }
-
-    [Fact]
-    public void CanCreateMultipleNamedEventHandlersPerComponent()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-            builder.OpenElement(2, "form");
-            builder.AddAttribute(3, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyOtherFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        Assert.Equal(2, namedEvents.Count);
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            },
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(2, edit.ReferenceFrameIndex);
-            });
-
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
-        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, namedEvents[0].eventHandlerId);
-        Assert.Equal("MyFormSubmit", namedEvents[0].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[0].componentId);
-
-        AssertFrame.Element(batch.ReferenceFrames[2], "form", 2);
-        AssertFrame.Attribute(batch.ReferenceFrames[3], "onsubmit");
-        Assert.Equal(batch.ReferenceFrames[3].AttributeEventHandlerId, namedEvents[1].eventHandlerId);
-        Assert.Equal("MyOtherFormSubmit", namedEvents[1].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[1].componentId);
-    }
-
-    [Fact]
-    public void CanCreateMultipleNamedEventHandlersPerElement()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.AddAttribute(2, "onclick", () => { });
-            builder.SetEventHandlerName("MyFormClick");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-
-        // Assert
-        var batch = renderer.Batches.Single();
-        var diff = batch.DiffsByComponentId[componentId].Single();
-        Assert.Equal(2, namedEvents.Count);
-        Assert.Collection(diff.Edits,
-            edit =>
-            {
-                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                Assert.Equal(0, edit.ReferenceFrameIndex);
-            });
-        AssertFrame.Element(batch.ReferenceFrames[0], "form", 3);
-        AssertFrame.Attribute(batch.ReferenceFrames[1], "onsubmit");
-        AssertFrame.Attribute(batch.ReferenceFrames[2], "onclick");
-
-        Assert.Equal(batch.ReferenceFrames[1].AttributeEventHandlerId, namedEvents[0].eventHandlerId);
-        Assert.Equal("MyFormSubmit", namedEvents[0].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[0].componentId);
-
-        Assert.Equal(batch.ReferenceFrames[2].AttributeEventHandlerId, namedEvents[1].eventHandlerId);
-        Assert.Equal("MyFormClick", namedEvents[1].eventHandlerName);
-        Assert.Equal(componentId, namedEvents[1].componentId);
-    }
-
-    [Fact]
-    public void DuplicateNamedEventHandlersOnComponentThrows()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-            builder.OpenElement(2, "form");
-            builder.AddAttribute(3, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal("An event handler 'MyFormSubmit' is already defined in this component.", exception.Message);
-    }
-
-    [Fact]
-    public void DuplicateNamedEventHandlersOnElementThrows()
-    {
-        // Arrange
-        var renderer = new TestRenderer
-        {
-            TrackNamedEventHandlers = true
-        };
-        var namedEvents = new List<(ulong eventHandlerId, int componentId, string eventHandlerName)>();
-        renderer.OnNamedEvent = namedEvents.Add;
-
-        var component = new TestComponent(builder =>
-        {
-            builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.AddAttribute(2, "onclick", () => { });
-            builder.SetEventHandlerName("MyFormSubmit");
-            builder.CloseElement();
-        });
-
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-
-        // Assert
-        var exception = Assert.Throws<InvalidOperationException>(component.TriggerRender);
-        Assert.Equal("An event handler 'MyFormSubmit' is already defined in this component.", exception.Message);
+        Assert.Equal(expected, component.HotReloadValue);
     }
 
     [Fact]
@@ -5230,6 +5088,24 @@ public class RendererTest
         var componentId = renderer.AssignRootComponentId(component);
         var ex = Assert.Throws<NotSupportedException>(() => component.TriggerRender());
         Assert.Contains($"Cannot supply a component of type '{typeof(ComponentWithUnknownRenderMode)}' because the current platform does not support the render mode '{typeof(ComponentWithUnknownRenderMode.UnknownRenderMode)}'.", ex.Message);
+    }
+
+    [Fact]
+    public void ThrowsForUnknownRenderMode_AtCallSite()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddComponentRenderMode(new ComponentWithUnknownRenderMode.UnknownRenderMode());
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        var ex = Assert.Throws<NotSupportedException>(component.TriggerRender);
+        Assert.Contains($"Cannot supply a component of type '{typeof(TestComponent)}' because the current platform does not support the render mode '{typeof(ComponentWithUnknownRenderMode.UnknownRenderMode)}'.", ex.Message);
     }
 
     [Fact]
@@ -5256,6 +5132,31 @@ public class RendererTest
         Assert.Equal("Some message", resolvedComponent.Message);
     }
 
+    [Fact]
+    public void RenderModeResolverCanSupplyComponent_CallSiteRenderMode()
+    {
+        // Arrange
+        var renderer = new RendererWithRenderModeResolver();
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddComponentParameter(1, nameof(MessageComponent.Message), "Some message");
+            builder.AddComponentRenderMode(new SubstituteComponentRenderMode());
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var componentFrames = batch.GetComponentFrames<MessageComponent>();
+        var resolvedComponent = (MessageComponent)componentFrames.Single().Component;
+        Assert.Equal("Some message", resolvedComponent.Message);
+    }
+
     [HasSubstituteComponentRenderMode]
     private class ComponentWithRenderMode : IComponent
     {
@@ -5266,6 +5167,130 @@ public class RendererTest
         {
             public override IComponentRenderMode Mode => new SubstituteComponentRenderMode();
         }
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithBaseClassParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var baseFragment = (RenderFragment<Animal>)((Animal animal) => builder =>
+        {
+            builder.AddContent(0, $"Animal: {animal.Name}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfDog>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfDog.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfDog>(componentFrame.Component);
+        var dogComponent = (ComponentWithRenderFragmentOfDog)componentFrame.Component;
+        Assert.NotNull(dogComponent.Template);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithInterfaceParameter()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var baseFragment = (RenderFragment<IList<string>>)((IList<string> items) => builder =>
+        {
+            builder.AddContent(0, $"Count: {items.Count}");
+        });
+
+        var component = new TestComponent(builder =>
+        {
+            builder.OpenComponent<ComponentWithRenderFragmentOfListOfString>(0);
+            builder.AddComponentParameter(1, nameof(ComponentWithRenderFragmentOfListOfString.Template), baseFragment);
+            builder.CloseComponent();
+        });
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        component.TriggerRender();
+
+        // Assert - Should compile and render without exception
+        var batch = renderer.Batches.Single();
+        var componentFrame = batch.ReferenceFrames
+            .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+        Assert.IsType<ComponentWithRenderFragmentOfListOfString>(componentFrame.Component);
+        var listComponent = (ComponentWithRenderFragmentOfListOfString)componentFrame.Component;
+        Assert.NotNull(listComponent.Template);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithInterfaceHierarchy()
+    {
+        // C# variance only works with reference types. This test uses interface hierarchy.
+        // IComparable<T> is contravariant, so we can demonstrate the concept
+
+        // Arrange - Create a fragment that accepts any IComparable
+        RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
+        {
+            builder.AddContent(0, $"Value: {value}");
+        };
+
+        // Act - Assign to a variable that accepts string (which implements IComparable)
+        RenderFragment<string> specificFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = specificFragment("test");
+
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithObjectToPrimitiveWrapper()
+    {
+        // For value types, contravariance only works when going through object (boxing)
+
+        // Arrange - Create a fragment that accepts object
+        RenderFragment<object> baseFragment = (object value) => builder =>
+        {
+            builder.AddContent(0, $"Value: {value}");
+        };
+
+        // Act - Can use this with a string (reference type derived from object)
+        RenderFragment<string> stringFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = stringFragment("test value");
+
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void RenderFragmentContravariance_WorksWithComparableTypes()
+    {
+        // Demonstrating contravariance with reference types implementing IComparable
+
+        // Arrange - Create a fragment that accepts IComparable
+        RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
+        {
+            builder.AddContent(0, $"Value: {value}");
+        };
+
+        // Act - Can use this with Version (reference type that implements IComparable)
+        RenderFragment<Version> versionFragment = baseFragment;
+        var builder = new RenderTreeBuilder();
+        var result = versionFragment(new Version(1, 0));
+
+        // Assert - Should compile and execute without exception
+        result(builder);
+        Assert.NotNull(result);
     }
 
     [HasUnknownRenderMode]
@@ -5284,9 +5309,9 @@ public class RendererTest
 
     private class RendererWithRenderModeResolver : TestRenderer
     {
-        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+        protected internal override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
         {
-            return componentTypeRenderMode switch
+            return renderMode switch
             {
                 SubstituteComponentRenderMode => componentActivator.CreateInstance(typeof(MessageComponent)),
                 var other => throw new NotSupportedException($"{nameof(RendererWithRenderModeResolver)} should not have received rendermode {other}"),
@@ -5323,6 +5348,34 @@ public class RendererTest
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             => Task.CompletedTask;
+    }
+
+    private class ServiceAccessor
+    {
+        public static AsyncLocal<string> TestAsyncLocal = new AsyncLocal<string>();
+    }
+
+    private class AsyncLocalCaptureComponent : IComponent
+    {
+        private bool _initialized;
+        private RenderHandle _renderHandle;
+        public string HotReloadValue { get; private set; }
+
+        public void Attach(RenderHandle renderHandle) => _renderHandle = renderHandle;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            if (!_initialized)
+            {
+                _initialized = true; // First (normal) render, don't capture.
+            }
+            else
+            {
+                // Hot reload re-render path.
+                HotReloadValue = ServiceAccessor.TestAsyncLocal.Value;
+            }
+            return Task.CompletedTask;
+        }
     }
 
     private class TestComponent : IComponent, IDisposable
@@ -6243,5 +6296,69 @@ public class RendererTest
         }
 
         public static implicit operator string(ImplicitlyConvertsToString value) => value._value;
+    }
+
+    // Test classes for RenderFragment contravariance
+    private class Animal
+    {
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private class Dog : Animal
+    {
+        public string Breed { get; set; } = string.Empty;
+    }
+
+    private class ComponentWithRenderFragmentOfDog : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<Dog> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var dog = new Dog { Name = "Buddy", Breed = "Golden Retriever" };
+                builder.AddContent(0, Template(dog));
+            }
+        }
+    }
+
+    private class ComponentWithRenderFragmentOfListOfString : AutoRenderComponent
+    {
+        [Parameter]
+        public RenderFragment<List<string>> Template { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (Template != null)
+            {
+                var list = new List<string> { "Item1", "Item2", "Item3" };
+                builder.AddContent(0, Template(list));
+            }
+        }
+    }
+
+    // Struct that implements IComparable for testing contravariance
+    private struct TestStructWithInterface : IComparable
+    {
+        public int Value { get; set; }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is TestStructWithInterface other)
+            {
+                return Value.CompareTo(other.Value);
+            }
+            return 1;
+        }
+    }
+
+    // Enum for testing contravariance (enums implement IConvertible)
+    private enum TestEnum
+    {
+        Value1,
+        Value2,
+        Value3
     }
 }

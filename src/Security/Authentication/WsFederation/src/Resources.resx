@@ -121,7 +121,7 @@
     <value>The service descriptor is missing.</value>
   </data>
   <data name="Exception_NoTokenValidatorFound" xml:space="preserve">
-    <value>No token validator was found for the given token.</value>
+    <value>No token validator or token handler was found for the given token.</value>
   </data>
   <data name="Exception_OptionMustBeProvided" xml:space="preserve">
     <value>The '{0}' option must be provided.</value>

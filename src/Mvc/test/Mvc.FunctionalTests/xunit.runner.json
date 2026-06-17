@@ -1,3 +1,6 @@
 {
+  "longRunningTestSeconds": 30,
+  "diagnosticMessages": true,
+  "maxParallelThreads": -1,
   "shadowCopy": false
 }

@@ -9,13 +9,13 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class ResponseHeaderTests
+public class ResponseHeaderTests : LoggedTest
 {
     [ConditionalFact]
     public async Task ResponseHeaders_ServerSendsDefaultHeaders_Success()
@@ -24,7 +24,7 @@ public class ResponseHeaderTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();
@@ -47,7 +47,7 @@ public class ResponseHeaderTests
             var responseHeaders = responseInfo.Headers;
             responseHeaders["WWW-Authenticate"] = new string[] { "custom1" };
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
 
 #pragma warning disable SYSLIB0014 // HttpClient would merge the headers no matter what
@@ -73,7 +73,7 @@ public class ResponseHeaderTests
             var responseHeaders = responseInfo.Headers;
             responseHeaders["WWW-Authenticate"] = new string[] { "custom1, and custom2", "custom3" };
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
 #pragma warning disable SYSLIB0014 // HttpClient would merge the headers no matter what
             WebRequest request = WebRequest.Create(address);
@@ -98,7 +98,7 @@ public class ResponseHeaderTests
             var responseHeaders = responseInfo.Headers;
             responseHeaders["Custom-Header1"] = new string[] { "custom1, and custom2", "custom3" };
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
 #pragma warning disable SYSLIB0014 // HttpClient would merge the headers no matter what
             WebRequest request = WebRequest.Create(address);
@@ -121,16 +121,16 @@ public class ResponseHeaderTests
         {
             var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
             var responseHeaders = responseInfo.Headers;
-            responseHeaders["Custom-Header1"] = new string[] { "Dašta" };
+            responseHeaders["Custom-Header1"] = new string[] { "DaÅ¡ta" };
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var socketsHttpHandler = new SocketsHttpHandler() { ResponseHeaderEncodingSelector = (_, _) => Encoding.UTF8 };
             var httpClient = new HttpClient(socketsHttpHandler);
             var response = await httpClient.GetAsync(address);
             response.EnsureSuccessStatusCode();
             Assert.True(response.Headers.TryGetValues("Custom-Header1", out var header));
-            Assert.Equal("Dašta", header.Single());
+            Assert.Equal("DaÅ¡ta", header.Single());
         }
     }
 
@@ -144,7 +144,7 @@ public class ResponseHeaderTests
             var responseHeaders = responseInfo.Headers;
             responseHeaders["Connection"] = new string[] { "Close" };
             return httpContext.Response.Body.FlushAsync(); // Http.Sys adds the Content-Length: header for us if we don't flush
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();
@@ -165,7 +165,7 @@ public class ResponseHeaderTests
         using (Utilities.CreateHttpServer(out address, httpContext =>
         {
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             using (HttpClient client = new HttpClient())
             {
@@ -192,7 +192,7 @@ public class ResponseHeaderTests
             responseHeaders["Transfer-Encoding"] = new string[] { "chunked" };
             var responseBytes = Encoding.ASCII.GetBytes("10\r\nManually Chunked\r\n0\r\n\r\n");
             return response.Body.WriteAsync(responseBytes, 0, responseBytes.Length);
-        }))
+        }, LoggerFactory))
         {
             using (HttpClient client = new HttpClient())
             {
@@ -228,7 +228,7 @@ public class ResponseHeaderTests
                 Assert.Throws<InvalidOperationException>(() => response.StatusCode = 404);
                 Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
                 return Task.FromResult(0);
-            }))
+            }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();
@@ -258,7 +258,7 @@ public class ResponseHeaderTests
                 Assert.True(response.HasStarted);
                 Assert.Throws<InvalidOperationException>(() => response.StatusCode = 404);
                 Assert.Throws<InvalidOperationException>(() => responseHeaders.Add("Custom3", new string[] { "value3a, value3b", "value3c" }));
-            }))
+            }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();
@@ -281,7 +281,7 @@ public class ResponseHeaderTests
             var responseHeaders = httpContext.Response.Headers;
             responseHeaders.Add(headerName, headerValue);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             HttpResponseMessage response = await SendRequestAsync(address);
             response.EnsureSuccessStatusCode();

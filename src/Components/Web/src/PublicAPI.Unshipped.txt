@@ -1,76 +1,115 @@
 #nullable enable
-*REMOVED*override Microsoft.AspNetCore.Components.Forms.InputFile.OnInitialized() -> void
-abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Entries.get -> System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>!
-abstract Microsoft.AspNetCore.Components.Forms.FormDataProvider.Name.get -> string?
-Microsoft.AspNetCore.Components.Binding.CascadingFormModelBindingProvider
-Microsoft.AspNetCore.Components.Binding.CascadingFormModelBindingProvider.CascadingFormModelBindingProvider(Microsoft.AspNetCore.Components.Binding.IFormValueSupplier! formValueSupplier) -> void
-Microsoft.AspNetCore.Components.Forms.FormDataProvider
-Microsoft.AspNetCore.Components.Forms.FormDataProvider.FormDataProvider() -> void
-Microsoft.AspNetCore.Components.Forms.FormDataProvider.IsFormDataAvailable.get -> bool
-Microsoft.AspNetCore.Components.Forms.IHostEnvironmentFormDataProvider
-Microsoft.AspNetCore.Components.Forms.IHostEnvironmentFormDataProvider.SetFormData(string! name, System.Collections.Generic.IReadOnlyDictionary<string!, Microsoft.Extensions.Primitives.StringValues>! formData) -> void
-Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.NameAttributeValue.get -> string!
-Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.get -> Microsoft.AspNetCore.Components.ModelBindingContext?
-Microsoft.AspNetCore.Components.Forms.EditForm.BindingContext.set -> void
-Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.get -> string?
-Microsoft.AspNetCore.Components.Forms.EditForm.FormHandlerName.set -> void
-Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer
-Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView initialParameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.StaticHtmlRenderer(System.IServiceProvider! serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Components.RenderTree.WebRenderer.WaitUntilAttachedAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute
-Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.SupplyParameterFromFormAttribute() -> void
-Microsoft.AspNetCore.Components.Web.AutoRenderMode
-Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode() -> void
-Microsoft.AspNetCore.Components.Web.AutoRenderMode.AutoRenderMode(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.AutoRenderMode.Prerender.get -> bool
-Microsoft.AspNetCore.Components.Web.HtmlRenderer
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>() -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.BeginRenderingComponent<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.Dispose() -> void
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.HtmlRenderer(System.IServiceProvider! services, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync(System.Type! componentType, Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
-Microsoft.AspNetCore.Components.Web.HtmlRenderer.RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent>!
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ComponentId.get -> int
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.HtmlRootComponent() -> void
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.QuiescenceTask.get -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.ToHtmlString() -> string!
-Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent.WriteHtmlTo(System.IO.TextWriter! output) -> void
-Microsoft.AspNetCore.Components.Web.RenderMode
-Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.RenderModeAutoAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.RenderModeAutoAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.RenderModeServerAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.RenderModeServerAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute
-Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.RenderModeWebAssemblyAttribute() -> void
-Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.RenderModeWebAssemblyAttribute(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.ServerRenderMode
-Microsoft.AspNetCore.Components.Web.ServerRenderMode.Prerender.get -> bool
-Microsoft.AspNetCore.Components.Web.ServerRenderMode.ServerRenderMode() -> void
-Microsoft.AspNetCore.Components.Web.ServerRenderMode.ServerRenderMode(bool prerender) -> void
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.Prerender.get -> bool
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.WebAssemblyRenderMode() -> void
-Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode.WebAssemblyRenderMode(bool prerender) -> void
-override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
-override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.HandleException(System.Exception! exception) -> void
-override Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.UpdateDisplayAsync(in Microsoft.AspNetCore.Components.RenderTree.RenderBatch renderBatch) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.get -> string?
-override Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute.Name.set -> void
-override Microsoft.AspNetCore.Components.Web.RenderModeAutoAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
-override Microsoft.AspNetCore.Components.Web.RenderModeServerAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
-override Microsoft.AspNetCore.Components.Web.RenderModeWebAssemblyAttribute.Mode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode!
-static Microsoft.AspNetCore.Components.Web.RenderMode.Auto.get -> Microsoft.AspNetCore.Components.Web.AutoRenderMode!
-static Microsoft.AspNetCore.Components.Web.RenderMode.Server.get -> Microsoft.AspNetCore.Components.Web.ServerRenderMode!
-static Microsoft.AspNetCore.Components.Web.RenderMode.WebAssembly.get -> Microsoft.AspNetCore.Components.Web.WebAssemblyRenderMode!
-virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.WriteComponentHtml(int componentId, System.IO.TextWriter! output) -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.EnvironmentBoundary() -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Exclude.get -> string?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Exclude.set -> void
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.get -> string?
+Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxSegmentSize.get -> int
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxSegmentSize.set -> void
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.RemoteBrowserFileStreamOptions() -> void
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.SegmentFetchTimeout.get -> System.TimeSpan
+*REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.SegmentFetchTimeout.set -> void
+*REMOVED*Microsoft.AspNetCore.Components.RenderTree.WebRenderer.RendererId.init -> void
+*REMOVED*Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.ClipboardEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ClipboardEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.DragEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.DragEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.ErrorEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ErrorEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.FocusEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.FocusEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.KeyboardEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.KeyboardEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.PointerEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.PointerEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.ProgressEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ProgressEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.TouchEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.TouchEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Action<Microsoft.AspNetCore.Components.Web.WheelEventArgs!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.WheelEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.ClipboardEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ClipboardEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.DragEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.DragEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.ErrorEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ErrorEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.FocusEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.FocusEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.KeyboardEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.KeyboardEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.MouseEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.PointerEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.PointerEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.ProgressEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.ProgressEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.TouchEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.TouchEventArgs!>
+*REMOVED*static Microsoft.AspNetCore.Components.Web.WebEventCallbackFactoryEventArgsExtensions.Create(this Microsoft.AspNetCore.Components.EventCallbackFactory! factory, object! receiver, System.Func<Microsoft.AspNetCore.Components.Web.WheelEventArgs!, System.Threading.Tasks.Task!>! callback) -> Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.WheelEventArgs!>
+Microsoft.AspNetCore.Components.Web.Media.FileDownload
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Media.FileDownloadContext!>?
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.FileDownload() -> void
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.FileName.get -> string!
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.FileName.set -> void
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.Text.get -> string?
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.Text.set -> void
+Microsoft.AspNetCore.Components.Web.Media.FileDownloadContext
+Microsoft.AspNetCore.Components.Web.Media.FileDownloadContext.FileDownloadContext() -> void
+Microsoft.AspNetCore.Components.Web.Media.FileDownloadContext.FileName.get -> string!
+Microsoft.AspNetCore.Components.Web.Media.FileDownloadContext.InvokeAsync() -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Web.Media.Image
+Microsoft.AspNetCore.Components.Web.Media.Image.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Media.MediaContext!>?
+Microsoft.AspNetCore.Components.Web.Media.Image.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Web.Media.Image.Image() -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.Source.get -> Microsoft.AspNetCore.Components.Web.Media.MediaSource!
+Microsoft.AspNetCore.Components.Web.Media.MediaContext
+Microsoft.AspNetCore.Components.Web.Media.MediaContext.Element.get -> Microsoft.AspNetCore.Components.ElementReference
+Microsoft.AspNetCore.Components.Web.Media.MediaContext.Element.set -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaContext.HasError.get -> bool
+Microsoft.AspNetCore.Components.Web.Media.MediaContext.IsLoading.get -> bool
+Microsoft.AspNetCore.Components.Web.Media.MediaContext.MediaContext() -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaContext.ObjectUrl.get -> string?
+Microsoft.AspNetCore.Components.Web.Media.Video
+Microsoft.AspNetCore.Components.Web.Media.Video.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Media.MediaContext!>?
+Microsoft.AspNetCore.Components.Web.Media.Video.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Web.Media.Video.Video() -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.MediaComponentBase() -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.Source.set -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaSource
+Microsoft.AspNetCore.Components.Web.Media.MediaSource.CacheKey.get -> string!
+Microsoft.AspNetCore.Components.Web.Media.MediaSource.Length.get -> long?
+Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(byte[]! data, string! mimeType, string! cacheKey) -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
+Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.SupplyParameterFromSessionAttribute() -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialIndex.get -> int
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialIndex.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>!
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ScrollToIndexAsync(int itemIndex, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.Beginning = 1 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.End = 2 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.None = 0 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.Name.get -> string?
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.Name.set -> void
+Microsoft.AspNetCore.Components.Web.SupplyParameterFromTempDataAttribute.SupplyParameterFromTempDataAttribute() -> void
+virtual Microsoft.AspNetCore.Components.Forms.InputFile.Dispose(bool disposing) -> void
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.DisplayName() -> void
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.set -> void
+Microsoft.AspNetCore.Components.Forms.InputBase<TValue>.IdAttributeValue.get -> string!
+Microsoft.AspNetCore.Components.Forms.Label<TValue>
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.set -> void
+Microsoft.AspNetCore.Components.Forms.Label<TValue>.Label() -> void

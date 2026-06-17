@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -40,6 +41,7 @@ public static class IdentityBuilderExtensions
     private static void AddSignInManagerDeps(this IdentityBuilder builder)
     {
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped(typeof(IPasskeyHandler<>).MakeGenericType(builder.UserType), typeof(PasskeyHandler<>).MakeGenericType(builder.UserType));
         builder.Services.AddScoped(typeof(ISecurityStampValidator), typeof(SecurityStampValidator<>).MakeGenericType(builder.UserType));
         builder.Services.AddScoped(typeof(ITwoFactorSecurityStampValidator), typeof(TwoFactorSecurityStampValidator<>).MakeGenericType(builder.UserType));
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
@@ -84,7 +86,7 @@ public static class IdentityBuilderExtensions
     }
 
     /// <summary>
-    /// Adds configuration ans services needed to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
+    /// Adds configuration and services needed to support <see cref="IdentityApiEndpointRouteBuilderExtensions.MapIdentityApi{TUser}(IEndpointRouteBuilder)"/>
     /// but does not configure authentication. Call <see cref="BearerTokenExtensions.AddBearerToken(AuthenticationBuilder, Action{BearerTokenOptions}?)"/> and/or
     /// <see cref="IdentityCookieAuthenticationBuilderExtensions.AddIdentityCookies(AuthenticationBuilder)"/> to configure authentication separately.
     /// </summary>
@@ -95,6 +97,9 @@ public static class IdentityBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.AddSignInManager();
+        builder.AddDefaultTokenProviders();
+        builder.Services.TryAddTransient(typeof(IEmailSender<>), typeof(DefaultMessageEmailSender<>));
+        builder.Services.TryAddTransient<IEmailSender, NoOpEmailSender>();
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, IdentityEndpointsJsonOptionsSetup>());
         return builder;
     }
@@ -102,12 +107,14 @@ public static class IdentityBuilderExtensions
     // Set TimeProvider from DI on all options instances, if not already set by tests.
     private sealed class PostConfigureSecurityStampValidatorOptions : IPostConfigureOptions<SecurityStampValidatorOptions>
     {
-        public PostConfigureSecurityStampValidatorOptions(TimeProvider timeProvider)
+        public PostConfigureSecurityStampValidatorOptions(TimeProvider? timeProvider = null)
         {
+            // We could assign this to "timeProvider ?? TimeProvider.System", but
+            // SecurityStampValidator already has system clock fallback logic.
             TimeProvider = timeProvider;
         }
 
-        private TimeProvider TimeProvider { get; }
+        private TimeProvider? TimeProvider { get; }
 
         public void PostConfigure(string? name, SecurityStampValidatorOptions options)
         {

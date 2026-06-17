@@ -1,0 +1,2 @@
+#nullable enable
+Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.Exception.get -> System.Exception?

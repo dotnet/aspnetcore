@@ -100,7 +100,7 @@ private void DoSomething() { }
         VerifyCSharpDiagnostic(source, new DiagnosticResult
         {
             Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties.Id,
-            Message = "Component parameter 'C.MyProp' should be auto property",
+            Message = "Component parameter 'C.MyProp' should be auto property. Manipulating component parameters can result in infinite loops and unintended side effects.",
             Locations = new[]
             {
                 new DiagnosticResultLocation("Test0.cs", 9, 15),
@@ -139,7 +139,7 @@ private void DoSomething() { }
         VerifyCSharpDiagnostic(source, new DiagnosticResult
         {
             Id = DiagnosticDescriptors.ComponentParametersShouldBeAutoProperties.Id,
-            Message = "Component parameter 'C.MyProp' should be auto property",
+            Message = "Component parameter 'C.MyProp' should be auto property. Manipulating component parameters can result in infinite loops and unintended side effects.",
             Locations = new[]
             {
                 new DiagnosticResultLocation("Test0.cs", 9, 15),

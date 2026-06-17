@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -43,6 +44,9 @@ internal sealed class HttpsConnectionMiddleware
     // The following fields are only set by TlsHandshakeCallbackOptions ctor.
     private readonly Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>>? _tlsCallbackOptions;
     private readonly object? _tlsCallbackOptionsState;
+
+    // Captures raw TLS client hello and invokes a user callback if any
+    private readonly TlsListener? _tlsListener;
 
     // Internal for testing
     internal readonly HttpProtocols _httpProtocols;
@@ -112,6 +116,13 @@ internal sealed class HttpsConnectionMiddleware
             (RemoteCertificateValidationCallback?)null : RemoteCertificateValidationCallback;
 
         _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
+
+#pragma warning disable CS0618 // Type or member is obsolete - still need to support the old property for back-compat
+        if (options.TlsClientHelloBytesCallback is not null)
+        {
+            _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
+        }
+#pragma warning restore CS0618
     }
 
     internal HttpsConnectionMiddleware(
@@ -154,6 +165,7 @@ internal sealed class HttpsConnectionMiddleware
         context.Features.Set<ISslStreamFeature>(feature);
         context.Features.Set<SslStream>(sslStream); // Anti-pattern, but retain for back compat
 
+        var metricsTagsFeature = context.Features.Get<IConnectionMetricsTagsFeature>();
         var metricsContext = context.Features.GetRequiredFeature<IConnectionMetricsContextFeature>().MetricsContext;
         var startTimestamp = Stopwatch.GetTimestamp();
         try
@@ -161,6 +173,10 @@ internal sealed class HttpsConnectionMiddleware
             using var cancellationTokenSource = _ctsPool.Rent();
             cancellationTokenSource.CancelAfter(_handshakeTimeout);
 
+            if (_tlsListener is not null)
+            {
+                await _tlsListener.OnTlsClientHelloAsync(context, cancellationTokenSource.Token);
+            }
             if (_tlsCallbackOptions is null)
             {
                 await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
@@ -173,7 +189,9 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (OperationCanceledException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
+            feature.Exception = ex;
+            feature.Snapshot();
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationTimedOut();
             await sslStream.DisposeAsync();
@@ -181,7 +199,9 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (IOException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
+            feature.Exception = ex;
+            feature.Snapshot();
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
             await sslStream.DisposeAsync();
@@ -189,10 +209,11 @@ internal sealed class HttpsConnectionMiddleware
         }
         catch (AuthenticationException ex)
         {
-            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, ex);
+            feature.Exception = ex;
+            feature.Snapshot();
+            RecordHandshakeFailed(_metrics, startTimestamp, Stopwatch.GetTimestamp(), metricsContext, metricsTagsFeature, ex);
 
             _logger.AuthenticationFailed(ex);
-
             await sslStream.DisposeAsync();
             return;
         }
@@ -202,9 +223,17 @@ internal sealed class HttpsConnectionMiddleware
 
         _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
-        if (context.Features.Get<IConnectionMetricsTagsFeature>() is { } metricsTags)
+        if (metricsTagsFeature != null)
         {
-            metricsTags.Tags.Add(new KeyValuePair<string, object?>("tls-protocol", sslStream.SslProtocol.ToString()));
+            if (KestrelMetrics.TryGetHandshakeProtocol(sslStream.SslProtocol, out var protocolName, out var protocolVersion))
+            {
+                // "tls" is considered the default protocol name and isn't explicitly recorded.
+                if (protocolName != "tls")
+                {
+                    metricsTagsFeature.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.name", protocolName));
+                }
+                metricsTagsFeature.Tags.Add(new KeyValuePair<string, object?>("tls.protocol.version", protocolVersion));
+            }
         }
 
         var originalTransport = context.Transport;
@@ -217,7 +246,16 @@ internal sealed class HttpsConnectionMiddleware
             await using (sslStream)
             await using (sslDuplexPipe)
             {
-                await _next(context);
+                try
+                {
+                    await _next(context);
+                }
+                finally
+                {
+                    // Snapshot SslStream-backed properties before disposal so outer middleware
+                    // can still read ITlsHandshakeFeature after the connection completes.
+                    feature.Snapshot();
+                }
                 // Dispose the inner stream (SslDuplexPipe) before disposing the SslStream
                 // as the duplex pipe can hit an ODE as it still may be writing.
             }
@@ -228,10 +266,12 @@ internal sealed class HttpsConnectionMiddleware
             context.Transport = originalTransport;
         }
 
-        static void RecordHandshakeFailed(KestrelMetrics metrics, long startTimestamp, long currentTimestamp, ConnectionMetricsContext metricsContext, Exception ex)
+        static void RecordHandshakeFailed(KestrelMetrics metrics, long startTimestamp, long currentTimestamp, ConnectionMetricsContext metricsContext, IConnectionMetricsTagsFeature? metricsTagsFeature, Exception ex)
         {
             KestrelEventSource.Log.TlsHandshakeFailed(metricsContext.ConnectionContext.ConnectionId);
             KestrelEventSource.Log.TlsHandshakeStop(metricsContext.ConnectionContext, null);
+
+            KestrelMetrics.AddConnectionEndReason(metricsTagsFeature, ConnectionEndReason.TlsHandshakeFailed);
             metrics.TlsHandshakeStop(metricsContext, startTimestamp, currentTimestamp, exception: ex);
         }
     }
@@ -252,15 +292,10 @@ internal sealed class HttpsConnectionMiddleware
                 store.Open(OpenFlags.ReadOnly);
                 return store;
             }
-            catch (Exception exception)
+            catch (Exception exception) when (exception is CryptographicException || exception is SecurityException)
             {
-                if (exception is CryptographicException || exception is SecurityException)
-                {
-                    _logger.FailedToOpenStore(storeLocation, exception);
-                    return null;
-                }
-
-                throw;
+                _logger.FailedToOpenStore(storeLocation, exception);
+                return null;
             }
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text;
@@ -50,6 +51,8 @@ public partial class Startup
 
             var ws = await Upgrade(context);
             await SendMessages(ws, "Yay");
+
+            await CloseWebSocket(ws, false);
         });
     }
 
@@ -85,6 +88,8 @@ public partial class Startup
             messages.Add("Upgraded");
 
             await SendMessages(ws, messages.ToArray());
+
+            await CloseWebSocket(ws, false);
         });
     }
 
@@ -94,9 +99,37 @@ public partial class Startup
         {
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => upgradeFeature.UpgradeAsync());
-            Assert.Equal("Upgrade requires HTTP/1.1.", ex.Message);
+            if (ex.Message != "Upgrade requires HTTP/1.1."
+                && ex.Message != "Cannot upgrade a non-upgradable request. Check IHttpUpgradeFeature.IsUpgradableRequest to determine if a request can be upgraded.")
+            {
+                throw new InvalidOperationException("Unexpected error from UpgradeAsync.");
+            }
         });
     }
+
+#if !FORWARDCOMPAT
+    private void WebSocketAllowCompression(IApplicationBuilder app)
+    {
+        app.Run(async context =>
+        {
+            var ws = await context.WebSockets.AcceptWebSocketAsync(new WebSocketAcceptContext()
+            {
+                DangerousEnableCompression = true
+            });
+
+            var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
+
+            var extensionsHeader = context.Response.Headers.SecWebSocketExtensions.ToString();
+            if (extensionsHeader.Length == 0)
+            {
+                extensionsHeader = "None";
+            }
+            await ws.SendAsync(Encoding.ASCII.GetBytes(extensionsHeader), WebSocketMessageType.Text, endOfMessage: true, default);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(appLifetime.ApplicationStopping, context.RequestAborted);
+            await Echo(ws, cts.Token);
+        });
+    }
+#endif
 
     private static async Task SendMessages(WebSocket webSocket, params string[] messages)
     {
@@ -157,17 +190,30 @@ public partial class Startup
         }
         else
         {
-            // Server-initiated close handshake due to either of the two conditions:
-            // (1) The applicaton host is performing a graceful shutdown.
-            // (2) The client sent "CloseFromServer" text message to request the server to close (a test scenario).
-            await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, closeFromServerCmd, CancellationToken.None);
-
-            // The server has sent the Close frame.
-            // Stop sending but keep receiving until we get the Close frame from the client.
-            while (!result.CloseStatus.HasValue)
-            {
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            }
+            await CloseWebSocket(webSocket, false);
         }
+    }
+
+    private async Task CloseWebSocket(WebSocket webSocket, bool receivedClose)
+    {
+        // Server-initiated close handshake due to either of the two conditions:
+        // (1) The applicaton host is performing a graceful shutdown.
+        // (2) The client sent "CloseFromServer" text message to request the server to close (a test scenario).
+        await webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "CloseFromServer", CancellationToken.None);
+
+        if (receivedClose)
+        {
+            return;
+        }
+
+        // The server has sent the Close frame.
+        // Stop sending but keep receiving until we get the Close frame from the client.
+        WebSocketReceiveResult result;
+        var buffer = new byte[100];
+        do
+        {
+            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+        }
+        while (!result.CloseStatus.HasValue);
     }
 }

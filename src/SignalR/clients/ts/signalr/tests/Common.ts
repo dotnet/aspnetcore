@@ -15,8 +15,8 @@ export function eachTransport(action: (transport: HttpTransportType) => void): v
 
 export function eachEndpointUrl(action: (givenUrl: string, expectedUrl: string) => void): void {
     const urls = [
-        [ "http://tempuri.org/endpoint/?q=my/Data", "http://tempuri.org/endpoint/negotiate?q=my/Data&negotiateVersion=1" ],
-        [ "http://tempuri.org/endpoint?q=my/Data", "http://tempuri.org/endpoint/negotiate?q=my/Data&negotiateVersion=1" ],
+        [ "http://tempuri.org/endpoint/?q=my/Data", "http://tempuri.org/endpoint/negotiate?q=my%2FData&negotiateVersion=1" ],
+        [ "http://tempuri.org/endpoint?q=my/Data", "http://tempuri.org/endpoint/negotiate?q=my%2FData&negotiateVersion=1" ],
         [ "http://tempuri.org/endpoint", "http://tempuri.org/endpoint/negotiate?negotiateVersion=1" ],
         [ "http://tempuri.org/endpoint/", "http://tempuri.org/endpoint/negotiate?negotiateVersion=1" ],
     ];

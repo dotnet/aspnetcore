@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
-using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -24,14 +24,19 @@ internal sealed class ListCommand
 
             cmd.OnExecute(() =>
             {
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), showTokensOption.HasValue(), cmd.OutputOption.Value());
+                if (!cmd.TryGetProjectOrFilePath(out var projectPath, out var isFileBasedApp))
+                {
+                    return 1;
+                }
+
+                return Execute(cmd.Reporter, projectPath, isFileBasedApp, showTokensOption.HasValue(), cmd.OutputOption.Value());
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, bool showTokens, string outputFormat)
+    private static int Execute(IReporter reporter, string projectPath, bool isFileBasedApp, bool showTokens, string outputFormat)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
+        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, isFileBasedApp, reporter, out var project, out var userSecretsId))
         {
             return 1;
         }
@@ -54,11 +59,11 @@ internal sealed class ListCommand
     {
         if (jwtStore.Jwts is { Count: > 0 } jwts)
         {
-            reporter.Output(JsonSerializer.Serialize(jwts, new JsonSerializerOptions { WriteIndented = true }));
+            reporter.Output(JsonSerializer.Serialize(jwts, JwtSerializerContext.Default.IDictionaryStringJwt));
         }
         else
         {
-            reporter.Output(JsonSerializer.Serialize(Array.Empty<Jwt>(), new JsonSerializerOptions { WriteIndented = true }));
+            reporter.Output(JsonSerializer.Serialize(Array.Empty<Jwt>(), JwtSerializerContext.Default.JwtArray));
         }
     }
 

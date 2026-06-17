@@ -1,14 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
 using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.WebView.Services;
 
 internal sealed class WebViewRenderer : WebRenderer
 {
+    private static readonly RendererInfo _componentPlatform = new("WebView", isInteractive: true);
     private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
     private readonly Dispatcher _dispatcher;
     private readonly IpcSender _ipcSender;
@@ -30,6 +33,10 @@ internal sealed class WebViewRenderer : WebRenderer
     }
 
     public override Dispatcher Dispatcher => _dispatcher;
+
+    protected override RendererInfo RendererInfo => _componentPlatform;
+
+    protected override int GetWebRendererId() => (int)WebRendererId.WebView;
 
     protected override void HandleException(Exception exception)
     {
@@ -76,9 +83,20 @@ internal sealed class WebViewRenderer : WebRenderer
         nextUnacknowledgedBatch.CompletionSource.SetResult();
     }
 
-    private sealed record UnacknowledgedRenderBatch
+    protected override IComponent ResolveComponentForRenderMode(
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        int? parentComponentId,
+        IComponentActivator componentActivator,
+        IComponentRenderMode renderMode)
+    {
+        // Blazor Hybrid is always interactive, so all render modes are treated as no-ops.
+        return componentActivator.CreateInstance(componentType);
+    }
+
+    private sealed class UnacknowledgedRenderBatch
     {
         public long BatchId { get; init; }
+
         public TaskCompletionSource CompletionSource { get; init; }
     }
 }

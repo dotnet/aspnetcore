@@ -86,7 +86,7 @@ app.MapPost("/", (Todo todo, TestService svc) => $"{svc.TestServiceMethod()}, {t
         await VerifyResponseBodyAsync(httpContext, expectedBody);
     }
 
-        public static IEnumerable<object[]> BodyParamOptionalityData
+    public static IEnumerable<object[]> BodyParamOptionalityData
     {
         get
         {
@@ -98,6 +98,11 @@ app.MapPost("/", (Todo todo, TestService svc) => $"{svc.TestServiceMethod()}, {t
                 new object[] { @"(Todo? todo = null) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo"},
                 new object[] { @"(Todo? todo) => $""Todo: {todo?.Name}"";", false, false, "Todo: " },
                 new object[] { @"(Todo? todo) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo" },
+                new object[] { @"(TodoStruct todo) => $""Todo: {todo.Name}"";", true, false, "Todo: Default Todo"},
+                new object[] { @"(TodoStruct? todo = null) => $""Todo: {todo?.Name}"";", false, false, "Todo: "},
+                new object[] { @"(TodoStruct? todo = null) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo"},
+                new object[] { @"(TodoStruct? todo) => $""Todo: {todo?.Name}"";", false, false, "Todo: " },
+                new object[] { @"(TodoStruct? todo) => $""Todo: {todo?.Name}"";", true, false, "Todo: Default Todo" },
             };
         }
     }
@@ -189,10 +194,7 @@ app.MapPost("/", TestAction);
         });
         var endpoint = GetEndpointFromCompilation(compilation, serviceProvider: serviceProvider);
 
-        var httpContext = CreateHttpContext(serviceProvider);
-        httpContext.Request.Headers["Content-Type"] = "application/json";
-        httpContext.Request.Headers["Content-Length"] = "0";
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+        var httpContext = CreateHttpContextWithEmptyJsonBody(serviceProvider);
 
         var ex = await Assert.ThrowsAsync<BadHttpRequestException>(() => endpoint.RequestDelegate(httpContext));
         Assert.StartsWith("Implicit body inferred for parameter", ex.Message);

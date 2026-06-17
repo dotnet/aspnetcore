@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing.Tracing;
+namespace Microsoft.AspNetCore.InternalTesting.Tracing;
 
 // This collection attribute is what makes the "magic" happen. It forces xunit to run all tests that inherit from this
 // base class sequentially, preventing conflicts (since EventSource/EventListener is a process-global concept).
 [Collection(CollectionName)]
 public abstract class EventSourceTestBase : IDisposable
 {
-    public const string CollectionName = "Microsoft.AspNetCore.Testing.Tracing.EventSourceTestCollection";
+    public const string CollectionName = "Microsoft.AspNetCore.InternalTesting.Tracing.EventSourceTestCollection";
 
     private readonly CollectingEventListener _listener;
 

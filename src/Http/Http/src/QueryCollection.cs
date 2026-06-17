@@ -3,7 +3,7 @@
 
 using System.Collections;
 using System.Diagnostics;
-using System.Linq;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http;
 /// The HttpRequest query string collection
 /// </summary>
 [DebuggerDisplay("Count = {Count}")]
-[DebuggerTypeProxy(typeof(QueryCollectionDebugView))]
+[DebuggerTypeProxy(typeof(StringValuesDictionaryDebugView))]
 public class QueryCollection : IQueryCollection
 {
     /// <summary>
@@ -249,13 +249,5 @@ public class QueryCollection : IQueryCollection
                 ((IEnumerator)_dictionaryEnumerator).Reset();
             }
         }
-    }
-
-    private sealed class QueryCollectionDebugView(QueryCollectionInternal collection)
-    {
-        private readonly QueryCollectionInternal _collection = collection;
-
-        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-        public KeyValuePair<string, string>[] Items => _collection.Select(pair => new KeyValuePair<string, string>(pair.Key, pair.Value.ToString())).ToArray();
     }
 }

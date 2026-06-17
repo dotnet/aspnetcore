@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal;
 
 internal sealed partial class LoggingHttpMessageHandler : DelegatingHandler
 {
-    private readonly ILogger<LoggingHttpMessageHandler> _logger;
+    private readonly ILogger _logger;
 
     public LoggingHttpMessageHandler(HttpMessageHandler inner, ILoggerFactory loggerFactory) : base(inner)
     {
         ArgumentNullThrowHelper.ThrowIfNull(loggerFactory);
 
-        _logger = loggerFactory.CreateLogger<LoggingHttpMessageHandler>();
+        _logger = loggerFactory.CreateLogger(typeof(LoggingHttpMessageHandler));
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

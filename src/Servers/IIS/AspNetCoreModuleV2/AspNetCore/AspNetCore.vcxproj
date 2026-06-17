@@ -16,6 +16,7 @@
     <ClCompile>
       <PreprocessorDefinitions>_USRDLL;ASPNETCOREMODULE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\IISLib;.\Inc;..\CommonLib;$(LibNetHostPath)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/guard:cf /Qspectre</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;ahadmin.lib;ws2_32.lib;iphlpapi.lib;version.lib;libnethost.lib</AdditionalDependencies>
@@ -35,6 +36,7 @@
     <ClInclude Include="AppOfflineApplication.h" />
     <ClInclude Include="AppOfflineHandler.h" />
     <ClInclude Include="DisconnectHandler.h" />
+    <ClInclude Include="ModuleEnvironment.h" />
     <ClInclude Include="ShimOptions.h" />
     <ClInclude Include="globalmodule.h" />
     <ClInclude Include="resource.h" />
@@ -49,6 +51,7 @@
     <ClCompile Include="AppOfflineApplication.cpp" />
     <ClCompile Include="AppOfflineHandler.cpp" />
     <ClCompile Include="DisconnectHandler.cpp" />
+    <ClCompile Include="ModuleEnvironment.cpp" />
     <ClCompile Include="ShimOptions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="globalmodule.cpp" />

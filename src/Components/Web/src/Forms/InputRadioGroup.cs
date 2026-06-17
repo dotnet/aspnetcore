@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Groups child <see cref="InputRadio{TValue}"/> components.
 /// </summary>
-public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>
+public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue> : InputBase<TValue>, IInputRadioValueProvider
 {
     private readonly string _defaultGroupName = Guid.NewGuid().ToString("N");
     private InputRadioContext? _context;
@@ -27,6 +27,8 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
 
     [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
 
+    object? IInputRadioValueProvider.CurrentValue => CurrentValue;
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
@@ -34,7 +36,7 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
         if (_context is null)
         {
             var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
-            _context = new InputRadioContext(CascadedContext, changeEventCallback);
+            _context = new InputRadioContext(this, CascadedContext, changeEventCallback);
         }
         else if (_context.ParentContext != CascadedContext)
         {
@@ -59,8 +61,15 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
             // Otherwise, just use a GUID to disambiguate this group's radio inputs from any others on the page.
             _context.GroupName = _defaultGroupName;
         }
-        _context.CurrentValue = CurrentValue;
+
         _context.FieldClass = EditContext?.FieldCssClass(FieldIdentifier);
+
+        // Pass client validation attributes to child InputRadio components via shared context.
+        // Unlike MVC (which uses FormContext to emit data-val-* on only the first radio button),
+        // Blazor's component model renders children independently. We achieve the same first-only
+        // behavior by mutating the shared context: the first InputRadio reads the attributes,
+        // renders them, and clears the property so subsequent radios in the group get nothing.
+        _context.ClientValidationAttributes = ExtractClientValidationAttributes();
     }
 
     /// <inheritdoc />
@@ -79,4 +88,31 @@ public class InputRadioGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemb
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
+
+    /// <summary>
+    /// Extracts data-val-* client validation attributes from AdditionalAttributes so they
+    /// can be passed to child InputRadio components via InputRadioContext. InputRadioGroup
+    /// itself doesn't render an HTML element, so it can't carry these attributes directly.
+    /// </summary>
+    private IReadOnlyDictionary<string, object>? ExtractClientValidationAttributes()
+    {
+        if (AdditionalAttributes is null)
+        {
+            return null;
+        }
+
+        Dictionary<string, object>? result = null;
+        foreach (var (key, value) in AdditionalAttributes)
+        {
+            // Match "data-val" exactly and "data-val-*" (with dash), but not "data-value" or other unrelated attributes.
+            if (string.Equals(key, "data-val", StringComparison.OrdinalIgnoreCase)
+                || key.StartsWith("data-val-", StringComparison.OrdinalIgnoreCase))
+            {
+                result ??= new();
+                result[key] = value;
+            }
+        }
+
+        return result;
+    }
 }

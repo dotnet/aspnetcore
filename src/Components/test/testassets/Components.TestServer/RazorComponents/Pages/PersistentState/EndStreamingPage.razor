@@ -1,0 +1,36 @@
+﻿@page "/persistent-state/end-streaming"
+@using Components.TestServer.Services
+
+<h3>End streaming page</h3>
+
+<h4>This page is used to terminate the streaming rendering operations for
+    persistent component state tests. It accepts a streaming-id query parameter
+    which is used to complete streaming on the request with the associated streaming-id.
+</h4>
+
+<p>Streaming finished for stream id: @StreamingId</p>
+
+<script>
+    setTimeout(() => {
+        window.close();
+    }, 3000);
+</script>
+
+@code {
+
+    [SupplyParameterFromQuery(Name = "streaming-id")] public string StreamingId { get; set; }
+
+    [Inject] public AsyncOperationService StreamingManager { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(StreamingId))
+        {
+            throw new InvalidOperationException("StreamingId is required.");
+        }
+        else
+        {
+            StreamingManager.Complete(StreamingId);
+        }
+    }
+}

@@ -1,38 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Buffers;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.IO.Pipelines;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.QPack;
 using System.Reflection;
 using System.Text;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
-using Xunit;
 using Xunit.Abstractions;
-using static System.IO.Pipelines.DuplexPipe;
-using static Microsoft.AspNetCore.Server.Kestrel.Core.Tests.Http2TestBase;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -136,7 +114,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
         };
     }
 
-    public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
@@ -145,7 +123,7 @@ public abstract class Http3TestBase : TestApplicationErrorLoggerLoggedTest, IDis
             Scheduler = PipeScheduler.Inline,
         };
 
-        Http3Api = new Http3InMemory(_serviceContext, _serviceContext.MockTimeProvider, _mockTimeoutHandler.Object, LoggerFactory);
+        Http3Api = new Http3InMemory(_serviceContext, _serviceContext.FakeTimeProvider, _mockTimeoutHandler.Object, LoggerFactory);
     }
 
     public void AssertExpectedErrorMessages(string expectedErrorMessage)

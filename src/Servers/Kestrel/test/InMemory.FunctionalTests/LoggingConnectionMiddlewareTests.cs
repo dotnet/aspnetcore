@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
 public class LoggingConnectionMiddlewareTests : LoggedTest
 {
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38086")]
     [Fact]
     public async Task LoggingConnectionMiddlewareCanBeAddedBeforeAndAfterHttps()
     {

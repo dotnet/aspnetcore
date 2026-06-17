@@ -10,7 +10,6 @@
 //
 
 #define MAXULONG 4294967295
-#define ISWHITE( ch )       ((ch) == L' ' || (ch) == L'\t' || (ch) == L'\r')
 
 //
 //  When appending data, this is the extra amount we request to avoid
@@ -33,81 +32,13 @@ MULTISZA::CalcLength( const CHAR * str,
         count++;
     }
 
-    if( pcStrings != NULL ) {
+    if( pcStrings != nullptr ) {
         *pcStrings = count;
     }
 
     return total;
 
 }   // MULTISZA::CalcLength
-
-
-BOOL
-MULTISZA::FindString( const CHAR * str ) const
-{
-    //
-    // Sanity check.
-    //
-
-    DBG_ASSERT( QueryStr() != NULL );
-    DBG_ASSERT( str != NULL );
-    DBG_ASSERT( *str != '\0' );
-
-    //
-    // Scan it.
-    //
-
-    CHAR* multisz = QueryStr();
-
-    while( *multisz != '\0' ) {
-
-        if( !::strcmp( multisz, str ) ) {
-
-            return TRUE;
-
-        }
-
-        multisz += ::strlen( multisz ) + 1;
-
-    }
-
-    return FALSE;
-
-}   // MULTISZA::FindString
-
-
-BOOL
-MULTISZA::FindStringNoCase( const CHAR * str ) const
-{
-    //
-    // Sanity check.
-    //
-
-    DBG_ASSERT( QueryStr() != NULL );
-    DBG_ASSERT( str != NULL );
-    DBG_ASSERT( *str != '\0' );
-
-    //
-    // Scan it.
-    //
-
-    CHAR* multisz = QueryStr();
-
-    while( *multisz != '\0' ) {
-
-        if( !_stricmp( multisz, str ) ) {
-
-            return TRUE;
-
-        }
-
-        multisz += strlen( multisz ) + 1;
-
-    }
-
-    return FALSE;
-
-}   // MULTISZA::FindStringNoCase
 
 
 VOID
@@ -147,7 +78,7 @@ MULTISZA::AuxInit( const CHAR * pInit )
 
 BOOL MULTISZA::AuxAppend( const CHAR * pStr, UINT cbStr, BOOL fAddSlop )
 {
-    DBG_ASSERT( pStr != NULL );
+    DBG_ASSERT( pStr != nullptr);
 
     UINT cbThis = QueryCB();
 
@@ -217,50 +148,6 @@ BOOL MULTISZA::AuxAppend( const CHAR * pStr, UINT cbStr, BOOL fAddSlop )
 
 } // MULTISZA::AuxAppend()
 
-BOOL
-MULTISZA::CopyToBuffer( __out_ecount_opt(*lpcch) CHAR * lpszBuffer, LPDWORD lpcch) const
-/*++
-    Description:
-        Copies the string into the CHAR buffer passed in if the buffer
-          is sufficient to hold the translated string.
-        If the buffer is small, the function returns small and sets *lpcch
-          to contain the required number of characters.
-
-    Arguments:
-        lpszBuffer      pointer to CHAR buffer which on return contains
-                        the string on success.
-        lpcch           pointer to DWORD containing the length of the buffer.
-                        If *lpcch == 0 then the function returns TRUE with
-                        the count of characters required stored in lpcch.
-                        Also in this case lpszBuffer is not affected.
-    Returns:
-        TRUE on success.
-        FALSE on failure.  Use GetLastError() for further details.
---*/
-{
-   BOOL fReturn = TRUE;
-
-    if ( lpcch == NULL) {
-        SetLastError( ERROR_INVALID_PARAMETER);
-        return ( FALSE);
-    }
-
-   DWORD cch = QueryCCH();
-
-    if ( *lpcch >= cch) {
-
-        DBG_ASSERT( lpszBuffer);
-        memcpy( lpszBuffer, QueryStr(), cch * sizeof(CHAR));
-    } else {
-        DBG_ASSERT( *lpcch < cch);
-        SetLastError( ERROR_INSUFFICIENT_BUFFER);
-        fReturn = FALSE;
-    }
-
-    *lpcch = cch;
-
-    return ( fReturn);
-} // MULTISZA::CopyToBuffer()
 
 BOOL
 MULTISZA::Equals(
@@ -270,7 +157,7 @@ MULTISZA::Equals(
 // Compares this to pmszRhs, returns TRUE if equal
 //
 {
-    DBG_ASSERT( NULL != pmszRhs );
+    DBG_ASSERT(nullptr != pmszRhs );
 
     PCSTR pszLhs = First( );
     PCSTR pszRhs = pmszRhs->First( );
@@ -280,9 +167,9 @@ MULTISZA::Equals(
         return FALSE;
     }
 
-    while( NULL != pszLhs )
+    while( nullptr != pszLhs )
     {
-        DBG_ASSERT( NULL != pszRhs );
+        DBG_ASSERT( nullptr != pszRhs );
 
         if( 0 != strcmp( pszLhs, pszRhs ) )
         {
@@ -296,103 +183,4 @@ MULTISZA::Equals(
     return TRUE;
 }
 
-HRESULT
-SplitCommaDelimitedString(
-    PCSTR                        pszList,
-    BOOL                         fTrimEntries,
-    BOOL                         fRemoveEmptyEntries,
-    MULTISZA *                   pmszList
-)
-/*++
-
-Routine Description:
-
-    Split comma delimited string into a MULTISZA. Additional leading empty
-    entries after the first are discarded.
-
-Arguments:
-
-    pszList - List to split up
-    fTrimEntries - Whether each entry should be trimmed before added to MULTISZA
-    fRemoveEmptyEntries - Whether empty entires should be discarded
-    pmszList - Filled with MULTISZA list
-
-Return Value:
-
-    HRESULT
-
---*/
-{
-    HRESULT                 hr = S_OK;
-
-    if ( pszList == NULL ||
-         pmszList == NULL )
-    {
-        DBG_ASSERT( FALSE );
-        hr = HRESULT_FROM_WIN32( ERROR_INVALID_PARAMETER );
-        goto Finished;
-    }
-    
-    pmszList->Reset();
-
-    /*
-        pszCurrent: start of the current entry which may be the comma that
-                    precedes the next entry if the entry is empty
-
-        pszNext: the comma that precedes the next entry. If
-                 pszCurrent == pszNext, then the entry is empty
-
-        pszEnd: just past the end of the current entry
-    */
-    
-    for ( PCSTR pszCurrent = pszList,
-                 pszNext = strchr( pszCurrent, L',' )
-            ;
-            ;
-          pszCurrent = pszNext + 1,
-          pszNext = strchr( pszCurrent, L',' ) )
-    {
-        PCSTR pszEnd = NULL;
-
-        if ( pszNext != NULL )
-        {
-            pszEnd = pszNext;
-        }
-        else
-        {
-            pszEnd = pszCurrent + strlen( pszCurrent );
-        }
-
-        if ( fTrimEntries )
-        {
-            while ( pszCurrent < pszEnd && ISWHITE( pszCurrent[ 0 ] ) )
-            {
-                pszCurrent++;
-            }
-
-            while ( pszEnd > pszCurrent && ISWHITE( pszEnd[ -1 ] ) )
-            {
-                pszEnd--;
-            }
-        }
-
-        if ( pszCurrent != pszEnd || !fRemoveEmptyEntries  )
-        {
-            if ( !pmszList->Append( pszCurrent, static_cast<DWORD>(pszEnd - pszCurrent) ) )
-            {
-                hr = HRESULT_FROM_WIN32( GetLastError() );
-                goto Finished;
-            }
-        }
-        
-        if ( pszNext == NULL )
-        {
-            break;
-        }
-    }
-
-Finished:
-
-    return hr;
-}
 #pragma warning(default:4267)

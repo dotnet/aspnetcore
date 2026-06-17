@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Channels;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,8 @@ public class TestHub : Hub
     public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
 
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    public string InvokeException() => TestHubMethodsImpl.InvokeException();
 
     public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
@@ -140,17 +143,21 @@ public class DynamicTestHub : DynamicHub
 
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
 
+    public string InvokeException() => TestHubMethodsImpl.InvokeException();
+
     public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
     public ChannelReader<int> StreamException() => TestHubMethodsImpl.StreamException();
 
     public ChannelReader<string> StreamBroken() => TestHubMethodsImpl.StreamBroken();
 
+    [RuntimeAsyncMethodGeneration(false)]
     public async Task CallEcho(string message)
     {
         await Clients.Client(Context.ConnectionId).Echo(message);
     }
 
+    [RuntimeAsyncMethodGeneration(false)]
     public async Task CallHandlerThatDoesntExist()
     {
         await Clients.Client(Context.ConnectionId).NoClientHandler();
@@ -173,6 +180,8 @@ public class TestHubT : Hub<ITestHub>
     public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
 
     public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+    public string InvokeException() => TestHubMethodsImpl.InvokeException();
 
     public ChannelReader<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
 
@@ -213,6 +222,8 @@ internal static class TestHubMethodsImpl
     {
         return message;
     }
+
+    public static string InvokeException() => throw new InvalidOperationException();
 
     public static ChannelReader<int> Stream(int count)
     {

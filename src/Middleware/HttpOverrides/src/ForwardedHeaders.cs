@@ -26,7 +26,11 @@ public enum ForwardedHeaders
     /// </summary>
     XForwardedProto = 1 << 2,
     /// <summary>
-    /// Process X-Forwarded-For, X-Forwarded-Host and X-Forwarded-Proto.
+    /// Process X-Forwarded-Prefix, which identifies the original path base used by the client.
     /// </summary>
-    All = XForwardedFor | XForwardedHost | XForwardedProto
+    XForwardedPrefix = 1 << 3,
+    /// <summary>
+    /// Process X-Forwarded-For, X-Forwarded-Host, X-Forwarded-Proto and X-Forwarded-Prefix.
+    /// </summary>
+    All = XForwardedFor | XForwardedHost | XForwardedProto | XForwardedPrefix
 }

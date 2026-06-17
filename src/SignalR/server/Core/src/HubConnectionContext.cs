@@ -46,14 +46,20 @@ public partial class HubConnectionContext
     private volatile bool _allowReconnect = true;
     private readonly int _streamBufferCapacity;
     private readonly long? _maxMessageSize;
+    private readonly long _statefulReconnectBufferSize;
     private bool _receivedMessageTimeoutEnabled;
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
     private ClaimsPrincipal? _user;
-    private bool _useAcks;
+    private bool _useStatefulReconnect;
 
     [MemberNotNullWhen(true, nameof(_messageBuffer))]
-    internal bool UsingAcks() => _useAcks;
+    internal bool UsingStatefulReconnect() => _useStatefulReconnect;
+
+    // Tracks groups that the connection has been added to
+    internal HashSet<string> GroupNames { get; } = new HashSet<string>();
+
+    internal Activity? OriginalActivity { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -68,9 +74,10 @@ public partial class HubConnectionContext
         _clientTimeoutInterval = contextOptions.ClientTimeoutInterval;
         _streamBufferCapacity = contextOptions.StreamBufferCapacity;
         _maxMessageSize = contextOptions.MaximumReceiveMessageSize;
+        _statefulReconnectBufferSize = contextOptions.StatefulReconnectBufferSize;
 
         _connectionContext = connectionContext;
-        _logger = loggerFactory.CreateLogger<HubConnectionContext>();
+        _logger = loggerFactory.CreateLogger(typeof(HubConnectionContext));
         ConnectionAborted = _connectionAbortedTokenSource.Token;
         _closedRegistration = connectionContext.ConnectionClosed.Register(static (state) => ((HubConnectionContext)state!).Abort(), this);
 
@@ -198,7 +205,7 @@ public partial class HubConnectionContext
         // The write didn't complete synchronously so await completion
         if (!task.IsCompletedSuccessfully)
         {
-            return new ValueTask(CompleteWriteAsync(task));
+            return new ValueTask(CompleteWriteAsync(task, cancellationToken));
         }
         else
         {
@@ -243,7 +250,7 @@ public partial class HubConnectionContext
         // The write didn't complete synchronously so await completion
         if (!task.IsCompletedSuccessfully)
         {
-            return new ValueTask(CompleteWriteAsync(task));
+            return new ValueTask(CompleteWriteAsync(task, cancellationToken));
         }
         else
         {
@@ -262,9 +269,27 @@ public partial class HubConnectionContext
     {
         try
         {
-            if (UsingAcks())
+            if (UsingStatefulReconnect())
             {
-                return _messageBuffer.WriteAsync(new SerializedHubMessage(message), cancellationToken);
+                return WriteAsync(_messageBuffer, this, message, cancellationToken);
+
+                static async ValueTask<FlushResult> WriteAsync(MessageBuffer messageBuffer, HubConnectionContext hubConnectionContext,
+                    HubMessage message, CancellationToken cancellationToken)
+                {
+                    var connectionToken = hubConnectionContext.ConnectionAborted;
+                    if (message is CloseMessage)
+                    {
+                        // If it's a CloseMessage, we might already have triggered the ConnectionAborted token
+                        // We would like to successfully send the CloseMessage for graceful close which means we can't use the ConnectionAborted token.
+                        connectionToken = CancellationToken.None;
+                    }
+
+                    // MessageBuffer can wait on things other than the PipeWriter (which is canceled by other means)
+                    // So we need to make sure the cancellation token passed to it is also canceled when the connection is aborted
+                    using var _ = CancellationTokenUtils.CreateLinkedToken(connectionToken, cancellationToken, out var linkedToken);
+                    var result = await messageBuffer.WriteAsync(message, linkedToken);
+                    return result;
+                }
             }
             else
             {
@@ -290,10 +315,20 @@ public partial class HubConnectionContext
     {
         try
         {
-            if (UsingAcks())
+            if (UsingStatefulReconnect())
             {
                 Debug.Assert(_messageBuffer is not null);
-                return _messageBuffer.WriteAsync(message, cancellationToken);
+                return WriteAsync(_messageBuffer, this, message, cancellationToken);
+
+                static async ValueTask<FlushResult> WriteAsync(MessageBuffer messageBuffer, HubConnectionContext hubConnectionContext,
+                    SerializedHubMessage message, CancellationToken cancellationToken)
+                {
+                    // MessageBuffer can wait on things other than the PipeWriter (which is canceled by other means)
+                    // So we need to make sure the cancellation token passed to it is also canceled when the connection is aborted
+                    using var _ = CancellationTokenUtils.CreateLinkedToken(hubConnectionContext.ConnectionAborted, cancellationToken, out var linkedToken);
+                    var result = await messageBuffer.WriteAsync(message, linkedToken);
+                    return result;
+                }
             }
             else
             {
@@ -314,13 +349,16 @@ public partial class HubConnectionContext
         }
     }
 
-    private async Task CompleteWriteAsync(ValueTask<FlushResult> task)
+    private async Task CompleteWriteAsync(ValueTask<FlushResult> task, CancellationToken cancellationToken)
     {
         try
         {
             await task;
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -348,7 +386,10 @@ public partial class HubConnectionContext
 
             await WriteCore(message, cancellationToken);
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -374,7 +415,10 @@ public partial class HubConnectionContext
 
             await WriteCore(message, cancellationToken);
         }
-        catch (Exception ex)
+        // We care about errors while serializing to the PipeWriter as that will leave the Pipe
+        // in an invalid (for our scenario) state. OCE shouldn't occur while serializing bytes and
+        // writing to the Pipe. We assume that PipeWriter.WriteAsync(buffer) always writes the full message before calling FlushAsync
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             CloseException = ex;
             Log.FailedWritingMessage(_logger, ex);
@@ -452,6 +496,13 @@ public partial class HubConnectionContext
     /// </summary>
     public virtual void Abort()
     {
+#pragma warning disable CA2252 // This API requires opting into preview features
+        if (_useStatefulReconnect && _connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+        {
+            feature.DisableReconnect();
+        }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
         _allowReconnect = false;
         AbortAllowReconnect();
     }
@@ -570,16 +621,27 @@ public partial class HubConnectionContext
                                     Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);
                                 }
 
+#pragma warning disable CA2252 // This API requires opting into preview features
+                                if (_connectionContext.Features.Get<IStatefulReconnectFeature>() is IStatefulReconnectFeature feature)
+                                {
+                                    if (handshakeRequestMessage.Version < 2)
+                                    {
+                                        Log.DisablingReconnect(_logger, handshakeRequestMessage.Protocol, handshakeRequestMessage.Version);
+                                        feature.DisableReconnect();
+                                    }
+                                    else
+                                    {
+                                        _useStatefulReconnect = true;
+                                        _messageBuffer = new MessageBuffer(_connectionContext, Protocol, _statefulReconnectBufferSize, _logger, _timeProvider);
+                                        feature.OnReconnected(_messageBuffer.ResendAsync);
+                                    }
+                                }
+#pragma warning restore CA2252 // This API requires opting into preview features
+
                                 Log.HandshakeComplete(_logger, Protocol.Name);
 
                                 await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
 
-                                if (_connectionContext.Features.Get<IReconnectFeature>() is IReconnectFeature feature)
-                                {
-                                    _useAcks = true;
-                                    _messageBuffer = new MessageBuffer(_connectionContext, Protocol);
-                                    feature.NotifyOnReconnect = _messageBuffer.Resend;
-                                }
                                 return true;
                             }
                             else if (overLength)
@@ -764,28 +826,22 @@ public partial class HubConnectionContext
         _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
     }
 
-    internal void Ack(AckMessage ackMessage)
+    internal Task AckAsync(AckMessage ackMessage)
     {
-        if (UsingAcks())
+        if (UsingStatefulReconnect())
         {
-            _messageBuffer.Ack(ackMessage);
+            return _messageBuffer.AckAsync(ackMessage);
         }
+
+        return Task.CompletedTask;
     }
 
     internal bool ShouldProcessMessage(HubMessage message)
     {
-        if (UsingAcks())
+        if (UsingStatefulReconnect())
         {
             return _messageBuffer.ShouldProcessMessage(message);
         }
         return true;
-    }
-
-    internal void ResetSequence(SequenceMessage sequenceMessage)
-    {
-        if (UsingAcks())
-        {
-            _messageBuffer.ResetSequence(sequenceMessage);
-        }
     }
 }

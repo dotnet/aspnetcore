@@ -93,7 +93,7 @@ public class ManifestEmbeddedFileProvider : IFileProvider
             return NotFoundDirectoryContents.Singleton;
         }
 
-        return new ManifestDirectoryContents(Assembly, directory, _lastModified);
+        return new ManifestDirectoryInfo(Assembly, directory, _lastModified);
     }
 
     /// <inheritdoc />

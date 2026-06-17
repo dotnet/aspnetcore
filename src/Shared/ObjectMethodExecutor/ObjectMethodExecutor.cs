@@ -7,11 +7,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Internal;
 
-[RequiresUnreferencedCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
-[RequiresDynamicCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
 internal sealed class ObjectMethodExecutor
 {
     private readonly object?[]? _parameterDefaultValues;
@@ -28,7 +27,7 @@ internal sealed class ObjectMethodExecutor
             typeof(Action<object, Action>)  // unsafeOnCompletedMethod
     })!;
 
-    private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[]? parameterDefaultValues)
+    private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo)
     {
         ArgumentNullException.ThrowIfNull(methodInfo);
 
@@ -36,7 +35,13 @@ internal sealed class ObjectMethodExecutor
         MethodParameters = methodInfo.GetParameters();
         TargetTypeInfo = targetTypeInfo;
         MethodReturnType = methodInfo.ReturnType;
+    }
 
+    [RequiresUnreferencedCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
+    [RequiresDynamicCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
+    private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[]? parameterDefaultValues)
+        : this(methodInfo, targetTypeInfo)
+    {
         var isAwaitable = CoercedAwaitableInfo.IsTypeAwaitable(MethodReturnType, out var coercedAwaitableInfo);
 
         IsMethodAsync = isAwaitable;
@@ -53,6 +58,27 @@ internal sealed class ObjectMethodExecutor
         }
 
         _parameterDefaultValues = parameterDefaultValues;
+    }
+
+    private ObjectMethodExecutor(MethodInfo methodInfo, TypeInfo targetTypeInfo, bool isTrimAotCompatible)
+        : this(methodInfo, targetTypeInfo)
+    {
+        Debug.Assert(isTrimAotCompatible, "isTrimAotCompatible should always be true.");
+
+        var isAwaitable = IsTaskType(MethodReturnType, out var resultType);
+
+        IsMethodAsync = isAwaitable;
+        AsyncResultType = isAwaitable ? resultType : null;
+
+        // Upstream code may prefer to use the sync-executor even for async methods, because if it knows
+        // that the result is a specific Task<T> where T is known, then it can directly cast to that type
+        // and await it without the extra heap allocations involved in the _executorAsync code path.
+        _executor = methodInfo.Invoke;
+
+        if (IsMethodAsync)
+        {
+            _executorAsync = GetExecutorAsyncTrimAotCompatible(methodInfo, AsyncResultType!);
+        }
     }
 
     private delegate ObjectMethodExecutorAwaitable MethodExecutorAsync(object target, object?[]? parameters);
@@ -74,16 +100,33 @@ internal sealed class ObjectMethodExecutor
 
     public bool IsMethodAsync { get; }
 
+    [RequiresUnreferencedCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
+    [RequiresDynamicCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
     public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo)
     {
         return new ObjectMethodExecutor(methodInfo, targetTypeInfo, null);
     }
 
+    [RequiresUnreferencedCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
+    [RequiresDynamicCode("ObjectMethodExecutor performs reflection on arbitrary types.")]
     public static ObjectMethodExecutor Create(MethodInfo methodInfo, TypeInfo targetTypeInfo, object?[] parameterDefaultValues)
     {
         ArgumentNullException.ThrowIfNull(parameterDefaultValues);
 
         return new ObjectMethodExecutor(methodInfo, targetTypeInfo, parameterDefaultValues);
+    }
+
+    /// <summary>
+    /// Creates an ObjectMethodExecutor that is compatible with trimming and Ahead-of-Time (AOT) compilation.
+    /// </summary>
+    /// <remarks>
+    /// The difference between this method and <see cref="Create(MethodInfo, TypeInfo)"/> is that
+    /// this method doesn't support custom awaitables and Task{unit} in F#. It only supports Task, Task{T}, ValueTask, and ValueTask{T}
+    /// as async methods.
+    /// </remarks>
+    public static ObjectMethodExecutor CreateTrimAotCompatible(MethodInfo methodInfo, TypeInfo targetTypeInfo)
+    {
+        return new ObjectMethodExecutor(methodInfo, targetTypeInfo, isTrimAotCompatible: true);
     }
 
     /// <summary>
@@ -123,6 +166,9 @@ internal sealed class ObjectMethodExecutor
     ///    of it, and if it is, it will have to be boxed so the calling code can reference it as an object).
     /// 3. The async result value, if it's a value type (it has to be boxed as an object, since the calling
     ///    code doesn't know what type it's going to be).
+    ///
+    /// Note if <see cref="CreateTrimAotCompatible"/> was used to create the ObjectMethodExecutor, only the
+    /// built-in Task types are supported and not custom awaitables.
     /// </remarks>
     /// <param name="target">The object whose method is to be executed.</param>
     /// <param name="parameters">Parameters to pass to the method.</param>
@@ -335,5 +381,147 @@ internal sealed class ObjectMethodExecutor
 
         var lambda = Expression.Lambda<MethodExecutorAsync>(returnValueExpression, targetParameter, parametersParameter);
         return lambda.Compile();
+    }
+
+    private static readonly MethodInfo _taskGetAwaiterMethodInfo = typeof(Task<>).GetMethod("GetAwaiter")!;
+    private static readonly MethodInfo _taskAwaiterGetIsCompletedMethodInfo = typeof(TaskAwaiter<>).GetMethod("get_IsCompleted")!;
+    private static readonly MethodInfo _taskAwaiterGetResultMethodInfo = typeof(TaskAwaiter<>).GetMethod("GetResult")!;
+    private static readonly MethodInfo _taskAwaiterOnCompletedMethodInfo = typeof(TaskAwaiter<>).GetMethod("OnCompleted")!;
+    private static readonly MethodInfo _taskAwaiterUnsafeOnCompletedMethodInfo = typeof(TaskAwaiter<>).GetMethod("UnsafeOnCompleted")!;
+
+    private static readonly MethodInfo _valueTaskGetAwaiterMethodInfo = typeof(ValueTask<>).GetMethod("GetAwaiter")!;
+    private static readonly MethodInfo _valueTaskAwaiterGetIsCompletedMethodInfo = typeof(ValueTaskAwaiter<>).GetMethod("get_IsCompleted")!;
+    private static readonly MethodInfo _valueTaskAwaiterGetResultMethodInfo = typeof(ValueTaskAwaiter<>).GetMethod("GetResult")!;
+    private static readonly MethodInfo _valueTaskAwaiterOnCompletedMethodInfo = typeof(ValueTaskAwaiter<>).GetMethod("OnCompleted")!;
+    private static readonly MethodInfo _valueTaskAwaiterUnsafeOnCompletedMethodInfo = typeof(ValueTaskAwaiter<>).GetMethod("UnsafeOnCompleted")!;
+
+    private static bool IsTaskType(Type methodReturnType, [NotNullWhen(true)] out Type? resultType)
+    {
+        if (methodReturnType == typeof(Task) || methodReturnType == typeof(ValueTask))
+        {
+            resultType = typeof(void);
+            return true;
+        }
+
+        if (methodReturnType.IsGenericType && methodReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+        {
+            resultType = methodReturnType.GetGenericArguments()[0];
+            return true;
+        }
+
+        var currentType = methodReturnType;
+        while (currentType is not null)
+        {
+            if (currentType == typeof(Task))
+            {
+                resultType = typeof(void);
+                return true;
+            }
+
+            if (currentType.IsGenericType && currentType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                var taskGetAwaiterMethodInfo = (MethodInfo)methodReturnType.GetMemberWithSameMetadataDefinitionAs(_taskGetAwaiterMethodInfo);
+                var taskAwaiterGetResultMethodInfo = (MethodInfo)taskGetAwaiterMethodInfo.ReturnType.GetMemberWithSameMetadataDefinitionAs(_taskAwaiterGetResultMethodInfo);
+
+                resultType = taskAwaiterGetResultMethodInfo.ReturnType;
+                return true;
+            }
+
+            currentType = currentType.BaseType;
+        }
+
+        resultType = null;
+        return false;
+    }
+
+    private static MethodExecutorAsync? GetExecutorAsyncTrimAotCompatible(MethodInfo methodInfo, Type asyncResultType)
+    {
+        var methodReturnType = methodInfo.ReturnType;
+        if (asyncResultType == typeof(void))
+        {
+            if (methodReturnType == typeof(ValueTask))
+            {
+                return (target, args) =>
+                {
+                    return new ObjectMethodExecutorAwaitable(
+                        methodInfo.Invoke(target, args),
+                        (awaitable) => ((ValueTask)awaitable).GetAwaiter(),
+                        (awaiter) => ((ValueTaskAwaiter)awaiter).IsCompleted,
+                        (awaiter) =>
+                        {
+                            ((ValueTaskAwaiter)awaiter).GetResult();
+                            return null;
+                        },
+                        (awaiter, continuation) =>
+                        {
+                            ((ValueTaskAwaiter)awaiter).OnCompleted(continuation);
+                        },
+                        (awaiter, continuation) =>
+                        {
+                            ((ValueTaskAwaiter)awaiter).UnsafeOnCompleted(continuation);
+                        });
+                };
+            }
+
+            // The method must return Task, or a derived type that isn't Task<T>
+            return (target, args) =>
+            {
+                return new ObjectMethodExecutorAwaitable(
+                    methodInfo.Invoke(target, args),
+                    (awaitable) => ((Task)awaitable).GetAwaiter(),
+                    (awaiter) => ((TaskAwaiter)awaiter).IsCompleted,
+                    (awaiter) =>
+                    {
+                        ((TaskAwaiter)awaiter).GetResult();
+                        return null;
+                    },
+                    (awaiter, continuation) =>
+                    {
+                        ((TaskAwaiter)awaiter).OnCompleted(continuation);
+                    },
+                    (awaiter, continuation) =>
+                    {
+                        ((TaskAwaiter)awaiter).UnsafeOnCompleted(continuation);
+                    });
+            };
+        }
+
+        if (methodReturnType.IsGenericType && methodReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+        {
+            return (target, args) =>
+            {
+                return new ObjectMethodExecutorAwaitable(
+                    methodInfo.Invoke(target, args),
+                    (awaitable) => ((MethodInfo)awaitable.GetType().GetMemberWithSameMetadataDefinitionAs(_valueTaskGetAwaiterMethodInfo)).Invoke(awaitable, Array.Empty<object>()),
+                    (awaiter) => (bool)((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_valueTaskAwaiterGetIsCompletedMethodInfo)).Invoke(awaiter, Array.Empty<object>())!,
+                    (awaiter) => ((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_valueTaskAwaiterGetResultMethodInfo)).Invoke(awaiter, Array.Empty<object>())!,
+                    (awaiter, continuation) =>
+                    {
+                        ((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_valueTaskAwaiterOnCompletedMethodInfo)).Invoke(awaiter, [continuation]);
+                    },
+                    (awaiter, continuation) =>
+                    {
+                        ((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_valueTaskAwaiterUnsafeOnCompletedMethodInfo)).Invoke(awaiter, [continuation]);
+                    });
+            };
+        }
+
+        // The method must return a Task<T> or a derived type
+        return (target, args) =>
+        {
+            return new ObjectMethodExecutorAwaitable(
+                methodInfo.Invoke(target, args),
+                (awaitable) => ((MethodInfo)awaitable.GetType().GetMemberWithSameMetadataDefinitionAs(_taskGetAwaiterMethodInfo)).Invoke(awaitable, Array.Empty<object>()),
+                (awaiter) => (bool)((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_taskAwaiterGetIsCompletedMethodInfo)).Invoke(awaiter, Array.Empty<object>())!,
+                (awaiter) => ((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_taskAwaiterGetResultMethodInfo)).Invoke(awaiter, Array.Empty<object>())!,
+                (awaiter, continuation) =>
+                {
+                    ((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_taskAwaiterOnCompletedMethodInfo)).Invoke(awaiter, [continuation]);
+                },
+                (awaiter, continuation) =>
+                {
+                    ((MethodInfo)awaiter.GetType().GetMemberWithSameMetadataDefinitionAs(_taskAwaiterUnsafeOnCompletedMethodInfo)).Invoke(awaiter, [continuation]);
+                });
+        };
     }
 }

@@ -77,17 +77,17 @@ public class AuthenticationPropertiesTests
     {
         var props = new AuthenticationProperties();
         Assert.Null(props.GetString("foo"));
-        Assert.Equal(0, props.Items.Count);
+        Assert.Empty(props.Items);
 
         props.SetString("foo", "foo bar");
         Assert.Equal("foo bar", props.GetString("foo"));
         Assert.Equal("foo bar", props.Items["foo"]);
-        Assert.Equal(1, props.Items.Count);
+        Assert.Single(props.Items);
 
         props.SetString("foo", "foo baz");
         Assert.Equal("foo baz", props.GetString("foo"));
         Assert.Equal("foo baz", props.Items["foo"]);
-        Assert.Equal(1, props.Items.Count);
+        Assert.Single(props.Items);
 
         props.SetString("bar", "xy");
         Assert.Equal("xy", props.GetString("bar"));
@@ -100,11 +100,11 @@ public class AuthenticationPropertiesTests
 
         props.SetString("foo", null);
         Assert.Null(props.GetString("foo"));
-        Assert.Equal(1, props.Items.Count);
+        Assert.Single(props.Items);
 
         props.SetString("doesntexist", null);
         Assert.False(props.Items.ContainsKey("doesntexist"));
-        Assert.Equal(1, props.Items.Count);
+        Assert.Single(props.Items);
     }
 
     [Fact]
@@ -112,17 +112,17 @@ public class AuthenticationPropertiesTests
     {
         var props = new AuthenticationProperties();
         Assert.Null(props.GetParameter<string>("foo"));
-        Assert.Equal(0, props.Parameters.Count);
+        Assert.Empty(props.Parameters);
 
         props.SetParameter<string>("foo", "foo bar");
         Assert.Equal("foo bar", props.GetParameter<string>("foo"));
         Assert.Equal("foo bar", props.Parameters["foo"]);
-        Assert.Equal(1, props.Parameters.Count);
+        Assert.Single(props.Parameters);
 
         props.SetParameter<string?>("foo", null);
         Assert.Null(props.GetParameter<string>("foo"));
         Assert.Null(props.Parameters["foo"]);
-        Assert.Equal(1, props.Parameters.Count);
+        Assert.Single(props.Parameters);
     }
 
     [Fact]
@@ -130,17 +130,17 @@ public class AuthenticationPropertiesTests
     {
         var props = new AuthenticationProperties();
         Assert.Null(props.GetParameter<int?>("foo"));
-        Assert.Equal(0, props.Parameters.Count);
+        Assert.Empty(props.Parameters);
 
         props.SetParameter<int?>("foo", 123);
         Assert.Equal(123, props.GetParameter<int?>("foo"));
         Assert.Equal(123, props.Parameters["foo"]);
-        Assert.Equal(1, props.Parameters.Count);
+        Assert.Single(props.Parameters);
 
         props.SetParameter<int?>("foo", null);
         Assert.Null(props.GetParameter<int?>("foo"));
         Assert.Null(props.Parameters["foo"]);
-        Assert.Equal(1, props.Parameters.Count);
+        Assert.Single(props.Parameters);
     }
 
     [Fact]
@@ -148,18 +148,18 @@ public class AuthenticationPropertiesTests
     {
         var props = new AuthenticationProperties();
         Assert.Null(props.GetParameter<int?>("foo"));
-        Assert.Equal(0, props.Parameters.Count);
+        Assert.Empty(props.Parameters);
 
         var list = new string[] { "a", "b", "c" };
         props.SetParameter<ICollection<string>>("foo", list);
         Assert.Equal(new string[] { "a", "b", "c" }, props.GetParameter<ICollection<string>>("foo"));
         Assert.Same(list, props.Parameters["foo"]);
-        Assert.Equal(1, props.Parameters.Count);
+        Assert.Single(props.Parameters);
 
         props.SetParameter<ICollection<string>?>("foo", null);
         Assert.Null(props.GetParameter<ICollection<string>>("foo"));
         Assert.Null(props.Parameters["foo"]);
-        Assert.Equal(1, props.Parameters.Count);
+        Assert.Single(props.Parameters);
     }
 
     [Fact]
@@ -341,7 +341,7 @@ public class AuthenticationPropertiesTests
 
         // Ensure that parameters are not round-tripped
         Assert.NotNull(deserialized.Parameters);
-        Assert.Equal(0, deserialized.Parameters.Count);
+        Assert.Empty(deserialized.Parameters);
     }
 
     [Fact]
@@ -355,7 +355,7 @@ public class AuthenticationPropertiesTests
 
         // Ensure that parameters is not deserialized from a raw payload
         Assert.NotNull(deserialized!.Parameters);
-        Assert.Equal(0, deserialized.Parameters.Count);
+        Assert.Empty(deserialized.Parameters);
     }
 
     [Fact]

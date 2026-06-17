@@ -43,6 +43,13 @@ public class GoogleTests : RemoteAuthenticationTests<GoogleOptions>
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new GoogleOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task ChallengeWillTriggerRedirection()
     {
         using var host = await CreateHost(o =>

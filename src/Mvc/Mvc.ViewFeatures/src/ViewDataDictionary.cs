@@ -4,9 +4,11 @@
 #nullable enable
 
 using System.Collections;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -14,6 +16,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 /// <summary>
 /// A <see cref="IDictionary{TKey, TValue}"/> for view data.
 /// </summary>
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 public class ViewDataDictionary : IDictionary<string, object?>
 {
     private readonly IDictionary<string, object?> _data;

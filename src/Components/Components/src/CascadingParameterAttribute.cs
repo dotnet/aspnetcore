@@ -20,5 +20,5 @@ public sealed class CascadingParameterAttribute : CascadingParameterAttributeBas
     /// <see cref="CascadingValue{T}"/>  that supplies a value with a compatible
     /// type.
     /// </summary>
-    public override string? Name { get; set; }
+    public string? Name { get; set; }
 }

@@ -1,24 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using System.Buffers;
 using System.Globalization;
-using System.IO;
-using System.Linq;
+using System.IO.Pipelines;
 using System.Net.Http;
 using System.Runtime.ExceptionServices;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -256,6 +253,36 @@ public class Http3StreamTests : Http3TestBase
         Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
         Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
         Assert.Equal("0", responseHeaders["content-length"]);
+    }
+
+    [Theory]
+    [InlineData("/\u0161dmin?x=1")]  // U+0161 (353), truncates to 0x61 = 'a' → "/admin?x=1"
+    [InlineData("/\u0170ser")]        // U+0170 (368), truncates to 0x70 = 'p' → "/pser"
+    [InlineData("/caf\u0165?q=1")]   // U+0165 (357), truncates to 0x65 = 'e' → "/cafe?q=1
+    public async Task NonAsciiPath_Reset(string path)
+    {
+        var pathBytes = Encoding.UTF8.GetBytes(path);
+        var qpackBlock = new byte[6 + pathBytes.Length];
+        qpackBlock[0] = 0x00; // Required Insert Count = 0
+        qpackBlock[1] = 0x00; // Delta Base = 0
+        qpackBlock[2] = 0xD1; // Indexed: :method GET (QPACK static index 17)
+        qpackBlock[3] = 0xD6; // Indexed: :scheme http (QPACK static index 22)
+        qpackBlock[4] = 0x51; // Literal with static name ref, index 1 (:path)
+        qpackBlock[5] = (byte)pathBytes.Length; // Value length, no Huffman
+        pathBytes.CopyTo(qpackBlock.AsSpan(6));
+
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+        Http3Api.OutboundControlStream = await Http3Api.CreateControlStream();
+
+        var requestStream = await Http3Api.CreateRequestStream(
+            headers: (IEnumerable<KeyValuePair<string, string>>)null, endStream: false);
+
+        await requestStream.SendFrameAsync(Http3FrameType.Headers, qpackBlock, endStream: true);
+
+        await requestStream.WaitForStreamErrorAsync(
+            Http3ErrorCode.ProtocolError,
+            AssertExpectedErrorMessages,
+            CoreStrings.FormatHttp3StreamErrorPathInvalid(path));
     }
 
     [Theory]
@@ -782,7 +809,7 @@ public class Http3StreamTests : Http3TestBase
         }, requestHeaders, endStream: true);
 
         await requestStream.ExpectReceiveEndOfStream();
-        await appTcs.Task;
+        await appTcs.Task.DefaultTimeout();
     }
 
     [Fact]
@@ -1982,7 +2009,7 @@ public class Http3StreamTests : Http3TestBase
         var trailers = new[]
         {
                 new KeyValuePair<string, string>("TestName", "TestValue"),
-            };
+        };
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async c =>
         {
             await c.Request.Body.DrainAsync(default);
@@ -2032,6 +2059,13 @@ public class Http3StreamTests : Http3TestBase
             expectedErrorMessage: CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Data)));
 
         tcs.SetResult();
+
+        await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: null,
+            Http3ErrorCode.UnexpectedFrame,
+            null);
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -2107,6 +2141,7 @@ public class Http3StreamTests : Http3TestBase
             expectedErrorCode: Http3ErrorCode.UnexpectedFrame,
             matchExpectedErrorMessage: AssertExpectedErrorMessages,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(Http3Formatting.ToFormattedType(f)));
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Theory]
@@ -2130,6 +2165,13 @@ public class Http3StreamTests : Http3TestBase
         await requestStream.WaitForStreamErrorAsync(
             Http3ErrorCode.UnexpectedFrame,
             expectedErrorMessage: CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(Http3Formatting.ToFormattedType(f)));
+
+        await Http3Api.WaitForConnectionErrorAsync<ConnectionAbortedException>(
+            ignoreNonGoAwayFrames: false,
+            expectedLastStreamId: null,
+            Http3ErrorCode.UnexpectedFrame,
+            null);
+        MetricsAssert.Equal(ConnectionEndReason.UnexpectedFrame, Http3Api.ConnectionTags);
     }
 
     [Fact]
@@ -2361,6 +2403,21 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Fact]
+    public Task HEADERS_Received_HeaderValueOverLimit_ConnectionError()
+    {
+        var limit = _serviceContext.ServerOptions.Limits.Http3.MaxRequestHeaderFieldSize;
+        // Single header value exceeds limit
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>("a", new string('a', limit + 1)),
+        };
+
+        return HEADERS_Received_InvalidHeaderFields_StreamError(headers,
+            SR.Format(SR.net_http_headers_exceeded_length, limit),
+            Http3ErrorCode.InternalError);
+    }
+
+    [Fact]
     public async Task HEADERS_Received_TooManyHeaders_431()
     {
         // > MaxRequestHeaderCount (100)
@@ -2408,7 +2465,7 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Fact]
-    public Task HEADERS_Received_InvalidCharacters_ConnectionError()
+    public Task HEADERS_Received_InvalidCharactersInHeaderValue_ConnectionError()
     {
         var headers = new[]
         {
@@ -2422,28 +2479,34 @@ public class Http3StreamTests : Http3TestBase
     }
 
     [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
+    public Task HEADERS_Received_InvalidCharactersInHeaderName_ConnectionError()
     {
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("connection", "keep-alive")
+            new KeyValuePair<string, string>("Cus\0tom", "value"),
         };
 
-        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
+        return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.BadRequest_InvalidCharactersInHeaderName);
     }
 
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
+    [Theory]
+    [InlineData("transfer-encoding", "chunked")]
+    [InlineData("keep-alive", "timeout=5, max=1000")]
+    [InlineData("proxy-connection", "keep-alive")]
+    [InlineData("upgrade", "websocket")]
+    [InlineData("connection", "keep-alive")]
+    [InlineData("te", "trailers, deflate")]
+    public Task HEADERS_Received_HeaderBlockContainsConnectionSpecificHeader_StreamError(string headerName, string headerValue)
     {
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("te", "trailers, deflate")
+            new KeyValuePair<string, string>(headerName, headerValue)
         };
 
         return HEADERS_Received_InvalidHeaderFields_StreamError(headers, CoreStrings.HttpErrorConnectionSpecificHeaderField);
@@ -2975,5 +3038,323 @@ public class Http3StreamTests : Http3TestBase
             await context.Response.CompleteAsync();
             context.Response.BodyWriter.Advance(memory.Length);
         }, headers);
+    }
+
+    [Fact]
+    public async Task ControlStream_CloseBeforeSendingSettings()
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var outboundcontrolStream = await Http3Api.CreateControlStream();
+
+        await outboundcontrolStream.EndStreamAsync();
+
+        await outboundcontrolStream.ReceiveEndAsync();
+    }
+
+    [Fact]
+    public async Task ControlStream_PartialFrameThenClose()
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var outboundcontrolStream = await Http3Api.CreateControlStream();
+
+        var settings = new List<Http3PeerSetting>
+        {
+            new Http3PeerSetting(Internal.Http3.Http3SettingType.MaxFieldSectionSize, 100),
+            new Http3PeerSetting(Internal.Http3.Http3SettingType.EnableWebTransport, 1),
+            new Http3PeerSetting(Internal.Http3.Http3SettingType.H3Datagram, 1)
+        };
+        var len = Http3FrameWriter.CalculateSettingsSize(settings);
+
+        Http3FrameWriter.WriteHeader(Http3FrameType.Settings, len, outboundcontrolStream.Pair.Application.Output);
+
+        var parameterLength = VariableLengthIntegerHelper.WriteInteger(outboundcontrolStream.Pair.Application.Output.GetSpan(), (long)Internal.Http3.Http3SettingType.MaxFieldSectionSize);
+        outboundcontrolStream.Pair.Application.Output.Advance(parameterLength);
+        await outboundcontrolStream.Pair.Application.Output.FlushAsync();
+
+        await outboundcontrolStream.EndStreamAsync();
+
+        await outboundcontrolStream.ReceiveEndAsync();
+    }
+
+    [Fact]
+    public async Task SendDataObservesBackpressureFromApp()
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "Custom"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        // Http3Stream hardcodes a 64k size for the RequestBodyPipe there is also the transport Pipe which we can influence with MaxRequestBufferSize
+        // So we need to send enough to fill up the 64k Pipe as well as the 100 byte Pipe.
+        var sendSize = 1024 * 65;
+        _serviceContext.ServerOptions.Limits.MaxRequestBufferSize = 100;
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var startedReadingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(async c =>
+        {
+            // Read a single byte to make sure data has gotten here before we start verifying backpressure in the test code
+            var res = await c.Request.BodyReader.ReadAsync();
+            Assert.Equal(sendSize, res.Buffer.Length);
+            c.Request.BodyReader.AdvanceTo(res.Buffer.Slice(1).Start);
+            startedReadingTcs.SetResult();
+
+            await tcs.Task;
+            res = await c.Request.BodyReader.ReadAsync();
+            Assert.Equal(sendSize - 1, res.Buffer.Length);
+            c.Request.BodyReader.AdvanceTo(res.Buffer.End);
+        }, headers);
+
+        var sendTask = requestStream.SendDataAsync(Encoding.ASCII.GetBytes(new string('a', sendSize)));
+
+        // Wait for "app" code to start reading to ensure it has gotten bytes before we start verifying backpressure
+        await startedReadingTcs.Task;
+        Assert.False(sendTask.IsCompleted);
+        tcs.SetResult();
+
+        await sendTask;
+
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+
+        await requestStream.ExpectReceiveEndOfStream();
+    }
+
+    [Fact]
+    public async Task Request_FrameParsingSingleByteAtATimeWorks()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var total = 0;
+        var trailerValue = string.Empty;
+        await Http3Api.InitializeConnectionAsync(async context =>
+        {
+            var buffer = new byte[100];
+            var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+            var captureTcs = tcs;
+            tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            captureTcs.SetResult();
+            Assert.Equal(1, read);
+            total = read;
+            while (read > 0)
+            {
+                read = await context.Request.Body.ReadAsync(buffer, total, buffer.Length - total);
+                captureTcs = tcs;
+                tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                captureTcs.SetResult();
+                total += read;
+                if (read == 0)
+                {
+                    break;
+                }
+                Assert.Equal(1, read);
+            }
+
+            trailerValue = context.Request.GetTrailer("TestName");
+        });
+
+        // Use Inline scheduling and buffer size of 1 to guarantee each write will wait for the parsing loop to complete before writing more data
+        _serviceContext.ServerOptions.Limits.MaxRequestBufferSize = 1;
+        var stream = await Http3Api.CreateRequestStream(headers: [], clientWriterScheduler: PipeScheduler.Inline);
+
+        // Use local pipe to write frames so we can get the entire buffer in order to write it one byte at a time
+        var bufferPipe = new Pipe();
+        Http3FrameWriter.WriteHeader(Http3FrameType.Headers, frameLength: 38, bufferPipe.Writer);
+
+        var headersTotalSize = 0;
+        var headers = new Http3HeadersEnumerator();
+        headers.Initialize(new Dictionary<string, StringValues>() {
+            { InternalHeaderNames.Method, "POST" },
+            { InternalHeaderNames.Path, "/" },
+            { InternalHeaderNames.Scheme, "http" }, });
+
+        var mem = bufferPipe.Writer.GetMemory();
+        var done = QPackHeaderWriter.BeginEncodeHeaders(headers, mem.Span, ref headersTotalSize, out var length);
+        Assert.True(done);
+        bufferPipe.Writer.Advance(length);
+        await bufferPipe.Writer.FlushAsync();
+
+        // Write header frame one byte at a time
+        await WriteOneByteAtATime(bufferPipe.Reader, stream.Pair.Application.Output);
+
+        Http3FrameWriter.WriteHeader(Http3FrameType.Data, frameLength: 12, bufferPipe.Writer);
+        await bufferPipe.Writer.FlushAsync();
+
+        // Write data header one byte at a time
+        await WriteOneByteAtATime(bufferPipe.Reader, stream.Pair.Application.Output);
+
+        bufferPipe.Writer.Write(new byte[12]);
+        await bufferPipe.Writer.FlushAsync();
+
+        // Write data in data frame one byte at a time
+        // Don't use WriteOneByteAtATime() as we want to wait on the TCS after every flush to make sure app code consumed the data
+        // before we send another byte
+        var res = await bufferPipe.Reader.ReadAsync();
+        for (var i = 0; i < res.Buffer.Length; i++)
+        {
+            mem = stream.Pair.Application.Output.GetMemory();
+            mem.Span[0] = res.Buffer.Slice(i).FirstSpan[0];
+            stream.Pair.Application.Output.Advance(1);
+            // Use TCS to make sure app can read data before we send more
+            var capturedTcs = tcs;
+            await stream.Pair.Application.Output.FlushAsync();
+            await capturedTcs.Task;
+        }
+        bufferPipe.Reader.AdvanceTo(res.Buffer.End);
+
+        var trailers = new Http3HeadersEnumerator();
+        trailers.Initialize(new Dictionary<string, StringValues>()
+        {
+            { "TestName", "TestValue" }
+        });
+
+        Http3FrameWriter.WriteHeader(Http3FrameType.Headers, frameLength: 22, bufferPipe.Writer);
+        mem = bufferPipe.Writer.GetMemory();
+        done = QPackHeaderWriter.BeginEncodeHeaders(trailers, mem.Span, ref headersTotalSize, out length);
+        Assert.True(done);
+        bufferPipe.Writer.Advance(length);
+        await bufferPipe.Writer.FlushAsync();
+
+        // Write trailer frame one byte at a time
+        await WriteOneByteAtATime(bufferPipe.Reader, stream.Pair.Application.Output);
+
+        await stream.EndStreamAsync();
+
+        var responseHeaders = await stream.ExpectHeadersAsync();
+        Assert.Equal(3, responseHeaders.Count);
+        Assert.Contains("date", responseHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+        Assert.Equal("0", responseHeaders["content-length"]);
+
+        await stream.ExpectReceiveEndOfStream();
+
+        Assert.Equal(12, total);
+        Assert.Equal("TestValue", trailerValue);
+    }
+
+    [Fact]
+    public async Task Control_FrameParsingSingleByteAtATimeWorks()
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        // Use Inline scheduling and buffer size of 1 to guarantee each write will wait for the parsing loop to complete before writing more data
+        _serviceContext.ServerOptions.Limits.MaxRequestBufferSize = 1;
+        var outboundcontrolStream = await Http3Api.CreateControlStream(clientWriterScheduler: PipeScheduler.Inline);
+
+        // Use local pipe to write frames so we can get the entire buffer in order to write it one byte at a time
+        var bufferPipe = new Pipe();
+
+        var settings = new List<Http3PeerSetting>
+        {
+            new Http3PeerSetting(Internal.Http3.Http3SettingType.MaxFieldSectionSize, 100),
+            new Http3PeerSetting(Internal.Http3.Http3SettingType.EnableWebTransport, 1),
+            new Http3PeerSetting(Internal.Http3.Http3SettingType.H3Datagram, 1)
+        };
+        var len = Http3FrameWriter.CalculateSettingsSize(settings);
+
+        Http3FrameWriter.WriteHeader(Http3FrameType.Settings, len, bufferPipe.Writer);
+        var mem = bufferPipe.Writer.GetMemory();
+        Http3FrameWriter.WriteSettings(settings, mem.Span);
+
+        bufferPipe.Writer.Advance(len);
+        await bufferPipe.Writer.FlushAsync();
+
+        // Write Settings frame one byte at a time
+        await WriteOneByteAtATime(bufferPipe.Reader, outboundcontrolStream.Pair.Application.Output);
+
+        var fieldSetting = await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+
+        Assert.Equal(Internal.Http3.Http3SettingType.MaxFieldSectionSize, fieldSetting.Key);
+        Assert.Equal(100, fieldSetting.Value);
+
+        fieldSetting = await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        Assert.Equal(Internal.Http3.Http3SettingType.EnableWebTransport, fieldSetting.Key);
+        Assert.Equal(1, fieldSetting.Value);
+
+        fieldSetting = await Http3Api.ServerReceivedSettingsReader.ReadAsync().DefaultTimeout();
+        Assert.Equal(Internal.Http3.Http3SettingType.H3Datagram, fieldSetting.Key);
+        Assert.Equal(1, fieldSetting.Value);
+
+        // Frames must be well-formed otherwise we close the connection with a frame error
+        Http3FrameWriter.WriteHeader(Http3FrameType.CancelPush, frameLength: 2, bufferPipe.Writer);
+        var idLength = VariableLengthIntegerHelper.WriteInteger(bufferPipe.Writer.GetSpan(), longToEncode: 1026);
+        bufferPipe.Writer.Advance(idLength);
+        await bufferPipe.Writer.FlushAsync();
+
+        // Write CancelPush frame one byte at a time
+        await WriteOneByteAtATime(bufferPipe.Reader, outboundcontrolStream.Pair.Application.Output);
+
+        // Frames must be well-formed otherwise we close the connection with a frame error
+        Http3FrameWriter.WriteHeader(Http3FrameType.GoAway, frameLength: 4, bufferPipe.Writer);
+        idLength = VariableLengthIntegerHelper.WriteInteger(bufferPipe.Writer.GetSpan(), longToEncode: 100026);
+        bufferPipe.Writer.Advance(idLength);
+        await bufferPipe.Writer.FlushAsync();
+
+        try
+        {
+            // Write GoAway frame one byte at a time
+            await WriteOneByteAtATime(bufferPipe.Reader, outboundcontrolStream.Pair.Application.Output);
+        }
+        // As soon as the GOAWAY frame identifier is processed we initiate the connection close process.
+        // That means it's possible to still be writing to the stream when we close the
+        // connection which would result in an exception. We'll just ignore the exception in this case.
+        catch (Exception) { }
+
+        await outboundcontrolStream.EndStreamAsync();
+
+        // Check that connection is closed.
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Http3Api.MultiplexedConnectionContext.ConnectionClosed.Register(() => tcs.TrySetResult());
+        await tcs.Task;
+
+        await outboundcontrolStream.ReceiveEndAsync();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanHaveBody_ReturnsFalseWithoutRequestBody(bool endstream)
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
+        {
+            Assert.NotEqual(endstream, context.Features.Get<IHttpRequestBodyDetectionFeature>().CanHaveBody);
+            context.Response.StatusCode = 200;
+            return Task.CompletedTask;
+        }, headers, endStream: endstream);
+
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+
+        await requestStream.ExpectReceiveEndOfStream();
+    }
+
+    private async Task WriteOneByteAtATime(PipeReader reader, PipeWriter writer)
+    {
+        var res = await reader.ReadAsync();
+        try
+        {
+            for (var i = 0; i < res.Buffer.Length; i++)
+            {
+                var mem = writer.GetMemory();
+                mem.Span[0] = res.Buffer.Slice(i).FirstSpan[0];
+                writer.Advance(1);
+                await writer.FlushAsync();
+            }
+        }
+        finally
+        {
+            reader.AdvanceTo(res.Buffer.End);
+        }
     }
 }

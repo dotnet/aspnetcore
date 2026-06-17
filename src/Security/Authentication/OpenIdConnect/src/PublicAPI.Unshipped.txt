@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder) -> void

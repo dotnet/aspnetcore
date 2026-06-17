@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
 
     <!--
       This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. See also

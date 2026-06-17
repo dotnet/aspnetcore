@@ -52,7 +52,7 @@ internal static class ExecuteHandlerHelper
         // call WriteAsJsonAsync<object>() rather than the declared type
         // and avoid source generators issues.
         // https://github.com/dotnet/aspnetcore/issues/43894
-        // https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-polymorphism
+        // https://learn.microsoft.com/dotnet/standard/serialization/system-text-json-polymorphism
         return response.WriteAsJsonAsync<object?>(value, jsonTypeInfo.Options);
     }
 }

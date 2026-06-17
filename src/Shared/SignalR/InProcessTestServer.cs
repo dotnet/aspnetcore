@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,6 +26,8 @@ public abstract class InProcessTestServer : IAsyncDisposable
     public abstract string WebSocketsUrl { get; }
 
     public abstract string Url { get; }
+
+    public abstract IServiceProvider Services { get; }
 
     public abstract ValueTask DisposeAsync();
 }
@@ -53,6 +55,8 @@ public class InProcessTestServer<TStartup> : InProcessTestServer
     public override string WebSocketsUrl => Url.Replace("http", "ws");
 
     public override string Url => _url;
+
+    public override IServiceProvider Services => _host.Services;
 
     public static async Task<InProcessTestServer<TStartup>> StartServer(ILoggerFactory loggerFactory, Action<KestrelServerOptions> configureKestrelServerOptions = null, IDisposable disposable = null)
     {

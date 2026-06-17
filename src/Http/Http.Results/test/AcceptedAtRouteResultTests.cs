@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
@@ -77,7 +77,6 @@ public class AcceptedAtRouteResultTests
     {
         // Arrange
         AcceptedAtRoute MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
@@ -87,17 +86,19 @@ public class AcceptedAtRouteResultTests
         var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
         Assert.Equal(StatusCodes.Status202Accepted, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(void), producesResponseTypeMetadata.Type);
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new AcceptedAtRoute(null);
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     [Fact]

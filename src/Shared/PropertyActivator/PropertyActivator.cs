@@ -56,6 +56,32 @@ internal sealed class PropertyActivator<TContext>
         ArgumentNullException.ThrowIfNull(activateAttributeType);
         ArgumentNullException.ThrowIfNull(createActivateInfo);
 
+        var properties = GetActivatableProperties(type, activateAttributeType, includeNonPublic);
+        return properties.Select(createActivateInfo).ToArray();
+    }
+
+    public static PropertyActivator<TContext>[] GetPropertiesToActivate<TAttribute>(
+        Type type,
+        Func<PropertyInfo, TAttribute, PropertyActivator<TContext>> createActivateInfo,
+        bool includeNonPublic)
+        where TAttribute : Attribute
+    {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentNullException.ThrowIfNull(createActivateInfo);
+
+        var properties = GetActivatableProperties(type, typeof(TAttribute), includeNonPublic);
+        return properties.Select(property =>
+        {
+            var attribute = property.GetCustomAttribute<TAttribute>()!;
+            return createActivateInfo(property, attribute);
+        }).ToArray();
+    }
+
+    private static IEnumerable<PropertyInfo> GetActivatableProperties(
+        Type type,
+        Type activateAttributeType,
+        bool includeNonPublic)
+    {
         var properties = type.GetRuntimeProperties()
             .Where((property) =>
             {
@@ -71,6 +97,6 @@ internal sealed class PropertyActivator<TContext>
             properties = properties.Where(property => property.SetMethod is { IsPublic: true });
         }
 
-        return properties.Select(createActivateInfo).ToArray();
+        return properties;
     }
 }

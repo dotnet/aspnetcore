@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
@@ -24,7 +25,7 @@ public class ErrorNotificationTest : ServerTestBase<ToggleExecutionModeServerFix
     protected override void InitializeAsyncCore()
     {
         // On WebAssembly, page reloads are expensive so skip if possible
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<ErrorComponent>();
         Browser.Exists(By.Id("blazor-error-ui"));
         Browser.Exists(By.Id("throw-simple-exception"));

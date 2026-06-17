@@ -40,7 +40,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
     private bool _streamClosed;
     private bool _serverAborted;
     private bool _clientAbort;
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
 
     public QuicStreamContext(QuicConnectionContext connection, QuicTransportContext context)
     {
@@ -273,7 +273,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         catch (QuicException ex) when (ex.QuicError is QuicError.StreamAborted or QuicError.ConnectionAborted)
         {
             // Abort from peer.
-            _error = ex.ApplicationErrorCode;
+            _error = ex.ApplicationErrorCode; // Trust Quic to provide us a valid error code
             QuicLog.StreamAbortedRead(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
@@ -434,7 +434,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
         catch (QuicException ex) when (ex.QuicError is QuicError.StreamAborted or QuicError.ConnectionAborted)
         {
             // Abort from peer.
-            _error = ex.ApplicationErrorCode;
+            _error = ex.ApplicationErrorCode; // Trust Quic to provide us a valid error code
             QuicLog.StreamAbortedWrite(_log, this, ex.ApplicationErrorCode.GetValueOrDefault());
 
             // This could be ignored if _shutdownReason is already set.
@@ -501,7 +501,7 @@ internal partial class QuicStreamContext : TransportConnection, IPooledStream, I
             _shutdownReason = abortReason;
         }
 
-        var resolvedErrorCode = _error ?? 0;
+        var resolvedErrorCode = _error ?? 0; // _error is validated on assignment
         QuicLog.StreamAbort(_log, this, resolvedErrorCode, abortReason.Message);
 
         if (stream.CanRead)

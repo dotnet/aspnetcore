@@ -1,0 +1,42 @@
+﻿@page "/nav/interactive-component-navigation/{renderMode}"
+@using TestContentPackage;
+@inject NavigationManager Nav
+
+@{
+    _renderId++;
+}
+
+<h1>Page with interactive components that navigate</h1>
+
+<p>
+    SSR render ID: <span id="render-id">@_renderId</span>
+</p>
+
+@if (_renderMode is not null)
+{
+    <InteractiveNavigationComponent @rendermode="@_renderMode" />
+}
+else
+{
+    <text>Invalid render mode "@RenderMode"</text>
+}
+
+@code {
+    private IComponentRenderMode? _renderMode;
+    private static int _renderId;
+
+    [Parameter]
+    public string RenderMode { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (string.Equals("server", RenderMode, StringComparison.OrdinalIgnoreCase))
+        {
+            _renderMode = new InteractiveServerRenderMode(prerender: false);
+        }
+        else if (string.Equals("webassembly", RenderMode, StringComparison.OrdinalIgnoreCase))
+        {
+            _renderMode = new InteractiveWebAssemblyRenderMode(prerender: false);
+        }
+    }
+}

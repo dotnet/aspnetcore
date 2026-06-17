@@ -7,7 +7,7 @@ Commonly used types:
 Microsoft.Extensions.Localization.IStringLocalizer
 Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>localization</PackageTags>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>

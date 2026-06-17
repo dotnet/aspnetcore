@@ -10,7 +10,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 

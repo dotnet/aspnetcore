@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Configuration;
-using System.Text.Json.Nodes;
-using System.Text.Json;
 using System.Linq;
-using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer.Tools;
 
@@ -69,7 +68,7 @@ internal static class SigningKeysHandler
             using var secretsFileStream = new FileStream(secretsFilePath, FileMode.Open, FileAccess.Read);
             if (secretsFileStream.Length > 0)
             {
-                secrets = JsonSerializer.Deserialize<JsonObject>(secretsFileStream);
+                secrets = JsonSerializer.Deserialize(secretsFileStream, JwtSerializerContext.Default.JsonObject);
             }
         }
 
@@ -86,15 +85,15 @@ internal static class SigningKeysHandler
                 var toRemove = signingKeys.SingleOrDefault(key => key["Issuer"].GetValue<string>() == issuer);
                 signingKeys.Remove(toRemove);
             }
-            signingKeys.Add(key);
+            signingKeys.Add(JsonSerializer.SerializeToNode(key, JwtSerializerContext.Default.SigningKey));
         }
         else
         {
-            secrets.Add(signkingKeysPropertyName, JsonValue.Create(new[] { key }));
+            secrets.Add(signkingKeysPropertyName, JsonSerializer.SerializeToNode(new[] { key }, JwtSerializerContext.Default.SigningKeyArray));
         }
 
         using var secretsWriteStream = new FileStream(secretsFilePath, FileMode.Create, FileAccess.Write);
-        JsonSerializer.Serialize(secretsWriteStream, secrets);
+        JsonSerializer.Serialize(secretsWriteStream, secrets, JwtSerializerContext.Default.JsonObject);
 
         return newKeyMaterial;
     }

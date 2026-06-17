@@ -42,7 +42,7 @@ public class ConnectionBuilder : IConnectionBuilder
             return Task.CompletedTask;
         };
 
-        foreach (var component in _components.Reverse())
+        foreach (var component in Enumerable.Reverse(_components))
         {
             app = component(app);
         }

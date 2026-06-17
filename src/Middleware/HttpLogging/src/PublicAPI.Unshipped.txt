@@ -1,12 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.HttpLoggingEndpointConventionBuilderExtensions
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.HttpLoggingAttribute(Microsoft.AspNetCore.HttpLogging.HttpLoggingFields loggingFields) -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.IsRequestBodyLogLimitSet.get -> bool
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.IsResponseBodyLogLimitSet.get -> bool
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.LoggingFields.get -> Microsoft.AspNetCore.HttpLogging.HttpLoggingFields
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.RequestBodyLogLimit.get -> int
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.RequestBodyLogLimit.set -> void
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.get -> int
-Microsoft.AspNetCore.HttpLogging.HttpLoggingAttribute.ResponseBodyLogLimit.set -> void
-static Microsoft.AspNetCore.Builder.HttpLoggingEndpointConventionBuilderExtensions.WithHttpLogging<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.HttpLogging.HttpLoggingFields loggingFields, int? requestBodyLogLimit = null, int? responseBodyLogLimit = null) -> TBuilder

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
@@ -47,7 +48,7 @@ internal static class Utilities
                 var options = new HttpSysOptions();
                 options.UrlPrefixes.Add(prefix);
                 options.RequestQueueName = prefix.Port; // Convention for use with CreateServerOnExistingQueue
-                var listener = new HttpSysListener(options, new LoggerFactory());
+                var listener = new HttpSysListener(options, new DefaultMemoryPoolFactory(), new LoggerFactory());
                 try
                 {
                     listener.Start();
@@ -56,9 +57,9 @@ internal static class Utilities
                 catch (HttpSysException ex)
                 {
                     listener.Dispose();
-                    if (ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS
-                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SHARING_VIOLATION
-                        && ex.ErrorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
+                    if (ex.ErrorCode != ErrorCodes.ERROR_ALREADY_EXISTS
+                        && ex.ErrorCode != ErrorCodes.ERROR_SHARING_VIOLATION
+                        && ex.ErrorCode != ErrorCodes.ERROR_ACCESS_DENIED)
                     {
                         throw;
                     }
@@ -76,7 +77,7 @@ internal static class Utilities
 
     internal static HttpSysListener CreateServer(string scheme, string host, int port, string path)
     {
-        var listener = new HttpSysListener(new HttpSysOptions(), new LoggerFactory());
+        var listener = new HttpSysListener(new HttpSysOptions(), new DefaultMemoryPoolFactory(), new LoggerFactory());
         listener.Options.UrlPrefixes.Add(UrlPrefix.Create(scheme, host, port, path));
         listener.Start();
         return listener;
@@ -86,7 +87,7 @@ internal static class Utilities
     {
         var options = new HttpSysOptions();
         configureOptions(options);
-        var listener = new HttpSysListener(options, new LoggerFactory());
+        var listener = new HttpSysListener(options, new DefaultMemoryPoolFactory(), new LoggerFactory());
         listener.Start();
         return listener;
     }
@@ -107,7 +108,7 @@ internal static class Utilities
     internal static async Task<RequestContext> AcceptAsync(this HttpSysListener server, TimeSpan timeout)
     {
         var factory = new TestRequestContextFactory(server);
-        using var acceptContext = new AsyncAcceptContext(server, factory);
+        using var acceptContext = new AsyncAcceptContext(server, factory, server.Logger);
 
         async Task<RequestContext> AcceptAsync()
         {

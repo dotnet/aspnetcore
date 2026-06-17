@@ -543,6 +543,24 @@ public class RemoteAuthenticationServiceTests
             return new ValueTask<TValue>((TValue)GetInvocationResult(identifier));
         }
 
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+            => throw new NotImplementedException();
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
+            => throw new NotImplementedException();
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
+            => throw new NotImplementedException();
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+            => throw new NotImplementedException();
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+            => throw new NotImplementedException();
+
         private object GetInvocationResult(string identifier)
         {
             switch (identifier)

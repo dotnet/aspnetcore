@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 using Xunit.Abstractions;
@@ -75,7 +76,7 @@ public class TargetTest : IDisposable
 
         Assert.Equal(0, process.ExitCode);
         Assert.Empty(process.Error);
-        Assert.Contains($"Compile: {Path.Combine("obj", "azureMonitorClient.cs")}", process.Output);
+        Assert.Contains($"Compile: {Path.Combine(_temporaryDirectory.Root, "obj", "azureMonitorClient.cs")}", process.Output);
         Assert.Contains($"FileWrites: {Path.Combine("obj", "azureMonitorClient.cs")}", process.Output);
         Assert.DoesNotContain("TypeScriptCompile:", process.Output);
     }
@@ -118,9 +119,9 @@ public class TargetTest : IDisposable
 
         Assert.Equal(0, process.ExitCode);
         Assert.Empty(process.Error);
-        Assert.Contains($"Compile: {Path.Combine("obj", "azureMonitorClient.cs")}", process.Output);
-        Assert.Contains($"Compile: {Path.Combine("obj", "NSwagClient.cs")}", process.Output);
-        Assert.Contains($"Compile: {Path.Combine("obj", "swashbuckleClient.cs")}", process.Output);
+        Assert.Contains($"Compile: {Path.Combine(_temporaryDirectory.Root, "obj", "azureMonitorClient.cs")}", process.Output);
+        Assert.Contains($"Compile: {Path.Combine(_temporaryDirectory.Root, "obj", "NSwagClient.cs")}", process.Output);
+        Assert.Contains($"Compile: {Path.Combine(_temporaryDirectory.Root, "obj", "swashbuckleClient.cs")}", process.Output);
         Assert.Contains($"FileWrites: {Path.Combine("obj", "azureMonitorClient.cs")}", process.Output);
         Assert.Contains($"FileWrites: {Path.Combine("obj", "NSwagClient.cs")}", process.Output);
         Assert.Contains($"FileWrites: {Path.Combine("obj", "swashbuckleClient.cs")}", process.Output);

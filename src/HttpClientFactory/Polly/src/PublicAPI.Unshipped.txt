@@ -1,5 +1,1 @@
 #nullable enable
-*REMOVED*static Polly.HttpRequestMessageExtensions.GetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request) -> Polly.Context!
-*REMOVED*static Polly.HttpRequestMessageExtensions.SetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request, Polly.Context! context) -> void
-static Polly.HttpRequestMessageExtensions.GetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request) -> Polly.Context?
-static Polly.HttpRequestMessageExtensions.SetPolicyExecutionContext(this System.Net.Http.HttpRequestMessage! request, Polly.Context? context) -> void

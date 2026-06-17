@@ -9,7 +9,7 @@
 
 
 /*++
-  class MULTISZ:
+  class MULTISZA:
 
   Intention:
     A light-weight multi-string class supporting encapsulated string class.
@@ -17,9 +17,6 @@
     This object is derived from BUFFER class.
     It maintains following state:
 
-     m_fValid  - whether this object is valid -
-        used only by MULTISZ() init functions
-        * NYI: I need to kill this someday *
      m_cchLen - string length cached when we update the string.
      m_cStrings - number of strings.
 
@@ -62,33 +59,15 @@ public:
           m_cStrings(0)
     { AuxInit( str.QueryStr()); }
 
-//    BOOL IsValid(VOID) const { return ( BUFFER::IsValid()) ; }
-    //
-    //  Checks and returns TRUE if this string has no valid data else FALSE
-    //
-    BOOL IsEmpty( VOID) const      { return ( *QueryStr() == L'\0'); }
-
-    BOOL Append( const CHAR  * pchInit ) {
-      return ((pchInit != NULL) ? (AuxAppend( pchInit,
-                                              (DWORD) (::strlen(pchInit)) * sizeof(CHAR)
-                                              )) :
-              TRUE);
-    }
-
-
     BOOL Append( const CHAR  * pchInit, DWORD cchLen ) {
-      return ((pchInit != NULL) ? (AuxAppend( pchInit,
+      return ((pchInit != nullptr) ? (AuxAppend( pchInit,
                                               cchLen * sizeof(CHAR))) :
               TRUE);
     }
 
-    BOOL Append( STRA & str )
-      { return AuxAppend( str.QueryStr(),
-                          (str.QueryCCH()) * sizeof(CHAR)); }
-
     // Resets the internal string to be NULL string. Buffer remains cached.
     VOID Reset()
-    { DBG_ASSERT( QueryPtr() != NULL);
+    { DBG_ASSERT( QueryPtr() != nullptr );
       QueryStr()[0] = L'\0';
       QueryStr()[1] = L'\0';
       m_cchLen = 2;
@@ -97,7 +76,7 @@ public:
 
     BOOL Copy( const CHAR  * pchInit, IN DWORD cbLen ) {
       if ( QueryPtr() ) { Reset(); }
-      return ( (pchInit != NULL) ?
+      return ( (pchInit != nullptr) ?
                AuxAppend( pchInit, cbLen, FALSE ):
                TRUE);
     }
@@ -112,26 +91,10 @@ public:
     UINT QueryCB() const
         { return ( m_cchLen * sizeof(CHAR)); }
 
-    //
-    //  Returns # of characters in the string including the terminating NULLs
-    //
-    UINT QueryCCH() const { return (m_cchLen); }
-
-    //
-    //  Returns # of strings in the MULTISZA.
-    //
-
-    DWORD QueryStringCount() const { return m_cStrings; }
-
-    //
-    // Makes a copy of the stored string in given buffer
-    //
-    BOOL CopyToBuffer( __out_ecount_opt(*lpcch) CHAR * lpszBuffer,  LPDWORD lpcch) const;
 
     //
     //  Return the string buffer
     //
-    CHAR * QueryStrA() const { return ( QueryStr()); }
     CHAR * QueryStr() const { return reinterpret_cast<CHAR*>(QueryPtr()); }
 
     //
@@ -140,19 +103,12 @@ public:
     BOOL
       Clone( OUT MULTISZA * pstrClone) const
         {
-          return ((pstrClone == NULL) ?
+          return ((pstrClone == nullptr) ?
                   (SetLastError(ERROR_INVALID_PARAMETER), FALSE) :
                   (pstrClone->Copy( *this))
                   );
         } // MULTISZA::Clone()
 
-    //
-    //  Recalculates the length of *this because we've modified the buffers
-    //  directly
-    //
-
-    VOID RecalcLen()
-        { m_cchLen = MULTISZA::CalcLength( QueryStr(), &m_cStrings ); }
 
     //
     // Calculate total character length of a MULTI_SZ, including the
@@ -160,36 +116,18 @@ public:
     //
 
     static DWORD CalcLength( const CHAR * str,
-                                    LPDWORD pcStrings = NULL );
-
-    //
-    // Determine if the MULTISZA contains a specific string.
-    //
-
-    BOOL FindString( const CHAR * str ) const;
-
-    BOOL FindString( STRA & str ) const
-    { return FindString( str.QueryStr() ); }
-
-    //
-    // Determine if the MULTISZA contains a specific string - case-insensitive
-    //
-
-    BOOL FindStringNoCase( const CHAR * str ) const;
-
-    BOOL FindStringNoCase( STRA & str ) const
-    { return FindStringNoCase( str.QueryStr() ); }
+                                    LPDWORD pcStrings = nullptr );
 
     //
     // Used for scanning a MULTISZA.
     //
 
     const CHAR * First( VOID ) const
-        { return *QueryStr() == L'\0' ? NULL : QueryStr(); }
+        { return *QueryStr() == L'\0' ? nullptr : QueryStr(); }
 
     const CHAR * Next( const CHAR * Current ) const
         { Current += ::strlen( Current ) + 1;
-          return *Current == L'\0' ? NULL : Current; }
+          return *Current == L'\0' ? nullptr : Current; }
 
     BOOL
     Equals(
@@ -206,21 +144,5 @@ private:
 
 };
 
-//
-//  Quick macro for declaring a MULTISZA that will use stack memory of <size>
-//  bytes.  If the buffer overflows then a heap buffer will be allocated
-//
-
-#define STACK_MULTISZA( name, size )     CHAR __ach##name[size]; \
-                                    MULTISZA name( __ach##name, sizeof( __ach##name ))
-
-HRESULT
-SplitCommaDelimitedString(
-    PCSTR                       pszList,
-    BOOL                        fTrimEntries,
-    BOOL                        fRemoveEmptyEntries,
-    MULTISZA *                  pmszList
-);
-
-#endif // !_MULTISZA_HXX_
+#endif // !_MULTISZA_H_
 

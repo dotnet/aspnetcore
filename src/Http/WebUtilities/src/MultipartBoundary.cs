@@ -7,61 +7,32 @@ namespace Microsoft.AspNetCore.WebUtilities;
 
 internal sealed class MultipartBoundary
 {
-    private readonly int[] _skipTable = new int[256];
-    private readonly string _boundary;
+    private readonly byte[] _boundaryBytes;
     private bool _expectLeadingCrlf;
 
-    public MultipartBoundary(string boundary, bool expectLeadingCrlf = true)
+    public MultipartBoundary(string boundary)
     {
         ArgumentNullException.ThrowIfNull(boundary);
 
-        _boundary = boundary;
-        _expectLeadingCrlf = expectLeadingCrlf;
-        Initialize(_boundary, _expectLeadingCrlf);
-    }
+        _expectLeadingCrlf = false;
+        _boundaryBytes = Encoding.UTF8.GetBytes("\r\n--" + boundary);
 
-    private void Initialize(string boundary, bool expectLeadingCrlf)
-    {
-        if (expectLeadingCrlf)
-        {
-            BoundaryBytes = Encoding.UTF8.GetBytes("\r\n--" + boundary);
-        }
-        else
-        {
-            BoundaryBytes = Encoding.UTF8.GetBytes("--" + boundary);
-        }
         FinalBoundaryLength = BoundaryBytes.Length + 2; // Include the final '--' terminator.
-
-        var length = BoundaryBytes.Length;
-        for (var i = 0; i < _skipTable.Length; ++i)
-        {
-            _skipTable[i] = length;
-        }
-        for (var i = 0; i < length; ++i)
-        {
-            _skipTable[BoundaryBytes[i]] = Math.Max(1, length - 1 - i);
-        }
     }
 
-    public int GetSkipValue(byte input)
+    public void ExpectLeadingCrlf()
     {
-        return _skipTable[input];
+        _expectLeadingCrlf = true;
     }
 
-    public bool ExpectLeadingCrlf
+    // Lets us throw a more specific error from MultipartReaderStream when reading any preamble data.
+    public bool BeforeFirstBoundary()
     {
-        get { return _expectLeadingCrlf; }
-        set
-        {
-            if (value != _expectLeadingCrlf)
-            {
-                _expectLeadingCrlf = value;
-                Initialize(_boundary, _expectLeadingCrlf);
-            }
-        }
+        return !_expectLeadingCrlf;
     }
 
-    public byte[] BoundaryBytes { get; private set; } = default!; // This gets initialized as part of Initialize called from in the ctor.
+    // Return either "--{boundary}" or "\r\n--{boundary}" depending on if we're looking for the end of a section
+    public ReadOnlySpan<byte> BoundaryBytes => _boundaryBytes.AsSpan(_expectLeadingCrlf ? 0 : 2);
 
     public int FinalBoundaryLength { get; private set; }
 }

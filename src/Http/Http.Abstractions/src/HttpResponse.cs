@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Http;
@@ -165,6 +166,14 @@ public abstract class HttpResponse
 
         public int StatusCode => _response.StatusCode;
         public IHeaderDictionary Headers => _response.Headers;
+        public IHeaderDictionary? Trailers
+        {
+            get
+            {
+                var feature = _response.HttpContext.Features.Get<IHttpResponseTrailersFeature>();
+                return feature?.Trailers;
+            }
+        }
         public long? ContentLength => _response.ContentLength;
         public string? ContentType => _response.ContentType;
         public bool HasStarted => _response.HasStarted;

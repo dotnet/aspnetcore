@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 internal sealed class AddressBinder
 {
     // note this doesn't copy the ListenOptions[], only call this with an array that isn't mutated elsewhere
-    public static async Task BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func<ListenOptions, ListenOptions> useHttps, CancellationToken cancellationToken)
+    public static Task BindAsync(ListenOptions[] listenOptions, AddressBindContext context, Func<ListenOptions, ListenOptions> useHttps, CancellationToken cancellationToken)
     {
         var strategy = CreateStrategy(
             listenOptions,
@@ -29,7 +29,7 @@ internal sealed class AddressBinder
         context.ServerOptions.OptionsInUse.Clear();
         context.Addresses.Clear();
 
-        await strategy.BindAsync(context, cancellationToken).ConfigureAwait(false);
+        return strategy.BindAsync(context, cancellationToken);
     }
 
     private static IStrategy CreateStrategy(ListenOptions[] listenOptions, string[] addresses, bool preferAddresses, Func<ListenOptions, ListenOptions> useHttps)
@@ -125,10 +125,10 @@ internal sealed class AddressBinder
         {
             options = new ListenOptions(new NamedPipeEndPoint(parsedAddress.NamedPipeName));
         }
-        else if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+        else if (IsLocalhost(parsedAddress.Host, out var prefix))
         {
             // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
-            options = new LocalhostListenOptions(parsedAddress.Port);
+            options = prefix is null ? new LocalhostListenOptions(parsedAddress.Port) : new LocalhostListenOptions(parsedAddress.Port, prefix);
         }
         else if (TryCreateIPEndPoint(parsedAddress, out var endpoint))
         {
@@ -141,6 +141,28 @@ internal sealed class AddressBinder
         }
 
         return options;
+
+        static bool IsLocalhost(string host, out string? prefix)
+        {
+            // Check for "localhost"
+            if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                prefix = null;
+                return true;
+            }
+
+            // Check for use of .localhost TLD (Top Level Domain)
+            const string localhostTld = ".localhost";
+            if (host.Length > localhostTld.Length && host.EndsWith(localhostTld, StringComparison.OrdinalIgnoreCase))
+            {
+                // Take all but the .localhost TLD as the prefix
+                prefix = host[..^localhostTld.Length];
+                return true;
+            }
+
+            prefix = null;
+            return false;
+        }
     }
 
     private interface IStrategy

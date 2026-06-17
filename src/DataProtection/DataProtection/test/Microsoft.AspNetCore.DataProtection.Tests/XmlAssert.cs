@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Xml.Linq;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
@@ -33,7 +37,7 @@ public static class XmlAssert
 
         if (!Core.AreEqual(expected, actual))
         {
-            Assert.True(false,
+            Assert.Fail(
                    "Expected element:" + Environment.NewLine
                    + expected.ToString() + Environment.NewLine
                    + "Actual element:" + Environment.NewLine

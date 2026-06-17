@@ -179,7 +179,7 @@ public class RouteCollectionTest
         route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(0));
         Assert.NotNull(context.Handler);
 
-        Assert.Equal(1, context.RouteData.Routers.Count);
+        Assert.Single(context.RouteData.Routers);
         Assert.Same(route1.Object, context.RouteData.Routers[0]);
     }
 
@@ -205,7 +205,7 @@ public class RouteCollectionTest
         route2.Verify(e => e.RouteAsync(It.IsAny<RouteContext>()), Times.Exactly(1));
         Assert.NotNull(context.Handler);
 
-        Assert.Equal(1, context.RouteData.Routers.Count);
+        Assert.Single(context.RouteData.Routers);
         Assert.Same(route2.Object, context.RouteData.Routers[0]);
     }
 

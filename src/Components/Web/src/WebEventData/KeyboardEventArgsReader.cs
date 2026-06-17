@@ -18,6 +18,7 @@ internal static class KeyboardEventArgsReader
     private static readonly JsonEncodedText AltKey = JsonEncodedText.Encode("altKey");
     private static readonly JsonEncodedText MetaKey = JsonEncodedText.Encode("metaKey");
     private static readonly JsonEncodedText Type = JsonEncodedText.Encode("type");
+    private static readonly JsonEncodedText IsComposing = JsonEncodedText.Encode("isComposing");
 
     internal static KeyboardEventArgs Read(JsonElement jsonElement)
     {
@@ -59,6 +60,10 @@ internal static class KeyboardEventArgsReader
             else if (property.NameEquals(Type.EncodedUtf8Bytes))
             {
                 eventArgs.Type = property.Value.GetString()!;
+            }
+            else if (property.NameEquals(IsComposing.EncodedUtf8Bytes))
+            {
+                eventArgs.IsComposing = property.Value.GetBoolean();
             }
             else
             {

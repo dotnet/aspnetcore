@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class ControllerEndpointRouteBuilderExtensions
 {
+    internal const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
+
     /// <summary>
     /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> without specifying any routes.
     /// </summary>
@@ -28,7 +30,13 @@ public static class ControllerEndpointRouteBuilderExtensions
 
         EnsureControllerServices(endpoints);
 
-        return GetOrCreateDataSource(endpoints).DefaultBuilder;
+        var result = GetOrCreateDataSource(endpoints).DefaultBuilder;
+        if (!result.Items.ContainsKey(EndpointRouteBuilderKey))
+        {
+            result.Items[EndpointRouteBuilderKey] = endpoints;
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -46,6 +54,11 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
+        if (!dataSource.DefaultBuilder.Items.ContainsKey(EndpointRouteBuilderKey))
+        {
+            dataSource.DefaultBuilder.Items[EndpointRouteBuilderKey] = endpoints;
+        }
+
         return dataSource.AddRoute(
             "default",
             "{controller=Home}/{action=Index}/{id?}",
@@ -90,6 +103,11 @@ public static class ControllerEndpointRouteBuilderExtensions
         EnsureControllerServices(endpoints);
 
         var dataSource = GetOrCreateDataSource(endpoints);
+        if (!dataSource.DefaultBuilder.Items.ContainsKey(EndpointRouteBuilderKey))
+        {
+            dataSource.DefaultBuilder.Items[EndpointRouteBuilderKey] = endpoints;
+        }
+
         return dataSource.AddRoute(
             name,
             pattern,
@@ -132,11 +150,7 @@ public static class ControllerEndpointRouteBuilderExtensions
         object? dataTokens = null)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         var defaultsDictionary = new RouteValueDictionary(defaults);
         defaultsDictionary["area"] = defaultsDictionary["area"] ?? areaName;

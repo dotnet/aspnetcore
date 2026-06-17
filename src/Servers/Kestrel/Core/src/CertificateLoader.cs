@@ -48,7 +48,7 @@ public static class CertificateLoader
                     // Pick the first one if there's no exact match as a fallback to substring default.
                     foundCertificate ??= certificate;
 
-                    if (certificate.GetNameInfo(X509NameType.SimpleName, true).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
+                    if (certificate.GetNameInfo(X509NameType.SimpleName, forIssuer: false).Equals(subject, StringComparison.InvariantCultureIgnoreCase))
                     {
                         foundCertificate = certificate;
                         break;

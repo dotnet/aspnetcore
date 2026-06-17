@@ -3,22 +3,32 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Net.Http.Headers;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class TempDataInCookiesUsingCookieConsentTest
-    : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent>>
+public class TempDataInCookiesUsingCookieConsentTest : LoggedTest
 {
-    private readonly HttpClient _client;
-
-    public TempDataInCookiesUsingCookieConsentTest(
-        MvcTestFixture<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        _client = factory.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
     }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent>();
@@ -33,16 +43,16 @@ public class TempDataInCookiesUsingCookieConsentTest
             };
         var content = new FormUrlEncodedContent(nameValueCollection);
         // This response would have the consent cookie which would be sent on rest of the requests here
-        var response = await _client.GetAsync("/TempData/GrantConsent");
+        var response = await Client.GetAsync("/TempData/GrantConsent");
 
         // Act 1
-        response = await _client.SendAsync(GetPostRequest("/TempData/SetTempData", content, response));
+        response = await Client.SendAsync(GetPostRequest("/TempData/SetTempData", content, response));
 
         // Assert 1
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         // Act 2
-        response = await _client.SendAsync(GetRequest("/TempData/GetTempData", response));
+        response = await Client.SendAsync(GetRequest("/TempData/GetTempData", response));
 
         // Assert 2
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -50,7 +60,7 @@ public class TempDataInCookiesUsingCookieConsentTest
         Assert.Equal("Foo", body);
 
         // Act 3
-        response = await _client.SendAsync(GetRequest("/TempData/GetTempData", response));
+        response = await Client.SendAsync(GetRequest("/TempData/GetTempData", response));
 
         // Assert 3
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -67,13 +77,13 @@ public class TempDataInCookiesUsingCookieConsentTest
         var content = new FormUrlEncodedContent(nameValueCollection);
 
         // Act 1
-        var response = await _client.PostAsync("/TempData/SetTempData", content);
+        var response = await Client.PostAsync("/TempData/SetTempData", content);
 
         // Assert 1
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         // Act 2
-        response = await _client.SendAsync(GetRequest("/TempData/GetTempData", response));
+        response = await Client.SendAsync(GetRequest("/TempData/GetTempData", response));
 
         // Assert 2
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);

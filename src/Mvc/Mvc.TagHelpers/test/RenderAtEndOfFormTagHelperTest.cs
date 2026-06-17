@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers;
 
 public class RenderAtEndOfFormTagHelperTest
 {
-    public static TheoryData RenderAtEndOfFormTagHelperData
+    public static TheoryData<List<TagBuilder>, string> RenderAtEndOfFormTagHelperData
     {
         get
         {

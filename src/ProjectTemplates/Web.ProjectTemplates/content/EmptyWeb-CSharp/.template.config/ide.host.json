@@ -1,11 +1,17 @@
 {
-  "$schema": "http://json.schemastore.org/ide.host",
+  "$schema": "https://json.schemastore.org/ide.host",
   "order": 100,
-  "icon": "ide/Empty.png",
+  "icon": "ide/icon.ico",
   "supportsDocker": true,
   "symbolInfo": [
     {
       "id": "UseProgramMain",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "LocalhostTld",
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"

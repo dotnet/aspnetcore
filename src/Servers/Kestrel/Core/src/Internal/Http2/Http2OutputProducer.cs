@@ -12,6 +12,13 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeWrite
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <remarks>
+/// Owned by <see cref="Http2Stream"/>.
+/// <para/>
+/// Tracks the outgoing stream flow control window.
+/// <para/>
+/// Reusable after calling <see cref="StreamReset"/> (<see cref="Reset"/> is unrelated and does nothing).
+/// </remarks>
 internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
 {
     private int StreamId => _stream.StreamId;
@@ -21,7 +28,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     private readonly MemoryPool<byte> _memoryPool;
     private readonly Http2Stream _stream;
-    private readonly object _dataWriterLock = new object();
+    private readonly Lock _dataWriterLock = new();
     private readonly Pipe _pipe;
     private readonly ConcurrentPipeWriter _pipeWriter;
     private readonly PipeReader _pipeReader;
@@ -225,11 +232,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
                 _pipeWriter.Complete();
             }
 
-            if (_fakeMemoryOwner != null)
-            {
-                _fakeMemoryOwner.Dispose();
-                _fakeMemoryOwner = null;
-            }
+            _fakeMemoryOwner?.Dispose();
+            _fakeMemoryOwner = null;
 
             if (_fakeMemory != null)
             {
@@ -239,9 +243,9 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    // This is called when a CancellationToken fires mid-write. In HTTP/1.x, this aborts the entire connection.
-    // For HTTP/2 we abort the stream.
-    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
+    // This is called when a CancellationToken fires mid-write.
+    // In HTTP/1.x, this aborts the entire connection. For HTTP/2 we abort the stream.
+    void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason, ConnectionEndReason reason)
     {
         _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
     }
@@ -351,7 +355,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, bool appCompleted)
     {
         lock (_dataWriterLock)
         {
@@ -469,6 +473,8 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
+    public long UnflushedBytes => _pipeWriter.UnflushedBytes;
+
     public Span<byte> GetSpan(int sizeHint = 0)
     {
         lock (_dataWriterLock)
@@ -543,11 +549,11 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         }
     }
 
-    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
     {
         lock (_dataWriterLock)
         {
-            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false);
+            WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, responseBodyMode, appCompleted: false);
 
             return WriteDataToPipeAsync(data, cancellationToken);
         }
@@ -558,7 +564,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
         throw new NotImplementedException();
     }
 
-    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }
@@ -590,6 +596,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     internal void OnRequestProcessingEnded()
     {
+        bool shouldCompleteStream;
         lock (_dataWriterLock)
         {
             if (_requestProcessingComplete)
@@ -600,15 +607,24 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
             _requestProcessingComplete = true;
 
-            if (_completedResponse)
-            {
-                Stream.CompleteStream(errored: false);
-            }
+            shouldCompleteStream = _completedResponse;
         }
+
+        // Complete outside of lock, anything this method does that needs a lock will acquire a lock itself.
+        // Additionally, this method should only be called once per Reset so calling outside of the lock is fine from the perspective
+        // of multiple threads calling OnRequestProcessingEnded.
+        if (shouldCompleteStream)
+        {
+            Stream.CompleteStream(errored: false);
+        }
+
     }
 
     internal ValueTask<FlushResult> CompleteResponseAsync()
     {
+        bool shouldCompleteStream;
+        ValueTask<FlushResult> task = default;
+
         lock (_dataWriterLock)
         {
             if (_completedResponse)
@@ -619,8 +635,6 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
             _completedResponse = true;
 
-            ValueTask<FlushResult> task = default;
-
             if (_resetErrorCode is { } error)
             {
                 // If we have an error code to write, write it now that we're done with the response.
@@ -628,13 +642,18 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
                 task = _frameWriter.WriteRstStreamAsync(StreamId, error);
             }
 
-            if (_requestProcessingComplete)
-            {
-                Stream.CompleteStream(errored: false);
-            }
-
-            return task;
+            shouldCompleteStream = _requestProcessingComplete;
         }
+
+        // Complete outside of lock, anything this method does that needs a lock will acquire a lock itself.
+        // CompleteResponseAsync also should never be called in parallel so calling this outside of the lock doesn't
+        // cause any weirdness with parallel threads calling this method and no longer waiting on the stream completion call.
+        if (shouldCompleteStream)
+        {
+            Stream.CompleteStream(errored: false);
+        }
+
+        return task;
     }
 
     internal Memory<byte> GetFakeMemory(int minSize)
@@ -683,8 +702,7 @@ internal sealed class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAbor
 
     public bool TryUpdateStreamWindow(int bytes)
     {
-        var schedule = false;
-
+        bool schedule;
         lock (_dataWriterLock)
         {
             var maxUpdate = Http2PeerSettings.MaxWindowSize - _streamWindow;

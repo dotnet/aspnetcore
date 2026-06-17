@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -85,14 +85,14 @@ public class RedirectToRouteResultTests
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new RedirectToRouteHttpResult(null);
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     private static HttpContext GetHttpContext(string path)

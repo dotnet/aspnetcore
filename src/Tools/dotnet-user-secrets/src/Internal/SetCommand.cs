@@ -61,7 +61,7 @@ Examples:
         public void Execute(CommandContext context)
         {
             // parses stdin with the same parser that Microsoft.Extensions.Configuration.Json would use
-            var provider = new ReadableJsonConfigurationProvider();
+            using var provider = new ReadableJsonConfigurationProvider();
             using (var stream = new MemoryStream())
             {
                 using (var writer = new StreamWriter(stream, Encoding.Unicode, 1024, true))
@@ -99,7 +99,7 @@ Examples:
         {
             context.SecretStore.Set(_keyName, _keyValue);
             context.SecretStore.Save();
-            context.Reporter.Output(Resources.FormatMessage_Saved_Secret(_keyName, _keyValue));
+            context.Reporter.Output(Resources.FormatMessage_Saved_Secret(_keyName));
         }
     }
 }

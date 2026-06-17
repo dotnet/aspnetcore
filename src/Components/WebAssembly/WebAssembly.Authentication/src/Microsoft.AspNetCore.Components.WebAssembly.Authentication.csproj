@@ -1,7 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <Import Project="Sdk.props" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
-
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side authentication for single-page applications (SPAs).</Description>
@@ -26,78 +24,50 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
+    <InteropWorkingDir>$(MSBuildThisFileDirectory)Interop\</InteropWorkingDir>
     <ResolveStaticWebAssetsInputsDependsOn>
-      CompileInterop;
       IncludeCompileInteropOutput;
       $(ResolveStaticWebAssetsInputsDependsOn)
     </ResolveStaticWebAssetsInputsDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
-    <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
-    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js" />
-
-    <Content Remove="$(YarnWorkingDir)**" />
-    <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
-
-    <UpToDateCheckInput Include="@(YarnInputs)" Exclude="$(YarnWorkingDir)package.json" Set="StaticWebassets" />
-    <UpToDateCheckOutput Include="@(YarnOutputs)" Set="StaticWebassets" />
+    <Content Update="$(InteropWorkingDir)**" Pack="false" />
   </ItemGroup>
-
-  <Target Name="_CreateInteropHash" BeforeTargets="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'">
-
-    <PropertyGroup>
-      <InteropCompilationCacheFile>$(IntermediateOutputPath)interop.cache</InteropCompilationCacheFile>
-    </PropertyGroup>
-
-    <Hash ItemsToHash="@(YarnInputs)">
-      <Output TaskParameter="HashResult" PropertyName="_YarnInputsHash" />
-    </Hash>
-
-     <WriteLinesToFile Lines="$(_YarnInputsHash)" File="$(InteropCompilationCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
-
-    <ItemGroup>
-      <FileWrites Include="$(InteropCompilationCacheFile)" />
-    </ItemGroup>
-
-  </Target>
-
-  <Target Name="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
-    <!-- Retry yarn install if first one fails -->
-    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
-          WorkingDirectory="$(YarnWorkingDir)"
-          IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"
-          IgnoreExitCode="true">
-            <Output TaskParameter="ExitCode" PropertyName="_LocalYarnExitCode" />
-    </Yarn>
-    <Yarn Command="install --mutex network $(InstallArgs) --frozen-lockfile"
-          WorkingDirectory="$(YarnWorkingDir)"
-          IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)"
-          Condition="'$(_LocalYarnExitCode)' != '0'" />
-    <Yarn Command="run build:production" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
-    <Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
-
-    <Message Importance="high" Text="@(_InteropBuildOutput->'Emitted %(FullPath)')" />
-
-  </Target>
 
   <Target Name="IncludeCompileInteropOutput">
     <ItemGroup>
-      <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+      <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
     </ItemGroup>
 
-    <DefineStaticWebAssets Condition="'@(_InteropBuildOutput)' != ''" SourceType="Computed" SourceId="$(PackageId)" ContentRoot="$(YarnWorkingDir)dist\$(Configuration)\" BasePath="_content/$(PackageId)" CandidateAssets="@(_InteropBuildOutput)" RelativePathFilter="**.js">
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+    <DefineStaticWebAssets
+      Condition="'@(_InteropBuildOutput)' != ''"
+      SourceType="Computed"
+      SourceId="$(PackageId)"
+      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
+      BasePath="_content/$(PackageId)"
+      CandidateAssets="@(_InteropBuildOutput)"
+      RelativePathFilter="**.js"
+    >
+      <Output TaskParameter="Assets" ItemName="_InteropBuildStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_InteropBuildOutput)' != ''"
+      CandidateAssets="@(_InteropBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_InteropBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
-      <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+      <StaticWebAsset Include="@(_InteropBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_InteropBuildStaticWebAssetEndpoint)" />
+      <_InteropBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
       <FileWrites Include="$(_InteropBuildOutput)" />
     </ItemGroup>
   </Target>
-
-  <Import Project="Sdk.targets" Sdk="Yarn.MSBuild" Condition=" '$(DotNetBuildFromSource)' != 'true'" />
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Tests" />

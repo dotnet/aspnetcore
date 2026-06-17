@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components.HotReload;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -12,6 +16,16 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
 {
+    private static readonly ConcurrentDictionary<(Type ModelType, MemberInfo Member), Func<object, object>> _fieldAccessors = new();
+
+    static FieldIdentifier()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
     /// </summary>
@@ -56,7 +70,10 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
     /// </summary>
     public string FieldName { get; }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Returns the hash code for this field identifier.
+    /// </summary>
+    /// <returns>A hash code based on the model instance and field name.</returns>
     public override int GetHashCode()
     {
         // We want to compare Model instances by reference. RuntimeHelpers.GetHashCode returns identical hashes for equal object references (ignoring any `Equals`/`GetHashCode` overrides) which is what we want.
@@ -69,12 +86,20 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         .GetHashCode();
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the specified object is equal to the current field identifier.
+    /// </summary>
+    /// <param name="obj">The object to compare with the current field identifier.</param>
+    /// <returns><see langword="true"/> if the specified object is equal to the current field identifier; otherwise, <see langword="false"/>.</returns>
     public override bool Equals(object? obj)
         => obj is FieldIdentifier otherIdentifier
         && Equals(otherIdentifier);
 
-    /// <inheritdoc />
+    /// <summary>
+    /// Determines whether the specified <see cref="FieldIdentifier"/> is equal to the current field identifier.
+    /// </summary>
+    /// <param name="otherIdentifier">The field identifier to compare with the current instance.</param>
+    /// <returns><see langword="true"/> if the two instances are equal; otherwise, <see langword="false"/>.</returns>
     public bool Equals(FieldIdentifier otherIdentifier)
     {
         return ReferenceEquals(otherIdentifier.Model, Model) &&
@@ -100,47 +125,97 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
                 fieldName = memberExpression.Member.Name;
                 // Get a reference to the model object
                 // i.e., given a value like "(something).MemberName", determine the runtime value of "(something)",
-                if (memberExpression.Expression is ConstantExpression constantExpression)
+                switch (memberExpression.Expression)
                 {
-                    if (constantExpression.Value is null)
-                    {
+                    case ConstantExpression constant when constant.Value == null:
                         throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-                    }
-                    model = constantExpression.Value;
-                }
-                else if (memberExpression.Expression != null)
-                {
-                    // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
-                    // so, given that it embeds captured values such as "this". We could consider special-casing
-                    // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
-                    // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
-                    var modelLambda = Expression.Lambda(memberExpression.Expression);
-                    var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
-                    var result = modelLambdaCompiled();
-                    if (result is null)
-                    {
-                        throw new ArgumentException("The provided expression must evaluate to a non-null value.");
-                    }
-                    model = result;
-                }
-                else
-                {
-                    throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
+                    case ConstantExpression constant when constant.Value != null:
+                        model = constant.Value;
+                        break;
+                    case MemberExpression member when member.Expression is ConstantExpression:
+                        model = GetModelFromMemberAccess(member);
+                        break;
+                    case not null:
+                        // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
+                        // so, given that it embeds captured values such as "this". We could consider special-casing
+                        // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
+                        // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
+                        var modelLambda = Expression.Lambda(typeof(Func<object?>), memberExpression.Expression);
+                        var modelLambdaCompiled = (Func<object?>)modelLambda.Compile();
+                        var result = modelLambdaCompiled() ??
+                            throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+
+                        model = result;
+                        break;
+                    default:
+                        throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
                 }
                 break;
             case MethodCallExpression methodCallExpression when ExpressionFormatter.IsSingleArgumentIndexer(accessorBody):
                 fieldName = ExpressionFormatter.FormatIndexArgument(methodCallExpression.Arguments[0]);
-                model = GetModelFromIndexer(methodCallExpression);
+                model = GetModelFromIndexer(methodCallExpression.Object!);
+                break;
+            case BinaryExpression binaryExpression when binaryExpression.NodeType == ExpressionType.ArrayIndex:
+                fieldName = ExpressionFormatter.FormatIndexArgument(binaryExpression.Right);
+                model = GetModelFromIndexer(binaryExpression.Left);
                 break;
             default:
                 throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
         }
     }
 
-    private static object GetModelFromIndexer(MethodCallExpression methodCallExpression)
+    internal static object GetModelFromMemberAccess(
+        MemberExpression member,
+        ConcurrentDictionary<(Type ModelType, MemberInfo Member), Func<object, object>>? cache = null)
+    {
+        cache ??= _fieldAccessors;
+        Func<object, object>? accessor = null;
+        object? value = null;
+        switch (member.Expression)
+        {
+            case ConstantExpression model:
+                value = model.Value ?? throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+                accessor = cache.GetOrAdd((value.GetType(), member.Member), CreateAccessor);
+                break;
+            default:
+                break;
+        }
+
+        if (accessor == null)
+        {
+            throw new InvalidOperationException($"Unable to compile expression: {member}");
+        }
+
+        if (value == null)
+        {
+            throw new ArgumentException("The provided expression must evaluate to a non-null value.");
+        }
+
+        var result = accessor(value);
+        return result;
+
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
+            Justification = "Application code does not get trimmed. We expect the members in the expression to not be trimmed.")]
+        static Func<object, object> CreateAccessor((Type model, MemberInfo member) arg)
+        {
+            var parameter = Expression.Parameter(typeof(object), "value");
+            Expression expression = Expression.Convert(parameter, arg.model);
+
+            expression = Expression.MakeMemberAccess(expression, arg.member);
+            expression = Expression.Convert(expression, typeof(object));
+            var lambda = Expression.Lambda<Func<object, object>>(expression, parameter);
+
+            var func = lambda.Compile();
+            return func;
+        }
+    }
+
+    private static object GetModelFromIndexer(Expression methodCallExpression)
     {
         object model;
-        var methodCallObjectLambda = Expression.Lambda(methodCallExpression.Object!);
+        var methodCallObjectLambda = Expression.Lambda(typeof(Func<object?>), methodCallExpression!);
         var methodCallObjectLambdaCompiled = (Func<object?>)methodCallObjectLambda.Compile();
         var result = methodCallObjectLambdaCompiled();
         if (result is null)
@@ -149,5 +224,10 @@ public readonly struct FieldIdentifier : IEquatable<FieldIdentifier>
         }
         model = result;
         return model;
+    }
+
+    private static void ClearCache()
+    {
+        _fieldAccessors.Clear();
     }
 }

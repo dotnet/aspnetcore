@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
@@ -110,6 +110,34 @@ namespace Test
     }
 
     [Fact]
+    public async Task DiagnosticsAreReturned_IfCreatedCalledWithNullValue()
+    {
+        // Arrange
+        var source = @"
+using System;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    [Route(""[controller]"")]
+    public class TestController : ControllerBase
+    {
+        [HttpPost]
+        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
+        public IActionResult PostSomething()
+        {
+            return Created(new Uri(""/somepath""), null);
+        }
+    }
+}";
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(source);
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1002_ActionDoesNotReturnDocumentedStatusCode.Id);
+    }
+
+    [Fact]
     public async Task DiagnosticsAreReturned_ForNotFoundNullActionResults()
     {
         // Arrange
@@ -126,6 +154,72 @@ namespace Test
         public ActionResult<string> Test()
         {
             return NotFound(null);
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+        var expectedLocation = testSource.DefaultMarkerLocation;
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
+    public async Task DiagnosticsAreReturned_ForActionsReturnedFromSwitchExpression()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        public IActionResult Get(bool b)
+        {
+            return b switch
+            {
+                true => Ok(),
+                false => BadRequest()
+            };
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+        var expectedLocation = testSource.DefaultMarkerLocation;
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+        [Fact]
+    public async Task DiagnosticsAreReturned_ForActionsReturnedFromSwitchStatement()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        public IActionResult Get(bool b)
+        {
+            switch (b)
+            {
+                case true:
+                    return Ok();
+                case false:
+                    return BadRequest();
+            }
         }
     }
 }";

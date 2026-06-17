@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { HttpConnection } from "signalr/src/HttpConnection";
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
@@ -405,6 +406,24 @@ describe("HubConnectionBuilder", () => {
             .build();
 
         expect(connection.keepAliveIntervalInMilliseconds).toBe(milliseconds);
+    });
+
+    it("can configure Stateful Reconnect buffer limit on HubConnection", () => {
+        const connection = createConnectionBuilder()
+            .withUrl("http://example.com")
+            .withStatefulReconnect({ bufferSize: 103 })
+            .build();
+
+        expect((connection as any)._statefulReconnectBufferSize).toBe(103);
+    });
+
+    it("enables Stateful Reconnect on HttpConnection", () => {
+        const connection = createConnectionBuilder()
+            .withUrl("http://example.com")
+            .withStatefulReconnect()
+            .build();
+
+        expect((connection as any).connection._options._useStatefulReconnect).toBe(true);
     });
 });
 

@@ -89,7 +89,9 @@ internal static class TaskGenericsUtil
             // If necessary, attempt a cast
             var typedResult = result is T resultT
                 ? resultT
-                : (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture)!;
+                : result == null && typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(Nullable<>) // ChangeType can't convert null to value types
+                    ? default(T)
+                    : (T)Convert.ChangeType(result, typeof(T), CultureInfo.InvariantCulture)!;
 
             typedTcs.SetResult(typedResult!);
         }

@@ -9,12 +9,13 @@ using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpe
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests;
 
@@ -538,7 +539,9 @@ public class DatabaseErrorPageMiddlewareTest
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddDbContext<TContext>(optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
+                    services.AddDbContext<TContext>(optionsBuilder => optionsBuilder
+                        .UseSqlite(database.ConnectionString)
+                        .ConfigureWarnings(w => w.Log(RelationalEventId.PendingModelChangesWarning)));
                 });
             }).Build();
 

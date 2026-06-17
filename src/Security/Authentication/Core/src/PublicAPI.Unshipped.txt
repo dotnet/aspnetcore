@@ -1,9 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.AuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
-Microsoft.AspNetCore.Authentication.AuthenticationHandler<TOptions>.TimeProvider.get -> System.TimeProvider!
-Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.TimeProvider.get -> System.TimeProvider?
-Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions.TimeProvider.set -> void
-Microsoft.AspNetCore.Authentication.PolicySchemeHandler.PolicySchemeHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.PolicySchemeOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
-Microsoft.AspNetCore.Authentication.RemoteAuthenticationHandler<TOptions>.RemoteAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
-Microsoft.AspNetCore.Authentication.SignInAuthenticationHandler<TOptions>.SignInAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
-Microsoft.AspNetCore.Authentication.SignOutAuthenticationHandler<TOptions>.SignOutAuthenticationHandler(Microsoft.Extensions.Options.IOptionsMonitor<TOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void

@@ -424,7 +424,7 @@ public class SetCookieHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out SetCookieHeaderValue? parsedValue)
     {
         var index = 0;
-        return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
+        return SingleValueParser.TryParseValue(input, index, out _, out parsedValue!);
     }
 
     /// <summary>
@@ -585,6 +585,16 @@ public class SetCookieHeaderValue
                 if (isNegative)
                 {
                     maxAge = -maxAge;
+                }
+
+                // Check if maxAge would cause TimeSpan.FromSeconds to overflow
+                // TimeSpan.MaxValue.TotalSeconds is approximately 922337203685.4775
+                const long MaxTimeSpanSeconds = 922337203685L;
+                const long MinTimeSpanSeconds = -922337203685L;
+                if (maxAge is > MaxTimeSpanSeconds or < MinTimeSpanSeconds)
+                {
+                    // MaxAge value would overflow TimeSpan, abort
+                    return 0;
                 }
 
                 result.MaxAge = TimeSpan.FromSeconds(maxAge);

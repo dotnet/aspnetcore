@@ -1,21 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
 using System.Collections.ObjectModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing.Constraints;
+#if COMPONENTS
+using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing;
+#else
+using System.Collections;
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Internal;
+#endif
 
+#if COMPONENTS
+namespace Microsoft.AspNetCore.Components.Routing.Patterns;
+#else
 namespace Microsoft.AspNetCore.Routing.Patterns;
+#endif
 
+#if !COMPONENTS
 /// <summary>
 /// Contains factory methods for creating <see cref="RoutePattern"/> and related types.
 /// Use <see cref="Parse(string)"/> to parse a route pattern in
 /// string format.
 /// </summary>
 public static class RoutePatternFactory
+#else
+internal static class RoutePatternFactory
+#endif
 {
     private static readonly IReadOnlyDictionary<string, object?> EmptyDictionary =
         new ReadOnlyDictionary<string, object?>(new Dictionary<string, object?>());
@@ -23,6 +36,7 @@ public static class RoutePatternFactory
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>> EmptyPoliciesDictionary =
         new ReadOnlyDictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>>(new Dictionary<string, IReadOnlyList<RoutePatternParameterPolicyReference>>());
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePattern"/> from its string representation.
     /// </summary>
@@ -154,7 +168,7 @@ public static class RoutePatternFactory
 
         return PatternCore(null, null, null, null, segments);
     }
-
+#endif
     /// <summary>
     /// Creates a new instance of <see cref="RoutePattern"/> from a collection of segments.
     /// </summary>
@@ -168,6 +182,7 @@ public static class RoutePatternFactory
         return PatternCore(rawText, null, null, null, segments);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePattern"/> from a collection of segments along
     /// with provided default values and parameter policies.
@@ -420,6 +435,7 @@ public static class RoutePatternFactory
 
         return PatternCore(rawText, defaults, CreateRoutePatternPolicyReferences(parameterPolicies), requiredValues: null, segments);
     }
+#endif
 
     private static RoutePattern PatternCore(
         string? rawText,
@@ -624,6 +640,7 @@ public static class RoutePatternFactory
         }
     }
 
+#if !COMPONENTS
     /// <summary>
     /// String policy references are infered to be regex constraints. Creating them is moved here to its own method so apps can
     /// trim away the regex dependency when RoutePatternFactory.Parse(string) is used. This is the method typically used by the various Map methods.
@@ -700,6 +717,7 @@ public static class RoutePatternFactory
     {
         return new RoutePatternPathSegment(parts);
     }
+#endif
 
     /// <summary>
     /// Creates a <see cref="RoutePatternLiteralPart"/> from the provided text
@@ -709,10 +727,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternLiteralPart"/>.</returns>
     public static RoutePatternLiteralPart LiteralPart(string content)
     {
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(content);
 
         if (content.Contains('?'))
         {
@@ -735,10 +750,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternSeparatorPart"/>.</returns>
     public static RoutePatternSeparatorPart SeparatorPart(string content)
     {
-        if (string.IsNullOrEmpty(content))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(content);
 
         return SeparatorPartCore(content);
     }
@@ -748,6 +760,7 @@ public static class RoutePatternFactory
         return new RoutePatternSeparatorPart(content);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePatternParameterPart"/> from the provided parameter name.
     /// </summary>
@@ -755,10 +768,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
     public static RoutePatternParameterPart ParameterPart(string parameterName)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -781,10 +791,7 @@ public static class RoutePatternFactory
     /// <returns>The <see cref="RoutePatternParameterPart"/>.</returns>
     public static RoutePatternParameterPart ParameterPart(string parameterName, object @default)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -811,10 +818,7 @@ public static class RoutePatternFactory
         object? @default,
         RoutePatternParameterKind parameterKind)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -848,10 +852,7 @@ public static class RoutePatternFactory
         RoutePatternParameterKind parameterKind,
         IEnumerable<RoutePatternParameterPolicyReference> parameterPolicies)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -887,10 +888,7 @@ public static class RoutePatternFactory
         RoutePatternParameterKind parameterKind,
         params RoutePatternParameterPolicyReference[] parameterPolicies)
     {
-        if (string.IsNullOrEmpty(parameterName))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
         if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
         {
@@ -919,6 +917,7 @@ public static class RoutePatternFactory
     {
         return ParameterPartCore(parameterName, @default, parameterKind, parameterPolicies, encodeSlashes: true);
     }
+#endif
 
     private static RoutePatternParameterPart ParameterPartCore(
         string parameterName,
@@ -977,6 +976,7 @@ public static class RoutePatternFactory
         return ParameterPolicyCore(constraint);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided constraint.
     /// </summary>
@@ -984,12 +984,10 @@ public static class RoutePatternFactory
     /// The constraint text, which will be resolved by <see cref="ParameterPolicyFactory"/>.
     /// </param>
     /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+#endif
     public static RoutePatternParameterPolicyReference Constraint(string constraint)
     {
-        if (string.IsNullOrEmpty(constraint))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(constraint));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(constraint);
 
         return ParameterPolicyCore(constraint);
     }
@@ -1008,6 +1006,7 @@ public static class RoutePatternFactory
         return ParameterPolicyCore(parameterPolicy);
     }
 
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePatternParameterPolicyReference"/> from the provided object.
     /// </summary>
@@ -1015,16 +1014,14 @@ public static class RoutePatternFactory
     /// The parameter policy text, which will be resolved by <see cref="ParameterPolicyFactory"/>.
     /// </param>
     /// <returns>The <see cref="RoutePatternParameterPolicyReference"/>.</returns>
+#endif
     public static RoutePatternParameterPolicyReference ParameterPolicy(string parameterPolicy)
     {
-        if (string.IsNullOrEmpty(parameterPolicy))
-        {
-            throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterPolicy));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(parameterPolicy);
 
         return ParameterPolicyCore(parameterPolicy);
     }
-
+#if !COMPONENTS
     /// <summary>
     /// Creates a <see cref="RoutePattern"/> that combines the specified patterns.
     /// </summary>
@@ -1138,6 +1135,7 @@ public static class RoutePatternFactory
 
         return combinedList;
     }
+#endif
 
     private static RoutePatternParameterPolicyReference ParameterPolicyCore(string parameterPolicy)
     {
@@ -1149,9 +1147,11 @@ public static class RoutePatternFactory
         return new RoutePatternParameterPolicyReference(parameterPolicy);
     }
 
+#if !COMPONENTS
     [RequiresUnreferencedCode(RouteValueDictionaryTrimmerWarning.Warning)]
     private static RouteValueDictionary? Wrap(object? values)
     {
         return values is null ? null : new RouteValueDictionary(values);
     }
+#endif
 }

@@ -25,12 +25,31 @@ public class WebAssemblyLocalizationTest : ServerTestBase<ToggleExecutionModeSer
     [InlineData("fr-FR", "Bonjour!")]
     public void CanSetCultureAndReadLocalizedResources(string culture, string message)
     {
-        Navigate($"{ServerPathBase}/?culture={culture}", noReload: false);
+        Navigate($"{ServerPathBase}/?culture={culture}");
 
         Browser.MountTestComponent<LocalizedText>();
 
         var cultureDisplay = Browser.Exists(By.Id("culture-name-display"));
         Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+
+        var messageDisplay = Browser.Exists(By.Id("message-display"));
+        Assert.Equal(message, messageDisplay.Text);
+    }
+
+    [Theory]
+    [InlineData("en-US", "fr-FR", "Bonjour!")]
+    [InlineData("fr-FR", "en-US", "Hello!")]
+    public void CanSetCultureAndDifferentiateBetweenCurrentAndUICulture(string culture, string cultureUI, string message)
+    {
+        Navigate($"{ServerPathBase}/?culture={culture}&cultureUI={cultureUI}");
+
+        Browser.MountTestComponent<LocalizedText>();
+
+        var cultureDisplay = Browser.Exists(By.Id("culture-name-display"));
+        Assert.Equal($"Culture is: {culture}", cultureDisplay.Text);
+
+        var cultureUIDisplay = Browser.Exists(By.Id("culture-ui-display"));
+        Assert.Equal($"CultureUI is: {cultureUI}", cultureUIDisplay.Text);
 
         var messageDisplay = Browser.Exists(By.Id("message-display"));
         Assert.Equal(message, messageDisplay.Text);

@@ -17,6 +17,13 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
     private readonly DefaultHttpContextFactory? _defaultHttpContextFactory;
     private readonly HostingApplicationDiagnostics _diagnostics;
 
+    // Internal for testing purposes only
+    internal bool SuppressActivityOpenTelemetryData
+    {
+        get => _diagnostics.SuppressActivityOpenTelemetryData;
+        set => _diagnostics.SuppressActivityOpenTelemetryData = value;
+    }
+
     public HostingApplication(
         RequestDelegate application,
         ILogger logger,
@@ -144,7 +151,8 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
 
         public long StartTimestamp { get; set; }
         internal bool HasDiagnosticListener { get; set; }
-        public bool EventLogOrMetricsEnabled { get; set; }
+        public bool MetricsEnabled { get; set; }
+        public bool EventLogEnabled { get; set; }
 
         internal HttpActivityFeature? HttpActivityFeature;
         internal HttpMetricsTagsFeature? MetricsTagsFeature;
@@ -159,8 +167,9 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
 
             StartTimestamp = 0;
             HasDiagnosticListener = false;
-            EventLogOrMetricsEnabled = false;
-            MetricsTagsFeature?.TagsList.Clear();
+            MetricsEnabled = false;
+            EventLogEnabled = false;
+            MetricsTagsFeature?.Reset();
         }
     }
 }

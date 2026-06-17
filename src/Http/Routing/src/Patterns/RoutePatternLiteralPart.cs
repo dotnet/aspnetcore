@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -6,11 +6,15 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Routing.Patterns;
 
 /// <summary>
-/// Resprents a literal text part of a route pattern. Instances of <see cref="RoutePatternLiteralPart"/>
+/// Represents a literal text part of a route pattern. Instances of <see cref="RoutePatternLiteralPart"/>
 /// are immutable.
 /// </summary>
 [DebuggerDisplay("{DebuggerToString()}")]
+#if !COMPONENTS
 public sealed class RoutePatternLiteralPart : RoutePatternPart
+#else
+internal sealed class RoutePatternLiteralPart : RoutePatternPart
+#endif
 {
     internal RoutePatternLiteralPart(string content)
         : base(RoutePatternPartKind.Literal)

@@ -40,4 +40,9 @@ public sealed class RouteData
     /// Gets route parameter values extracted from the matched route.
     /// </summary>
     public IReadOnlyDictionary<string, object?> RouteValues { get; }
+
+    /// <summary>
+    /// Gets the route template that was used to match the route if any.
+    /// </summary>
+    public string? Template { get; set; }
 }

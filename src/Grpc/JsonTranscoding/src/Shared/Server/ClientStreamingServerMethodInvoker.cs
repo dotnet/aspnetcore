@@ -16,6 +16,7 @@
 
 #endregion
 
+using System.Diagnostics.CodeAnalysis;
 using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Grpc.Core;
@@ -29,7 +30,7 @@ namespace Grpc.Shared.Server;
 /// <typeparam name="TService">Service type for this method.</typeparam>
 /// <typeparam name="TRequest">Request message type for this method.</typeparam>
 /// <typeparam name="TResponse">Response message type for this method.</typeparam>
-internal sealed class ClientStreamingServerMethodInvoker<TService, TRequest, TResponse> : ServerMethodInvokerBase<TService, TRequest, TResponse>
+internal sealed class ClientStreamingServerMethodInvoker<[DynamicallyAccessedMembers(ServerDynamicAccessConstants.ServiceAccessibility)] TService, TRequest, TResponse> : ServerMethodInvokerBase<TService, TRequest, TResponse>
     where TRequest : class
     where TResponse : class
     where TService : class
@@ -44,18 +45,20 @@ internal sealed class ClientStreamingServerMethodInvoker<TService, TRequest, TRe
     /// <param name="method">The description of the gRPC method.</param>
     /// <param name="options">The options used to execute the method.</param>
     /// <param name="serviceActivator">The service activator used to create service instances.</param>
+    /// <param name="interceptorActivators">The interceptor activators used to create interceptor instances.</param>
     public ClientStreamingServerMethodInvoker(
         ClientStreamingServerMethod<TService, TRequest, TResponse> invoker,
         Method<TRequest, TResponse> method,
         MethodOptions options,
-        IGrpcServiceActivator<TService> serviceActivator)
+        IGrpcServiceActivator<TService> serviceActivator,
+        InterceptorActivators interceptorActivators)
         : base(method, options, serviceActivator)
     {
         _invoker = invoker;
 
         if (Options.HasInterceptors)
         {
-            var interceptorPipeline = new InterceptorPipelineBuilder<TRequest, TResponse>(Options.Interceptors);
+            var interceptorPipeline = new InterceptorPipelineBuilder<TRequest, TResponse>(Options.Interceptors, interceptorActivators);
             _pipelineInvoker = interceptorPipeline.ClientStreamingPipeline(ResolvedInterceptorInvoker);
         }
     }
@@ -65,7 +68,7 @@ internal sealed class ClientStreamingServerMethodInvoker<TService, TRequest, TRe
         GrpcActivatorHandle<TService> serviceHandle = default;
         try
         {
-            serviceHandle = ServiceActivator.Create(resolvedContext.GetHttpContext().RequestServices);
+            serviceHandle = CreateServiceHandle(resolvedContext);
             return await _invoker(
                 serviceHandle.Instance,
                 requestStream,
@@ -95,7 +98,7 @@ internal sealed class ClientStreamingServerMethodInvoker<TService, TRequest, TRe
             GrpcActivatorHandle<TService> serviceHandle = default;
             try
             {
-                serviceHandle = ServiceActivator.Create(httpContext.RequestServices);
+                serviceHandle = CreateServiceHandle(httpContext);
                 return await _invoker(
                     serviceHandle.Instance,
                     requestStream,

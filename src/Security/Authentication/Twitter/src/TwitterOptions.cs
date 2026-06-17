@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http;
@@ -105,15 +104,8 @@ public class TwitterOptions : RemoteAuthenticationOptions
     public override void Validate()
     {
         base.Validate();
-        if (string.IsNullOrEmpty(ConsumerKey))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(ConsumerKey)), nameof(ConsumerKey));
-        }
-
-        if (string.IsNullOrEmpty(ConsumerSecret))
-        {
-            throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Exception_OptionMustBeProvided, nameof(ConsumerSecret)), nameof(ConsumerSecret));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(ConsumerKey);
+        ArgumentException.ThrowIfNullOrEmpty(ConsumerSecret);
     }
 
     private sealed class TwitterCookieBuilder : CookieBuilder

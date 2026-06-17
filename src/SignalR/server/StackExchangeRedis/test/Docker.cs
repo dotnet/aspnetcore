@@ -16,7 +16,8 @@ public class Docker
 {
     private static readonly string _exeSuffix = OperatingSystem.IsWindows() ? ".exe" : string.Empty;
 
-    private static readonly string _dockerContainerName = "redisTestContainer";
+    private static readonly string _redisImageName = "dotnetdhmirror-f8bzbjakh8cga6ab.azurecr.io/library/redis:7.4";
+    private static readonly string _dockerContainerName = "redisTestContainer74";
     private static readonly string _dockerMonitorContainerName = _dockerContainerName + "Monitor";
     private static readonly Lazy<Docker> _instance = new Lazy<Docker>(Create);
 
@@ -112,7 +113,7 @@ public class Docker
             // use static name 'redisTestContainer' so if the container doesn't get removed we don't keep adding more
             // use redis base docker image
             // 30 second timeout to allow redis image to be downloaded, should be a rare occurrence, only happening when a new version is released
-            RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", "redis", logger, TimeSpan.FromMinutes(1));
+            RunProcessAndThrowIfFailed(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d {_redisImageName}", "redis", logger, TimeSpan.FromMinutes(1));
         }
     }
 

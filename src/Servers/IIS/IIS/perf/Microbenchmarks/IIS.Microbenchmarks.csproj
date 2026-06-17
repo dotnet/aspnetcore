@@ -37,7 +37,6 @@
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <Reference Include="System.Private.Uri" />
 
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
   </ItemGroup>

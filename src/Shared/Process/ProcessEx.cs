@@ -49,6 +49,11 @@ internal sealed class ProcessEx : IDisposable
         proc.BeginOutputReadLine();
         proc.BeginErrorReadLine();
 
+        if (proc.HasExited)
+        {
+            OnProcessExited();
+        }
+
         // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
         // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
         // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.
@@ -171,7 +176,7 @@ internal sealed class ProcessEx : IDisposable
         _stdoutLines?.Add(e.Data);
     }
 
-    private void OnProcessExited(object sender, EventArgs e)
+    private void OnProcessExited(object sender = null, EventArgs e = null)
     {
         lock (_testOutputLock)
         {
@@ -182,7 +187,7 @@ internal sealed class ProcessEx : IDisposable
         }
         // Don't remove this line - There is a race condition where the process exits and we grab the output before the stdout/stderr completed writing.
         _process.WaitForExit();
-        _stdoutLines.CompleteAdding();
+        _stdoutLines?.CompleteAdding();
         _stdoutLines = null;
         _exited.TrySetResult(_process.ExitCode);
     }

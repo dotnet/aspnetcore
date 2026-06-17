@@ -160,7 +160,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
             methodNode = delegateExpression;
 
             // Incomplete inline delegate syntax is very messy and arguments are mixed together.
-            // Examine tokens to figure out wether the current token is the argument name.
+            // Examine tokens to figure out whether the current token is the argument name.
             var previous = token.GetPreviousToken();
             if (previous.IsKind(SyntaxKind.CommaToken) ||
                 previous.IsKind(SyntaxKind.OpenParenToken) ||
@@ -263,7 +263,7 @@ public sealed class FrameworkParametersCompletionProvider : CompletionProvider
 
             if (change.NewPosition != null)
             {
-                properties.Add(NewPositionKey, change.NewPosition.ToString());
+                properties.Add(NewPositionKey, change.NewPosition.Value.ToString(CultureInfo.InvariantCulture));
             }
 
             // Keep everything sorted in the order we just produced the items in.

@@ -7,7 +7,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
@@ -95,7 +94,7 @@ internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser
     private readonly UserManager<TUser> _userManager;
     private readonly IUserStore<TUser> _userStore;
     private readonly IUserEmailStore<TUser> _emailStore;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailSender<TUser> _emailSender;
     private readonly ILogger<ExternalLoginModel> _logger;
 
     public ExternalLoginModel(
@@ -103,7 +102,7 @@ internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser
         UserManager<TUser> userManager,
         IUserStore<TUser> userStore,
         ILogger<ExternalLoginModel> logger,
-        IEmailSender emailSender)
+        IEmailSender<TUser> emailSender)
     {
         _signInManager = signInManager;
         _userManager = userManager;
@@ -206,8 +205,7 @@ internal sealed class ExternalLoginModel<TUser> : ExternalLoginModel where TUser
                         values: new { area = "Identity", userId = userId, code = code },
                         protocol: Request.Scheme)!;
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    await _emailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
 
                     // If account confirmation is required, we need to show the link if we don't have a real email sender
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)

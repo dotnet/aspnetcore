@@ -1,4 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.AuthenticationFailureException
-Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message) -> void
-Microsoft.AspNetCore.Authentication.AuthenticationFailureException.AuthenticationFailureException(string? message, System.Exception? innerException) -> void

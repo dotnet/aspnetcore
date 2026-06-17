@@ -1,23 +1,29 @@
 <!--
 
   This file defines the versions of external dependencies used by ASP.NET Core.
-  This file might be updated by automation.
 
 -->
 <Project>
+
+  <Import Project="Version.Details.props" />
+
   <PropertyGroup Label="Version settings">
-    <AspNetCoreMajorVersion>8</AspNetCoreMajorVersion>
+    <AspNetCoreMajorVersion>11</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseVersionIteration>7</PreReleaseVersionIteration>
-    <ValidateBaseline>true</ValidateBaseline>
-    <!--
-        When StabilizePackageVersion is set to 'true', this branch will produce stable outputs for 'Shipping' packages
-    -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
-    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+    <PreReleaseVersionIteration>6</PreReleaseVersionIteration>
+    <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">8.0.1</IdentityModelVersion>
+    <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">*-*</IdentityModelVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel>Preview $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
+    <DotNetFinalVersionKind></DotNetFinalVersionKind>
+
+    <!-- PreReleaseBrandingLabel is automatically calculated based on PreReleaseVersionLabel -->
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'alpha'">Alpha $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'preview'">Preview $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'rc'">RC $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'rtm'">RTM</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'servicing'">Servicing</PreReleaseBrandingLabel>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
@@ -41,297 +47,165 @@
       src\Components\WebAssembly\Sdk\testassets\Directory.Build.props, and
       src\Razor\test\testassets\Directory.Build.props when this changes.
     -->
-    <DefaultNetCoreTargetFramework>net8.0</DefaultNetCoreTargetFramework>
+    <DefaultNetCoreTargetFramework>net11.0</DefaultNetCoreTargetFramework>
+    <!-- this should usually match for LTS builds, and be off-by-one otherwise;
+      example use-case here is OOB packages where Aspire wants to be able to consume
+      new features specific to OOB -->
+    <CurrentLtsTargetFramework>net10.0</CurrentLtsTargetFramework>
   </PropertyGroup>
+
   <PropertyGroup Label="Arcade settings">
     <!-- Opt-in to Arcade tools for building VSIX projects. -->
     <UsingToolVSSDK>true</UsingToolVSSDK>
-    <!-- Only use Microsoft.NETFramework.ReferenceAssemblies on non-windows builds. Using this on Windows breaks MVC runtime compilation. -->
-    <UsingToolNetFrameworkReferenceAssemblies Condition="'$(OS)' != 'Windows_NT'">true</UsingToolNetFrameworkReferenceAssemblies>
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
+    <!-- Allow missing prune package data when not targeting the current .NET version -->
+    <AllowMissingPrunePackageData Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</AllowMissingPrunePackageData>
   </PropertyGroup>
+
   <!--
-
-    These versions should ONLY be updated by automation.
-
-    DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
-    Version.Details.xml.
-
-    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
-
-  -->
-  <PropertyGroup Label="Automated">
-    <!-- Packages from dotnet/runtime -->
-    <MicrosoftExtensionsDependencyModelVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsDependencyModelVersion>
-    <MicrosoftNETCoreAppRefVersion>8.0.0-preview.7.23326.5</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETCoreAppRuntimewinx64Version>8.0.0-preview.7.23326.5</MicrosoftNETCoreAppRuntimewinx64Version>
-    <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>8.0.0-preview.7.23326.5</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
-    <MicrosoftNETRuntimeWebAssemblySdkVersion>8.0.0-preview.7.23326.5</MicrosoftNETRuntimeWebAssemblySdkVersion>
-    <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>8.0.0-preview.7.23326.5</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportVersion>8.0.0-preview.7.23326.5</MicrosoftNETCoreBrowserDebugHostTransportVersion>
-    <MicrosoftExtensionsCachingAbstractionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsCachingAbstractionsVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationBinderVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationBinderVersion>
-    <MicrosoftExtensionsConfigurationCommandLineVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationCommandLineVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationIniVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationIniVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsConfigurationVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationUserSecretsVersion>
-    <MicrosoftExtensionsConfigurationXmlVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsConfigurationXmlVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDiagnosticsAbstractionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsDiagnosticsAbstractionsVersion>
-    <MicrosoftExtensionsDiagnosticsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsDiagnosticsVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersCompositeVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsFileProvidersCompositeVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsFileProvidersPhysicalVersion>
-    <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsHostingVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsHostingVersion>
-    <MicrosoftExtensionsHttpVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConfigurationVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingConfigurationVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsLoggingEventSourceVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingEventSourceVersion>
-    <MicrosoftExtensionsLoggingEventLogVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingEventLogVersion>
-    <MicrosoftExtensionsLoggingVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingTraceSourceVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsLoggingTraceSourceVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
-    <MicrosoftExtensionsOptionsDataAnnotationsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsOptionsDataAnnotationsVersion>
-    <MicrosoftExtensionsOptionsVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsOptionsVersion>
-    <MicrosoftExtensionsPrimitivesVersion>8.0.0-preview.7.23326.5</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>8.0.0-preview.7.23326.5</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
-    <SystemConfigurationConfigurationManagerVersion>8.0.0-preview.7.23326.5</SystemConfigurationConfigurationManagerVersion>
-    <SystemDiagnosticsDiagnosticSourceVersion>8.0.0-preview.7.23326.5</SystemDiagnosticsDiagnosticSourceVersion>
-    <SystemDiagnosticsEventLogVersion>8.0.0-preview.7.23326.5</SystemDiagnosticsEventLogVersion>
-    <SystemDirectoryServicesProtocolsVersion>8.0.0-preview.7.23326.5</SystemDirectoryServicesProtocolsVersion>
-    <SystemIOPipelinesVersion>8.0.0-preview.7.23326.5</SystemIOPipelinesVersion>
-    <SystemNetHttpJsonVersion>8.0.0-preview.7.23326.5</SystemNetHttpJsonVersion>
-    <SystemNetHttpWinHttpHandlerVersion>8.0.0-preview.7.23326.5</SystemNetHttpWinHttpHandlerVersion>
-    <SystemReflectionMetadataVersion>8.0.0-preview.7.23326.5</SystemReflectionMetadataVersion>
-    <SystemResourcesExtensionsVersion>8.0.0-preview.7.23326.5</SystemResourcesExtensionsVersion>
-    <SystemSecurityCryptographyPkcsVersion>8.0.0-preview.7.23326.5</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>8.0.0-preview.7.23326.5</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>8.0.0-preview.7.23326.5</SystemSecurityPermissionsVersion>
-    <SystemServiceProcessServiceControllerVersion>8.0.0-preview.7.23326.5</SystemServiceProcessServiceControllerVersion>
-    <SystemTextEncodingsWebVersion>8.0.0-preview.7.23326.5</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>8.0.0-preview.7.23326.5</SystemTextJsonVersion>
-    <SystemThreadingAccessControlVersion>8.0.0-preview.7.23326.5</SystemThreadingAccessControlVersion>
-    <SystemThreadingChannelsVersion>8.0.0-preview.7.23326.5</SystemThreadingChannelsVersion>
-    <SystemThreadingRateLimitingVersion>8.0.0-preview.7.23326.5</SystemThreadingRateLimitingVersion>
-    <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <MicrosoftNETCorePlatformsVersion>8.0.0-preview.7.23326.5</MicrosoftNETCorePlatformsVersion>
-    <MicrosoftBclAsyncInterfacesVersion>8.0.0-preview.7.23326.5</MicrosoftBclAsyncInterfacesVersion>
-    <!-- Transitive package to provide coherency in dotnet/extensions -->
-    <MicrosoftBclTimeProviderVersion>8.0.0-preview.7.23326.5</MicrosoftBclTimeProviderVersion>
-    <SystemCollectionsImmutableVersion>8.0.0-preview.7.23326.5</SystemCollectionsImmutableVersion>
-    <SystemDiagnosticsPerformanceCounterVersion>8.0.0-preview.7.23326.5</SystemDiagnosticsPerformanceCounterVersion>
-    <SystemIOHashingVersion>8.0.0-preview.7.23326.5</SystemIOHashingVersion>
-    <SystemRuntimeCachingVersion>8.0.0-preview.7.23326.5</SystemRuntimeCachingVersion>
-    <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsTelemetryTestingVersion>8.0.0-preview.7.23326.2</MicrosoftExtensionsTelemetryTestingVersion>
-    <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>8.0.0-preview.7.23327.3</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>8.0.0-preview.7.23327.3</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>8.0.0-preview.7.23327.3</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>8.0.0-preview.7.23327.3</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>8.0.0-preview.7.23327.3</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>8.0.0-preview.7.23327.3</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>8.0.0-preview.7.23327.3</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>8.0.0-preview.7.23327.3</MicrosoftEntityFrameworkCoreDesignVersion>
-    <!-- Packages from dotnet/roslyn -->
-    <MicrosoftCodeAnalysisCommonVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCommonVersion>
-    <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
-    <MicrosoftCodeAnalysisCSharpVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
-    <!-- Packages from NuGet/Nuget.client -->
-    <!-- If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline.xml -->
-    <NuGetPackagingVersion>6.2.4</NuGetPackagingVersion>
-    <NuGetVersioningVersion>6.2.4</NuGetVersioningVersion>
-    <NuGetFrameworksVersion>6.2.4</NuGetFrameworksVersion>
-    <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersVersion>8.0.0-beta.23322.2</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>8.0.0-beta.23322.2</MicrosoftDotNetBuildTasksTemplatingVersion>
-    <MicrosoftDotNetRemoteExecutorVersion>8.0.0-beta.23322.2</MicrosoftDotNetRemoteExecutorVersion>
-    <!-- Packages from dotnet/source-link -->
-    <MicrosoftSourceLinkGitHubVersion>8.0.0-beta.23314.2</MicrosoftSourceLinkGitHubVersion>
-    <!-- Packages from dotnet/source-build-externals -->
-    <MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>8.0.0-alpha.1.23319.1</MicrosoftSourceBuildIntermediatesourcebuildexternalsVersion>
-    <!-- Packages from dotnet/source-build-reference-packages -->
-    <MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>8.0.0-alpha.1.23326.1</MicrosoftSourceBuildIntermediatesourcebuildreferencepackagesVersion>
-    <!-- Packages from dotnet/xdt -->
-    <MicrosoftWebXdtVersion>7.0.0-preview.22423.2</MicrosoftWebXdtVersion>
-  </PropertyGroup>
-  <!--
-
-    ^^^^^^^^^^
-    SEE NOTE ABOVE.
-
-    Versions above this comment are updated automatically. Don't change them manually.
-
     Versions below this comment are not managed by automation and can be changed as needed.
   -->
-  <PropertyGroup Label="Dependency version settings">
-    <!--
-      Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
-      All Runtime.$rid packages should have the same version.
-    -->
-    <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64Version)</MicrosoftNETCoreAppRuntimeVersion>
-  </PropertyGroup>
   <PropertyGroup Label="Manual">
+    <!-- Dependencies from maintenance-packages -->
+    <MicrosoftBCLHashCodeVersion>6.0.0</MicrosoftBCLHashCodeVersion>
+    <MicrosoftIoRedistVersion>6.1.3</MicrosoftIoRedistVersion>
+    <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
+    <SystemMemoryVersion>4.6.3</SystemMemoryVersion>
+    <SystemThreadingTasksExtensionsVersion>4.6.3</SystemThreadingTasksExtensionsVersion>
+    <SystemValueTupleVersion>4.6.2</SystemValueTupleVersion>
     <!-- DiagnosticAdapter package pinned temporarily (??) until migrated/deprecated -->
     <!-- This is the latest version found in dotnet-public. -->
     <MicrosoftExtensionsDiagnosticAdapterVersion>5.0.0-preview.3.20215.2</MicrosoftExtensionsDiagnosticAdapterVersion>
     <!-- Build tool dependencies -->
     <MicrosoftVSSDKBuildToolsVersion>15.9.3032</MicrosoftVSSDKBuildToolsVersion>
-    <!-- Manually updated version from 6.0.0 to address CVE-2021-43877 -->
-    <RepoTasksSystemSecurityCryptographyXmlVersion>6.0.1</RepoTasksSystemSecurityCryptographyXmlVersion>
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <MicrosoftCSharpVersion>4.7.0</MicrosoftCSharpVersion>
     <MicrosoftWin32RegistryVersion>5.0.0</MicrosoftWin32RegistryVersion>
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
-    <SystemBuffersVersion>4.5.0</SystemBuffersVersion>
     <SystemCodeDomVersion>4.4.0</SystemCodeDomVersion>
     <SystemCommandlineExperimentalVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalVersion>
     <SystemComponentModelVersion>4.3.0</SystemComponentModelVersion>
     <SystemNetHttpVersion>4.3.4</SystemNetHttpVersion>
     <SystemNetSocketsVersion>4.3.0</SystemNetSocketsVersion>
-    <SystemPrivateUriVersion>4.3.2</SystemPrivateUriVersion>
     <SystemSecurityCryptographyX509CertificatesVersion>4.3.2</SystemSecurityCryptographyX509CertificatesVersion>
     <SystemRuntimeInteropServicesRuntimeInformationVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationVersion>
-    <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
-    <SystemValueTupleVersion>4.5.0</SystemValueTupleVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->
     <MicrosoftAspNetWebApiClientVersion>5.2.6</MicrosoftAspNetWebApiClientVersion>
     <MicrosoftAspNetCoreRazorLanguageVersion>6.0.0</MicrosoftAspNetCoreRazorLanguageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsVersion>6.0.0</MicrosoftAspNetCoreMvcRazorExtensionsVersion>
     <MicrosoftCodeAnalysisRazorVersion>6.0.0</MicrosoftCodeAnalysisRazorVersion>
     <!-- Partner teams -->
-    <MicrosoftBCLHashCodeVersion>1.1.1</MicrosoftBCLHashCodeVersion>
-    <MicrosoftBuildVersion>17.4.0</MicrosoftBuildVersion>
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
-    <MicrosoftBuildFrameworkVersion>17.4.0</MicrosoftBuildFrameworkVersion>
-    <MicrosoftBuildTasksCoreVersion>17.4.0</MicrosoftBuildTasksCoreVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>17.4.0</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>17.4.0</MicrosoftBuildUtilitiesCoreVersion>
-    <!--
-      Temporarily override the Microsoft.NET.Test.Sdk version Arcade defaults to. That's incompatible w/ test
-      framework in current .NET SDKs.
-    -->
-    <MicrosoftNETTestSdkVersion>17.1.0-preview-20211109-03</MicrosoftNETTestSdkVersion>
-    <!--
-      Also use a newer, publicly-released version of the templating engine than the Arcade default.
-      https://github.com/dotnet/templating/blob/main/docs/Localization.md recommends updating the version when
-      preview or stable versions are released to NuGet.org.
-    -->
-    <MicrosoftTemplateEngineAuthoringTasksVersion>8.0.100-alpha.1.22607.1</MicrosoftTemplateEngineAuthoringTasksVersion>
     <!--
       Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
       This need to be pinned since they're used in 3.1 apps and need to be loadable in VS 2019.
-      If you update these versions, make sure to also update https://github.com/dotnet/aspnetcore/blob/main/eng/SourceBuildPrebuiltBaseline.xml
     -->
     <Analyzer_MicrosoftCodeAnalysisCSharpVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpVersion>
     <Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>3.3.1</Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion>
-    <!-- Pin the version of the M.CA dependencies that we utilize with a cutom version property $(MicrosoftCodeAnalysisVersion_LatestVS) to avoid automatically
+    <!-- Pin the version of the M.CA dependencies that we utilize with a custom version property $(MicrosoftCodeAnalysisVersion_LatestVS) to avoid automatically
     consuming the newest version of the packages when using the $(MicrosoftCodeAnalysisCSharpVersion) properties in source-build. -->
-    <MicrosoftCodeAnalysisVersion_LatestVS>4.5.0</MicrosoftCodeAnalysisVersion_LatestVS>
-    <MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisExternalAccessAspNetCoreVersion>
-    <MicrosoftCodeAnalysisCommonVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCommonVersion>
-    <MicrosoftCodeAnalysisCSharpVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesVersion>4.4.0-4.22520.2</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
+    <MicrosoftCodeAnalysisVersion_LatestVS>4.13.0-3.24613.7</MicrosoftCodeAnalysisVersion_LatestVS>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.3</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
-    <MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>1.1.2-beta1.22531.1</MicrosoftCodeAnalysisCSharpAnalyzerTestingXUnitVersion>
-    <MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>1.1.2-beta1.22531.1</MicrosoftCodeAnalysisCSharpCodeFixTestingXUnitVersion>
+    <MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpAnalyzerTestingVersion>
+    <MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpCodeFixTestingVersion>
+    <MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>1.1.2</MicrosoftCodeAnalysisCSharpSourceGeneratorsTestingVersion>
+    <!-- Specifies the version of Roslyn that should be referenced by source generators.
+         This gets overriden by source-build, separately from MicrosoftCodeAnalysisVersion_LatestVS. -->
+    <MicrosoftCodeAnalysisSourceGeneratorVersion>$(MicrosoftCodeAnalysisVersion_LatestVS)</MicrosoftCodeAnalysisSourceGeneratorVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
-    <MicrosoftIdentityModelLoggingVersion>6.15.1</MicrosoftIdentityModelLoggingVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>6.15.1</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
-    <MicrosoftIdentityModelProtocolsWsFederationVersion>6.15.1</MicrosoftIdentityModelProtocolsWsFederationVersion>
+    <MicrosoftIdentityModelLoggingVersion>$(IdentityModelVersion)</MicrosoftIdentityModelLoggingVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsOpenIdConnectVersion>
+    <MicrosoftIdentityModelProtocolsWsFederationVersion>$(IdentityModelVersion)</MicrosoftIdentityModelProtocolsWsFederationVersion>
     <MicrosoftInternalAspNetCoreH2SpecAllVersion>2.2.1</MicrosoftInternalAspNetCoreH2SpecAllVersion>
     <MicrosoftNETCoreWindowsApiSetsVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsVersion>
     <MicrosoftOwinSecurityCookiesVersion>3.0.1</MicrosoftOwinSecurityCookiesVersion>
     <MicrosoftOwinTestingVersion>3.0.1</MicrosoftOwinTestingVersion>
     <MicrosoftWebAdministrationVersion>11.1.0</MicrosoftWebAdministrationVersion>
-    <SystemIdentityModelTokensJwtVersion>6.21.0</SystemIdentityModelTokensJwtVersion>
+    <SystemIdentityModelTokensJwtVersion>$(IdentityModelVersion)</SystemIdentityModelTokensJwtVersion>
     <SystemComponentModelAnnotationsVersion>5.0.0</SystemComponentModelAnnotationsVersion>
     <SystemNetExperimentalMsQuicVersion>5.0.0-alpha.20560.6</SystemNetExperimentalMsQuicVersion>
     <SystemSecurityPrincipalWindowsVersion>5.0.0</SystemSecurityPrincipalWindowsVersion>
     <!-- Packages from downlevel branches used for site extension build. -->
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>3.1.32-servicing-22566-10</MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>5.0.17-servicing-22215-7</MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x64Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension50Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension50x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>6.0.18-servicing-23269-9</MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x64Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension60Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension60x86Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version>7.0.7-servicing-23274-8</MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension70x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension70x64Version>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension70x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension70Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension70x86Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version>8.0.0-rtm-23531-12</MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x64Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension80Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension80x86Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version>9.0.0-rtm-24529-3</MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension90x64Version>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension90Version)</MicrosoftAspNetCoreAzureAppServicesSiteExtension90x86Version>
     <!-- 3rd party dependencies -->
+    <AzureIdentityVersion>1.11.4</AzureIdentityVersion>
     <AngleSharpVersion>0.9.9</AngleSharpVersion>
     <BenchmarkDotNetVersion>0.13.0</BenchmarkDotNetVersion>
-    <CastleCoreVersion>4.2.1</CastleCoreVersion>
+    <CastleCoreVersion>5.2.1</CastleCoreVersion>
     <CommandLineParserVersion>2.3.0</CommandLineParserVersion>
     <FSharpCoreVersion>6.0.0</FSharpCoreVersion>
-    <GoogleApiCommonProtosVersion>2.5.0</GoogleApiCommonProtosVersion>
-    <GoogleProtobufVersion>3.22.0</GoogleProtobufVersion>
-    <GrpcAspNetCoreVersion>2.52.0</GrpcAspNetCoreVersion>
-    <GrpcAspNetCoreServerVersion>2.52.0</GrpcAspNetCoreServerVersion>
-    <GrpcAuthVersion>2.52.0</GrpcAuthVersion>
-    <GrpcNetClientVersion>2.52.0</GrpcNetClientVersion>
-    <GrpcToolsVersion>2.52.0</GrpcToolsVersion>
-    <DuendeIdentityServerAspNetIdentityVersion>6.0.4</DuendeIdentityServerAspNetIdentityVersion>
-    <DuendeIdentityServerEntityFrameworkVersion>6.0.4</DuendeIdentityServerEntityFrameworkVersion>
-    <DuendeIdentityServerVersion>6.0.4</DuendeIdentityServerVersion>
-    <DuendeIdentityServerStorageVersion>6.0.4</DuendeIdentityServerStorageVersion>
-    <DuendeIdentityServerEntityFrameworkStorageVersion>6.0.4</DuendeIdentityServerEntityFrameworkStorageVersion>
-    <MessagePackVersion>2.5.108</MessagePackVersion>
-    <MicrosoftIdentityWebVersion>2.10.0</MicrosoftIdentityWebVersion>
-    <MicrosoftIdentityWebMicrosoftGraphVersion>2.10.0</MicrosoftIdentityWebMicrosoftGraphVersion>
-    <MicrosoftIdentityWebUIVersion>2.10.0</MicrosoftIdentityWebUIVersion>
-    <MicrosoftIdentityWebDownstreamApiVersion>2.10.0</MicrosoftIdentityWebDownstreamApiVersion>
+    <GoogleApiCommonProtosVersion>2.15.0</GoogleApiCommonProtosVersion>
+    <GoogleProtobufVersion>3.27.0</GoogleProtobufVersion>
+    <GrpcAspNetCoreVersion>2.64.0</GrpcAspNetCoreVersion>
+    <GrpcAspNetCoreServerVersion>2.64.0</GrpcAspNetCoreServerVersion>
+    <GrpcAuthVersion>2.64.0</GrpcAuthVersion>
+    <GrpcNetClientVersion>2.64.0</GrpcNetClientVersion>
+    <GrpcToolsVersion>2.64.0</GrpcToolsVersion>
+    <MessagePackVersion>2.5.302</MessagePackVersion>
+    <!-- Extensions packages for Blazor WASM Service Defaults -->
+    <MicrosoftExtensionsHttpResilienceVersion>10.0.0</MicrosoftExtensionsHttpResilienceVersion>
+    <MicrosoftIdentityWebVersion>3.15.1</MicrosoftIdentityWebVersion>
+    <MicrosoftIdentityWebGraphServiceClientVersion>3.15.1</MicrosoftIdentityWebGraphServiceClientVersion>
+    <MicrosoftIdentityWebUIVersion>3.15.1</MicrosoftIdentityWebUIVersion>
+    <MicrosoftIdentityWebDownstreamApiVersion>3.15.1</MicrosoftIdentityWebDownstreamApiVersion>
+    <MicrosoftWindowsCsWin32Version>0.3.275</MicrosoftWindowsCsWin32Version>
     <MessagePackAnalyzerVersion>$(MessagePackVersion)</MessagePackAnalyzerVersion>
-    <MoqVersion>4.10.0</MoqVersion>
+    <ModelContextProtocolVersion>1.2.0</ModelContextProtocolVersion>
+    <ModelContextProtocolAspNetCoreVersion>$(ModelContextProtocolVersion)</ModelContextProtocolAspNetCoreVersion>
+    <MoqVersion>4.20.72</MoqVersion>
     <MonoCecilVersion>0.11.2</MonoCecilVersion>
     <MonoTextTemplatingVersion>2.2.1</MonoTextTemplatingVersion>
     <NewtonsoftJsonBsonVersion>1.0.2</NewtonsoftJsonBsonVersion>
-    <NewtonsoftJsonVersion>13.0.1</NewtonsoftJsonVersion>
+    <NewtonsoftJsonVersion>13.0.4</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
-    <PhotinoNETVersion>1.1.6</PhotinoNETVersion>
-    <MicrosoftPlaywrightVersion>1.28.0</MicrosoftPlaywrightVersion>
+    <!-- OpenTelemetry packages for Blazor WASM Service Defaults -->
+    <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.15.3</OpenTelemetryExporterOpenTelemetryProtocolVersion>
+    <OpenTelemetryExtensionsHostingVersion>1.15.3</OpenTelemetryExtensionsHostingVersion>
+    <OpenTelemetryInstrumentationHttpVersion>1.15.1</OpenTelemetryInstrumentationHttpVersion>
+    <OpenTelemetryInstrumentationAspNetCoreVersion>1.15.1</OpenTelemetryInstrumentationAspNetCoreVersion>
+    <OpenTelemetryInstrumentationRuntimeVersion>1.15.1</OpenTelemetryInstrumentationRuntimeVersion>
+    <PhotinoNETVersion>2.5.2</PhotinoNETVersion>
+    <MicrosoftPlaywrightVersion>1.60.0</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.2.4</PollyVersion>
-    <SeleniumSupportVersion>4.10.0</SeleniumSupportVersion>
-    <SeleniumWebDriverChromeDriverVersion>114.0.5735.9000</SeleniumWebDriverChromeDriverVersion>
-    <SeleniumWebDriverVersion>4.10.0</SeleniumWebDriverVersion>
+    <SeleniumSupportVersion>4.44.0</SeleniumSupportVersion>
+    <SeleniumWebDriverVersion>4.44.0</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
-    <StackExchangeRedisVersion>2.6.90</StackExchangeRedisVersion>
+    <SharpFuzzVersion>2.2.0</SharpFuzzVersion>
+    <StackExchangeRedisVersion>2.7.27</StackExchangeRedisVersion>
     <SystemReactiveLinqVersion>5.0.0</SystemReactiveLinqVersion>
-    <SwashbuckleAspNetCoreVersion>6.4.0</SwashbuckleAspNetCoreVersion>
+    <SwashbuckleAspNetCoreVersion>6.6.2</SwashbuckleAspNetCoreVersion>
+    <VerifySourceGeneratorsVersion>2.2.0</VerifySourceGeneratorsVersion>
+    <VerifyXunitVersion>19.14.0</VerifyXunitVersion>
     <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
-    <XunitAnalyzersVersion>1.0.0</XunitAnalyzersVersion>
-    <XunitVersion>2.4.2</XunitVersion>
+    <XunitAnalyzersVersion>1.15.0</XunitAnalyzersVersion>
+    <XunitVersion>2.9.2</XunitVersion>
     <XunitAssertVersion>$(XunitVersion)</XunitAssertVersion>
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
-    <XUnitRunnerVisualStudioVersion>2.4.3</XUnitRunnerVisualStudioVersion>
-    <MicrosoftDataSqlClientVersion>4.0.1</MicrosoftDataSqlClientVersion>
-    <MicrosoftAspNetCoreAppVersion>6.0.0-preview.3.21167.1</MicrosoftAspNetCoreAppVersion>
-    <MicrosoftOpenApiVersion>1.4.3</MicrosoftOpenApiVersion>
+    <XUnitRunnerVisualStudioVersion>3.1.3</XUnitRunnerVisualStudioVersion>
+    <!-- xUnit v3 packages (used by Components.Testing E2E infrastructure) -->
+    <XunitV3Version>3.2.2</XunitV3Version>
+    <XunitV3ExtensibilityCoreVersion>$(XunitV3Version)</XunitV3ExtensibilityCoreVersion>
+    <MicrosoftPlaywrightXunitV3Version>1.58.0</MicrosoftPlaywrightXunitV3Version>
+    <!-- Components.Testing dependencies -->
+    <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
+    <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
+    <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
+    <MicrosoftOpenApiVersion>3.6.0</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>3.6.0</MicrosoftOpenApiYamlReaderVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
     <MicrosoftPlaywrightCLIVersion>1.2.3</MicrosoftPlaywrightCLIVersion>
   </PropertyGroup>
+
 </Project>

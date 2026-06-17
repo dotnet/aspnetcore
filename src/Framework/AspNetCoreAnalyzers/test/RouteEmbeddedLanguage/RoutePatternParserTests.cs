@@ -176,7 +176,7 @@ public partial class RoutePatternParserTests
 
                 // Ensure the diagnostic we emit is the same as the .NET one. Note: we can only
                 // do this in en as that's the only culture where we control the text exactly
-                // and can ensure it exactly matches RoutePattern. We depend on localization to do a 
+                // and can ensure it exactly matches RoutePattern. We depend on localization to do a
                 // good enough job here for other languages.
                 if (Thread.CurrentThread.CurrentCulture.Parent.Name == "en")
                 {
@@ -195,7 +195,7 @@ public partial class RoutePatternParserTests
         if (!tree.Diagnostics.IsEmpty && !allowDiagnosticsMismatch)
         {
             var expectedDiagnostics = CreateDiagnosticsElement(sourceText, tree);
-            Assert.False(true, $"Parsing '{token.ValueText}' didn't throw an error for expected diagnostics: \r\n" + expectedDiagnostics.ToString().Replace(@"""", @""""""));
+            Assert.Fail($"Parsing '{token.ValueText}' didn't throw an error for expected diagnostics: \r\n" + expectedDiagnostics.ToString().Replace(@"""", @""""""));
         }
 
         if (parsedRoutePatterns != null)

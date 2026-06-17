@@ -4,6 +4,7 @@
 using ApiExplorerWebSite.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Hosting;
 
 namespace ApiExplorerWebSite;
 
@@ -12,8 +13,6 @@ public class Startup
     // Set up application services
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddTransient<ILoggerFactory, LoggerFactory>();
-
         var wellKnownChangeToken = new WellKnownChangeToken();
         services.AddControllers(options =>
         {
@@ -47,17 +46,21 @@ public class Startup
 
     public static void Main(string[] args)
     {
-        var host = CreateWebHostBuilder(args)
+        using var host = CreateHostBuilder(args)
             .Build();
 
         host.Run();
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        new WebHostBuilder()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseKestrel()
-            .UseIISIntegration()
-            .UseStartup<Startup>();
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+            });
 }
 

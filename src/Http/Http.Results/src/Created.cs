@@ -81,6 +81,7 @@ public sealed class Created : IResult, IEndpointMetadataProvider, IStatusCodeHtt
         ArgumentNullException.ThrowIfNull(method);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created));
+        builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status201Created, typeof(void)));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

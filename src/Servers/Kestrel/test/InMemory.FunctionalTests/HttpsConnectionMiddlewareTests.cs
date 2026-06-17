@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -79,7 +79,7 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
 
         var options = CreateServerOptions();
 
-        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), reloadOnChange: false);
+        var loader = new KestrelConfigurationLoader(options, configuration, options.ApplicationServices.GetRequiredService<IHttpsConfigurationService>(), certificatePathWatcher: null, reloadOnChange: false);
         options.ConfigurationLoader = loader; // Since we're constructing it explicitly, we have to hook it up explicitly
         loader.Load();
 
@@ -147,12 +147,14 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.Equal(expectedHostname, tlsFeature.HostName);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
             Assert.True(tlsFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL, "NegotiatedCipherSuite");
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
             Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
             Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
             Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
             Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
@@ -183,12 +185,14 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
             Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
             Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
             Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
             Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
             Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
             Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
@@ -196,6 +200,154 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
             Assert.Equal("hello world", result);
         }
+    }
+
+    [Fact]
+    public async Task HandshakeExceptionIsAvailableAfterHandshakeFailure()
+    {
+        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            // Outer middleware wraps the HTTPS middleware and can inspect the feature after it returns.
+            listenOptions.Use(next => async connectionContext =>
+            {
+                await next(connectionContext);
+
+                var feature = connectionContext.Features.Get<ITlsHandshakeFeature>();
+                handshakeFeatureTcs.TrySetResult(feature);
+            });
+
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        }
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using var connection = server.CreateConnection();
+            await using var sslStream = new SslStream(connection.Stream);
+
+            var clientAuthOptions = new SslClientAuthenticationOptions
+            {
+                TargetHost = "localhost",
+                // Only enabling an obsolete protocol should cause a handshake failure.
+#pragma warning disable CS0618 // Type or member is obsolete
+                EnabledSslProtocols = SslProtocols.Ssl2,
+#pragma warning restore CS0618
+            };
+
+            using var handshakeCts = new CancellationTokenSource(TestConstants.DefaultTimeout);
+            await Assert.ThrowsAnyAsync<Exception>(() => sslStream.AuthenticateAsClientAsync(clientAuthOptions, handshakeCts.Token));
+
+            var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+            Assert.NotNull(handshakeFeature);
+            Assert.NotNull(handshakeFeature.Exception);
+        }
+    }
+
+    [Fact]
+    public async Task HandshakeFeaturePropertiesAreAccessibleAfterHandshakeTimeout()
+    {
+        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.Use(next => async connectionContext =>
+            {
+                await next(connectionContext);
+
+                var feature = connectionContext.Features.Get<ITlsHandshakeFeature>();
+                handshakeFeatureTcs.TrySetResult(feature);
+            });
+
+            listenOptions.UseHttps(o =>
+            {
+                o.ServerCertificate = _x509Certificate2;
+                o.HandshakeTimeout = TimeSpan.FromSeconds(2);
+            });
+        }
+
+        await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            using var connection = server.CreateConnection();
+            // Don't send any TLS data — let the handshake time out.
+            Assert.Equal(0, await connection.Stream.ReadAsync(new byte[1], 0, 1).DefaultTimeout());
+
+            var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+            Assert.NotNull(handshakeFeature);
+            Assert.IsAssignableFrom<OperationCanceledException>(handshakeFeature.Exception);
+        }
+    }
+
+    [Fact]
+    public async Task HandshakeExceptionIsNullOnSuccessfulHandshake()
+    {
+        ITlsHandshakeFeature capturedFeature = null;
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        }
+
+        await using (var server = new TestServer(context =>
+        {
+            capturedFeature = context.Features.Get<ITlsHandshakeFeature>();
+            Assert.NotNull(capturedFeature);
+            Assert.Null(capturedFeature.Exception);
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+
+        Assert.NotNull(capturedFeature);
+    }
+
+    [Fact]
+    public async Task SnapshotPreservesAllPropertiesAfterConnectionClose()
+    {
+        var handshakeFeatureTcs = new TaskCompletionSource<ITlsHandshakeFeature>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            // Outer middleware captures the feature AFTER the HTTPS middleware returns,
+            // which is when Snapshot() has been called and the SslStream may be disposed.
+            listenOptions.Use(next => async connectionContext =>
+            {
+                await next(connectionContext);
+
+                var handshakeFeature = connectionContext.Features.Get<ITlsHandshakeFeature>();
+                handshakeFeatureTcs.TrySetResult(handshakeFeature);
+            });
+
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        }
+
+        await using (var server = new TestServer(context =>
+        {
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+
+        var handshakeFeature = await handshakeFeatureTcs.Task.DefaultTimeout();
+        Assert.NotNull(handshakeFeature);
+
+        // Verify all snapshotted properties are accessible after connection close.
+        Assert.Null(handshakeFeature.Exception);
+        Assert.True(handshakeFeature.Protocol > SslProtocols.None);
+        Assert.True(handshakeFeature.NegotiatedCipherSuite >= TlsCipherSuite.TLS_NULL_WITH_NULL_NULL);
+
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
+        Assert.True(handshakeFeature.CipherAlgorithm > CipherAlgorithmType.Null);
+        Assert.True(handshakeFeature.CipherStrength > 0);
+        Assert.True(handshakeFeature.HashAlgorithm >= HashAlgorithmType.None);
+        Assert.True(handshakeFeature.HashStrength >= 0);
+        Assert.True(handshakeFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None);
+        Assert.True(handshakeFeature.KeyExchangeStrength >= 0);
+#pragma warning restore SYSLIB0058
     }
 
     [Fact]

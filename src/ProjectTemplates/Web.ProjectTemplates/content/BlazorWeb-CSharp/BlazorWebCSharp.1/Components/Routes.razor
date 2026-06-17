@@ -1,0 +1,21 @@
+﻿@*#if (IndividualLocalAuth && !UseWebAssembly)
+@using BlazorWebCSharp._1.Components.Account.Shared
+##endif*@
+@*#if (UseWebAssembly && !InteractiveAtRoot)
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Client._Imports).Assembly }" NotFoundPage="typeof(Pages.NotFound)">
+##else
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+##endif*@
+    <Found Context="routeData">
+        @*#if (IndividualLocalAuth)
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        ##else
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        ##endif*@
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

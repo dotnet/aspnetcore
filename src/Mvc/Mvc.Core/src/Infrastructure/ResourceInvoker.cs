@@ -15,7 +15,9 @@ internal abstract partial class ResourceInvoker
 {
     protected readonly DiagnosticListener _diagnosticListener;
     protected readonly ILogger _logger;
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
     protected readonly IActionContextAccessor _actionContextAccessor;
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
     protected readonly IActionResultTypeMapper _mapper;
     protected readonly ActionContext _actionContext;
     protected readonly IFilterMetadata[] _filters;
@@ -37,7 +39,9 @@ internal abstract partial class ResourceInvoker
     public ResourceInvoker(
         DiagnosticListener diagnosticListener,
         ILogger logger,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         IActionContextAccessor actionContextAccessor,
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
         IActionResultTypeMapper mapper,
         ActionContext actionContext,
         IFilterMetadata[] filters,
@@ -496,28 +500,32 @@ internal abstract partial class ResourceInvoker
                     Debug.Assert(_resourceExecutingContext != null);
 
                     var filter = (IAsyncResourceFilter)state;
-                    if (_resourceExecutedContext == null)
+                    try
                     {
-                        // If we get here then the filter didn't call 'next' indicating a short circuit.
-                        _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext, _filters)
+                        if (_resourceExecutedContext == null)
                         {
-                            Canceled = true,
-                            Result = _resourceExecutingContext.Result,
-                        };
+                            // If we get here then the filter didn't call 'next' indicating a short circuit.
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext, _filters)
+                            {
+                                Canceled = true,
+                                Result = _resourceExecutingContext.Result,
+                            };
 
+                            // A filter could complete a Task without setting a result
+                            if (_resourceExecutingContext.Result != null)
+                            {
+                                goto case State.ResourceShortCircuit;
+                            }
+                        }
+                    }
+                    finally
+                    {
                         _diagnosticListener.AfterOnResourceExecution(_resourceExecutedContext, filter);
                         _logger.AfterExecutingMethodOnFilter(
                             FilterTypeConstants.ResourceFilter,
                             nameof(IAsyncResourceFilter.OnResourceExecutionAsync),
                             filter);
-
-                        // A filter could complete a Task without setting a result
-                        if (_resourceExecutingContext.Result != null)
-                        {
-                            goto case State.ResourceShortCircuit;
-                        }
                     }
-
                     goto case State.ResourceEnd;
                 }
 

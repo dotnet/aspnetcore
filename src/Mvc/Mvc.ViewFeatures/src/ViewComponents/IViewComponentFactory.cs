@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents;
 public interface IViewComponentFactory
 {
     /// <summary>
-    /// Creates a new controller for the specified <paramref name="context"/>.
+    /// Creates a new view component for the specified <paramref name="context"/>.
     /// </summary>
     /// <param name="context"><see cref="ViewComponentContext"/> for the view component.</param>
     /// <returns>The view component.</returns>

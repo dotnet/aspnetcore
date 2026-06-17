@@ -24,7 +24,7 @@ public class SectionsWithErrorBoundaryTest : ServerTestBase<ToggleExecutionModeS
 
     protected override void InitializeAsyncCore()
     {
-        Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+        Navigate(ServerPathBase);
         Browser.MountTestComponent<BasicTestApp.SectionsTest.SectionsWithErrorBoundary>();
     }
 
@@ -37,7 +37,7 @@ public class SectionsWithErrorBoundaryTest : ServerTestBase<ToggleExecutionModeS
 
         Browser.FindElement(By.Id("error-button")).Click();
 
-        Browser.Equal("Sorry!", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("Sorry!", () => Browser.Exists(By.Id("error-content")).Text);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class SectionsWithErrorBoundaryTest : ServerTestBase<ToggleExecutionModeS
         Browser.FindElement(By.Id("render-second-section-content")).Click();
         Browser.FindElement(By.Id("error-button")).Click();
 
-        Browser.Equal("Sorry!", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("Sorry!", () => Browser.Exists(By.Id("error-content")).Text);
     }
 
     [Fact]
@@ -102,6 +102,6 @@ public class SectionsWithErrorBoundaryTest : ServerTestBase<ToggleExecutionModeS
         Browser.FindElement(By.Id("change-section-outlet-id")).Click();
         Browser.FindElement(By.Id("error-button")).Click();
 
-        Browser.Equal("Sorry!", () => Browser.Exists(By.TagName("p")).Text);
+        Browser.Equal("Sorry!", () => Browser.Exists(By.Id("error-content")).Text);
     }
 }

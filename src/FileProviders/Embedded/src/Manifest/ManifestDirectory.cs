@@ -47,11 +47,7 @@ internal class ManifestDirectory : ManifestEntry
 
     public static ManifestDirectory CreateDirectory(string name, ManifestEntry[] children)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new ArgumentException($"'{nameof(name)}' must not be null, empty or whitespace.", nameof(name));
-        }
-
+        ArgumentThrowHelper.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullThrowHelper.ThrowIfNull(children);
 
         var result = new ManifestDirectory(name, children);

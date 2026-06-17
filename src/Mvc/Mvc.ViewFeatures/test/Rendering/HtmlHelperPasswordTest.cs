@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -44,8 +44,8 @@ public class HtmlHelperPasswordTest
             var data = new TheoryData<ViewDataDictionary<PasswordModel>, object>();
             foreach (var items in HtmlAttributeData)
             {
-                data.Add(viewData, items[0]);
-                data.Add(nullModelViewData, items[0]);
+                data.Add(viewData, items);
+                data.Add(nullModelViewData, items);
             }
 
             return data;
@@ -320,7 +320,7 @@ public class HtmlHelperPasswordTest
         Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
     }
 
-    public static TheoryData PasswordFor_WithComplexExpressionsData
+    public static TheoryData<Expression<Func<PasswordModel, string>>, string> PasswordFor_WithComplexExpressionsData
     {
         get
         {
@@ -468,7 +468,7 @@ public class HtmlHelperPasswordTest
         return viewData;
     }
 
-    public static TheoryData PasswordFor_IgnoresExpressionValueForComplexExpressionsData
+    public static TheoryData<Expression<Func<PasswordModel, string>>, string> PasswordFor_IgnoresExpressionValueForComplexExpressionsData
     {
         get
         {

@@ -1,19 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http.HPack;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
-
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -29,7 +22,7 @@ public class Http2HPackEncoderTests
         enumerator.Initialize(headers);
 
         var hpackEncoder = new DynamicHPackEncoder();
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
         var result = buffer.Slice(0, length).ToArray();
         var hex = BitConverter.ToString(result);
@@ -52,7 +45,7 @@ public class Http2HPackEncoderTests
         enumerator.Initialize(headers);
 
         var hpackEncoder = new DynamicHPackEncoder();
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
         var result = buffer.Slice(5, length - 5).ToArray();
         var hex = BitConverter.ToString(result);
@@ -67,7 +60,6 @@ public class Http2HPackEncoderTests
     public void BeginEncodeHeaders_MaxHeaderTableSizeExceeded_EvictionsToFit()
     {
         // Test follows example https://tools.ietf.org/html/rfc7541#appendix-C.5
-
         Span<byte> buffer = new byte[1024 * 16];
 
         var headers = (IHeaderDictionary)new HttpResponseHeaders();
@@ -81,7 +73,7 @@ public class Http2HPackEncoderTests
 
         // First response
         enumerator.Initialize(headers);
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
         var result = buffer.Slice(0, length).ToArray();
         var hex = BitConverter.ToString(result);
@@ -123,7 +115,7 @@ public class Http2HPackEncoderTests
 
         // Second response
         enumerator.Initialize(headers);
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(307, hpackEncoder, enumerator, buffer, out length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(307, hpackEncoder, enumerator, buffer, out length));
 
         result = buffer.Slice(0, length).ToArray();
         hex = BitConverter.ToString(result);
@@ -164,7 +156,7 @@ public class Http2HPackEncoderTests
         headers.SetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
 
         enumerator.Initialize(headers);
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));
 
         result = buffer.Slice(0, length).ToArray();
         hex = BitConverter.ToString(result);
@@ -225,7 +217,7 @@ public class Http2HPackEncoderTests
 
         // First response
         enumerator.Initialize((HttpResponseHeaders)headers);
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(302, hpackEncoder, enumerator, buffer, out var length));
 
         var result = buffer.Slice(0, length).ToArray();
         var hex = BitConverter.ToString(result);
@@ -267,7 +259,7 @@ public class Http2HPackEncoderTests
 
         // Second response
         enumerator.Initialize(headers);
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(307, hpackEncoder, enumerator, buffer, out length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(307, hpackEncoder, enumerator, buffer, out length));
 
         result = buffer.Slice(0, length).ToArray();
         hex = BitConverter.ToString(result);
@@ -308,7 +300,7 @@ public class Http2HPackEncoderTests
         headers.SetCookie = "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
 
         enumerator.Initialize(headers);
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out length));
 
         result = buffer.Slice(0, length).ToArray();
         hex = BitConverter.ToString(result);
@@ -366,7 +358,7 @@ public class Http2HPackEncoderTests
         enumerator.Initialize(headers);
 
         var hpackEncoder = new DynamicHPackEncoder(maxHeaderTableSize: Http2PeerSettings.DefaultHeaderTableSize);
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out _));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out _));
 
         if (neverIndex)
         {
@@ -392,7 +384,7 @@ public class Http2HPackEncoderTests
         enumerator.Initialize(headers);
 
         var hpackEncoder = new DynamicHPackEncoder();
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
 
         Assert.Empty(GetHeaderEntries(hpackEncoder));
     }
@@ -477,16 +469,15 @@ public class Http2HPackEncoderTests
     public void EncodesHeadersInSinglePayloadWhenSpaceAvailable(KeyValuePair<string, string>[] headers, byte[] expectedPayload, int? statusCode)
     {
         var hpackEncoder = new DynamicHPackEncoder();
-
         var payload = new byte[1024];
         var length = 0;
         if (statusCode.HasValue)
         {
-            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(statusCode.Value, hpackEncoder, GetHeadersEnumerator(headers), payload, out length));
+            Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(statusCode.Value, hpackEncoder, GetHeadersEnumerator(headers), payload, out length));
         }
         else
         {
-            Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, GetHeadersEnumerator(headers), payload, out length));
+            Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, GetHeadersEnumerator(headers), payload, out length));
         }
         Assert.Equal(expectedPayload.Length, length);
 
@@ -495,7 +486,7 @@ public class Http2HPackEncoderTests
             Assert.True(expectedPayload[i] == payload[i], $"{expectedPayload[i]} != {payload[i]} at {i} (len {length})");
         }
 
-        Assert.Equal(expectedPayload, new ArraySegment<byte>(payload, 0, length));
+        Assert.Equal(expectedPayload, new ArraySegment<byte>(payload, 0, length).ToArray());
     }
 
     [Theory]
@@ -548,28 +539,28 @@ public class Http2HPackEncoderTests
 
         // When !exactSize, slices are one byte short of fitting the next header
         var sliceLength = expectedStatusCodePayload.Length + (exactSize ? 0 : expectedDateHeaderPayload.Length - 1);
-        Assert.False(HPackHeaderWriter.BeginEncodeHeaders(statusCode, hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out var length));
+        Assert.Equal(HeaderWriteResult.MoreHeaders, HPackHeaderWriter.BeginEncodeHeaders(statusCode, hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out var length));
         Assert.Equal(expectedStatusCodePayload.Length, length);
         Assert.Equal(expectedStatusCodePayload, payload.Slice(0, length).ToArray());
 
         offset += length;
 
         sliceLength = expectedDateHeaderPayload.Length + (exactSize ? 0 : expectedContentTypeHeaderPayload.Length - 1);
-        Assert.False(HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
+        Assert.Equal(HeaderWriteResult.MoreHeaders, HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
         Assert.Equal(expectedDateHeaderPayload.Length, length);
         Assert.Equal(expectedDateHeaderPayload, payload.Slice(offset, length).ToArray());
 
         offset += length;
 
         sliceLength = expectedContentTypeHeaderPayload.Length + (exactSize ? 0 : expectedServerHeaderPayload.Length - 1);
-        Assert.False(HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
+        Assert.Equal(HeaderWriteResult.MoreHeaders, HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
         Assert.Equal(expectedContentTypeHeaderPayload.Length, length);
         Assert.Equal(expectedContentTypeHeaderPayload, payload.Slice(offset, length).ToArray());
 
         offset += length;
 
         sliceLength = expectedServerHeaderPayload.Length;
-        Assert.True(HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.ContinueEncodeHeaders(hpackEncoder, headerEnumerator, payload.Slice(offset, sliceLength), out length));
         Assert.Equal(expectedServerHeaderPayload.Length, length);
         Assert.Equal(expectedServerHeaderPayload, payload.Slice(offset, length).ToArray());
     }
@@ -586,7 +577,7 @@ public class Http2HPackEncoderTests
 
         // First request
         enumerator.Initialize(new Dictionary<string, StringValues>());
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out var length));
 
         Assert.Equal(2, length);
 
@@ -600,9 +591,70 @@ public class Http2HPackEncoderTests
 
         // Second request
         enumerator.Initialize(new Dictionary<string, StringValues>());
-        Assert.True(HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out length));
+        Assert.Equal(HeaderWriteResult.Done, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out length));
 
         Assert.Equal(0, length);
+    }
+
+    [Fact]
+    public void WithStatusCode_TooLargeHeader_ReturnsMoreHeaders()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers.Cookie = new string('a', buffer.Length + 1);
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Equal(HeaderWriteResult.MoreHeaders, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(1, length);
+    }
+
+    [Fact]
+    public void NoStatusCodeLargeHeader_ReturnsOversized()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers.Cookie = new string('a', buffer.Length + 1);
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Equal(HeaderWriteResult.BufferTooSmall, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(0, length);
+    }
+
+    [Fact]
+    public void WithStatusCode_JustFittingHeaderNoSpace_ReturnsMoreHeaders()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers.Cookie = new string('a', buffer.Length - 1);
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Equal(HeaderWriteResult.MoreHeaders, HPackHeaderWriter.BeginEncodeHeaders(200, hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(1, length);
+    }
+
+    [Fact]
+    public void NoStatusCode_JustFittingHeaderNoSpace_ReturnsMoreHeaders()
+    {
+        Span<byte> buffer = new byte[1024 * 16];
+
+        IHeaderDictionary headers = new HttpResponseHeaders();
+        headers.Accept = "application/json;";
+        headers.Cookie = new string('a', buffer.Length - 1);
+        var enumerator = new Http2HeadersEnumerator();
+        enumerator.Initialize(headers);
+
+        var hpackEncoder = new DynamicHPackEncoder();
+        Assert.Equal(HeaderWriteResult.MoreHeaders, HPackHeaderWriter.BeginEncodeHeaders(hpackEncoder, enumerator, buffer, out var length));
+        Assert.Equal(26, length);
     }
 
     private static Http2HeadersEnumerator GetHeadersEnumerator(IEnumerable<KeyValuePair<string, string>> headers)

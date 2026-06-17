@@ -14,19 +14,25 @@
       DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
       GrpcAspNetCoreVersion=$(GrpcAspNetCoreVersion);
       MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationVersion);
+      MicrosoftEntityFrameworkCoreDesignVersion=$(MicrosoftEntityFrameworkCoreDesignVersion);
       MicrosoftEntityFrameworkCoreSqliteVersion=$(MicrosoftEntityFrameworkCoreSqliteVersion);
       MicrosoftEntityFrameworkCoreSqlServerVersion=$(MicrosoftEntityFrameworkCoreSqlServerVersion);
+      MicrosoftDataSqlClientExtensionsAzureVersion=$(MicrosoftDataSqlClientExtensionsAzureVersion);
       MicrosoftEntityFrameworkCoreToolsVersion=$(MicrosoftEntityFrameworkCoreToolsVersion);
       MicrosoftExtensionsHostingVersion=$(MicrosoftExtensionsHostingVersion);
       MicrosoftExtensionsHttpVersion=$(MicrosoftExtensionsHttpVersion);
+      MicrosoftExtensionsHttpResilienceVersion=$(MicrosoftExtensionsHttpResilienceVersion);
+      MicrosoftExtensionsServiceDiscoveryVersion=$(MicrosoftExtensionsServiceDiscoveryVersion);
       MicrosoftIdentityWebVersion=$(MicrosoftIdentityWebVersion);
-      MicrosoftIdentityWebMicrosoftGraphVersion=$(MicrosoftIdentityWebMicrosoftGraphVersion);
+      MicrosoftIdentityWebGraphServiceClientVersion=$(MicrosoftIdentityWebGraphServiceClientVersion);
       MicrosoftIdentityWebUIVersion=$(MicrosoftIdentityWebUIVersion);
       MicrosoftIdentityWebDownstreamApiVersion=$(MicrosoftIdentityWebDownstreamApiVersion);
-      MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+      OpenTelemetryExporterOpenTelemetryProtocolVersion=$(OpenTelemetryExporterOpenTelemetryProtocolVersion);
+      OpenTelemetryExtensionsHostingVersion=$(OpenTelemetryExtensionsHostingVersion);
+      OpenTelemetryInstrumentationHttpVersion=$(OpenTelemetryInstrumentationHttpVersion);
+      OpenTelemetryInstrumentationRuntimeVersion=$(OpenTelemetryInstrumentationRuntimeVersion);
       SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
       MicrosoftGraphVersion=$(MicrosoftGraphVersion);
-      SwashbuckleAspNetCoreVersion=$(SwashbuckleAspNetCoreVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
@@ -36,7 +42,6 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
-    <PackageVersionVariableReference Include="$(RepoRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
     <PackageVersionVariableReference Include="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
@@ -45,6 +50,7 @@
     <PackageVersionVariableReference Include="$(RepoRoot)src\Security\Authentication\OpenIdConnect\src\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
+    <PackageVersionVariableReference Include="$(RepoRoot)src\Components\Gateway\src\Microsoft.AspNetCore.Components.Gateway.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
     <PackageVersionVariableReference Include="$(ComponentsWebAssemblyProjectsRoot)Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />
@@ -58,14 +64,16 @@
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />
     <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="StarterWeb-FSharp.fsproj.in" OutputPath="content/StarterWeb-FSharp/Company.WebApplication1.fsproj" />
-    <GeneratedContent Include="Api-CSharp.csproj.in" OutputPath="content/Api-CSharp/Company.ApiApplication1.csproj" />
     <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj" />
+    <GeneratedContent Include="WebApiAot-CSharp.csproj.in" OutputPath="content/WebApiAot-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
     <GeneratedContent Include="Worker-FSharp.fsproj.in" OutputPath="content/Worker-FSharp/Company.Application1.fsproj" />
-    <GeneratedContent Include="Components-CSharp.csproj.in" OutputPath="content/Components-CSharp/Components-CSharp.csproj" />
+    <GeneratedContent Include="BlazorWebCSharp.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1/BlazorWebCSharp.1.csproj" />
+    <GeneratedContent Include="BlazorWebCSharp.Client.csproj.in" OutputPath="content/BlazorWeb-CSharp/BlazorWebCSharp.1.Client/BlazorWebCSharp.1.Client.csproj" />
+    <GeneratedContent Include="BlazorWasmServiceDefaults-CSharp.csproj.in" OutputPath="content/BlazorWasmServiceDefaults-CSharp/BlazorWasm.ServiceDefaults1.csproj" />
     <GeneratedContent Include="ComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/ComponentsWebAssembly-CSharp/ComponentsWebAssembly-CSharp.csproj" />
-    <GeneratedContent Include="EmptyComponentsWebAssembly-CSharp.csproj.in" OutputPath="content/EmptyComponentsWebAssembly-CSharp/EmptyComponentsWebAssembly-CSharp.csproj" />
+    <GeneratedContent Include="BlazorWebWorker-CSharp.csproj.in" OutputPath="content/BlazorWebWorker-CSharp/Company.WebWorker1.csproj" />
   </ItemGroup>
 
 </Project>

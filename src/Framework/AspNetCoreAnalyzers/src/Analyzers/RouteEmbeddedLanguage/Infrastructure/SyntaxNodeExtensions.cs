@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -32,6 +33,12 @@ internal static class SyntaxNodeExtensions
 
         return parent;
     }
+
+    public static bool IsLiteralExpression([NotNullWhen(true)] this SyntaxNode? node)
+        => node is LiteralExpressionSyntax;
+
+    public static bool IsBinaryExpression([NotNullWhen(true)] this SyntaxNode? node)
+        => node is BinaryExpressionSyntax;
 
     [return: NotNullIfNotNull("node")]
     public static SyntaxNode? WalkUpParentheses(this SyntaxNode? node)
@@ -120,7 +127,7 @@ internal static class SyntaxNodeExtensions
     /// </summary>
     private static SyntaxToken FindSkippedTokenBackward(SyntaxTriviaList triviaList, int position)
     {
-        foreach (var trivia in triviaList.Reverse())
+        foreach (var trivia in Enumerable.Reverse(triviaList))
         {
             if (trivia.HasStructure)
             {

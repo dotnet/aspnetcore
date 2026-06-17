@@ -40,7 +40,7 @@ public static class EntityFrameworkCoreHealthChecksBuilderExtensions
     /// <para>
     /// By default the health check implementation will use the <see cref="DatabaseFacade.CanConnectAsync(CancellationToken)"/> method
     /// to test connectivity to the database. This method requires that the database provider has correctly implemented the
-    /// <see cref="IDatabaseCreator" /> interface. If the database provide has not implemented this interface
+    /// <see cref="IDatabaseCreator" /> interface. If the database provider has not implemented this interface
     /// then the health check will report a failure.
     /// </para>
     /// <para>

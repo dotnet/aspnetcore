@@ -85,6 +85,8 @@ static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.DetailedErrorsKey -
 static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.EnvironmentKey -> string!
 static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HostingStartupAssembliesKey -> string!
 static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HostingStartupExcludeAssembliesKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HttpPortsKey -> string!
+static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.HttpsPortsKey -> string!
 static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.PreferHostingUrlsKey -> string!
 static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.PreventHostingStartupKey -> string!
 static readonly Microsoft.AspNetCore.Hosting.WebHostDefaults.ServerUrlsKey -> string!

@@ -18,7 +18,7 @@ To use it, simply run from VS. This will launch the server and terminal. Now you
 
 ## Using Edge or Chrome DevTools as a client
 
-The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demonstrating how to use that API can be found [here](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
+The Chromium project has implemented a WebTransport client and can be accessed via their JS API from the Chrome or Edge DevTools console. A good sample app demonstrating how to use that API can be found in the [Google WebTransport sample repository](https://github.com/myjimmy/google-webtransport-sample/blob/ee13bde656c4d421d1f2a8e88fd71f572272c163/client.js).
 
 ## Note about preview features
 
@@ -103,7 +103,7 @@ var host = builder.Build();
 ```
 **Note:** As WebTransport uses HTTP/3, you must make sure to select the `listenOptions.UseHttps` setting as well as set the `listenOptions.Protocols` to include HTTP/3.
 
-**Note:** The default Kestrel certificate cannot be used for WebTransport connections. For local testing you can use the workaround described in the [Obtaining a test certificate section](#Obtaining-a-test-certificate).
+**Note:** The default Kestrel certificate cannot be used for WebTransport connections. For local testing you can use the workaround described in the [Obtaining a test certificate section](#obtaining-a-test-certificate).
 
 Next, we defined the code that will run when Kestrel receives a connection.
 ```C#
@@ -171,7 +171,7 @@ session.Abort(int errorCode);
 ```
 Aborting a WebTransport session will result in severing the connection with the client and aborting all the streams. You can optionally specify an error code that will be passed down into the logs. The default value (256) represents no error.
 
-**Note:** valid error codes are defined [here](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
+**Note:** valid error codes are defined in the [HTTP/3 Error Codes specification](https://www.rfc-editor.org/rfc/rfc9114.html#name-http-3-error-codes).
 
 - Aborting a WebTransport stream
 ```C#
@@ -184,7 +184,6 @@ Aborting a WebTransport stream will result in abruptly ending all data transmiss
 stream.DisposeAsync();
 ```
 Disposing a WebTransport stream will result in ending data transmission and closing the stream gracefully.
-
 
 ### Examples
 

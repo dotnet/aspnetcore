@@ -18,9 +18,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core;
 
@@ -28,6 +30,8 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 
 internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
 {
+    private static readonly bool AllowKeepAliveAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.IIS.AllowKeepAliveAfterCLTE", out var value) && value;
+
     private const int MinAllocBufferSize = 2048;
 
     protected readonly NativeSafeHandle _requestNativeHandle;
@@ -40,6 +44,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private int _statusCode;
     private string? _reasonPhrase;
+
     // Used to synchronize callback registration and native method calls
     internal readonly object _contextLock = new object();
 
@@ -77,7 +82,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         IISHttpServer server,
         ILogger logger,
         bool useLatin1)
-        : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
+        : base((HTTP_REQUEST_V1*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
     {
         _memoryPool = memoryPool;
         _requestNativeHandle = pInProcessHandler;
@@ -89,7 +94,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     }
 
     private int PauseWriterThreshold => _options.MaxRequestBodyBufferSize;
-    private int ResumeWriterTheshold => PauseWriterThreshold / 2;
+    private int ResumeWriterThreshold => PauseWriterThreshold / 2;
     private bool IsHttps => SslStatus != SslStatus.Insecure;
 
     public Version HttpVersion { get; set; } = default!;
@@ -117,11 +122,17 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     public SslProtocols Protocol { get; private set; }
     public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
     public string SniHostName { get; private set; } = default!;
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int CipherStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public HashAlgorithmType HashAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public int HashStrength { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId)]
     public int KeyExchangeStrength { get; private set; }
 
     protected IAsyncIOEngine? AsyncIO { get; set; }
@@ -133,7 +144,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
     internal bool HasTrailers => _trailers?.Count > 0;
 
-    internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
+    internal HTTP_VERB KnownMethod { get; private set; }
 
     private bool HasStartedConsumingRequestBody { get; set; }
     public long? MaxRequestBodySize { get; set; }
@@ -142,7 +153,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         // create a memory barrier between initialize and disconnect to prevent a possible
         // NullRef with disconnect being called before these fields have been written
-        // disconnect aquires this lock as well
+        // disconnect acquires this lock as well
         lock (_abortLock)
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -163,7 +174,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 pathBase = pathBase[..^1];
             }
 
-            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
+            if (KnownMethod == HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
@@ -301,7 +312,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 // schedules app code when backpressure is relieved which may block.
                 readerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: PauseWriterThreshold,
-                resumeWriterThreshold: ResumeWriterTheshold,
+                resumeWriterThreshold: ResumeWriterThreshold,
                 minimumSegmentSize: MinAllocBufferSize));
             _bodyOutput = new OutputProducer(pipe);
         }
@@ -352,6 +363,19 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             {
                 ThrowResponseAlreadyStartedException(nameof(ReasonPhrase));
             }
+
+            if (value is not null)
+            {
+                // Reject non-ASCII (> 0x7E), CR/LF, and other control characters
+                // to prevent HTTP response splitting. Only HTAB, SP, and VCHAR
+                // (0x21-0x7E) are allowed per RFC 9112 Section 4.
+                var invalid = HttpCharacters.IndexOfInvalidFieldValueChar(value);
+                if (invalid >= 0)
+                {
+                    ThrowInvalidReasonPhraseCharacter(value[invalid]);
+                }
+            }
+
             _reasonPhrase = value;
         }
     }
@@ -366,23 +390,36 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         string transferEncoding = RequestHeaders.TransferEncoding.ToString();
         if (IsChunked(transferEncoding))
         {
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
             // A sender MUST NOT send a Content-Length header field in any message
             // that contains a Transfer-Encoding header field.
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
             // If a message is received with both a Transfer-Encoding and a
             // Content-Length header field, the Transfer-Encoding overrides the
-            // Content-Length.  Such a message might indicate an attempt to
-            // perform request smuggling (Section 9.5) or response splitting
-            // (Section 9.4) and ought to be handled as an error.  A sender MUST
-            // remove the received Content-Length field prior to forwarding such
-            // a message downstream.
+            // Content-Length. Such a message might indicate an attempt to
+            // perform request smuggling (Section 11.2) or response splitting
+            // (Section 11.1) and ought to be handled as an error. An intermediary
+            // that chooses to forward the message MUST first remove the received
+            // Content-Length field and process the Transfer-Encoding
+            // (as described below) prior to forwarding the message downstream.
             // We should remove the Content-Length request header in this case, for compatibility
             // reasons, include X-Content-Length so that the original Content-Length is still available.
-            if (RequestHeaders.ContentLength.HasValue)
+            if (RequestHeaders.TryGetValue(HeaderNames.ContentLength, out var contentLength))
             {
-                RequestHeaders.Add("X-Content-Length", RequestHeaders[HeaderNames.ContentLength]);
+                // if user already passed X-Content-Length, we won't overwrite it
+                _ = RequestHeaders.TryAdd("X-Content-Length", contentLength);
                 RequestHeaders.ContentLength = null;
+
+                if (!AllowKeepAliveAfterCLTE)
+                {
+                    // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+                    // A server MAY reject a request that contains both Content-Length
+                    // and Transfer-Encoding or process such a request in accordance
+                    // with the Transfer-Encoding alone. Regardless, the server MUST
+                    // close the connection after responding to such a request to
+                    // avoid the potential attacks.
+                    NativeMethods.HttpSetClose(_requestNativeHandle);
+                }
             }
             return true;
         }
@@ -392,27 +429,53 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private void GetTlsHandshakeResults()
     {
-        var handshake = this.GetTlsHandshake();
-        Protocol = handshake.Protocol;
-        CipherAlgorithm = handshake.CipherType;
+        var handshake = GetTlsHandshake();
+        Protocol = (SslProtocols)handshake.Protocol;
+
+        NegotiatedCipherSuite = GetTlsCipherSuite();
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
+        CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
-        HashAlgorithm = handshake.HashType;
+        HashAlgorithm = (HashAlgorithmType)handshake.HashType;
         HashStrength = (int)handshake.HashStrength;
-        KeyExchangeAlgorithm = handshake.KeyExchangeType;
+        KeyExchangeAlgorithm = (ExchangeAlgorithmType)handshake.KeyExchangeType;
         KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
         var sni = GetClientSni();
-        SniHostName = sni.Hostname;
+        SniHostName = sni.Hostname.ToString();
     }
 
-    private unsafe HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    private unsafe TlsCipherSuite? GetTlsCipherSuite()
+    {
+        SecPkgContext_CipherInfo cipherInfo = default;
+
+        var statusCode = NativeMethods.HttpQueryRequestProperty(
+            RequestId,
+            HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: null,
+            overlapped: IntPtr.Zero);
+
+        if (statusCode == NativeMethods.HR_OK)
+        {
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
+        }
+
+        return default;
+    }
+
+    private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
     {
         var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
         fixed (byte* pBuffer = buffer)
         {
             var statusCode = NativeMethods.HttpQueryRequestProperty(
                 RequestId,
-                HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
                 qualifier: null,
                 qualifierSize: 0,
                 (void*)pBuffer,
@@ -420,7 +483,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 bytesReturned: null,
                 IntPtr.Zero);
 
-            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HttpApiTypes.HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
+            return statusCode == NativeMethods.HR_OK ? Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer) : default;
         }
     }
 
@@ -590,7 +653,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
                 continue;
             }
 
-            var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
+            var isKnownHeader = HttpApiTypes.KnownResponseHeaders.TryGetValue(headerPair.Key, out var knownHeaderIndex);
             for (var i = 0; i < headerValues.Count; i++)
             {
                 var headerValue = headerValues[i];
@@ -605,7 +668,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
                 fixed (byte* pHeaderValue = headerValueBytes)
                 {
-                    if (knownHeaderIndex == -1)
+                    if (!isKnownHeader)
                     {
                         var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
                         fixed (byte* pHeaderName = headerNameBytes)
@@ -831,6 +894,12 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
         throw new InvalidOperationException(CoreStrings.FormatParameterReadOnlyAfterResponseStarted(name));
     }
 
+    private static void ThrowInvalidReasonPhraseCharacter(char ch)
+    {
+        throw new InvalidOperationException(CoreStrings.FormatInvalidReasonPhraseCharacter(
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "0x{0:X4}", (ushort)ch)));
+    }
+
     private WindowsPrincipal? GetWindowsPrincipal()
     {
         NativeMethods.HttpGetAuthenticationInformation(_requestNativeHandle, out var authenticationType, out var token);
@@ -899,11 +968,13 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             return false;
         }
 
-        var index = transferEncoding.LastIndexOf(',');
-        if (transferEncoding.AsSpan().Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-        return false;
+        // Per RFC 7230 §7, list-based headers tolerate empty list elements
+        // (e.g. "chunked,"). Strip any trailing OWS/commas so that the
+        // LastIndexOf-based check below sees the real final coding.
+        ReadOnlySpan<char> trimChars = [' ', '\t', ','];
+        var span = transferEncoding.AsSpan().TrimEnd(trimChars);
+
+        var index = span.LastIndexOf(',');
+        return span.Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase);
     }
 }

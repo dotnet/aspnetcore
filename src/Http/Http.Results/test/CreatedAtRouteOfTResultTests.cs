@@ -6,10 +6,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Microsoft.AspNetCore.Http.HttpResults;
 
@@ -93,7 +94,6 @@ public partial class CreatedAtRouteOfTResultTests
     {
         // Arrange
         CreatedAtRoute<Todo> MyApi() { throw new NotImplementedException(); }
-        var metadata = new List<object>();
         var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
 
         // Act
@@ -104,17 +104,38 @@ public partial class CreatedAtRouteOfTResultTests
         Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
         Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]
-    public void ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
+    public void PopulateMetadata_ProblemDetailsAddsProblemJsonMetadata()
+    {
+        // Arrange
+        CreatedAtRoute<ProblemDetails> MyApi() { throw new NotImplementedException(); }
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<CreatedAtRoute<ProblemDetails>>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        var producesResponseTypeMetadata = builder.Metadata.OfType<ProducesResponseTypeMetadata>().Last();
+        Assert.Equal(StatusCodes.Status201Created, producesResponseTypeMetadata.StatusCode);
+        Assert.Equal(typeof(ProblemDetails), producesResponseTypeMetadata.Type);
+        Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/problem+json");
+
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_ThrowsArgumentNullException_WhenHttpContextIsNull()
     {
         // Arrange
         var result = new CreatedAtRoute<object>(null, null);
         HttpContext httpContext = null;
 
         // Act & Assert
-        Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
+        await Assert.ThrowsAsync<ArgumentNullException>("httpContext", () => result.ExecuteAsync(httpContext));
     }
 
     [Fact]

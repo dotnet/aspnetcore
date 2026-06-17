@@ -8,5 +8,6 @@
   ],
   "projectName": "DEVDIV",
   "repositoryName": "AspNetCore",
-  "template": "TFSDEVDIV"
+  "template": "TFSDEVDIV",
+  "serviceTreeId": "4db45fa9-fb0f-43ce-b523-ad1da773dfbc"
 }

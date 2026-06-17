@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Connections.NegotiationResponse.UseAcking.get -> bool
-Microsoft.AspNetCore.Http.Connections.NegotiationResponse.UseAcking.set -> void

@@ -86,10 +86,7 @@ public class PageConventionCollection : Collection<IPageConvention>
         string pageName,
         Action<PageApplicationModel> action)
     {
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         EnsureValidPageName(pageName);
 
@@ -133,10 +130,7 @@ public class PageConventionCollection : Collection<IPageConvention>
         string folderPath,
         Action<PageApplicationModel> action)
     {
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         EnsureValidFolderPath(folderPath);
 
@@ -177,10 +171,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     /// <returns>The added <see cref="IPageRouteModelConvention"/>.</returns>
     public IPageRouteModelConvention AddAreaPageRouteModelConvention(string areaName, string pageName, Action<PageRouteModel> action)
     {
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         EnsureValidPageName(pageName);
 
@@ -221,10 +212,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     /// <returns>The added <see cref="IPageApplicationModelConvention"/>.</returns>
     public IPageRouteModelConvention AddAreaFolderRouteModelConvention(string areaName, string folderPath, Action<PageRouteModel> action)
     {
-        if (string.IsNullOrEmpty(areaName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(areaName);
 
         EnsureValidFolderPath(folderPath);
 
@@ -261,10 +249,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     // Internal for unit testing
     internal static void EnsureValidPageName(string pageName, string argumentName = "pageName")
     {
-        if (string.IsNullOrEmpty(pageName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, argumentName);
-        }
+        ArgumentException.ThrowIfNullOrEmpty(pageName);
 
         if (pageName[0] != '/' || pageName.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
         {
@@ -275,10 +260,7 @@ public class PageConventionCollection : Collection<IPageConvention>
     // Internal for unit testing
     internal static void EnsureValidFolderPath(string folderPath)
     {
-        if (string.IsNullOrEmpty(folderPath))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(folderPath);
 
         if (folderPath[0] != '/')
         {

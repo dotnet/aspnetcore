@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -20,8 +21,28 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
     {
     }
 
+    public override Task InitializeAsync()
+        => InitializeAsync(BrowserFixture.RoutingTestContext);
+
     [Fact]
-    public void NavigationIsLockedAfterPrerendering()
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66043")]
+    public void ExternalNavigationIsLockedAfterPrerendering()
+    {
+        Navigate("/locked-navigation");
+
+        // Assert that the component rendered successfully
+        Browser.Equal("Prevented navigations: 0", () => Browser.FindElement(By.Id("num-prevented-navigations")).Text);
+
+        BeginInteractivity();
+
+        // Assert that external navigations are blocked
+        Browser.Navigate().GoToUrl("about:blank");
+        Browser.SwitchTo().Alert().Dismiss();
+        Browser.Equal("Prevented navigations: 0", () => Browser.FindElement(By.Id("num-prevented-navigations")).Text);
+    }
+
+    [Fact]
+    public void InternalNavigationIsLockedAfterPrerendering()
     {
         Navigate("/locked-navigation");
 
@@ -32,11 +53,6 @@ public class NavigationLockPrerenderingTest : ServerTestBase<BasicTestAppServerS
 
         // Assert that internal navigations are blocked
         Browser.Click(By.Id("internal-navigation-link"));
-        Browser.Equal("Prevented navigations: 1", () => Browser.FindElement(By.Id("num-prevented-navigations")).Text);
-
-        // Assert that external navigations are blocked
-        Browser.Navigate().GoToUrl("about:blank");
-        Browser.SwitchTo().Alert().Dismiss();
         Browser.Equal("Prevented navigations: 1", () => Browser.FindElement(By.Id("num-prevented-navigations")).Text);
     }
 

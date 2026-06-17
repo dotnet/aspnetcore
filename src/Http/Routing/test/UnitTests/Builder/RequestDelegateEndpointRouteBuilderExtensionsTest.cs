@@ -402,7 +402,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(EmptyServiceProvider.Instance));
 
         // Act
-        var endpointBuilder = builder.MapMethods("/", new[] { "METHOD" }, HandleHttpMetdata);
+        var endpointBuilder = builder.MapMethods("/", new[] { "METHOD" }, HandleHttpMetadata);
         endpointBuilder.WithMetadata(new HttpMethodMetadata(new[] { "BUILDER" }));
 
         // Assert
@@ -487,6 +487,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
 
         Assert.Collection(metadata,
             m => Assert.IsAssignableFrom<MethodInfo>(m),
+            m => Assert.IsAssignableFrom<IParameterBindingMetadata>(m),
             m => Assert.IsAssignableFrom<ParameterNameMetadata>(m),
             m =>
             {
@@ -525,7 +526,7 @@ public class RequestDelegateEndpointRouteBuilderExtensionsTest
     private static Task Handle(HttpContext context) => Task.CompletedTask;
 
     [HttpMethod("ATTRIBUTE")]
-    private static Task HandleHttpMetdata(HttpContext context) => Task.CompletedTask;
+    private static Task HandleHttpMetadata(HttpContext context) => Task.CompletedTask;
 
     private class HttpMethodAttribute : Attribute, IHttpMethodMetadata
     {

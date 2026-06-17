@@ -23,6 +23,17 @@ internal struct ValueStopwatch
 
     public static ValueStopwatch StartNew() => new ValueStopwatch(Stopwatch.GetTimestamp());
 
+    public static TimeSpan GetElapsedTime(long startingTimestamp, long endingTimestamp)
+    {
+#if !NET7_0_OR_GREATER
+        var timestampDelta = endingTimestamp - startingTimestamp;
+        var ticks = (long)(TimestampToTicks * timestampDelta);
+        return new TimeSpan(ticks);
+#else
+        return Stopwatch.GetElapsedTime(startingTimestamp, endingTimestamp);
+#endif
+    }
+
     public TimeSpan GetElapsedTime()
     {
         // Start timestamp can't be zero in an initialized ValueStopwatch. It would have to be literally the first thing executed when the machine boots to be 0.
@@ -34,12 +45,6 @@ internal struct ValueStopwatch
 
         var end = Stopwatch.GetTimestamp();
 
-#if !NET7_0_OR_GREATER
-        var timestampDelta = end - _startTimestamp;
-        var ticks = (long)(TimestampToTicks * timestampDelta);
-        return new TimeSpan(ticks);
-#else
-        return Stopwatch.GetElapsedTime(_startTimestamp, end);
-#endif
+        return GetElapsedTime(_startTimestamp, end);
     }
 }

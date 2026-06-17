@@ -14,5 +14,5 @@ Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.TryParseMessage(ref System
 Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.Version.get -> int
 Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.WriteMessage(Microsoft.AspNetCore.SignalR.Protocol.HubMessage! message, System.Buffers.IBufferWriter<byte>! output) -> void
 Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions
-static Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions.AddJsonProtocol<TBuilder>(this TBuilder builder) -> TBuilder
 static Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions.AddJsonProtocol<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions!>! configure) -> TBuilder
+static Microsoft.Extensions.DependencyInjection.JsonProtocolDependencyInjectionExtensions.AddJsonProtocol<TBuilder>(this TBuilder builder) -> TBuilder

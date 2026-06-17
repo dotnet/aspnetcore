@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,8 +12,9 @@ using Microsoft.AspNetCore.DataProtection.Cng;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging.Abstractions;
+using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 
@@ -39,13 +41,13 @@ public class AuthenticatedEncryptorDescriptorTests
             symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
             symmetricAlgorithmKeySizeInBytes: (uint)(keyLengthInBits / 8),
             hmacAlgorithmHandle: BCryptAlgorithmHandle.OpenAlgorithmHandle(hashAlgorithm, hmac: true));
-        var test = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey));
+        var encryptor = CreateEncryptorInstanceFromDescriptor(CreateDescriptor(encryptionAlgorithm, validationAlgorithm, masterKey));
 
         // Act & assert - data round trips properly from control to test
         byte[] plaintext = new byte[] { 1, 2, 3, 4, 5 };
         byte[] aad = new byte[] { 2, 4, 6, 8, 0 };
         byte[] ciphertext = control.Encrypt(new ArraySegment<byte>(plaintext), new ArraySegment<byte>(aad));
-        byte[] roundTripPlaintext = test.Decrypt(new ArraySegment<byte>(ciphertext), new ArraySegment<byte>(aad));
+        byte[] roundTripPlaintext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), new ArraySegment<byte>(aad));
         Assert.Equal(plaintext, roundTripPlaintext);
     }
 
@@ -101,8 +103,8 @@ public class AuthenticatedEncryptorDescriptorTests
         Assert.Equal(plaintext, roundTripPlaintext);
     }
 
-    public static TheoryData CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementationData
-        => new TheoryData<EncryptionAlgorithm, ValidationAlgorithm, Func<HMAC>>
+    public static TheoryData<EncryptionAlgorithm, ValidationAlgorithm, Func<HMAC>> CreateAuthenticatedEncryptor_RoundTripsData_ManagedImplementationData
+        => new()
         {
                 { EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256, () => new HMACSHA256() },
                 { EncryptionAlgorithm.AES_192_CBC, ValidationAlgorithm.HMACSHA256, () => new HMACSHA256() },

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -118,12 +118,12 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CryptCommon_GenericError" xml:space="preserve">
-    <value>An error occurred during a cryptographic operation. For more information go to http://aka.ms/dataprotectionwarning</value>
+    <value>An error occurred during a cryptographic operation. Refer to the inner exception for more information.</value>
   </data>
   <data name="TimeLimitedDataProtector_PayloadExpired" xml:space="preserve">
-    <value>The payload expired at {0}. For more information go to http://aka.ms/dataprotectionwarning</value>
+    <value>The payload expired at {0}.</value>
   </data>
   <data name="TimeLimitedDataProtector_PayloadInvalid" xml:space="preserve">
-    <value>The payload is invalid. For more information go to http://aka.ms/dataprotectionwarning</value>
+    <value>The payload is invalid. For more information go to https://aka.ms/aspnet/dataprotectionwarning</value>
   </data>
 </root>

@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Runtime.InteropServices;
 using System.Security;
-using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.Extensions.Logging;
+using Windows.Win32.Networking.HttpServer;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
@@ -18,14 +15,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 // failures are handled internally and reported via ClientCertException or ClientCertError.
 internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposable
 {
-    private const uint CertBoblSize = 1500;
+    private const uint CertBlobSize = 1500;
     private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(WaitCallback);
-    private static readonly int RequestChannelBindStatusSize =
-        Marshal.SizeOf<HttpApiTypes.HTTP_REQUEST_CHANNEL_BIND_STATUS>();
 
     private SafeNativeOverlapped? _overlapped;
     private byte[]? _backingBuffer;
-    private HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
+    private HTTP_SSL_CLIENT_CERT_INFO* _memoryBlob;
     private uint _size;
     private readonly TaskCompletionSource<object?> _tcs;
     private readonly RequestContext _requestContext;
@@ -41,7 +36,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         _tcs = new TaskCompletionSource<object?>();
         // we will use this overlapped structure to issue async IO to ul
         // the event handle will be put in by the BeginHttpApi2.ERROR_SUCCESS() method
-        Reset(CertBoblSize);
+        Reset(CertBlobSize);
 
         if (cancellationToken.CanBeCanceled)
         {
@@ -102,7 +97,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         }
     }
 
-    private HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* RequestBlob
+    private HTTP_SSL_CLIENT_CERT_INFO* RequestBlob
     {
         get
         {
@@ -132,7 +127,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
         var boundHandle = RequestContext.Server.RequestQueue.BoundHandle;
         _overlapped = new SafeNativeOverlapped(boundHandle,
             boundHandle.AllocateNativeOverlapped(IOCallback, this, _backingBuffer));
-        _memoryBlob = (HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO*)Marshal.UnsafeAddrOfPinnedArrayElement(_backingBuffer, 0);
+        _memoryBlob = (HTTP_SSL_CLIENT_CERT_INFO*)Marshal.UnsafeAddrOfPinnedArrayElement(_backingBuffer, 0);
     }
 
     // When you use netsh to configure HTTP.SYS with clientcertnegotiation = enable
@@ -155,42 +150,42 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
     // HTTP.SYS will not do this for you automatically
     internal Task LoadClientCertificateAsync()
     {
-        uint size = CertBoblSize;
+        var size = CertBlobSize;
         bool retry;
         do
         {
             retry = false;
             uint bytesReceived = 0;
 
-            uint statusCode =
+            var statusCode =
                 HttpApi.HttpReceiveClientCertificate(
                     RequestQueueHandle,
                     RequestContext.Request.UConnectionId,
-                    (uint)HttpApiTypes.HTTP_FLAGS.NONE,
+                    0u,
                     RequestBlob,
                     size,
                     &bytesReceived,
                     NativeOverlapped!);
 
-            if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
+            if (statusCode == ErrorCodes.ERROR_MORE_DATA)
             {
-                HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = RequestBlob;
+                var pClientCertInfo = RequestBlob;
                 size = bytesReceived + pClientCertInfo->CertEncodedSize;
                 Reset(size);
                 retry = true;
             }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
+            else if (statusCode == ErrorCodes.ERROR_NOT_FOUND)
             {
                 // The client did not send a cert.
                 Complete(0, null);
             }
-            else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
+            else if (statusCode == ErrorCodes.ERROR_SUCCESS &&
                 HttpSysListener.SkipIOCPCallbackOnSuccess)
             {
                 IOCompleted(statusCode, bytesReceived);
             }
-            else if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
-                statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
+            else if (statusCode != ErrorCodes.ERROR_SUCCESS &&
+                statusCode != ErrorCodes.ERROR_IO_PENDING)
             {
                 // Some other bad error, possible(?) return values are:
                 // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
@@ -228,16 +223,16 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
     [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirected to callback")]
     private static unsafe void IOCompleted(ClientCertLoader asyncResult, uint errorCode, uint numBytes)
     {
-        RequestContext requestContext = asyncResult.RequestContext;
+        var requestContext = asyncResult.RequestContext;
         try
         {
-            if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
+            if (errorCode == ErrorCodes.ERROR_MORE_DATA)
             {
                 // There is a bug that has existed in http.sys since w2k3.  Bytesreceived will only
                 // return the size of the initial cert structure.  To get the full size,
                 // we need to add the certificate encoding size as well.
 
-                HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult.RequestBlob;
+                var pClientCertInfo = asyncResult.RequestBlob;
                 asyncResult.Reset(numBytes + pClientCertInfo->CertEncodedSize);
 
                 uint bytesReceived = 0;
@@ -245,31 +240,31 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                     HttpApi.HttpReceiveClientCertificate(
                         requestContext.Server.RequestQueue.Handle,
                         requestContext.Request.UConnectionId,
-                        (uint)HttpApiTypes.HTTP_FLAGS.NONE,
+                        0u,
                         asyncResult._memoryBlob,
                         asyncResult._size,
                         &bytesReceived,
                         asyncResult._overlapped!);
 
-                if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING ||
-                   (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && !HttpSysListener.SkipIOCPCallbackOnSuccess))
+                if (errorCode == ErrorCodes.ERROR_IO_PENDING ||
+                   (errorCode == ErrorCodes.ERROR_SUCCESS && !HttpSysListener.SkipIOCPCallbackOnSuccess))
                 {
                     return;
                 }
             }
 
-            if (errorCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_NOT_FOUND)
+            if (errorCode == ErrorCodes.ERROR_NOT_FOUND)
             {
                 // The client did not send a cert.
                 asyncResult.Complete(0, null);
             }
-            else if (errorCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            else if (errorCode != ErrorCodes.ERROR_SUCCESS)
             {
                 asyncResult.Fail(new HttpSysException((int)errorCode));
             }
             else
             {
-                HttpApiTypes.HTTP_SSL_CLIENT_CERT_INFO* pClientCertInfo = asyncResult._memoryBlob;
+                var pClientCertInfo = asyncResult._memoryBlob;
                 if (pClientCertInfo == null)
                 {
                     asyncResult.Complete(0, null);
@@ -280,7 +275,7 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
                     {
                         try
                         {
-                            byte[] certEncoded = new byte[pClientCertInfo->CertEncodedSize];
+                            var certEncoded = new byte[pClientCertInfo->CertEncodedSize];
                             Marshal.Copy((IntPtr)pClientCertInfo->pCertEncoded, certEncoded, 0, certEncoded.Length);
                             asyncResult.Complete((int)pClientCertInfo->CertFlags, new X509Certificate2(certEncoded));
                         }
@@ -346,84 +341,5 @@ internal sealed unsafe partial class ClientCertLoader : IAsyncResult, IDisposabl
     public bool IsCompleted
     {
         get { return _tcs.Task.IsCompleted; }
-    }
-
-    internal static unsafe ChannelBinding? GetChannelBindingFromTls(RequestQueue requestQueue, ulong connectionId, ILogger logger)
-    {
-        // +128 since a CBT is usually <128 thus we need to call HRCC just once. If the CBT
-        // is >128 we will get ERROR_MORE_DATA and call again
-        int size = RequestChannelBindStatusSize + 128;
-
-        Debug.Assert(size >= 0);
-
-        byte[]? blob = null;
-        SafeLocalFreeChannelBinding? token = null;
-
-        uint bytesReceived = 0;
-        uint statusCode;
-
-        do
-        {
-            blob = new byte[size];
-            fixed (byte* blobPtr = blob)
-            {
-                // Http.sys team: ServiceName will always be null if
-                // HTTP_RECEIVE_SECURE_CHANNEL_TOKEN flag is set.
-                statusCode = HttpApi.HttpReceiveClientCertificate(
-                    requestQueue.Handle,
-                    connectionId,
-                    (uint)HttpApiTypes.HTTP_FLAGS.HTTP_RECEIVE_SECURE_CHANNEL_TOKEN,
-                    blobPtr,
-                    (uint)size,
-                    &bytesReceived,
-                    SafeNativeOverlapped.Zero);
-
-                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
-                {
-                    int tokenOffset = GetTokenOffsetFromBlob((IntPtr)blobPtr);
-                    int tokenSize = GetTokenSizeFromBlob((IntPtr)blobPtr);
-                    Debug.Assert(tokenSize < Int32.MaxValue);
-
-                    token = SafeLocalFreeChannelBinding.LocalAlloc(tokenSize);
-
-                    Marshal.Copy(blob, tokenOffset, token.DangerousGetHandle(), tokenSize);
-                }
-                else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_MORE_DATA)
-                {
-                    int tokenSize = GetTokenSizeFromBlob((IntPtr)blobPtr);
-                    Debug.Assert(tokenSize < Int32.MaxValue);
-
-                    size = RequestChannelBindStatusSize + tokenSize;
-                }
-                else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
-                {
-                    Log.ChannelBindingUnsupported(logger);
-                    return null; // old schannel library which doesn't support CBT
-                }
-                else
-                {
-                    // It's up to the consumer to fail if the missing ChannelBinding matters to them.
-                    Log.ChannelBindingMissing(logger, new HttpSysException((int)statusCode));
-                    break;
-                }
-            }
-        }
-        while (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS);
-
-        return token;
-    }
-
-    private static int GetTokenOffsetFromBlob(IntPtr blob)
-    {
-        Debug.Assert(blob != IntPtr.Zero);
-        IntPtr tokenPointer = Marshal.ReadIntPtr(blob, (int)Marshal.OffsetOf<HttpApiTypes.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelToken"));
-        Debug.Assert(tokenPointer != IntPtr.Zero);
-        return (int)IntPtrHelper.Subtract(tokenPointer, blob);
-    }
-
-    private static int GetTokenSizeFromBlob(IntPtr blob)
-    {
-        Debug.Assert(blob != IntPtr.Zero);
-        return Marshal.ReadInt32(blob, (int)Marshal.OffsetOf<HttpApiTypes.HTTP_REQUEST_CHANNEL_BIND_STATUS>("ChannelTokenSize"));
     }
 }

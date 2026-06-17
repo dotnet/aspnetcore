@@ -35,6 +35,25 @@ public abstract class NavigationManager
 
     private CancellationTokenSource? _locationChangingCts;
 
+    /// <summary>
+    /// An event that fires when the page is not found.
+    /// </summary>
+    public event EventHandler<NotFoundEventArgs> OnNotFound
+    {
+        add
+        {
+            AssertInitialized();
+            _notFound += value;
+        }
+        remove
+        {
+            AssertInitialized();
+            _notFound -= value;
+        }
+    }
+
+    private EventHandler<NotFoundEventArgs>? _notFound;
+
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -141,8 +160,67 @@ public abstract class NavigationManager
     public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options)
     {
         AssertInitialized();
+
+        if (options.RelativeToCurrentUri)
+        {
+            uri = ResolveRelativeToCurrentPath(uri);
+        }
+
         NavigateToCore(uri, options);
     }
+
+    internal string ResolveRelativeToCurrentPath(string relativeUri)
+    {
+        if (IsAbsoluteUri(relativeUri))
+        {
+            throw new ArgumentException(
+                $"The URI '{relativeUri}' is not a relative URI. When RelativeToCurrentUri is true, the URI must be relative (e.g., 'page.html', 'folder/page', '../other').",
+                nameof(relativeUri));
+        }
+
+        var currentUri = _uri!.AsSpan();
+
+        // fragment-only and query-only references are special cases
+        // that resolve against the full current URI
+        if (relativeUri.StartsWith('#'))
+        {
+            var existingFragmentIndex = currentUri.IndexOf('#');
+            if (existingFragmentIndex >= 0)
+            {
+                return string.Concat(currentUri[..existingFragmentIndex], relativeUri.AsSpan());
+            }
+            return string.Concat(_uri, relativeUri);
+        }
+
+        if (relativeUri.StartsWith('?'))
+        {
+            var existingQueryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
+            if (existingQueryOrFragmentIndex >= 0)
+            {
+                return string.Concat(currentUri[..existingQueryOrFragmentIndex], relativeUri.AsSpan());
+            }
+            return string.Concat(_uri, relativeUri);
+        }
+
+        // For path-based relative URIs, resolve against the directory (strip last segment)
+        var queryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
+        var pathOnlyLength = queryOrFragmentIndex >= 0 ? queryOrFragmentIndex : currentUri.Length;
+        var lastSlashIndex = currentUri[..pathOnlyLength].LastIndexOf('/');
+        
+        if (lastSlashIndex < 0)
+        {
+            // No slash found - this shouldn't happen for valid absolute URIs
+            // In this edge case, just append to the current URI
+            return string.Concat(_uri, relativeUri);
+        }
+        
+        // Keep everything up to and including the last slash, then append the relative URI
+        var basePathLength = lastSlashIndex + 1;
+        return string.Concat(currentUri[..basePathLength], relativeUri.AsSpan());
+    }
+
+    private static bool IsAbsoluteUri(string uri)
+        => uri.StartsWith('/') || System.Uri.TryCreate(uri, UriKind.Absolute, out _);
 
     /// <summary>
     /// Navigates to the specified URI.
@@ -165,6 +243,35 @@ public abstract class NavigationManager
     /// <param name="options">Provides additional <see cref="NavigationOptions"/>.</param>
     protected virtual void NavigateToCore([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options) =>
         throw new NotImplementedException($"The type {GetType().FullName} does not support supplying {nameof(NavigationOptions)}. To add support, that type should override {nameof(NavigateToCore)}(string uri, {nameof(NavigationOptions)} options).");
+
+    /// <summary>
+    /// Refreshes the current page via request to the server.
+    /// </summary>
+    /// <remarks>
+    /// If <paramref name="forceReload"/> is <c>true</c>, a full page reload will always be performed.
+    /// Otherwise, the response HTML may be merged with the document's existing HTML to preserve client-side state,
+    /// falling back on a full page reload if necessary.
+    /// </remarks>
+    public virtual void Refresh(bool forceReload = false)
+        => NavigateTo(Uri, forceLoad: true, replace: true);
+
+    /// <summary>
+    /// Handles setting the NotFound state.
+    /// </summary>
+    public void NotFound() => NotFoundCore();
+
+    private void NotFoundCore()
+    {
+        if (_notFound == null)
+        {
+            // global router doesn't exist, no events were registered
+            return;
+        }
+        else
+        {
+            _notFound.Invoke(this, new NotFoundEventArgs());
+        }
+    }
 
     /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.
@@ -198,7 +305,7 @@ public abstract class NavigationManager
 
     /// <summary>
     /// Converts a relative URI into an absolute one (by resolving it
-    /// relative to the current absolute URI).
+    /// relative to the base URI).
     /// </summary>
     /// <param name="relativeUri">The relative URI.</param>
     /// <returns>The absolute URI.</returns>
@@ -234,6 +341,32 @@ public abstract class NavigationManager
             // slash is present, but ASP.NET Core at least does by default when
             // using PathBase.
             return uri.Substring(_baseUri.OriginalString.Length - 1);
+        }
+
+        var message = $"The URI '{uri}' is not contained by the base URI '{_baseUri}'.";
+        throw new ArgumentException(message);
+    }
+
+    internal ReadOnlySpan<char> ToBaseRelativePath(ReadOnlySpan<char> uri)
+    {
+        if (MemoryExtensions.StartsWith(uri, _baseUri!.OriginalString.AsSpan(), StringComparison.Ordinal))
+        {
+            // The absolute URI must be of the form "{baseUri}something" (where
+            // baseUri ends with a slash), and from that we return "something"
+            return uri[_baseUri.OriginalString.Length..];
+        }
+
+        var pathEndIndex = uri.IndexOfAny('#', '?');
+        var uriPathOnly = pathEndIndex < 0 ? uri : uri[..pathEndIndex];
+        if (_baseUri.OriginalString.EndsWith('/') && MemoryExtensions.Equals(uriPathOnly, _baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        {
+            // Special case: for the base URI "/something/", if you're at
+            // "/something" then treat it as if you were at "/something/" (i.e.,
+            // with the trailing slash). It's a bit ambiguous because we don't know
+            // whether the server would return the same page whether or not the
+            // slash is present, but ASP.NET Core at least does by default when
+            // using PathBase.
+            return uri[(_baseUri.OriginalString.Length - 1)..];
         }
 
         var message = $"The URI '{uri}' is not contained by the base URI '{_baseUri}'.";

@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Win32;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -136,7 +136,7 @@ public sealed class RequiresIISAttribute : Attribute, ITestCondition
                 IsMet &= available;
                 if (!available)
                 {
-                    SkipReason += $"The machine does have {module.Capability} available.";
+                    SkipReason += $"The machine does not have {module.Capability} available.";
                 }
             }
         }

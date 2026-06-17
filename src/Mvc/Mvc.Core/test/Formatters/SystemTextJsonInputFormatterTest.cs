@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters;
@@ -197,7 +197,7 @@ public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
 
     internal override string JsonFormatter_EscapedKeys_Bracket_Expected => "$[0]['It[s a key']";
 
-    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "$[0]['It's a key']";
+    internal override string JsonFormatter_EscapedKeys_SingleQuote_Expected => "$[0]['It\\'s a key']";
 
     internal override string ReadAsync_ArrayOfObjects_HasCorrectKey_Expected => "$[2].Age";
 

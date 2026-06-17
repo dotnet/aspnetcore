@@ -1,267 +1,200 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
 [DebuggerDisplay("{_state,nq}")]
 internal sealed class RendererSynchronizationContext : SynchronizationContext
 {
-    private static readonly ContextCallback ExecutionContextThunk = (object state) =>
+    private readonly object _lock;
+    private Task _taskQueue;
+
+    public event UnhandledExceptionEventHandler? UnhandledException;
+
+    public RendererSynchronizationContext() : this(new object(), Task.CompletedTask) { }
+
+    private RendererSynchronizationContext(object @lock, Task taskQueue)
     {
-        var item = (WorkItem)state;
-        item.SynchronizationContext.ExecuteSynchronously(null, item.Callback, item.State);
-    };
-
-    private static readonly Action<Task, object> BackgroundWorkThunk = (Task task, object state) =>
-    {
-        var item = (WorkItem)state;
-        item.SynchronizationContext.ExecuteBackground(item);
-    };
-
-    private readonly State _state;
-
-    public event UnhandledExceptionEventHandler UnhandledException;
-
-    public RendererSynchronizationContext()
-        : this(new State())
-    {
+        _lock = @lock;
+        _taskQueue = taskQueue;
     }
 
-    private RendererSynchronizationContext(State state)
-    {
-        _state = state;
-    }
+    /// <inheritdoc />
+    public override SynchronizationContext CreateCopy() =>
+        new RendererSynchronizationContext(_lock, _taskQueue);
+
+    // The following two Action/Func<TResult> overloads can be more optimized than their
+    // async equivalents, as they don't need to deal with the possibility of the callback
+    // posting back to this context.  As a result, they can use the Task for the InvokeAsync
+    // operation as the object to use in the task queue itself if the operation is the next
+    // in line.  For the async overloads, the callbacks might await and need to post back
+    // to the current synchronization context, in which case their continuation could end
+    // up seeing the InvokeAsync task as the antecedent, which would lead to deadlock. As
+    // such, those operations must use a different task for the task queue. Note that this
+    // requires these synchronous callbacks not doing sync-over-async with any work that
+    // blocks waiting for this sync ctx to do work, but such cases are perilous, anyway,
+    // as they invariably lead to deadlock.
 
     public Task InvokeAsync(Action action)
     {
-        var completion = new RendererSynchronizationTaskCompletionSource<Action, object>(action);
-        ExecuteSynchronouslyIfPossible((state) =>
+        var completion = AsyncTaskMethodBuilder.Create();
+        var t = completion.Task; // lazy initialize before passing around the struct
+
+        lock (_lock)
         {
-            var completion = (RendererSynchronizationTaskCompletionSource<Action, object>)state;
+            if (!_taskQueue.IsCompleted)
+            {
+                _taskQueue = PostAsync(_taskQueue, Execute, (completion, action, this));
+                return t;
+            }
+
+            _taskQueue = t;
+        }
+
+        Execute((completion, action, this));
+        return t;
+
+        static void Execute((AsyncTaskMethodBuilder Completion, Action Action, RendererSynchronizationContext Context) state)
+        {
+            var original = Current;
+            SetSynchronizationContext(state.Context);
             try
             {
-                completion.Callback();
-                completion.SetResult(null);
-            }
-            catch (OperationCanceledException)
-            {
-                completion.SetCanceled();
+                state.Action();
+                state.Completion.SetResult();
             }
             catch (Exception exception)
             {
-                completion.SetException(exception);
+                state.Completion.SetException(exception);
             }
-        }, completion);
-
-        return completion.Task;
-    }
-
-    public Task InvokeAsync(Func<Task> asyncAction)
-    {
-        var completion = new RendererSynchronizationTaskCompletionSource<Func<Task>, object>(asyncAction);
-        ExecuteSynchronouslyIfPossible(async (state) =>
-        {
-            var completion = (RendererSynchronizationTaskCompletionSource<Func<Task>, object>)state;
-            try
+            finally
             {
-                await completion.Callback();
-                completion.SetResult(null);
+                SetSynchronizationContext(original);
             }
-            catch (OperationCanceledException)
-            {
-                completion.SetCanceled();
-            }
-            catch (Exception exception)
-            {
-                completion.SetException(exception);
-            }
-        }, completion);
-
-        return completion.Task;
+        }
     }
 
     public Task<TResult> InvokeAsync<TResult>(Func<TResult> function)
     {
-        var completion = new RendererSynchronizationTaskCompletionSource<Func<TResult>, TResult>(function);
-        ExecuteSynchronouslyIfPossible((state) =>
+        var completion = AsyncTaskMethodBuilder<TResult>.Create();
+        var t = completion.Task; // lazy initialize before passing around the struct
+
+        lock (_lock)
         {
-            var completion = (RendererSynchronizationTaskCompletionSource<Func<TResult>, TResult>)state;
+            if (!_taskQueue.IsCompleted)
+            {
+                _taskQueue = PostAsync(_taskQueue, Execute, (completion, function, this));
+                return t;
+            }
+
+            _taskQueue = t;
+        }
+
+        Execute((completion, function, this));
+        return t;
+
+        static void Execute((AsyncTaskMethodBuilder<TResult> Completion, Func<TResult> Func, RendererSynchronizationContext Context) state)
+        {
+            var original = Current;
+            SetSynchronizationContext(state.Context);
             try
             {
-                var result = completion.Callback();
-                completion.SetResult(result);
-            }
-            catch (OperationCanceledException)
-            {
-                completion.SetCanceled();
+                state.Completion.SetResult(state.Func());
             }
             catch (Exception exception)
             {
-                completion.SetException(exception);
+                state.Completion.SetException(exception);
             }
-        }, completion);
+            finally
+            {
+                SetSynchronizationContext(original);
+            }
+        }
+    }
 
-        return completion.Task;
+    public Task InvokeAsync(Func<Task> asyncAction)
+    {
+        var completion = AsyncTaskMethodBuilder.Create();
+        var t = completion.Task; // lazy initialize before passing around the struct
+
+        SendIfQuiescedOrElsePost(static async state =>
+        {
+            try
+            {
+                await state.asyncAction().ConfigureAwait(false);
+                state.completion.SetResult();
+            }
+            catch (Exception exception)
+            {
+                state.completion.SetException(exception);
+            }
+        }, (completion, asyncAction));
+
+        return t;
     }
 
     public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> asyncFunction)
     {
-        var completion = new RendererSynchronizationTaskCompletionSource<Func<Task<TResult>>, TResult>(asyncFunction);
-        ExecuteSynchronouslyIfPossible(async (state) =>
+        var completion = AsyncTaskMethodBuilder<TResult>.Create();
+        var t = completion.Task; // lazy initialize before passing around the struct
+
+        SendIfQuiescedOrElsePost(static async state =>
         {
-            var completion = (RendererSynchronizationTaskCompletionSource<Func<Task<TResult>>, TResult>)state;
             try
             {
-                var result = await completion.Callback();
-                completion.SetResult(result);
-            }
-            catch (OperationCanceledException)
-            {
-                completion.SetCanceled();
+                state.completion.SetResult(await state.asyncFunction().ConfigureAwait(false));
             }
             catch (Exception exception)
             {
-                completion.SetException(exception);
+                state.completion.SetException(exception);
             }
-        }, completion);
+        }, (completion, asyncFunction));
 
-        return completion.Task;
+        return t;
     }
 
-    // asynchronously runs the callback
-    //
-    // NOTE: this must always run async. It's not legal here to execute the work item synchronously.
-    public override void Post(SendOrPostCallback d, object state)
+    /// <inheritdoc/>
+    public override void Post(SendOrPostCallback d, object? state)
     {
-        lock (_state.Lock)
+        lock (_lock)
         {
-            _state.Task = Enqueue(_state.Task, d, state, forceAsync: true);
+            _taskQueue = PostAsync(_taskQueue, static s => s.d(s.state), (d, state));
         }
     }
 
-    // synchronously runs the callback
-    public override void Send(SendOrPostCallback d, object state)
+    /// <inheritdoc/>
+    public override void Send(SendOrPostCallback d, object? state)
     {
         Task antecedent;
-        var completion = new TaskCompletionSource();
+        var completion = AsyncTaskMethodBuilder.Create();
 
-        lock (_state.Lock)
+        lock (_lock)
         {
-            antecedent = _state.Task;
-            _state.Task = completion.Task;
+            antecedent = _taskQueue;
+            _taskQueue = completion.Task;
         }
 
         // We have to block. That's the contract of Send - we don't expect this to be used
         // in many scenarios in Components.
-        //
-        // Using Wait here is ok because the antecedent task will never throw.
-        antecedent.Wait();
+        antecedent.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing).GetAwaiter().GetResult();
 
-        ExecuteSynchronously(completion, d, state);
+        InvokeWithThisAsCurrentSyncCtxThenSetResult(completion, d.Invoke, state); // Allocates, but using this method should be rare
     }
 
-    // shallow copy
-    public override SynchronizationContext CreateCopy()
+    /// <summary>
+    /// Queues a work item that invokes the <paramref name="callback"/> with this instance as the current synchronization context.
+    /// The work item will only run once <paramref name="antecedent"/> has completed.
+    /// </summary>
+    private async Task PostAsync<TState>(Task antecedent, Action<TState> callback, TState state)
     {
-        return new RendererSynchronizationContext(_state);
-    }
-
-    // Similar to Post, but it can runs the work item synchronously if the context is not busy.
-    //
-    // This is the main code path used by components, we want to be able to run async work but only dispatch
-    // if necessary.
-    private void ExecuteSynchronouslyIfPossible(SendOrPostCallback d, object state)
-    {
-        TaskCompletionSource completion;
-        lock (_state.Lock)
-        {
-            if (!_state.Task.IsCompleted)
-            {
-                _state.Task = Enqueue(_state.Task, d, state);
-                return;
-            }
-
-            // We can execute this synchronously because nothing is currently running
-            // or queued.
-            completion = new TaskCompletionSource();
-            _state.Task = completion.Task;
-        }
-
-        ExecuteSynchronously(completion, d, state);
-    }
-
-    private Task Enqueue(Task antecedent, SendOrPostCallback d, object state, bool forceAsync = false)
-    {
-        // If we get here is means that a callback is being explicitly queued. Let's instead add it to the queue and yield.
-        //
-        // We use our own queue here to maintain the execution order of the callbacks scheduled here. Also
-        // we need a queue rather than just scheduling an item in the thread pool - those items would immediately
-        // block and hurt scalability.
-        //
-        // We need to capture the execution context so we can restore it later. This code is similar to
-        // the call path of ThreadPool.QueueUserWorkItem and System.Threading.QueueUserWorkItemCallback.
-        ExecutionContext executionContext = null;
-        if (!ExecutionContext.IsFlowSuppressed())
-        {
-            executionContext = ExecutionContext.Capture();
-        }
-
-        var flags = forceAsync ? TaskContinuationOptions.RunContinuationsAsynchronously : TaskContinuationOptions.None;
-        return antecedent.ContinueWith(BackgroundWorkThunk, new WorkItem()
-        {
-            SynchronizationContext = this,
-            ExecutionContext = executionContext,
-            Callback = d,
-            State = state,
-        }, CancellationToken.None, flags, TaskScheduler.Current);
-    }
-
-    private void ExecuteSynchronously(
-        TaskCompletionSource completion,
-        SendOrPostCallback d,
-        object state)
-    {
-        var original = Current;
+        await antecedent.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ForceYielding);
         try
         {
-            SetSynchronizationContext(this);
-            _state.IsBusy = true;
-
-            d(state);
-        }
-        finally
-        {
-            _state.IsBusy = false;
-            SetSynchronizationContext(original);
-
-            completion?.SetResult();
-        }
-    }
-
-    private void ExecuteBackground(WorkItem item)
-    {
-        if (item.ExecutionContext == null)
-        {
-            try
-            {
-                ExecuteSynchronously(null, item.Callback, item.State);
-            }
-            catch (Exception ex)
-            {
-                DispatchException(ex);
-            }
-
-            return;
-        }
-
-        // Perf - using a static thunk here to avoid a delegate allocation.
-        try
-        {
-            ExecutionContext.Run(item.ExecutionContext, ExecutionContextThunk, item);
+            SetSynchronizationContext(this); // this will be undone automatically by the thread pool, so we don't need to here
+            callback(state);
         }
         catch (Exception ex)
         {
@@ -269,42 +202,54 @@ internal sealed class RendererSynchronizationContext : SynchronizationContext
         }
     }
 
-    private void DispatchException(Exception ex)
+    /// <summary>Workhorse for the InvokeAsync methods.</summary>
+    /// <remarks>
+    /// Similar to Post, but it can run the work item synchronously if the context is not busy.
+    /// This is the main code path used by components, we want to be able to run async work but only dispatch
+    /// if necessary.
+    /// </remarks>
+    private void SendIfQuiescedOrElsePost<TState>(Action<TState> callback, TState state)
     {
-        var handler = UnhandledException;
-        if (handler != null)
+        AsyncTaskMethodBuilder completion;
+        lock (_lock)
         {
-            handler(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
+            if (!_taskQueue.IsCompleted)
+            {
+                _taskQueue = PostAsync(_taskQueue, callback, state);
+                return;
+            }
+
+            // We can execute this synchronously because nothing is currently running or queued.
+            completion = AsyncTaskMethodBuilder.Create();
+            _taskQueue = completion.Task;
+        }
+
+        InvokeWithThisAsCurrentSyncCtxThenSetResult(completion, callback, state);
+    }
+
+    /// <summary>
+    /// Sets the current synchronization context to this instance, invokes the <paramref name="callback"/>,
+    /// resets the synchronization context, and sets marks the builder as completed.
+    /// </summary>
+    private void InvokeWithThisAsCurrentSyncCtxThenSetResult<TState>(
+        AsyncTaskMethodBuilder completion,
+        Action<TState> callback,
+        TState state)
+    {
+        var original = Current;
+        try
+        {
+            SetSynchronizationContext(this);
+            callback(state);
+        }
+        finally
+        {
+            SetSynchronizationContext(original);
+            completion.SetResult();
         }
     }
 
-    private sealed class State
-    {
-        public bool IsBusy; // Just for debugging
-        public object Lock = new object();
-        public Task Task = Task.CompletedTask;
-
-        public override string ToString()
-        {
-            return $"{{ Busy: {IsBusy}, Pending Task: {Task} }}";
-        }
-    }
-
-    private sealed class WorkItem
-    {
-        public RendererSynchronizationContext SynchronizationContext;
-        public ExecutionContext ExecutionContext;
-        public SendOrPostCallback Callback;
-        public object State;
-    }
-
-    private sealed class RendererSynchronizationTaskCompletionSource<TCallback, TResult> : TaskCompletionSource<TResult>
-    {
-        public RendererSynchronizationTaskCompletionSource(TCallback callback)
-        {
-            Callback = callback;
-        }
-
-        public TCallback Callback { get; }
-    }
+    /// <summary>Invokes <see cref="UnhandledException"/> with the supplied exception instance.</summary>
+    private void DispatchException(Exception ex) =>
+        UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
 }

@@ -12,5 +12,8 @@ public partial class RedisCache
     {
         [LoggerMessage(1, LogLevel.Warning, "Could not determine the Redis server version. Falling back to use HMSET command instead of HSET.", EventName = "CouldNotDetermineServerVersion")]
         public static partial void CouldNotDetermineServerVersion(ILogger logger, Exception exception);
+
+        [LoggerMessage(2, LogLevel.Debug, "Unable to add library name suffix.", EventName = "UnableToAddLibraryNameSuffix")]
+        internal static partial void UnableToAddLibraryNameSuffix(ILogger logger, Exception exception);
     }
 }

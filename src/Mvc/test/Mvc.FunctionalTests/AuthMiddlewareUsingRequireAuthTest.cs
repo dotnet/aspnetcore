@@ -1,24 +1,36 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class AuthMiddlewareUsingRequireAuthTest : IClassFixture<MvcTestFixture<SecurityWebSite.StartupWithRequireAuth>>
+public class AuthMiddlewareUsingRequireAuthTest : LoggedTest
 {
-    public AuthMiddlewareUsingRequireAuthTest(MvcTestFixture<SecurityWebSite.StartupWithRequireAuth> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<SecurityWebSite.StartupWithRequireAuth>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
     }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<SecurityWebSite.StartupWithRequireAuth>();
 
-    public HttpClient Client { get; }
+    public WebApplicationFactory<SecurityWebSite.StartupWithRequireAuth> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task RequireAuthConfiguredGlobally_AppliesToControllers()

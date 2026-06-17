@@ -31,7 +31,8 @@ internal abstract class ProgramBase
         return console;
     }
 
-    protected int Run(string[] args, CommandBase command, bool throwOnUnexpectedArg)
+    // Internal for testing
+    internal int Run(string[] args, CommandBase command, bool throwOnUnexpectedArg)
     {
         try
         {

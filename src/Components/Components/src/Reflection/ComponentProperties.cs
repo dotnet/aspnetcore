@@ -5,12 +5,21 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Reflection;
 
 internal static class ComponentProperties
 {
+    static ComponentProperties()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+
     internal const BindingFlags BindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
     // Right now it's not possible for a component to define a Parameter and a Cascading Parameter with
@@ -28,7 +37,10 @@ internal static class ComponentProperties
         var targetType = target.GetType();
         if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
         {
+            // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
+            #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
             writers = new WritersForType(targetType);
+            #pragma warning restore IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.WritersForType.WritersForType(Type)'.
             _cachedWritersByType[targetType] = writers;
         }
 
@@ -39,10 +51,15 @@ internal static class ComponentProperties
             foreach (var parameter in parameters)
             {
                 var parameterName = parameter.Name;
+
                 if (!writers.TryGetValue(parameterName, out var writer))
                 {
+                    // Suppressed with "pragma warning disable" so ILLink Roslyn Anayzer doesn't report the warning.
+                    #pragma warning disable IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
                     // Case 1: There is nowhere to put this value.
                     ThrowForUnknownIncomingParameterName(targetType, parameterName);
+                    #pragma warning restore IL2072 // 'targetType' argument does not satisfy 'DynamicallyAccessedMemberTypes.All' in call to 'Microsoft.AspNetCore.Components.Reflection.ComponentProperties.ThrowForUnknownIncomingParameterName(Type, String)'.
+
                     throw null; // Unreachable
                 }
                 else if (!writer.AcceptsDirectParameters && !parameter.Cascading)
@@ -184,8 +201,7 @@ internal static class ComponentProperties
             {
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' has a property matching the name '{parameterName}', " +
-                    $"but it does not have [{nameof(ParameterAttribute)}], [{nameof(CascadingParameterAttribute)}] or " +
-                    $"[SupplyParameterFromFormAttribute] applied.");
+                    $"but it does not have [Parameter], [CascadingParameter], or any other parameter-supplying attribute.");
             }
             else
             {

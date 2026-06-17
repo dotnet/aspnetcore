@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Authentication.Google.GoogleHandler.GoogleHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.Google.GoogleOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder) -> void

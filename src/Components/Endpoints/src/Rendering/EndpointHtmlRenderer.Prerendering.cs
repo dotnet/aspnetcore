@@ -1,10 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -12,8 +18,13 @@ internal partial class EndpointHtmlRenderer
 {
     private static readonly object ComponentSequenceKey = new object();
 
-    protected override IComponent ResolveComponentForRenderMode(Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode componentTypeRenderMode)
+    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
+        if (_isHandlingErrors)
+        {
+            // Ignore the render mode boundary in error scenarios.
+            return componentActivator.CreateInstance(componentType);
+        }
         var closestRenderModeBoundary = parentComponentId.HasValue
             ? GetClosestRenderModeBoundary(parentComponentId.Value)
             : null;
@@ -27,37 +38,64 @@ internal partial class EndpointHtmlRenderer
         else
         {
             // This component is the start of a subtree with a rendermode, so introduce a new rendermode boundary here
-            return new SSRRenderModeBoundary(componentType, componentTypeRenderMode);
+            return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
         }
+    }
+
+    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component)
+    {
+        var componentState = GetComponentState(component);
+        var ssrRenderBoundary = GetClosestRenderModeBoundary(componentState);
+
+        if (ssrRenderBoundary is null)
+        {
+            return null;
+        }
+
+        return ssrRenderBoundary.RenderMode;
     }
 
     private SSRRenderModeBoundary? GetClosestRenderModeBoundary(int componentId)
     {
         var componentState = GetComponentState(componentId);
+        return GetClosestRenderModeBoundary(componentState);
+    }
+
+    private static SSRRenderModeBoundary? GetClosestRenderModeBoundary(ComponentState componentState)
+    {
+        var currentComponentState = componentState;
+
         do
         {
-            if (componentState.Component is SSRRenderModeBoundary boundary)
+            if (currentComponentState.Component is SSRRenderModeBoundary boundary)
             {
                 return boundary;
             }
 
-            componentState = componentState.ParentComponentState;
+            currentComponentState = currentComponentState.ParentComponentState;
         }
-        while (componentState is not null);
+        while (currentComponentState is not null);
 
         return null;
     }
 
+    public static void MarkAsAllowingEnhancedNavigation(HttpContext context)
+    {
+        context.Response.Headers.Add("blazor-enhanced-nav", "allow");
+    }
+
     public ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode prerenderMode,
         ParameterView parameters)
         => PrerenderComponentAsync(httpContext, componentType, prerenderMode, parameters, waitForQuiescence: true);
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     public async ValueTask<IHtmlAsyncContent> PrerenderComponentAsync(
         HttpContext httpContext,
-        Type componentType,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
         IComponentRenderMode? prerenderMode,
         ParameterView parameters,
         bool waitForQuiescence)
@@ -82,7 +120,7 @@ internal partial class EndpointHtmlRenderer
         {
             var rootComponent = prerenderMode is null
                 ? InstantiateComponent(componentType)
-                : new SSRRenderModeBoundary(componentType, prerenderMode);
+                : new SSRRenderModeBoundary(_httpContext, componentType, prerenderMode);
             var htmlRootComponent = await Dispatcher.InvokeAsync(() => BeginRenderingComponent(rootComponent, parameters));
             var result = new PrerenderedComponentHtmlContent(Dispatcher, htmlRootComponent);
 
@@ -96,9 +134,11 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
+    // We do not want the debugger to consider NavigationExceptions caught by this method as user-unhandled.
+    [DebuggerDisableUserUnhandledExceptions]
     internal async ValueTask<PrerenderedComponentHtmlContent> RenderEndpointComponent(
         HttpContext httpContext,
-        Type rootComponentType,
+        [DynamicallyAccessedMembers(Component)] Type rootComponentType,
         ParameterView parameters,
         bool waitForQuiescence)
     {
@@ -128,12 +168,59 @@ internal partial class EndpointHtmlRenderer
         }
         else if (_nonStreamingPendingTasks.Count > 0)
         {
-            // Just wait for quiescence of the non-streaming subtrees
-            await Task.WhenAll(_nonStreamingPendingTasks);
+            await WaitForNonStreamingPendingTasks();
         }
     }
 
-    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
+    private async Task GetErrorHandledTask(Task taskToHandle)
+    {
+        try
+        {
+            await taskToHandle;
+        }
+        catch (Exception ex)
+        {
+            // Ignore errors due to task cancellations.
+            if (!taskToHandle.IsCanceled)
+            {
+                _logger.LogError(
+                    ex,
+                    "An exception occurred during non-streaming rendering. " +
+                    "This exception will be ignored because the response " +
+                    "is being discarded and the request is being re-executed.");
+            }
+        }
+    }
+
+    public Task WaitForNonStreamingPendingTasks()
+    {
+        return NonStreamingPendingTasksCompletion ??= Execute();
+
+        async Task Execute()
+        {
+            while (_nonStreamingPendingTasks.Count > 0)
+            {
+                // Create a Task that represents the remaining ongoing work for the rendering process
+                var pendingWork = Task.WhenAll(_nonStreamingPendingTasks);
+
+                // Clear all pending work.
+                _nonStreamingPendingTasks.Clear();
+
+                try
+                {
+                    // new work might be added before we check again as a result of waiting for all
+                    // the child components to finish executing SetParametersAsync
+                    await pendingWork;
+                }
+                catch (NavigationException navigationException)
+                {
+                    await HandleNavigationException(_httpContext, navigationException);
+                }
+            }
+        }
+    }
+
+    public static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationException(HttpContext httpContext, NavigationException navigationException)
     {
         if (httpContext.Response.HasStarted)
         {
@@ -145,20 +232,31 @@ internal partial class EndpointHtmlRenderer
             throw new InvalidOperationException(
                 "A navigation command was attempted during prerendering after the server already started sending the response. " +
                 "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.");
+                "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
+                navigationException);
         }
-        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location) && httpContext.Request.Headers.ContainsKey("blazor-enhanced-nav"))
+        else
         {
-            // It's unsafe to do a 301/302/etc to an external destination when this was requested via fetch, because
-            // assuming it doesn't expose CORS headers, we won't be allowed to follow the redirection nor will
-            // we even find out what the destination URL would have been. But since it's our own JS code making this
-            // fetch request, we can have a custom protocol for describing the URL we wanted to redirect to.
-            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location", navigationException.Location);
+            return HandleNavigationBeforeResponseStarted(httpContext, navigationException.Location);
+        }
+    }
+
+    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationBeforeResponseStarted(HttpContext httpContext, string destinationLocation)
+    {
+        if (IsPossibleExternalDestination(httpContext.Request, destinationLocation)
+            && IsProgressivelyEnhancedNavigation(httpContext.Request))
+        {
+            // For progressively-enhanced nav, we prefer to use opaque redirections for external URLs rather than
+            // forcing the request to be retried, since that allows post-redirect-get to work, plus avoids a
+            // duplicated request. The client can't rely on receiving this header, though, since non-Blazor endpoints
+            // wouldn't return it.
+            httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location",
+                OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, destinationLocation));
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
         else
         {
-            httpContext.Response.Redirect(navigationException.Location);
+            httpContext.Response.Redirect(destinationLocation);
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }
@@ -183,6 +281,42 @@ internal partial class EndpointHtmlRenderer
         }
 
         return (ServerComponentInvocationSequence)result!;
+    }
+
+    internal (int sequence, object? key) GetSequenceAndKey(ComponentState boundaryComponentState)
+    {
+        if (boundaryComponentState is null || boundaryComponentState.Component is not SSRRenderModeBoundary boundary)
+        {
+            throw new InvalidOperationException(
+                "The parent component state must be an SSRRenderModeBoundary to get the sequence and key.");
+        }
+
+        // The boundary is at the root (not supported, but we handle it gracefully)
+        if (boundaryComponentState.ParentComponentState is null)
+        {
+            return (0, null);
+        }
+
+        // Grab the parent of the boundary component. We need to find the SSRRenderModeBoundary component marker frame
+        // within it. As when we do `@rendermode="InteractiveServer" @key="some-key" the sequence we are interested in
+        // is the one on the SSRRenderModeBoundary component marker frame, not the one on the nested component frame.
+        // Same for the key.
+        var targetState = boundaryComponentState.ParentComponentState;
+        var frames = GetCurrentRenderTreeFrames(targetState.ComponentId);
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var frame = ref frames.Array[i];
+            if (frame.FrameType == RenderTreeFrameType.Component &&
+                frame.Component is SSRRenderModeBoundary candidate &&
+                ReferenceEquals(candidate, boundary))
+            {
+                // This is the component marker frame, so we can use its sequence and key
+                return (frame.Sequence, frame.ComponentKey);
+            }
+        }
+
+        throw new InvalidOperationException(
+            "The parent component state does not have a valid SSRRenderModeBoundary component marker frame.");
     }
 
     // An implementation of IHtmlContent that holds a reference to a component until we're ready to emit it as HTML to the response.

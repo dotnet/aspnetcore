@@ -1,25 +1,38 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
 using RazorWebSite;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class DataAnnotationTests : IClassFixture<MvcTestFixture<StartupDataAnnotations>>
+public class DataAnnotationTests : LoggedTest
 {
-    private HttpClient Client { get; set; }
-
-    public DataAnnotationTests(MvcTestFixture<StartupDataAnnotations> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(builder =>
-        {
-            builder.UseStartup<StartupDataAnnotations>();
-        });
-        Client = factory.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<StartupDataAnnotations>(LoggerFactory)
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseStartup<StartupDataAnnotations>();
+            });
+        Client = Factory.CreateDefaultClient();
     }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<StartupDataAnnotations> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     private const string EnumUrl = "http://localhost/Enum/Enum";
 

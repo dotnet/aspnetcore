@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.NetworkInformation;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public static class ServerRetryHelper
 {

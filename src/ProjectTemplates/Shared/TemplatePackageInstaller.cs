@@ -35,16 +35,11 @@ internal static class TemplatePackageInstaller
             "Microsoft.DotNet.Web.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.ProjectTemplates.7.0",
             "Microsoft.DotNet.Web.ProjectTemplates.8.0",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates.8.0",
-            "Microsoft.DotNet.Web.Spa.ProjectTemplates",
+            "Microsoft.DotNet.Web.ProjectTemplates.9.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.10.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.11.0",
             "Microsoft.AspNetCore.Blazor.Templates",
+            "Microsoft.McpServer.ProjectTemplates",
         };
 
     public static string CustomHivePath { get; } = Path.GetFullPath((string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
@@ -110,9 +105,6 @@ internal static class TemplatePackageInstaller
         await VerifyCannotFindTemplateAsync(output, "webapp");
         await VerifyCannotFindTemplateAsync(output, "webapi");
         await VerifyCannotFindTemplateAsync(output, "mvc");
-        await VerifyCannotFindTemplateAsync(output, "react");
-        await VerifyCannotFindTemplateAsync(output, "reactredux");
-        await VerifyCannotFindTemplateAsync(output, "angular");
 
         foreach (var packagePath in builtPackages)
         {
@@ -124,7 +116,6 @@ internal static class TemplatePackageInstaller
         await VerifyCanFindTemplate(output, "webapp");
         await VerifyCanFindTemplate(output, "web");
         await VerifyCanFindTemplate(output, "webapi");
-        await VerifyCanFindTemplate(output, "react");
     }
 
     private static async Task VerifyCanFindTemplate(ITestOutputHelper output, string templateName)

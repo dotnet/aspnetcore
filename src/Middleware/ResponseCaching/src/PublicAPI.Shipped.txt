@@ -1,8 +1,8 @@
 #nullable enable
 ~Microsoft.AspNetCore.ResponseCaching.ResponseCachingMiddleware.Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) -> System.Threading.Tasks.Task
 ~static Microsoft.AspNetCore.Builder.ResponseCachingExtensions.UseResponseCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder
-~static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 ~static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions> configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
+~static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection
 Microsoft.AspNetCore.Builder.ResponseCachingExtensions
 Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature
 Microsoft.AspNetCore.ResponseCaching.ResponseCachingFeature.ResponseCachingFeature() -> void
@@ -21,5 +21,5 @@ Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.UseCaseSensitivePath
 Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions.UseCaseSensitivePaths.set -> void
 Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions
 static Microsoft.AspNetCore.Builder.ResponseCachingExtensions.UseResponseCaching(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.ResponseCachingServicesExtensions.AddResponseCaching(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Routing.Matching;
 
@@ -42,7 +42,7 @@ internal static class JumpTableBuilder
 
         // The IL Emit jump table is not faster for a single entry - but we have an optimized version when all text
         // is ASCII
-        if (pathEntries.Length == 1 && Ascii.IsAscii(pathEntries[0].text))
+        if (pathEntries.Length == 1 && Ascii.IsValid(pathEntries[0].text))
         {
             var entry = pathEntries[0];
             return new SingleEntryAsciiJumpTable(defaultDestination, exitDestination, entry.text, entry.destination);
@@ -88,8 +88,6 @@ internal static class JumpTableBuilder
         // Use the ILEmitTrieJumpTable if the IL is going to be compiled (not interpreted)
         return MakeILEmitTrieJumpTableIfSupported(defaultDestination, exitDestination, pathEntries, fallback);
 
-        // TODO: This suppression can be removed when https://github.com/dotnet/linker/issues/2715 is complete.
-        [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "Guarded by IsDynamicCodeCompiled")]
         static JumpTable MakeILEmitTrieJumpTableIfSupported(int defaultDestination, int exitDestination, (string text, int destination)[] pathEntries, JumpTable fallback)
         {
             // ILEmitTrieJumpTable use IL emit to generate a custom, high-performance jump table.

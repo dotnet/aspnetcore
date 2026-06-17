@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using System;
+using System.CodeDom.Compiler;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -32,7 +33,7 @@ app.MapGet("/", () => "Hello, world!");
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Null(metadata.Type);
+        Assert.Equal(typeof(string), metadata.Type);
 
         await VerifyAgainstBaselineUsingFile(compilation);
     }
@@ -78,19 +79,18 @@ app.MapGet("/", Task<string> () => Task.FromResult("Hello, world!"));
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Null(metadata.Type);
+        Assert.Equal(typeof(string), metadata.Type);
     }
 
     [Fact]
-    public async Task MapAction_ReturnsTask_Has_No_Metadata()
+    public async Task MapAction_ReturnsTask_ProducesNoInferredProducesResponseTypeMetadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", Task () => Task.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
-        Assert.Empty(metadata);
+        Assert.Empty(endpoint.Metadata.OfType<IProducesResponseTypeMetadata>());
     }
 
     [Fact]
@@ -104,19 +104,18 @@ app.MapGet("/", ValueTask<string> () => ValueTask.FromResult("Hello, world!"));
         var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
         Assert.Equal(200, metadata.StatusCode);
         Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Null(metadata.Type);
+        Assert.Equal(typeof(string), metadata.Type);
     }
 
     [Fact]
-    public async Task MapAction_ReturnsValueTask_Has_No_Metadata()
+    public async Task MapAction_ReturnsValueTask_ProducesNoInferredProducesResponseTypeMetadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>();
-        Assert.Empty(metadata);
+        Assert.Empty(endpoint.Metadata.OfType<IProducesResponseTypeMetadata>());
     }
 
     [Fact]
@@ -188,7 +187,7 @@ app.MapGet("/", () => "Hello");
         var responseMetadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
 
         Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
-        Assert.Null(responseMetadata.Type);
+        Assert.Equal(typeof(string), responseMetadata.Type);
     }
 
     [Fact]
@@ -466,6 +465,22 @@ app.MapPost("/", (AddsCustomParameterMetadata param1) => "Hello").WithMetadata(n
     }
 
     [Fact]
+    public async Task Create_CombinesDefaultMetadata_AndMetadataFromParameterTypesImplementingIEndpointMetadataProvider_AndNonMetadataProviderParameter()
+    {
+        // Arrange
+        var (_, compilation) = await RunGeneratorAsync("""
+app.MapPost("/", (AddsCustomParameterMetadata param1, HttpContext context) => "Hello").WithMetadata(new CustomEndpointMetadata { Source = MetadataSource.Caller });
+""");
+
+        // Act
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        // Assert
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.Contains(endpoint.Metadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Parameter });
+    }
+
+    [Fact]
     public async Task Create_FlowsRoutePattern_ToMetadataProvider()
     {
         // Arrange
@@ -491,6 +506,11 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         // Act
         var endpoint = GetEndpointFromCompilation(compilation);
 
+        // IDisableCookieRedirectMetadata is tricky to order consistently because it depends on whether AddsCustomParameterMetadata is registered
+        // as a service at runtime. However, the order of IDisableCookieRedirectMetadata is not significant since there's no way to override it
+        // other than removing it.
+        Assert.Single(endpoint.Metadata, m => m is IDisableCookieRedirectMetadata);
+
         // Assert
         // NOTE: Depending on whether we are running under RDG or RDG, there are some generated types which
         //       don't have equivalents in the opposite. The two examples here are NullableContextAttribute which
@@ -499,16 +519,19 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         //       of this test from RDF.
         var filteredMetadata = endpoint.Metadata.Where(
             m => m.GetType().Name != "NullableContextAttribute" &&
-            m.GetType().Name != "SourceKey" &&
+            m is not GeneratedCodeAttribute &&
             m is not MethodInfo &&
             m is not HttpMethodMetadata &&
             m is not Attribute1 &&
             m is not Attribute2 &&
-            m is not IRouteDiagnosticsMetadata);
+            m is not IRouteDiagnosticsMetadata &&
+            m is not IDisableCookieRedirectMetadata);
 
         Assert.Collection(filteredMetadata,
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is IAcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
+            // Parameter binding metadata inferred by RDF
+            m => Assert.True(m is IParameterBindingMetadata { Name: "param1" }),
             // Inferred ProducesResopnseTypeMetadata from RDF for complex type
             m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider

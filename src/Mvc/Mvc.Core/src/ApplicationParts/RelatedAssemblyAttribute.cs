@@ -20,10 +20,7 @@ public sealed class RelatedAssemblyAttribute : Attribute
     /// <param name="assemblyFileName">The file name, without extension, of the related assembly.</param>
     public RelatedAssemblyAttribute(string assemblyFileName)
     {
-        if (string.IsNullOrEmpty(assemblyFileName))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(assemblyFileName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(assemblyFileName);
 
         AssemblyFileName = assemblyFileName;
     }

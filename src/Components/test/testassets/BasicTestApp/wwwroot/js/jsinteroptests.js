@@ -217,6 +217,27 @@ function createArgumentList(argumentNumber, dotNetObjectByRef) {
   return array;
 }
 
+class TestClass {
+    constructor(text) {
+        this.text = text;
+    }
+
+    getTextLength() {
+        return this.text.length;
+    }
+}
+
+const testObject = {
+    num: 10,
+    get getOnlyProperty() {
+        return 20;
+    },
+    set setOnlyProperty(value) {
+        this.num = value;
+    },
+    nullProperty: null
+}
+
 window.jsInteropTests = {
   invokeDotNetInteropMethodsAsync: invokeDotNetInteropMethodsAsync,
   collectInteropResults: collectInteropResults,
@@ -233,6 +254,10 @@ window.jsInteropTests = {
   receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync,
   receiveDotNetStreamReference: receiveDotNetStreamReference,
   receiveDotNetStreamWrapperReference: receiveDotNetStreamWrapperReference,
+  returnElementReference: returnElementReference,
+  TestClass: TestClass,
+  nonConstructorFunction: () => { return 42; },
+  testObject: testObject,
 };
 
 function returnUndefined() {
@@ -346,12 +371,11 @@ function returnJSObjectReference() {
     dispose: function () {
       DotNet.disposeJSObjectReference(this);
     },
-    unmarshalledFunction: function (fields) {
-      const message = Blazor.platform.readStringField(fields, 0);
-      const numberField = Blazor.platform.readInt32Field(fields, 8);
-      return message === "Sent from .NET" && numberField === 42;
-    }
   };
+}
+
+function returnElementReference(element) {
+  return element;
 }
 
 function addViaJSObjectReference(jsObjectReference, a, b) {

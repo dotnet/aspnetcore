@@ -20,15 +20,22 @@ public class KestrelConfigurationLoader
 {
     private readonly IHttpsConfigurationService _httpsConfigurationService;
 
+    /// <remarks>
+    /// Non-null only makes sense if <see cref="ReloadOnChange"/> is true.
+    /// </remarks>
+    private readonly CertificatePathWatcher? _certificatePathWatcher;
+
     private bool _loaded;
     private bool _endpointsToAddProcessed;
 
+    // This is not used to trigger reloads but to suppress redundant reloads triggered in other ways
     private IChangeToken? _reloadToken;
 
     internal KestrelConfigurationLoader(
         KestrelServerOptions options,
         IConfiguration configuration,
         IHttpsConfigurationService httpsConfigurationService,
+        CertificatePathWatcher? certificatePathWatcher,
         bool reloadOnChange)
     {
         Options = options;
@@ -39,6 +46,8 @@ public class KestrelConfigurationLoader
         ConfigurationReader = new ConfigurationReader(configuration);
 
         _httpsConfigurationService = httpsConfigurationService;
+        _certificatePathWatcher = certificatePathWatcher;
+        Debug.Assert(reloadOnChange || (certificatePathWatcher is null), "If reloadOnChange is false, then certificatePathWatcher should be null");
     }
 
     /// <summary>
@@ -49,7 +58,7 @@ public class KestrelConfigurationLoader
     /// <summary>
     /// Gets the application <see cref="IConfiguration"/>.
     /// </summary>
-    public IConfiguration Configuration { get; internal set; }
+    public IConfiguration Configuration { get; internal set; } // Setter internal for testing
 
     /// <summary>
     /// If <see langword="true" />, Kestrel will dynamically update endpoint bindings when configuration changes.
@@ -67,6 +76,8 @@ public class KestrelConfigurationLoader
 
     private CertificateConfig? DefaultCertificateConfig { get; set; }
     internal X509Certificate2? DefaultCertificate { get; set; }
+
+    internal X509Certificate2Collection? DefaultCertificateChain { get; set; }
 
     /// <summary>
     /// Specifies a configuration Action to run when an endpoint with the given name is loaded from configuration.
@@ -183,6 +194,27 @@ public class KestrelConfigurationLoader
     }
 
     /// <summary>
+    /// Bind to given named pipe.
+    /// </summary>
+    public KestrelConfigurationLoader NamedPipeEndpoint(string pipeName) => NamedPipeEndpoint(pipeName, _ => { });
+
+    /// <summary>
+    /// Bind to given named pipe.
+    /// </summary>
+    public KestrelConfigurationLoader NamedPipeEndpoint(string pipeName, Action<ListenOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(pipeName);
+        ArgumentNullException.ThrowIfNull(configure);
+
+        EndpointsToAdd.Add(() =>
+        {
+            Options.ListenNamedPipe(pipeName, configure);
+        });
+
+        return this;
+    }
+
+    /// <summary>
     /// Open a socket file descriptor.
     /// </summary>
     public KestrelConfigurationLoader HandleEndpoint(ulong handle) => HandleEndpoint(handle, _ => { });
@@ -283,27 +315,46 @@ public class KestrelConfigurationLoader
         }
     }
 
+    internal IChangeToken? GetReloadToken()
+    {
+        Debug.Assert(ReloadOnChange);
+
+        var configToken = Configuration.GetReloadToken();
+
+        if (_certificatePathWatcher is null)
+        {
+            return configToken;
+        }
+
+        var watcherToken = _certificatePathWatcher.GetChangeToken();
+        return new CompositeChangeToken(new[] { configToken, watcherToken });
+    }
+
     // Adds endpoints from config to KestrelServerOptions.ConfigurationBackedListenOptions and configures some other options.
     // Any endpoints that were removed from the last time endpoints were loaded are returned.
     internal (List<ListenOptions>, List<ListenOptions>) Reload()
     {
         if (ReloadOnChange)
         {
-            _reloadToken = Configuration.GetReloadToken();
+            _reloadToken = GetReloadToken();
         }
 
         var endpointsToStop = Options.ConfigurationBackedListenOptions.ToList();
         var endpointsToStart = new List<ListenOptions>();
         var endpointsToReuse = new List<ListenOptions>();
 
+        var oldDefaultCertificateConfig = DefaultCertificateConfig;
+
         DefaultCertificateConfig = null;
         DefaultCertificate = null;
+        DefaultCertificateChain = null;
 
         ConfigurationReader = new ConfigurationReader(Configuration);
 
         if (_httpsConfigurationService.IsInitialized && _httpsConfigurationService.LoadDefaultCertificate(ConfigurationReader) is CertificateAndConfig certPair)
         {
             DefaultCertificate = certPair.Certificate;
+            DefaultCertificateChain = certPair.CertificateChain;
             DefaultCertificateConfig = certPair.CertificateConfig;
         }
 
@@ -345,6 +396,7 @@ public class KestrelConfigurationLoader
             {
                 if (o.EndpointConfig == endpoint)
                 {
+                    Debug.Assert(o.EndpointConfig?.Certificate?.FileHasChanged != true, "Preserving an endpoint with file changes");
                     matchingBoundEndpoints.Add(o);
                 }
             }
@@ -383,6 +435,75 @@ public class KestrelConfigurationLoader
         Options.ConfigurationBackedListenOptions.Clear();
         Options.ConfigurationBackedListenOptions.AddRange(endpointsToReuse);
         Options.ConfigurationBackedListenOptions.AddRange(endpointsToStart);
+
+        if (ReloadOnChange && _certificatePathWatcher is not null)
+        {
+            var certificateConfigsToRemove = new List<CertificateConfig>();
+            var certificateConfigsToAdd = new List<CertificateConfig>();
+
+            if (DefaultCertificateConfig != oldDefaultCertificateConfig)
+            {
+                if (DefaultCertificateConfig?.IsFileCert == true)
+                {
+                    certificateConfigsToAdd.Add(DefaultCertificateConfig);
+                }
+
+                if (oldDefaultCertificateConfig is not null)
+                {
+                    certificateConfigsToRemove.Add(oldDefaultCertificateConfig);
+                }
+            }
+
+            foreach (var endpointToStart in endpointsToStart)
+            {
+                var endpointConfig = endpointToStart.EndpointConfig;
+                if (endpointConfig is null)
+                {
+                    continue;
+                }
+
+                var certConfig = endpointConfig.Certificate;
+                if (certConfig?.IsFileCert == true)
+                {
+                    certificateConfigsToAdd.Add(certConfig);
+                }
+
+                foreach (var sniConfig in endpointConfig.Sni.Values)
+                {
+                    var sniCertConfig = sniConfig.Certificate;
+                    if (sniCertConfig?.IsFileCert == true)
+                    {
+                        certificateConfigsToAdd.Add(sniCertConfig);
+                    }
+                }
+            }
+
+            foreach (var endpointToStop in endpointsToStop)
+            {
+                var endpointConfig = endpointToStop.EndpointConfig;
+                if (endpointConfig is null)
+                {
+                    continue;
+                }
+
+                var certConfig = endpointConfig.Certificate;
+                if (certConfig?.IsFileCert == true)
+                {
+                    certificateConfigsToRemove.Add(certConfig);
+                }
+
+                foreach (var sniConfig in endpointConfig.Sni.Values)
+                {
+                    var sniCertConfig = sniConfig.Certificate;
+                    if (sniCertConfig?.IsFileCert == true)
+                    {
+                        certificateConfigsToRemove.Add(sniCertConfig);
+                    }
+                }
+            }
+
+            _certificatePathWatcher.UpdateWatches(certificateConfigsToRemove, certificateConfigsToAdd);
+        }
 
         return (endpointsToStop, endpointsToStart);
     }

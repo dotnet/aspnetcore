@@ -149,6 +149,22 @@ public class TokenExtensionTests
         Assert.Equal("3", await context.GetTokenAsync("simple", "Three"));
     }
 
+    [Fact]
+    public void UpdateTokenValueWorksWithNullGetTokenValueResult()
+    {
+        var sourceProperties = new AuthenticationProperties();
+        var targetProperties = new AuthenticationProperties();
+
+        var tokens = new List<AuthenticationToken>
+        {
+            new AuthenticationToken { Name = "refresh_token", Value = "refresh_value" }
+        };
+
+        targetProperties.StoreTokens(tokens);
+        targetProperties.UpdateTokenValue("refresh_token", sourceProperties.GetTokenValue("refresh_token"));
+        Assert.Null(targetProperties.GetTokenValue("refresh_token"));
+    }
+
     private class SimpleAuth : IAuthenticationHandler
     {
         public Task<AuthenticateResult> AuthenticateAsync()

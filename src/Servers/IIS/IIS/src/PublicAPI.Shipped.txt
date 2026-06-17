@@ -18,36 +18,18 @@ Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variable
 Microsoft.AspNetCore.Http.Features.IServerVariablesFeature.this[string! variableName].set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Features)
 Microsoft.AspNetCore.Server.IIS.BadHttpRequestException
 Microsoft.AspNetCore.Server.IIS.BadHttpRequestException.StatusCode.get -> int
-Microsoft.AspNetCore.Server.IIS.Core.IISServerAuthenticationHandler
-Microsoft.AspNetCore.Server.IIS.Core.IISServerAuthenticationHandler.AuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
-Microsoft.AspNetCore.Server.IIS.Core.IISServerAuthenticationHandler.ChallengeAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Server.IIS.Core.IISServerAuthenticationHandler.ForbidAsync(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Server.IIS.Core.IISServerAuthenticationHandler.IISServerAuthenticationHandler() -> void
-Microsoft.AspNetCore.Server.IIS.Core.IISServerAuthenticationHandler.InitializeAsync(Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Http.HttpContext! context) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Server.IIS.Core.ThrowingWasUpgradedWriteOnlyStream
-Microsoft.AspNetCore.Server.IIS.Core.ThrowingWasUpgradedWriteOnlyStream.ThrowingWasUpgradedWriteOnlyStream() -> void
-Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream
-Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.WriteOnlyStream() -> void
 Microsoft.AspNetCore.Server.IIS.HttpContextExtensions
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppConfigPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationId.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationPhysicalPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.ApplicationVirtualPath.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolConfigFile.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.AppPoolId.get -> string!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.IISVersion.get -> System.Version!
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteId.get -> uint
+Microsoft.AspNetCore.Server.IIS.IIISEnvironmentFeature.SiteName.get -> string!
 Microsoft.AspNetCore.Server.IIS.IISServerDefaults
 Microsoft.AspNetCore.Server.IIS.IISServerDefaults.IISServerDefaults() -> void
-override Microsoft.AspNetCore.Server.IIS.Core.ThrowingWasUpgradedWriteOnlyStream.Flush() -> void
-override Microsoft.AspNetCore.Server.IIS.Core.ThrowingWasUpgradedWriteOnlyStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
-override Microsoft.AspNetCore.Server.IIS.Core.ThrowingWasUpgradedWriteOnlyStream.SetLength(long value) -> void
-override Microsoft.AspNetCore.Server.IIS.Core.ThrowingWasUpgradedWriteOnlyStream.Write(byte[]! buffer, int offset, int count) -> void
-override Microsoft.AspNetCore.Server.IIS.Core.ThrowingWasUpgradedWriteOnlyStream.WriteAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.CanRead.get -> bool
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.CanSeek.get -> bool
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.CanWrite.get -> bool
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.Length.get -> long
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.Position.get -> long
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.Position.set -> void
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.Read(byte[]! buffer, int offset, int count) -> int
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.ReadAsync(byte[]! buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<int>!
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.ValueTask<int>
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.ReadTimeout.get -> int
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.ReadTimeout.set -> void
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.Seek(long offset, System.IO.SeekOrigin origin) -> long
-override Microsoft.AspNetCore.Server.IIS.Core.WriteOnlyStream.SetLength(long value) -> void
 static Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions.UseIIS(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 static Microsoft.AspNetCore.Server.IIS.HttpContextExtensions.GetIISServerVariable(this Microsoft.AspNetCore.Http.HttpContext! context, string! variableName) -> string?

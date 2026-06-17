@@ -245,9 +245,8 @@ public class TagHelperExecutionContextTest
         get
         {
             var data = new TheoryData<HtmlEncoder>();
-            foreach (var row in HtmlEncoderData)
+            foreach (var encoder in HtmlEncoderData)
             {
-                var encoder = (HtmlEncoder)(row[0]);
                 if (encoder != null)
                 {
                     data.Add(encoder);

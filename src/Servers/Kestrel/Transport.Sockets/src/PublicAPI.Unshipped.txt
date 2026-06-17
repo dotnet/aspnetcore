@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportFactory.CanBind(System.Net.EndPoint! endpoint) -> bool

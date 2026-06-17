@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.Routing;
@@ -49,7 +49,7 @@ public class UrlHelperExtensionsTest
         Assert.Null(actual.Fragment);
     }
 
-    public static TheoryData Page_WithNameAndRouteValues_WorksData
+    public static TheoryData<object> Page_WithNameAndRouteValues_WorksData
     {
         get => new TheoryData<object>
             {

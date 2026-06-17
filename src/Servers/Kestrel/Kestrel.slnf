@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\..\\AspNetCore.sln",
+    "path": "..\\..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
@@ -61,7 +61,7 @@
       "src\\Servers\\Kestrel\\test\\Sockets.BindTests\\Sockets.BindTests.csproj",
       "src\\Servers\\Kestrel\\test\\Sockets.FunctionalTests\\Sockets.FunctionalTests.csproj",
       "src\\Servers\\Kestrel\\tools\\CodeGenerator\\CodeGenerator.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }

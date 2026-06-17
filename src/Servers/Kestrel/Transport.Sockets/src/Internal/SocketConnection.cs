@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 
 internal sealed partial class SocketConnection : TransportConnection
 {
-    private static readonly int MinAllocBufferSize = PinnedBlockMemoryPool.BlockSize / 2;
+    // PinnedBlockMemoryPool.BlockSize / 2
+    private const int MinAllocBufferSize = 4096 / 2;
 
     private readonly Socket _socket;
     private readonly ILogger _logger;
@@ -22,13 +23,14 @@ internal sealed partial class SocketConnection : TransportConnection
     private readonly IDuplexPipe _originalTransport;
     private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
-    private readonly object _shutdownLock = new object();
+    private readonly Lock _shutdownLock = new();
     private volatile Exception? _shutdownReason;
     private Task? _sendingTask;
     private Task? _receivingTask;
     private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource();
     private bool _connectionClosed;
     private readonly bool _waitForData;
+    private readonly bool _finOnError;
 
     internal SocketConnection(Socket socket,
                               MemoryPool<byte> memoryPool,
@@ -37,7 +39,8 @@ internal sealed partial class SocketConnection : TransportConnection
                               SocketSenderPool socketSenderPool,
                               PipeOptions inputOptions,
                               PipeOptions outputOptions,
-                              bool waitForData = true)
+                              bool waitForData = true,
+                              bool finOnError = false)
     {
         Debug.Assert(socket != null);
         Debug.Assert(memoryPool != null);
@@ -48,6 +51,7 @@ internal sealed partial class SocketConnection : TransportConnection
         _logger = logger;
         _waitForData = waitForData;
         _socketSenderPool = socketSenderPool;
+        _finOnError = finOnError;
 
         LocalEndPoint = _socket.LocalEndPoint;
         RemoteEndPoint = _socket.RemoteEndPoint;
@@ -376,11 +380,21 @@ internal sealed partial class SocketConnection : TransportConnection
             // ever observe this ConnectionAbortedException except for connection middleware attempting
             // to half close the connection which is currently unsupported. The message is always logged though.
             _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
+
+            // NB: not _shutdownReason since we don't want to do this on graceful completion
+            if (!_finOnError && shutdownReason is not null)
+            {
+                SocketsLog.ConnectionWriteRst(_logger, this, shutdownReason.Message);
+
+                // This forces an abortive close with linger time 0 (and implies Dispose)
+                _socket.Close(timeout: 0);
+                return;
+            }
+
             SocketsLog.ConnectionWriteFin(_logger, this, _shutdownReason.Message);
 
             try
             {
-                // Try to gracefully close the socket even for aborts to match libuv behavior.
                 _socket.Shutdown(SocketShutdown.Both);
             }
             catch

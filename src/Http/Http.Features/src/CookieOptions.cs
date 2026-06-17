@@ -8,6 +8,13 @@ namespace Microsoft.AspNetCore.Http;
 /// <summary>
 /// Options used to create a new cookie.
 /// </summary>
+/// <remarks>
+/// A <see cref="CookieOptions"/> instance is intended to govern the behavior of an individual cookie.
+/// Reusing the same <see cref="CookieOptions"/> instance across multiple cookies can lead to unintended
+/// consequences, such as modifications affecting multiple cookies. We recommend instantiating a new
+/// <see cref="CookieOptions"/> object for each cookie to ensure that the configuration is applied
+/// independently.
+/// </remarks>
 public class CookieOptions
 {
     private List<string>? _extensions;

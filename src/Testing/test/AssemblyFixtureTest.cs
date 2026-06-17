@@ -3,11 +3,13 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
+
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
 
 // We include a collection and assembly fixture to verify that they both still work.
 [Collection("MyCollection")]
-[TestCaseOrderer("Microsoft.AspNetCore.Testing.AlphabeticalOrderer", "Microsoft.AspNetCore.Testing.Tests")]
+[TestCaseOrderer("Microsoft.AspNetCore.InternalTesting.AlphabeticalOrderer", "Microsoft.AspNetCore.InternalTesting.Tests")]
 public class AssemblyFixtureTest
 {
     public AssemblyFixtureTest(

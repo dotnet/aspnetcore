@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -17,7 +17,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns;
 /// in a route pattern.
 /// </remarks>
 [DebuggerDisplay("{DebuggerToString()}")]
+#if !COMPONENTS
 public sealed class RoutePatternPathSegment
+#else
+internal sealed class RoutePatternPathSegment
+#endif
 {
     internal RoutePatternPathSegment(IReadOnlyList<RoutePatternPart> parts)
     {

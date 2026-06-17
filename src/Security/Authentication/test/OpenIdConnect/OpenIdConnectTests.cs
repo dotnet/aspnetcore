@@ -25,6 +25,13 @@ public class OpenIdConnectTests
     static readonly string nonceDelimiter = ".";
     const string DefaultHost = @"https://example.com";
 
+    [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new OpenIdConnectOptions();
+        Assert.NotNull(options.Events);
+    }
+
     /// <summary>
     /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
     /// </summary>
@@ -374,7 +381,9 @@ public class OpenIdConnectTests
     {
         var options = new OpenIdConnectOptions();
         Assert.True(options.MapInboundClaims);
+#pragma warning disable CS0618 // Type or member is obsolete
         var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.NotNull(jwtHandler);
         Assert.True(jwtHandler.MapInboundClaims);
     }
@@ -385,7 +394,9 @@ public class OpenIdConnectTests
         var options = new OpenIdConnectOptions();
         options.MapInboundClaims = false;
         Assert.False(options.MapInboundClaims);
+#pragma warning disable CS0618 // Type or member is obsolete
         var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+#pragma warning restore CS0618 // Type or member is obsolete
         Assert.NotNull(jwtHandler);
         Assert.False(jwtHandler.MapInboundClaims);
     }

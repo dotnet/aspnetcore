@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -21,6 +21,7 @@ public class HttpConnectionManagerTests : LoggedTest
 #if !DEBUG
     [ConditionalFact]
     [NoDebuggerCondition]
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126735")]
     public async Task CriticalErrorLoggedIfApplicationDoesntComplete()
     {
         ////////////////////////////////////////////////////////////////////////////////////////

@@ -33,6 +33,7 @@ public class Startup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<EchoHub>("/echo");
+            endpoints.MapHub<StatefulHub>("/stateful", o => o.AllowStatefulReconnects = true);
         });
     }
 

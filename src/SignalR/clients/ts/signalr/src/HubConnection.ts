@@ -10,9 +10,11 @@ import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
 import { Arg, getErrorString, Platform } from "./Utils";
+import { MessageBuffer } from "./MessageBuffer";
 
 const DEFAULT_TIMEOUT_IN_MS: number = 30 * 1000;
 const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
+const DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE = 100_000;
 
 /** Describes the current state of the {@link HubConnection} to the server. */
 export enum HubConnectionState {
@@ -36,11 +38,13 @@ export class HubConnection {
     private readonly connection: IConnection;
     private readonly _logger: ILogger;
     private readonly _reconnectPolicy?: IRetryPolicy;
+    private readonly _statefulReconnectBufferSize: number;
     private _protocol: IHubProtocol;
     private _handshakeProtocol: HandshakeProtocol;
     private _callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
     private _methods: { [name: string]: (((...args: any[]) => void) | ((...args: any[]) => any))[] };
     private _invocationId: number;
+    private _messageBuffer?: MessageBuffer;
 
     private _closedCallbacks: ((error?: Error) => void)[];
     private _reconnectingCallbacks: ((error?: Error) => void)[];
@@ -98,8 +102,10 @@ export class HubConnection {
         protocol: IHubProtocol,
         reconnectPolicy?: IRetryPolicy,
         serverTimeoutInMilliseconds?: number,
-        keepAliveIntervalInMilliseconds?: number): HubConnection {
-        return new HubConnection(connection, logger, protocol, reconnectPolicy, serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds);
+        keepAliveIntervalInMilliseconds?: number,
+        statefulReconnectBufferSize?: number): HubConnection {
+        return new HubConnection(connection, logger, protocol, reconnectPolicy,
+            serverTimeoutInMilliseconds, keepAliveIntervalInMilliseconds, statefulReconnectBufferSize);
     }
 
     private constructor(
@@ -108,13 +114,16 @@ export class HubConnection {
         protocol: IHubProtocol,
         reconnectPolicy?: IRetryPolicy,
         serverTimeoutInMilliseconds?: number,
-        keepAliveIntervalInMilliseconds?: number) {
+        keepAliveIntervalInMilliseconds?: number,
+        statefulReconnectBufferSize?: number) {
         Arg.isRequired(connection, "connection");
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
 
         this.serverTimeoutInMilliseconds = serverTimeoutInMilliseconds ?? DEFAULT_TIMEOUT_IN_MS;
         this.keepAliveIntervalInMilliseconds = keepAliveIntervalInMilliseconds ?? DEFAULT_PING_INTERVAL_IN_MS;
+
+        this._statefulReconnectBufferSize = statefulReconnectBufferSize ?? DEFAULT_STATEFUL_RECONNECT_BUFFER_SIZE;
 
         this._logger = logger;
         this._protocol = protocol;
@@ -219,9 +228,16 @@ export class HubConnection {
         await this.connection.start(this._protocol.transferFormat);
 
         try {
+            let version = this._protocol.version;
+            if (!this.connection.features.reconnect) {
+                // Stateful Reconnect starts with HubProtocol version 2, newer clients connecting to older servers will fail to connect due to
+                // the handshake only supporting version 1, so we will try to send version 1 during the handshake to keep old servers working.
+                version = 1;
+            }
+
             const handshakeRequest: HandshakeRequestMessage = {
                 protocol: this._protocol.name,
-                version: this._protocol.version,
+                version,
             };
 
             this._logger.log(LogLevel.Debug, "Sending handshake request.");
@@ -248,6 +264,17 @@ export class HubConnection {
                 throw this._stopDuringStartError;
             }
 
+            const useStatefulReconnect = this.connection.features.reconnect || false;
+            if (useStatefulReconnect) {
+                this._messageBuffer = new MessageBuffer(this._protocol, this.connection, this._statefulReconnectBufferSize);
+                this.connection.features.disconnected = this._messageBuffer._disconnected.bind(this._messageBuffer);
+                this.connection.features.resend = () => {
+                    if (this._messageBuffer) {
+                        return this._messageBuffer._resend();
+                    }
+                }
+            }
+
             if (!this.connection.features.inherentKeepAlive) {
                 await this._sendMessage(this._cachedPingMessage);
             }
@@ -271,6 +298,7 @@ export class HubConnection {
     public async stop(): Promise<void> {
         // Capture the start promise before the connection might be restarted in an onclose callback.
         const startPromise = this._startPromise;
+        this.connection.features.reconnect = false;
 
         this._stopPromise = this._stopInternal();
         await this._stopPromise;
@@ -399,7 +427,11 @@ export class HubConnection {
      * @param message The js object to serialize and send.
      */
     private _sendWithProtocol(message: any) {
-        return this._sendMessage(this._protocol.writeMessage(message));
+        if (this._messageBuffer) {
+            return this._messageBuffer._send(message);
+        } else {
+            return this._sendMessage(this._protocol.writeMessage(message));
+        }
     }
 
     /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
@@ -575,10 +607,17 @@ export class HubConnection {
             const messages = this._protocol.parseMessages(data, this._logger);
 
             for (const message of messages) {
+                if (this._messageBuffer && !this._messageBuffer._shouldProcessMessage(message)) {
+                    // Don't process the message, we are either waiting for a SequenceMessage or received a duplicate message
+                    continue;
+                }
+
                 switch (message.type) {
                     case MessageType.Invocation:
-                        // eslint-disable-next-line @typescript-eslint/no-floating-promises
-                        this._invokeClientMethod(message);
+                        this._invokeClientMethod(message)
+                            .catch((e) => {
+                                this._logger.log(LogLevel.Error, `Invoke client method threw error: ${getErrorString(e)}`)
+                            });
                         break;
                     case MessageType.StreamItem:
                     case MessageType.Completion: {
@@ -616,6 +655,16 @@ export class HubConnection {
 
                         break;
                     }
+                    case MessageType.Ack:
+                        if (this._messageBuffer) {
+                            this._messageBuffer._ack(message);
+                        }
+                        break;
+                    case MessageType.Sequence:
+                        if (this._messageBuffer) {
+                            this._messageBuffer._resetSequence(message);
+                        }
+                        break;
                     default:
                         this._logger.log(LogLevel.Warning, `Invalid message type: ${message.type}.`);
                         break;
@@ -672,10 +721,19 @@ export class HubConnection {
             // Set the timeout timer
             this._timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
 
+            // Immediately fire Keep-Alive ping if nextPing is overdue to avoid dependency on JS timers
+            let nextPing = this._nextKeepAlive - new Date().getTime();
+            if (nextPing < 0) {
+                if (this._connectionState === HubConnectionState.Connected) {
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                    this._trySendPingMessage();
+                }
+                return;
+            }
+
             // Set keepAlive timer if there isn't one
             if (this._pingServerHandle === undefined)
             {
-                let nextPing = this._nextKeepAlive - new Date().getTime();
                 if (nextPing < 0) {
                     nextPing = 0;
                 }
@@ -683,13 +741,7 @@ export class HubConnection {
                 // The timer needs to be set from a networking callback to avoid Chrome timer throttling from causing timers to run once a minute
                 this._pingServerHandle = setTimeout(async () => {
                     if (this._connectionState === HubConnectionState.Connected) {
-                        try {
-                            await this._sendMessage(this._cachedPingMessage);
-                        } catch {
-                            // We don't care about the error. It should be seen elsewhere in the client.
-                            // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
-                            this._cleanupPingTimer();
-                        }
+                        await this._trySendPingMessage();
                     }
                 }, nextPing);
             }
@@ -800,6 +852,10 @@ export class HubConnection {
         if (this._connectionStarted) {
             this._connectionState = HubConnectionState.Disconnected;
             this._connectionStarted = false;
+            if (this._messageBuffer) {
+                this._messageBuffer._dispose(error ?? new Error("Connection closed."));
+                this._messageBuffer = undefined;
+            }
 
             if (Platform.isBrowser) {
                 window.document.removeEventListener("freeze", this._freezeEventListener);
@@ -818,7 +874,7 @@ export class HubConnection {
         let previousReconnectAttempts = 0;
         let retryError = error !== undefined ? error : new Error("Attempting to reconnect due to a unknown error.");
 
-        let nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, 0, retryError);
+        let nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts, 0, retryError);
 
         if (nextRetryDelay === null) {
             this._logger.log(LogLevel.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt.");
@@ -849,7 +905,7 @@ export class HubConnection {
         }
 
         while (nextRetryDelay !== null) {
-            this._logger.log(LogLevel.Information, `Reconnect attempt number ${previousReconnectAttempts} will start in ${nextRetryDelay} ms.`);
+            this._logger.log(LogLevel.Information, `Reconnect attempt number ${previousReconnectAttempts + 1} will start in ${nextRetryDelay} ms.`);
 
             await new Promise((resolve) => {
                 this._reconnectDelayHandle = setTimeout(resolve, nextRetryDelay!);
@@ -888,8 +944,9 @@ export class HubConnection {
                     return;
                 }
 
+                previousReconnectAttempts++;
                 retryError = e instanceof Error ? e : new Error((e as any).toString());
-                nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
+                nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts, Date.now() - reconnectStartTime, retryError);
             }
         }
 
@@ -943,15 +1000,15 @@ export class HubConnection {
         if (nonblocking) {
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
-                    arguments: args,
                     target: methodName,
+                    arguments: args,
                     type: MessageType.Invocation,
                 };
             }
@@ -961,17 +1018,17 @@ export class HubConnection {
 
             if (streamIds.length !== 0) {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
                     streamIds,
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             } else {
                 return {
+                    target: methodName,
                     arguments: args,
                     invocationId: invocationId.toString(),
-                    target: methodName,
                     type: MessageType.Invocation,
                 };
             }
@@ -1045,17 +1102,17 @@ export class HubConnection {
 
         if (streamIds.length !== 0) {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
                 streamIds,
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         } else {
             return {
+                target: methodName,
                 arguments: args,
                 invocationId: invocationId.toString(),
-                target: methodName,
                 type: MessageType.StreamInvocation,
             };
         }
@@ -1094,5 +1151,15 @@ export class HubConnection {
 
     private _createCloseMessage(): CloseMessage {
         return { type: MessageType.Close };
+    }
+
+    private async _trySendPingMessage(): Promise<void> {
+        try {
+            await this._sendMessage(this._cachedPingMessage);
+        } catch {
+            // We don't care about the error. It should be seen elsewhere in the client.
+            // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
+            this._cleanupPingTimer();
+        }
     }
 }

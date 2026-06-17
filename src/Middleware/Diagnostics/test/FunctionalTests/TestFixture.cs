@@ -4,7 +4,7 @@
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests;

@@ -40,18 +40,12 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
             return;
         }
 
+        var validateIssuer = StringHelpers.ParseValueOrDefault(configSection[nameof(TokenValidationParameters.ValidateIssuer)], bool.Parse, options.TokenValidationParameters.ValidateIssuer);
         var issuer = configSection[nameof(TokenValidationParameters.ValidIssuer)];
         var issuers = configSection.GetSection(nameof(TokenValidationParameters.ValidIssuers)).GetChildren().Select(iss => iss.Value).ToList();
-        if (issuer is not null)
-        {
-            issuers.Add(issuer);
-        }
+        var validateAudience = StringHelpers.ParseValueOrDefault(configSection[nameof(TokenValidationParameters.ValidateAudience)], bool.Parse, options.TokenValidationParameters.ValidateAudience);
         var audience = configSection[nameof(TokenValidationParameters.ValidAudience)];
         var audiences = configSection.GetSection(nameof(TokenValidationParameters.ValidAudiences)).GetChildren().Select(aud => aud.Value).ToList();
-        if (audience is not null)
-        {
-            audiences.Add(audience);
-        }
 
         options.Authority = configSection[nameof(options.Authority)] ?? options.Authority;
         options.BackchannelTimeout = StringHelpers.ParseValueOrDefault(configSection[nameof(options.BackchannelTimeout)], _invariantTimeSpanParse, options.BackchannelTimeout);
@@ -71,12 +65,14 @@ internal sealed class JwtBearerConfigureOptions : IConfigureNamedOptions<JwtBear
         options.SaveToken = StringHelpers.ParseValueOrDefault(configSection[nameof(options.SaveToken)], bool.Parse, options.SaveToken);
         options.TokenValidationParameters = new()
         {
-            ValidateIssuer = issuers.Count > 0,
+            ValidateIssuer = validateIssuer,
             ValidIssuers = issuers,
-            ValidateAudience = audiences.Count > 0,
+            ValidIssuer = issuer,
+            ValidateAudience = validateAudience,
             ValidAudiences = audiences,
+            ValidAudience = audience,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKeys = GetIssuerSigningKeys(configSection, issuers),
+            IssuerSigningKeys = GetIssuerSigningKeys(configSection, [issuer, ..issuers]),
         };
     }
 

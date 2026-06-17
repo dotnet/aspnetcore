@@ -15,6 +15,6 @@
 
   <Target Name="_GenerateOpenApiCode"
       BeforeTargets="BeforeCompile"
-      Condition=" ''$(OpenApiGenerateCodeOnBuild)' == 'true' "
+      Condition=" '$(OpenApiGenerateCodeOnBuild)' == 'true' "
       DependsOnTargets="GenerateOpenApiCode" />
 </Project>

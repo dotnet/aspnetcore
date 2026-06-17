@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 
@@ -65,13 +66,69 @@ public class JSObjectReferenceTest
         Assert.Throws<ObjectDisposedException>(() => jsObject.Invoke<object>("test", "arg1", "arg2"));
     }
 
+    [Fact]
+    public async Task JSObjectReference_DisposeAsync_IgnoresJSDisconnectedException()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntimeThatThrowsJSDisconnectedException();
+        var jsObject = new JSObjectReference(jsRuntime, 0);
+
+        // Act & Assert - Should not throw
+        await jsObject.DisposeAsync();
+
+        // Verify dispose was attempted
+        Assert.Equal(1, jsRuntime.BeginInvokeJSInvocationCount);
+    }
+
+    [Fact]
+    public async Task JSObjectReference_DisposeAsync_IgnoresJSDisconnectedException_OnMultipleCalls()
+    {
+        // Arrange
+        var jsRuntime = new TestJSRuntimeThatThrowsJSDisconnectedException();
+        var jsObject = new JSObjectReference(jsRuntime, 0);
+
+        // Act & Assert - Should not throw on first call
+        await jsObject.DisposeAsync();
+
+        // Act & Assert - Should not throw on second call (no-op)
+        await jsObject.DisposeAsync();
+
+        // Verify dispose was only attempted once
+        Assert.Equal(1, jsRuntime.BeginInvokeJSInvocationCount);
+    }
+
     class TestJSRuntime : JSRuntime
     {
         public int BeginInvokeJSInvocationCount { get; private set; }
 
-        protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
             BeginInvokeJSInvocationCount++;
+        }
+
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
+        {
+        }
+    }
+
+    class TestJSRuntimeThatThrowsJSDisconnectedException : JSRuntime
+    {
+        public int BeginInvokeJSInvocationCount { get; private set; }
+
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+        {
+            BeginInvokeJSInvocationCount++;
+            throw new JSDisconnectedException("JavaScript interop calls cannot be issued at this time. This is because the circuit has disconnected and is being disposed.");
+        }
+
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
         }
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
@@ -83,15 +140,25 @@ public class JSObjectReferenceTest
     {
         public int InvokeJSInvocationCount { get; private set; }
 
-        protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
         }
 
-        protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override string? InvokeJS(in JSInvocationInfo invocationInfo)
         {
             InvokeJSInvocationCount++;
 
             return null;
+        }
+
+        protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
         }
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

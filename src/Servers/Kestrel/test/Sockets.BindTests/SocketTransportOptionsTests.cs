@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -55,7 +55,7 @@ public class SocketTransportOptionsTests : LoggedTestBase
     public async Task SocketTransportCallsCreateBoundListenSocketForFileHandleEndpoint()
     {
         using var fileHandleSocket = CreateBoundSocket();
-        var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, FileHandleType.Auto);
+        var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, Microsoft.AspNetCore.Connections.FileHandleType.Auto);
 
         await VerifySocketTransportCallsCreateBoundListenSocketAsync(endpoint);
     }
@@ -72,7 +72,7 @@ public class SocketTransportOptionsTests : LoggedTestBase
     public void CreateDefaultBoundListenSocket_PreservesLocalEndpointFromFileHandleEndpoint()
     {
         using var fileHandleSocket = CreateBoundSocket();
-        var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, FileHandleType.Auto);
+        var endpoint = new FileHandleEndPoint((ulong)fileHandleSocket.Handle, Microsoft.AspNetCore.Connections.FileHandleType.Auto);
 
         using var listenSocket = SocketTransportOptions.CreateDefaultBoundListenSocket(endpoint);
 

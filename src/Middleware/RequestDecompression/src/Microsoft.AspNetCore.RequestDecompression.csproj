@@ -12,14 +12,18 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.AspNetCore.Http.Features" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.RequestDecompression.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.RequestDecompression.Microbenchmarks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)SizeLimitedStream.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

@@ -8,6 +8,7 @@ import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { IHubProtocol } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { IRetryPolicy } from "./IRetryPolicy";
+import { IStatefulReconnectOptions } from "./IStatefulReconnectOptions";
 import { HttpTransportType } from "./ITransport";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
@@ -54,6 +55,8 @@ export class HubConnectionBuilder {
     /** If defined, this indicates the client should automatically attempt to reconnect if the connection is lost. */
     /** @internal */
     public reconnectPolicy?: IRetryPolicy;
+
+    private _statefulReconnectBufferSize?: number;
 
     /** Configures console logging for the {@link @microsoft/signalr.HubConnection}.
      *
@@ -210,6 +213,21 @@ export class HubConnectionBuilder {
         return this;
     }
 
+    /** Enables and configures options for the Stateful Reconnect feature.
+     *
+     * @returns The {@link @microsoft/signalr.HubConnectionBuilder} instance, for chaining.
+     */
+    public withStatefulReconnect(options?: IStatefulReconnectOptions): HubConnectionBuilder {
+        if (this.httpConnectionOptions === undefined) {
+            this.httpConnectionOptions = {};
+        }
+        this.httpConnectionOptions._useStatefulReconnect = true;
+
+        this._statefulReconnectBufferSize = options?.bufferSize;
+
+        return this;
+    }
+
     /** Creates a {@link @microsoft/signalr.HubConnection} from the configuration options specified in this builder.
      *
      * @returns {HubConnection} The configured {@link @microsoft/signalr.HubConnection}.
@@ -237,7 +255,8 @@ export class HubConnectionBuilder {
             this.protocol || new JsonHubProtocol(),
             this.reconnectPolicy,
             this._serverTimeoutInMilliseconds,
-            this._keepAliveIntervalInMilliseconds);
+            this._keepAliveIntervalInMilliseconds,
+            this._statefulReconnectBufferSize);
     }
 }
 

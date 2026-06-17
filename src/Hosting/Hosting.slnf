@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\FileProviders\\Embedded\\src\\Microsoft.Extensions.FileProviders.Embedded.csproj",
@@ -33,7 +33,7 @@
       "src\\Servers\\Kestrel\\Transport.NamedPipes\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj",
       "src\\Servers\\Kestrel\\Transport.Quic\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj",
       "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
-      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+      "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj"
     ]
   }
 }

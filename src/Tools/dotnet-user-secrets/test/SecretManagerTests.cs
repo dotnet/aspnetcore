@@ -6,7 +6,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Tools;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Tools.Internal;
@@ -64,7 +65,51 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         var secretManager = CreateProgram();
 
         secretManager.RunInternal("list", "--project", projectPath);
-        Assert.Contains(Resources.FormatError_ProjectPath_NotFound(projectPath), _console.GetOutput());
+        Assert.Contains(SecretsHelpersResources.FormatError_File_NotFound(projectPath), _console.GetOutput());
+    }
+
+    [Fact]
+    public void Error_ProjectAndFileOptions()
+    {
+        var projectPath = Path.Combine(_fixture.GetTempSecretProject(), "does_not_exist", "TestProject.csproj");
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "--project", projectPath, "--file", projectPath);
+        Assert.Contains(Resources.Error_ProjectAndFileOptions, _console.GetOutput());
+    }
+
+    [Fact]
+    public void Error_File_DoesNotExist()
+    {
+        var filePath = Path.Combine(_fixture.GetTempSecretProject(), "does_not_exist.cs");
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "--file", filePath);
+        Assert.Contains(SecretsHelpersResources.FormatError_File_NotFound(filePath), _console.GetOutput());
+    }
+
+    [Fact]
+    public void Error_File_InvalidExtension()
+    {
+        var filePath = Path.Combine(_fixture.GetTempSecretProject(), "foo.txt");
+        File.WriteAllText(filePath, string.Empty);
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("list", "--file", filePath);
+        var output = _console.GetOutput();
+
+        Assert.Contains(Resources.Error_FileInvalidExtension, output);
+        Assert.DoesNotContain(SecretsHelpersResources.FormatError_ProjectFailedToLoad(filePath), output);
+    }
+
+    [Fact]
+    public void Error_InitFile()
+    {
+        var dir = _fixture.CreateFileBasedApp(null);
+        var secretManager = CreateProgram();
+
+        secretManager.RunInternal("init", "--file", Path.Combine(dir, "app.cs"));
+        Assert.Contains(Resources.Error_InitNotSupportedForFileBasedApps, _console.GetOutput());
     }
 
     [Fact]
@@ -81,9 +126,10 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void SetSecrets(bool fromCurrentDirectory)
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    public void SetSecrets(bool fromCurrentDirectory, bool fileBasedApp)
     {
         var secrets = new KeyValuePair<string, string>[]
                     {
@@ -95,32 +141,33 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
                         new KeyValuePair<string, string>("--twoDashedKey", "--twoDashedValue")
                     };
 
-        var projectPath = _fixture.GetTempSecretProject();
+        var projectPath = fileBasedApp
+            ? _fixture.GetTempFileBasedApp(out _)
+            : _fixture.GetTempSecretProject();
         var dir = fromCurrentDirectory
             ? projectPath
             : Path.GetTempPath();
+        ReadOnlySpan<string> pathArgs = fromCurrentDirectory
+            ? []
+            : (fileBasedApp
+                ? ["-f", Path.Join(projectPath, "app.cs")]
+                : ["-p", projectPath]);
         var secretManager = new Program(_console, dir);
 
         foreach (var secret in secrets)
         {
-            var parameters = fromCurrentDirectory ?
-                new string[] { "set", secret.Key, secret.Value, "--verbose" } :
-                new string[] { "set", secret.Key, secret.Value, "-p", projectPath, "--verbose" };
-            secretManager.RunInternal(parameters);
+            secretManager.RunInternal(["set", secret.Key, secret.Value, .. pathArgs, "--verbose"]);
         }
 
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
-                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
+                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} to the secret store.", keyValue.Key),
                 _console.GetOutput());
         }
 
         _console.ClearOutput();
-        var args = fromCurrentDirectory
-            ? new string[] { "list", "--verbose" }
-            : new string[] { "list", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
@@ -132,19 +179,22 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         _console.ClearOutput();
         foreach (var secret in secrets)
         {
-            var parameters = fromCurrentDirectory ?
-                new string[] { "remove", secret.Key, "--verbose" } :
-                new string[] { "remove", secret.Key, "-p", projectPath, "--verbose" };
-            secretManager.RunInternal(parameters);
+            secretManager.RunInternal(["remove", secret.Key, .. pathArgs, "--verbose"]);
         }
 
         // Verify secrets are removed.
         _console.ClearOutput();
-        args = fromCurrentDirectory
-            ? new string[] { "list", "--verbose" }
-            : new string[] { "list", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
+    }
+
+    [Fact]
+    public void SetSecrets_FileBasedAppInCurrentDirectory()
+    {
+        var directoryPath = _fixture.GetTempFileBasedApp(out _);
+        var secretManager = new Program(_console, directoryPath);
+        secretManager.RunInternal("set", "key1", "value1", "--verbose");
+        Assert.Contains(SecretsHelpersResources.FormatError_NoProjectsFound(directoryPath), _console.GetOutput());
     }
 
     [Fact]
@@ -154,9 +204,9 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         var secretManager = CreateProgram();
 
         secretManager.RunInternal("set", "secret1", "value1", "-p", projectPath, "--verbose");
-        Assert.Contains("Successfully saved secret1 = value1 to the secret store.", _console.GetOutput());
+        Assert.Contains("Successfully saved secret1 to the secret store.", _console.GetOutput());
         secretManager.RunInternal("set", "secret1", "value2", "-p", projectPath, "--verbose");
-        Assert.Contains("Successfully saved secret1 = value2 to the secret store.", _console.GetOutput());
+        Assert.Contains("Successfully saved secret1 to the secret store.", _console.GetOutput());
 
         _console.ClearOutput();
 
@@ -174,7 +224,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         secretManager.RunInternal("-v", "set", "secret1", "value1", "-p", projectPath);
         Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Project file path {0}.", Path.Combine(projectPath, "TestProject.csproj")), _console.GetOutput());
         Assert.Contains(string.Format(CultureInfo.InvariantCulture, "Secrets file path {0}.", PathHelper.GetSecretsPathFromSecretsId(secretId)), _console.GetOutput());
-        Assert.Contains("Successfully saved secret1 = value1 to the secret store.", _console.GetOutput());
+        Assert.Contains("Successfully saved secret1 to the secret store.", _console.GetOutput());
         _console.ClearOutput();
 
         secretManager.RunInternal("-v", "list", "-p", projectPath);
@@ -210,32 +260,35 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Fact]
+    public void List_Json_OptionIsWired()
+    {
+        string id;
+        var projectPath = _fixture.GetTempSecretProject(out id);
+        var secretManager = CreateProgram();
+        secretManager.RunInternal("set", "key1", "value1", "-p", projectPath);
+
+        _console.ClearOutput();
+        secretManager.RunInternal("list", "--id", id, "--json");
+
+        var stdout = _console.GetOutput();
+        Assert.Contains("//BEGIN", stdout);
+        Assert.Contains("\"key1\": \"value1\"", stdout);
+        Assert.Contains("//END", stdout);
+    }
+
+    [Fact]
     public void List_Flattens_Nested_Objects()
     {
         string secretId;
         var projectPath = _fixture.GetTempSecretProject(out secretId);
         var secretsFile = PathHelper.GetSecretsPathFromSecretsId(secretId);
         Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
-        File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
+        File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abc"" } }", Encoding.UTF8);
         var secretManager = CreateProgram();
-        secretManager.RunInternal("list", "-p", projectPath, "--verbose");
-        Assert.Contains("AzureAd:ClientSecret = abcdéƒ©˙î", _console.GetOutput());
-    }
 
-    [Fact]
-    public void List_Json()
-    {
-        string id;
-        var projectPath = _fixture.GetTempSecretProject(out id);
-        var secretsFile = PathHelper.GetSecretsPathFromSecretsId(id);
-        Directory.CreateDirectory(Path.GetDirectoryName(secretsFile));
-        File.WriteAllText(secretsFile, @"{ ""AzureAd"": { ""ClientSecret"": ""abcdéƒ©˙î""} }", Encoding.UTF8);
-        var secretManager = new Program(_console, Path.GetDirectoryName(projectPath));
-        secretManager.RunInternal("list", "--id", id, "--json");
-        var stdout = _console.GetOutput();
-        Assert.Contains("//BEGIN", stdout);
-        Assert.Contains(@"""AzureAd:ClientSecret"": ""abcdéƒ©˙î""", stdout);
-        Assert.Contains("//END", stdout);
+        secretManager.RunInternal("list", "-p", projectPath);
+
+        Assert.Contains("AzureAd:ClientSecret = abc", _console.GetOutput());
     }
 
     [Fact]
@@ -253,30 +306,30 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         Assert.Contains("AzureAd:ClientSecret = ¡™£¢∞", _console.GetOutput());
         var fileContents = File.ReadAllText(secretsFile, Encoding.UTF8);
         Assert.Equal(@"{
-    ""AzureAd:ClientSecret"": ""¡™£¢∞""
+    ""AzureAd:ClientSecret"": ""\u00A1\u2122\u00A3\u00A2\u221E""
 }",
             fileContents, ignoreLineEndingDifferences: true, ignoreWhiteSpaceDifferences: true);
     }
 
-    [Fact]
-    public void List_Empty_Secrets_File()
-    {
-        var projectPath = _fixture.GetTempSecretProject();
-        var secretManager = CreateProgram();
-        secretManager.RunInternal("list", "-p", projectPath, "--verbose");
-        Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
-    }
-
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Clear_Secrets(bool fromCurrentDirectory)
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    public void Clear_Secrets(bool fromCurrentDirectory, bool fileBasedApp)
     {
-        var projectPath = _fixture.GetTempSecretProject();
+        var projectPath = fileBasedApp
+            ? _fixture.GetTempFileBasedApp(out _)
+            : _fixture.GetTempSecretProject();
 
         var dir = fromCurrentDirectory
             ? projectPath
             : Path.GetTempPath();
+
+        ReadOnlySpan<string> pathArgs = fromCurrentDirectory
+            ? []
+            : (fileBasedApp
+                ? ["-f", Path.Join(projectPath, "app.cs")]
+                : ["-p", projectPath]);
 
         var secretManager = new Program(_console, dir);
 
@@ -290,25 +343,19 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
 
         foreach (var secret in secrets)
         {
-            var parameters = fromCurrentDirectory ?
-                new string[] { "set", secret.Key, secret.Value, "--verbose" } :
-                new string[] { "set", secret.Key, secret.Value, "-p", projectPath, "--verbose" };
-            secretManager.RunInternal(parameters);
+            secretManager.RunInternal(["set", secret.Key, secret.Value, .. pathArgs, "--verbose"]);
         }
 
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
-                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} = {1} to the secret store.", keyValue.Key, keyValue.Value),
+                string.Format(CultureInfo.InvariantCulture, "Successfully saved {0} to the secret store.", keyValue.Key),
                 _console.GetOutput());
         }
 
         // Verify secrets are persisted.
         _console.ClearOutput();
-        var args = fromCurrentDirectory ?
-            new string[] { "list", "--verbose" } :
-            new string[] { "list", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
@@ -318,11 +365,9 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
 
         // Clear secrets.
         _console.ClearOutput();
-        args = fromCurrentDirectory ? new string[] { "clear", "--verbose" } : new string[] { "clear", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["clear", .. pathArgs, "--verbose"]);
 
-        args = fromCurrentDirectory ? new string[] { "list", "--verbose" } : new string[] { "list", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
     }
 

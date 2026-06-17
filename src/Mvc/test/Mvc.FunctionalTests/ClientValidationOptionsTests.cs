@@ -1,22 +1,34 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class ClientValidationOptionsTests : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
+public class ClientValidationOptionsTests : LoggedTest
 {
-    public ClientValidationOptionsTests(MvcTestFixture<RazorPagesWebSite.Startup> fixture) =>
-        Fixture = fixture;
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<RazorPagesWebSite.Startup>(LoggerFactory);
+    }
 
-    public MvcTestFixture<RazorPagesWebSite.Startup> Fixture { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<RazorPagesWebSite.Startup> Factory { get; private set; }
 
     [Fact]
     public async Task DisablingClientValidation_DisablesItForPagesAndViews()
     {
         // Arrange
-        var client = Fixture
+        var client = Factory
             .WithWebHostBuilder(whb => whb.UseStartup<RazorPagesWebSite.StartupWithClientValidationDisabled>())
             .CreateClient();
 

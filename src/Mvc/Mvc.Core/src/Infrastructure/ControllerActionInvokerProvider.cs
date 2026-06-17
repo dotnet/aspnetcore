@@ -23,7 +23,9 @@ internal sealed class ControllerActionInvokerProvider : IActionInvokerProvider
     private readonly ILogger _logger;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly IActionResultTypeMapper _mapper;
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
     private readonly IActionContextAccessor _actionContextAccessor;
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
 
     public ControllerActionInvokerProvider(
         ControllerActionInvokerCache controllerActionInvokerCache,
@@ -41,17 +43,21 @@ internal sealed class ControllerActionInvokerProvider : IActionInvokerProvider
         ILoggerFactory loggerFactory,
         DiagnosticListener diagnosticListener,
         IActionResultTypeMapper mapper,
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         IActionContextAccessor? actionContextAccessor)
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
     {
         _controllerActionInvokerCache = controllerActionInvokerCache;
         _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
         _maxModelValidationErrors = optionsAccessor.Value.MaxModelValidationErrors;
         _maxValidationDepth = optionsAccessor.Value.MaxValidationDepth;
         _maxModelBindingRecursionDepth = optionsAccessor.Value.MaxModelBindingRecursionDepth;
-        _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
+        _logger = loggerFactory.CreateLogger(typeof(ControllerActionInvoker));
         _diagnosticListener = diagnosticListener;
         _mapper = mapper;
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
     }
 
     public int Order => -1000;

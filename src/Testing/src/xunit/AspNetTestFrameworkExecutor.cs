@@ -6,7 +6,7 @@ using System.Reflection;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 public class AspNetTestFrameworkExecutor : XunitTestFrameworkExecutor
 {

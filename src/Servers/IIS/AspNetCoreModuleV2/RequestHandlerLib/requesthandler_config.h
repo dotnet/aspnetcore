@@ -236,7 +236,7 @@ protected:
     REQUESTHANDLER_CONFIG() :
         m_fStdoutLogEnabled(FALSE),
         m_hostingModel(HOSTING_UNKNOWN),
-        m_ppStrArguments(NULL)
+        m_ppStrArguments(nullptr)
     {
     }
 

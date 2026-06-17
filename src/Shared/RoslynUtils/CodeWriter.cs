@@ -30,6 +30,12 @@ internal sealed class CodeWriter : IndentedTextWriter
         this.WriteLine("},");
     }
 
+    public void EndBlockWithSemicolon()
+    {
+        this.Indent--;
+        this.WriteLine("};");
+    }
+
     // The IndentedTextWriter adds the indentation
     // _after_ writing the first line of text. This
     // method can be used ot initialize indentation

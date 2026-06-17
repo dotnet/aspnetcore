@@ -17,15 +17,15 @@ public class FeatureCollectionExtensionsTests
         features.Set<IThing>(thing);
 
         // Act
-        var retrivedThing = features.GetRequiredFeature<IThing>();
+        var retrievedThing = features.GetRequiredFeature<IThing>();
 
         // Assert
-        Assert.NotNull(retrivedThing);
-        Assert.Equal(retrivedThing, thing);
+        Assert.NotNull(retrievedThing);
+        Assert.Equal(retrievedThing, thing);
     }
 
     [Fact]
-    public void ExceptionThrowned_WhenAskedForUnknownFeature()
+    public void ExceptionThrown_WhenAskedForUnknownFeature()
     {
         // Arrange
         var features = new FeatureCollection();

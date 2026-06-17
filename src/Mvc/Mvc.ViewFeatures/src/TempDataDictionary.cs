@@ -8,10 +8,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 /// <inheritdoc />
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(DictionaryDebugView<string, object?>))]
 public class TempDataDictionary : ITempDataDictionary
 {
     // Perf: Everything here is lazy because the TempDataDictionary is frequently created and passed around

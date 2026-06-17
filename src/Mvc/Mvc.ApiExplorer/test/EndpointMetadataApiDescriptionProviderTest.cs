@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -19,11 +20,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
-public class EndpointMetadataApiDescriptionProviderTest
+public partial class EndpointMetadataApiDescriptionProviderTest
 {
     [Fact]
     public void MultipleApiDescriptionsCreatedForMultipleHttpMethods()
@@ -71,12 +73,12 @@ public class EndpointMetadataApiDescriptionProviderTest
         AssertCustomRequestFormat(GetApiDescription(
             [Consumes("application/custom")]
         (InferredJsonClass fromBody) =>
-            { }));
+            { }, httpMethods: ["POST"]));
 
         AssertCustomRequestFormat(GetApiDescription(
             [Consumes("application/custom")]
         ([FromBody] int fromBody) =>
-            { }));
+            { }, httpMethods: ["POST"]));
     }
 
     [Fact]
@@ -85,7 +87,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var apiDescription = GetApiDescription(
             [Consumes("application/custom0", "application/custom1")]
         (InferredJsonClass fromBody) =>
-            { });
+            { }, httpMethods: ["POST"]);
 
         Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
@@ -119,7 +121,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var apiDescription = GetApiDescription(
             [Consumes(typeof(InferredJsonClass), "application/custom0", "application/custom1", IsOptional = false)]
         (InferredJsonClass fromBody) =>
-            { });
+            { }, httpMethods: ["POST"]);
 
         Assert.Equal(2, apiDescription.SupportedRequestFormats.Count);
 
@@ -188,14 +190,23 @@ public class EndpointMetadataApiDescriptionProviderTest
         [Produces("application/custom")]
         () => new InferredJsonClass());
 
-        var responseType = Assert.Single(apiDescription.SupportedResponseTypes);
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
 
-        Assert.Equal(201, responseType.StatusCode);
-        Assert.Equal(typeof(TimeSpan), responseType.Type);
-        Assert.Equal(typeof(TimeSpan), responseType.ModelMetadata?.ModelType);
+        var inferredResponseType = apiDescription.SupportedResponseTypes[0];
 
-        var responseFormat = Assert.Single(responseType.ApiResponseFormats);
-        Assert.Equal("application/custom", responseFormat.MediaType);
+        Assert.Equal(200, inferredResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), inferredResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), inferredResponseType.ModelMetadata?.ModelType);
+
+        Assert.Equal(["application/json", "application/custom"], inferredResponseType.ApiResponseFormats.Select(f => f.MediaType));
+
+        var annotatedResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(201, annotatedResponseType.StatusCode);
+        Assert.Equal(typeof(TimeSpan), annotatedResponseType.Type);
+        Assert.Equal(typeof(TimeSpan), annotatedResponseType.ModelMetadata?.ModelType);
+
+        Assert.Equal("application/custom", Assert.Single(annotatedResponseType.ApiResponseFormats).MediaType);
     }
 
     [Fact]
@@ -206,9 +217,18 @@ public class EndpointMetadataApiDescriptionProviderTest
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         () => new InferredJsonClass());
 
-        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+        Assert.Equal(3, apiDescription.SupportedResponseTypes.Count);
 
-        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+        var rdfInferredResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(200, rdfInferredResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), rdfInferredResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), rdfInferredResponseType.ModelMetadata?.ModelType);
+
+        var rdfInferredResponseFormat = Assert.Single(rdfInferredResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", rdfInferredResponseFormat.MediaType);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[1];
 
         Assert.Equal(201, createdResponseType.StatusCode);
         Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
@@ -217,7 +237,7 @@ public class EndpointMetadataApiDescriptionProviderTest
         var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
         Assert.Equal("application/json", createdResponseFormat.MediaType);
 
-        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[2];
 
         Assert.Equal(400, badRequestResponseType.StatusCode);
         Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.Type);
@@ -253,6 +273,459 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
 
         Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void PreservesMultipleProducesResponseTypesWithSameStatusCodeButDifferentContentTypes()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json")]
+            [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/html")]
+            () => Results.Ok()
+        );
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var jsonResponseType = apiDescription.SupportedResponseTypes.Single(r => r.Type == typeof(InferredJsonClass));
+        Assert.Equal(200, jsonResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), jsonResponseType.Type);
+        Assert.Equal("application/json", Assert.Single(jsonResponseType.ApiResponseFormats).MediaType);
+
+        var htmlResponseType = apiDescription.SupportedResponseTypes.Single(r => r.Type == typeof(string));
+        Assert.Equal(200, htmlResponseType.StatusCode);
+        Assert.Equal(typeof(string), htmlResponseType.Type);
+        Assert.Equal("text/html", Assert.Single(htmlResponseType.ApiResponseFormats).MediaType);
+    }
+
+    [Fact]
+    public void PreservesMultipleProducesResponseTypesWithSameStatusCodeButDifferentContentTypes_WithParametersAndAnonymousObjectResult()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status200OK, "application/json")]
+            [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/html")]
+            (int id, string name) => Results.Ok(new { Id = id, Name = name }),
+            "/{id}"
+        );
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var jsonResponseType = apiDescription.SupportedResponseTypes.Single(r => r.Type == typeof(InferredJsonClass));
+        Assert.Equal(200, jsonResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), jsonResponseType.Type);
+        Assert.Equal("application/json", Assert.Single(jsonResponseType.ApiResponseFormats).MediaType);
+
+        var htmlResponseType = apiDescription.SupportedResponseTypes.Single(r => r.Type == typeof(string));
+        Assert.Equal(200, htmlResponseType.StatusCode);
+        Assert.Equal(typeof(string), htmlResponseType.Type);
+        Assert.Equal("text/html", Assert.Single(htmlResponseType.ApiResponseFormats).MediaType);
+    }
+
+    [Fact]
+    public void PreservesMultipleProducesResponseTypesWithSameStatusCodeButDifferentTypesWithoutContentTypes()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status200OK)]
+            [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
+            () => Results.Ok(new { Value = 1 })
+        );
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var inferredJsonResponseType = apiDescription.SupportedResponseTypes.Single(r => r.Type == typeof(InferredJsonClass));
+        Assert.Equal(200, inferredJsonResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), inferredJsonResponseType.Type);
+
+        var stringResponseType = apiDescription.SupportedResponseTypes.Single(r => r.Type == typeof(string));
+        Assert.Equal(200, stringResponseType.StatusCode);
+        Assert.Equal(typeof(string), stringResponseType.Type);
+    }
+
+    [Fact]
+    public void AddsMultipleResponseFormatsForTypedResults()
+    {
+        var apiDescription = GetApiDescription(Results<Created<InferredJsonClass>, BadRequest> () =>
+            TypedResults.Created("https://example.com", new InferredJsonClass()));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+
+        Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void AddsResponseDescription()
+    {
+        const string expectedCreatedDescription = "A new item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        var apiDescription = GetApiDescription(
+    [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () => TypedResults.Created("https://example.com", new TimeSpan()));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedCreatedDescription, createdResponseType.Description);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedBadRequestDescription, badRequestResponseType.Description);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithGenerics()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => new GenericClass<TimeSpan> { Value = new TimeSpan() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithGenericsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => TypedResults.Ok(new GenericClass<TimeSpan> { Value = new TimeSpan() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollections()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => new List<TimeSpan> { new() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollectionsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => TypedResults.Ok(new List<TimeSpan> { new() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    /// <summary>
+    /// EndpointMetadataApiDescriptionProvider performs a one way type check for discovering response types to match the description that's set in [ProducesResponseType]
+    /// The reason we do a one-way check instead of a bidirectional check is to prevent too many positive matches.
+    /// </summary>
+    /// <remarks>
+    /// Example: If we did a bidirectional check, we would match something scenarios like this, which can cause confusion:
+    /// [ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Returned with a string")] -> TypedResults.Ok(new object())
+    /// This would match because object is assignable to string,
+    /// but it doesn't make sense to add the Description to the object type because the attribute says we should return a string.
+    ///
+    /// This test documents this desired behavior and will fail if the behavior changes, so the developer can double check if their change is intentional.
+    /// </summary>
+    [Fact]
+    public void AddsResponseDescription_ShouldFailWhenInferredTypeIsNotDirectlyAssignableToAttributeType()
+    {
+        var apiDescription = GetApiDescription([ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Only returned with a string")]
+        () => TypedResults.Ok(new object()));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(object), okResponseType.Type);
+        Assert.Equal(typeof(object), okResponseType.ModelMetadata?.ModelType);
+        Assert.Null(okResponseType.Description);
+    }
+
+    [Fact]
+    public void WithEmptyMethodBody_AddsResponseDescription()
+    {
+        const string expectedCreatedDescription = "A new item was created";
+        const string expectedBadRequestDescription = "Validation failed for the request";
+
+        var apiDescription = GetApiDescription(
+    [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Description = expectedBadRequestDescription)]
+        () => new InferredJsonClass());
+
+        Assert.Equal(3, apiDescription.SupportedResponseTypes.Count);
+
+        var rdfInferredResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(200, rdfInferredResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), rdfInferredResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), rdfInferredResponseType.ModelMetadata?.ModelType);
+
+        var rdfInferredResponseFormat = Assert.Single(rdfInferredResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", rdfInferredResponseFormat.MediaType);
+        Assert.Null(rdfInferredResponseType.Description); // There is no description set for the default "200" code, so we expect it to be null.
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedCreatedDescription, createdResponseType.Description);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[2];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), badRequestResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedBadRequestDescription, badRequestResponseType.Description);
+
+        var badRequestResponseFormat = Assert.Single(badRequestResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", badRequestResponseFormat.MediaType);
+    }
+
+    /// <summary>
+    /// Description policy for the (StatusCode, Type) pair when multiple ProducesResponseType
+    /// attributes match: descriptions are merged
+    /// </summary>
+    [Fact]
+    public void AddsResponseDescription_ConcatenatesOnMerge_LastWinsForFallback()
+    {
+        const string expectedCreatedDescription = "A new item was created";
+        const string firstBadRequestDescription = "Validation failed for the request";
+        const string secondBadRequestDescription = "Last description for bad request";
+        var expectedBadRequestDescription = firstBadRequestDescription + "\n\n" + secondBadRequestDescription;
+
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "First description")]
+            [ProducesResponseType(typeof(int), StatusCodes.Status201Created, Description = "Second description")]
+            [ProducesResponseType(typeof(TimeSpan), StatusCodes.Status201Created, Description = expectedCreatedDescription)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest, Description = firstBadRequestDescription)]
+            [ProducesResponseType(StatusCodes.Status400BadRequest, Description = secondBadRequestDescription)]
+            () => TypedResults.Created("https://example.com", new TimeSpan()));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        // For status 201, only the (201, TimeSpan) entry survives merging (TypedResults.Created
+        // claims status 201 from endpoint metadata, dropping the (201, int) attribute entries) and
+        // type-compatibility filtering then picks the matching description from the dropped entries
+        // via the GetMatchingResponseTypeDescription fallback (which keeps the LAST match).
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.Type);
+        Assert.Equal(typeof(TimeSpan), createdResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedCreatedDescription, createdResponseType.Description);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        // For status 400 (no endpoint claim), both attribute entries are merged and their
+        // descriptions are concatenated with a Markdown paragraph break per MergeApiResponse.
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedBadRequestDescription, badRequestResponseType.Description);
+    }
+
+    [Fact]
+    public void AddsResponseFormatsForTypedResultWithoutReturnType()
+    {
+        var apiDescription = GetApiDescription(() => TypedResults.Created("https://example.com", new InferredJsonClass()));
+
+        Assert.Single(apiDescription.SupportedResponseTypes);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+    }
+
+    [Fact]
+    public void HandlesTypedResultsWithoutIEndpointMetadataProviderImplementation()
+    {
+        // TypedResults for ProblemDetails doesn't implement IEndpointMetadataProvider
+        var apiDescription = GetApiDescription(() => TypedResults.Problem());
+
+        Assert.Single(apiDescription.SupportedResponseTypes);
+
+        var responseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Equal(typeof(void), responseType.Type);
+        Assert.Equal(typeof(void), responseType.ModelMetadata?.ModelType);
+    }
+
+    [Fact]
+    public void AddsResponseFormatsForAwaitableTypedResultWithoutReturnType()
+    {
+        var apiDescription = GetApiDescription(() =>
+            Task.FromResult(TypedResults.Created("https://example.com", new InferredJsonClass())));
+
+        Assert.Single(apiDescription.SupportedResponseTypes);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+    }
+
+    // Coverage for https://github.com/dotnet/aspnetcore/issues/56975
+    [Fact]
+    public void AddsMultipleResponseFormatsFromMetadataWithAwaitableIResult()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        () => Task.FromResult(Results.Ok(new InferredJsonClass())));
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+
+        Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void AddsMultipleResponseFormatsFromMetadataWithAwaitableResultType()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(InferredJsonClass), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        async Task<Results<Created<InferredJsonClass>, ProblemHttpResult>> () =>
+            {
+                await Task.CompletedTask;
+                return Random.Shared.Next() % 2 == 0
+                    ? TypedResults.Created<InferredJsonClass>("/", new InferredJsonClass())
+                    : TypedResults.Problem();
+            });
+
+        Assert.Equal(2, apiDescription.SupportedResponseTypes.Count);
+
+        var createdResponseType = apiDescription.SupportedResponseTypes[0];
+
+        Assert.Equal(201, createdResponseType.StatusCode);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.Type);
+        Assert.Equal(typeof(InferredJsonClass), createdResponseType.ModelMetadata?.ModelType);
+
+        var createdResponseFormat = Assert.Single(createdResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdResponseFormat.MediaType);
+
+        var badRequestResponseType = apiDescription.SupportedResponseTypes[1];
+
+        Assert.Equal(400, badRequestResponseType.StatusCode);
+        Assert.Equal(typeof(void), badRequestResponseType.Type);
+        Assert.Equal(typeof(void), badRequestResponseType.ModelMetadata?.ModelType);
+
+        Assert.Empty(badRequestResponseType.ApiResponseFormats);
+    }
+
+    [Fact]
+    public void ResponseProducesMetadataWithIResultImplementor()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(CustomIResultImplementor), StatusCodes.Status200OK)] () => new CustomIResultImplementor { Content = "Hello, World!" });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.Type);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.ModelMetadata?.ModelType);
+
+        var okResponseFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", okResponseFormat.MediaType);
+    }
+
+    public class CustomIResultImplementor : IResult
+    {
+        public required string Content { get; set; }
+
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return httpContext.Response.WriteAsJsonAsync(this);
+        }
     }
 
     [Fact]
@@ -421,7 +894,10 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void DoesNotAddFromServiceParameterAsService()
     {
         Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
-        Assert.Empty(GetApiDescription(([FromServices] int foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([FromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([FromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
@@ -442,8 +918,8 @@ public class EndpointMetadataApiDescriptionProviderTest
             Assert.Equal(BindingSource.Body, param.Source);
         }
 
-        AssertBodyParameter(GetApiDescription((InferredJsonClass foo) => { }), "foo", typeof(InferredJsonClass));
-        AssertBodyParameter(GetApiDescription(([FromBody] int bar) => { }), "bar", typeof(int));
+        AssertBodyParameter(GetApiDescription((InferredJsonClass foo) => { }, httpMethods: ["POST"]), "foo", typeof(InferredJsonClass));
+        AssertBodyParameter(GetApiDescription(([FromBody] int bar) => { }, httpMethods: ["POST"]), "bar", typeof(int));
     }
 
     [Fact]
@@ -458,7 +934,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     [Fact]
     public void AddsMultipleParameters()
     {
-        var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { });
+        var apiDescription = GetApiDescription(([FromRoute] int foo, int bar, InferredJsonClass fromBody) => { }, httpMethods: ["POST"]);
         Assert.Equal(3, apiDescription.ParameterDescriptions.Count);
 
         var fooParam = apiDescription.ParameterDescriptions[0];
@@ -516,14 +992,14 @@ public class EndpointMetadataApiDescriptionProviderTest
             );
         }
 
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClass req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListStruct req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }));
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}"), "foo");
-        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}"));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClass req) => { }, httpMethods: ["POST"]));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListClassWithReadOnlyProperties req) => { }, httpMethods: ["POST"]));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListStruct req) => { }, httpMethods: ["POST"]));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecord req) => { }, httpMethods: ["POST"]));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordStruct req) => { }, httpMethods: ["POST"]));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutPositionalParameters req) => { }, httpMethods: ["POST"]));
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{foo}", httpMethods: ["POST"]), "foo");
+        AssertParameters(GetApiDescription(([AsParameters] ArgumentListRecordWithoutAttributes req) => { }, "/{Foo}", httpMethods: ["POST"]));
     }
 #nullable enable
 
@@ -546,6 +1022,16 @@ public class EndpointMetadataApiDescriptionProviderTest
             param => Assert.False(param.IsRequired),
             param => Assert.True(param.IsRequired),
             param => Assert.False(param.IsRequired));
+    }
+
+    [Fact]
+    public void SupportsContainerTypeInAsParametersAttribute()
+    {
+        var apiDescription = GetApiDescription(([AsParameters] AsParametersWithRequiredMembers foo) => { });
+        Assert.Equal(4, apiDescription.ParameterDescriptions.Count);
+
+        Assert.NotNull(apiDescription.ParameterDescriptions[0].ModelMetadata.ContainerType);
+        Assert.Equal(typeof(AsParametersWithRequiredMembers), apiDescription.ParameterDescriptions[0].ModelMetadata.ContainerType);
     }
 
 #nullable disable
@@ -635,7 +1121,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     public void TestParameterAttributesCanBeInspected()
     {
         var apiDescription = GetApiDescription(([Description("The name.")] string name) => { });
-        Assert.Equal(1, apiDescription.ParameterDescriptions.Count);
+        Assert.Single(apiDescription.ParameterDescriptions);
 
         var nameParam = apiDescription.ParameterDescriptions[0];
         Assert.Equal(typeof(string), nameParam.Type);
@@ -678,8 +1164,8 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert
         var apiDescription = Assert.Single(context.Results);
-        var responseTypes = Assert.Single(apiDescription.SupportedResponseTypes);
-        Assert.Equal(typeof(ProblemDetails), responseTypes.Type);
+        Assert.Contains(apiDescription.SupportedResponseTypes, m => m is { StatusCode: 400, Type: { } type } && type == typeof(ProblemDetails));
+        Assert.Contains(apiDescription.SupportedResponseTypes, m => m is { StatusCode: 200, Type: { } type } && type == typeof(string));
     }
 
     [Fact]
@@ -703,8 +1189,20 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert
         var apiDescription = Assert.Single(context.Results);
-        var responseTypes = Assert.Single(apiDescription.SupportedResponseTypes);
-        Assert.Equal(typeof(InferredJsonClass), responseTypes.Type);
+        Assert.Collection(
+            apiDescription.SupportedResponseTypes,
+            responseType =>
+            {
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
+            });
         Assert.Equal(endpointGroupName, apiDescription.GroupName);
     }
 
@@ -755,30 +1253,36 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(HttpValidationProblemDetails), responseType.Type);
                 Assert.Equal(400, responseType.StatusCode);
-                Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/problem+json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(ProblemDetails), responseType.Type);
                 Assert.Equal(404, responseType.StatusCode);
-                Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/problem+json"], GetSortedMediaTypes(responseType));
             },
             responseType =>
             {
                 Assert.Equal(typeof(ProblemDetails), responseType.Type);
                 Assert.Equal(409, responseType.StatusCode);
-                Assert.Equal(new[] { "application/problem+json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/problem+json"], GetSortedMediaTypes(responseType));
             });
     }
 
@@ -805,7 +1309,75 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
+            responseType =>
+            {
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(201, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void HandleMultipleProducesWithSameStatusCodeAndDifferentContentTypes()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json")
+            .Produces<string>(StatusCodes.Status200OK, "text/html");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        Assert.Collection(
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
+            responseType =>
+            {
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/html"], GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void HandleMultipleProducesWithSameStatusCodeAndDifferentTypesWithoutContentType()
+    {
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK)
+            .Produces<string>(StatusCodes.Status200OK);
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        Assert.Collection(
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
@@ -814,9 +1386,85 @@ public class EndpointMetadataApiDescriptionProviderTest
             },
             responseType =>
             {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void HandleMultipleProducesWithSameStatusCodeAndTypeMergesContentTypes()
+    {
+        // Same (StatusCode, Type) with different content types → merge into single entry with multiple content types
+
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json")
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert — single entry for (200, InferredJsonClass) with both content types merged
+        var responseType = Assert.Single(context.Results.SelectMany(r => r.SupportedResponseTypes));
+        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
+    }
+
+    [Fact]
+    public void HandleMultipleProducesDeterministicOrdering()
+    {
+        // Deterministic ordering in complex scenario — multiple types, status codes, and merged content types
+
+        var builder = CreateBuilder();
+        builder.MapGet("/api/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json")
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml")
+            .Produces<string>(StatusCodes.Status200OK, "text/plain")
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces<InferredJsonClass>(StatusCodes.Status201Created, "application/json");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        // Assert — ordered by StatusCode, then by Type name, content types merged for same (StatusCode, Type)
+        Assert.Collection(
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
+            responseType =>
+            {
+                // (200, InferredJsonClass) — merged from two .Produces calls
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // (200, string)
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // (201, InferredJsonClass)
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(201, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                // (404, void)
+                Assert.Equal(typeof(void), responseType.Type);
+                Assert.Equal(404, responseType.StatusCode);
             });
     }
 
@@ -905,13 +1553,106 @@ public class EndpointMetadataApiDescriptionProviderTest
 
         // Assert
         Assert.Collection(
-            context.Results.SelectMany(r => r.SupportedResponseTypes).OrderBy(r => r.StatusCode),
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
             responseType =>
             {
                 Assert.Equal(typeof(InferredJsonClass), responseType.Type);
                 Assert.Equal(200, responseType.StatusCode);
-                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
             });
+    }
+
+    [Fact]
+    public void RouteGroup_AndRouteSpecific_SameStatusCodeAndType_MergesContentTypes()
+    {
+        // Route group adds (200, InferredJsonClass, "application/json"),
+        // route-specific adds (200, InferredJsonClass, "text/xml").
+        // Same (StatusCode, Type) → content types merge into a single entry.
+
+        var builder = CreateBuilder();
+        var group = builder.MapGroup("/api")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), ["application/json"]));
+        group.MapGet("/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "text/xml");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        var responseType = Assert.Single(context.Results.SelectMany(r => r.SupportedResponseTypes));
+        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Equal(["application/json", "text/xml"], GetSortedMediaTypes(responseType));
+    }
+
+    [Fact]
+    public void RouteGroup_AndRouteSpecific_SameStatusCodeDifferentType_BothCoexist()
+    {
+        // Route group adds (200, InferredJsonClass, "application/json"),
+        // route-specific adds (200, string, "text/plain").
+        // Different types at same status code → both coexist.
+
+        var builder = CreateBuilder();
+        var group = builder.MapGroup("/api")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), ["application/json"]));
+        group.MapGet("/todos", () => Results.Ok())
+            .Produces<string>(StatusCodes.Status200OK, "text/plain");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        Assert.Collection(
+            context.Results.SelectMany(r => r.SupportedResponseTypes),
+            responseType =>
+            {
+                Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(["text/plain"], GetSortedMediaTypes(responseType));
+            });
+    }
+
+    [Fact]
+    public void RouteGroup_AndRouteSpecific_IdenticalMetadata_SingleEntry()
+    {
+        // Route group and route-specific both add (200, InferredJsonClass, "application/json").
+        // Identical (StatusCode, Type) → merged into a single entry, not duplicated.
+
+        var builder = CreateBuilder();
+        var group = builder.MapGroup("/api")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(InferredJsonClass), ["application/json"]));
+        group.MapGet("/todos", () => Results.Ok())
+            .Produces<InferredJsonClass>(StatusCodes.Status200OK, "application/json");
+        var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
+
+        var endpointDataSource = builder.DataSources.OfType<EndpointDataSource>().Single();
+        var provider = CreateEndpointMetadataApiDescriptionProvider(endpointDataSource);
+
+        provider.OnProvidersExecuting(context);
+        provider.OnProvidersExecuted(context);
+
+        var responseType = Assert.Single(context.Results.SelectMany(r => r.SupportedResponseTypes));
+        Assert.Equal(typeof(InferredJsonClass), responseType.Type);
+        Assert.Equal(200, responseType.StatusCode);
+        Assert.Equal(["application/json"], GetSortedMediaTypes(responseType));
     }
 
     [Fact]
@@ -1119,8 +1860,8 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         var apiDescription0 = GetApiDescription((IFormFile fromFile) => { });
         var apiDescription1 = GetApiDescription((IFormFile? fromFile) => { });
-        Assert.Equal(1, apiDescription0.ParameterDescriptions.Count);
-        Assert.Equal(1, apiDescription1.ParameterDescriptions.Count);
+        Assert.Single(apiDescription0.ParameterDescriptions);
+        Assert.Single(apiDescription1.ParameterDescriptions);
 
         var fromFileParam0 = apiDescription0.ParameterDescriptions[0];
         Assert.Equal(typeof(IFormFile), fromFileParam0.Type);
@@ -1361,9 +2102,26 @@ public class EndpointMetadataApiDescriptionProviderTest
         var attributes = methodInfo.GetCustomAttributes();
         var context = new ApiDescriptionProviderContext(Array.Empty<ActionDescriptor>());
 
-        var httpMethodMetadata = new HttpMethodMetadata(httpMethods ?? new[] { "GET" });
-        var metadataItems = new List<object>(attributes) { methodInfo, httpMethodMetadata };
-        var endpointMetadata = new EndpointMetadataCollection(metadataItems.ToArray());
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<IInferredServiceInterface>(new InferredServiceClass());
+        serviceCollection.AddKeyedSingleton("foo", new InferredServiceClass());
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+
+        var shouldDisableInferredBodyForMethod = httpMethods is null || httpMethods.Any(method =>
+            // GET, DELETE, HEAD, CONNECT, TRACE, and OPTIONS normally do not contain bodies
+            method.Equals(HttpMethods.Get, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Delete, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Head, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Options, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Trace, StringComparison.Ordinal) ||
+            method.Equals(HttpMethods.Connect, StringComparison.Ordinal));
+
+        var options = new RequestDelegateFactoryOptions { ServiceProvider = serviceProvider, DisableInferBodyFromParameters = shouldDisableInferredBodyForMethod };
+        var requestDelegateResult = RequestDelegateFactory.Create(methodInfo, options: options);
+
+        var httpMethodMetadata = new HttpMethodMetadata(httpMethods ?? ["GET"]);
+        var metadataItems = new List<object>(requestDelegateResult.EndpointMetadata) { methodInfo, httpMethodMetadata };
+        var endpointMetadata = new EndpointMetadataCollection([.. metadataItems, .. attributes]);
         var routePattern = RoutePatternFactory.Parse(pattern ?? "/");
 
         var endpoint = new RouteEndpoint(httpContext => Task.CompletedTask, routePattern, 0, endpointMetadata, displayName);
@@ -1386,7 +2144,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     private static TestEndpointRouteBuilder CreateBuilder() =>
         new TestEndpointRouteBuilder(new ApplicationBuilder(TestServiceProvider.Instance));
 
-    private static ApiDescription GetApiDescription(Delegate action, string? pattern = null, string? displayName = null, IEnumerable<string>? httpMethods = null) =>
+    private static ApiDescription GetApiDescription(Delegate action, string? pattern = null, string? displayName = null, IEnumerable<string>? httpMethods = null, RequestDelegateFactoryOptions? options = null) =>
         Assert.Single(GetApiDescriptions(action, pattern, displayName: displayName, httpMethods: httpMethods));
 
     private static void TestAction()
@@ -1406,6 +2164,10 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     private interface IInferredJsonInterface
+    {
+    }
+
+    private class InferredServiceClass : IInferredServiceInterface
     {
     }
 
@@ -1511,4 +2273,10 @@ public class EndpointMetadataApiDescriptionProviderTest
             return null;
         }
     }
+
+    private class GenericClass<TType> { public required TType Value { get; set; } }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }

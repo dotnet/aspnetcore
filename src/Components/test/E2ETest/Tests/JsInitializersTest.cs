@@ -25,11 +25,30 @@ public class JsInitializersTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Navigate(ServerPathBase + "#initializer");
     }
 
+    // This case is essentially the same as Blazor.web.js with 'legacy' initializers enabled by default, as Blazor.server.js and Blazor.Webassembly.js
+    // both need to support the legacy initializers for backwards compatibility.
+    // The implementation accounts for the new 'modern' initializers and prefers those over the 'legacy' ones.
     [Fact]
     public void InitializersWork()
     {
         Browser.Exists(By.Id("initializer-start"));
         Browser.Exists(By.Id("initializer-end"));
+        var expectedCallbacks = GetExpectedCallbacks();
+        Browser.Equal(expectedCallbacks.Length, () => Browser.FindElements(By.CssSelector("#initializers-content > p")).Count);
+        foreach (var callback in expectedCallbacks)
+        {
+            Browser.Exists(By.Id(callback));
+        }
+    }
+
+    protected virtual string[] GetExpectedCallbacks()
+    {
+        return ["classic-before-start",
+            "classic-after-started",
+            "classic-and-modern-before-web-assembly-start",
+            "classic-and-modern-after-web-assembly-started",
+            "modern-before-web-assembly-start",
+            "modern-after-web-assembly-started"];
     }
 
     [Fact]

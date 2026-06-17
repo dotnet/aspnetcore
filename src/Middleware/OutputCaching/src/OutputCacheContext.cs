@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.OutputCaching;
 /// </summary>
 public sealed class OutputCacheContext
 {
+    /// <summary>
+    /// Constructs a new instance of <see cref="OutputCacheContext"/>.
+    /// </summary>
     public OutputCacheContext()
     {
     }
@@ -67,7 +70,14 @@ public sealed class OutputCacheContext
 
     internal TimeSpan CachedEntryAge { get; set; }
 
-    internal OutputCacheEntry CachedResponse { get; set; } = default!;
+    internal OutputCacheEntry? CachedResponse { get; set; }
+
+    internal void ReleaseCachedResponse()
+    {
+        var tmp = CachedResponse;
+        CachedResponse = null;
+        tmp?.Dispose();
+    }
 
     internal bool ResponseStarted { get; set; }
 

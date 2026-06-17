@@ -35,6 +35,12 @@ service XmlDoc {
       delete: "/v1/greeter/{name}"
     };
   }
+  // QueryGet!
+  rpc QueryGet (StringRequestWithDetail) returns (StringReply) {
+    option (google.api.http) = {
+      get: "/v1/greeter/query/{name}"
+    };
+  }
 }
 
 // StringRequest!

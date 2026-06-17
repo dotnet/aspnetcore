@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Condition="'$(SkipTestBuild)' != 'true'" Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
 
@@ -7,8 +7,12 @@
     <TestGroupName>ProjectTemplates.Tests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
+    <BuildHelixPayload Condition="'$(RunTemplateTests)' != 'true'">false</BuildHelixPayload>
 
     <BaseOutputPath />
     <OutputPath />
@@ -35,7 +39,7 @@
   <ItemGroup>
     <!-- We need the actual templates in the output directory for tests to verify file encodings. -->
     <Content Include="..\..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
-    <Content Include="$(RepoRoot)src\submodules\spa-templates\src\**" LinkBase="Assets\Web.Spa.ProjectTemplates" />
+    <Content Include="..\..\McpServer.ProjectTemplates\**" LinkBase="Assets\McpServer.ProjectTemplates" />
     <Content Include="..\..\Web.ItemTemplates\**" LinkBase="Assets\Web.ItemTemplates" />
     <Content Include="..\..\Web.Client.ItemTemplates\**" LinkBase="Assets\Web.Client.ItemTemplates" />
   </ItemGroup>
@@ -45,9 +49,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <Reference Include="AngleSharp" />
-    <Reference Include="System.Net.Http" />
-    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.sfxproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
@@ -66,7 +71,7 @@
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />
-    <ProjectReference Include="$(RepoRoot)src\submodules\spa-templates\src\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj"
+    <ProjectReference Include="../../McpServer.ProjectTemplates/Microsoft.McpServer.ProjectTemplates.csproj"
       Private="false"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true" />

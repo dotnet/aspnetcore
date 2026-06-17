@@ -1,0 +1,34 @@
+parameters:
+- name: is1ESPipeline
+  type: boolean
+  default: false
+
+- name: args
+  type: object
+  default: {}
+
+steps:
+- ${{ if eq(parameters.is1ESPipeline, true) }}:
+  - 'eng/common/templates cannot be referenced from a 1ES managed template': error
+- task: PublishPipelineArtifact@1
+  displayName: ${{ coalesce(parameters.args.displayName, 'Publish to Build Artifact') }}
+  ${{ if parameters.args.condition }}:
+    condition: ${{ parameters.args.condition }}
+  ${{ else }}:
+    condition: succeeded()
+  ${{ if parameters.args.continueOnError }}:
+    continueOnError: ${{ parameters.args.continueOnError }}
+  inputs:
+    targetPath: ${{ parameters.args.targetPath }}
+    ${{ if parameters.args.artifactName }}:
+      artifactName: ${{ parameters.args.artifactName }}
+    ${{ if parameters.args.publishLocation }}:
+      publishLocation: ${{ parameters.args.publishLocation }}
+    ${{ if parameters.args.fileSharePath }}:
+      fileSharePath: ${{ parameters.args.fileSharePath }}
+    ${{ if parameters.args.Parallel }}:
+      parallel: ${{ parameters.args.Parallel }}
+    ${{ if parameters.args.parallelCount }}:
+      parallelCount: ${{ parameters.args.parallelCount }}
+    ${{ if parameters.args.properties }}:
+      properties: ${{ parameters.args.properties }}

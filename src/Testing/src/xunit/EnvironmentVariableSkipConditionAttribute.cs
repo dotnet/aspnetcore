@@ -5,7 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Shared;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// Skips a test when the value of an environment variable matches any of the supplied values.

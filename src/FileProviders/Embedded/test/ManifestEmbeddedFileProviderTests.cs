@@ -375,6 +375,51 @@ public class ManifestEmbeddedFileProviderTests
     }
 
     [Fact]
+    public void GetDirectoryContents_ReturnsDirectoryInfoThatImplementsIDirectoryContents_ForDirectory()
+    {
+        // Arrange
+        var assembly = new TestAssembly(
+            TestEntry.Directory("unused",
+                TestEntry.Directory("wwwroot",
+                    TestEntry.File("site.css")),
+                TestEntry.File("data.json"),
+                TestEntry.Directory("config",
+                    TestEntry.File("release.json"),
+                    TestEntry.File("testing.json"))));
+
+        // Act
+        var provider = new ManifestEmbeddedFileProvider(assembly);
+        var root = provider.GetDirectoryContents("/").ToDictionary(f => f.Name);
+
+        var rootExpected = new[]
+        {
+            CreateTestFileInfo("wwwroot", isDirectory: true),
+            CreateTestFileInfo("data.json"),
+            CreateTestFileInfo("config", isDirectory: true)
+        };
+
+        var wwwrootExpected = new[]
+        {
+            CreateTestFileInfo("site.css")
+        };
+
+        var configExpected = new[]
+        {
+            CreateTestFileInfo("release.json"),
+            CreateTestFileInfo("testing.json")
+        };
+
+        // Assert
+
+        Assert.IsAssignableFrom<IDirectoryContents>(root["wwwroot"]);
+        Assert.IsAssignableFrom<IDirectoryContents>(root["config"]);
+
+        Assert.Equal(rootExpected, root.Values, FileInfoComparer.Instance);
+        Assert.Equal(wwwrootExpected, (IDirectoryContents)root["wwwroot"], FileInfoComparer.Instance);
+        Assert.Equal(configExpected, (IDirectoryContents)root["config"], FileInfoComparer.Instance);
+    }
+
+    [Fact]
     public void Contructor_CanScopeManifestToAFolder()
     {
         // Arrange

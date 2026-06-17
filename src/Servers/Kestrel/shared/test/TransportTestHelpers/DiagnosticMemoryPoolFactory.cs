@@ -6,10 +6,11 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 
-public class DiagnosticMemoryPoolFactory
+public class DiagnosticMemoryPoolFactory : IMemoryPoolFactory<byte>
 {
     private readonly bool _allowLateReturn;
 
@@ -24,11 +25,11 @@ public class DiagnosticMemoryPoolFactory
         _pools = new List<DiagnosticMemoryPool>();
     }
 
-    public MemoryPool<byte> Create()
+    public MemoryPool<byte> Create(MemoryPoolOptions options = null)
     {
         lock (_pools)
         {
-            var pool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), _allowLateReturn, _rentTracking);
+            var pool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(options?.Owner), _allowLateReturn, _rentTracking);
             _pools.Add(pool);
             return pool;
         }

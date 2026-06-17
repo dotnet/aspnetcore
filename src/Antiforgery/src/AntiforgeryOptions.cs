@@ -81,4 +81,9 @@ public class AntiforgeryOptions
     /// the X-Frame-Options header will not be generated for the response.
     /// </summary>
     public bool SuppressXFrameOptionsHeader { get; set; }
+
+    /// <summary>
+    /// Specifies whether to suppress load of antiforgery token from request body.
+    /// </summary>
+    public bool SuppressReadingTokenFromFormBody { get; set; }
 }

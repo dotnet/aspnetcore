@@ -1,26 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
+using Windows.Win32.Networking.HttpServer;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class HttpsTests
+public class HttpsTests : LoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate("eku.client.pfx");
 
@@ -30,7 +27,7 @@ public class HttpsTests
         using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
         {
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -45,7 +42,7 @@ public class HttpsTests
             byte[] body = Encoding.UTF8.GetBytes("Hello World");
             httpContext.Response.ContentLength = body.Length;
             return httpContext.Response.Body.WriteAsync(body, 0, body.Length);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal("Hello World", response);
@@ -62,7 +59,7 @@ public class HttpsTests
             var body = Encoding.UTF8.GetBytes("Hello World");
             httpContext.Response.ContentLength = body.Length;
             await httpContext.Response.Body.WriteAsync(body, 0, body.Length);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address, "Hello World");
             Assert.Equal("Hello World", response);
@@ -143,7 +140,7 @@ public class HttpsTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -159,7 +156,7 @@ public class HttpsTests
             var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
             Assert.NotNull(tlsFeature);
             return httpContext.Response.WriteAsJsonAsync(tlsFeature);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             var result = System.Text.Json.JsonDocument.Parse(response).RootElement;
@@ -168,20 +165,26 @@ public class HttpsTests
             Assert.True(protocol > SslProtocols.None, "Protocol: " + protocol);
             Assert.True(Enum.IsDefined(typeof(SslProtocols), protocol), "Defined: " + protocol); // Mapping is required, make sure it's current
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             var cipherAlgorithm = (CipherAlgorithmType)result.GetProperty("cipherAlgorithm").GetInt32();
             Assert.True(cipherAlgorithm > CipherAlgorithmType.Null, "Cipher: " + cipherAlgorithm);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             var cipherStrength = result.GetProperty("cipherStrength").GetInt32();
             Assert.True(cipherStrength > 0, "CipherStrength: " + cipherStrength);
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             var hashAlgorithm = (HashAlgorithmType)result.GetProperty("hashAlgorithm").GetInt32();
             Assert.True(hashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm: " + hashAlgorithm);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             var hashStrength = result.GetProperty("hashStrength").GetInt32();
             Assert.True(hashStrength >= 0, "HashStrength: " + hashStrength); // May be 0 for some algorithms
 
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
             var keyExchangeAlgorithm = (ExchangeAlgorithmType)result.GetProperty("keyExchangeAlgorithm").GetInt32();
             Assert.True(keyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm: " + keyExchangeAlgorithm);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
 
             var keyExchangeStrength = result.GetProperty("keyExchangeStrength").GetInt32();
             Assert.True(keyExchangeStrength >= 0, "KeyExchangeStrength: " + keyExchangeStrength);
@@ -207,27 +210,88 @@ public class HttpsTests
                 Assert.NotNull(tlsFeature);
                 Assert.NotNull(requestInfoFeature);
                 Assert.True(requestInfoFeature.RequestInfo.Count > 0);
-                var tlsInfo = requestInfoFeature.RequestInfo[(int)HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol];
-                HttpApiTypes.HTTP_SSL_PROTOCOL_INFO tlsCopy;
+                var tlsInfo = requestInfoFeature.RequestInfo[(int)HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol];
+                HTTP_SSL_PROTOCOL_INFO tlsCopy;
                 unsafe
                 {
                     using var handle = tlsInfo.Pin();
-                    tlsCopy = Marshal.PtrToStructure<HttpApiTypes.HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
+                    tlsCopy = Marshal.PtrToStructure<HTTP_SSL_PROTOCOL_INFO>((IntPtr)handle.Pointer);
                 }
 
                 // Assert.Equal(tlsFeature.Protocol, tlsCopy.Protocol); // These don't directly match because the native and managed enums use different values.
-                Assert.Equal(tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
+                Assert.Equal((uint)tlsFeature.CipherAlgorithm, tlsCopy.CipherType);
                 Assert.Equal(tlsFeature.CipherStrength, (int)tlsCopy.CipherStrength);
-                Assert.Equal(tlsFeature.HashAlgorithm, tlsCopy.HashType);
+                Assert.Equal((uint)tlsFeature.HashAlgorithm, tlsCopy.HashType);
                 Assert.Equal(tlsFeature.HashStrength, (int)tlsCopy.HashStrength);
-                Assert.Equal(tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
+                Assert.Equal((uint)tlsFeature.KeyExchangeAlgorithm, tlsCopy.KeyExchangeType);
                 Assert.Equal(tlsFeature.KeyExchangeStrength, (int)tlsCopy.KeyExchangeStrength);
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
             }
             catch (Exception ex)
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_SetsIHttpSysRequestPropertyFeature()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var requestPropertyFeature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(requestPropertyFeature);
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_TryGetRequestProperty_TlsCipherInfo_RoundTrips()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var feature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(feature);
+
+                // TlsCipherInfo is available on any HTTPS request without per-binding configuration,
+                // unlike TlsClientHello which requires HTTP_SERVICE_CONFIG_SSL_FLAG_ENABLE_CACHE_CLIENT_HELLO.
+                // The buffer is generously sized so the API can write its (fixed-size) struct without
+                // us having to know the exact size up front.
+                var propertyId = (int)HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo;
+
+                var buffer = new byte[4096];
+                Assert.True(feature.TryGetRequestProperty(propertyId, qualifier: default, output: buffer, out var written));
+                Assert.InRange(written, 1, buffer.Length);
+
+                // Buffer too small returns false. Some HTTP_REQUEST_PROPERTY values report the required
+                // size in `bytesReturned`, others do not, so we only assert the false return here.
+                var tooSmall = new byte[1];
+                Assert.False(feature.TryGetRequestProperty(propertyId, qualifier: default, output: tooSmall, out _));
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -257,7 +321,7 @@ public class HttpsTests
             {
                 await httpContext.Response.WriteAsync(ex.ToString());
             }
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);

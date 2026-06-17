@@ -89,7 +89,8 @@ public class HttpConnectionFactory : IConnectionFactory
             DefaultTransferFormat = options.DefaultTransferFormat,
             ApplicationMaxBufferSize = options.ApplicationMaxBufferSize,
             TransportMaxBufferSize = options.TransportMaxBufferSize,
-            UseAcks = options.UseAcks,
+            UseStatefulReconnect = options.UseStatefulReconnect,
+            WebSocketFactory = options.WebSocketFactory,
         };
 
         if (!OperatingSystem.IsBrowser())
@@ -100,7 +101,6 @@ public class HttpConnectionFactory : IConnectionFactory
             newOptions.Proxy = options.Proxy;
             newOptions.UseDefaultCredentials = options.UseDefaultCredentials;
             newOptions.WebSocketConfiguration = options.WebSocketConfiguration;
-            newOptions.WebSocketFactory = options.WebSocketFactory;
         }
 
         return newOptions;

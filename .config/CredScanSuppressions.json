@@ -70,22 +70,6 @@
       "_justification": "Legitimate UT certificate file with private key"
     },
     {
-      "file": "\\src\\Identity\\ApiAuthorization.IdentityServer\\test\\current.pfx",
-      "_justification": "Legitimate UT certificate file with private key"
-    },
-    {
-      "file": "\\src\\Identity\\ApiAuthorization.IdentityServer\\test\\expired.pfx",
-      "_justification": "Legitimate UT certificate file with private key"
-    },
-    {
-      "file": "\\src\\Identity\\ApiAuthorization.IdentityServer\\test\\future.pfx",
-      "_justification": "Legitimate UT certificate file with private key"
-    },
-    {
-      "file": "\\src\\Identity\\ApiAuthorization.IdentityServer\\test\\test.pfx",
-      "_justification": "Legitimate UT certificate file with private key"
-    },
-    {
       "file": "\\src\\Middleware\\WebSockets\\test\\ConformanceTests\\AutobahnTestApp\\TestResources\\testCert.pfx",
       "_justification": "Legitimate UT certificate file with private key"
     },

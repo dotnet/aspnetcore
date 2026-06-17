@@ -10,8 +10,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -29,8 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.NewShim.FunctionalTests;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
-[Collection(IISTestSiteCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+[Collection(IISTestSiteCollectionInProc.Name)]
 public class RequestResponseTests
 {
     private readonly IISTestSiteFixture _fixture;
@@ -133,7 +132,7 @@ public class RequestResponseTests
         Assert.Equal(
             new byte[] {
                 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x04, 0x0A, 0x63, 0x60, 0xA0, 0x3D, 0x00, 0x00,
+                0x04, 0x0A, 0x63, 0xA0, 0x03, 0x00, 0x00,
                 0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
             await response.Content.ReadAsByteArrayAsync());
     }
@@ -151,7 +150,7 @@ public class RequestResponseTests
         Assert.Equal(
             new byte[] {
                 0x1F, 0x8B, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
-                0x04, 0x0A, 0x63, 0x60, 0xA0, 0x3D, 0x00, 0x00,
+                0x04, 0x0A, 0x63, 0xA0, 0x03, 0x00, 0x00,
                 0xCA, 0xC6, 0x88, 0x99, 0x64, 0x00, 0x00, 0x00 },
             await response.Content.ReadAsByteArrayAsync());
     }
@@ -612,6 +611,28 @@ public class RequestResponseTests
     }
 
     [ConditionalTheory]
+    [InlineData("IIISEnvironmentFeature")]
+    [InlineData("IIISEnvironmentFeatureConfig")]
+    public async Task IISEnvironmentFeatureIsAvailable(string endpoint)
+    {
+        var siteName = _fixture.DeploymentResult.DeploymentParameters.SiteName.ToUpperInvariant();
+    
+        var expected = $"""
+            IIS Version: 10.0
+            ApplicationId: /LM/W3SVC/{siteName}/ROOT
+            Application Path: {_fixture.DeploymentResult.ContentRoot}\
+            Application Virtual Path: /
+            Application Config Path: MACHINE/WEBROOT/APPHOST/{siteName}
+            AppPool ID: {_fixture.DeploymentResult.AppPoolName}
+            AppPool Config File: {_fixture.DeploymentResult.DeploymentParameters.ServerConfigLocation}
+            Site ID: {siteName}
+            Site Name: {siteName}
+            """;
+
+        Assert.Equal(expected, await _fixture.Client.GetStringAsync($"/{endpoint}"));
+    }
+
+    [ConditionalTheory]
     [InlineData(65000)]
     [InlineData(1000000)]
     [InlineData(10000000)]
@@ -764,6 +785,84 @@ public class RequestResponseTests
             await connection.Receive(
                 "HTTP/1.1 200 OK",
                 "");
+        }
+    }
+
+    [ConditionalFact]
+    [RequiresNewHandler]
+    public async Task SendTransferEncodingWithTrailingCommaAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/66720.
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            await connection.Send(
+                "POST /TransferEncodingWithTrailingCommaAndContentLengthShouldBeRemove HTTP/1.1",
+                "Transfer-Encoding: chunked,",
+                "Content-Length: 5",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+        }
+    }
+
+    [ConditionalFact]
+    public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+    {
+        using (var connection = _fixture.CreateTestConnection())
+        {
+            for (var i = 0; i < 2; i++)
+            {
+                await connection.Send(
+                    "POST /ReadAndWriteEcho HTTP/1.1",
+                    "Host: localhost",
+                    "Transfer-Encoding: chunked",
+                    "Connection: keep-alive",
+                    "Content-Length: 25",
+                    "",
+                    "5", "Hello",
+                    "6", " World",
+                    "0",
+                    "",
+                    "");
+            }
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                "");
+            var headers = await connection.ReceiveHeaders();
+
+            // RFC 9112 §6.1: the server MUST close the connection after responding
+            // to a request that contained both Content-Length and Transfer-Encoding.
+            Assert.Contains("Connection: close", headers);
+            Assert.Contains("Server: Microsoft-IIS/10.0", headers);
+
+            if (headers.Contains("Transfer-Encoding: chunked"))
+            {
+                await connection.Receive(
+                    "B",
+                    "Hello World",
+                    "");
+                await connection.Receive(
+                    "0",
+                    "",
+                    "");
+            }
+            else
+            {
+                // Either framed by Content-Length: 11 or by connection close
+                // (no framing header). Either way the body is exactly "Hello World"
+                // and WaitForConnectionClose below verifies nothing else follows.
+                await connection.Receive("Hello World");
+            }
+
+            // Verify the second request was not processed and that the server closed
+            // the connection (no extra bytes are sent).
+            await connection.WaitForConnectionClose();
         }
     }
 

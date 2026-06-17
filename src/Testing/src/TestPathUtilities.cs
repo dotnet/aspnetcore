@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [Obsolete("This API is obsolete and the pattern its usage encouraged should not be used anymore. See https://github.com/dotnet/extensions/issues/1697 for details.")]
 public class TestPathUtilities
@@ -22,7 +22,7 @@ public class TestPathUtilities
                 return projectFileInfo.DirectoryName;
             }
 
-            projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "AspNetCore.sln"));
+            projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "AspNetCore.slnx"));
             if (projectFileInfo.Exists)
             {
                 // Have reached the solution root. Work down through the src/ folder to find the solution filter.

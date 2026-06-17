@@ -16,6 +16,7 @@
 
 #endregion
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Grpc.Core;
 
@@ -64,6 +65,8 @@ internal static class BindMethodFinder
         return null;
     }
 
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2075:UnrecognizedReflectionPattern",
+        Justification = "Fallback doesn't have BindServiceMethodAttribute so can't be verified.")]
     internal static MethodInfo? GetBindMethodFallback(Type serviceType)
     {
         // Search for the generated service base class

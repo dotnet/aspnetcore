@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
@@ -34,13 +35,13 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
         {
             return true;
         }
-
         for (var i = 0; i < acceptHeader.Count; i++)
         {
             var acceptHeaderValue = acceptHeader[i];
-
-            if (_jsonMediaType.IsSubsetOf(acceptHeaderValue) ||
-                _problemDetailsJsonMediaType.IsSubsetOf(acceptHeaderValue))
+            // Check to see if the Accepted header values support `application/json` or `application/problem+json`
+            // with  support for argument parameters. Support handling `*/*` and `application/*` as Accepts header values.
+            // Application/json is a subset of */* but */* is not a subset of application/json
+            if (acceptHeaderValue.IsSubsetOf(_jsonMediaType) || acceptHeaderValue.IsSubsetOf(_problemDetailsJsonMediaType) || _jsonMediaType.IsSubsetOf(acceptHeaderValue))
             {
                 return true;
             }
@@ -53,6 +54,17 @@ internal sealed partial class DefaultProblemDetailsWriter : IProblemDetailsWrite
     {
         var httpContext = context.HttpContext;
         ProblemDetailsDefaults.Apply(context.ProblemDetails, httpContext.Response.StatusCode);
+
+        var traceId = Activity.Current?.Id ?? httpContext.TraceIdentifier;
+
+        // We shouldn't attempt to change the casing here.
+        // STJ doesn't respect the naming policy for JsonExtensionData as it won't round-trip otherwise.
+        // In addition, trying to special case traceId specifically can cause inconsistencies.
+        // See:
+        // https://github.com/dotnet/aspnetcore/issues/65543
+        // https://github.com/dotnet/aspnetcore/issues/66603
+        context.ProblemDetails.Extensions["traceId"] = traceId;
+
         _options.CustomizeProblemDetails?.Invoke(context);
 
         var problemDetailsType = context.ProblemDetails.GetType();

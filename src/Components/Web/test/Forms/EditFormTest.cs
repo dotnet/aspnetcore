@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Components.Binding;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -18,10 +17,12 @@ public class EditFormTest
     public EditFormTest()
     {
         var services = new ServiceCollection();
-        services.AddSingleton<NavigationManager, TestNavigationManager>();
-        services.AddSingleton<IFormValueSupplier, TestFormValueSupplier>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingFormModelBindingProvider>();
-        services.AddSingleton<CascadingModelBindingProvider, CascadingQueryModelBindingProvider>();
+        services.AddSingleton<IFormValueMapper, TestFormValueModelBinder>();
+        services.AddAntiforgery();
+        services.AddLogging();
+        services.AddSingleton<ComponentStatePersistenceManager>();
+        services.AddSingleton(services => services.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
         _testRenderer = new(services.BuildServiceProvider());
     }
 
@@ -97,7 +98,7 @@ public class EditFormTest
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_SetToComponentName_WhenFormNameIsProvided()
+    public async Task DoesNotAddSSRContentWhenNoMappingContextPresent()
     {
         // Arrange
         var model = new TestModel();
@@ -108,221 +109,281 @@ public class EditFormTest
         };
 
         // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editFormComponentId = _testRenderer.Batches.Single()
+            .GetComponentFrames<EditForm>().Single().ComponentId;
+        var editFormFrames = _testRenderer.GetCurrentRenderTreeFrames(editFormComponentId);
 
-        // Assert
-        AssertFrame.Attribute(attributes[0], "name", "my-form");
-        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=my-form");
+        // Assert:
+        //  - Does not set any "method" attribute
+        //  - Does not assign any name to the submit event
+        Assert.Collection(editFormFrames.AsEnumerable(),
+            frame => AssertFrame.Region(frame, 7),
+            frame => AssertFrame.Element(frame, "form", 6),
+            frame => AssertFrame.Attribute(frame, "onsubmit"),
+            frame => AssertFrame.Component<CascadingValue<EditContext>>(frame, 4),
+            frame => AssertFrame.Attribute(frame, "IsFixed", true),
+            frame => AssertFrame.Attribute(frame, "Value"),
+            frame => AssertFrame.Attribute(frame, "ChildContent"));
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_SetToComponentName_WhenCombiningWithDefaultParentBindingContext()
+    public async Task AddSSRContentWhenMappingContextPresent()
     {
         // Arrange
-        var model = new TestModel();
+        var editContext = new EditContext(new object());
         var rootComponent = new TestEditFormHostComponent
         {
-            Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
+            MappingContextName = "mapping-context-name",
+            EditContext = editContext,
         };
 
         // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editFormComponentId = _testRenderer.Batches.Single()
+            .GetComponentFrames<EditForm>().Single().ComponentId;
+        var editFormFrames = _testRenderer.GetCurrentRenderTreeFrames(editFormComponentId);
 
         // Assert
-        AssertFrame.Attribute(attributes[0], "name", "my-form");
-        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=my-form");
+        Assert.Collection(editFormFrames.AsEnumerable(),
+            frame => AssertFrame.Region(frame, 13),
+            frame => AssertFrame.Element(frame, "form", 12),
+
+            // Sets "method" to "post" by default
+            frame => AssertFrame.Attribute(frame, "method", "post"),
+
+            // Assigns name to the submit event
+            frame => AssertFrame.Attribute(frame, "onsubmit"),
+            frame => AssertFrame.NamedEvent(frame, "onsubmit", "my-form"),
+
+            frame => AssertFrame.Region(frame, 4),
+
+            // Adds FormMappingValidator child
+            frame => AssertFrame.Component<FormMappingValidator>(frame, 2),
+            frame => AssertFrame.Attribute(frame, nameof(FormMappingValidator.CurrentEditContext), editContext),
+
+            // Adds AntiforgeryToken child
+            frame => AssertFrame.Component<AntiforgeryToken>(frame, 1),
+
+            frame => AssertFrame.Component<CascadingValue<EditContext>>(frame, 4),
+            frame => AssertFrame.Attribute(frame, "IsFixed", true),
+            frame => AssertFrame.Attribute(frame, "Value"),
+            frame => AssertFrame.Attribute(frame, "ChildContent"));
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_SetToCombinedIdentifier_WhenCombiningWithNamedParentBindingContext()
+    public async Task CanOverrideMethodWhenMappingContextPresent()
     {
         // Arrange
-        var model = new TestModel();
+        var editContext = new EditContext(new object());
         var rootComponent = new TestEditFormHostComponent
         {
-            Model = model,
             FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
-
-        // Assert
-        AssertFrame.Attribute(attributes[0], "name", "parent-context.my-form");
-        AssertFrame.Attribute(attributes[1], "action", "path?query=value&handler=parent-context.my-form");
-    }
-
-    [Fact]
-    public async Task FormElementNameAndAction_CanBeExplicitlyOverriden()
-    {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-            AdditionalFormAttributes = new Dictionary<string, object>()
+            MappingContextName = "mapping-context-name",
+            EditContext = editContext,
+            AdditionalFormAttributes = new Dictionary<string, object>
             {
-                ["name"] = "my-explicit-name",
-                ["action"] = "/somewhere/else",
+                { "method", "my method" },
+                { "custom attribute", "some value" },
             },
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
         };
 
         // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames().ToArray();
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editFormComponentId = _testRenderer.Batches.Single()
+            .GetComponentFrames<EditForm>().Single().ComponentId;
+        var editFormFrames = _testRenderer.GetCurrentRenderTreeFrames(editFormComponentId);
+        var editFormAttributes = editFormFrames.AsEnumerable()
+            .SkipWhile(f => f.FrameType != RenderTreeFrameType.Attribute)
+            .TakeWhile(f => f.FrameType == RenderTreeFrameType.Attribute)
+            .ToDictionary(f => f.AttributeName, f => f.AttributeValue);
 
         // Assert
-        AssertFrame.Attribute(attributes[0], "name", "my-explicit-name");
-        AssertFrame.Attribute(attributes[1], "action", "/somewhere/else");
+        Assert.Equal("my method", editFormAttributes["method"]);
+        Assert.Equal("some value", editFormAttributes["custom attribute"]);
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_NotSetOnDefaultBindingContext()
+    public async Task Submit_AwaitsAsyncValidationBeforeOnValidSubmit()
     {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        TestAsyncValidator validator = null;
+        var validSubmitCount = 0;
+        var rootComponent = new AsyncEditFormHostComponent
         {
-            Model = model,
-            BindingContext = new ModelBindingContext("", ""),
-            SubmitHandler = ctx => { }
+            EditContext = editContext,
+            Configure = current =>
+            {
+                current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.Valid });
+                current.GetGate(field);
+            },
+            Created = current => validator = current,
+            OnValidSubmit = _ => validSubmitCount++,
         };
+        await RenderAsyncRootAsync(rootComponent);
 
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames();
+        var dispatchTask = _testRenderer.DispatchEventAsync(GetSubmitEventHandlerId(), EventArgs.Empty);
+        await WaitUntilAsync(() => validator.FormValidationStartCount == 1);
 
-        // Assert
-        var frame = Assert.Single(attributes);
-        AssertFrame.Attribute(frame, "onsubmit");
+        Assert.Equal(0, validSubmitCount);
+
+        validator.OpenGate(field, ValidationOutcome.Valid);
+        await dispatchTask.WaitAsync(DefaultAsyncTimeout);
+
+        Assert.Equal(1, validSubmitCount);
     }
 
     [Fact]
-    public async Task FormElementNameAndAction_NotSetWhenNoFormNameAndNoBindingContext()
+    public async Task Submit_InvalidAsyncValidation_FiresOnInvalidSubmit()
     {
-        // Arrange
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        var validSubmitCount = 0;
+        var invalidSubmitCount = 0;
+        var rootComponent = new AsyncEditFormHostComponent
         {
-            Model = model,
-            SubmitHandler = ctx => { }
+            EditContext = editContext,
+            Configure = current => current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.Invalid, ErrorMessage = "Invalid" }),
+            OnValidSubmit = _ => validSubmitCount++,
+            OnInvalidSubmit = _ => invalidSubmitCount++,
         };
+        await RenderAsyncRootAsync(rootComponent);
 
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-        var attributes = GetFormElementAttributeFrames();
+        await _testRenderer.DispatchEventAsync(GetSubmitEventHandlerId(), EventArgs.Empty).WaitAsync(DefaultAsyncTimeout);
 
-        // Assert
-        var frame = Assert.Single(attributes);
-        AssertFrame.Attribute(frame, "onsubmit");
+        Assert.Equal(0, validSubmitCount);
+        Assert.Equal(1, invalidSubmitCount);
+        Assert.Equal(new[] { "Invalid" }, editContext.GetValidationMessages(field));
     }
 
     [Fact]
-    public async Task EventHandlerName_NotSetWhenNoBindingContextProvided()
+    public async Task Submit_AsyncValidatorThrows_FiresOnInvalidSubmitWithFaultedContext()
     {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        var validSubmitCount = 0;
+        var invalidSubmitCount = 0;
+        var observedFaulted = false;
+        var rootComponent = new AsyncEditFormHostComponent
         {
-            Model = model,
-            SubmitHandler = ctx => { }
+            EditContext = editContext,
+            Configure = current => current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.ThrowInfraException }),
+            OnValidSubmit = _ => validSubmitCount++,
+            OnInvalidSubmit = context =>
+            {
+                invalidSubmitCount++;
+                observedFaulted = context.IsValidationFaulted();
+            },
         };
+        await RenderAsyncRootAsync(rootComponent);
 
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        await _testRenderer.DispatchEventAsync(GetSubmitEventHandlerId(), EventArgs.Empty).WaitAsync(DefaultAsyncTimeout);
 
-        // Assert
-        Assert.Null(tracker.EventName);
+        Assert.Equal(0, validSubmitCount);
+        Assert.Equal(1, invalidSubmitCount);
+        Assert.True(observedFaulted);
     }
 
     [Fact]
-    public async Task EventHandlerName_SetToBindingIdOnDefaultHandler()
+    public async Task Submit_WithPendingFieldTask_CancelsFieldTaskAndRunsFormValidation()
     {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        TestAsyncValidator validator = null;
+        var validSubmitCount = 0;
+        var rootComponent = new AsyncEditFormHostComponent
         {
-            Model = model,
-            BindingContext = new ModelBindingContext("", "")
+            EditContext = editContext,
+            Configure = current => current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.Valid }),
+            Created = current => validator = current,
+            OnValidSubmit = _ => validSubmitCount++,
         };
+        await RenderAsyncRootAsync(rootComponent);
+        var pendingCts = new CancellationTokenSource();
+        var pendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var pendingRegistration = pendingCts.Token.Register(() => pendingTcs.TrySetCanceled(pendingCts.Token));
+        editContext.AddValidationTask(field, pendingTcs.Task, pendingCts);
 
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        await _testRenderer.DispatchEventAsync(GetSubmitEventHandlerId(), EventArgs.Empty).WaitAsync(DefaultAsyncTimeout);
 
-        // Assert
-        Assert.Equal("", tracker.EventName);
+        Assert.True(pendingCts.IsCancellationRequested);
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.Equal(1, validator.FormValidationStartCount);
+        Assert.Equal(1, validSubmitCount);
     }
 
-    [Fact]
-    public async Task EventHandlerName_SetToFormNameWhenFormNameIsProvided()
+    private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
     {
-        // Arrange
-        var tracker = TrackEventNames();
-
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("my-form", tracker.EventName);
+        var componentId = _testRenderer.AssignRootComponentId(rootComponent);
+        await _testRenderer.RenderRootComponentAsync(componentId);
     }
 
-    [Fact]
-    public async Task EventHandlerName_SetToFormNameWhenParentBindingContextIsDefault()
+    private ulong GetSubmitEventHandlerId()
     {
-        // Arrange
-        var tracker = TrackEventNames();
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
-        {
-            Model = model,
-            FormName = "my-form",
-            BindingContext = new ModelBindingContext("", "")
-        };
-
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
-
-        // Assert
-        Assert.Equal("my-form", tracker.EventName);
+        var editFormComponentId = _testRenderer.Batches.Last().ReferenceFrames.AsEnumerable()
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
+            .Where(frame => frame.Component is EditForm)
+            .Select(frame => frame.ComponentId)
+            .Single();
+        var editFormFrames = _testRenderer.GetCurrentRenderTreeFrames(editFormComponentId);
+        return editFormFrames.AsEnumerable()
+            .Where(frame => frame.FrameType == RenderTreeFrameType.Attribute)
+            .Where(frame => frame.AttributeName == "onsubmit")
+            .Select(frame => frame.AttributeEventHandlerId)
+            .Single();
     }
 
-    [Fact]
-    public async Task EventHandlerName_SetToCombinedNameWhenParentBindingContextIsNamed()
+    private static async Task WaitUntilAsync(Func<bool> condition)
     {
-        // Arrange
-        var tracker = TrackEventNames();
-        var model = new TestModel();
-        var rootComponent = new TestEditFormHostComponent
+        var start = DateTime.UtcNow;
+        while (!condition())
         {
-            Model = model,
-            FormName = "my-form",
-            BindingContext = new ModelBindingContext("parent-context", "path?handler=parent-context")
-        };
+            if (DateTime.UtcNow - start > DefaultAsyncTimeout)
+            {
+                throw new TimeoutException("The expected condition was not reached before the timeout.");
+            }
 
-        // Act
-        _ = await RenderAndGetTestEditFormComponentAsync(rootComponent);
+            await Task.Yield();
+        }
+    }
 
-        // Assert
-        Assert.Equal("parent-context.my-form", tracker.EventName);
+    private static readonly TimeSpan DefaultAsyncTimeout = TimeSpan.FromSeconds(5);
+
+    private sealed class AsyncEditFormHostComponent : AutoRenderComponent
+    {
+        public EditContext EditContext { get; set; }
+
+        public Action<TestAsyncValidator> Configure { get; set; }
+
+        public Action<TestAsyncValidator> Created { get; set; }
+
+        public Action<EditContext> OnValidSubmit { get; set; }
+
+        public Action<EditContext> OnInvalidSubmit { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<EditForm>(0);
+            builder.AddComponentParameter(1, nameof(EditForm.EditContext), EditContext);
+            if (OnValidSubmit is not null)
+            {
+                builder.AddComponentParameter(2, nameof(EditForm.OnValidSubmit), EventCallback.Factory.Create(this, OnValidSubmit));
+            }
+            if (OnInvalidSubmit is not null)
+            {
+                builder.AddComponentParameter(3, nameof(EditForm.OnInvalidSubmit), EventCallback.Factory.Create(this, OnInvalidSubmit));
+            }
+            builder.AddComponentParameter(4, nameof(EditForm.ChildContent), (RenderFragment<EditContext>)(context => childBuilder =>
+            {
+                childBuilder.OpenComponent<TestAsyncValidatorComponent>(0);
+                childBuilder.AddComponentParameter(1, nameof(TestAsyncValidatorComponent.Configure), Configure);
+                childBuilder.AddComponentParameter(2, nameof(TestAsyncValidatorComponent.Created), EventCallback.Factory.Create<TestAsyncValidator>(this, Created));
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
     }
 
     private static EditForm FindEditFormComponent(CapturedBatch batch)
@@ -339,55 +400,6 @@ public class EditFormTest
         return FindEditFormComponent(_testRenderer.Batches.Single());
     }
 
-    private IEnumerable<RenderTreeFrame> GetFormElementAttributeFrames()
-    {
-        var frames = _testRenderer.Batches.Single().ReferenceFrames;
-        var index = frames
-            .Select((frame, index) => (frame, index))
-            .Where(pair => pair.frame.FrameType == RenderTreeFrameType.Element)
-            .Select(pair => pair.index)
-            .Single();
-
-        var attributes = frames
-            .Skip(index + 1)
-            .TakeWhile(f => f.FrameType == RenderTreeFrameType.Attribute);
-
-        return attributes;
-    }
-
-    private int GetComponentFrameIndex()
-    {
-        var frames = _testRenderer.Batches.Single().ReferenceFrames;
-        var frameIndex = frames
-            .Select((frame, index) => (frame, index))
-            .Where(pair => pair.frame.FrameType == RenderTreeFrameType.Component && pair.frame.Component is EditForm)
-            .Select(pair => pair.index)
-            .Single();
-        return frameIndex;
-    }
-
-    private EventHandlerNameTracker TrackEventNames()
-    {
-        var tracker = new EventHandlerNameTracker();
-        _testRenderer.TrackNamedEventHandlers = true;
-        _testRenderer.OnNamedEvent += tracker.Track;
-        return tracker;
-    }
-
-    private class EventHandlerNameTracker
-    {
-        public ulong EventHandlerId { get; private set; }
-
-        public int ComponentId { get; private set; }
-
-        public string EventName { get; private set; }
-
-        internal void Track((ulong, int, string) tuple)
-        {
-            (EventHandlerId, ComponentId, EventName) = tuple;
-        }
-    }
-
     class TestModel
     {
         public string StringProperty { get; set; }
@@ -399,21 +411,21 @@ public class EditFormTest
 
         public TestModel Model { get; set; }
 
-        public ModelBindingContext BindingContext { get; set; }
+        public string MappingContextName { get; set; }
 
         public Action<EditContext> SubmitHandler { get; set; }
 
         public string FormName { get; set; }
 
-        public Dictionary<string, object> AdditionalFormAttributes { get; internal set; }
+        public Dictionary<string, object> AdditionalFormAttributes { get; set; }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if (BindingContext != null)
+            if (MappingContextName is not null)
             {
-                builder.OpenComponent<CascadingModelBinder>(0);
-                builder.AddComponentParameter(1, nameof(CascadingModelBinder.Name), BindingContext.Name);
-                builder.AddComponentParameter(3, nameof(CascadingModelBinder.ChildContent), (RenderFragment<ModelBindingContext>)((_) => RenderForm));
+                builder.OpenComponent<FormMappingScope>(0);
+                builder.AddComponentParameter(1, nameof(FormMappingScope.Name), MappingContextName);
+                builder.AddComponentParameter(3, nameof(FormMappingScope.ChildContent), (RenderFragment<FormMappingContext>)(_ => RenderForm));
                 builder.CloseComponent();
             }
             else
@@ -434,24 +446,16 @@ public class EditFormTest
                 {
                     builder.AddComponentParameter(4, "OnValidSubmit", new EventCallback<EditContext>(null, SubmitHandler));
                 }
-                builder.AddComponentParameter(5, "FormHandlerName", FormName);
+                builder.AddComponentParameter(5, "FormName", FormName);
 
                 builder.CloseComponent();
             }
         }
     }
 
-    class TestNavigationManager : NavigationManager
+    private class TestFormValueModelBinder : IFormValueMapper
     {
-        public TestNavigationManager()
-        {
-            Initialize("https://localhost:85/subdir/", "https://localhost:85/subdir/path?query=value#hash");
-        }
-    }
-
-    private class TestFormValueSupplier : IFormValueSupplier
-    {
-        public bool CanBind(Type valueType, string formName = null) => false;
-        public void Bind(FormValueSupplierContext context) { }
+        public bool CanMap(Type valueType, string mappingScopeName, string formName) => false;
+        public void Map(FormValueMappingContext context) { }
     }
 }

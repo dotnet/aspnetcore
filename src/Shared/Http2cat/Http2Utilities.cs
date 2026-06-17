@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -145,7 +145,14 @@ internal sealed class Http2Utilities : IHttpStreamHeadersHandler
 
     void IHttpStreamHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
+        var headerName = name.GetAsciiString();
+        var headerValue = value.GetAsciiOrUTF8String(HeaderValueEncoding);
+        if (headerName.Contains('\0') || headerValue.Contains('\0'))
+        {
+            throw new InvalidOperationException();
+        }
+
+        _decodedHeaders[headerName] = headerValue;
     }
 
     void IHttpStreamHeadersHandler.OnHeadersComplete(bool endStream) { }

@@ -19,6 +19,7 @@ internal class WellKnownTypes
 
     private readonly INamedTypeSymbol?[] _lazyWellKnownTypes;
     private readonly Compilation _compilation;
+    private readonly INamedTypeSymbol _missingTypeSymbol;
 
     static WellKnownTypes()
     {
@@ -51,6 +52,7 @@ internal class WellKnownTypes
     {
         _lazyWellKnownTypes = new INamedTypeSymbol?[WellKnownTypeData.WellKnownTypeNames.Length];
         _compilation = compilation;
+        _missingTypeSymbol = compilation.GetTypeByMetadataName(typeof(MissingType).FullName!)!;
     }
 
     public INamedTypeSymbol Get(SpecialType type)
@@ -58,7 +60,28 @@ internal class WellKnownTypes
         return _compilation.GetSpecialType(type);
     }
 
+    /// <summary>
+    /// Returns the type symbol for the specified well-known type, or throws if the type cannot be found.
+    /// </summary>
     public INamedTypeSymbol Get(WellKnownTypeData.WellKnownType type)
+    {
+        return Get(type, throwOnNotFound: true);
+    }
+
+    /// <summary>
+    /// Returns the type symbol for the specified well-known type, or a special marker type symbol if the type cannot be found.
+    /// </summary>
+    /// <remarks>
+    /// We use a special marker type for cases where some types can be legitimately missing.
+    /// E.g. The Microsoft.Extensions.Validation source generator checks against some types
+    /// from the shared framework which are missing in Blazor WebAssembly SDK projects.
+    /// </remarks>
+    public INamedTypeSymbol GetOptional(WellKnownTypeData.WellKnownType type)
+    {
+        return Get(type, throwOnNotFound: false);
+    }
+
+    private INamedTypeSymbol Get(WellKnownTypeData.WellKnownType type, bool throwOnNotFound)
     {
         var index = (int)type;
         var symbol = _lazyWellKnownTypes[index];
@@ -69,21 +92,54 @@ internal class WellKnownTypes
 
         // Symbol hasn't been added to the cache yet.
         // Resolve symbol from name, cache, and return.
-        return GetAndCache(index);
+        return GetAndCache(index, throwOnNotFound);
     }
 
-    private INamedTypeSymbol GetAndCache(int index)
+    private INamedTypeSymbol GetAndCache(int index, bool throwOnNotFound)
     {
-        var result = _compilation.GetTypeByMetadataName(WellKnownTypeData.WellKnownTypeNames[index]);
-        if (result == null)
+        var result = GetTypeByMetadataNameInTargetAssembly(WellKnownTypeData.WellKnownTypeNames[index]);
+
+        if (result == null && throwOnNotFound)
         {
             throw new InvalidOperationException($"Failed to resolve well-known type '{WellKnownTypeData.WellKnownTypeNames[index]}'.");
         }
+        else
+        {
+            result ??= _compilation.GetTypeByMetadataName(typeof(MissingType).FullName!)!;
+        }
+
         Interlocked.CompareExchange(ref _lazyWellKnownTypes[index], result, null);
 
         // GetTypeByMetadataName should always return the same instance for a name.
         // To ensure we have a consistent value, for thread safety, return symbol set in the array.
         return _lazyWellKnownTypes[index]!;
+    }
+
+    // Filter for types within well-known (framework-owned) assemblies only.
+    private INamedTypeSymbol? GetTypeByMetadataNameInTargetAssembly(string metadataName)
+    {
+        var types = _compilation.GetTypesByMetadataName(metadataName);
+        if (types.Length == 0)
+        {
+            return null;
+        }
+
+        if (types.Length == 1)
+        {
+            return types[0];
+        }
+
+        // Multiple types match the name. This is most likely caused by someone reusing the namespace + type name in their apps or libraries.
+        // Workaround this situation by prioritizing types in System and Microsoft assemblies.
+        foreach (var type in types)
+        {
+            if (type.ContainingAssembly.Identity.Name.StartsWith("System.", StringComparison.Ordinal)
+                || type.ContainingAssembly.Identity.Name.StartsWith("Microsoft.", StringComparison.Ordinal))
+            {
+                return type;
+            }
+        }
+        return null;
     }
 
     public bool IsType(ITypeSymbol type, WellKnownTypeData.WellKnownType[] wellKnownTypes) => IsType(type, wellKnownTypes, out var _);
@@ -132,4 +188,6 @@ internal class WellKnownTypes
         }
         return false;
     }
+
+    internal class MissingType { }
 }

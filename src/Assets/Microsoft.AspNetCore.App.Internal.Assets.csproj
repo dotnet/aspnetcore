@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor" DefaultTargets="Pack">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>ASP.NET Core static framework assets</Description>
+    <PackageId>Microsoft.AspNetCore.App.Internal.Assets</PackageId>
+    <IsPackable>true</IsPackable>
+    <OutputType>Library</OutputType>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ImplicitUsings>disable</ImplicitUsings>
+
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
+
+    <!-- The package doesn't produce any lib or ref assemblies -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Debug'">$(RepoRoot)src\Components\Web.JS\dist\Debug</_BlazorJSContentRoot>
+    <_BlazorJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorJSContentRoot>
+  </PropertyGroup>
+
+  <!-- Include blazor JS files as Content under wwwroot/ so the SWA pipeline discovers them.
+       ContentRoot points to the JS dist folder so the runtime middleware can serve files directly.
+       Condition on BuildNodeJS since the files won't exist during No-NodeJS CI builds. -->
+  <!-- blazor.webassembly.js is provided by Microsoft.AspNetCore.Components.WebAssembly instead.
+       It flows to Blazor Web Apps through the client project P2P reference chain. -->
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js" Link="wwwroot\_framework\blazor.web.js" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js" Link="wwwroot\_framework\blazor.server.js" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js.map" Link="wwwroot\_framework\blazor.web.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
+    <Content Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js.map" Link="wwwroot\_framework\blazor.server.js.map" ContentRoot="$(_BlazorJSContentRoot)\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <StaticWebAssetGroupDefinition Include="BlazorFramework"
+      Value="enabled" SourceId="$(PackageId)" Order="0"
+      IncludePattern="**" />
+  </ItemGroup>
+
+  <Target Name="_CheckBlazorJSPath" AfterTargets="ResolveProjectReferences" Condition="'$(BuildNodeJS)' != 'false'">
+    <ItemGroup>
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.web.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.web.js')" />
+      <_MissingBlazorJSFile Include="$(_BlazorJSContentRoot)\_framework\blazor.server.js" Condition="!EXISTS('$(_BlazorJSContentRoot)\_framework\blazor.server.js')" />
+    </ItemGroup>
+
+    <Error
+      Condition="'@(_MissingBlazorJSFile)' != ''"
+      Text="'%(_MissingBlazorJSFile.Identity)' does not exist. Run 'npm run build' in the repo root to generate the file." />
+  </Target>
+
+</Project>

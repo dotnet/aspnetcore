@@ -16,12 +16,14 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 public class ComponentState : IAsyncDisposable
 {
     private readonly Renderer _renderer;
-    private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
-    private readonly bool _hasCascadingParameters;
     private readonly bool _hasAnyCascadingParameterSubscriptions;
+    private IReadOnlyList<CascadingParameterState> _cascadingParameters;
+    private bool _hasCascadingParameters;
+    private bool _hasSingleDeliveryCascadingParameters;
     private RenderTreeBuilder _nextRenderTree;
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
     private bool _componentWasDisposed;
+    private readonly string? _componentTypeName;
 
     /// <summary>
     /// Constructs an instance of <see cref="ComponentState"/>.
@@ -39,14 +41,21 @@ public class ComponentState : IAsyncDisposable
             ? (GetSectionOutletLogicalParent(renderer, (SectionOutlet)parentComponentState!.Component) ?? parentComponentState)
             : parentComponentState;
         _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
+        _cascadingParameters = CascadingParameterState.FindCascadingParameters(this, out _hasSingleDeliveryCascadingParameters);
         CurrentRenderTree = new RenderTreeBuilder();
         _nextRenderTree = new RenderTreeBuilder();
+
+        _renderer.RegisterComponentState(component, ComponentId, this);
 
         if (_cascadingParameters.Count != 0)
         {
             _hasCascadingParameters = true;
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
+        }
+
+        if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+        {
+            _componentTypeName = component.GetType().FullName;
         }
     }
 
@@ -84,6 +93,13 @@ public class ComponentState : IAsyncDisposable
 
     internal RenderTreeBuilder CurrentRenderTree { get; set; }
 
+    /// <summary>
+    /// Gets the <see cref="Renderer"/> instance used to render the output.
+    /// </summary>
+    /// <remarks>The <see cref="Renderer"/> instance is accessible to derived classes and classes within the
+    /// same assembly. It provides rendering functionality that may be used for custom rendering logic.</remarks>
+    protected internal Renderer Renderer => _renderer;
+
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
         renderFragmentException = null;
@@ -96,7 +112,6 @@ public class ComponentState : IAsyncDisposable
         }
 
         _nextRenderTree.Clear();
-        _nextRenderTree.TrackNamedEventHandlers = _renderer.ShouldTrackNamedEventHandlers();
 
         try
         {
@@ -122,8 +137,7 @@ public class ComponentState : IAsyncDisposable
             batchBuilder,
             ComponentId,
             _nextRenderTree.GetFrames(),
-            CurrentRenderTree.GetFrames(),
-            CurrentRenderTree.GetNamedEvents());
+            CurrentRenderTree.GetFrames());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
     }
@@ -174,13 +188,48 @@ public class ComponentState : IAsyncDisposable
         if (_hasCascadingParameters)
         {
             parameters = parameters.WithCascadingParameters(_cascadingParameters);
+            if (_hasSingleDeliveryCascadingParameters)
+            {
+                StopSupplyingSingleDeliveryCascadingParameters();
+            }
         }
 
         SupplyCombinedParameters(parameters);
     }
 
+    private void StopSupplyingSingleDeliveryCascadingParameters()
+    {
+        // We're optimizing for the case where there are no single-delivery parameters, or if there were, we already
+        // removed them. In those cases _cascadingParameters is already up-to-date and gets used as-is without any filtering.
+        // In the unusual case were there are single-delivery parameters and we haven't yet removed them, it's OK to
+        // go through the extra work and allocation of creating a new list.
+        List<CascadingParameterState>? remainingCascadingParameters = null;
+        foreach (var param in _cascadingParameters)
+        {
+            if (!param.ParameterInfo.Attribute.SingleDelivery)
+            {
+                remainingCascadingParameters ??= new(_cascadingParameters.Count /* upper bound on capacity needed */);
+                remainingCascadingParameters.Add(param);
+            }
+        }
+
+        // Now update all the tracking state to match the filtered set
+        _hasCascadingParameters = remainingCascadingParameters is not null;
+        _cascadingParameters = (IReadOnlyList<CascadingParameterState>?)remainingCascadingParameters ?? Array.Empty<CascadingParameterState>();
+        _hasSingleDeliveryCascadingParameters = false;
+    }
+
     internal void NotifyCascadingValueChanged(in ParameterViewLifetime lifetime)
     {
+        // If the component was already disposed, we must not try to supply new parameters. Among other reasons,
+        // _latestDirectParametersSnapshot will already have been disposed and that puts it into an invalid state
+        // so we can't even read from it. Note that disposal doesn't instantly trigger unsubscription from cascading
+        // values - that only happens when the ComponentState is processed later by the disposal queue.
+        if (_componentWasDisposed)
+        {
+            return;
+        }
+
         var directParams = _latestDirectParametersSnapshot != null
             ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
             : ParameterView.Empty;
@@ -193,14 +242,27 @@ public class ComponentState : IAsyncDisposable
     // a consistent set to the recipient.
     private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
     {
-        // Normalise sync and async exceptions into a Task
+        var parametersStartTimestamp = ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
+
+        // Normalize sync and async exceptions into a Task
         Task setParametersAsyncTask;
         try
         {
             setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
+
+            // collect metrics
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            {
+                _ = _renderer.ComponentMetrics.CaptureParametersDuration(setParametersAsyncTask, parametersStartTimestamp, _componentTypeName);
+            }
         }
         catch (Exception ex)
         {
+            if (ComponentsMetrics.IsSupported && _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            {
+                _renderer.ComponentMetrics.FailParametersSync(ex, parametersStartTimestamp, _componentTypeName);
+            }
+
             setParametersAsyncTask = Task.FromException(ex);
         }
 
@@ -272,7 +334,7 @@ public class ComponentState : IAsyncDisposable
     internal ValueTask DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
     {
         // We don't expect these things to throw.
-        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
+        RenderTreeDiffBuilder.DisposeFrames(batchBuilder, ComponentId, CurrentRenderTree.GetFrames());
 
         if (_hasAnyCascadingParameterSubscriptions)
         {
@@ -282,8 +344,41 @@ public class ComponentState : IAsyncDisposable
         return DisposeAsync();
     }
 
+    /// <summary>
+    /// Gets the component key for this component instance.
+    /// This is used for state persistence and component identification across render modes.
+    /// </summary>
+    /// <returns>The component key, or null if no key is available.</returns>
+    protected internal virtual object? GetComponentKey()
+    {
+        if (ParentComponentState is not { } parentComponentState)
+        {
+            return null;
+        }
+
+        // Check if the parentComponentState has a `@key` directive applied to the current component.
+        var frames = parentComponentState.CurrentRenderTree.GetFrames();
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var currentFrame = ref frames.Array[i];
+
+            Debug.Assert(currentFrame.FrameType != RenderTreeFrameType.Component || currentFrame.Component != null, "GetComponentKey is being invoked too soon, ComponentState is not fully constructed.");
+
+            if (currentFrame.FrameType != RenderTreeFrameType.Component ||
+                !ReferenceEquals(Component, currentFrame.Component))
+            {
+                // Skip any frame that is not the current component.
+                continue;
+            }
+
+            return currentFrame.ComponentKey;
+        }
+
+        return null;
+    }
+
     private string GetDebuggerDisplay()
     {
-        return $"{ComponentId} - {Component.GetType().Name} - Disposed: {_componentWasDisposed}";
+        return $"ComponentId = {ComponentId}, Type = {Component.GetType().Name}, Disposed = {_componentWasDisposed}";
     }
 }

@@ -234,6 +234,24 @@ public class EditContextTest
     }
 
     [Fact]
+    public void IsInvalidWithValidationMessagesForSpecifiedField()
+    {
+        // Arrange
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var fieldOnThisModel1 = editContext.Field("field1");
+        var fieldOnThisModel2 = editContext.Field("field2");
+        messages.Add(
+            fieldOnThisModel1,
+            "Some message");
+
+        // Assert
+        Assert.False(editContext.Validate());
+        Assert.False(editContext.IsValid(fieldOnThisModel1));
+        Assert.True(editContext.IsValid(fieldOnThisModel2));
+    }
+
+    [Fact]
     public void LookingUpModel_ThatOverridesGetHashCodeAndEquals_Works()
     {
         // Test for https://github.com/aspnet/AspNetCore/issues/18069

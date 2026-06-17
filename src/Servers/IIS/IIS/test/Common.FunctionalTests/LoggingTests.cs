@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 
 #if !IIS_FUNCTIONALS
@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class LoggingTests : IISFunctionalTestBase
 {
     public LoggingTests(PublishedSitesFixture fixture) : base(fixture)
@@ -100,7 +99,7 @@ public class LoggingTests : IISFunctionalTestBase
         if (variant.HostingModel == HostingModel.InProcess)
         {
             // Error is getting logged twice, from shim and handler
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), Logger, allowMultiple: true);
+            await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), Logger, allowMultiple: true);
         }
     }
 
@@ -190,12 +189,11 @@ public class LoggingTests : IISFunctionalTestBase
         deploymentParameters.HandlerSettings["debugLevel"] = "file,eventlog";
         var deploymentResult = await StartAsync(deploymentParameters);
         StopServer();
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, @"\[aspnetcorev2.dll\] Initializing logs for .*?Description: IIS ASP.NET Core Module V2", Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, @"\[aspnetcorev2.dll\] Initializing logs for .*?Description: IIS ASP.NET Core Module V2", Logger);
     }
 
     [ConditionalTheory]
     [MemberData(nameof(InprocessTestVariants))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/38957")]
     public async Task CheckUTF8File(TestVariant variant)
     {
         var path = "CheckConsoleFunctions";
@@ -216,7 +214,7 @@ public class LoggingTests : IISFunctionalTestBase
 
         var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, logFolderPath), Logger);
         Assert.Contains("彡⾔", contents);
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
     }
 
     [ConditionalTheory]
@@ -246,7 +244,7 @@ public class LoggingTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
     }
 
     [ConditionalFact]
@@ -262,7 +260,7 @@ public class LoggingTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
     }
 
     [ConditionalFact]
@@ -276,7 +274,7 @@ public class LoggingTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, new string('a', 30000)), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, new string('a', 30000)), Logger);
     }
 
     [ConditionalTheory]

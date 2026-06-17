@@ -88,7 +88,7 @@ public abstract class EndpointDataSource
     // We don't implement DebuggerDisplay directly on the EndpointDataSource base type because this could have side effects.
     internal static string GetDebuggerDisplayStringForEndpoints(IReadOnlyList<Endpoint>? endpoints)
     {
-        if (endpoints is null)
+        if (endpoints is null || endpoints.Count == 0)
         {
             return "No endpoints";
         }

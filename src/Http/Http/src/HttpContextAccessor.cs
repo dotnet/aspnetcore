@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
 /// Provides an implementation of <see cref="IHttpContextAccessor" /> based on the current execution context.
 /// </summary>
+[DebuggerDisplay("HttpContext = {HttpContext}")]
 public class HttpContextAccessor : IHttpContextAccessor
 {
     private static readonly AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
@@ -19,12 +22,8 @@ public class HttpContextAccessor : IHttpContextAccessor
         }
         set
         {
-            var holder = _httpContextCurrent.Value;
-            if (holder != null)
-            {
-                // Clear current HttpContext trapped in the AsyncLocals, as its done.
-                holder.Context = null;
-            }
+            // Clear current HttpContext trapped in the AsyncLocals, as its done.
+            _httpContextCurrent.Value?.Context = null;
 
             if (value != null)
             {

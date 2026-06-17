@@ -16,8 +16,10 @@
 
 #endregion
 
+using System.Diagnostics.CodeAnalysis;
 using Grpc.AspNetCore.Server;
 using Grpc.Core;
+using Microsoft.AspNetCore.Http;
 
 namespace Grpc.Shared.Server;
 
@@ -27,7 +29,7 @@ namespace Grpc.Shared.Server;
 /// <typeparam name="TService">Service type for this method.</typeparam>
 /// <typeparam name="TRequest">Request message type for this method.</typeparam>
 /// <typeparam name="TResponse">Response message type for this method.</typeparam>
-internal abstract class ServerMethodInvokerBase<TService, TRequest, TResponse>
+internal abstract class ServerMethodInvokerBase<[DynamicallyAccessedMembers(ServerDynamicAccessConstants.ServiceAccessibility)] TService, TRequest, TResponse>
     where TRequest : class
     where TResponse : class
     where TService : class
@@ -61,5 +63,20 @@ internal abstract class ServerMethodInvokerBase<TService, TRequest, TResponse>
         Method = method;
         Options = options;
         ServiceActivator = serviceActivator;
+    }
+
+    protected GrpcActivatorHandle<TService> CreateServiceHandle(ServerCallContext context)
+    {
+        return CreateServiceHandle(context.GetHttpContext());
+    }
+
+    protected GrpcActivatorHandle<TService> CreateServiceHandle(HttpContext httpContext)
+    {
+        if (!Options.SuppressCreatingService)
+        {
+            return ServiceActivator.Create(httpContext.RequestServices);
+        }
+
+        return default;
     }
 }

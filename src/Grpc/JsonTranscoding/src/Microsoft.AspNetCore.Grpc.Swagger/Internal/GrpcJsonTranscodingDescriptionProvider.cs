@@ -21,10 +21,12 @@ namespace Microsoft.AspNetCore.Grpc.Swagger.Internal;
 internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionProvider
 {
     private readonly EndpointDataSource _endpointDataSource;
+    private readonly DescriptorRegistry _descriptorRegistry;
 
-    public GrpcJsonTranscodingDescriptionProvider(EndpointDataSource endpointDataSource)
+    public GrpcJsonTranscodingDescriptionProvider(EndpointDataSource endpointDataSource, DescriptorRegistry descriptorRegistry)
     {
         _endpointDataSource = endpointDataSource;
+        _descriptorRegistry = descriptorRegistry;
     }
 
     // Executes after ASP.NET Core
@@ -48,8 +50,9 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
                     if (ServiceDescriptorHelpers.TryResolvePattern(grpcMetadata.HttpRule, out var pattern, out var verb))
                     {
                         var apiDescription = CreateApiDescription(routeEndpoint, httpRule, methodDescriptor, pattern, verb);
-
                         context.Results.Add(apiDescription);
+
+                        _descriptorRegistry.RegisterFileDescriptor(grpcMetadata.MethodDescriptor.File);
                     }
                 }
             }
@@ -71,10 +74,13 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
             EndpointMetadata = routeEndpoint.Metadata.ToList()
         };
         apiDescription.SupportedRequestFormats.Add(new ApiRequestFormat { MediaType = "application/json" });
+
+        var responseBodyDescriptor = ServiceDescriptorHelpers.ResolveResponseBodyDescriptor(httpRule.ResponseBody, methodDescriptor);
+        var responseType = responseBodyDescriptor != null ? MessageDescriptorHelpers.ResolveFieldType(responseBodyDescriptor) : methodDescriptor.OutputType.ClrType;
         apiDescription.SupportedResponseTypes.Add(new ApiResponseType
         {
             ApiResponseFormats = { new ApiResponseFormat { MediaType = "application/json" } },
-            ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(methodDescriptor.OutputType.ClrType)),
+            ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(responseType)),
             StatusCode = 200
         });
         apiDescription.SupportedResponseTypes.Add(new ApiResponseType
@@ -140,16 +146,18 @@ internal sealed class GrpcJsonTranscodingDescriptionProvider : IApiDescriptionPr
         var queryParameters = ServiceDescriptorHelpers.ResolveQueryParameterDescriptors(routeParameters, methodDescriptor, bodyDescriptor?.Descriptor, bodyDescriptor?.FieldDescriptor);
         foreach (var queryDescription in queryParameters)
         {
-            var fieldType = MessageDescriptorHelpers.ResolveFieldType(queryDescription.Value);
-            if (queryDescription.Value.IsRepeated)
-            {
-                fieldType = typeof(List<>).MakeGenericType(fieldType);
-            }
+            var field = queryDescription.Value;
+            var propertyInfo = field.ContainingType.ClrType.GetProperty(field.PropertyName);
+
+            // If from a property, create model as property to get its XML comments.
+            var identity = propertyInfo != null
+                ? ModelMetadataIdentity.ForProperty(propertyInfo, MessageDescriptorHelpers.ResolveFieldType(field), field.ContainingType.ClrType)
+                : ModelMetadataIdentity.ForType(MessageDescriptorHelpers.ResolveFieldType(field));
 
             apiDescription.ParameterDescriptions.Add(new ApiParameterDescription
             {
                 Name = queryDescription.Key,
-                ModelMetadata = new GrpcModelMetadata(ModelMetadataIdentity.ForType(fieldType)),
+                ModelMetadata = new GrpcModelMetadata(identity),
                 Source = BindingSource.Query,
                 DefaultValue = string.Empty
             });

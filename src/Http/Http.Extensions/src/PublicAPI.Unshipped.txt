@@ -1,8 +1,1 @@
 #nullable enable
-override Microsoft.AspNetCore.Http.EndpointDescriptionAttribute.ToString() -> string!
-override Microsoft.AspNetCore.Http.EndpointSummaryAttribute.ToString() -> string!
-override Microsoft.AspNetCore.Http.TagsAttribute.ToString() -> string!
-static Microsoft.AspNetCore.Http.HttpRequestJsonExtensions.ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<object?>
-static Microsoft.AspNetCore.Http.HttpResponseJsonExtensions.WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse! response, object? value, System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo, string? contentType = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Mvc.ProblemDetails.Extensions.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
-Microsoft.AspNetCore.Http.HttpValidationProblemDetails.Errors.set -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)

@@ -16,7 +16,11 @@ namespace Microsoft.AspNetCore.Routing;
 ///
 /// strings are compared using <see cref="StringComparison.OrdinalIgnoreCase"/>.
 /// </remarks>
+#if !COMPONENTS
 public class RouteValueEqualityComparer : IEqualityComparer<object?>
+#else
+internal class RouteValueEqualityComparer : IEqualityComparer<object?>
+#endif
 {
     /// <summary>
     /// A default instance of the <see cref="RouteValueEqualityComparer"/>.

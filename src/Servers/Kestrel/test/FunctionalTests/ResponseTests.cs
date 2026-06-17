@@ -1,34 +1,29 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.FunctionalTests;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
-using Moq;
-using Xunit;
 
 #if SOCKETS
 namespace Microsoft.AspNetCore.Server.Kestrel.Sockets.FunctionalTests;
@@ -205,6 +200,11 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         var requestAbortedWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestStartWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testServiceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
+
         await using (var server = new TestServer(async httpContext =>
         {
             requestStartWh.SetResult();
@@ -231,7 +231,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
 
             writeTcs.SetException(new Exception("This shouldn't be reached."));
-        }, new TestServiceContext(LoggerFactory), listenOptions))
+        }, testServiceContext, listenOptions))
         {
             using (var connection = server.CreateConnection())
             {
@@ -252,6 +252,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             // RequestAborted tripped
             await requestAbortedWh.Task.DefaultTimeout();
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Theory]
@@ -412,9 +414,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel" ||
                                                         w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
 
-        Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
+        Assert.DoesNotContain(transportLogs, w => w.LogLevel > LogLevel.Debug);
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/52464")]
     [Theory]
     [MemberData(nameof(ConnectionMiddlewareData))]
     public async Task ClientAbortingConnectionImmediatelyIsNotLoggedHigherThanDebug(ListenOptions listenOptions)
@@ -422,9 +425,12 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         // Attempt multiple connections to be extra sure the resets are consistently logged appropriately.
         const int numConnections = 10;
 
-        // There's not guarantee that the app even gets invoked in this test. The connection reset can be observed
+        // There's no guarantee that the app even gets invoked in this test. The connection reset can be observed
         // as early as accept.
-        var testServiceContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testServiceContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         await using (var server = new TestServer(context => Task.CompletedTask, testServiceContext, listenOptions))
         {
             for (var i = 0; i < numConnections; i++)
@@ -448,12 +454,19 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         // partial headers to be read leading to a bad request.
         var coreLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel");
 
-        Assert.Empty(transportLogs.Where(w => w.LogLevel > LogLevel.Debug));
-        Assert.Empty(coreLogs.Where(w => w.LogLevel > LogLevel.Information));
+        Assert.DoesNotContain(transportLogs, w => w.LogLevel > LogLevel.Debug);
+        Assert.DoesNotContain(coreLogs, w => w.LogLevel > LogLevel.Information);
+
+        await connectionDuration.WaitForMeasurementsAsync(minCount: 1).DefaultTimeout();
+
+        var measurement = connectionDuration.GetMeasurementSnapshot().First();
+        MetricsAssert.NoError(measurement.Tags);
     }
 
-    [Fact]
-    public async Task ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
     {
         var logger = LoggerFactory.CreateLogger($"{ typeof(ResponseTests).FullName}.{ nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
         const int chunkSize = 1024;
@@ -463,25 +476,38 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         var responseRateTimeoutMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var connectionStopMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionWriteFinMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionWriteRstMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         TestSink.MessageLogged += context =>
         {
-            if (context.EventId.Name == "ResponseMinimumDataRateNotSatisfied")
+            switch (context.EventId.Name)
             {
-                responseRateTimeoutMessageLogged.SetResult();
-            }
-            if (context.EventId.Name == "ConnectionStop")
-            {
-                connectionStopMessageLogged.SetResult();
+                case "ResponseMinimumDataRateNotSatisfied":
+                    responseRateTimeoutMessageLogged.SetResult();
+                    break;
+                case "ConnectionStop":
+                    connectionStopMessageLogged.SetResult();
+                    break;
+                case "ConnectionWriteFin":
+                    connectionWriteFinMessageLogged.SetResult();
+                    break;
+                case "ConnectionWriteRst":
+                    connectionWriteRstMessageLogged.SetResult();
+                    break;
             }
         };
 
-        var testContext = new TestServiceContext(LoggerFactory)
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ServerOptions =
             {
+                FinOnError = fin,
                 Limits =
                 {
                     MinResponseDataRate = new MinDataRate(bytesPerSecond: 1024 * 1024, gracePeriod: TimeSpan.FromSeconds(2))
@@ -527,7 +553,14 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             }
         }
 
-        await using (var server = new TestServer(App, testContext))
+        await using (var server = new TestServer(App, testContext, configureListenOptions: _ => { },
+            services =>
+            {
+                services.Configure<SocketTransportOptions>(o =>
+                {
+                    o.FinOnError = fin;
+                });
+            }))
         {
             using (var connection = server.CreateConnection())
             {
@@ -547,6 +580,14 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 await requestAborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                 await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                 await connectionStopMessageLogged.Task.DefaultTimeout();
+                if (fin)
+                {
+                    await connectionWriteFinMessageLogged.Task.DefaultTimeout();
+                }
+                else
+                {
+                    await connectionWriteRstMessageLogged.Task.DefaultTimeout();
+                }
                 await appFuncCompleted.Task.DefaultTimeout();
                 await AssertStreamAborted(connection.Stream, chunkSize * chunks);
 
@@ -554,10 +595,15 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinResponseDataRate, m.Tags));
     }
 
-    [Fact]
-    public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/49974")]
+    public async Task HttpsConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate(bool fin)
     {
         const int chunkSize = 1024;
         const int chunks = 256 * 1024;
@@ -567,18 +613,27 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         var responseRateTimeoutMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var connectionStopMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionWriteFinMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionWriteRstMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var aborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         TestSink.MessageLogged += context =>
         {
-            if (context.EventId.Name == "ResponseMinimumDataRateNotSatisfied")
+            switch (context.EventId.Name)
             {
-                responseRateTimeoutMessageLogged.SetResult();
-            }
-            if (context.EventId.Name == "ConnectionStop")
-            {
-                connectionStopMessageLogged.SetResult();
+                case "ResponseMinimumDataRateNotSatisfied":
+                    responseRateTimeoutMessageLogged.SetResult();
+                    break;
+                case "ConnectionStop":
+                    connectionStopMessageLogged.SetResult();
+                    break;
+                case "ConnectionWriteFin":
+                    connectionWriteFinMessageLogged.SetResult();
+                    break;
+                case "ConnectionWriteRst":
+                    connectionWriteRstMessageLogged.SetResult();
+                    break;
             }
         };
 
@@ -586,6 +641,7 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         {
             ServerOptions =
             {
+                FinOnError = fin,
                 Limits =
                 {
                     MinResponseDataRate = new MinDataRate(bytesPerSecond: 1024 * 1024, gracePeriod: TimeSpan.FromSeconds(2))
@@ -625,7 +681,14 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             {
                 await aborted.Task.DefaultTimeout();
             }
-        }, testContext, ConfigureListenOptions))
+        }, testContext, ConfigureListenOptions,
+        services =>
+        {
+            services.Configure<SocketTransportOptions>(o =>
+            {
+                o.FinOnError = fin;
+            });
+        }))
         {
             using (var connection = server.CreateConnection())
             {
@@ -640,6 +703,14 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                     await aborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                     await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                     await connectionStopMessageLogged.Task.DefaultTimeout();
+                    if (fin)
+                    {
+                        await connectionWriteFinMessageLogged.Task.DefaultTimeout();
+                    }
+                    else
+                    {
+                        await connectionWriteRstMessageLogged.Task.DefaultTimeout();
+                    }
                     await appFuncCompleted.Task.DefaultTimeout();
 
                     await AssertStreamAborted(connection.Stream, chunkSize * chunks);
@@ -648,8 +719,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         }
     }
 
-    [Fact]
-    public async Task ConnectionClosedWhenBothRequestAndResponseExperienceBackPressure()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ConnectionClosedWhenBothRequestAndResponseExperienceBackPressure(bool fin)
     {
         const int bufferSize = 65536;
         const int bufferCount = 100;
@@ -658,25 +731,38 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
 
         var responseRateTimeoutMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var connectionStopMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionWriteFinMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionWriteRstMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var copyToAsyncCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         TestSink.MessageLogged += context =>
         {
-            if (context.EventId.Name == "ResponseMinimumDataRateNotSatisfied")
+            switch (context.EventId.Name)
             {
-                responseRateTimeoutMessageLogged.SetResult();
-            }
-            if (context.EventId.Name == "ConnectionStop")
-            {
-                connectionStopMessageLogged.SetResult();
+                case "ResponseMinimumDataRateNotSatisfied":
+                    responseRateTimeoutMessageLogged.SetResult();
+                    break;
+                case "ConnectionStop":
+                    connectionStopMessageLogged.SetResult();
+                    break;
+                case "ConnectionWriteFin":
+                    connectionWriteFinMessageLogged.SetResult();
+                    break;
+                case "ConnectionWriteRst":
+                    connectionWriteRstMessageLogged.SetResult();
+                    break;
             }
         };
 
-        var testContext = new TestServiceContext(LoggerFactory)
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ServerOptions =
             {
+                FinOnError = fin,
                 Limits =
                 {
                     MinResponseDataRate = new MinDataRate(bytesPerSecond: 1024 * 1024, gracePeriod: TimeSpan.FromSeconds(2)),
@@ -686,8 +772,6 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         };
 
         testContext.InitializeHeartbeat();
-
-        var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
 
         async Task App(HttpContext context)
         {
@@ -713,7 +797,14 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
             copyToAsyncCts.SetException(new Exception("This shouldn't be reached."));
         }
 
-        await using (var server = new TestServer(App, testContext, listenOptions))
+        await using (var server = new TestServer(App, testContext, configureListenOptions: _ => { },
+            services =>
+            {
+                services.Configure<SocketTransportOptions>(o =>
+                {
+                    o.FinOnError = fin;
+                });
+            }))
         {
             using (var connection = server.CreateConnection())
             {
@@ -738,12 +829,22 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
                 await requestAborted.Task.DefaultTimeout(TimeSpan.FromSeconds(30));
                 await responseRateTimeoutMessageLogged.Task.DefaultTimeout();
                 await connectionStopMessageLogged.Task.DefaultTimeout();
+                if (fin)
+                {
+                    await connectionWriteFinMessageLogged.Task.DefaultTimeout();
+                }
+                else
+                {
+                    await connectionWriteRstMessageLogged.Task.DefaultTimeout();
+                }
 
                 // Expect OperationCanceledException instead of IOException because the server initiated the abort due to a response rate timeout.
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => copyToAsyncCts.Task).DefaultTimeout();
                 await AssertStreamAborted(connection.Stream, responseSize);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.MinResponseDataRate, m.Tags));
     }
 
     [ConditionalFact]
@@ -917,7 +1018,10 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         var requestAborted = false;
         var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var testContext = new TestServiceContext(LoggerFactory)
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory))
         {
             ServerOptions =
             {
@@ -980,6 +1084,8 @@ public class ResponseTests : TestApplicationErrorLoggerLoggedTest
         Assert.Equal(0, TestSink.Writes.Count(w => w.EventId.Name == "ResponseMinimumDataRateNotSatisfied"));
         Assert.Equal(1, TestSink.Writes.Count(w => w.EventId.Name == "ConnectionStop"));
         Assert.False(requestAborted);
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     private async Task AssertStreamAborted(Stream stream, int totalBytes)

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Mvc;
@@ -22,7 +22,8 @@ public class JsonOptionsTest
             var options = new JsonOptions().JsonSerializerOptions;
 
             // Assert
-            Assert.Null(options.TypeInfoResolver);
+            Assert.NotNull(options.TypeInfoResolver);
+            Assert.IsAssignableFrom<IJsonTypeInfoResolver>(options.TypeInfoResolver);
         }, options);
     }
 

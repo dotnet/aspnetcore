@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Logging;
 
 #if !IIS_FUNCTIONALS
@@ -27,7 +27,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to shutdown, including app_offline, abort, and app recycle
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
+#if NEWSHIM_FUNCTIONALS
+[QuarantinedTest("https://github.com/dotnet/runtime/issues/126925")]
+#endif
 public class ShutdownTests : IISFunctionalTestBase
 {
     public ShutdownTests(PublishedSitesFixture fixture) : base(fixture)
@@ -48,7 +50,7 @@ public class ShutdownTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEvents(deploymentResult,
             EventLogHelpers.InProcessStarted(deploymentResult),
             EventLogHelpers.InProcessFailedToStop(deploymentResult, ""));
     }
@@ -255,8 +257,82 @@ public class ShutdownTests : IISFunctionalTestBase
         deploymentResult.AssertWorkerProcessStop();
 
         // Shutdown should be graceful here!
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-            EventLogHelpers.InProcessShutdown(), Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task RequestsWhileRestartingAppFromConfigChangeAreProcessed()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress doesn't support recycle
+            return;
+        }
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        result.Dispose();
+
+        // Just "touching" web.config should be enough to restart the process
+        deploymentResult.ModifyWebConfig(element => { });
+
+        // Default shutdown delay is 1 second, we want to send requests while the shutdown is happening
+        // So we send a bunch of requests and one of them hopefully will run during shutdown and be queued for processing by the new app
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        await deploymentResult.AssertRecycledAsync();
+
+        // Shutdown should be graceful here!
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
+    }
+
+    [ConditionalFact]
+    [RequiresNewShim]
+    public async Task RequestsWhileRecyclingAppAreProcessed()
+    {
+        var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress doesn't support recycle
+            return;
+        }
+
+        var deploymentResult = await DeployAsync(deploymentParameters);
+
+        var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+        Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        result.Dispose();
+
+        // Recycle app pool
+        Helpers.Recycle(deploymentResult.AppPoolName);
+
+        // Default shutdown delay is 1 second, we want to send requests while the shutdown is happening
+        // So we send a bunch of requests and one of them hopefully will run during shutdown and be queued for processing by the new app
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        }
+
+        await deploymentResult.AssertRecycledAsync();
+
+        // Shutdown should be graceful here!
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
+            EventLogHelpers.ShutdownMessage(deploymentResult), Logger);
     }
 
     [ConditionalFact]
@@ -315,7 +391,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
     public async Task AppOfflineAddedAndRemovedStress_InProcess()
     {
@@ -404,10 +479,21 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [RequiresNewShim]
     public async Task ConfigurationChangeCanBeIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
         deploymentParameters.HandlerSettings["disallowRotationOnConfigChange"] = "true";
+
+        if (deploymentParameters.ServerType == ServerType.IISExpress)
+        {
+            // IISExpress seems to call OnGlobalApplicationStop after config changes
+            // In theory we might be able to store a bool if OnGlobalConfigurationChange is called
+            // and reset it in OnGlobalApplicationStop and ignore the current OnGlobalApplicationStop call
+            // But that seems a little risky, so I'd prefer not doing that as this probably isn't
+            // an important user scenario
+            return;
+        }
 
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -418,16 +504,21 @@ public class ShutdownTests : IISFunctionalTestBase
         // Just "touching" web.config should be enough
         deploymentResult.ModifyWebConfig(element => { });
 
-        // Have to retry here to allow ANCM to receive notification and react to it
-        // Verify that worker process does not get restarted with new process id
-        await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
+        // need some reasonable delay here to ensure the app has time to react to the file change notification
+        // In this case it should ignore it, but it's hard to test that the app doesn't do anything in reaction to the file change.
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/ProcessId");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Equal(processBefore, await res.Content.ReadAsStringAsync());
+        }
     }
 
     [ConditionalFact]
     public async Task AppHostConfigurationChangeIsIgnoredInProcess()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
-        deploymentParameters.HandlerSettings["disallowRotationOnConfigChange"] = "true";
 
         var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -438,9 +529,15 @@ public class ShutdownTests : IISFunctionalTestBase
         // Just "touching" applicationHost.config should be enough
         _deployer.ModifyApplicationHostConfig(element => { });
 
-        // Have to retry here to allow ANCM to receive notification and react to it
-        // Verify that worker process does not get restarted with new process id
-        await deploymentResult.HttpClient.RetryRequestAsync("/ProcessId", async r => await r.Content.ReadAsStringAsync() == processBefore);
+        // need some reasonable delay here to ensure the app has time to react to the file change notification
+        // In this case it should ignore it, but it's hard to test that the app doesn't do anything in reaction to the file change.
+        for (var i = 0; i < 2000; i++)
+        {
+            using var res = await deploymentResult.HttpClient.GetAsync("/ProcessId");
+            await Task.Delay(1);
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Equal(processBefore, await res.Content.ReadAsStringAsync());
+        }
     }
 
     [ConditionalFact]
@@ -484,7 +581,6 @@ public class ShutdownTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
     public async Task ConfigurationTouchedStress_InProcess()
     {
         await ConfigurationTouchedStress(HostingModel.InProcess);
@@ -538,8 +634,15 @@ public class ShutdownTests : IISFunctionalTestBase
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
             Assert.Equal(HttpStatusCode.BadGateway, response.StatusCode);
+
+#if NEWSHIM_FUNCTIONALS
+            // In-proc SocketConnection isn't used and there's no abort
             // 0x80072f78 ERROR_HTTP_INVALID_SERVER_RESPONSE The server returned an invalid or unrecognized response
             Assert.Contains("0x80072f78", await response.Content.ReadAsStringAsync());
+#else
+            // 0x80072efe ERROR_INTERNET_CONNECTION_ABORTED The connection with the server was terminated abnormally
+            Assert.Contains("0x80072efe", await response.Content.ReadAsStringAsync());
+#endif
         }
         catch (HttpRequestException)
         {
@@ -557,7 +660,7 @@ public class ShutdownTests : IISFunctionalTestBase
             var deploymentResult = await DeployAsync(deploymentParameters);
             var response = await deploymentResult.HttpClient.GetAsync("/Abort").TimeoutAfter(TimeoutExtensions.DefaultTimeoutValue);
 
-            Assert.True(false, "Should not reach here");
+            Assert.Fail("Should not reach here");
         }
         catch (HttpRequestException)
         {

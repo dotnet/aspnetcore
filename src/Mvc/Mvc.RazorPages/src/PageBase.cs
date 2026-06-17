@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -63,6 +64,7 @@ public abstract class PageBase : RazorPageBase
     /// <summary>
     /// Gets or sets the <see cref="IModelMetadataProvider"/>.
     /// </summary>
+    [DebuggerBrowsable(DebuggerBrowsableState.Never)]
     public IModelMetadataProvider MetadataProvider
     {
         get
@@ -408,10 +410,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     public virtual LocalRedirectResult LocalRedirect([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl);
     }
@@ -424,10 +423,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     public virtual LocalRedirectResult LocalRedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl, permanent: true);
     }
@@ -441,10 +437,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     public virtual LocalRedirectResult LocalRedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl: localUrl, permanent: false, preserveMethod: true);
     }
@@ -458,10 +451,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="LocalRedirectResult"/> for the response.</returns>
     public virtual LocalRedirectResult LocalRedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri, UriKind.Relative)] string localUrl)
     {
-        if (string.IsNullOrEmpty(localUrl))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(localUrl));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(localUrl);
 
         return new LocalRedirectResult(localUrl: localUrl, permanent: true, preserveMethod: true);
     }
@@ -497,10 +487,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     public virtual RedirectResult Redirect([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url);
     }
@@ -513,10 +500,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     public virtual RedirectResult RedirectPermanent([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url, permanent: true);
     }
@@ -530,10 +514,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     public virtual RedirectResult RedirectPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url: url, permanent: false, preserveMethod: true);
     }
@@ -547,10 +528,7 @@ public abstract class PageBase : RazorPageBase
     /// <returns>The created <see cref="RedirectResult"/> for the response.</returns>
     public virtual RedirectResult RedirectPermanentPreserveMethod([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
-        if (string.IsNullOrEmpty(url))
-        {
-            throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(url));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(url);
 
         return new RedirectResult(url: url, permanent: true, preserveMethod: true);
     }

@@ -35,6 +35,6 @@ internal sealed class RemoteNavigationInterception : INavigationInterception
                 "attempted during prerendering or while the client is disconnected.");
         }
 
-        await _jsRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception);
+        await _jsRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception, WebRendererId.Server);
     }
 }

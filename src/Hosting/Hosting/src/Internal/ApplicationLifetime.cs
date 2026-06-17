@@ -58,7 +58,7 @@ internal sealed class ApplicationLifetime : IApplicationLifetime, Extensions.Hos
         {
             try
             {
-                ExecuteHandlers(_stoppingSource);
+                _stoppingSource.Cancel();
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ internal sealed class ApplicationLifetime : IApplicationLifetime, Extensions.Hos
     {
         try
         {
-            ExecuteHandlers(_startedSource);
+            _startedSource.Cancel();
         }
         catch (Exception ex)
         {
@@ -93,7 +93,7 @@ internal sealed class ApplicationLifetime : IApplicationLifetime, Extensions.Hos
     {
         try
         {
-            ExecuteHandlers(_stoppedSource);
+            _stoppedSource.Cancel();
         }
         catch (Exception ex)
         {
@@ -101,17 +101,5 @@ internal sealed class ApplicationLifetime : IApplicationLifetime, Extensions.Hos
                                      "An error occurred stopping the application",
                                      ex);
         }
-    }
-
-    private static void ExecuteHandlers(CancellationTokenSource cancel)
-    {
-        // Noop if this is already cancelled
-        if (cancel.IsCancellationRequested)
-        {
-            return;
-        }
-
-        // Run the cancellation token callbacks
-        cancel.Cancel(throwOnFirstException: false);
     }
 }

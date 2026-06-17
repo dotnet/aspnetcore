@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Html.IHtmlAsyncContent
-Microsoft.AspNetCore.Html.IHtmlAsyncContent.WriteToAsync(System.IO.TextWriter! writer) -> System.Threading.Tasks.ValueTask

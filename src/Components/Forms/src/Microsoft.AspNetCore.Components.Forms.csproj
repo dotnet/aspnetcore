@@ -11,14 +11,20 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.Extensions.Validation" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ExpressionFormatting\**\*" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\ILLink.Substitutions.xml" LogicalName="ILLink.Substitutions.xml" />
   </ItemGroup>
 
 </Project>

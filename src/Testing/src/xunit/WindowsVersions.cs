@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 /// <summary>
 /// https://en.wikipedia.org/wiki/Windows_10_version_history

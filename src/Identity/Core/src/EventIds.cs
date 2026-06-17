@@ -7,12 +7,16 @@ namespace Microsoft.AspNetCore.Identity;
 
 internal static class EventIds
 {
-    public static EventId UserCannotSignInWithoutConfirmedEmail = new EventId(0, "UserCannotSignInWithoutConfirmedEmail");
-    public static EventId SecurityStampValidationFailed = new EventId(0, "SecurityStampValidationFailed");
-    public static EventId SecurityStampValidationFailedId4 = new EventId(4, "SecurityStampValidationFailed");
-    public static EventId UserCannotSignInWithoutConfirmedPhoneNumber = new EventId(1, "UserCannotSignInWithoutConfirmedPhoneNumber");
-    public static EventId InvalidPassword = new EventId(2, "InvalidPassword");
-    public static EventId UserLockedOut = new EventId(3, "UserLockedOut");
-    public static EventId UserCannotSignInWithoutConfirmedAccount = new EventId(4, "UserCannotSignInWithoutConfirmedAccount");
-    public static EventId TwoFactorSecurityStampValidationFailed = new EventId(5, "TwoFactorSecurityStampValidationFailed");
+    public static readonly EventId UserCannotSignInWithoutConfirmedEmail = new(0, "UserCannotSignInWithoutConfirmedEmail");
+    public static readonly EventId SecurityStampValidationFailed = new(0, "SecurityStampValidationFailed");
+    public static readonly EventId SecurityStampValidationFailedId4 = new(4, "SecurityStampValidationFailed");
+    public static readonly EventId UserCannotSignInWithoutConfirmedPhoneNumber = new(1, "UserCannotSignInWithoutConfirmedPhoneNumber");
+    public static readonly EventId InvalidPassword = new(2, "InvalidPassword");
+    public static readonly EventId UserLockedOut = new(3, "UserLockedOut");
+    public static readonly EventId UserCannotSignInWithoutConfirmedAccount = new(4, "UserCannotSignInWithoutConfirmedAccount");
+    public static readonly EventId TwoFactorSecurityStampValidationFailed = new(5, "TwoFactorSecurityStampValidationFailed");
+    public static readonly EventId NoPasskeyCreationOptions = new(6, "NoPasskeyCreationOptions");
+    public static readonly EventId UserDoesNotMatchPasskeyCreationOptions = new(7, "UserDoesNotMatchPasskeyCreationOptions");
+    public static readonly EventId PasskeyAttestationFailed = new(8, "PasskeyAttestationFailed");
+    public static readonly EventId PasskeyAssertionFailed = new(9, "PasskeyAssertionFailed");
 }

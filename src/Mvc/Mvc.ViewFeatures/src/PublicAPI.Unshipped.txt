@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Mvc.Rendering.FormMethod.Dialog = 2 -> Microsoft.AspNetCore.Mvc.Rendering.FormMethod

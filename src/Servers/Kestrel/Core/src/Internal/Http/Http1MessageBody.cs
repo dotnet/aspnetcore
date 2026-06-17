@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,8 @@ using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestExceptio
 
 internal abstract class Http1MessageBody : MessageBody
 {
+    private static readonly bool ContinueProcessingAfterCLTE = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.Kestrel.AllowKeepAliveAfterCLTE", out var value) && value;
+
     protected readonly Http1Connection _context;
     private bool _readerCompleted;
 
@@ -68,11 +71,10 @@ internal abstract class Http1MessageBody : MessageBody
         }
         catch (InvalidOperationException ex)
         {
-            var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-            _context.ReportApplicationError(connectionAbortedException);
+            Log.RequestBodyDrainBodyReaderInvalidState(_context.ConnectionIdFeature, _context.TraceIdentifier, ex);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest();
+            _context.StopProcessingNextRequest(ConnectionEndReason.InvalidBodyReaderState);
             return Task.CompletedTask;
         }
 
@@ -104,16 +106,21 @@ internal abstract class Http1MessageBody : MessageBody
         }
         catch (InvalidOperationException ex)
         {
-            var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-            _context.ReportApplicationError(connectionAbortedException);
+            Log.RequestBodyDrainBodyReaderInvalidState(_context.ConnectionIdFeature, _context.TraceIdentifier, ex);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest();
+            _context.StopProcessingNextRequest(ConnectionEndReason.InvalidBodyReaderState);
         }
         finally
         {
             _context.TimeoutControl.CancelTimeout();
         }
+    }
+
+    protected override void OnObservedBytesExceedMaxRequestBodySize(long maxRequestBodySize)
+    {
+        _context.DisableKeepAlive(ConnectionEndReason.MaxRequestBodySizeExceeded);
+        KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.ToString(CultureInfo.InvariantCulture));
     }
 
     public static MessageBody For(
@@ -161,24 +168,38 @@ internal abstract class Http1MessageBody : MessageBody
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding);
             }
 
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.2
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.2
             // A sender MUST NOT send a Content-Length header field in any message
             // that contains a Transfer-Encoding header field.
-            // https://datatracker.ietf.org/doc/html/rfc7230#section-3.3.3
+            // https://www.rfc-editor.org/rfc/rfc9112#section-6.3-2.3
             // If a message is received with both a Transfer-Encoding and a
             // Content-Length header field, the Transfer-Encoding overrides the
-            // Content-Length.  Such a message might indicate an attempt to
-            // perform request smuggling (Section 9.5) or response splitting
-            // (Section 9.4) and ought to be handled as an error.  A sender MUST
-            // remove the received Content-Length field prior to forwarding such
-            // a message downstream.
+            // Content-Length. Such a message might indicate an attempt to
+            // perform request smuggling (Section 11.2) or response splitting
+            // (Section 11.1) and ought to be handled as an error. An intermediary
+            // that chooses to forward the message MUST first remove the received
+            // Content-Length field and process the Transfer-Encoding
+            // (as described below) prior to forwarding the message downstream.
             // We should remove the Content-Length request header in this case, for compatibility
             // reasons, include x-Content-Length so that the original Content-Length is still available.
             if (headers.ContentLength.HasValue)
             {
                 IHeaderDictionary headerDictionary = headers;
-                headerDictionary.Add("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
+
+                // if user already passed X-Content-Length, we won't overwrite it
+                _ = headerDictionary.TryAdd("X-Content-Length", headerDictionary[HeaderNames.ContentLength]);
                 headers.ContentLength = null;
+
+                if (!ContinueProcessingAfterCLTE)
+                {
+                    // https://www.rfc-editor.org/rfc/rfc9112#section-6.1
+                    // A server MAY reject a request that contains both Content-Length
+                    // and Transfer-Encoding or process such a request in accordance
+                    // with the Transfer-Encoding alone. Regardless, the server MUST
+                    // close the connection after responding to such a request to
+                    // avoid the potential attacks.
+                    keepAlive = false;
+                }
             }
 
             // TODO may push more into the wrapper rather than just calling into the message body
@@ -202,6 +223,7 @@ internal abstract class Http1MessageBody : MessageBody
         // Reject with Length Required for HTTP 1.0.
         if (httpVersion == HttpVersion.Http10 && (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put))
         {
+            KestrelMetrics.AddConnectionEndReason(context.MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.LengthRequiredHttp10, context.Method);
         }
 
@@ -221,12 +243,15 @@ internal abstract class Http1MessageBody : MessageBody
     [StackTraceHidden]
     protected void ThrowUnexpectedEndOfRequestContent()
     {
+        // Set before calling OnInputOrOutputCompleted.
+        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
+
         // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
         // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
         // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
         // response is written after observing the unexpected end of request content instead of just
         // closing the connection without a response as expected.
-        _context.OnInputOrOutputCompleted();
+        ((IHttpOutputAborter)_context).OnInputOrOutputCompleted();
 
         KestrelBadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
     }

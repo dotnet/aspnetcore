@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.SignalR.Internal;
 
-internal sealed class HubConnectionBinder<THub> : IInvocationBinder where THub : Hub
+internal sealed class HubConnectionBinder<[DynamicallyAccessedMembers(Hub.DynamicallyAccessedMembers)] THub> : IInvocationBinder where THub : Hub
 {
     private readonly HubDispatcher<THub> _dispatcher;
     private readonly HubConnectionContext _connection;

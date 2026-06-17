@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
+using Microsoft.Web.Administration;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
@@ -71,7 +72,7 @@ public static class Helpers
         }
         else
         {
-            return Path.Combine(folder, "W3SVC1");
+            return Path.Combine(folder, $"W3SVC{result.DeploymentParameters.SiteName}");
         }
     }
 
@@ -179,6 +180,15 @@ public static class Helpers
         }
     }
 
+    // Don't use with IISExpress, recycle isn't a valid operation
+    public static void Recycle(string appPoolName)
+    {
+        using var serverManager = new ServerManager();
+        var appPool = serverManager.ApplicationPools.FirstOrDefault(ap => ap.Name == appPoolName);
+        Assert.NotNull(appPool);
+        appPool.Recycle();
+    }
+
     public static IEnumerable<object[]> ToTheoryData<T>(this Dictionary<string, T> dictionary)
     {
         return dictionary.Keys.Select(k => new[] { k });
@@ -246,7 +256,7 @@ public static class Helpers
         var siteElement = config
             .RequiredElement("system.applicationHost")
             .RequiredElement("sites")
-            .RequiredElement("site");
+            .Elements("site").Last();
 
         var application = siteElement
             .RequiredElement("application");

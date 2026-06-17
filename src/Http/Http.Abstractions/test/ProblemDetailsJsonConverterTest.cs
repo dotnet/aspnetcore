@@ -23,7 +23,7 @@ public class ProblemDetailsJsonConverterTest
         var ex = Record.Exception(() =>
         {
             var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
-            JsonSerializer.Deserialize(ref reader, typeof(ProblemDetails), JsonSerializerOptions);;
+            JsonSerializer.Deserialize(ref reader, typeof(ProblemDetails), JsonSerializerOptions);
         });
         Assert.IsAssignableFrom<JsonException>(ex);
     }

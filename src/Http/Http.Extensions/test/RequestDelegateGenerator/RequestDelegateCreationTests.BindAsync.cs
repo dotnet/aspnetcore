@@ -309,4 +309,24 @@ app.MapPost("/", (HttpContext context, CustomTodo customTodo, Todo todo) =>
         Assert.NotNull(todo1);
         Assert.Equal("Write more tests!", todo1!.Name);
     }
+
+    [Fact]
+    public async Task MapAction_BindAsync_MismatchedNullability()
+    {
+        var source = """
+app.MapGet("/1", (BindableWithMismatchedNullability<Todo> param) => "Hello /1!");
+app.MapGet("/2", (BindableStructWithMismatchedNullability<Todo> param) => "Hello /2!");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation);
+
+        var index = 1;
+        foreach (var endpoint in endpoints)
+        {
+            var httpContext = CreateHttpContext();
+            await endpoint.RequestDelegate(httpContext);
+            await VerifyResponseBodyAsync(httpContext, $"Hello /{index}!");
+            index++;
+        }
+    }
 }

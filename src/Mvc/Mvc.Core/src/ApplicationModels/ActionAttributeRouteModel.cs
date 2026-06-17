@@ -31,7 +31,7 @@ internal static class ActionAttributeRouteModel
             //
             // This is fragile wrt application model customizing the data - but no one has
             // run into an issue with this and its pretty esoteric.
-            additionalSelector = new SelectorModel(actionModel.Controller.Selectors.First());
+            additionalSelector = new SelectorModel(actionModel.Controller.Selectors[0]);
             additionalSelector.AttributeRouteModel = null;
 
             for (var i = additionalSelector.ActionConstraints.Count - 1; i >= 0; i--)

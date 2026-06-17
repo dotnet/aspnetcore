@@ -7,13 +7,13 @@ using System.Net.Sockets;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys;
 
-public class RequestHeaderTests
+public class RequestHeaderTests : LoggedTest
 {
     [ConditionalFact]
     public async Task RequestHeaders_ClientSendsDefaultHeaders_Success()
@@ -28,7 +28,7 @@ public class RequestHeaderTests
                 Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
                 Assert.True(StringValues.IsNullOrEmpty(requestHeaders["Accept"]));
                 return Task.FromResult(0);
-            }))
+            }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -50,7 +50,7 @@ public class RequestHeaderTests
             Assert.Single(requestHeaders["Spacer-Header"]);
             Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         var customValues = new string[] { "custom1, and custom2", "custom3" };
 
@@ -92,7 +92,7 @@ public class RequestHeaderTests
 
             Assert.True(requestHeaders.Contains(header));
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             string response = await SendRequestAsync(address);
             Assert.Equal(string.Empty, response);
@@ -111,7 +111,7 @@ public class RequestHeaderTests
             Assert.Equal("chunked", requestHeaders.TransferEncoding);
             Assert.True(request.HasEntityBody);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
                 { "Transfer-Encoding", "chunked" }
@@ -134,7 +134,7 @@ public class RequestHeaderTests
             Assert.Equal("gzip, chunked", requestHeaders.TransferEncoding);
             Assert.True(request.HasEntityBody);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
                 { "Transfer-Encoding", new string[] { "gzip", "chunked" } }
@@ -165,7 +165,7 @@ public class RequestHeaderTests
             Assert.Single(requestHeaders["X-Content-Length"]);
             Assert.Equal("1", requestHeaders["X-Content-Length"]);
             return Task.FromResult(0);
-        }))
+        }, LoggerFactory))
         {
             var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
                 { "Transfer-Encoding", new string[] { "gzip", "chunked" } },
@@ -174,6 +174,147 @@ public class RequestHeaderTests
             var response = await SendRequestAsync(address, headerDictionary);
             var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
             Assert.Equal("200", responseStatusCode);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendTransferEncodingWithTrailingCommaAndContentLength_ContentLengthShouldBeRemoved()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("chunked,", requestHeaders.TransferEncoding);
+
+            Assert.Null(request.ContentLength);
+            Assert.True(request.HasEntityBody);
+
+            Assert.False(requestHeaders.ContainsKey("Content-Length"));
+            Assert.Null(requestHeaders.ContentLength);
+
+            Assert.Single(requestHeaders["X-Content-Length"]);
+            Assert.Equal("1", requestHeaders["X-Content-Length"]);
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            // Trailing comma in Transfer-Encoding (https://github.com/dotnet/aspnetcore/issues/66720).
+            // Per RFC 9110, http.sys treats this as chunked; the managed layer must agree
+            // and strip Content-Length.
+            var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
+                { "Transfer-Encoding", "chunked," },
+                { "Content-Length", "1" },
+            });
+            var response = await SendRequestAsync(address, headerDictionary);
+            var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+            Assert.Equal("200", responseStatusCode);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task RequestHeaders_ClientSendTransferEncodingAndContentLengthAndXContentLength_ContentLengthShouldBeRemoved()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("gzip, chunked", requestHeaders.TransferEncoding);
+
+            Assert.Null(request.ContentLength);
+            Assert.True(request.HasEntityBody);
+
+            Assert.False(requestHeaders.ContainsKey("Content-Length"));
+            Assert.Null(requestHeaders.ContentLength);
+
+            Assert.Single(requestHeaders["X-Content-Length"]);
+            Assert.Equal("123", requestHeaders["X-Content-Length"]);
+            return Task.FromResult(0);
+        }, LoggerFactory))
+        {
+            var headerDictionary = new HeaderDictionary(new Dictionary<string, StringValues> {
+                { "Transfer-Encoding", new string[] { "gzip", "chunked" } },
+                { "Content-Length", "1" },
+                { "X-Content-Length", "123" },
+            });
+            var response = await SendRequestAsync(address, headerDictionary);
+            var responseStatusCode = response.Substring(9, 3); // Skip "HTTP/1.1 "
+            Assert.Equal("200", responseStatusCode);
+        }
+    }
+
+    [ConditionalFact]
+    public async Task CloseConnectionAfterProcessingContentLengthPlusChunkedRequest()
+    {
+        string address;
+        using (Utilities.CreateHttpServer(out address, async httpContext =>
+        {
+            var requestHeaders = httpContext.Request.Headers;
+            var request = httpContext.Features.Get<RequestContext>().Request;
+            Assert.Single(requestHeaders["Transfer-Encoding"]);
+            Assert.Equal("chunked", requestHeaders.TransferEncoding);
+
+            Assert.Null(request.ContentLength);
+            Assert.True(request.HasEntityBody);
+
+            Assert.False(requestHeaders.ContainsKey("Content-Length"));
+            Assert.Null(requestHeaders.ContentLength);
+
+            Assert.Single(requestHeaders["X-Content-Length"]);
+            Assert.Equal("1", requestHeaders["X-Content-Length"]);
+
+            await httpContext.Response.WriteAsync("Hello World");
+        }, LoggerFactory))
+        {
+            var uri = new Uri(address);
+            using (Socket socket = new Socket(SocketType.Stream, ProtocolType.Tcp))
+            {
+                socket.Connect(uri.Host, uri.Port);
+                // Send 2 requests with both CL and TE header
+                // expect the second to not be processed and the connection to be closed
+                for (var i = 0; i < 2; i++)
+                {
+                    socket.Send(Encoding.ASCII.GetBytes(string.Join("\r\n",
+                    "POST / HTTP/1.1",
+                    $"Host: {uri.Authority}",
+                    "Transfer-Encoding: chunked",
+                    "Connection: keep-alive",
+                    "Content-Length: 1",
+                    "",
+                    "5", "Hello",
+                    "6", " World",
+                    "0",
+                    "",
+                    "")));
+                }
+                byte[] response = new byte[1024 * 5];
+                var sb = new StringBuilder();
+
+                int read = 0;
+                do
+                {
+                    read = await Task.Run(() => socket.Receive(response));
+                    var s = Encoding.ASCII.GetString(response, 0, read);
+                    sb.Append(s);
+                } while (read != 0);
+
+                var resp = sb.ToString();
+
+                Assert.Matches(@"HTTP/1\.1 200 OK
+Transfer-Encoding: chunked
+Server: Microsoft-HTTPAPI/2\.0
+Date: .+
+Connection: close
+
+B
+Hello World
+0
+
+$",
+                resp);
+            }
         }
     }
 
@@ -191,7 +332,7 @@ public class RequestHeaderTests
             Assert.Contains(requestHeaders[customHeader].First(), requestHeaders.Keys);
             Assert.Contains(HeaderNames.Host, requestHeaders.Keys);
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         foreach ((HttpSysRequestHeader Key, string Value) testRow in HeaderTestData())
         {
@@ -219,7 +360,7 @@ public class RequestHeaderTests
             Assert.Contains("X-UnknownHeader-2", requestHeaders.Keys);
             Assert.Contains(HeaderNames.Host, requestHeaders.Keys);
             return Task.FromResult(0);
-        });
+        }, LoggerFactory);
 
         var headerDictionary = new Dictionary<string, string>
         {

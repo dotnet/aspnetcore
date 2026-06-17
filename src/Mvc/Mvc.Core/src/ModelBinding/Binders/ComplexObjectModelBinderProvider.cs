@@ -22,7 +22,7 @@ public class ComplexObjectModelBinderProvider : IModelBinderProvider
         if (metadata.IsComplexType && !metadata.IsCollectionType)
         {
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger<ComplexObjectModelBinder>();
+            var logger = loggerFactory.CreateLogger(typeof(ComplexObjectModelBinder));
             var parameterBinders = GetParameterBinders(context);
 
             var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();

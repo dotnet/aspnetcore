@@ -4,11 +4,11 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components.WebView;
 
-// Handles comunication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
+// Handles communication between the component abstractions (Renderer, NavigationManager, JSInterop, etc.)
 // and the underlying transport channel
 internal sealed class IpcSender
 {
@@ -39,14 +39,27 @@ internal sealed class IpcSender
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Navigate, uri, options));
     }
 
+    public void Refresh(bool forceReload)
+    {
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.Refresh, forceReload));
+    }
+
     public void AttachToDocument(int componentId, string selector)
     {
         DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.AttachToDocument, componentId, selector));
     }
 
-    public void BeginInvokeJS(long taskId, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+    public void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
-        DispatchMessageWithErrorHandling(IpcCommon.Serialize(IpcCommon.OutgoingMessageType.BeginInvokeJS, taskId, identifier, argsJson, resultType, targetInstanceId));
+        DispatchMessageWithErrorHandling(IpcCommon.Serialize(
+            IpcCommon.OutgoingMessageType.BeginInvokeJS,
+            invocationInfo.AsyncHandle,
+            invocationInfo.Identifier,
+            invocationInfo.ArgsJson,
+            invocationInfo.ResultType,
+            invocationInfo.TargetInstanceId,
+            invocationInfo.CallType
+        ));
     }
 
     public void EndInvokeDotNet(string callId, bool success, string invocationResultOrError)

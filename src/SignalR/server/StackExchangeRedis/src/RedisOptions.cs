@@ -3,6 +3,7 @@
 
 using System.Net;
 using StackExchange.Redis;
+using StackExchange.Redis.Configuration;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis;
 
@@ -37,6 +38,10 @@ public class RedisOptions
                 Configuration.EndPoints.Add(IPAddress.Loopback, 0);
                 Configuration.SetDefaultPorts();
             }
+
+            // suffix SignalR onto the declared library name
+            var provider = DefaultOptionsProvider.GetProvider(Configuration.EndPoints);
+            Configuration.LibraryName = $"{provider.LibraryName} SignalR";
 
             return await ConnectionMultiplexer.ConnectAsync(Configuration, log);
         }

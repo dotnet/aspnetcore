@@ -5,7 +5,7 @@ using System;
 using System.Net.Quic;
 using Microsoft.Win32;
 
-namespace Microsoft.AspNetCore.Testing;
+namespace Microsoft.AspNetCore.InternalTesting;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
 public class HttpSysHttp3SupportedAttribute : Attribute, ITestCondition

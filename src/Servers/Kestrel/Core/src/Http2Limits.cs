@@ -84,7 +84,7 @@ public class Http2Limits
     /// <summary>
     /// Indicates the size of the maximum allowed size of a request header field sequence, in octets. This limit applies to both name and value sequences in their compressed and uncompressed representations.
     /// <para>
-    /// Value must be greater than 0, defaults to 2^14 octets (16 KiB).
+    /// Value must be greater than 0, defaults to 2^15 octets (32 KiB).
     /// </para>
     /// </summary>
     public int MaxRequestHeaderFieldSize

@@ -27,4 +27,7 @@ internal static partial class LoggerExtensions
 
     [LoggerMessage(6, LogLevel.Information, "The host '{Host}' does not match an allowed host.", EventName = "NoAllowedHostMatched")]
     public static partial void NoAllowedHostMatched(this ILogger logger, string host);
+
+    [LoggerMessage(7, LogLevel.Debug, "Middleware configuration started with options: {Options}", EventName = "MiddlewareConfigurationStarted")]
+    public static partial void MiddlewareConfigurationStarted(this ILogger logger, string options);
 }

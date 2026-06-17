@@ -8,7 +8,8 @@ Start a discussion on the [repository issue tracker](https://github.com/dotnet/a
 
 ## Bugs and feature requests?
 
-❗ **IMPORTANT: If you want to report a security-related issue, please see the `Reporting security issues and bugs` section below.**
+> [!IMPORTANT]
+> **If you want to report a security-related issue, please see the `Reporting security issues and bugs` section below.**
 
 Before reporting a new issue, try to find an existing issue if one already exists. If it already exists, upvote (👍) it. Also, consider adding a comment with your unique scenarios and requirements related to that issue.  Upvotes and clear details on the issue's impact help us prioritize the most important issues to be worked on sooner rather than later. If you can't find one, that's okay, we'd rather get a duplicate report than none.
 
@@ -42,7 +43,7 @@ To help you be successful we've put together a few simple rules to follow when y
 
   Over the years we've seen many PRs targeting areas of the framework, which we didn't plan to expand further at the time.
   In all these cases we had to say `no` to those PRs and close them. That, obviously, is not a great outcome for us. And it's especially bad for the contributor, as they've spent a lot of effort preparing the change.
-  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with the `help wanted` label. You can find all these issues at [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted).
+  To resolve this problem, we've decided to separate a bucket of issues, which would be great candidates for community members to contribute to. We mark these issues with the `help wanted` label. You can find all these issues at [https://aka.ms/aspnet/helpwanted](https://aka.ms/aspnet/helpwanted). When you choose an issue you'd like to work on, you'll see that some include a comment from our team that follows the [Issue Summary Template](/docs/HelpWantedIssueSummaryCommentTemplate.md). That comment is meant to make it much simpler for you to both understand what the problem is as well as provide references and hints about how to approach it.
 
 Within that set, we have additionally marked issues that are good candidates for first-time contributors. Those do not require too much familiarity with the framework and are more novice-friendly. Those are marked with the `good first issue` label. The full list of such issues can be found at [https://aka.ms/aspnet/goodfirstissues](https://aka.ms/aspnet/goodfirstissues).
 
@@ -52,7 +53,7 @@ If you would like to make a contribution to an area not documented here, first o
 
   We've seen PRs, where customers would solve an issue in a way, which either wouldn't fit into the framework because of how it's designed or it would change the framework in a way, which is not something we'd like to do. To avoid these situations and potentially save you a lot of time, we encourage customers to discuss the preferred design with the team first. To do so, file a new `design proposal` issue, link to the issue you'd like to address, and provide detailed information about how you'd like to solve a specific problem. We triage issues periodically and it will not take long for a team member to engage with you on that proposal.
   When you get an agreement from our team members that the design proposal you have is solid, then go ahead and prepare the PR.
-  To file a design proposal, look for the relevant issue in the `New issue` page or simply click [this link](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=design-proposal&template=4_design_proposal.md):
+  To file a design proposal, look for the relevant issue in the `New issue` page or simply click [this link](https://github.com/dotnet/aspnetcore/issues/new?assignees=&labels=design-proposal&template=40_design_proposal.md):
   ![image](https://user-images.githubusercontent.com/34246760/107969904-41b9ae80-6f65-11eb-8b84-d15e7d94753b.png)
 
 ### Before submitting the pull request

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories;
 /// <summary>
 /// An XML repository backed by a file system.
 /// </summary>
-public class FileSystemXmlRepository : IXmlRepository
+public class FileSystemXmlRepository : IDeletableXmlRepository
 {
     private readonly ILogger _logger;
 
@@ -81,10 +82,15 @@ public class FileSystemXmlRepository : IXmlRepository
         // set of elements. If a file contains well-formed XML but its contents are meaningless, we
         // won't fail that operation here. The caller is responsible for failing as appropriate given
         // that scenario.
-        foreach (var fileSystemInfo in Directory.EnumerateFileSystemInfos("*.xml", SearchOption.TopDirectoryOnly))
+        foreach (var fileSystemInfo in EnumerateFileSystemInfos())
         {
             yield return ReadElementFromFile(fileSystemInfo.FullName);
         }
+    }
+
+    private IEnumerable<FileSystemInfo> EnumerateFileSystemInfos()
+    {
+        return Directory.EnumerateFileSystemInfos("*.xml", SearchOption.TopDirectoryOnly);
     }
 
     private static bool IsSafeFilename(string filename)
@@ -168,5 +174,63 @@ public class FileSystemXmlRepository : IXmlRepository
         {
             File.Delete(tempFilename); // won't throw if the file doesn't exist
         }
+    }
+
+    /// <inheritdoc/>
+    public virtual bool DeleteElements(Action<IReadOnlyCollection<IDeletableElement>> chooseElements)
+    {
+        ArgumentNullThrowHelper.ThrowIfNull(chooseElements);
+
+        var deletableElements = new List<DeletableElement>();
+
+        foreach (var fileSystemInfo in EnumerateFileSystemInfos())
+        {
+            var fullPath = fileSystemInfo.FullName;
+            var element = ReadElementFromFile(fullPath);
+            deletableElements.Add(new DeletableElement(fileSystemInfo, element));
+        }
+
+        chooseElements(deletableElements);
+
+        var elementsToDelete = deletableElements
+            .Where(e => e.DeletionOrder.HasValue)
+            .OrderBy(e => e.DeletionOrder.GetValueOrDefault());
+
+        foreach (var deletableElement in elementsToDelete)
+        {
+            var fileSystemInfo = deletableElement.FileSystemInfo;
+            _logger.DeletingFile(fileSystemInfo.FullName);
+            try
+            {
+                fileSystemInfo.Delete();
+            }
+            catch (Exception ex)
+            {
+                Debug.Assert(fileSystemInfo.Exists, "Having previously been deleted should not have caused an exception");
+                _logger.FailedToDeleteFile(fileSystemInfo.FullName, ex);
+                // Stop processing deletions to avoid deleting a revocation entry for a key that we failed to delete.
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private sealed class DeletableElement : IDeletableElement
+    {
+        public DeletableElement(FileSystemInfo fileSystemInfo, XElement element)
+        {
+            FileSystemInfo = fileSystemInfo;
+            Element = element;
+        }
+
+        /// <inheritdoc/>
+        public XElement Element { get; }
+
+        /// <summary>The FileSystemInfo from which <see cref="Element"/> was read.</summary>
+        public FileSystemInfo FileSystemInfo { get; }
+
+        /// <inheritdoc/>
+        public int? DeletionOrder { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -100,11 +101,14 @@ public class ApiActionsDoNotRequireExplicitModelValidationCheckAnalyzer : Diagno
 
             var actualMetadata = ActualApiResponseMetadataFactory.InspectReturnOperation(
                 in symbolCache,
-               returnOperation);
+                returnOperation);
 
-            if (actualMetadata == null || actualMetadata.Value.StatusCode != 400)
+            foreach (var metadata in actualMetadata)
             {
-                return;
+                if (!metadata.HasValue || metadata.Value.StatusCode != 400)
+                {
+                    return;
+                }
             }
 
             var returnStatementSyntax = returnOperation.Syntax;

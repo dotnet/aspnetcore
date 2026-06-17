@@ -9,11 +9,14 @@ public class BootResourceRequestLog
 {
     private readonly ConcurrentBag<string> _requestPaths = new ConcurrentBag<string>();
 
-    public IReadOnlyCollection<string> RequestPaths => _requestPaths;
+    public IReadOnlyCollection<string> RequestPathsWithNewContent => _requestPaths;
 
-    public void AddRequest(HttpRequest request)
+    public void AddRequest(string originalRequestPath, HttpResponse response)
     {
-        _requestPaths.Add(request.Path);
+        if (response.StatusCode != StatusCodes.Status304NotModified)
+        {
+            _requestPaths.Add(originalRequestPath);
+        }
     }
 
     public void Clear()

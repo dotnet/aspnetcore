@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -20,11 +19,17 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public static class ComponentsWebAssemblyApplicationBuilderExtensions
 {
+    private static readonly string? s_dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
+    private static readonly string? s_aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
+
+    private static string? GetNonEmptyEnvironmentVariableValue(string name)
+        => Environment.GetEnvironmentVariable(name) is { Length: > 0 } value ? value : null;
+
     /// <summary>
     /// Configures the application to serve Blazor WebAssembly framework files from the path <paramref name="pathPrefix"/>. This path must correspond to a referenced Blazor WebAssembly application project.
     /// </summary>
     /// <param name="builder">The <see cref="IApplicationBuilder"/>.</param>
-    /// <param name="pathPrefix">The <see cref="PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
+    /// <param name="pathPrefix">The <see cref="Microsoft.AspNetCore.Http.PathString"/> that indicates the prefix for the Blazor WebAssembly application.</param>
     /// <returns>The <see cref="IApplicationBuilder"/></returns>
     public static IApplicationBuilder UseBlazorFrameworkFiles(this IApplicationBuilder builder, PathString pathPrefix)
     {
@@ -42,23 +47,19 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
             {
                 context.Response.Headers.Append("Blazor-Environment", webHostEnvironment.EnvironmentName);
 
-                if (webHostEnvironment.IsDevelopment())
+                // DOTNET_MODIFIABLE_ASSEMBLIES is used by the runtime to initialize hot-reload specific environment variables and is configured
+                // by the launching process (dotnet-watch / Visual Studio).
+                // Always add the header if the environment variable is set, regardless of the kind of environment.
+                if (s_dotnetModifiableAssemblies != null)
                 {
-                    // DOTNET_MODIFIABLE_ASSEMBLIES is used by the runtime to initialize hot-reload specific environment variables and is configured
-                    // by the launching process (dotnet-watch / Visual Studio).
-                    // In Development, we'll transmit the environment variable to WebAssembly as a HTTP header. The bootstrapping code will read the header
-                    // and configure it as env variable for the wasm app.
-                    if (Environment.GetEnvironmentVariable("DOTNET_MODIFIABLE_ASSEMBLIES") is string dotnetModifiableAssemblies)
-                    {
-                        context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", dotnetModifiableAssemblies);
-                    }
+                    context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", s_dotnetModifiableAssemblies);
+                }
 
-                    // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
-                    // Translate the _ASPNETCORE_BROWSER_TOOLS environment configured by the browser tools agent in to a HTTP response header.
-                    if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") is string blazorWasmHotReload)
-                    {
-                        context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", blazorWasmHotReload);
-                    }
+                // See https://github.com/dotnet/aspnetcore/issues/37357#issuecomment-941237000
+                // Translate the _ASPNETCORE_BROWSER_TOOLS environment configured by the browser tools agent in to a HTTP response header.
+                if (s_aspnetcoreBrowserTools != null)
+                {
+                    context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", s_aspnetcoreBrowserTools);
                 }
 
                 await next(context);
@@ -93,6 +94,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
         AddMapping(contentTypeProvider, ".dat", MediaTypeNames.Application.Octet);
         AddMapping(contentTypeProvider, ".blat", MediaTypeNames.Application.Octet);
+        AddMapping(contentTypeProvider, ".mjs", MediaTypeNames.Text.JavaScript);
 
         options.ContentTypeProvider = contentTypeProvider;
 
@@ -108,7 +110,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
             var fileExtension = Path.GetExtension(requestPath.Value);
             if (string.Equals(fileExtension, ".gz") || string.Equals(fileExtension, ".br"))
             {
-                // When we are serving framework files (under _framework/ we perform content negotiation
+                // When we are serving framework files (under _framework/) we perform content negotiation
                 // on the accept encoding and replace the path with <<original>>.gz|br if we can serve gzip or brotli content
                 // respectively.
                 // Here we simply calculate the original content type by removing the extension and apply it

@@ -47,7 +47,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
 
             for (var i = 0; i < _settingsCount; i++)
             {
-                var memoryPool = _options.MemoryPoolFactory();
+                var memoryPool = _options.MemoryPoolFactory.Create(SocketConnectionFactoryOptions.MemoryPoolOptions);
                 var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : new IOQueue();
 
                 _settings[i] = new QueueSettings()
@@ -62,11 +62,11 @@ public sealed class SocketConnectionContextFactory : IDisposable
         }
         else
         {
-            var memoryPool = _options.MemoryPoolFactory();
+            var memoryPool = _options.MemoryPoolFactory.Create(SocketConnectionFactoryOptions.MemoryPoolOptions);
             var transportScheduler = options.UnsafePreferInlineScheduling ? PipeScheduler.Inline : PipeScheduler.ThreadPool;
 
-            _settings = new QueueSettings[]
-            {
+            _settings =
+            [
                 new QueueSettings()
                 {
                     Scheduler = transportScheduler,
@@ -75,7 +75,7 @@ public sealed class SocketConnectionContextFactory : IDisposable
                     SocketSenderPool = new SocketSenderPool(PipeScheduler.Inline),
                     MemoryPool = memoryPool,
                 }
-            };
+            ];
             _settingsCount = 1;
         }
     }
@@ -96,7 +96,8 @@ public sealed class SocketConnectionContextFactory : IDisposable
             setting.SocketSenderPool,
             setting.InputOptions,
             setting.OutputOptions,
-            waitForData: _options.WaitForDataBeforeAllocatingBuffer);
+            waitForData: _options.WaitForDataBeforeAllocatingBuffer,
+            finOnError: _options.FinOnError);
 
         connection.Start();
         return connection;

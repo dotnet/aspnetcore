@@ -3,7 +3,8 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
@@ -11,14 +12,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 public class MvcEncodedTestFixture<TStartup> : MvcTestFixture<TStartup>
     where TStartup : class
 {
+    public MvcEncodedTestFixture(ILoggerFactory outputHelper) : base(outputHelper) { }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         base.ConfigureWebHost(builder);
         builder.ConfigureServices(services =>
         {
-            services.TryAddTransient<HtmlEncoder, HtmlTestEncoder>();
-            services.TryAddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
-            services.TryAddTransient<UrlEncoder, UrlTestEncoder>();
+            services.AddTransient<HtmlEncoder, HtmlTestEncoder>();
+            services.AddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
+            services.AddTransient<UrlEncoder, UrlTestEncoder>();
         });
     }
 }

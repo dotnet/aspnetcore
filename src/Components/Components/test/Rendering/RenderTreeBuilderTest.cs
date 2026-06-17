@@ -2080,6 +2080,202 @@ public class RenderTreeBuilderTest
         Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Region' was left unclosed.", ex.Message);
     }
 
+    [Fact]
+    public void ComponentHasNoFlagsByDefault()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 1, 0);
+                Assert.Equal(default, frame.ComponentFrameFlags);
+            });
+    }
+
+    [Fact]
+    public void CanAddComponentRenderMode()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        var renderMode = new TestRenderMode();
+
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentParameter(1, "param", 123);
+        builder.AddComponentRenderMode(renderMode);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 3, 0);
+                Assert.True(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
+            },
+            frame => AssertFrame.Attribute(frame, "param", 123, 1),
+            frame => AssertFrame.ComponentRenderMode(frame, renderMode));
+    }
+
+    [Fact]
+    public void CannotAddComponentRenderModeToElement()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "something");
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            builder.AddComponentRenderMode(new TestRenderMode());
+        });
+        Assert.Equal($"The enclosing frame is not of the required type '{nameof(RenderTreeFrameType.Component)}'.", ex.Message);
+    }
+
+    [Fact]
+    public void CanAddNullComponentRenderMode()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+
+        // Act
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentParameter(1, "param", 123);
+        builder.AddComponentRenderMode(null);
+        builder.CloseComponent();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame =>
+            {
+                AssertFrame.Component<TestComponent>(frame, 2, 0);
+                Assert.False(frame.ComponentFrameFlags.HasFlag(ComponentFrameFlags.HasCallerSpecifiedRenderMode));
+            },
+            frame => AssertFrame.Attribute(frame, "param", 123, 1));
+    }
+
+    [Fact]
+    public void CannotAddParametersAfterComponentRenderMode()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenComponent<TestComponent>(0);
+        builder.AddComponentRenderMode(new TestRenderMode());
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            builder.AddComponentParameter(2, "key", "value");
+        });
+        Assert.Equal($"Component parameters may only be added immediately after frames of type {RenderTreeFrameType.Component}", ex.Message);
+    }
+
+    [Fact]
+    public void CanAddNamedEvent()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        var renderMode = new TestRenderMode();
+
+        // Act
+        builder.OpenElement(0, "elem");
+        builder.AddAttribute(1, "attr", 123);
+        builder.AddNamedEvent("myeventtype", "my event name");
+        builder.CloseElement();
+
+        // Assert
+        Assert.Collection(
+            builder.GetFrames().AsEnumerable(),
+            frame => AssertFrame.Element(frame, "elem", 3, 0),
+            frame => AssertFrame.Attribute(frame, "attr", "123", 1),
+            frame => AssertFrame.NamedEvent(frame, "myeventtype", "my event name"));
+    }
+
+    [Fact]
+    public void CannotAddNamedEventToComponent()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenComponent<TestComponent>(0);
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            builder.AddNamedEvent("x", "y");
+        });
+        Assert.Equal($"Named events may only be added as children of frames of type {RenderTreeFrameType.Element}", ex.Message);
+    }
+
+    [Fact]
+    public void CannotAddNamedEventWithNullEventType()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "elem");
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentNullException>(() =>
+        {
+            builder.AddNamedEvent(null, "assigned name");
+        });
+        Assert.Equal("eventType", ex.ParamName);
+    }
+
+    [Fact]
+    public void CannotAddNamedEventWithNullAssignedName()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "elem");
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentNullException>(() =>
+        {
+            builder.AddNamedEvent("eventtype", null);
+        });
+        Assert.Equal("assignedName", ex.ParamName);
+    }
+
+    [Fact]
+    public void CannotAddNamedEventWithEmptyAssignedName()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "elem");
+
+        // Act/Assert
+        var ex = Assert.Throws<ArgumentException>(() =>
+        {
+            builder.AddNamedEvent("eventtype", "");
+        });
+        Assert.Equal("assignedName", ex.ParamName);
+    }
+
+    [Fact]
+    public void CannotAddAttributesAfterNamedEvent()
+    {
+        // Arrange
+        var builder = new RenderTreeBuilder();
+        builder.OpenElement(0, "elem");
+        builder.AddNamedEvent("someevent", "somename");
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            builder.AddAttribute(2, "a", "b");
+        });
+        Assert.Equal($"Attributes may only be added immediately after frames of type {RenderTreeFrameType.Element} or {RenderTreeFrameType.Component}", ex.Message);
+    }
+
     private class TestComponent : IComponent
     {
         public void Attach(RenderHandle renderHandle) { }

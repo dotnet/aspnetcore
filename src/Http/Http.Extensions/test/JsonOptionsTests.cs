@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.DotNet.RemoteExecutor;
 
 namespace Microsoft.AspNetCore.Http.Extensions;
@@ -12,7 +12,7 @@ public class JsonOptionsTests
 {
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void DefaultSerializerOptions_SetsTypeInfoResolverNull_WhenJsonIsReflectionEnabledByDefaultFalse()
+    public void DefaultSerializerOptions_SetsTypeInfoResolverEmptyResolver_WhenJsonIsReflectionEnabledByDefaultFalse()
     {
         var options = new RemoteInvokeOptions();
         options.RuntimeConfigurationOptions.Add("System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault", false.ToString());
@@ -23,7 +23,8 @@ public class JsonOptionsTests
             var options = JsonOptions.DefaultSerializerOptions;
 
             // Assert
-            Assert.Null(options.TypeInfoResolver);
+            Assert.NotNull(options.TypeInfoResolver);
+            Assert.IsAssignableFrom<IJsonTypeInfoResolver>(options.TypeInfoResolver);
         }, options);
     }
 

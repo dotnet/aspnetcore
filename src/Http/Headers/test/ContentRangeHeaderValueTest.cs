@@ -18,7 +18,7 @@ public class ContentRangeHeaderValueTest
 
         Assert.False(range.HasRange, "HasRange");
         Assert.True(range.HasLength, "HasLength");
-        Assert.Equal("bytes", range.Unit);
+        Assert.Equal("bytes", range.Unit.AsSpan());
         Assert.Null(range.From);
         Assert.Null(range.To);
         Assert.Equal(5, range.Length);
@@ -39,7 +39,7 @@ public class ContentRangeHeaderValueTest
 
         Assert.True(range.HasRange, "HasRange");
         Assert.False(range.HasLength, "HasLength");
-        Assert.Equal("bytes", range.Unit);
+        Assert.Equal("bytes", range.Unit.AsSpan());
         Assert.Equal(0, range.From);
         Assert.Equal(1, range.To);
         Assert.Null(range.Length);
@@ -63,7 +63,7 @@ public class ContentRangeHeaderValueTest
 
         Assert.True(range.HasRange, "HasRange");
         Assert.True(range.HasLength, "HasLength");
-        Assert.Equal("bytes", range.Unit);
+        Assert.Equal("bytes", range.Unit.AsSpan());
         Assert.Equal(0, range.From);
         Assert.Equal(1, range.To);
         Assert.Equal(2, range.Length);
@@ -74,7 +74,7 @@ public class ContentRangeHeaderValueTest
     {
         var range = new ContentRangeHeaderValue(0);
         range.Unit = "myunit";
-        Assert.Equal("myunit", range.Unit);
+        Assert.Equal("myunit", range.Unit.AsSpan());
 
         Assert.Throws<ArgumentException>(() => range.Unit = null);
         Assert.Throws<ArgumentException>(() => range.Unit = "");
@@ -156,7 +156,7 @@ public class ContentRangeHeaderValueTest
         // Note that we don't have a public constructor for value 'bytes */*' since the RFC doesn't mention a
         // scenario for it. However, if a server returns this value, we're flexible and accept it.
         var result = ContentRangeHeaderValue.Parse("bytes */*");
-        Assert.Equal("bytes", result.Unit);
+        Assert.Equal("bytes", result.Unit.AsSpan());
         Assert.Null(result.From);
         Assert.Null(result.To);
         Assert.Null(result.Length);
@@ -187,7 +187,7 @@ public class ContentRangeHeaderValueTest
         // Note that we don't have a public constructor for value 'bytes */*' since the RFC doesn't mention a
         // scenario for it. However, if a server returns this value, we're flexible and accept it.
         Assert.True(ContentRangeHeaderValue.TryParse("bytes */*", out var result));
-        Assert.Equal("bytes", result.Unit);
+        Assert.Equal("bytes", result.Unit.AsSpan());
         Assert.Null(result.From);
         Assert.Null(result.To);
         Assert.Null(result.Length);

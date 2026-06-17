@@ -10,6 +10,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Authorization;
 
+// This middleware exists to force the correct constructor overload to be called when the user calls UseAuthorization().
+// Since we already expose the AuthorizationMiddleware type, we can't change the constructor signature without breaking it.
+internal sealed class AuthorizationMiddlewareInternal(
+    RequestDelegate next,
+    IServiceProvider services,
+    IAuthorizationPolicyProvider policyProvider,
+    ILogger<AuthorizationMiddleware> logger) : AuthorizationMiddleware(next, policyProvider, services, logger)
+{
+
+}
+
 /// <summary>
 /// A middleware that enables authorization capabilities.
 /// </summary>
@@ -17,6 +28,7 @@ public class AuthorizationMiddleware
 {
     // AppContext switch used to control whether HttpContext or endpoint is passed as a resource to AuthZ
     private const string SuppressUseHttpContextAsAuthorizationResource = "Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource";
+    private static readonly bool _suppressUseHttpContextAsAuthorizationResource = AppContext.TryGetSwitch(SuppressUseHttpContextAsAuthorizationResource, out var enabled) && enabled;
 
     // Property key is used by Endpoint routing to determine if Authorization has run
     private const string AuthorizationMiddlewareInvokedWithEndpointKey = "__AuthorizationMiddlewareWithEndpointInvoked";
@@ -170,7 +182,7 @@ public class AuthorizationMiddleware
         }
 
         object? resource;
-        if (AppContext.TryGetSwitch(SuppressUseHttpContextAsAuthorizationResource, out var useEndpointAsResource) && useEndpointAsResource)
+        if (_suppressUseHttpContextAsAuthorizationResource)
         {
             resource = endpoint;
         }

@@ -5,6 +5,7 @@
 using System;
 #if NETCOREAPP
 using System.Buffers;
+using System.Buffers.Text;
 #endif
 using System.Diagnostics;
 using System.Globalization;
@@ -27,6 +28,11 @@ internal
 #endif
 static class WebEncoders
 {
+#if NET9_0_OR_GREATER
+    /// <summary>SearchValues for the two Base64 and two Base64Url chars that differ from each other.</summary>
+    private static readonly SearchValues<char> s_base64vsBase64UrlDifferentiators = SearchValues.Create("+/-_");
+#endif
+
     /// <summary>
     /// Decodes a base64url-encoded string.
     /// </summary>
@@ -66,6 +72,25 @@ static class WebEncoders
             return Array.Empty<byte>();
         }
 
+#if NET9_0_OR_GREATER
+        // Legacy behavior of Base64UrlDecode supports either Base64 or Base64Url input.
+        // If it has a - or _, or if it doesn't have + or /, it can be treated as Base64Url.
+        // Searching for any of them allows us to stop the search as early as we know whether Base64Url should be used.
+        ReadOnlySpan<char> inputSpan = input.AsSpan(offset, count);
+        int indexOfFirstDifferentiator = inputSpan.IndexOfAny(s_base64vsBase64UrlDifferentiators);
+        if (indexOfFirstDifferentiator < 0 || inputSpan[indexOfFirstDifferentiator] is '-' or '_')
+        {
+            return Base64Url.DecodeFromChars(inputSpan);
+        }
+
+        // Otherwise, maintain the legacy behavior of accepting Base64 input. Input that
+        // contained both +/ and -_ is neither Base64 nor Base64Url and is considered invalid.
+        if (offset == 0 && count == input.Length)
+        {
+            return Convert.FromBase64String(input);
+        }
+#endif
+
         // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
         var buffer = new char[GetArraySizeRequiredToDecode(count)];
 
@@ -104,6 +129,25 @@ static class WebEncoders
             return Array.Empty<byte>();
         }
 
+#if NET9_0_OR_GREATER
+        // Legacy behavior of Base64UrlDecode supports either Base64 or Base64Url input.
+        // If it has a - or _, or if it doesn't have + or /, it can be treated as Base64Url.
+        // Searching for any of them allows us to stop the search as early as we know Base64Url should be used.
+        ReadOnlySpan<char> inputSpan = input.AsSpan(offset, count);
+        int indexOfFirstDifferentiator = inputSpan.IndexOfAny(s_base64vsBase64UrlDifferentiators);
+        if (indexOfFirstDifferentiator < 0 || inputSpan[indexOfFirstDifferentiator] is '-' or '_')
+        {
+            return Base64Url.DecodeFromChars(inputSpan);
+        }
+
+        // Otherwise, maintain the legacy behavior of accepting Base64 input. Input that
+        // contained both +/ and -_ is neither Base64 nor Base64Url and is considered invalid.
+        if (offset == 0 && count == input.Length)
+        {
+            return Convert.FromBase64String(input);
+        }
+#endif
+
         // Assumption: input is base64url encoded without padding and contains no whitespace.
 
         var paddingCharsToAdd = GetNumBase64PaddingCharsToAddForDecode(count);
@@ -124,6 +168,13 @@ static class WebEncoders
 
         // Copy input into buffer, fixing up '-' -> '+' and '_' -> '/'.
         var i = bufferOffset;
+#if NET8_0_OR_GREATER
+        Span<char> bufferSpan = buffer.AsSpan(i, count);
+        inputSpan.CopyTo(bufferSpan);
+        bufferSpan.Replace('-', '+');
+        bufferSpan.Replace('_', '/');
+        i += count;
+#else
         for (var j = offset; i - bufferOffset < count; i++, j++)
         {
             var ch = input[j];
@@ -140,6 +191,7 @@ static class WebEncoders
                 buffer[i] = ch;
             }
         }
+#endif
 
         // Add the padding characters back.
         for (; paddingCharsToAdd > 0; i++, paddingCharsToAdd--)
@@ -151,6 +203,38 @@ static class WebEncoders
         // If the caller provided invalid base64 chars, they'll be caught here.
         return Convert.FromBase64CharArray(buffer, bufferOffset, arraySizeRequired);
     }
+
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Decodes a base64url-encoded <paramref name="input"/> into <paramref name="output"/>.
+    /// </summary>
+    /// <param name="input">The base64url-encoded input to decode.</param>
+    /// <param name="output">The buffer to receive the decoded bytes.</param>
+    /// <returns>The number of bytes written to <paramref name="output"/>.</returns>
+    /// <remarks>
+    /// The input must not contain any whitespace or padding characters.
+    /// Throws <see cref="FormatException"/> if the input is malformed.
+    /// </remarks>
+    internal static int Base64UrlDecode(string input, Span<byte> output)
+    {
+        if (string.IsNullOrEmpty(input))
+        {
+            return 0;
+        }
+
+        var status = Base64Url.DecodeFromChars(input, output, out _, out int bytesWritten);
+        if (status != OperationStatus.Done)
+        {
+            throw new FormatException(
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    EncoderResources.WebEncoders_MalformedInput,
+                    input.Length));
+        }
+
+        return bytesWritten;
+    }
+#endif
 
     /// <summary>
     /// Gets the minimum <c>char[]</c> size required for decoding of <paramref name="count"/> characters
@@ -314,6 +398,9 @@ static class WebEncoders
     [SkipLocalsInit]
     public static string Base64UrlEncode(ReadOnlySpan<byte> input)
     {
+#if NET9_0_OR_GREATER
+        return Base64Url.EncodeToString(input);
+#else
         const int StackAllocThreshold = 128;
 
         if (input.IsEmpty)
@@ -337,8 +424,21 @@ static class WebEncoders
         }
 
         return base64Url;
+#endif
     }
 
+#if NET9_0_OR_GREATER
+    /// <summary>
+    /// Encodes <paramref name="input"/> using base64url encoding.
+    /// </summary>
+    /// <param name="input">The binary input to encode.</param>
+    /// <param name="output">The buffer to place the result in.</param>
+    /// <returns></returns>
+    public static int Base64UrlEncode(ReadOnlySpan<byte> input, Span<char> output)
+    {
+        return Base64Url.EncodeToChars(input, output);
+    }
+#else
     private static int Base64UrlEncode(ReadOnlySpan<byte> input, Span<char> output)
     {
         Debug.Assert(output.Length >= GetArraySizeRequiredToEncode(input.Length));
@@ -373,6 +473,7 @@ static class WebEncoders
 
         return charsWritten;
     }
+#endif
 #endif
 
     private static int GetNumBase64PaddingCharsToAddForDecode(int inputLength)

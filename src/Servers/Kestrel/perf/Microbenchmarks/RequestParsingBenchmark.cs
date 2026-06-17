@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks;
 
@@ -24,7 +24,7 @@ public class RequestParsingBenchmark
     [IterationSetup]
     public void Setup()
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
 

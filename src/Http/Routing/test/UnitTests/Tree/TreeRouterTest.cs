@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Template;
@@ -100,7 +101,7 @@ public class TreeRouterTest
 
         // We setup the route entries in reverse order of precedence to ensure that when we
         // try to route the request, the route with a higher precedence gets tried first.
-        foreach (var template in routes.Reverse())
+        foreach (var template in Enumerable.Reverse(routes))
         {
             MapInboundEntry(builder, template);
         }
@@ -147,7 +148,7 @@ public class TreeRouterTest
 
         // We setup the route entries in reverse order of precedence to ensure that when we
         // try to route the request, the route with a higher precedence gets tried first.
-        foreach (var template in routes.Reverse())
+        foreach (var template in Enumerable.Reverse(routes))
         {
             MapInboundEntry(builder, template);
         }
@@ -199,7 +200,7 @@ public class TreeRouterTest
 
         // We setup the route entries in reverse order of precedence to ensure that when we
         // try to route the request, the route with a higher precedence gets tried first.
-        foreach (var template in routes.Reverse())
+        foreach (var template in Enumerable.Reverse(routes))
         {
             MapInboundEntry(builder, template);
         }
@@ -242,7 +243,7 @@ public class TreeRouterTest
 
         // We setup the route entries in reverse order of precedence to ensure that when we
         // try to route the request, the route with a higher precedence gets tried first.
-        foreach (var template in routes.Reverse())
+        foreach (var template in Enumerable.Reverse(routes))
         {
             MapInboundEntry(builder, template);
         }
@@ -340,7 +341,7 @@ public class TreeRouterTest
 
         // We setup the route entries in reverse order of precedence to ensure that when we
         // try to route the request, the route with a higher precedence gets tried first.
-        foreach (var template in routes.Reverse())
+        foreach (var template in Enumerable.Reverse(routes))
         {
             MapInboundEntry(builder, template);
         }

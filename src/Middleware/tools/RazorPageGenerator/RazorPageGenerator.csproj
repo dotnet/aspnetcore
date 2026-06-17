@@ -7,7 +7,7 @@
     <PackageId>RazorPageGenerator</PackageId>
     <OutputType>Exe</OutputType>
     <IsShipping>false</IsShipping>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
     <!-- No need to track public APIs of this tool. -->
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <Nullable>disable</Nullable>

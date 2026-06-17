@@ -7,7 +7,7 @@ import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 import { getUserAgentHeader } from "../src/Utils";
 
-import { AbortError, HttpError } from "../src/Errors";
+import { AbortError, FailedToNegotiateWithServerError, HttpError } from "../src/Errors";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { NullLogger } from "../src/Loggers";
 import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
@@ -16,7 +16,7 @@ import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
 import { TestTransport } from "./TestTransport";
 import { TestEvent, TestWebSocket } from "./TestWebSocket";
-import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
+import { delayUntil, PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 import { HeaderNames } from "../src/HeaderNames";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -1655,5 +1655,342 @@ describe("TransportSendQueue", () => {
 
         await queue.stop();
         await expect(queue.send("test")).rejects.toBe("Connection stopped.");
+    });
+
+    it("negotiate stateful reconnect false does not set query string", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: false,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1&useStatefulReconnect=true", () => { throw new Error(); })
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate Stateful Reconnect sets query string", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useStatefulReconnect = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?negotiateVersion=1&useStatefulReconnect=true", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeTruthy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate Stateful Reconnect with query string present", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useStatefulReconnect = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: false,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?useStatefulReconnect=true&negotiateVersion=1", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org?useStatefulReconnect=true", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeTruthy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate Stateful Reconnect with query string set to false", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            // client didn't request the feature, we should error
+            negotiateResponse.useStatefulReconnect = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", "http://tempuri.org/negotiate?useStatefulReconnect=false&negotiateVersion=1", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org?useStatefulReconnect=false", options);
+
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow(new FailedToNegotiateWithServerError("Client didn't negotiate Stateful Reconnect but the server did."));
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+        }, "Failed to start the connection: Error: Client didn't negotiate Stateful Reconnect but the server did.");
+    });
+
+    it("negotiate Stateful Reconnect works with websockets", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useStatefulReconnect = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeTruthy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate Stateful Reconnect denied by server", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => defaultNegotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+
+            TestWebSocket.webSocket.close();
+        });
+    });
+
+    it("negotiate Stateful Reconnect does not work with long polling", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useStatefulReconnect = true;
+
+            let firstPoll = true;
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
+                transport: HttpTransportType.LongPolling,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => negotiateResponse)
+                    .on("GET", async () => {
+                        if (firstPoll) {
+                            firstPoll = false;
+                            return "";
+                        }
+                        await delayUntil(1);
+                        return new HttpResponse(200);
+                    })
+                    .on("DELETE", () => new HttpResponse(202)),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            const startPromise = connection.start(TransferFormat.Text);
+            await startPromise;
+
+            // Set when acks used by both server and client
+            expect(connection.features.reconnect).toBeFalsy();
+
+            await connection.stop();
+        });
+    });
+
+    it("using Stateful Reconnect restarts connection", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useStatefulReconnect = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            let oncloseCalled = false;
+            connection.onclose = (error) => {
+                oncloseCalled = true;
+            };
+
+            // Call order is:
+            // disconnected()
+            // await transport.connect()
+            // resend()
+            let disconnectedCalled = false;
+            let resendCalled = false;
+            const resendPromise = new PromiseSource();
+            connection.features.disconnected = () => {
+                disconnectedCalled = true;
+                expect(resendCalled).toBe(false);
+            };
+            connection.features.resend = () => {
+                resendCalled = true;
+                expect(disconnectedCalled).toBe(true);
+                resendPromise.resolve();
+            };
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            TestWebSocket.webSocket.close();
+
+            // transport should be trying to connect again
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            expect(disconnectedCalled).toBe(true);
+            expect(resendCalled).toBe(false);
+            // successfully connect
+            TestWebSocket.webSocket.onopen(new TestEvent());
+
+            await resendPromise;
+            expect(resendCalled).toBe(true);
+
+            expect(oncloseCalled).toBe(false);
+        });
+    });
+
+    it("using Stateful Reconnect restarts connection and closes on error", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const negotiateResponse: INegotiateResponse = { ...defaultNegotiateResponse };
+            negotiateResponse.useStatefulReconnect = true;
+
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                _useStatefulReconnect: true,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => negotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            const onclosePromise = new PromiseSource();
+            connection.onclose = (error) => {
+                onclosePromise.resolve();
+            };
+
+            // Call order is:
+            // disconnected()
+            // await transport.connect()
+            // resend()
+            let disconnectedCalled = false;
+            let resendCalled = false;
+            connection.features.disconnected = () => {
+                disconnectedCalled = true;
+                expect(resendCalled).toBe(false);
+            };
+            connection.features.resend = () => {
+                resendCalled = true;
+                expect(disconnectedCalled).toBe(true);
+            };
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            const startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            await connection.send("text");
+            TestWebSocket.webSocketSet = new PromiseSource();
+            TestWebSocket.webSocket.close();
+
+            // transport should be trying to connect again
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            expect(disconnectedCalled).toBe(true);
+            expect(resendCalled).toBe(false);
+            // fail to connect
+            TestWebSocket.webSocket.onclose(new TestEvent());
+
+            await onclosePromise;
+            expect(resendCalled).toBe(false);
+        });
     });
 });

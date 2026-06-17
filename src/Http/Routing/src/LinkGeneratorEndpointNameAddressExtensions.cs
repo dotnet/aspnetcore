@@ -305,11 +305,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     {
         ArgumentNullException.ThrowIfNull(generator);
         ArgumentNullException.ThrowIfNull(endpointName);
-
-        if (string.IsNullOrEmpty(scheme))
-        {
-            throw new ArgumentException("A scheme must be provided.", nameof(scheme));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(scheme);
 
         if (!host.HasValue)
         {
@@ -358,11 +354,7 @@ public static class LinkGeneratorEndpointNameAddressExtensions
     {
         ArgumentNullException.ThrowIfNull(generator);
         ArgumentNullException.ThrowIfNull(endpointName);
-
-        if (string.IsNullOrEmpty(scheme))
-        {
-            throw new ArgumentException("A scheme must be provided.", nameof(scheme));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(scheme);
 
         if (!host.HasValue)
         {

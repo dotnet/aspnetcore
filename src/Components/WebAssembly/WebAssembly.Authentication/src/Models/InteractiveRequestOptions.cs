@@ -115,11 +115,32 @@ public sealed class InteractiveRequestOptions
                 InteractiveRequestOptionsSerializerContext.Default.OptionsRecord);
         }
 
-        internal record struct OptionsRecord(
-            [property: JsonInclude] string ReturnUrl,
-            [property: JsonInclude] IEnumerable<string> Scopes,
-            [property: JsonInclude] InteractionType Interaction,
-            [property: JsonInclude] Dictionary<string, object>? AdditionalRequestParameters);
+        internal readonly struct OptionsRecord
+        {
+            [JsonInclude]
+            public string ReturnUrl { get; init; }
+
+            [JsonInclude]
+            public IEnumerable<string> Scopes { get; init; }
+
+            [JsonInclude]
+            public InteractionType Interaction { get; init; }
+
+            [JsonInclude]
+            public Dictionary<string, object>? AdditionalRequestParameters { get; init; }
+
+            public OptionsRecord(
+                string returnUrl,
+                IEnumerable<string> scopes,
+                InteractionType interaction,
+                Dictionary<string, object>? additionalRequestParameters)
+            {
+                ReturnUrl = returnUrl;
+                Scopes = scopes;
+                Interaction = interaction;
+                AdditionalRequestParameters = additionalRequestParameters;
+            }
+        }
     }
 }
 

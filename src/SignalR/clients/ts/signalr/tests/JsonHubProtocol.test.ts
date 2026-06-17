@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { CloseMessage, CompletionMessage, InvocationMessage, MessageType, StreamItemMessage } from "../src/IHubProtocol";
+import { AckMessage, CloseMessage, CompletionMessage, InvocationMessage, MessageType, SequenceMessage, StreamItemMessage } from "../src/IHubProtocol";
 import { JsonHubProtocol } from "../src/JsonHubProtocol";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 import { VerifyLogger } from "./Common";
@@ -222,6 +222,32 @@ describe("JsonHubProtocol", () => {
             const protocol = new JsonHubProtocol();
             const parsedMessages = protocol.parseMessages(protocol.writeMessage(closeMessage), logger);
             expect(parsedMessages).toEqual([closeMessage]);
+        });
+    });
+
+    it("can write/read Ack message", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const ackMessage = {
+                sequenceId: 45,
+                type: MessageType.Ack,
+            } as AckMessage;
+
+            const protocol = new JsonHubProtocol();
+            const parsedMessages = protocol.parseMessages(protocol.writeMessage(ackMessage), logger);
+            expect(parsedMessages).toEqual([ackMessage]);
+        });
+    });
+
+    it("can write/read Sequence message", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const sequenceMessage = {
+                sequenceId: 46,
+                type: MessageType.Sequence,
+            } as SequenceMessage;
+
+            const protocol = new JsonHubProtocol();
+            const parsedMessages = protocol.parseMessages(protocol.writeMessage(sequenceMessage), logger);
+            expect(parsedMessages).toEqual([sequenceMessage]);
         });
     });
 });

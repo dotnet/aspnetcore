@@ -20,6 +20,7 @@ internal sealed class RendererSynchronizationContextDispatcher : Dispatcher
 
     public override Task InvokeAsync(Action workItem)
     {
+        ArgumentNullException.ThrowIfNull(workItem);
         if (CheckAccess())
         {
             workItem();
@@ -31,6 +32,7 @@ internal sealed class RendererSynchronizationContextDispatcher : Dispatcher
 
     public override Task InvokeAsync(Func<Task> workItem)
     {
+        ArgumentNullException.ThrowIfNull(workItem);
         if (CheckAccess())
         {
             return workItem();
@@ -41,6 +43,7 @@ internal sealed class RendererSynchronizationContextDispatcher : Dispatcher
 
     public override Task<TResult> InvokeAsync<TResult>(Func<TResult> workItem)
     {
+        ArgumentNullException.ThrowIfNull(workItem);
         if (CheckAccess())
         {
             return Task.FromResult(workItem());
@@ -51,6 +54,7 @@ internal sealed class RendererSynchronizationContextDispatcher : Dispatcher
 
     public override Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> workItem)
     {
+        ArgumentNullException.ThrowIfNull(workItem);
         if (CheckAccess())
         {
             return workItem();

@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Playwright;
 
@@ -116,5 +113,16 @@ public class PageInformation : IDisposable
         }
     }
 
-    public record LogEntry(string Message, string Level);
+    public sealed class LogEntry
+    {
+        public string Message { get; }
+
+        public string Level { get; }
+
+        public LogEntry(string message, string level)
+        {
+            Message = message;
+            Level = level;
+        }
+    }
 }

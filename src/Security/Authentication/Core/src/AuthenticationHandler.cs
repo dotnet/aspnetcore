@@ -18,7 +18,7 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     private Task<AuthenticateResult>? _authenticateTask;
 
     /// <summary>
-    /// Gets or sets the <see cref="AuthenticationScheme"/> asssociated with this authentication handler.
+    /// Gets or sets the <see cref="AuthenticationScheme"/> associated with this authentication handler.
     /// </summary>
     public AuthenticationScheme Scheme { get; private set; } = default!;
 
@@ -156,7 +156,7 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
 
         TimeProvider = Options.TimeProvider ?? TimeProvider.System;
 #pragma warning disable CS0618 // Type or member is obsolete
-        Clock = new SystemClock(TimeProvider);
+        Clock = TimeProvider == TimeProvider.System ? SystemClock.Default : new SystemClock(TimeProvider);
 #pragma warning restore CS0618 // Type or member is obsolete
 
         await InitializeEventsAsync();
@@ -205,7 +205,7 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     {
         var target = scheme ?? Options.ForwardDefaultSelector?.Invoke(Context) ?? Options.ForwardDefault;
 
-        // Prevent self targetting
+        // Prevent self targeting
         return string.Equals(target, Scheme.Name, StringComparison.Ordinal)
             ? null
             : target;
@@ -290,9 +290,9 @@ public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler w
     }
 
     /// <summary>
-    /// Override this method to deal with 401 challenge concerns, if an authentication scheme in question
-    /// deals an authentication interaction as part of it's request flow. (like adding a response header, or
-    /// changing the 401 result to 302 of a login page or external sign-in location.)
+    /// Override this method to deal with 401 challenge concerns if an authentication scheme in question
+    /// deals an authentication interaction as part of its request flow (like adding a response header, or
+    /// changing the 401 result to 302 of a login page or external sign-in location).
     /// </summary>
     /// <param name="properties"></param>
     /// <returns>A Task.</returns>

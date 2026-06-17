@@ -91,7 +91,7 @@ public class AuthenticationOptions
     public string? DefaultForbidScheme { get; set; }
 
     /// <summary>
-    /// If true, SignIn should throw if attempted with a user is not authenticated.
+    /// If true, SignIn should throw if attempted with a user who is not authenticated.
     /// A user is considered authenticated if <see cref="ClaimsIdentity.IsAuthenticated"/> returns <see langword="true" /> for the <see cref="ClaimsPrincipal"/> associated with the HTTP request.
     /// </summary>
     public bool RequireAuthenticatedSignIn { get; set; } = true;

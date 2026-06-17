@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -96,7 +96,7 @@ namespace System.Net.Http
             // Cold path: copy to a temporary buffer before calling span-based read.
             return TryReadSlow(ref reader, out value);
 
-            static bool TryReadSlow(ref SequenceReader<byte> reader, out long value)
+            static unsafe bool TryReadSlow(ref SequenceReader<byte> reader, out long value)
             {
                 ReadOnlySpan<byte> span = reader.CurrentSpan;
 
@@ -128,19 +128,19 @@ namespace System.Net.Http
             }
         }
 
-        public static long GetInteger(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        // If callsite has 'examined', set it to buffer.End if the integer wasn't successfully read, otherwise set examined = consumed.
+        public static bool TryGetInteger(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out long integer)
         {
             var reader = new SequenceReader<byte>(buffer);
-            if (TryRead(ref reader, out long value))
+            if (TryRead(ref reader, out integer))
             {
-                consumed = examined = buffer.GetPosition(reader.Consumed);
-                return value;
+                consumed = buffer.GetPosition(reader.Consumed);
+                return true;
             }
             else
             {
-                consumed = default;
-                examined = buffer.End;
-                return -1;
+                consumed = buffer.Start;
+                return false;
             }
         }
 

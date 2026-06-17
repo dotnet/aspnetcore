@@ -4,9 +4,6 @@
         "module": "commonjs",
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "typeRoots": [
-            "./node_modules/@types"
-        ],
         "allowJs": true
     },
 }

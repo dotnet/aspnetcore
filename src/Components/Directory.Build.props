@@ -18,4 +18,7 @@
     <AddSyntheticProjectReferencesForSolutionDependencies>false</AddSyntheticProjectReferencesForSolutionDependencies>
   </PropertyGroup>
 
+  <Import Project="$(RepoRoot)\src\Assets\StaticWebAssets.Groups.targets" />
+  <Import Project="$(RepoRoot)\src\Components\WebAssembly\WebAssembly\src\StaticWebAssets.Groups.targets" />
+
 </Project>

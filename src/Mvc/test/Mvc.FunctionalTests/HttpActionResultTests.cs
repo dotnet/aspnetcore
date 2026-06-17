@@ -4,18 +4,30 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection;
 using BasicWebSite.Models;
+using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class HttpActionResultTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithSystemTextJson>>
+public class HttpActionResultTests : LoggedTest
 {
-    public HttpActionResultTests(MvcTestFixture<BasicWebSite.StartupWithSystemTextJson> fixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Client = fixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<BasicWebSite.StartupWithSystemTextJson>(LoggerFactory);
+        Client = Factory.CreateDefaultClient();
     }
 
-    public HttpClient Client { get; }
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public MvcTestFixture<BasicWebSite.StartupWithSystemTextJson> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Fact]
     public async Task ActionCanReturnIResultWithContent()

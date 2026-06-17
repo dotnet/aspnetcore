@@ -43,7 +43,7 @@ internal static class DebuggerHelpers
         {
             var kvp = values[i];
 
-            if (kvp.Value is not null || includeNullValues)
+            if (HasValue(kvp.Value) || includeNullValues)
             {
                 if (first)
                 {
@@ -93,6 +93,22 @@ internal static class DebuggerHelpers
         }
 
         return sb.ToString();
+    }
+
+    private static bool HasValue(object? value)
+    {
+        if (value is null)
+        {
+            return false;
+        }
+
+        // Empty collections don't have a value.
+        if (value is not string && value is IEnumerable enumerable && !enumerable.GetEnumerator().MoveNext())
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private static KeyValuePair<string, object?> Create(string key, object? value) => new KeyValuePair<string, object?>(key, value);

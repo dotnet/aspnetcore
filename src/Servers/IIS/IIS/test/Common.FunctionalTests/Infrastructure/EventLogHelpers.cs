@@ -15,17 +15,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 public class EventLogHelpers
 {
-    public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
+    public static async Task VerifyEventLogEventAsync(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
     {
         Assert.True(deploymentResult.HostProcess.HasExited);
 
-        var entries = GetEntries(deploymentResult);
         try
         {
-            AssertEntry(expectedRegexMatchString, entries, allowMultiple);
+            await AssertEntryAsync(expectedRegexMatchString, deploymentResult, allowMultiple);
         }
         catch (Exception)
         {
+            var entries = GetEntries(deploymentResult);
             foreach (var entry in entries)
             {
                 logger.LogInformation("'{Message}', generated {Generated}, written {Written}", entry.Message, entry.TimeGenerated, entry.TimeWritten);
@@ -34,22 +34,16 @@ public class EventLogHelpers
         }
     }
 
-    public static void VerifyEventLogEvents(IISDeploymentResult deploymentResult, params string[] expectedRegexMatchString)
+    public static async Task VerifyEventLogEvents(IISDeploymentResult deploymentResult, params string[] expectedRegexMatchString)
     {
         Assert.True(deploymentResult.HostProcess.HasExited);
 
         var entries = GetEntries(deploymentResult).ToList();
-        foreach (var regexString in expectedRegexMatchString)
+        for (var i = 0; i < expectedRegexMatchString.Length; i++)
         {
-            var matchedEntries = AssertEntry(regexString, entries);
-
-            foreach (var matchedEntry in matchedEntries)
-            {
-                entries.Remove(matchedEntry);
-            }
+            var matchedEntries = await AssertEntryAsync(expectedRegexMatchString[i], deploymentResult);
+            Assert.True(matchedEntries is not null, $"Regex {expectedRegexMatchString[i]} was not found.");
         }
-
-        Assert.True(0 == entries.Count, $"Some entries were not matched by any regex {FormatEntries(entries)}");
     }
 
     public static string OnlyOneAppPerAppPool()
@@ -65,13 +59,33 @@ public class EventLogHelpers
         }
     }
 
-    private static EventLogEntry[] AssertEntry(string regexString, IEnumerable<EventLogEntry> entries, bool allowMultiple = false)
+    private static async Task<EventLogEntry[]> AssertEntryAsync(string regexString, IISDeploymentResult deploymentResult, bool allowMultiple = false)
     {
+        EventLogEntry[] matchedEntries = [];
         var expectedRegex = new Regex(regexString, RegexOptions.Singleline);
-        var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
-        Assert.True(matchedEntries.Length > 0, $"No entries matched by '{regexString}'");
-        Assert.True(allowMultiple || matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
+
+        // EventLogs don't seem to be instant, add retries to attempt to reduce test failures when looking for logs.
+        for (var i = 10; i > 0; i--)
+        {
+            var entries = GetEntries(deploymentResult);
+            matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
+            if (matchedEntries.Length == 0)
+            {
+                await Task.Delay(100);
+                continue;
+            }
+            AssertEntries();
+            return matchedEntries;
+        }
+
+        AssertEntries();
         return matchedEntries;
+
+        void AssertEntries()
+        {
+            Assert.True(matchedEntries.Length > 0, $"No entries matched by '{regexString}'");
+            Assert.True(allowMultiple || matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
+        }
     }
 
     private static string FormatEntries(IEnumerable<EventLogEntry> entries)
@@ -79,7 +93,7 @@ public class EventLogHelpers
         return string.Join(",", entries.Select(e => e.Message));
     }
 
-    private static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
+    internal static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
     {
         var eventLog = new EventLog("Application");
 
@@ -147,24 +161,31 @@ public class EventLogHelpers
 
     public static string OutOfProcessStarted(IISDeploymentResult deploymentResult)
     {
-        return $"Application '/LM/W3SVC/1/ROOT' started process '\\d+' successfully and process '\\d+' is listening on port '\\d+'.";
+        return $"Application '/LM/W3SVC/\\d+/ROOT' started process '\\d+' successfully and process '\\d+' is listening on port '\\d+'.";
     }
 
     public static string InProcessFailedToStart(IISDeploymentResult deploymentResult, string reason)
     {
         if (DeployerSelector.HasNewHandler)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load coreclr. Exception message:\r\n{reason}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load coreclr. Exception message:\r\n{reason}";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load clr and managed application. {reason}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load clr and managed application. {reason}";
         }
     }
 
-    public static string InProcessShutdown()
+    public static string ShutdownMessage(IISDeploymentResult deploymentResult)
     {
-        return "Application 'MACHINE/WEBROOT/APPHOST/.*?' has shutdown.";
+        if (deploymentResult.DeploymentParameters.HostingModel == HostingModel.InProcess)
+        {
+            return "Application 'MACHINE/WEBROOT/APPHOST/.*?' has shutdown.";
+        }
+        else
+        {
+            return "Application '/LM/W3SVC/\\d+/ROOT' with physical root '.*?' shut down process with Id '.*?' listening on port '.*?'";
+        }
     }
 
     public static string ShutdownFileChange(IISDeploymentResult deploymentResult)
@@ -179,29 +200,29 @@ public class EventLogHelpers
 
     public static string InProcessThreadException(IISDeploymentResult deploymentResult, string reason)
     {
-        return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed exception{reason}";
+        return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed exception{reason}";
     }
 
     public static string InProcessThreadExit(IISDeploymentResult deploymentResult, string code)
     {
         if (DeployerSelector.HasNewHandler)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Please check the stderr logs for more information.";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Please check the stderr logs for more information.";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'.";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'.";
         }
     }
     public static string InProcessThreadExitStdOut(IISDeploymentResult deploymentResult, string code, string output)
     {
         if (DeployerSelector.HasNewHandler)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. First 30KB characters of captured stdout and stderr logs:\r\n{output}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. First 30KB characters of captured stdout and stderr logs:\r\n{output}";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'. Last 4KB characters of captured stdout and stderr logs:\r\n{output}";
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'. Last 4KB characters of captured stdout and stderr logs:\r\n{output}";
         }
     }
 
@@ -226,13 +247,13 @@ public class EventLogHelpers
     {
         if (DeployerSelector.HasNewShim)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
                 $"commandline '(.*)' with multiple retries. " +
                 $"Failed to bind to port '(.*)'. First 30KB characters of captured stdout and stderr logs from multiple retries:\r\n{output}";
         }
         else
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
+            return $"Application '/LM/W3SVC/\\d+/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
                 $"commandline '(.*)' with multiple retries. " +
                 $"The last try of listening port is '(.*)'. See previous warnings for details.";
         }

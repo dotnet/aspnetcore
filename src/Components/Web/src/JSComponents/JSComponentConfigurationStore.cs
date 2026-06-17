@@ -56,10 +56,7 @@ public sealed class JSComponentConfigurationStore
     {
         Add(componentType, identifier);
 
-        if (string.IsNullOrEmpty(javaScriptInitializer))
-        {
-            throw new ArgumentException($"'{nameof(javaScriptInitializer)}' cannot be null or empty.", nameof(javaScriptInitializer));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(javaScriptInitializer);
 
         // Since it has a JS initializer, prepare the metadata we'll supply to JS code
         if (!JSComponentIdentifiersByInitializer.TryGetValue(javaScriptInitializer, out var identifiersForInitializer))

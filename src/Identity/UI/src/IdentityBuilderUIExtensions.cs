@@ -59,7 +59,8 @@ public static class IdentityBuilderUIExtensions
         builder.Services.ConfigureOptions(
             typeof(IdentityDefaultUIConfigureOptions<>)
                 .MakeGenericType(builder.UserType));
-        builder.Services.TryAddTransient<IEmailSender, EmailSender>();
+        builder.Services.TryAddTransient<IEmailSender, NoOpEmailSender>();
+        builder.Services.TryAddTransient(typeof(IEmailSender<>), typeof(DefaultMessageEmailSender<>));
 
         return builder;
     }

@@ -56,7 +56,7 @@ public partial class ChallengeResult : ActionResult
     /// Initializes a new instance of <see cref="ChallengeResult"/> with the
     /// specified authentication scheme and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationScheme">The authentication schemes to challenge.</param>
+    /// <param name="authenticationScheme">The authentication scheme to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
     public ChallengeResult(string authenticationScheme, AuthenticationProperties? properties)
@@ -68,7 +68,7 @@ public partial class ChallengeResult : ActionResult
     /// Initializes a new instance of <see cref="ChallengeResult"/> with the
     /// specified authentication schemes and <paramref name="properties"/>.
     /// </summary>
-    /// <param name="authenticationSchemes">The authentication scheme to challenge.</param>
+    /// <param name="authenticationSchemes">The authentication schemes to challenge.</param>
     /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
     /// challenge.</param>
     public ChallengeResult(IList<string> authenticationSchemes, AuthenticationProperties? properties)
@@ -94,7 +94,7 @@ public partial class ChallengeResult : ActionResult
 
         var httpContext = context.HttpContext;
         var loggerFactory = httpContext.RequestServices.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger<ChallengeResult>();
+        var logger = loggerFactory.CreateLogger(typeof(ChallengeResult));
         Log.ChallengeResultExecuting(logger, AuthenticationSchemes);
 
         if (AuthenticationSchemes != null && AuthenticationSchemes.Count > 0)

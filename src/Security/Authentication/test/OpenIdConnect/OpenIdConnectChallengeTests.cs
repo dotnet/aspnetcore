@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Web;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -438,15 +441,15 @@ public class OpenIdConnectChallengeTests
         Assert.True(nonceCookie.Expires.HasValue);
         Assert.True(nonceCookie.Expires > DateTime.UtcNow);
         Assert.True(nonceCookie.HttpOnly);
-        Assert.Equal("/signin-oidc", nonceCookie.Path);
-        Assert.Equal("N", nonceCookie.Value);
+        Assert.Equal("/signin-oidc", nonceCookie.Path.AsSpan());
+        Assert.Equal("N", nonceCookie.Value.AsSpan());
         Assert.Equal(Net.Http.Headers.SameSiteMode.None, nonceCookie.SameSite);
 
         var correlationCookie = challengeCookies.Where(cookie => cookie.Name.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal)).Single();
         Assert.True(correlationCookie.Expires.HasValue);
         Assert.True(nonceCookie.Expires > DateTime.UtcNow);
         Assert.True(correlationCookie.HttpOnly);
-        Assert.Equal("/signin-oidc", correlationCookie.Path);
+        Assert.Equal("/signin-oidc", correlationCookie.Path.AsSpan());
         Assert.False(StringSegment.IsNullOrEmpty(correlationCookie.Value));
         Assert.Equal(Net.Http.Headers.SameSiteMode.None, correlationCookie.SameSite);
 
@@ -669,5 +672,328 @@ public class OpenIdConnectChallengeTests
         Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
         settings.ValidateChallengeRedirect(res.Headers.Location);
         Assert.Contains("max_age=1234", res.Headers.Location.Query);
+    }
+
+    [Fact]
+    public async Task Challenge_WithAdditionalAuthorizationParameters()
+    {
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.Authority = TestServerBuilder.DefaultAuthority;
+            opt.AdditionalAuthorizationParameters.Add("prompt", "login");
+            opt.AdditionalAuthorizationParameters.Add("audience", "https://api.example.com");
+        });
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(TestServerBuilder.TestHost + TestServerBuilder.ChallengeWithProperties);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+        settings.ValidateChallengeRedirect(res.Headers.Location);
+        Assert.Contains("prompt=login&audience=https%3A%2F%2Fapi.example.com", res.Headers.Location.Query);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+
+        // We should be redirected with a request_uri and client_id, as per spec
+        Assert.Contains("request_uri=my_reference_value", res.Headers.Location.Query);
+        Assert.Contains("client_id=Test%20Id", res.Headers.Location.Query);
+
+        // The request_uri takes the place of all the other usual parameters
+        Assert.DoesNotContain("redirect_uri", res.Headers.Location.Query);
+        Assert.DoesNotContain("scope", res.Headers.Location.Query);
+        Assert.DoesNotContain("client_secret", res.Headers.Location.Query);
+
+        Assert.Contains("redirect_uri", mockBackchannel.PushedParameters);
+        Assert.Contains("scope", mockBackchannel.PushedParameters);
+        Assert.Contains("client_secret", mockBackchannel.PushedParameters);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_RequiredByOptions_EndpointMissingInDiscovery()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Require;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+
+            // We are NOT setting the endpoint (as if the disco document didn't contain it)
+            //opt.Configuration.PushedAuthorizationRequestEndpoint;
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
+        Assert.Equal("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.", exception.Message);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_DisabledByOptions_RequiredInDiscovery()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+
+            opt.Configuration.RequirePushedAuthorizationRequests = true;
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
+        Assert.Equal("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.", exception.Message);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_Skipped()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                ctx.SkipPush();
+                return Task.CompletedTask;
+            };
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+
+        // We didn't push, so we don't have a request_uri, and the mock didn't capture any values
+        Assert.DoesNotContain("request_uri=my_reference_value", res.Headers.Location.Query);
+        Assert.Empty(mockBackchannel.PushedParameters);
+
+        // All the usual parameters are present
+        Assert.Contains("redirect_uri", res.Headers.Location.Query);
+        Assert.Contains("scope", res.Headers.Location.Query);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_Handled()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var eventProvidedRequestUri = "request_uri_from_event";
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                ctx.HandlePush(eventProvidedRequestUri);
+                return Task.CompletedTask;
+            };
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+
+        Assert.Contains("request_uri=request_uri_from_event", res.Headers.Location.Query);
+        Assert.Empty(mockBackchannel.PushedParameters);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorization_HandleClientAuthentication()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+            opt.ClientSecret = "secret";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                ctx.HandleClientAuthentication();
+                return Task.CompletedTask;
+            };
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+
+        // No secret is set, since the event handled it
+        Assert.DoesNotContain("scope", res.Headers.Location.Query);
+        Assert.DoesNotContain("client_secret", mockBackchannel.PushedParameters);
+    }
+
+    [Fact]
+    public async Task Challenge_WithPushedAuthorizationAndAdditionalParameters()
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+
+            opt.PushedAuthorizationBehavior = PushedAuthorizationBehavior.UseIfAvailable;
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
+
+            opt.AdditionalAuthorizationParameters.Add("prompt", "login"); // This should get pushed too, so we don't expect to see it in the authorize redirect.
+
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        var transaction = await server.SendAsync(ChallengeEndpoint);
+
+        var res = transaction.Response;
+
+        Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+
+        // We should be redirected with a request_uri and client_id, as per spec
+        Assert.Contains("request_uri=my_reference_value", res.Headers.Location.Query);
+        Assert.Contains("client_id=Test%20Id", res.Headers.Location.Query);
+
+        // The request_uri takes the place of all the other usual parameters
+        Assert.DoesNotContain("prompt", res.Headers.Location.Query);
+
+        Assert.Equal("login", mockBackchannel.PushedParameters["prompt"]);
+    }
+
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, false, true)]
+    [InlineData(false, true, true)]
+    public async Task Challenge_WithPushedAuthorization_MultipleContextActionsAreNotAllowed(bool handlePush, bool skipPush, bool handleAuth)
+    {
+        var mockBackchannel = new ParMockBackchannel();
+        var settings = new TestSettings(opt =>
+        {
+            opt.ClientId = "Test Id";
+
+            // Instead of using discovery, this test hard codes the configuration that disco would retrieve.
+            // This makes it easier to manipulate the discovery results
+            opt.Configuration = new OpenIdConnectConfiguration();
+            opt.Configuration.AuthorizationEndpoint = "https://testauthority/authorize";
+            opt.Configuration.PushedAuthorizationRequestEndpoint = "https://testauthority/par";
+
+            opt.Events.OnPushAuthorization = ctx =>
+            {
+                if (handlePush)
+                {
+                    ctx.HandlePush("some request uri");
+                }
+                if (skipPush)
+                {
+                    ctx.SkipPush();
+                }
+                if (handleAuth)
+                {
+                    ctx.HandleClientAuthentication();
+                }
+                return Task.CompletedTask;
+            };
+
+        }, mockBackchannel);
+
+        var server = settings.CreateTestServer();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
+    }
+}
+
+class ParMockBackchannel : HttpMessageHandler
+{
+    public IDictionary<string, string> PushedParameters { get; set; } = new Dictionary<string, string>();
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (string.Equals("/tokens", request.RequestUri.AbsolutePath, StringComparison.Ordinal))
+        {
+            return new HttpResponseMessage()
+            {
+                Content =
+                new StringContent("{ \"id_token\": \"my_id_token\", \"access_token\": \"my_access_token\" }", Encoding.ASCII, "application/json")
+            };
+        }
+        if (string.Equals("/user", request.RequestUri.AbsolutePath, StringComparison.Ordinal))
+        {
+            return new HttpResponseMessage() { Content = new StringContent("{ }", Encoding.ASCII, "application/json") };
+        }
+        if (string.Equals("/par", request.RequestUri.AbsolutePath, StringComparison.Ordinal))
+        {
+            var content = await request.Content.ReadAsStringAsync();
+            var query = HttpUtility.ParseQueryString(content);
+            foreach(string key in query)
+            {
+                PushedParameters[key] = query[key];
+            }
+            return new HttpResponseMessage() { Content = new StringContent("{ \"request_uri\": \"my_reference_value\", \"expires_in\": 60}", Encoding.ASCII, "application/json") };
+        }
+
+        throw new NotImplementedException(request.RequestUri.ToString());
     }
 }

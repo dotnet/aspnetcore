@@ -1,10 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Linq;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -14,23 +22,81 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 /// </summary>
 internal class SSRRenderModeBoundary : IComponent
 {
+    private static readonly ConcurrentDictionary<Type, string> _componentTypeNameHashCache = new();
+
+    [DynamicallyAccessedMembers(Component)]
     private readonly Type _componentType;
-    private readonly IComponentRenderMode _renderMode;
     private readonly bool _prerender;
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
+    private Dictionary<string, RenderFragmentCapture>? _topLevelCaptures;
+    private ComponentMarkerKey? _markerKey;
+    private readonly HttpContext _httpContext;
+    private ILogger? _renderFragmentSerializationLogger;
 
-    public SSRRenderModeBoundary(Type componentType, IComponentRenderMode renderMode)
+    public IComponentRenderMode RenderMode { get; }
+
+    public SSRRenderModeBoundary(
+        HttpContext httpContext,
+        [DynamicallyAccessedMembers(Component)] Type componentType,
+        IComponentRenderMode renderMode)
     {
+        AssertRenderModeIsConfigured(httpContext, componentType, renderMode);
+
+        _httpContext = httpContext;
         _componentType = componentType;
-        _renderMode = renderMode;
+        RenderMode = renderMode;
         _prerender = renderMode switch
         {
-            ServerRenderMode mode => mode.Prerender,
-            WebAssemblyRenderMode mode => mode.Prerender,
-            AutoRenderMode mode => mode.Prerender,
+            InteractiveServerRenderMode mode => mode.Prerender,
+            InteractiveWebAssemblyRenderMode mode => mode.Prerender,
+            InteractiveAutoRenderMode mode => mode.Prerender,
             _ => throw new ArgumentException($"Server-side rendering does not support the render mode '{renderMode}'.", nameof(renderMode))
         };
+    }
+
+    private static void AssertRenderModeIsConfigured(HttpContext httpContext, Type componentType, IComponentRenderMode renderMode)
+    {
+        var configuredRenderModesMetadata = httpContext.GetEndpoint()?.Metadata.GetMetadata<ConfiguredRenderModesMetadata>();
+        if (configuredRenderModesMetadata is null)
+        {
+            // This is not a Razor Components endpoint. It might be that the app is using RazorComponentResult,
+            // or perhaps something else has changed the endpoint dynamically. In this case we don't know how
+            // the app is configured so we just proceed and allow any errors to happen if the client-side code
+            // later tries to reach endpoints that aren't mapped.
+            return;
+        }
+
+        var configuredModes = configuredRenderModesMetadata.ConfiguredRenderModes;
+
+        // We have to allow for specified rendermodes being subclases of the known types
+        if (renderMode is InteractiveServerRenderMode || renderMode is InteractiveAutoRenderMode)
+        {
+            AssertRenderModeIsConfigured<InteractiveServerRenderMode>(componentType, renderMode, configuredModes, "AddInteractiveServerRenderMode");
+        }
+
+        if (renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode)
+        {
+            AssertRenderModeIsConfigured<InteractiveWebAssemblyRenderMode>(componentType, renderMode, configuredModes, "AddInteractiveWebAssemblyRenderMode");
+        }
+    }
+
+    private static void AssertRenderModeIsConfigured<TRequiredMode>(Type componentType, IComponentRenderMode specifiedMode, IComponentRenderMode[] configuredModes, string expectedCall) where TRequiredMode : IComponentRenderMode
+    {
+        foreach (var configuredMode in configuredModes)
+        {
+            // We have to allow for configured rendermodes being subclases of the known types
+            if (configuredMode is TRequiredMode)
+            {
+                return;
+            }
+        }
+
+        throw new InvalidOperationException($"A component of type '{componentType}' has render mode '{specifiedMode.GetType().Name}', " +
+            $"but the required endpoints are not mapped on the server. When calling " +
+            $"'{nameof(RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents)}', add a call to " +
+            $"'{expectedCall}'. For example, " +
+            $"'builder.{nameof(RazorComponentsEndpointRouteBuilderExtensions.MapRazorComponents)}<...>.{expectedCall}()'");
     }
 
     public void Attach(RenderHandle renderHandle)
@@ -44,12 +110,76 @@ internal class SSRRenderModeBoundary : IComponent
         // call stack because the underlying buffer may get reused. This is enforced through a runtime check.
         _latestParameters = parameters.ToDictionary();
 
+        ValidateParameters(_latestParameters);
+
+        if (_prerender)
+        {
+            // Replace each top-level RenderFragment parameter with a capture wrapper
+            // so that when the component invokes the fragment during prerendering,
+            // the output frames are captured for later serialization.
+            var parametersDict = (Dictionary<string, object?>)_latestParameters;
+            foreach (var name in parametersDict.Keys.ToArray())
+            {
+                if (parametersDict[name] is RenderFragment rf)
+                {
+                    var capture = new RenderFragmentCapture(rf);
+                    _topLevelCaptures ??= new();
+                    _topLevelCaptures[name] = capture;
+                    parametersDict[name] = (RenderFragment)capture.Invoke;
+                }
+            }
+        }
+
+        if (RenderMode is InteractiveWebAssemblyRenderMode)
+        {
+            // Preload WebAssembly assets when using WebAssembly (not Auto) mode
+            PreloadWebAssemblyAssets();
+        }
+
         if (_prerender)
         {
             _renderHandle.Render(Prerender);
         }
 
         return Task.CompletedTask;
+    }
+
+    private void PreloadWebAssemblyAssets()
+    {
+        if (EndpointHtmlRenderer.IsProgressivelyEnhancedNavigation(_httpContext.Request))
+        {
+            return;
+        }
+
+        var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
+        if (preloads != null && preloads.TryGetAssets("webassembly", out var preloadAssets))
+        {
+            var service = _httpContext.RequestServices.GetRequiredService<ResourcePreloadService>();
+            service.Preload(preloadAssets);
+        }
+    }
+
+    private void ValidateParameters(IReadOnlyDictionary<string, object?> latestParameters)
+    {
+        foreach (var (name, value) in latestParameters)
+        {
+            // There are many other things we can't serialize too, but give special errors for Delegate because
+            // it may be a common mistake to try passing ChildContent when crossing rendermode boundaries.
+            if (value is Delegate)
+            {
+                var valueType = value.GetType();
+                if (valueType.IsGenericType && valueType.GetGenericTypeDefinition() == typeof(RenderFragment<>))
+                {
+                    throw new InvalidOperationException($"Cannot pass RenderFragment<T> parameter '{name}' to component '{_componentType.Name}' with rendermode '{RenderMode.GetType().Name}'. Templated content can't be passed across a rendermode boundary, because it is arbitrary code and cannot be serialized.");
+                }
+                else if (value is not RenderFragment)
+                {
+                    // Non-RenderFragment delegates (event handlers, etc.) can't cross render mode boundaries.
+                    // RenderFragment is allowed and will be serialized in ToMarker().
+                    throw new InvalidOperationException($"Cannot pass the parameter '{name}' to component '{_componentType.Name}' with rendermode '{RenderMode.GetType().Name}'. This is because the parameter is of the delegate type '{value.GetType()}', which is arbitrary code and cannot be serialized.");
+                }
+            }
+        }
     }
 
     private void Prerender(RenderTreeBuilder builder)
@@ -64,29 +194,105 @@ internal class SSRRenderModeBoundary : IComponent
         builder.CloseComponent();
     }
 
-    public (ServerComponentMarker?, WebAssemblyComponentMarker?) ToMarkers(HttpContext httpContext)
+    public ComponentMarker ToMarker(HttpContext httpContext, int sequence, object? componentKey)
     {
-        var parameters = _latestParameters is null
-            ? ParameterView.Empty
-            : ParameterView.FromDictionary((IDictionary<string, object?>)_latestParameters);
+        // We expect that the '@key' and sequence number shouldn't change for a given component instance,
+        // so we lazily compute the marker key once.
+        _markerKey ??= GenerateMarkerKey(sequence, componentKey);
 
-        ServerComponentMarker? serverMarker = null;
-        if (_renderMode is ServerRenderMode or AutoRenderMode)
+        // Build a serialization-safe copy of parameters, replacing RenderFragment delegates with DTOs
+        _renderFragmentSerializationLogger ??= httpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger(typeof(RenderFragmentSerializer));
+
+        var serializableParameters = _latestParameters is null
+            ? ParameterView.Empty
+            : BuildSerializableParameterView(_latestParameters, _renderFragmentSerializationLogger);
+
+        var marker = RenderMode switch
+        {
+            InteractiveServerRenderMode server => ComponentMarker.Create(ComponentMarker.ServerMarkerType, server.Prerender, _markerKey),
+            InteractiveWebAssemblyRenderMode webAssembly => ComponentMarker.Create(ComponentMarker.WebAssemblyMarkerType, webAssembly.Prerender, _markerKey),
+            InteractiveAutoRenderMode auto => ComponentMarker.Create(ComponentMarker.AutoMarkerType, auto.Prerender, _markerKey),
+            _ => throw new UnreachableException($"Unknown render mode {RenderMode.GetType().FullName}"),
+        };
+
+        if (RenderMode is InteractiveServerRenderMode or InteractiveAutoRenderMode)
         {
             // Lazy because we don't actually want to require a whole chain of services including Data Protection
             // to be required unless you actually use Server render mode.
             var serverComponentSerializer = httpContext.RequestServices.GetRequiredService<ServerComponentSerializer>();
 
             var invocationId = EndpointHtmlRenderer.GetOrCreateInvocationId(httpContext);
-            serverMarker = serverComponentSerializer.SerializeInvocation(invocationId, _componentType, parameters, _prerender);
+            serverComponentSerializer.SerializeInvocation(ref marker, invocationId, _componentType, serializableParameters);
         }
 
-        WebAssemblyComponentMarker? webAssemblyMarker = null;
-        if (_renderMode is WebAssemblyRenderMode or AutoRenderMode)
+        if (RenderMode is InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode)
         {
-            webAssemblyMarker = WebAssemblyComponentSerializer.SerializeInvocation(_componentType, parameters, _prerender);
+            WebAssemblyComponentSerializer.SerializeInvocation(ref marker, _componentType, serializableParameters);
         }
 
-        return (serverMarker, webAssemblyMarker);
+        return marker;
+    }
+
+    private ParameterView BuildSerializableParameterView(
+        IReadOnlyDictionary<string, object?> latestParameters,
+        ILogger logger)
+    {
+        var dict = new Dictionary<string, object?>(latestParameters.Count);
+        foreach (var (name, value) in latestParameters)
+        {
+            if (value is RenderFragment)
+            {
+                if (_topLevelCaptures is null || !_topLevelCaptures.TryGetValue(name, out var capture))
+                {
+                    // If we didn't wrap the RenderFragment in a capture, it means prerendering is disabled.
+                    // If the capture is null, then fragment was conditionally rendered and didn't execute. In either case we can't serialize it.
+                    throw new InvalidOperationException(
+                        $"Cannot serialize RenderFragment parameter '{name}' for component '{_componentType.Name}', because the RenderFragment was not executed. It can be due to disabled prerendering or conditional rendering.");
+                }
+
+                dict[name] = new SerializedRenderFragment
+                {
+                    Nodes = RenderFragmentSerializer.SerializeFrames(capture, logger, _componentType.Name)
+                };
+            }
+            else
+            {
+                dict[name] = value;
+            }
+        }
+
+        return ParameterView.FromDictionary(dict);
+    }
+
+    private ComponentMarkerKey GenerateMarkerKey(int sequence, object? componentKey)
+    {
+        var componentTypeNameHash = _componentTypeNameHashCache.GetOrAdd(_componentType, TypeNameHash.Compute);
+        var sequenceString = sequence.ToString(CultureInfo.InvariantCulture);
+
+        var locationHash = $"{componentTypeNameHash}:{sequenceString}";
+        var formattedComponentKey = componentKey switch
+        {
+            string str => str,
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => string.Empty
+        };
+
+        return new()
+        {
+            LocationHash = locationHash,
+            FormattedComponentKey = formattedComponentKey,
+        };
+    }
+
+    /// <summary>
+    /// Gets the ComponentMarkerKey for this boundary if it has been computed.
+    /// This is used for state persistence across render modes.
+    /// </summary>
+    /// <returns>The ComponentMarkerKey if available, null otherwise.</returns>
+    internal ComponentMarkerKey GetComponentMarkerKey(int sequence, object? componentKey)
+    {
+        return _markerKey ??= GenerateMarkerKey(sequence, componentKey);
     }
 }

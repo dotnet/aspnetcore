@@ -1,2 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Diagnostics.IStatusCodeReExecuteFeature.OriginalStatusCode.get -> int

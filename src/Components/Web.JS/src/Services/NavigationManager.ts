@@ -2,18 +2,25 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import '@microsoft/dotnet-js-interop';
-import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
+import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { handleClickForNavigationInterception, hasInteractiveRouter, isWithinBaseUriSpace, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { WebRendererId } from '../Rendering/WebRendererId';
+import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
+import { IBlazor } from '../GlobalExports';
 
 let hasRegisteredNavigationEventListeners = false;
-let hasLocationChangingEventListeners = false;
 let currentHistoryIndex = 0;
 let currentLocationChangingCallId = 0;
 
-// Will be initialized once someone registers
-let notifyLocationChangedCallback: ((uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
-let notifyLocationChangingCallback: ((callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>) | null = null;
+type NavigationCallbacks = {
+  rendererId: WebRendererId;
+  hasLocationChangingEventListeners: boolean;
+  locationChanged(uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
+  locationChanging(callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void>;
+};
+
+const navigationCallbacks = new Map<WebRendererId, NavigationCallbacks>();
 
 let popStateCallback: ((state: PopStateEvent) => Promise<void> | void) = onBrowserInitiatedPopState;
 let resolveCurrentNavigation: ((shouldContinueNavigation: boolean) => void) | null = null;
@@ -25,17 +32,23 @@ export const internalFunctions = {
   setHasLocationChangingListeners,
   endLocationChanging,
   navigateTo: navigateToFromDotNet,
+  refresh,
   getBaseURI: (): string => document.baseURI,
   getLocationHref: (): string => location.href,
   scrollToElement,
 };
 
 function listenForNavigationEvents(
+  rendererId: WebRendererId,
   locationChangedCallback: (uri: string, state: string | undefined, intercepted: boolean) => Promise<void>,
   locationChangingCallback: (callId: number, uri: string, state: string | undefined, intercepted: boolean) => Promise<void>
 ): void {
-  notifyLocationChangedCallback = locationChangedCallback;
-  notifyLocationChangingCallback = locationChangingCallback;
+  navigationCallbacks.set(rendererId, {
+    rendererId,
+    hasLocationChangingEventListeners: false,
+    locationChanged: locationChangedCallback,
+    locationChanging: locationChangingCallback,
+  });
 
   if (hasRegisteredNavigationEventListeners) {
     return;
@@ -44,22 +57,20 @@ function listenForNavigationEvents(
   hasRegisteredNavigationEventListeners = true;
   window.addEventListener('popstate', onPopState);
   currentHistoryIndex = history.state?._index ?? 0;
+
+  attachEnhancedNavigationListener((internalDestinationHref, interceptedLink) => {
+    notifyLocationChanged(interceptedLink, internalDestinationHref);
+  });
 }
 
-function setHasLocationChangingListeners(hasListeners: boolean) {
-  hasLocationChangingEventListeners = hasListeners;
-}
-
-export function scrollToElement(identifier: string): boolean {
-  const element = document.getElementById(identifier);
-
-  if (element) {
-    element.scrollIntoView();
-    return true;
+function setHasLocationChangingListeners(rendererId: WebRendererId, hasListeners: boolean) {
+  const callbacks = navigationCallbacks.get(rendererId);
+  if (!callbacks) {
+    throw new Error(`Renderer with ID '${rendererId}' is not listening for navigation events`);
   }
-
-  return false;
+  callbacks.hasLocationChangingEventListeners = hasListeners;
 }
+
 
 export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   // We need to respond to clicks on <a> elements *after* the EventDelegator has finished
@@ -76,21 +87,13 @@ export function attachToEventDelegator(eventDelegator: EventDelegator): void {
   });
 }
 
-function isSamePageWithHash(absoluteHref: string): boolean {
-  const hashIndex = absoluteHref.indexOf('#');
-  return hashIndex > -1 && location.href.replace(location.hash, '') === absoluteHref.substring(0, hashIndex);
-}
 
-function performScrollToElementOnTheSamePage(absoluteHref : string, replace: boolean, state: string | undefined = undefined): void {
-  saveToBrowserHistory(absoluteHref, replace, state);
-
-  const hashIndex = absoluteHref.indexOf('#');
-  if (hashIndex === absoluteHref.length - 1) {
-    return;
+function refresh(forceReload: boolean): void {
+  if (!forceReload && hasProgrammaticEnhancedNavigationHandler()) {
+    performProgrammaticEnhancedNavigation(location.href, /* replace */ true);
+  } else {
+    location.reload();
   }
-
-  const identifier = absoluteHref.substring(hashIndex + 1);
-  scrollToElement(identifier);
 }
 
 // For back-compat, we need to accept multiple overloads
@@ -114,14 +117,21 @@ function navigateToFromDotNet(uri: string, options: NavigationOptions): void {
 
 function navigateToCore(uri: string, options: NavigationOptions, skipLocationChangingCallback = false): void {
   const absoluteUri = toAbsoluteUri(uri);
+  const pageLoadMechanism = currentPageLoadMechanism();
 
-  if (!options.forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
-  } else {
+  if (options.forceLoad || !isWithinBaseUriSpace(absoluteUri) || pageLoadMechanism === 'serverside-fullpageload') {
     // For external navigation, we work in terms of the originally-supplied uri string,
     // not the computed absoluteUri. This is in case there are some special URI formats
     // we're unable to translate into absolute URIs.
     performExternalNavigation(uri, options.replaceHistoryEntry);
+  } else if (pageLoadMechanism === 'clientside-router') {
+    performInternalNavigation(absoluteUri, false, options.replaceHistoryEntry, options.historyEntryState, skipLocationChangingCallback);
+  } else if (pageLoadMechanism === 'serverside-enhanced') {
+    performProgrammaticEnhancedNavigation(absoluteUri, options.replaceHistoryEntry);
+  } else {
+    // Force a compile-time error if some other case needs to be handled in the future
+    const unreachable: never = pageLoadMechanism;
+    throw new Error(`Unsupported page load mechanism: ${unreachable}`);
   }
 }
 
@@ -144,13 +154,15 @@ function performExternalNavigation(uri: string, replace: boolean) {
 async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
   ignorePendingNavigation();
 
-  if (isSamePageWithHash(absoluteInternalHref)) {
-    performScrollToElementOnTheSamePage(absoluteInternalHref, replace, state);
+  if (isSamePageWithHash(location.href, absoluteInternalHref)) {
+    saveToBrowserHistory(absoluteInternalHref, replace, state);
+    performScrollToElementOnTheSamePage(absoluteInternalHref);
     return;
   }
 
-  if (!skipLocationChangingCallback && hasLocationChangingEventListeners) {
-    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink);
+  const callbacks = getInteractiveRouterNavigationCallbacks();
+  if (!skipLocationChangingCallback && callbacks?.hasLocationChangingEventListeners) {
+    const shouldContinueNavigation = await notifyLocationChanging(absoluteInternalHref, state, interceptedLink, callbacks);
     if (!shouldContinueNavigation) {
       return;
     }
@@ -161,7 +173,9 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   // position, so reset it.
   // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
-  resetScrollAfterNextBatch();
+  if (!isForSamePath(absoluteInternalHref, location.href)) {
+    scheduleScrollReset(ScrollResetSchedule.AfterBatch);
+  }
 
   saveToBrowserHistory(absoluteInternalHref, replace, state);
 
@@ -203,18 +217,12 @@ function ignorePendingNavigation() {
   }
 }
 
-function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean): Promise<boolean> {
+function notifyLocationChanging(uri: string, state: string | undefined, intercepted: boolean, callbacks: NavigationCallbacks): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     ignorePendingNavigation();
-
-    if (!notifyLocationChangingCallback) {
-      resolve(false);
-      return;
-    }
-
     currentLocationChangingCallId++;
     resolveCurrentNavigation = resolve;
-    notifyLocationChangingCallback(currentLocationChangingCallId, uri, state, intercepted);
+    callbacks.locationChanging(currentLocationChangingCallId, uri, state, intercepted);
   });
 }
 
@@ -228,7 +236,8 @@ function endLocationChanging(callId: number, shouldContinueNavigation: boolean) 
 async function onBrowserInitiatedPopState(state: PopStateEvent) {
   ignorePendingNavigation();
 
-  if (hasLocationChangingEventListeners) {
+  const callbacks = getInteractiveRouterNavigationCallbacks();
+  if (callbacks?.hasLocationChangingEventListeners) {
     const index = state.state?._index ?? 0;
     const userState = state.state?.userState;
     const delta = index - currentHistoryIndex;
@@ -237,7 +246,7 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
     // Temporarily revert the navigation until we confirm if the navigation should continue.
     await navigateHistoryWithoutPopStateCallback(-delta);
 
-    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false);
+    const shouldContinueNavigation = await notifyLocationChanging(uri, userState, false, callbacks);
     if (!shouldContinueNavigation) {
       return;
     }
@@ -245,26 +254,60 @@ async function onBrowserInitiatedPopState(state: PopStateEvent) {
     await navigateHistoryWithoutPopStateCallback(delta);
   }
 
-  await notifyLocationChanged(false);
+  // We don't know if popstate was triggered for a navigation that can be handled by the client-side router,
+  // so we treat it as a intercepted link to be safe.
+  await notifyLocationChanged(/* interceptedLink */ true);
 }
 
-async function notifyLocationChanged(interceptedLink: boolean) {
-  if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, history.state?.userState, interceptedLink);
-  }
+async function notifyLocationChanged(interceptedLink: boolean, internalDestinationHref?: string) {
+  const uri = internalDestinationHref ?? location.href;
+
+  await Promise.all(Array.from(navigationCallbacks, async ([rendererId, callbacks]) => {
+    if (isRendererAttached(rendererId)) {
+      await callbacks.locationChanged(uri, history.state?.userState, interceptedLink);
+    }
+  }));
 }
 
 async function onPopState(state: PopStateEvent) {
-  if (popStateCallback) {
+  if (popStateCallback && currentPageLoadMechanism() !== 'serverside-enhanced') {
     await popStateCallback(state);
   }
 
   currentHistoryIndex = history.state?._index ?? 0;
 }
 
+function getInteractiveRouterNavigationCallbacks(): NavigationCallbacks | undefined {
+  const interactiveRouterRendererId = getInteractiveRouterRendererId();
+  if (interactiveRouterRendererId === undefined) {
+    return undefined;
+  }
+
+  return navigationCallbacks.get(interactiveRouterRendererId);
+}
+
+function currentPageLoadMechanism(): PageLoadMechanism {
+  if (hasInteractiveRouter()) {
+    return 'clientside-router';
+  } else if (hasProgrammaticEnhancedNavigationHandler()) {
+    return 'serverside-enhanced';
+  } else {
+    // For back-compat, in blazor.server.js or blazor.webassembly.js, we always behave as if there's an interactive
+    // router even if there isn't one attached. This preserves a niche case where people may call Blazor.navigateTo
+    // without a router and expect to receive a notification on the .NET side but no page load occurs.
+    // In blazor.web.js, we explicitly recognize the case where you have neither an interactive nor enhanced SSR router
+    // attached, and then handle Blazor.navigateTo by doing a full page load because that's more useful (issue #51636).
+    const isBlazorWeb = (window['Blazor'] as IBlazor)._internal.isBlazorWeb;
+    return isBlazorWeb ? 'serverside-fullpageload' : 'clientside-router';
+  }
+}
+
+type PageLoadMechanism = 'clientside-router' | 'serverside-enhanced' | 'serverside-fullpageload';
+
 // Keep in sync with Components/src/NavigationOptions.cs
 export interface NavigationOptions {
   forceLoad: boolean;
   replaceHistoryEntry: boolean;
   historyEntryState?: string;
+  relativeToCurrentUri?: boolean;
 }

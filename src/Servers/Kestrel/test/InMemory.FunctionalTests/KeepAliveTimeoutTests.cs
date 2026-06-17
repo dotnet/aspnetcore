@@ -1,17 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipelines;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
-using Microsoft.AspNetCore.Testing;
-using Xunit;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests;
 
@@ -26,7 +24,10 @@ public class KeepAliveTimeoutTests : LoggedTest
     [Fact]
     public async Task ConnectionClosedWhenKeepAliveTimeoutExpires()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -42,18 +43,23 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, m.Tags));
     }
 
     [Fact]
     public async Task ConnectionKeptAliveBetweenRequests()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -71,17 +77,22 @@ public class KeepAliveTimeoutTests : LoggedTest
                     await ReceiveResponse(connection, testContext);
 
                     // Max amount of time between requests that doesn't trigger a keep-alive timeout.
-                    testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval);
+                    testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
     public async Task ConnectionNotTimedOutWhileRequestBeingSent()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -105,7 +116,7 @@ public class KeepAliveTimeoutTests : LoggedTest
                         "a",
                         "");
 
-                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 
@@ -116,12 +127,17 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
     private async Task ConnectionNotTimedOutWhileAppIsRunning()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var cts = new CancellationTokenSource();
 
         await using (var server = CreateServer(testContext, longRunningCt: cts.Token))
@@ -140,7 +156,7 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 
@@ -156,12 +172,17 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await ReceiveResponse(connection, testContext);
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     [Fact]
     private async Task ConnectionTimesOutWhenOpenedButNoRequestSent()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
 
         await using (var server = CreateServer(testContext))
         {
@@ -170,18 +191,23 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.TransportConnection.WaitForReadTask;
 
                 // Min amount of time between requests that triggers a keep-alive timeout.
-                testContext.MockTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
+                testContext.FakeTimeProvider.Advance(_keepAliveTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1));
                 testContext.ConnectionManager.OnHeartbeat();
 
                 await connection.WaitForConnectionClose();
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.Equal(ConnectionEndReason.KeepAliveTimeout, m.Tags));
     }
 
     [Fact]
     private async Task KeepAliveTimeoutDoesNotApplyToUpgradedConnections()
     {
-        var testContext = new TestServiceContext(LoggerFactory);
+        var testMeterFactory = new TestMeterFactory();
+        using var connectionDuration = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.connection.duration");
+
+        var testContext = new TestServiceContext(LoggerFactory, metrics: new KestrelMetrics(testMeterFactory));
         var cts = new CancellationTokenSource();
 
         await using (var server = CreateServer(testContext, upgradeCt: cts.Token))
@@ -205,7 +231,7 @@ public class KeepAliveTimeoutTests : LoggedTest
 
                 for (var totalDelay = TimeSpan.Zero; totalDelay < _longDelay; totalDelay += _shortDelay)
                 {
-                    testContext.MockTimeProvider.Advance(_shortDelay);
+                    testContext.FakeTimeProvider.Advance(_shortDelay);
                     testContext.ConnectionManager.OnHeartbeat();
                 }
 
@@ -214,6 +240,8 @@ public class KeepAliveTimeoutTests : LoggedTest
                 await connection.Receive("hello, world");
             }
         }
+
+        Assert.Collection(connectionDuration.GetMeasurementSnapshot(), m => MetricsAssert.NoError(m.Tags));
     }
 
     private TestServer CreateServer(TestServiceContext context, CancellationToken longRunningCt = default, CancellationToken upgradeCt = default)

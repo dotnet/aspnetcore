@@ -4,7 +4,9 @@
 using System.Collections.Immutable;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers.Infrastructure;
@@ -34,7 +36,55 @@ class Program
         Assert.Collection(diagnostics, d => Assert.Equal("TEST001", d.Id));
     }
 
+    [Theory]
+    [InlineData("ExternAssembly")]
+    [InlineData("SystemFoo")]
+    [InlineData("MicrosoftFoo")]
+    public async Task ResolveAllWellKnownTypes_ToleratesDuplicateTypeNames(string assemblyName)
+    {
+        // Arrange
+        var source = TestSource.Read(@"
+class Program
+{
+    static void Main()
+    {
+    }
+}
+");
+        var referenceSource = """
+  namespace Microsoft.AspNetCore.Builder
+  {
+      public static class EndpointRouteBuilderExtensions
+      {
+      }
+  }
+  """;
+        // Act
+        var project = TestDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, source.Source);
+        Stream assemblyStream = GetInMemoryAssemblyStreamForCode(referenceSource, assemblyName, project.MetadataReferences.ToArray());
+        project = project.AddMetadataReference(MetadataReference.CreateFromStream(assemblyStream));
+        var diagnostics = await Runner.GetDiagnosticsAsync(project);
+
+        // Assert
+        Assert.Collection(diagnostics, d => Assert.Equal("TEST001", d.Id));
+    }
+
+    private static Stream GetInMemoryAssemblyStreamForCode(string code, string assemblyName, params MetadataReference[] references)
+    {
+        var tree = CSharpSyntaxTree.ParseText(code);
+        var trees = ImmutableArray.Create(tree);
+        var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+        var compilation = CSharpCompilation.Create(assemblyName, trees).WithOptions(options);
+        compilation = compilation.AddReferences(references);
+        var stream = new MemoryStream();
+        var emitResult = compilation.Emit(stream);
+        stream.Seek(0, SeekOrigin.Begin);
+        return stream;
+    }
+
+#pragma warning disable RS1041 // Compiler extensions should be implemented in assemblies targeting netstandard2.0
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
+#pragma warning restore RS1041 // Compiler extensions should be implemented in assemblies targeting netstandard2.0
     private class TestAnalyzer : DiagnosticAnalyzer
     {
         internal static readonly DiagnosticDescriptor SuccessDescriptor = new(

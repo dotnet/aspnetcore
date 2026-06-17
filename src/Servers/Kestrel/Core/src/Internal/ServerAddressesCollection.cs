@@ -1,14 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
+[DebuggerDisplay("Count = {Count}")]
+[DebuggerTypeProxy(typeof(ServerAddressesCollectionDebugView))]
 internal sealed class ServerAddressesCollection : ICollection<string>
 {
     private readonly List<string> _addresses = new List<string>();
@@ -97,6 +98,7 @@ internal sealed class ServerAddressesCollection : ICollection<string>
     }
 
     [DebuggerDisplay("Count = {Count}")]
+    [DebuggerTypeProxy(typeof(PublicServerAddressesCollectionDebugView))]
     private sealed class PublicServerAddressesCollection : ICollection<string>
     {
         private readonly ServerAddressesCollection _addressesCollection;
@@ -167,5 +169,20 @@ internal sealed class ServerAddressesCollection : ICollection<string>
                 throw new InvalidOperationException($"{nameof(IServerAddressesFeature)}.{nameof(IServerAddressesFeature.Addresses)} cannot be modified after the server has started.");
             }
         }
+    }
+
+    private sealed class PublicServerAddressesCollectionDebugView(PublicServerAddressesCollection publicCollection)
+    {
+        private readonly PublicServerAddressesCollection _collection = publicCollection;
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public string[] Items => _collection.ToArray();
+    }
+
+    private sealed class ServerAddressesCollectionDebugView(ServerAddressesCollection collection)
+    {
+        private readonly ServerAddressesCollection _collection = collection;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public string[] Items => _collection.ToArray();
     }
 }

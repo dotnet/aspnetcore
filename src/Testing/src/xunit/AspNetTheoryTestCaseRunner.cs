@@ -8,7 +8,7 @@ using System.Threading;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Testing.xunit;
+namespace Microsoft.AspNetCore.InternalTesting.xunit;
 
 internal sealed class AspNetTheoryTestCaseRunner : XunitTheoryTestCaseRunner
 {

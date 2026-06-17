@@ -60,8 +60,7 @@ internal sealed class Http3PendingStream
 
                 if (!readableBuffer.IsEmpty)
                 {
-                    var value = VariableLengthIntegerHelper.GetInteger(readableBuffer, out consumed, out _);
-                    if (value != -1)
+                    if (VariableLengthIntegerHelper.TryGetInteger(readableBuffer, out consumed, out var value))
                     {
                         if (!advanceOn.HasValue || value == (long)advanceOn)
                         {

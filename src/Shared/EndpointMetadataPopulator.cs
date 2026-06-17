@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http;
 internal static class EndpointMetadataPopulator
 {
     private static readonly MethodInfo PopulateMetadataForParameterMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForParameter), BindingFlags.NonPublic | BindingFlags.Static)!;
-    private static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
+    internal static readonly MethodInfo PopulateMetadataForEndpointMethod = typeof(EndpointMetadataPopulator).GetMethod(nameof(PopulateMetadataForEndpoint), BindingFlags.NonPublic | BindingFlags.Static)!;
 
     public static void PopulateMetadata(MethodInfo methodInfo, EndpointBuilder builder, IEnumerable<ParameterInfo>? parameters = null)
     {
@@ -47,9 +47,9 @@ internal static class EndpointMetadataPopulator
 
         // Get metadata from return type
         var returnType = methodInfo.ReturnType;
-        if (AwaitableInfo.IsTypeAwaitable(returnType, out var awaitableInfo))
+        if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
-            returnType = awaitableInfo.ResultType;
+            returnType = coercedAwaitableInfo.AwaitableInfo.ResultType;
         }
 
         if (returnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(returnType))
