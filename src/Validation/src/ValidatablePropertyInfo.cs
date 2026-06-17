@@ -76,33 +76,36 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         var propertyValue = Property.GetValue(containingObject);
         var validationAttributes = GetValidationAttributes();
 
-        var clonedContext = context.Clone(withNewInitiator: this);
+        var hasAsync = HasAsyncAttribute(validationAttributes);
+        var potentiallyClonedContext = hasAsync
+            ? context.Clone(withNewInitiator: this)
+            : context;
 
         // Calculate and save the current path
         var originalPrefix = context.CurrentValidationPath;
 
         if (string.IsNullOrEmpty(originalPrefix))
         {
-            clonedContext.CurrentValidationPath = Name;
+            potentiallyClonedContext.CurrentValidationPath = Name;
         }
         else
         {
-            clonedContext.CurrentValidationPath = $"{originalPrefix}.{Name}";
+            potentiallyClonedContext.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        var displayName = DisplayNameInfo?.GetDisplayName(clonedContext, Name, DeclaringType) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(potentiallyClonedContext, Name, DeclaringType) ?? Name;
 
-        clonedContext.ValidationContext.DisplayName = displayName;
-        clonedContext.ValidationContext.MemberName = Name;
+        potentiallyClonedContext.ValidationContext.DisplayName = displayName;
+        potentiallyClonedContext.ValidationContext.MemberName = Name;
 
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, clonedContext.ValidationContext);
+            var result = _requiredAttribute.GetValidationResult(propertyValue, potentiallyClonedContext.ValidationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = clonedContext.ResolveAttributeErrorMessage(
+                var errorMessage = potentiallyClonedContext.ResolveAttributeErrorMessage(
                     memberName: Name,
                     displayName,
                     declaringType: DeclaringType,
@@ -114,11 +117,11 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                     var errorContext = new ValidationErrorContext()
                     {
                         Name = Name,
-                        Path = clonedContext.CurrentValidationPath,
+                        Path = potentiallyClonedContext.CurrentValidationPath,
                         Errors = [errorMessage],
                         Container = containingObject,
                     };
-                    clonedContext.AddValidationError(errorContext);
+                    potentiallyClonedContext.AddValidationError(errorContext);
                 }
 
                 return;
@@ -126,7 +129,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
 
         // Validate any other attributes
-        clonedContext.ValidationTasks.Add(ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, clonedContext, (Name, displayName, DeclaringType, containingObject),
+        var attributesValidationTask = ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, potentiallyClonedContext, (Name, displayName, DeclaringType, containingObject),
             static (context, result, attribute, state) =>
             {
                 var (name, displayName, declaringType, container) = state;
@@ -150,19 +153,30 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                     };
                     context.AddValidationError(errorContext);
                 }
-            }, cancellationToken));
+            }, cancellationToken);
+
+        if (attributesValidationTask.IsCompleted || !hasAsync)
+        {
+            attributesValidationTask.GetAwaiter().GetResult();
+        }
+        else
+        {
+            potentiallyClonedContext.ValidationTasks.Add(attributesValidationTask);
+        }
+
+        var validationOptions = potentiallyClonedContext.ValidationOptions;
 
         // Check if we've reached the maximum depth before validating complex properties
-        if (clonedContext.CurrentDepth >= clonedContext.ValidationOptions.MaxDepth)
+        if (potentiallyClonedContext.CurrentDepth >= validationOptions.MaxDepth)
         {
             throw new InvalidOperationException(
-                $"Maximum validation depth of {clonedContext.ValidationOptions.MaxDepth} exceeded at '{clonedContext.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
+                $"Maximum validation depth of {validationOptions.MaxDepth} exceeded at '{potentiallyClonedContext.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
         // Increment depth counter
-        clonedContext.CurrentDepth++;
+        potentiallyClonedContext.CurrentDepth++;
 
         try
         {
@@ -170,40 +184,73 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
             if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
             {
                 var index = 0;
-                var currentPrefix = clonedContext.CurrentValidationPath;
+                var currentPrefix = potentiallyClonedContext.CurrentValidationPath;
 
                 foreach (var item in enumerable)
                 {
-                    var clonedContextForEnumerable = clonedContext.Clone(withNewInitiator: null);
-                    clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
-
                     if (item != null)
                     {
                         var itemType = item.GetType();
-                        if (clonedContextForEnumerable.ValidationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            await validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
+                            if (validatableType is ValidatableTypeInfo builtInValidatableInfo &&
+                                builtInValidatableInfo.IsGuaranteedToBeSynchronous(item, validationOptions))
+                            {
+                                potentiallyClonedContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
+
+                                validatableType.ValidateAsync(item, potentiallyClonedContext, cancellationToken).GetAwaiter().GetResult();
+                            }
+                            else
+                            {
+                                var clonedContextForEnumerable = potentiallyClonedContext.Clone(withNewInitiator: null);
+                                clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
+
+                                await validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
+                            }
                         }
                     }
 
                     index++;
                 }
+
+                potentiallyClonedContext.CurrentValidationPath = currentPrefix;
             }
             else if (propertyValue != null)
             {
                 // Validate as a complex object
                 var valueType = propertyValue.GetType();
-                var clonedForComplexObject = clonedContext.Clone(withNewInitiator: null);
-                if (clonedForComplexObject.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                if (validationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
                 {
-                    await validatableType.ValidateAsync(propertyValue, clonedForComplexObject, cancellationToken);
+                    if (validatableType is ValidatableTypeInfo builtInValidatableInfo &&
+                        builtInValidatableInfo.IsGuaranteedToBeSynchronous(propertyValue, validationOptions))
+                    {
+                        builtInValidatableInfo.ValidateAsync(propertyValue, potentiallyClonedContext, cancellationToken).GetAwaiter().GetResult();
+                    }
+                    else
+                    {
+                        var clonedForComplexObject = potentiallyClonedContext.Clone(withNewInitiator: null);
+                        await validatableType.ValidateAsync(propertyValue, clonedForComplexObject, cancellationToken);
+                    }
                 }
             }
         }
         finally
         {
-            await Task.WhenAll(clonedContext.ValidationTasks);
+            await Task.WhenAll(potentiallyClonedContext.ValidationTasks);
         }
+    }
+
+    private static bool HasAsyncAttribute(ValidationAttribute[] validationAttributes)
+    {
+        foreach (var attr in validationAttributes)
+        {
+            if (attr is AsyncValidationAttribute)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal bool IsGuaranteedToBeSynchronous(object containingObject, ValidationOptions options)
