@@ -50,7 +50,7 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
 
             var eventCallbackFactoryType = context.Compilation.GetTypeByMetadataName(EventCallbackFactoryTypeName);
             var eventHandlerMethods = new ConcurrentDictionary<IMethodSymbol, byte>(SymbolEqualityComparer.Default);
-            var redundantCallLocations = new ConcurrentBag<Location>();
+            var redundantCallLocationsByMethod = new ConcurrentDictionary<IMethodSymbol, ImmutableArray<Location>>(SymbolEqualityComparer.Default);
 
             // collect event handler methods
             context.RegisterOperationAction(operationContext =>
@@ -82,11 +82,6 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                 var methodDeclaration = (MethodDeclarationSyntax)syntaxContext.Node;
 
                 if (syntaxContext.SemanticModel.GetDeclaredSymbol(methodDeclaration) is not IMethodSymbol methodSymbol)
-                {
-                    return;
-                }
-
-                if (!IsTargetMethod(methodSymbol, eventHandlerMethods))
                 {
                     return;
                 }
@@ -136,19 +131,27 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                foreach (var location in callLocations.Values)
-                {
-                    redundantCallLocations.Add(location);
-                }
+                redundantCallLocationsByMethod.TryAdd(methodSymbol, callLocations.Values.ToImmutableArray());
             }, Microsoft.CodeAnalysis.CSharp.SyntaxKind.MethodDeclaration);
 
             context.RegisterSymbolEndAction(endContext =>
             {
-                foreach (var location in redundantCallLocations)
+                foreach (var methodAndLocations in redundantCallLocationsByMethod)
                 {
-                    endContext.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.UnnecessaryStateHasChangedCall,
-                        location));
+                    var method = methodAndLocations.Key;
+                    var locations = methodAndLocations.Value;
+
+                    if (!IsTargetMethod(method, eventHandlerMethods))
+                    {
+                        continue;
+                    }
+
+                    foreach (var location in locations)
+                    {
+                        endContext.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.UnnecessaryStateHasChangedCall,
+                            location));
+                    }
                 }
             });
         }, SymbolKind.NamedType);
