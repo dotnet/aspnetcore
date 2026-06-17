@@ -754,6 +754,35 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ClosedShadowDOM_InternalInputs_StatePreservedOnlyWithMitigation(bool useMitigation)
+    {
+        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
+        Navigate($"/subdir/persistent-state/auto-pause-closed-shadow-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript("document.getElementById('closed-form').setValues('secret1', 'secret2')");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        var saved = js.ExecuteScript("return window.__savedClosedFormValues") as string;
+        if (useMitigation)
+        {
+            Assert.Equal("secret1,secret2", saved);
+        }
+        else
+        {
+            Assert.Null(saved);
+        }
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();
