@@ -15,8 +15,7 @@ export type ValidationContext = {
  * The result of a validator function.
  * - `success: true` means the field is valid.
  * - `success: false` means invalid; if `message` is provided it overrides the rule's
- *   default error message, otherwise the rule's own message (from `data-val-{rule}=...`)
- *   is used.
+ *   default error message, otherwise the rule's own message (from the ValidationRule definition) is used.
  */
 export type ValidationResult = { success: boolean; message?: string };
 
@@ -40,13 +39,11 @@ export interface ValidationOptions {
 
 /**
  * Public API for client-side form validation. Exposed as `Blazor.formValidation`
- * (when embedded in blazor.web.js) or `window.__aspnetValidation` (standalone bundle).
+ * when embedded in blazor.web.js.
  */
 export interface ValidationService {
   /** Registers a custom validator function for a given rule name (e.g., 'zipcode'). */
   addValidator(name: string, validator: Validator): void;
-  /** Scans the DOM (or a subtree) for validatable elements and registers them. */
-  scanRules(elementOrSelector?: ParentNode | string): void;
   /** Validates a single field element and updates its error display. */
   validateField(element: ValidatableElement): boolean;
   /** Validates all tracked fields in the form. Returns true if all fields are valid. */

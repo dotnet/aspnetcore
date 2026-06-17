@@ -30,6 +30,7 @@ import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { createValidationService, ValidationOptions } from './Validation';
+import { ClientValidationElementName } from './Validation/Adapters/BlazorAdapter';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -79,15 +80,11 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   enableFocusOnNavigate(jsEventRegistry);
 
-  // Client-side validation is initialized on demand: only when the page contains
-  // SSR-rendered form fields with data-val attributes. This avoids adding document-level
-  // event listeners in interactive-only apps that never use client-side validation.
+  // Client-side validation is initialized only when the page contains the
+  // SSR-rendered custom element bearing the client validation data.
+  // This avoids adding event listeners in interactive-only apps that never use client validation.
   jsEventRegistry.addEventListener('enhancedload', () => {
-    if (Blazor.formValidation) {
-      Blazor.formValidation.scanRules();
-    } else {
-      initFormValidationIfNeeded(options?.ssr?.formValidation);
-    }
+    initFormValidationIfNeeded(options?.ssr?.formValidation);
   });
 
   // Wait until the initial page response completes before activating interactive components.
@@ -168,15 +165,13 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
   callAfterStartedCallbacks(initializersPromise);
 }
 
-function initFormValidationIfNeeded(formValidation?: ValidationOptions): void {
+function initFormValidationIfNeeded(validationOptions?: ValidationOptions): void {
   if (Blazor.formValidation) {
     return;
   }
-  for (const form of Array.from(document.forms)) {
-    if (form.querySelector('[data-val="true"]')) {
-      Blazor.formValidation = createValidationService(formValidation);
-      return;
-    }
+
+  if (document.querySelector(ClientValidationElementName)) {
+    Blazor.formValidation = createValidationService(validationOptions);
   }
 }
 
