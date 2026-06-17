@@ -192,8 +192,15 @@ internal sealed partial class HttpConnectionDispatcher
             return;
         }
 
-        var newExpiration = authResult.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
         var newPrincipal = authResult.Principal ?? context.User;
+        if (HasWindowsIdentity(connection.User) || HasWindowsIdentity(newPrincipal))
+        {
+            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest,
+                "windows_identity_not_supported", "Auth refresh does not support WindowsIdentity-backed principals.");
+            return;
+        }
+
+        var newExpiration = GetAuthenticationExpiration(authResult, context.User);
 
         if (options.OnAuthRefresh is { } callback)
         {
@@ -227,9 +234,6 @@ internal sealed partial class HttpConnectionDispatcher
         {
             using var jsonWriter = new Utf8JsonWriter((IBufferWriter<byte>)writer);
             jsonWriter.WriteStartObject();
-            jsonWriter.WriteString("connectionId", connection.ConnectionId);
-            jsonWriter.WriteString("refreshedAt",
-                DateTimeOffset.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture));
             if (tokenLifetimeSeconds.HasValue)
             {
                 jsonWriter.WriteNumber("tokenLifetimeSeconds", tokenLifetimeSeconds.Value);
@@ -690,8 +694,10 @@ internal sealed partial class HttpConnectionDispatcher
         // If auth refresh is enabled, compute token lifetime from auth properties
         if (options.EnableAuthRefresh)
         {
-            var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
-            var expiresUtc = authenticateResultFeature?.AuthenticateResult?.Properties?.ExpiresUtc;
+            var authenticateResult = context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult;
+            var expiresUtc = authenticateResult is not null && !HasWindowsIdentity(authenticateResult.Principal ?? context.User)
+                ? authenticateResult.Properties?.ExpiresUtc
+                : null;
             if (expiresUtc.HasValue && expiresUtc.Value != DateTimeOffset.MaxValue)
             {
                 var ttl = expiresUtc.Value - DateTimeOffset.UtcNow;
@@ -948,8 +954,8 @@ internal sealed partial class HttpConnectionDispatcher
             // SafeHandles could race the application), so those connections keep the legacy behavior below.
             var authRefreshEligible = options.EnableAuthRefresh
                 && transportType == HttpTransportType.LongPolling
-                && newPrincipal.Identity is not WindowsIdentity
-                && currentUser.Identity is not WindowsIdentity;
+                && !HasWindowsIdentity(newPrincipal)
+                && !HasWindowsIdentity(currentUser);
 
             if (authRefreshEligible)
             {
@@ -1018,7 +1024,7 @@ internal sealed partial class HttpConnectionDispatcher
             // race the application trying to access the identity).
             if (transportType == HttpTransportType.LongPolling
                 && connection.HttpContext is { } pollContext
-                && context.User.Identity is not WindowsIdentity)
+                && !HasWindowsIdentity(context.User))
             {
                 pollContext.User = context.User;
             }
@@ -1050,7 +1056,9 @@ internal sealed partial class HttpConnectionDispatcher
         if (authenticateResultFeature is not null)
         {
             connection.AuthenticationExpiration =
-                authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
+                authenticateResultFeature.AuthenticateResult is { } authenticateResult
+                    ? GetAuthenticationExpiration(authenticateResult, context.User)
+                    : DateTimeOffset.MaxValue;
         }
     }
 
@@ -1064,7 +1072,21 @@ internal sealed partial class HttpConnectionDispatcher
             return connection.AuthenticationExpiration;
         }
 
-        return authenticateResultFeature.AuthenticateResult?.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
+        return authenticateResultFeature.AuthenticateResult is { } authenticateResult
+            ? GetAuthenticationExpiration(authenticateResult, context.User)
+            : DateTimeOffset.MaxValue;
+    }
+
+    private static DateTimeOffset GetAuthenticationExpiration(AuthenticateResult authenticateResult, ClaimsPrincipal fallbackPrincipal)
+    {
+        return HasWindowsIdentity(authenticateResult.Principal ?? fallbackPrincipal)
+            ? DateTimeOffset.MaxValue
+            : authenticateResult.Properties?.ExpiresUtc ?? DateTimeOffset.MaxValue;
+    }
+
+    private static bool HasWindowsIdentity(ClaimsPrincipal? user)
+    {
+        return user?.Identities.Any(static identity => identity is WindowsIdentity) == true;
     }
 
     private static void CloneUser(HttpContext newContext, HttpContext oldContext)

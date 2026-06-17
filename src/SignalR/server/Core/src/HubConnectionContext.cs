@@ -51,7 +51,7 @@ public partial class HubConnectionContext
     private TimeSpan _receivedMessageElapsed;
     private long _receivedMessageTick;
     private bool _useStatefulReconnect;
-    private HubCallerContext? _hubCallerContext;
+    private DefaultHubCallerContext? _hubCallerContext;
     private string? _userIdentifier;
     // Suppresses HubCallerContext snapshot publication while a lifetime manager rekeys UserIdentifier.
     // ApplyUserState publishes the refreshed user and identifier together after routing state is updated.
@@ -189,19 +189,29 @@ public partial class HubConnectionContext
             Volatile.Write(ref _userIdentifier, value);
             if (!Volatile.Read(ref _stagingUserStateUpdate))
             {
-                Volatile.Write(ref _hubCallerContext,
-                    new DefaultHubCallerContext(this, HubCallerContext.User ?? new ClaimsPrincipal(), value));
+                PublishHubCallerContext(new DefaultHubCallerContext(this, HubCallerContext.User ?? new ClaimsPrincipal(), value));
             }
         }
     }
 
-    private HubCallerContext InitializeHubCallerContext()
+    private DefaultHubCallerContext InitializeHubCallerContext()
     {
         var hubCallerContext = new DefaultHubCallerContext(
             this,
             _connectionContext.Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal(),
             UserIdentifier);
-        return Interlocked.CompareExchange(ref _hubCallerContext, hubCallerContext, null) ?? hubCallerContext;
+        var existing = Interlocked.CompareExchange(ref _hubCallerContext, hubCallerContext, null);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        return hubCallerContext;
+    }
+
+    private void PublishHubCallerContext(DefaultHubCallerContext hubCallerContext)
+    {
+        Interlocked.Exchange(ref _hubCallerContext, hubCallerContext);
     }
 
     internal string? GetUserIdentifier(ClaimsPrincipal user, IUserIdProvider userIdProvider)
@@ -226,7 +236,7 @@ public partial class HubConnectionContext
     internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier)
     {
         Volatile.Write(ref _userIdentifier, userIdentifier);
-        Volatile.Write(ref _hubCallerContext, new DefaultHubCallerContext(this, user, userIdentifier));
+        PublishHubCallerContext(new DefaultHubCallerContext(this, user, userIdentifier));
         Volatile.Write(ref _stagingUserStateUpdate, false);
     }
 
@@ -907,6 +917,7 @@ public partial class HubConnectionContext
         _messageBuffer?.Dispose();
         _closedRegistration.Dispose();
         _closedRequestedRegistration?.Dispose();
+        Interlocked.Exchange(ref _hubCallerContext, null);
 
         // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
         _streamTracker?.CompleteAll(new OperationCanceledException("The underlying connection was closed."));

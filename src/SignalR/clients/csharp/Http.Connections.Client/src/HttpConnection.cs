@@ -772,7 +772,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 #pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
         var responseBuffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
 #pragma warning restore CA2016
-        // Parse the simple JSON response: { "connectionId": "...", "tokenLifetimeSeconds": ... }
+        // Parse the simple JSON response: { "tokenLifetimeSeconds": ... }
         return ParseRefreshTokenLifetime(responseBuffer);
     }
 

@@ -172,8 +172,6 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal("application/json", context.Response.ContentType);
 
             var json = ReadJson(context.Response.Body);
-            Assert.Equal(connection.ConnectionId, json.Value<string>("connectionId"));
-            Assert.False(string.IsNullOrEmpty(json.Value<string>("refreshedAt")));
             var ttl = json.Value<int?>("tokenLifetimeSeconds");
             Assert.NotNull(ttl);
             Assert.InRange(ttl.Value, 1, 1801);
@@ -216,9 +214,46 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
             Assert.Null(json["tokenLifetimeSeconds"]);
-            Assert.Equal(connection.ConnectionId, json.Value<string>("connectionId"));
+            Assert.Empty(json.Properties());
             Assert.Equal(DateTimeOffset.MaxValue, connection.AuthenticationExpiration);
             Assert.Same(newUser, connection.User);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    public async Task RefreshRejectsWindowsIdentityPrincipal()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+            var originalUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.User = originalUser;
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            using var windowsIdentity = WindowsIdentity.GetAnonymous();
+            var newUser = new WindowsPrincipal(windowsIdentity);
+            var authProps = new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) };
+            var ticket = new AuthenticationTicket(newUser, authProps, "Test");
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+            var json = ReadJson(context.Response.Body);
+            Assert.Equal("windows_identity_not_supported", json.Value<string>("error"));
+            Assert.Same(originalUser, connection.User);
         }
     }
 
@@ -267,9 +302,7 @@ public partial class HttpConnectionDispatcherTests
             // stored expiration is truncated to the second. Allow headroom so the sub-second truncation
             // can't push this over the tolerance.
             Assert.Equal(newExpires, connection.AuthenticationExpiration, TimeSpan.FromSeconds(2));
-
             var json = ReadJson(context.Response.Body);
-            Assert.Equal(connection.ConnectionId, json.Value<string>("connectionId"));
             var ttl = json.Value<int?>("tokenLifetimeSeconds");
             Assert.NotNull(ttl);
             Assert.InRange(ttl.Value, 1, 1801);
@@ -465,6 +498,28 @@ public partial class HttpConnectionDispatcherTests
             var dispatcher = CreateDispatcher(manager, LoggerFactory);
             var context = BuildNegotiateContext(out var body);
             SetAuthenticateResultFeature(context, expiresUtc: null);
+
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { EnableAuthRefresh = true });
+
+            var response = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(body.ToArray()));
+            Assert.Null(response["tokenLifetimeSeconds"]);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+    public async Task NegotiateDoesNotSetTokenLifetimeSecondsForWindowsIdentity()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = BuildNegotiateContext(out var body);
+            using var windowsIdentity = WindowsIdentity.GetAnonymous();
+            var principal = new WindowsPrincipal(windowsIdentity);
+            var props = new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(30) };
+            var ticket = new AuthenticationTicket(principal, props, "Test");
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
 
             await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions { EnableAuthRefresh = true });
 
