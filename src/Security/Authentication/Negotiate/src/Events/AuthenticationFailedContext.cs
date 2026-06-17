@@ -13,7 +13,9 @@ public class AuthenticationFailedContext : RemoteAuthenticationContext<Negotiate
     /// <summary>
     /// Creates a <see cref="AuthenticationFailedContext"/>.
     /// </summary>
-    /// <inheritdoc />
+    /// <param name="context">The HTTP request context.</param>
+    /// <param name="scheme">The authentication scheme.</param>
+    /// <param name="options">The negotiate authentication options.</param>
     public AuthenticationFailedContext(
         HttpContext context,
         AuthenticationScheme scheme,

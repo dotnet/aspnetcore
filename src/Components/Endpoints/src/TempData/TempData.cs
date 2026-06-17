@@ -49,8 +49,9 @@ internal sealed class TempData : ITempData
 
     public object? Get(string key)
     {
+        var value = Data.GetValueOrDefault(key);
         _retainedKeys.Remove(key);
-        return Data.GetValueOrDefault(key);
+        return value;
     }
 
     public object? Peek(string key)
@@ -60,7 +61,7 @@ internal sealed class TempData : ITempData
 
     public void Keep()
     {
-        _retainedKeys.UnionWith(_data.Keys);
+        _retainedKeys.UnionWith(Data.Keys);
     }
 
     public void Keep(string key)
@@ -78,8 +79,9 @@ internal sealed class TempData : ITempData
 
     public bool Remove(string key)
     {
+        var removed = Data.Remove(key);
         _retainedKeys.Remove(key);
-        return Data.Remove(key);
+        return removed;
     }
 
     public IDictionary<string, object?> Save()
@@ -175,7 +177,7 @@ internal sealed class TempData : ITempData
         public TempDataEnumerator(TempData tempData)
         {
             _tempData = tempData;
-            _innerEnumerator = tempData._data.GetEnumerator();
+            _innerEnumerator = tempData.Data.GetEnumerator();
         }
 
         public KeyValuePair<string, object?> Current

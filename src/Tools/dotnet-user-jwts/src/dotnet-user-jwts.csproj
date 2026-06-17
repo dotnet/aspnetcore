@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
@@ -10,6 +11,16 @@
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PublishAot>true</PublishAot>
+    <RuntimeIdentifiers>$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
+    <!--
+      Enable control flow guard
+      https://github.com/dotnet/docs/blob/main/docs/core/deploying/native-aot/security.md#control-flow-guard
+    -->
+    <ControlFlowGuard>Guard</ControlFlowGuard>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,7 +39,6 @@
 
   <ItemGroup>
     <Reference Include="System.IdentityModel.Tokens.Jwt" />
-    <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
@@ -37,4 +47,5 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests" />
   </ItemGroup>
+
 </Project>

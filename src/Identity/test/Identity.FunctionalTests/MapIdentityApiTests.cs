@@ -772,7 +772,6 @@ public class MapIdentityApiTests : LoggedTest
         AssertOk(await client.PostAsJsonAsync("/identity/login", new { Email, Password }));
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54840")]
     [Fact]
     public async Task CanResetSharedKey()
     {
@@ -1411,7 +1410,7 @@ public class MapIdentityApiTests : LoggedTest
     private static string GetPasswordResetCode(TestEmail email)
     {
         // Update if we add more links to the email.
-        var confirmationMatch = Regex.Match(email.HtmlMessage, "code: (.*?)$");
+        var confirmationMatch = Regex.Match(email.HtmlMessage, "code: (.*?)(?:\\.|$)");
         Assert.True(confirmationMatch.Success);
         Assert.Equal(2, confirmationMatch.Groups.Count);
 

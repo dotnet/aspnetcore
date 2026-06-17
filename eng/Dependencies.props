@@ -68,6 +68,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.OpenApi" />
     <LatestPackageReference Include="Microsoft.OpenApi.YamlReader" />
     <LatestPackageReference Include="System.Buffers" />
@@ -117,6 +118,11 @@ may be turned into `<PackageReference>` items in projects.
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.freebsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.openbsd-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.openbsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.illumos-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.solaris-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.haiku-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Runtime.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true'" />
 
     <!-- Crossgen2 compiler -->
@@ -134,6 +140,11 @@ may be turned into `<PackageReference>` items in projects.
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.linux-musl-arm64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.freebsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.openbsd-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.openbsd-arm64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.illumos-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.solaris-x64" />
+    <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.haiku-x64" />
     <_LatestRuntimePackageReference Include="Microsoft.NETCore.App.Crossgen2.$(TargetRuntimeIdentifier)" Condition=" '$(DotNetBuildSourceOnly)' == 'true' " />
 
     <!-- Remove duplicates potentially introduced by the 'unknown' target runtime identifier in source-only modes. -->
@@ -149,7 +160,6 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.DotNet.RemoteExecutor" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
@@ -203,7 +213,10 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
+    <LatestPackageReference Include="Microsoft.Data.SqlClient.Extensions.Azure" />
     <LatestPackageReference Include="Microsoft.Windows.CsWin32" />
+    <LatestPackageReference Include="ModelContextProtocol" />
+    <LatestPackageReference Include="ModelContextProtocol.AspNetCore" />
     <LatestPackageReference Include="Mono.Cecil" />
     <LatestPackageReference Include="Mono.TextTemplating" />
     <LatestPackageReference Include="Moq" />
@@ -215,6 +228,7 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="Microsoft.Playwright" />
     <LatestPackageReference Include="Polly" />
     <LatestPackageReference Include="Polly.Extensions.Http" />
+    <LatestPackageReference Include="SharpFuzz" />
     <LatestPackageReference Include="Selenium.Support" />
     <LatestPackageReference Include="Selenium.WebDriver" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" />
@@ -230,6 +244,20 @@ may be turned into `<PackageReference>` items in projects.
     <LatestPackageReference Include="xunit.assert" />
     <LatestPackageReference Include="xunit.extensibility.core" />
     <LatestPackageReference Include="xunit.extensibility.execution" />
+    <!-- Components.Testing (xUnit V3 + Playwright + YARP) -->
+    <LatestPackageReference Include="xunit.v3" Version="$(XunitV3Version)" />
+    <LatestPackageReference Include="xunit.v3.extensibility.core" Version="$(XunitV3ExtensibilityCoreVersion)" />
+    <LatestPackageReference Include="Microsoft.Playwright.Xunit.v3" Version="$(MicrosoftPlaywrightXunitV3Version)" />
+    <LatestPackageReference Include="Yarp.ReverseProxy" Version="$(YarpReverseProxyVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery" />
+    <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <!-- Components.Gateway OpenTelemetry + resilience dependencies -->
+    <LatestPackageReference Include="Microsoft.Extensions.Http.Resilience" Version="$(MicrosoftExtensionsHttpResilienceVersion)" />
+    <LatestPackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
+    <LatestPackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
+    <LatestPackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
+    <LatestPackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
+    <LatestPackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="Dependencies with versions.">

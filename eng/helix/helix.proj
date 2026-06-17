@@ -69,15 +69,31 @@
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>
 
-    <!-- Grab the tool packages for what HelixTestRunner installs. -->
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" />
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" />
-    <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" />
+    <!--
+      Tool nupkgs are included dynamically in the RestoreDotnetTools target below because
+      dotnet tool restore must run first to download them into the NuGet package cache.
+    -->
 
     <!-- Grab published `HelixTestRunner` project output. -->
     <HelixCorrelationPayload Include="$(ArtifactsBinDir)HelixTestRunner\$(Configuration)\net11.0\publish\"
         Destination="HelixTestRunner" />
   </ItemGroup>
+
+  <!--
+    Restore dotnet tools so their nupkgs are in the NuGet package cache, then include them
+    in the correlation payload with AsArchive="false" so the Helix SDK ships them as plain files
+    instead of extracting them (nupkgs are zip files and would otherwise be auto-extracted).
+  -->
+  <Target Name="RestoreDotnetTools" BeforeTargets="IncludeAspNetRuntime">
+    <Exec Command="dotnet tool restore" WorkingDirectory="$(RepoRoot)" IgnoreExitCode="true" />
+    <ItemGroup>
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-dump\$(DotnetDumpVersion)\dotnet-dump.$(DotnetDumpVersion).nupkg" AsArchive="false" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg" AsArchive="false" />
+      <HelixCorrelationPayload Include="$(NUGET_PACKAGES)\dotnet-serve\$(DotnetServeVersion)\dotnet-serve.$(DotnetServeVersion).nupkg" AsArchive="false" />
+    </ItemGroup>
+    <Warning Text="dotnet-ef nupkg not found at '$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg'. Helix template tests may install an incompatible version."
+        Condition="!Exists('$(NUGET_PACKAGES)\dotnet-ef\$(DotnetEfVersion)\dotnet-ef.$(DotnetEfVersion).nupkg')" />
+  </Target>
 
   <Choose>
     <When Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">

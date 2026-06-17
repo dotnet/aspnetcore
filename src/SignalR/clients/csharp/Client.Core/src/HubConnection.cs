@@ -2298,10 +2298,24 @@ public partial class HubConnection : IAsyncDisposable
             }
         }
 
-        public ValueTask<FlushResult> WriteAsync(HubMessage message, CancellationToken cancellationToken)
+        public async ValueTask<FlushResult> WriteAsync(HubMessage message, CancellationToken cancellationToken)
         {
             Debug.Assert(_messageBuffer is not null);
-            return _messageBuffer.WriteAsync(message, cancellationToken);
+            CancellationTokenSource? cts = null;
+            var connectionToken = _hubConnection._state.StopCts.Token;
+            // StopAsync might have been called which would trigger the StopCts and thus prevent the CloseMessage from being sent.
+            // We'll use a short-lived token for CloseMessage specifically that isn't tied to the StopCts so we have a good chance of
+            // sending the CloseMessage to the server.
+            if (message is CloseMessage)
+            {
+                cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                connectionToken = cts.Token;
+            }
+
+            using var __ = cts;
+
+            using var _ = CancellationTokenUtils.CreateLinkedToken(cancellationToken, connectionToken, out var linkedToken);
+            return await _messageBuffer.WriteAsync(message, linkedToken).ConfigureAwait(false);
         }
 
         public bool ShouldProcessMessage(HubMessage message)

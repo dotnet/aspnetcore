@@ -200,6 +200,9 @@ param(
     # Intentionally lowercase as tools.ps1 depends on it
     [switch]$fromVMR,
 
+    # Passed through to tools.ps1 MSBuild function
+    [string]$warnNotAsError = '',
+
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments

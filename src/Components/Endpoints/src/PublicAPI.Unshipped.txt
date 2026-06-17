@@ -13,3 +13,12 @@ Microsoft.AspNetCore.Components.ITempData.Get(string! key) -> object?
 Microsoft.AspNetCore.Components.ITempData.Keep() -> void
 Microsoft.AspNetCore.Components.ITempData.Keep(string! key) -> void
 Microsoft.AspNetCore.Components.ITempData.Peek(string! key) -> object?
+Microsoft.AspNetCore.Components.ConfigureBrowser
+Microsoft.AspNetCore.Components.ConfigureBrowser.ConfigureBrowser() -> void
+Microsoft.AspNetCore.Components.ConfigureBrowser.Configuration.get -> Microsoft.AspNetCore.Components.BrowserConfiguration!
+Microsoft.AspNetCore.Components.ConfigureBrowser.Configuration.set -> void
+Microsoft.AspNetCore.Components.ConfigureBrowser.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext?
+Microsoft.AspNetCore.Components.ConfigureBrowser.HttpContext.set -> void
+Microsoft.AspNetCore.Http.BrowserConfigurationHttpContextExtensions
+static Microsoft.AspNetCore.Http.BrowserConfigurationHttpContextExtensions.GetBrowserConfiguration(this Microsoft.AspNetCore.Http.HttpContext! context) -> Microsoft.AspNetCore.Components.BrowserConfiguration!
+static Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilderExtensions.WithBrowserConfiguration(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.BrowserConfiguration!>! configure) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
