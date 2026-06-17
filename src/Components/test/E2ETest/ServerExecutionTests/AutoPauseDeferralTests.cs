@@ -602,6 +602,34 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__wsResult") as string == "delivered");
     }
 
+    private void NavigateToServiceWorkerPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-serviceworker?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__swReady === true") is true);
+    }
+
+    [Fact]
+    public void ServiceWorker_EventDuringPause_DeliversResultOnReturn()
+    {
+        NavigateToServiceWorkerPage();
+        var token = Browser.Exists(By.Id("start-sw")).GetDomAttribute("data-token");
+
+        Browser.Exists(By.Id("start-sw")).Click();
+        WaitForStreamStarted(token);
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__swResult") as string == "pending");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        ReleaseGate(token);
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__swResult") as string == "delivered");
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();
