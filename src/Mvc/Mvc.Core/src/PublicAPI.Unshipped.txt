@@ -1,1 +1,15 @@
 #nullable enable
+*REMOVED*abstract Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.DefaultValues.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>!
+*REMOVED*Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.CompatibilityVersion.Latest = 2147483647 -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_0 = 0 -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1 = 1 -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_2 = 2 -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_3_0 = 3 -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>
+*REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.ConfigureCompatibilityOptions(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions!>! compatibilityOptions) -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.ConfigureCompatibilityOptions<TOptions>.Version.get -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions
+*REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions.CompatibilityVersion.get -> Microsoft.AspNetCore.Mvc.CompatibilityVersion
+*REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions.CompatibilityVersion.set -> void
+*REMOVED*Microsoft.AspNetCore.Mvc.Infrastructure.MvcCompatibilityOptions.MvcCompatibilityOptions() -> void
