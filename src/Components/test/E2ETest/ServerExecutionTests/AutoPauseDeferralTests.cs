@@ -779,6 +779,18 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             expectedWhenMitigated: "true,1,live");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void XRSession_State_PreservedOnlyWithMitigation(bool useMitigation)
+    {
+        RunRiskMitigationTest(
+            useMitigation,
+            page: "auto-pause-xr-risk",
+            savedVar: "__savedXRState",
+            expectedWhenMitigated: "immersive-vr,visible,false");
+    }
+
     private void RunRiskMitigationTest(
         bool useMitigation,
         string savedVar,
