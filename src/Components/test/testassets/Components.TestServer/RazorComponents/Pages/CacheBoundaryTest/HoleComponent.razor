@@ -1,0 +1,11 @@
+﻿@attribute [CacheBoundaryPolicy]
+
+<p id="@Id" class="@CssClass">@(Content ?? Guid.NewGuid().ToString())</p>
+
+@code {
+    [Parameter] public string? Id { get; set; }
+
+    [Parameter] public string CssClass { get; set; } = "";
+
+    [Parameter] public string? Content { get; set; }
+}

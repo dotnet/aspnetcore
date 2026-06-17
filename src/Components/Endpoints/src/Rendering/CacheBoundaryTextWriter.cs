@@ -127,6 +127,26 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
                 componentNode.Prerender = entry.RenderModePrerender;
             }
 
+            // A plain [CacheBoundaryPolicy] hole (no render mode) cannot have a RenderFragment
+            // parameter. The hole re-renders on every request, but its parameters are captured once
+            // and replayed, so a RenderFragment parameter would be frozen to the content of the first
+            // render instead of being excluded from the cache. Interactive (render-mode) holes
+            // serialize their parameters for hydration, so they are exempt.
+            if (componentNode.RenderModeName is null && componentNode.ComponentParameters is { } parameters)
+            {
+                foreach (var parameter in parameters)
+                {
+                    if (string.Equals(parameter.TypeName, RenderFragmentSerializer.SerializedRenderFragmentValueType, StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(
+                            $"Component '{componentNode.TypeName}' is excluded from caching because it is annotated with [CacheBoundaryPolicy] (a \"hole\"), " +
+                            $"but it has a RenderFragment parameter '{parameter.Name}'. A hole is re-rendered on every request, but its parameters are captured " +
+                            "once and replayed, so a RenderFragment parameter cannot be supported (it would be frozen to the content of the first render). " +
+                            "Remove the RenderFragment parameter from the component, or do not place it inside a CacheBoundary.");
+                    }
+                }
+            }
+
             nodes.Add(componentNode);
         }
 

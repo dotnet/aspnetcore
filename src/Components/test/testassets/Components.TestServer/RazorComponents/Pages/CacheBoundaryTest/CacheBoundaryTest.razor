@@ -7,9 +7,7 @@
 <div id="test-1">
     <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
         <p class="cached">@Guid.NewGuid()</p>
-        <ExcludedContent>
-            <p class="not-cache-component">@Guid.NewGuid()</p>
-        </ExcludedContent>
+        <HoleComponent CssClass="not-cache-component" />
     </CacheBoundary>
     <p class="not-cached">@Guid.NewGuid()</p>
 </div>
@@ -17,9 +15,7 @@
 <div id="test-2">
     <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" Enabled="false">
         <p class="cached">@Guid.NewGuid()</p>
-        <ExcludedContent>
-            <p class="not-cache-component">@Guid.NewGuid()</p>
-        </ExcludedContent>
+        <HoleComponent CssClass="not-cache-component" />
     </CacheBoundary>
     <p class="not-cached">@Guid.NewGuid()</p>
 </div>
@@ -30,9 +26,7 @@
             <input id="message-input" type="text" name="Message" />
             <button id="submit" type="submit">Submit</button>
         </CacheBoundary>
-        <ExcludedContent>
-            <p id="message">@Message</p>
-        </ExcludedContent>
+        <HoleComponent Id="message" Content="@Message" />
     </EditForm>
 </div>
 
@@ -63,9 +57,7 @@
         {
             var index = i;
             var label = index == 0 ? "first" : "second";
-            <ExcludedContent>
-                <p class="hole-@index">@label</p>
-            </ExcludedContent>
+            <HoleComponent CssClass="@($"hole-{index}")" Content="@label" />
         }
     </CacheBoundary>
 </div>
