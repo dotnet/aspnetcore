@@ -74,7 +74,7 @@ internal static class ValidationHelpers
             linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             validationResultTasks ??= new();
             validationResultTasks.Add(
-                GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken, linkedCts.Token));
+                GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken, linkedCts));
         }
 
         if (validationResultTasks is not null)
@@ -90,7 +90,7 @@ internal static class ValidationHelpers
         TState state,
         Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
         CancellationToken originalCancellationToken,
-        CancellationToken linkedCancellationToken)
+        CancellationTokenSource linkedCancellationTokenSource)
     {
         // originalCancellationToken is the cancellation token passed to ValidateAttributesAsync.
         // linkedCancellationToken is a LinkedCancellationToken that combines:
@@ -98,13 +98,14 @@ internal static class ValidationHelpers
         // 2. cancellation when we want to short-circuit on first error.
         try
         {
-            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, linkedCancellationToken);
+            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, linkedCancellationTokenSource.Token);
             if (result is not null && result != ValidationResult.Success)
             {
                 onValidationError(context, result, attribute, state);
+                linkedCancellationTokenSource.Cancel();
             }
         }
-        catch (OperationCanceledException) when (linkedCancellationToken.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
         {
             // If the original token wasn't cancelled, but ours is cancelled, it means we cancelled to short-circuit.
             // In this case, we want to just ignore this cancellation.

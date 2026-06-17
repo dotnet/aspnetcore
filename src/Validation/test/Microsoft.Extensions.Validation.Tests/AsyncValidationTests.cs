@@ -718,14 +718,15 @@ public class AsyncValidationTests
     }
 
     [Fact]
-    public async Task AsyncValidation_MultipleAttributesOnSameProperty_CollectsAllErrors()
+    public async Task AsyncValidation_MultipleAttributesOnSameProperty_ShortCircuitsAfterFirstError()
     {
         // Arrange
-        // The second DelayedAsyncValidationAttribute is going to wait until the semaphore can be entered.
+        // The second DelayedAsyncValidationAttribute waits until the semaphore can be entered.
         // The semaphore initially can't be entered (initialCount = 0).
         // Only when the first validation error is reached, it will release the semaphore, allowing
-        // the second validation to proceed and report its error as well.
-        // This ensures that we get the event as soon as validation results are available.
+        // the second validation to proceed. By then the first error has short-circuited validation
+        // and cancelled the sibling's (linked) cancellation token, so the second attribute is
+        // cancelled and its error is NOT collected.
         using var signal = new SemaphoreSlim(0, 1);
         var recordType = new TestValidatableTypeInfo(
             typeof(Record),
@@ -758,14 +759,12 @@ public class AsyncValidationTests
         // Act
         await recordType.ValidateAsync(record, context, default);
 
-        // Assert
+        // Assert - the first error short-circuits the sibling async attribute on the same property.
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Value", error.Key);
-        var errors = error.Value.ToArray();
-        Assert.Equal(2, errors.Length);
-        Assert.Contains("First async error", errors);
-        Assert.Contains("Second async error", errors);
+        var message = Assert.Single(error.Value);
+        Assert.Equal("First async error", message);
     }
 
     [Fact]
