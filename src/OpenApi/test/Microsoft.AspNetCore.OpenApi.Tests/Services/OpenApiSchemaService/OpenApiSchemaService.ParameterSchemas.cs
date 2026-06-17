@@ -265,7 +265,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = document.Paths["/api/{id}/{date}"].Operations[HttpMethod.Get];
             Assert.Collection(operation.Parameters, parameter =>
             {
-                Assert.Equal("id", parameter.Name);
+                Assert.Equal("Id", parameter.Name);
                 Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal("uuid", parameter.Schema.Format);
             },
@@ -570,6 +570,25 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                            actualMemory.Schema.Default.GetValueKind() == JsonValueKind.Number &&
                            actualMemory.Schema.Default.GetValue<int>() == 20;
                 });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesAsParametersRecordWithValidationOnPrimaryConstructor()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([AsParameters] AsParametersRecordWithValidationAttributeOnPrimaryConstructor model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("Id", parameter.Name);
+            Assert.True(parameter.Required);
         });
     }
 
@@ -1058,6 +1077,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     [Route("/api/{student}")]
     private Student GetStudent(Student student) => student;
+
+    private record AsParametersRecordWithValidationAttributeOnPrimaryConstructor([Required] string Id);
 
     public record Student(string Name)
     {
