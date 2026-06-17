@@ -720,6 +720,40 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Canvas_DrawingState_PreservedOnlyWithMitigation(bool useMitigation)
+    {
+        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
+        Navigate($"/subdir/persistent-state/auto-pause-canvas-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript(@"
+            var ctx = document.getElementById('test-canvas').getContext('2d');
+            ctx.fillStyle = 'red';
+            ctx.fillRect(0, 0, 50, 50);
+        ");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        var saved = ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__savedCanvasData") as string;
+        if (useMitigation)
+        {
+            Assert.NotNull(saved);
+            Assert.StartsWith("data:image/png", saved);
+        }
+        else
+        {
+            Assert.Null(saved);
+        }
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();

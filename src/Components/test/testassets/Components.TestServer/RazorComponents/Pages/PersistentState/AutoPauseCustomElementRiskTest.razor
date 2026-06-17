@@ -31,11 +31,14 @@
         customElements.define('custom-form', CustomForm);
     }
 
-    window.__savedFormValues = null;
+    if (!window.__customFormHookInitialized) {
+        window.__customFormHookInitialized = true;
+        window.__savedFormValues = null;
 
-    if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-        window.__onPauseRequestedHook = function () {
-            window.__savedFormValues = document.getElementById('custom-form').getValues();
-        };
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__onPauseRequestedHook = function () {
+                window.__savedFormValues = document.getElementById('custom-form').getValues();
+            };
+        }
     }
 </script>

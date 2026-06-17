@@ -1,0 +1,26 @@
+@page "/persistent-state/auto-pause-canvas-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Canvas state risk</h1>
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<canvas id="test-canvas" width="100" height="100"></canvas>
+
+<script>
+    if (!window.__canvasHookInitialized) {
+        window.__canvasHookInitialized = true;
+        window.__savedCanvasData = null;
+
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__onPauseRequestedHook = function () {
+                var c = document.getElementById('test-canvas');
+                if (c) window.__savedCanvasData = c.toDataURL();
+            };
+        }
+    }
+</script>
