@@ -279,9 +279,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 clearMethod.Invoke(store, null);
                 InnerCachedComponent.ResetRenderCount();
             });
-            endpoints.MapGet("cache-component/render-count", () =>
+            endpoints.MapGet("cache-component/render-count", (string? testId) =>
             {
-                return Results.Ok(InnerCachedComponent.RenderCount);
+                return Results.Ok(InnerCachedComponent.GetRenderCount(testId ?? ""));
             });
 
             MapEnhancedNavigationEndpoints(endpoints);

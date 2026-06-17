@@ -4,7 +4,7 @@
    request. *@
 
 <div class="reusable-panel">
-    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
         <p class="panel-content">@Label</p>
         <p class="panel-guid">@Guid.NewGuid()</p>
     </CacheBoundary>

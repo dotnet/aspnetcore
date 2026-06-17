@@ -78,6 +78,7 @@ public static class RazorComponentsServiceCollectionExtensions
             sp.GetRequiredService<IOptions<CacheBoundaryStoreOptions>>().Value.UseHybridCache
                 ? ActivatorUtilities.CreateInstance<HybridCacheBoundaryStore>(sp)
                 : ActivatorUtilities.CreateInstance<MemoryCacheBoundaryStore>(sp));
+        services.TryAddSingleton<CacheBoundaryService>();
         services.TryAddScoped<TempDataCascadingValueSupplier>();
         services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
             sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);

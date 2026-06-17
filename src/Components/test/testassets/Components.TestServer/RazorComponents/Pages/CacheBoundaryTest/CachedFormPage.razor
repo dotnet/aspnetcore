@@ -5,7 +5,7 @@
 
 <div id="test-form-in-cache">
     <EditForm Model="Model" method="POST" OnValidSubmit="DisplaySubmitted" FormName="cachedForm">
-        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
             <p class="form-cached-guid">@Guid.NewGuid()</p>
             <p class="form-display-name"><DisplayName For="() => Model.Message" /></p>
             <Label For="() => Model.Message" />

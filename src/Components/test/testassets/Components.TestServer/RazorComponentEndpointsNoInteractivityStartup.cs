@@ -174,9 +174,9 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 clearMethod.Invoke(store, null);
                 Components.TestServer.RazorComponents.Pages.CacheBoundaryTest.InnerCachedComponent.ResetRenderCount();
             });
-            endpoints.MapGet("cache-component/render-count", () =>
+            endpoints.MapGet("cache-component/render-count", (string? testId) =>
             {
-                return Results.Ok(Components.TestServer.RazorComponents.Pages.CacheBoundaryTest.InnerCachedComponent.RenderCount);
+                return Results.Ok(Components.TestServer.RazorComponents.Pages.CacheBoundaryTest.InnerCachedComponent.GetRenderCount(testId ?? ""));
             });
         });
     }

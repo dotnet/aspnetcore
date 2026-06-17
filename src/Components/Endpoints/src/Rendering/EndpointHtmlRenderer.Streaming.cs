@@ -286,13 +286,16 @@ internal partial class EndpointHtmlRenderer
 
         if (componentState.Component is CacheBoundary cacheBoundary)
         {
-            if (cacheBoundary.CachedData is not null)
+            var renderState = cacheBoundary.RenderState;
+
+            if (renderState?.CachedContent is not null)
             {
+                // Cache hit: the boundary's render tree already holds the cached content.
                 base.WriteComponentHtml(componentId, output);
                 return;
             }
 
-            if (cacheBoundary.TryBeginCacheCapture(output, out var wrappedOutput))
+            if (renderState is not null && CacheBoundaryService.TryBeginCapture(renderState, output, out var wrappedOutput))
             {
                 try
                 {
@@ -300,15 +303,14 @@ internal partial class EndpointHtmlRenderer
                 }
                 finally
                 {
-                    cacheBoundary.EndCacheCapture();
+                    GetCacheBoundaryService().EndCapture(renderState);
                 }
                 return;
             }
 
             if (output is not CacheBoundaryTextWriter)
             {
-                var validationWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions());
-                validationWriter.StartValidation();
+                var validationWriter = CacheBoundaryService.CreateValidationWriter(output, CacheBoundaryService.GetVaryBy(cacheBoundary));
                 base.WriteComponentHtml(componentId, validationWriter);
                 return;
             }
@@ -480,6 +482,11 @@ internal partial class EndpointHtmlRenderer
             .GetRequiredService<ILoggerFactory>()
             .CreateLogger(typeof(RenderFragmentSerializer).FullName!);
     }
+
+    private CacheBoundaryService? _cacheBoundaryService;
+
+    private CacheBoundaryService GetCacheBoundaryService()
+        => _cacheBoundaryService ??= _httpContext.RequestServices.GetRequiredService<CacheBoundaryService>();
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
     {

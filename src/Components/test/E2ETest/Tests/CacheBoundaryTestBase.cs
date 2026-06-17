@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>>>
 {
+    // A unique id per test instance. Every CacheBoundary on the test pages varies by the "testId" query
+    // parameter, so each test's cache entries are isolated. This lets the suite run without relying on a
+    // shared, globally-cleared cache and keeps tests independent when executed concurrently.
+    private readonly string _testId = Guid.NewGuid().ToString("N");
+
     protected CacheBoundaryTestBase(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsNoInteractivityStartup<App>> serverFixture,
@@ -28,7 +33,6 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     {
         ConfigureServerArguments();
         base.InitializeAsyncCore();
-        Navigate($"{ServerPathBase}/cache-component/clear");
     }
 
     // Hook for derived classes to select the cache store backing the server (e.g. HybridCache).
@@ -36,14 +40,22 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     {
     }
 
+    // Builds a URL for the given page path, appending this test's unique testId so cache entries and the
+    // render counter are isolated per test.
+    private string TestUrl(string path)
+    {
+        var separator = path.Contains('?', StringComparison.Ordinal) ? '&' : '?';
+        return $"{ServerPathBase}/{path}{separator}testId={_testId}";
+    }
+
     [Fact]
     public void CacheBoundaryCachesData()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         var testElement = Browser.FindElement(By.Id("test-1"));
         var cachedValue = testElement.FindElement(By.CssSelector(".cached")).Text;
 
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.Equal(cachedValue, () => Browser.FindElement(By.Id("test-1")).FindElement(By.CssSelector(".cached")).Text);
         Browser.NotEqual(cachedValue, () => Browser.FindElement(By.Id("test-1")).FindElement(By.CssSelector(".not-cached")).Text);
         Browser.NotEqual(cachedValue, () => Browser.FindElement(By.Id("test-1")).FindElement(By.CssSelector(".not-cache-component")).Text);
@@ -52,11 +64,11 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void CacheBoundaryDoesNotCacheDataWhenNotEnabled()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         var testElement = Browser.FindElement(By.Id("test-2"));
         var firstValue = testElement.FindElement(By.CssSelector(".cached")).Text;
 
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.NotEqual(firstValue, () => Browser.FindElement(By.Id("test-2")).FindElement(By.CssSelector(".cached")).Text);
         Browser.NotEqual(firstValue, () => Browser.FindElement(By.Id("test-2")).FindElement(By.CssSelector(".not-cached")).Text);
         Browser.NotEqual(firstValue, () => Browser.FindElement(By.Id("test-2")).FindElement(By.CssSelector(".not-cache-component")).Text);
@@ -65,7 +77,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void CacheBoundaryCorrectlyCreatesHoles()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         var testElement = Browser.FindElement(By.Id("test-3"));
         Browser.Equal("never", () => testElement.FindElement(By.Id("message")).Text);
         testElement.FindElement(By.Id("message-input")).SendKeys("new message");
@@ -82,14 +94,14 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void EditFormWithFormComponents_CachesStaticContent_AndFormStillSubmits()
     {
-        Navigate($"{ServerPathBase}/cache-component-form");
+        Navigate(TestUrl("cache-component-form"));
         var cachedGuid = Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-cached-guid")).Text;
         // The DisplayName form component rendered inside the cache.
         Browser.Equal("Message", () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-display-name")).Text);
         Browser.Equal("never", () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.Id("cached-form-message")).Text);
 
         // Warm reload: the cached form content (static guid + form components) is served from the cache.
-        Navigate($"{ServerPathBase}/cache-component-form");
+        Navigate(TestUrl("cache-component-form"));
         Browser.Equal(cachedGuid, () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-cached-guid")).Text);
         Browser.Equal("Message", () => Browser.FindElement(By.Id("test-form-in-cache")).FindElement(By.CssSelector(".form-display-name")).Text);
 
@@ -103,12 +115,12 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void NestedCacheBoundaryDoesNotExecuteOnOuterCacheHit()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.Exists(By.Id("inner-cached"));
         var renderCount = GetRenderCount();
         Assert.Equal(1, renderCount);
 
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.Exists(By.Id("inner-cached"));
         renderCount = GetRenderCount();
         Assert.Equal(1, renderCount);
@@ -117,7 +129,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void CacheBoundaryInLoopUsesVaryByForDistinctEntries()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         var loopItems = Browser.FindElement(By.Id("test-5")).FindElements(By.CssSelector(".loop-item"));
         Assert.Equal(3, loopItems.Count);
 
@@ -130,7 +142,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
         Assert.Equal(3, firstRenderValues.Distinct().Count());
 
         // Second navigation — each entry should be independently cached
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         for (var i = 0; i < 3; i++)
         {
             var index = i;
@@ -144,13 +156,13 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void CacheBoundaryMultipleHolesOfSameType_PreserveCorrectOrder()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.Equal("first", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
         Browser.Equal("second", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
         var cachedContent = Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text;
 
         // Cache hit — holes with same (TypeName, Sequence) must not be swapped
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.Equal(cachedContent, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text);
         Browser.Equal("first", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
         Browser.Equal("second", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
@@ -159,7 +171,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void ReusableComponentWithCacheBoundary_UsedTwice_SharesOneCacheEntry()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.Exists(By.Id("test-9"));
         Browser.Equal(2, () => Browser.FindElement(By.Id("test-9")).FindElements(By.CssSelector(".panel-content")).Count);
 
@@ -169,7 +181,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
 
         // Warm reload: both boundaries share the one cached entry, so both show the creator's cached
         // content and the identical cached guid.
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         Browser.Exists(By.Id("test-9"));
         Browser.Equal(2, () => Browser.FindElement(By.Id("test-9")).FindElements(By.CssSelector(".panel-content")).Count);
 
@@ -180,20 +192,22 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     [Fact]
     public void CacheBoundaryCachesHardcodedHole()
     {
-        Navigate($"{ServerPathBase}/cache-component");
+        Navigate(TestUrl("cache-component"));
         var panel = Browser.FindElement(By.Id("test-10"));
         var staticGuid = panel.FindElement(By.CssSelector(".panel-static")).Text;
         var holeGuid = panel.FindElement(By.CssSelector(".hardcoded-hole")).Text;
         Assert.NotEqual(staticGuid, holeGuid);
 
-        Navigate($"{ServerPathBase}/cache-component");
+        // Warm reload: the wrapper's static output (emitted around the hardcoded hole) is served from
+        // the cache, while the hole itself re-renders fresh on every request.
+        Navigate(TestUrl("cache-component"));
         Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".panel-static")).Text);
         Browser.NotEqual(holeGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".hardcoded-hole")).Text);
     }
 
     private int GetRenderCount()
     {
-        Navigate($"{ServerPathBase}/cache-component/render-count");
+        Navigate(TestUrl("cache-component/render-count"));
         var body = Browser.FindElement(By.TagName("body")).Text;
         return int.Parse(body, CultureInfo.InvariantCulture);
     }

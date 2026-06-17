@@ -18,14 +18,14 @@ public class CacheBoundaryRenderTest
     {
         var testLogger = new TestLogger();
         var httpContext = CreateHttpContext();
-        httpContext.RequestServices = new TestServiceProviderWithLogger(testLogger);
 
         var store = new TestCacheStore { ReturnForAnyKey = "NOT VALID JSON {{{" };
+        var service = new CacheBoundaryService(store, new TestLoggerFactory(testLogger));
 
         var component = new CacheBoundary
         {
             ChildContent = builder => builder.AddContent(0, "fallback"),
-            CacheStore = store,
+            CacheService = service,
             HttpContext = httpContext,
         };
 
@@ -82,6 +82,7 @@ public class CacheBoundaryRenderTest
             Nodes = [new RenderTreeNode { Type = "markup", Content = "<p>from-cache</p>" }],
         };
         var store = new TestCacheStore { ReturnForAnyKey = JsonSerializer.Serialize(precomputed, ServerComponentSerializationSettings.JsonSerializationOptions) };
+        var service = new CacheBoundaryService(store, new TestLoggerFactory(new TestLogger()));
 
         var childContentInvocations = 0;
         var component = new CacheBoundary
@@ -91,7 +92,7 @@ public class CacheBoundaryRenderTest
                 childContentInvocations++;
                 builder.AddMarkupContent(0, "<p>from-fresh</p>");
             },
-            CacheStore = store,
+            CacheService = service,
             HttpContext = httpContext,
         };
 
