@@ -685,6 +685,41 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__syncResult") as string == "delivered");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CustomElement_UnboundDirtyInputs_StatePreservedOnlyWithMitigation(bool useMitigation)
+    {
+        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
+        Navigate($"/subdir/persistent-state/auto-pause-custom-element-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+
+        // Type into shadow DOM inputs 1 and 2, leave 3 clean and focused.
+        var js = (IJavaScriptExecutor)Browser;
+        js.ExecuteScript(@"
+            var shadow = document.getElementById('custom-form').shadowRoot;
+            shadow.getElementById('f1').value = 'aaa';
+            shadow.getElementById('f2').value = 'bbb';
+            shadow.getElementById('f3').focus();
+        ");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        var saved = js.ExecuteScript("return window.__savedFormValues") as string;
+        if (useMitigation)
+        {
+            Assert.Equal("aaa,bbb,", saved);
+        }
+        else
+        {
+            Assert.Null(saved);
+        }
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();

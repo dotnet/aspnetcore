@@ -1,0 +1,41 @@
+@page "/persistent-state/auto-pause-custom-element-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Custom element state risk</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<custom-form id="custom-form"></custom-form>
+
+<script>
+    class CustomForm extends HTMLElement {
+        constructor() {
+            super();
+            var shadow = this.attachShadow({ mode: 'open' });
+            shadow.innerHTML =
+                '<input id="f1" type="text" placeholder="Field 1">' +
+                '<input id="f2" type="text" placeholder="Field 2">' +
+                '<input id="f3" type="text" placeholder="Field 3">';
+        }
+        getValues() {
+            var s = this.shadowRoot;
+            return s.getElementById('f1').value + ',' + s.getElementById('f2').value + ',' + s.getElementById('f3').value;
+        }
+    }
+    if (!customElements.get('custom-form')) {
+        customElements.define('custom-form', CustomForm);
+    }
+
+    window.__savedFormValues = null;
+
+    if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+        window.__onPauseRequestedHook = function () {
+            window.__savedFormValues = document.getElementById('custom-form').getValues();
+        };
+    }
+</script>

@@ -56,6 +56,9 @@
                 window.autoPauseEvents = [];
                 circuitOptions.onPauseRequested = async (signal) => {
                     window.autoPauseEvents.push({ phase: 'onPauseRequested', aborted: signal.aborted });
+                    if (window.__onPauseRequestedHook) {
+                        await window.__onPauseRequestedHook(signal);
+                    }
                 };
             }
             Blazor.start({
