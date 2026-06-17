@@ -123,7 +123,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         return null;
     }
 
-    internal bool IsGuaranteedToBeSynchronous(object? value, ValidationOptions options)
+    internal bool IsGuaranteedToBeSynchronous(object? value, ValidationOptions options, int currentDepth)
     {
         if (value is null)
         {
@@ -131,9 +131,18 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             return true;
         }
 
+        // Guard against circular references and excessively deep object graphs. If the graph cannot be
+        // proven synchronous within the configured depth, fall back to the asynchronous path; the
+        // subsequent ValidateAsync call surfaces the MaxDepth error when appropriate. Without this guard
+        // a circular reference would cause unbounded recursion and a stack overflow.
+        if (currentDepth >= options.MaxDepth)
+        {
+            return false;
+        }
+
         for (var i = 0; i < _membersCount; i++)
         {
-            if (!Members[i].IsGuaranteedToBeSynchronous(value, options))
+            if (!Members[i].IsGuaranteedToBeSynchronous(value, options, currentDepth))
             {
                 return false;
             }
@@ -146,7 +155,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         {
             for (var i = 0; i < superTypeInfo._membersCount; i++)
             {
-                if (!superTypeInfo.Members[i].IsGuaranteedToBeSynchronous(value, options))
+                if (!superTypeInfo.Members[i].IsGuaranteedToBeSynchronous(value, options, currentDepth))
                 {
                     return false;
                 }

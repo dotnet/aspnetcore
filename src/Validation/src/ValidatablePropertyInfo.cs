@@ -194,7 +194,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                         if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
                             if (validatableType is ValidatableTypeInfo builtInValidatableInfo &&
-                                builtInValidatableInfo.IsGuaranteedToBeSynchronous(item, validationOptions))
+                                builtInValidatableInfo.IsGuaranteedToBeSynchronous(item, validationOptions, context.CurrentDepth))
                             {
                                 potentiallyClonedContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
@@ -222,7 +222,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 if (validationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
                 {
                     if (validatableType is ValidatableTypeInfo builtInValidatableInfo &&
-                        builtInValidatableInfo.IsGuaranteedToBeSynchronous(propertyValue, validationOptions))
+                        builtInValidatableInfo.IsGuaranteedToBeSynchronous(propertyValue, validationOptions, context.CurrentDepth))
                     {
                         builtInValidatableInfo.ValidateAsync(propertyValue, potentiallyClonedContext, cancellationToken).GetAwaiter().GetResult();
                     }
@@ -253,7 +253,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         return false;
     }
 
-    internal bool IsGuaranteedToBeSynchronous(object containingObject, ValidationOptions options)
+    internal bool IsGuaranteedToBeSynchronous(object containingObject, ValidationOptions options, int currentDepth)
     {
         foreach (var attr in GetValidationAttributes())
         {
@@ -274,7 +274,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                     if (options.TryGetValidatableTypeInfo(itemType, out var validatableType))
                     {
                         if (validatableType is not ValidatableTypeInfo builtInInfo ||
-                            !builtInInfo.IsGuaranteedToBeSynchronous(item, options))
+                            !builtInInfo.IsGuaranteedToBeSynchronous(item, options, currentDepth + 1))
                         {
                             return false;
                         }
@@ -288,7 +288,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
             if (options.TryGetValidatableTypeInfo(valueType, out var validatableType))
             {
                 if (validatableType is not ValidatableTypeInfo builtInInfo ||
-                    !builtInInfo.IsGuaranteedToBeSynchronous(propertyValue, options))
+                    !builtInInfo.IsGuaranteedToBeSynchronous(propertyValue, options, currentDepth + 1))
                 {
                     return false;
                 }

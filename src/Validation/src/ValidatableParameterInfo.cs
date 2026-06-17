@@ -151,7 +151,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
                     {
                         // Perf optimization, avoid cloning the context when we know we will completely synchronously.
                         if (validatableType is ValidatableTypeInfo builtInValidatableTypeInfo &&
-                            builtInValidatableTypeInfo.IsGuaranteedToBeSynchronous(item, validationOptions))
+                            builtInValidatableTypeInfo.IsGuaranteedToBeSynchronous(item, validationOptions, context.CurrentDepth))
                         {
                             builtInValidatableTypeInfo.ValidateAsync(item, context, cancellationToken).GetAwaiter().GetResult();
                         }
