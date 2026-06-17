@@ -103,5 +103,35 @@ internal static class AutoPauseTestEndpoints
             gate.MarkCompleted(token);
             return Results.Ok(new { released = true });
         });
+
+        endpoints.MapGet("/autopause-test/ws-gate/{token}", async (string token, HttpContext context, AutoPauseTestStreamGate gate) =>
+        {
+            if (!context.WebSockets.IsWebSocketRequest)
+            {
+                context.Response.StatusCode = 400;
+                return;
+            }
+
+            using var ws = await context.WebSockets.AcceptWebSocketAsync();
+            gate.MarkStarted(token);
+
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+                timeout.CancelAfter(TimeSpan.FromSeconds(30));
+                await gate.WaitAsync(token, timeout.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                gate.MarkCompleted(token);
+                await ws.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "timeout", default);
+                return;
+            }
+
+            var payload = System.Text.Encoding.UTF8.GetBytes("delivered");
+            await ws.SendAsync(payload, System.Net.WebSockets.WebSocketMessageType.Text, true, default);
+            gate.MarkCompleted(token);
+            await ws.CloseAsync(System.Net.WebSockets.WebSocketCloseStatus.NormalClosure, "done", default);
+        });
     }
 }

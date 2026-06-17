@@ -212,6 +212,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.UseExceptionHandler("/Error", createScopeForErrors: true);
         }
 
+        app.UseWebSockets();
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();

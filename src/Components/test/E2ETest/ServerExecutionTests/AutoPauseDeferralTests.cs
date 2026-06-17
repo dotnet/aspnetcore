@@ -575,6 +575,33 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__fetchResult") as string == "delivered");
     }
 
+    private void NavigateToWebSocketPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-websocket?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    [Fact]
+    public void WebSocket_MessageDuringPause_DeliversResultOnReturn()
+    {
+        NavigateToWebSocketPage();
+        var token = Browser.Exists(By.Id("start-ws")).GetDomAttribute("data-token");
+
+        Browser.Exists(By.Id("start-ws")).Click();
+        WaitForStreamStarted(token);
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__wsResult") as string == "pending");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        ReleaseGate(token);
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__wsResult") as string == "delivered");
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();
