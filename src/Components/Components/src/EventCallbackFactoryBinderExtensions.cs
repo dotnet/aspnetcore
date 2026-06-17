@@ -1373,7 +1373,12 @@ public static class EventCallbackFactoryBinderExtensions
             }
             else if (string.Empty.Equals(e.Value))
             {
-                setter(default!);
+                var typeInfo = typeof(T);
+                var isNullable = typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
+                if (typeInfo == typeof(string) || isNullable)
+                {
+                    setter(default!);
+                }
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
@@ -1460,7 +1465,12 @@ public static class EventCallbackFactoryBinderExtensions
             }
             else if (string.Empty.Equals(e.Value))
             {
-                setter(default!);
+                var typeInfo = typeof(T);
+                var isNullable = typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
+                if (typeInfo == typeof(string) || isNullable)
+                {
+                    setter(default!);
+                }
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
