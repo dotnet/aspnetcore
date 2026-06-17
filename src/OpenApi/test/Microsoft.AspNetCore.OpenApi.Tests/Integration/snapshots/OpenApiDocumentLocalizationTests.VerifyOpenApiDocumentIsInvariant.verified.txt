@@ -1317,6 +1317,35 @@
         }
       }
     },
+    "/schemas-by-ref/nullable-enum-params": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "requiredEnum",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/MyEnum"
+            }
+          },
+          {
+            "name": "nullableEnum",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/NullableOfMyEnum"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/responses/200-add-xml": {
       "get": {
         "tags": [
@@ -2570,6 +2599,12 @@
           }
         }
       },
+      "MyEnum": {
+        "enum": [
+          "Value1",
+          "Value2"
+        ]
+      },
       "NestedModel": {
         "required": [
           "name"
@@ -2626,6 +2661,12 @@
             }
           }
         }
+      },
+      "NullableOfMyEnum": {
+        "enum": [
+          "Value1",
+          "Value2"
+        ]
       },
       "NullableOfTestEnum": {
         "type": "integer"
