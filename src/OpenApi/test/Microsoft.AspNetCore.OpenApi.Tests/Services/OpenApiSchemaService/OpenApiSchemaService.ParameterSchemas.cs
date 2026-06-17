@@ -815,32 +815,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiParameters_ProducesDistinctNullableEnumSchemaIds()
-    {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.ConfigureHttpJsonOptions(options =>
-        {
-            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        });
-        var builder = CreateBuilder(serviceCollection);
-
-        builder.MapGet("/api/enum-ids", (MyEnum requiredEnum, MyEnum? nullableEnum) => { });
-
-        await VerifyOpenApiDocument(builder, document =>
-        {
-            var operation = document.Paths["/api/enum-ids"].Operations[HttpMethod.Get];
-            Assert.Equal(2, operation.Parameters.Count);
-
-            var requiredSchema = Assert.IsType<OpenApiSchemaReference>(operation.Parameters[0].Schema);
-            var nullableSchema = Assert.IsType<OpenApiSchemaReference>(operation.Parameters[1].Schema);
-            Assert.Equal("MyEnum", requiredSchema.Reference.Id);
-            Assert.Equal("NullableOfMyEnum", nullableSchema.Reference.Id);
-            Assert.Contains("MyEnum", document.Components.Schemas.Keys);
-            Assert.Contains("NullableOfMyEnum", document.Components.Schemas.Keys);
-        });
-    }
-
-    [Fact]
     public async Task GetOpenApiParameters_EnumWithDuplicateValues_NonBodyUsesOriginalMemberNames()
     {
         // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
@@ -1159,12 +1133,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     public enum EnumArrayType
     {
         None = 1
-    }
-
-    public enum MyEnum
-    {
-        Value1,
-        Value2
     }
 
     public class EnumArrayTypeConverter : JsonConverter<EnumArrayType>
