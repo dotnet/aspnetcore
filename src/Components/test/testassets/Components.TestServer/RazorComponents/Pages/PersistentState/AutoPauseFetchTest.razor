@@ -1,0 +1,46 @@
+@page "/persistent-state/auto-pause-fetch"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Fetch survives pause</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<span id="fetch-status"></span>
+<br/>
+<button id="start-fetch" data-token="@_token" onclick="window.startGatedFetch('@_token')">Start fetch</button>
+
+<script>
+    window.__fetchResult = window.__fetchResult || 'idle';
+
+    window.startGatedFetch = function (token) {
+        window.__fetchResult = 'pending';
+        document.getElementById('fetch-status').textContent = 'pending';
+        fetch('/subdir/autopause-test/js-gate/' + token)
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                window.__fetchResult = data.released ? 'delivered' : 'aborted';
+                var el = document.getElementById('fetch-status');
+                if (el) el.textContent = window.__fetchResult;
+            })
+            .catch(function (err) {
+                window.__fetchResult = 'error:' + err.message;
+                var el = document.getElementById('fetch-status');
+                if (el) el.textContent = window.__fetchResult;
+            });
+    };
+
+    // On re-render (reconnect), restore the result into the DOM.
+    (function () {
+        var el = document.getElementById('fetch-status');
+        if (el) el.textContent = window.__fetchResult;
+    })();
+</script>
+
+@code {
+    private readonly string _token = Guid.NewGuid().ToString("N");
+}

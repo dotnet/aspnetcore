@@ -548,6 +548,33 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         }
     }
 
+    private void NavigateToFetchPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-fetch?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    [Fact]
+    public void Fetch_InFlightDuringPause_DeliversResultOnReturn()
+    {
+        NavigateToFetchPage();
+        var token = Browser.Exists(By.Id("start-fetch")).GetDomAttribute("data-token");
+
+        Browser.Exists(By.Id("start-fetch")).Click();
+        WaitForStreamStarted(token);
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__fetchResult") as string == "pending");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        ReleaseGate(token);
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__fetchResult") as string == "delivered");
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();
