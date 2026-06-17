@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -13,7 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,14 +18,6 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal partial class EndpointHtmlRenderer
 {
-    static EndpointHtmlRenderer()
-    {
-        if (HotReloadManager.IsSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += _cachedCacheExclusions.Clear;
-        }
-    }
-
     private const string _streamingRenderingFramingHeaderName = "ssr-framing";
     private TextWriter? _streamingUpdatesWriter;
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
@@ -288,14 +277,14 @@ internal partial class EndpointHtmlRenderer
         {
             var renderState = cacheBoundary.RenderState;
 
-            if (renderState?.CachedContent is not null)
+            if (renderState?.IsCacheHit == true)
             {
                 // Cache hit: the boundary's render tree already holds the cached content.
                 base.WriteComponentHtml(componentId, output);
                 return;
             }
 
-            if (renderState is not null && CacheBoundaryService.TryBeginCapture(renderState, output, out var wrappedOutput))
+            if (CacheBoundaryService.TryBeginWrite(renderState, cacheBoundary, output, out var wrappedOutput))
             {
                 try
                 {
@@ -307,37 +296,34 @@ internal partial class EndpointHtmlRenderer
                 }
                 return;
             }
-
-            if (output is not CacheBoundaryTextWriter)
-            {
-                var validationWriter = CacheBoundaryService.CreateValidationWriter(output, CacheBoundaryService.GetVaryBy(cacheBoundary));
-                base.WriteComponentHtml(componentId, validationWriter);
-                return;
-            }
         }
 
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
         var captureWriter = output as CacheBoundaryTextWriter;
         var pausedCapture = false;
-        if (captureWriter is not null && captureWriter.IsCapturing && (IsHoleComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
+        if (captureWriter is not null && captureWriter.IsCapturing && (CacheBoundaryService.IsHoleComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
         {
             pausedCapture = true;
             captureWriter.PauseCapture();
-            var (holeComponentType, renderModeName, renderModePrerender) = componentState.Component is SSRRenderModeBoundary boundary2
-                ? (boundary2.ComponentType, GetRenderModeNameOrThrowForCache(boundary2.RenderMode, boundary2.ComponentType), RenderFragmentSerializer.GetRenderModePrerender(boundary2.RenderMode))
-                : (componentState.Component.GetType(), (string?)null, true);
 
-            // A validation-only writer (a non-creator boundary) only needs the throws above to surface;
-            // it does not produce a cache entry, so skip the capture and serialization work.
+            // A validation-only writer (a non-creator boundary) records nothing; the hole-policy error
+            // already surfaced in the condition above. Only a real capture records the hole.
             if (!captureWriter.IsValidationOnly)
             {
+                // An interactive hole is wrapped in an SSRRenderModeBoundary that owns the inner component
+                // type and render mode; a plain [CacheBoundaryPolicy] hole is the component itself with no
+                // render mode.
+                var holeBoundary = componentState.Component as SSRRenderModeBoundary;
+                var holeComponentType = holeBoundary?.ComponentType ?? componentState.Component.GetType();
+
                 // The hole's parameters live in its render-tree parent's frames, whether it sits directly
                 // in the CacheBoundary's ChildContent or is emitted by an intermediate component's own
                 // BuildRenderTree. Capture them now, while we still hold its component state.
                 var holeCapture = TryCaptureHoleParameterFrames(componentState)
                     ?? throw new InvalidOperationException(
                         $"CacheBoundary could not locate the hole component '{holeComponentType.FullName}' in its parent's render tree.");
-                captureWriter.CreateHole(holeComponentType, renderModeName, renderModePrerender, holeCapture, GetRenderFragmentSerializationLogger());
+
+                captureWriter.CreateHole(holeComponentType, holeBoundary?.RenderMode, holeCapture, GetRenderFragmentSerializationLogger());
             }
         }
 
@@ -395,8 +381,6 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    private static readonly ConcurrentDictionary<Type, CacheBoundaryPolicyAttribute?> _cachedCacheExclusions = new();
-
     // Captures the frame range of a hole (the component frame plus its parameter attributes) from its
     // render-tree parent. The hole's parameters live in the parent's frames whether the hole sits in the
     // CacheBoundary's ChildContent or is emitted by an intermediate component's own BuildRenderTree.
@@ -423,55 +407,6 @@ internal partial class EndpointHtmlRenderer
         }
 
         return null;
-    }
-
-    internal static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
-    {
-        var attr = _cachedCacheExclusions.GetOrAdd(
-            componentType,
-            static type => type.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true));
-
-        if (attr is null)
-        {
-            return false;
-        }
-
-        // A VaryBy of None means the component is never safe to include in the
-        // cached output regardless of what dimensions the boundary varies by.
-        var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
-
-        if (attr.Disallow && !varyByMatches)
-        {
-            throw new InvalidOperationException(
-                $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary in its current configuration. " +
-                $"It is annotated with [CacheBoundaryPolicy(Disallow = true, VaryBy = {attr.VaryBy})] " +
-                $"because its rendered output depends on per-request state that cannot be safely captured into a cache entry and replayed on later requests. " +
-                (attr.VaryBy != CacheBoundaryVaryBy.None
-                    ? $"To use it inside a CacheBoundary, configure the boundary so that it varies by all of the following dimensions: {attr.VaryBy}. "
-                    : "") +
-                $"Alternatively, move this component outside the CacheBoundary, or wrap it in a component marked with [CacheBoundaryPolicy] so that its subtree is excluded from caching.");
-        }
-
-        // If Disallow is true we only reach here when varyByMatches is true (safe to cache).
-        // If Disallow is false, it's a hole only when VaryBy dimensions aren't covered.
-        return !varyByMatches;
-    }
-
-    private static string? GetRenderModeNameOrThrowForCache(IComponentRenderMode? renderMode, Type componentType)
-    {
-        try
-        {
-            return RenderFragmentSerializer.GetRenderModeName(renderMode);
-        }
-        catch (InvalidOperationException ex)
-        {
-            throw new InvalidOperationException(
-                $"Component '{componentType.FullName}' uses a custom render mode of type '{renderMode?.GetType().FullName}' " +
-                $"that is not supported inside a CacheBoundary. " +
-                $"Only the built-in interactive render modes (InteractiveServer, InteractiveWebAssembly, InteractiveAuto) " +
-                $"can be replayed from a cache entry.",
-                ex);
-        }
     }
 
     private ILogger? _renderFragmentSerializerLogger;

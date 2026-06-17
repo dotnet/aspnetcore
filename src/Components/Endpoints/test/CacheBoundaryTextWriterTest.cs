@@ -27,7 +27,7 @@ public class CacheBoundaryTextWriterTest
         writer.StartCapture();
 
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            writer.CreateHole(typeof(TestRenderFragmentHole), renderModeName: null, renderModePrerender: true, capture, NullLogger.Instance));
+            writer.CreateHole(typeof(TestRenderFragmentHole), renderMode: null, capture, NullLogger.Instance));
         Assert.Contains("RenderFragment parameter", ex.Message);
     }
 
@@ -43,7 +43,7 @@ public class CacheBoundaryTextWriterTest
 
         var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
         writer.StartCapture();
-        writer.CreateHole(typeof(TestRenderFragmentHole), renderModeName: null, renderModePrerender: true, capture, NullLogger.Instance);
+        writer.CreateHole(typeof(TestRenderFragmentHole), renderMode: null, capture, NullLogger.Instance);
         writer.StopCapture();
 
         var json = writer.GetJson();
@@ -65,7 +65,7 @@ public class CacheBoundaryTextWriterTest
         writer.StartCapture();
         writer.Write("<p>before</p>");
         writer.PauseCapture();
-        writer.CreateHole(typeof(TestRenderFragmentHole), renderModeName: null, renderModePrerender: true, capture, NullLogger.Instance);
+        writer.CreateHole(typeof(TestRenderFragmentHole), renderMode: null, capture, NullLogger.Instance);
         writer.StartCapture();
         writer.Write("<p>after</p>");
         writer.StopCapture();

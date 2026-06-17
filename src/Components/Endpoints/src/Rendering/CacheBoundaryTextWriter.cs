@@ -65,7 +65,7 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         _validateOnly = true;
     }
 
-    public void CreateHole(Type componentType, string? renderModeName, bool renderModePrerender, RenderFragmentCapture capture, ILogger renderFragmentSerializationLogger)
+    public void CreateHole(Type componentType, IComponentRenderMode? renderMode, RenderFragmentCapture capture, ILogger renderFragmentSerializationLogger)
     {
         ThrowIfHoleHasRenderFragmentParameter(componentType, capture);
 
@@ -86,11 +86,13 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         }
 
         // The serializer fills RenderModeName from an inline @rendermode frame. For components that
-        // declare their render mode via [RenderModeAttribute] instead, patch it from the runtime value.
+        // declare their render mode via [RenderModeAttribute] instead, the capture has no render-mode
+        // frame, so patch it from the boundary's runtime render mode.
+        var renderModeName = RenderFragmentSerializer.GetRenderModeName(renderMode);
         if (renderModeName is not null && holeNode.RenderModeName is null)
         {
             holeNode.RenderModeName = renderModeName;
-            holeNode.Prerender = renderModePrerender;
+            holeNode.Prerender = RenderFragmentSerializer.GetRenderModePrerender(renderMode);
         }
 
         _entries.Add(CacheCaptureEntry.Hole(holeNode));

@@ -7,14 +7,21 @@ namespace Microsoft.AspNetCore.Components;
 /// Specifies how a component interacts with an enclosing CacheBoundary.
 /// When present, the component is treated as a "hole" in the cached output: the
 /// component is instantiated and executes its own lifecycle on every request rather
-/// than being served from the cached HTML. Note that the parameters and any
-/// <see cref="RenderFragment"/> content passed into the component are captured at
-/// the time the cache entry is produced and are replayed unchanged on subsequent
-/// requests, so values closed over by the surrounding render (including child
-/// content) remain those of the original render.
+/// than being served from the cached HTML. Its parameters are captured at the time the
+/// cache entry is produced and are replayed unchanged on subsequent requests, so values
+/// closed over by the surrounding render remain those of the original render.
 /// Optionally, set <see cref="VaryBy"/> to lift the exclusion when the cache boundary
 /// varies by the specified dimensions, in which case the component is included in
 /// the cached output like any other.
+/// <para>
+/// <see cref="RenderFragment"/> parameters are not supported on hole components, because the
+/// hole re-renders on every request while its parameters are captured once and replayed; a
+/// captured <see cref="RenderFragment"/> would be frozen to the content of the first render.
+/// Encountering a hole with a <see cref="RenderFragment"/> parameter throws an
+/// <see cref="InvalidOperationException"/>. To use such a component as a hole, wrap it in a
+/// component annotated with <see cref="CacheBoundaryPolicyAttribute"/> that passes the
+/// <see cref="RenderFragment"/> parameters through to the inner component.
+/// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public sealed class CacheBoundaryPolicyAttribute : Attribute

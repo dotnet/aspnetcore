@@ -134,15 +134,8 @@ public sealed class CacheBoundary : IComponent, IDisposable
 
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // Cache hit (or waiter): render the deserialized content the service prepared. Otherwise render
-        // ChildContent live (cold render, creator capture, same-request sibling, or caching inactive).
-        if (RenderState?.CachedContent is { } cachedContent)
-        {
-            cachedContent(builder);
-            return;
-        }
-
-        builder.AddContent(0, ChildContent);
+        var content = RenderState?.Content ?? ChildContent;
+        content?.Invoke(builder);
     }
 
     /// <inheritdoc/>

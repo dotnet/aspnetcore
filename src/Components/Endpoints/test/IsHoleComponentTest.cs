@@ -10,28 +10,28 @@ public class IsHoleComponentTest
     [Fact]
     public void NoAttribute_IsNotHole()
     {
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ComponentBase), CacheBoundaryVaryBy.None));
+        Assert.False(CacheBoundaryService.IsHoleComponent(typeof(ComponentBase), CacheBoundaryVaryBy.None));
     }
 
     [Fact]
     public void Attribute_NoVaryBy_IsUnconditionalHole()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.None));
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.User));
+        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.None));
+        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.User));
     }
 
     [Fact]
     public void Attribute_Throw_ThrowsWhenNotCovered()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            EndpointHtmlRenderer.IsHoleComponent(typeof(ThrowingComponent), CacheBoundaryVaryBy.None));
+            CacheBoundaryService.IsHoleComponent(typeof(ThrowingComponent), CacheBoundaryVaryBy.None));
     }
 
     [Fact]
     public void Attribute_VaryBy_IsHoleWhenNotCovered_SafeWhenCovered()
     {
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.None));
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.User));
+        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.None));
+        Assert.False(CacheBoundaryService.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.User));
     }
 
     [Fact]
@@ -40,15 +40,15 @@ public class IsHoleComponentTest
         var partial = CacheBoundaryVaryBy.User;
         var full = CacheBoundaryVaryBy.User | CacheBoundaryVaryBy.Query;
 
-        Assert.True(EndpointHtmlRenderer.IsHoleComponent(typeof(MultiDimensionHole), partial));
-        Assert.False(EndpointHtmlRenderer.IsHoleComponent(typeof(MultiDimensionHole), full));
+        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(MultiDimensionHole), partial));
+        Assert.False(CacheBoundaryService.IsHoleComponent(typeof(MultiDimensionHole), full));
     }
 
     [Fact]
     public void Attribute_Inherited_AppliesToSubclass()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            EndpointHtmlRenderer.IsHoleComponent(typeof(DerivedThrowingComponent), CacheBoundaryVaryBy.None));
+            CacheBoundaryService.IsHoleComponent(typeof(DerivedThrowingComponent), CacheBoundaryVaryBy.None));
     }
 
     [CacheBoundaryPolicy]
