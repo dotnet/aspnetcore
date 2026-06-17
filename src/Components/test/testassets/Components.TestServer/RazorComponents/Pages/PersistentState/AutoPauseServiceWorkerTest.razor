@@ -2,7 +2,6 @@
 @rendermode RenderMode.InteractiveServer
 
 <h1>Auto-pause — Service Worker survives pause</h1>
-
 <script src="/subdir/auto-pause-log-capture.js"></script>
 
 @if (RendererInfo.IsInteractive)
@@ -10,23 +9,17 @@
     <span id="render-mode-interactive">True</span>
 }
 
-<span id="sw-status"></span>
-<br/>
 <button id="start-sw" data-token="@_token" onclick="window.startGatedServiceWorker('@_token')">Start SW event</button>
 
 <script>
     window.__swResult = window.__swResult || 'idle';
 
-    navigator.serviceWorker.register('/subdir/autopause-test-sw.js', { scope: '/subdir/persistent-state/auto-pause-serviceworker' })
+    navigator.serviceWorker.register('/subdir/autopause-test-sw.js', { scope: '/subdir/persistent-state/' })
         .then(function () { return navigator.serviceWorker.ready; })
         .then(function () { window.__swReady = true; });
 
     navigator.serviceWorker.addEventListener('message', function (e) {
-        if (e.data && e.data.type === 'result') {
-            window.__swResult = e.data.value;
-            var el = document.getElementById('sw-status');
-            if (el) el.textContent = e.data.value;
-        }
+        if (e.data && e.data.type === 'result') { window.__swResult = e.data.value; }
     });
 
     window.startGatedServiceWorker = function (token) {

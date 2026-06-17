@@ -2,7 +2,6 @@
 @rendermode RenderMode.InteractiveServer
 
 <h1>Auto-pause — IndexedDB survives pause</h1>
-
 <script src="/subdir/auto-pause-log-capture.js"></script>
 
 @if (RendererInfo.IsInteractive)
@@ -10,8 +9,6 @@
     <span id="render-mode-interactive">True</span>
 }
 
-<span id="idb-status"></span>
-<br/>
 <button id="start-idb" data-token="@_token" onclick="window.startGatedIndexedDB('@_token')">Start IDB transaction</button>
 
 <script>
@@ -19,7 +16,6 @@
 
     window.startGatedIndexedDB = function (token) {
         window.__idbResult = 'pending';
-
         fetch('/subdir/autopause-test/js-gate/' + token)
             .then(function (r) { return r.json(); })
             .then(function () {
@@ -29,10 +25,7 @@
                     var db = e.target.result;
                     var tx = db.transaction('data', 'readwrite');
                     tx.objectStore('data').put('delivered', 'result');
-                    tx.oncomplete = function () {
-                        window.__idbResult = 'delivered';
-                        db.close();
-                    };
+                    tx.oncomplete = function () { window.__idbResult = 'delivered'; db.close(); };
                 };
             });
     };

@@ -2,7 +2,6 @@
 @rendermode RenderMode.InteractiveServer
 
 <h1>Auto-pause — WebSocket survives pause</h1>
-
 <script src="/subdir/auto-pause-log-capture.js"></script>
 
 @if (RendererInfo.IsInteractive)
@@ -10,8 +9,6 @@
     <span id="render-mode-interactive">True</span>
 }
 
-<span id="ws-status"></span>
-<br/>
 <button id="start-ws" data-token="@_token" onclick="window.startGatedWebSocket('@_token')">Start WebSocket</button>
 
 <script>
@@ -19,35 +16,10 @@
 
     window.startGatedWebSocket = function (token) {
         window.__wsResult = 'pending';
-        var el = document.getElementById('ws-status');
-        if (el) el.textContent = 'pending';
-
         var protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
         var ws = new WebSocket(protocol + '//' + location.host + '/subdir/autopause-test/ws-gate/' + token);
-
-        ws.onmessage = function (e) {
-            window.__wsResult = e.data;
-            var el = document.getElementById('ws-status');
-            if (el) el.textContent = e.data;
-        };
-        ws.onerror = function () {
-            window.__wsResult = 'error';
-            var el = document.getElementById('ws-status');
-            if (el) el.textContent = 'error';
-        };
-        ws.onclose = function () {
-            if (window.__wsResult === 'pending') {
-                window.__wsResult = 'closed-without-message';
-                var el = document.getElementById('ws-status');
-                if (el) el.textContent = 'closed-without-message';
-            }
-        };
+        ws.onmessage = function (e) { window.__wsResult = e.data; };
     };
-
-    (function () {
-        var el = document.getElementById('ws-status');
-        if (el) el.textContent = window.__wsResult;
-    })();
 </script>
 
 @code {
