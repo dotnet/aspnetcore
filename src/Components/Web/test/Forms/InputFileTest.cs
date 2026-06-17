@@ -17,14 +17,11 @@ public class InputFileTest
     [Fact]
     public void DerivedClass_CanOverrideDisposeMethod()
     {
-        // Arrange
         var disposed = false;
         var derivedInputFile = new DerivedInputFile(() => disposed = true);
 
-        // Act
         ((IDisposable)derivedInputFile).Dispose();
 
-        // Assert
         Assert.True(disposed, "Derived class Dispose(bool) method should be called");
     }
 
@@ -50,22 +47,18 @@ public class InputFileTest
     [Fact]
     public async Task OnAfterRenderAsync_InvokesInitJsFunction()
     {
-        // Arrange
         var inputFile = new TestInputFile();
         var jsRuntime = new TestJSRuntime();
         inputFile.JSRuntime = jsRuntime;
 
-        // Act
         await inputFile.CallOnAfterRenderAsync(firstRender: true);
 
-        // Assert
         Assert.Contains(jsRuntime.Invocations, i => i.identifier == InputFileInterop.Init);
     }
 
     [Fact]
     public async Task ConvertToImageFileAsync_SetsOwnerAndReturnsFile()
     {
-        // Arrange
         var inputFile = new InputFile();
         var browserFile = new BrowserFile { Id = 123, Name = "f", Size = 10 };
         var jsRuntime = new TestJSRuntime((identifier, args) =>
@@ -80,10 +73,8 @@ public class InputFileTest
 
         inputFile.JSRuntime = jsRuntime;
 
-        // Act
         var result = await inputFile.ConvertToImageFileAsync(browserFile, format: "jpeg", maxWidth: 100, maxHeight: 100);
 
-        // Assert
         Assert.Same(browserFile, result);
         Assert.Same(inputFile, ((BrowserFile)result).Owner);
     }
@@ -91,20 +82,17 @@ public class InputFileTest
     [Fact]
     public async Task ConvertToImageFileAsync_ThrowsIfJsReturnsNull()
     {
-        // Arrange
         var inputFile = new InputFile();
         var browserFile = new BrowserFile { Id = 1 };
         var jsRuntime = new TestJSRuntime((identifier, args) => null);
         inputFile.JSRuntime = jsRuntime;
 
-        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => inputFile.ConvertToImageFileAsync(browserFile, "jpeg", 1, 1).AsTask());
     }
 
     [Fact]
     public async Task NotifyChange_SetsOwnerAndInvokesOnChange()
     {
-        // Arrange
         var inputFile = new InputFile();
         var file1 = new BrowserFile();
         var file2 = new BrowserFile();
@@ -113,10 +101,8 @@ public class InputFileTest
 
         inputFile.OnChange = new EventCallback<InputFileChangeEventArgs>((IHandleEvent?)null, (Func<InputFileChangeEventArgs, Task>)(args => { invoked = true; receivedArgs = args; return Task.CompletedTask; }));
 
-        // Act
         await ((IInputFileJsCallbacks)inputFile).NotifyChange(new[] { file1, file2 });
 
-        // Assert
         Assert.True(invoked);
         Assert.NotNull(receivedArgs);
         Assert.Equal(2, receivedArgs!.FileCount);
