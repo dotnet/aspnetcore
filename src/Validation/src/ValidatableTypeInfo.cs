@@ -133,7 +133,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 
         for (var i = 0; i < _membersCount; i++)
         {
-            if (!Members[i].IsGuaranteedToBeSynchronous())
+            if (!Members[i].IsGuaranteedToBeSynchronous(value, options))
             {
                 return false;
             }
@@ -146,7 +146,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         {
             for (var i = 0; i < superTypeInfo._membersCount; i++)
             {
-                if (!superTypeInfo.Members[i].IsGuaranteedToBeSynchronous())
+                if (!superTypeInfo.Members[i].IsGuaranteedToBeSynchronous(value, options))
                 {
                     return false;
                 }

@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -58,6 +59,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
     /// </summary>
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
+    private PropertyInfo Property
+        => DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+
     /// <summary>
     /// Gets the validation attributes for this property.
     /// </summary>
@@ -69,8 +73,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
     {
         ArgumentNullException.ThrowIfNull(containingObject);
 
-        var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
-        var propertyValue = property.GetValue(containingObject);
+        var propertyValue = Property.GetValue(containingObject);
         var validationAttributes = GetValidationAttributes();
 
         var clonedContext = context.Clone(withNewInitiator: this);
@@ -203,10 +206,48 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
     }
 
-#pragma warning disable CA1822 // Mark members as static - TODO
-    internal bool IsGuaranteedToBeSynchronous()
-#pragma warning restore CA1822 // Mark members as static
+    internal bool IsGuaranteedToBeSynchronous(object containingObject, ValidationOptions options)
     {
-        return false; // TODO
+        foreach (var attr in GetValidationAttributes())
+        {
+            if (attr is AsyncValidationAttribute)
+            {
+                return false;
+            }
+        }
+
+        var propertyValue = Property.GetValue(containingObject);
+        if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+        {
+            foreach (var item in enumerable)
+            {
+                if (item != null)
+                {
+                    var itemType = item.GetType();
+                    if (options.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                    {
+                        if (validatableType is not ValidatableTypeInfo builtInInfo ||
+                            !builtInInfo.IsGuaranteedToBeSynchronous(item, options))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        else if (propertyValue != null)
+        {
+            var valueType = propertyValue.GetType();
+            if (options.TryGetValidatableTypeInfo(valueType, out var validatableType))
+            {
+                if (validatableType is not ValidatableTypeInfo builtInInfo ||
+                    !builtInInfo.IsGuaranteedToBeSynchronous(propertyValue, options))
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
