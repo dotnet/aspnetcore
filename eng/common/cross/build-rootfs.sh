@@ -618,9 +618,9 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
         [[ -z "$PKG_FILE" ]] && { echo "ERROR: Package $pkg not found"; exit 1; }
 
         if [[ "$__hasWget" == 1 ]]; then
-            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
+            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
         else
-            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
+            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
         fi
     done
 
@@ -636,6 +636,10 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
             ln -sf "$VERSIONED_NAME" "$__RootfsDir/usr/lib/$BASE_NAME"
         fi
     done
+
+    echo "Cleaning up unnecessary paths"
+    # we don't use executables and kernel in rootfs (as we use host's compiler with -sysroot)
+    rm -rf "$__RootfsDir/usr/share" "$__RootfsDir/usr/bin"
 elif [[ "$__CodeName" == "illumos" ]]; then
     mkdir "$__RootfsDir/tmp"
     pushd "$__RootfsDir/tmp"

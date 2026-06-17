@@ -41,7 +41,7 @@ public class DefaultValidationLocalizerTests
         {
             MemberName = "Name",
             DisplayName = "Customer Name",
-            DeclaringType = typeof(object),
+            Type = typeof(object),
         });
 
         Assert.Equal("Nom du client", result);
@@ -56,7 +56,7 @@ public class DefaultValidationLocalizerTests
         {
             MemberName = "Name",
             DisplayName = "Customer Name",
-            DeclaringType = typeof(object),
+            Type = typeof(object),
         });
 
         Assert.Equal("Customer Name", result);
@@ -247,7 +247,7 @@ public class DefaultValidationLocalizerTests
         {
             MemberName = "M",
             DisplayName = "Key",
-            DeclaringType = typeof(SomeModel),
+            Type = typeof(SomeModel),
         });
 
         Assert.Single(seenTypes);
@@ -273,7 +273,7 @@ public class DefaultValidationLocalizerTests
         {
             MemberName = "param",
             DisplayName = "Param",
-            DeclaringType = null,
+            Type = null,
         });
 
         Assert.Single(seenTypes);
@@ -293,7 +293,7 @@ public class DefaultValidationLocalizerTests
         {
             MemberName = "param",
             DisplayName = "Customer Name",
-            DeclaringType = null,
+            Type = null,
         });
 
         Assert.Equal("Customer Name", result);
@@ -310,7 +310,7 @@ public class DefaultValidationLocalizerTests
             {
                 MemberName = "Name",
                 DisplayName = "Customer Name",
-                DeclaringType = typeof(object),
+                Type = typeof(object),
             }));
 
         Assert.Contains(nameof(ValidationLocalizationOptions.LocalizerProvider), ex.Message);
@@ -331,7 +331,7 @@ public class DefaultValidationLocalizerTests
         {
             MemberName = "Name",
             DisplayName = "Required",
-            DeclaringType = typeof(SomeModel),
+            Type = typeof(SomeModel),
         });
 
         Assert.Equal("Required (shared)", result);
@@ -348,8 +348,8 @@ public class DefaultValidationLocalizerTests
         };
         var localizer = CreateLocalizerPerType(perTypeTranslations);
 
-        var resultA = localizer.ResolveDisplayName(new() { MemberName = "M", DisplayName = "Key", DeclaringType = typeof(SomeModel) });
-        var resultB = localizer.ResolveDisplayName(new() { MemberName = "M", DisplayName = "Key", DeclaringType = typeof(OtherModel) });
+        var resultA = localizer.ResolveDisplayName(new() { MemberName = "M", DisplayName = "Key", Type = typeof(SomeModel) });
+        var resultB = localizer.ResolveDisplayName(new() { MemberName = "M", DisplayName = "Key", Type = typeof(OtherModel) });
 
         Assert.Equal("Translation A", resultA);
         Assert.Equal("Translation B", resultB);
