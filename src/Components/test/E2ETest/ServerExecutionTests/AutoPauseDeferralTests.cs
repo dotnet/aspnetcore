@@ -767,6 +767,18 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             expectedWhenMitigated: "connected");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void MediaCapture_StreamState_PreservedOnlyWithMitigation(bool useMitigation)
+    {
+        RunRiskMitigationTest(
+            useMitigation,
+            page: "auto-pause-media-capture-risk",
+            savedVar: "__savedMediaState",
+            expectedWhenMitigated: "true,1,live");
+    }
+
     private void RunRiskMitigationTest(
         bool useMitigation,
         string savedVar,
