@@ -67,6 +67,12 @@
     <ReusablePanel Label="beta" />
 </div>
 
+<div id="test-10">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)">
+        <HardcodedHolePanel />
+    </CacheBoundary>
+</div>
+
 @code
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]

@@ -177,6 +177,20 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
         Assert.Equal(new[] { creatorGuid, creatorGuid }, GetPanelTexts(".panel-guid"));
     }
 
+    [Fact]
+    public void CacheBoundaryCachesHardcodedHole()
+    {
+        Navigate($"{ServerPathBase}/cache-component");
+        var panel = Browser.FindElement(By.Id("test-10"));
+        var staticGuid = panel.FindElement(By.CssSelector(".panel-static")).Text;
+        var holeGuid = panel.FindElement(By.CssSelector(".hardcoded-hole")).Text;
+        Assert.NotEqual(staticGuid, holeGuid);
+
+        Navigate($"{ServerPathBase}/cache-component");
+        Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".panel-static")).Text);
+        Browser.NotEqual(holeGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".hardcoded-hole")).Text);
+    }
+
     private int GetRenderCount()
     {
         Navigate($"{ServerPathBase}/cache-component/render-count");

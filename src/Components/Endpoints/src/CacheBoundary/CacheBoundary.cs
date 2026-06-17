@@ -125,10 +125,6 @@ public sealed class CacheBoundary : IComponent, IDisposable
     internal string? ResolvedCacheKey { get; private set; }
     internal string? CachedData { get; private set; }
 
-    // Set on cache miss when caching is active. Wraps ChildContent so the live render populates frame
-    // captures that the cache can read at hole-emission time (and recurses into nested RenderFragments).
-    internal RenderFragmentCapture? ChildContentCapture { get; private set; }
-
     // Tracks the active capture writer between TryBeginCacheCapture and EndCacheCapture. Non-null
     // only while the renderer is walking this boundary's subtree on a cache miss.
     private CacheBoundaryTextWriter? _activeCaptureWriter;
@@ -191,7 +187,6 @@ public sealed class CacheBoundary : IComponent, IDisposable
         // Reset per-render state.
         ResolvedCacheKey = null;
         CachedData = null;
-        ChildContentCapture = null;
         _isCreator = false;
         _captureCompletion = null;
         _pendingCacheStoreTask = null;
@@ -285,24 +280,13 @@ public sealed class CacheBoundary : IComponent, IDisposable
     {
         if (TryDeserializeCachedNodes(out var nodes))
         {
-            ChildContentCapture = null;
             // Cache hit (or waiter): invoke the deserialized RenderFragment straight into the live builder.
             RenderFragmentSerializer.Deserialize(nodes!, _jsonOptions, _parametersTypeCache)(builder);
             return;
         }
 
         CachedData = null;
-
-        if (_isCreator && ChildContent is { } childContent)
-        {
-            ChildContentCapture = new RenderFragmentCapture(childContent);
-            builder.AddContent(0, (RenderFragment)ChildContentCapture.Invoke);
-        }
-        else
-        {
-            ChildContentCapture = null;
-            builder.AddContent(0, ChildContent);
-        }
+        builder.AddContent(0, ChildContent);
     }
 
     // Invoked by EndpointHtmlRenderer when it is about to emit HTML for this boundary's subtree.
@@ -317,7 +301,7 @@ public sealed class CacheBoundary : IComponent, IDisposable
             return false;
         }
 
-        var writer = new CacheBoundaryTextWriter(realOutput, GetVaryByOptions(), ChildContentCapture);
+        var writer = new CacheBoundaryTextWriter(realOutput, GetVaryByOptions());
         writer.StartCapture();
         _activeCaptureWriter = writer;
         wrappedOutput = writer;
@@ -341,7 +325,7 @@ public sealed class CacheBoundary : IComponent, IDisposable
         try
         {
             _activeCaptureWriter.StopCapture();
-            var json = _activeCaptureWriter.GetJson(GetSerializationLogger());
+            var json = _activeCaptureWriter.GetJson();
             completion?.TrySetResult(json);
         }
         catch (Exception ex)
@@ -393,10 +377,6 @@ public sealed class CacheBoundary : IComponent, IDisposable
 
     private ILogger? GetLogger()
         => HttpContext?.RequestServices.GetService<ILoggerFactory>()?.CreateLogger<CacheBoundary>();
-
-    private ILogger GetSerializationLogger()
-        => HttpContext!.RequestServices.GetRequiredService<ILoggerFactory>()
-            .CreateLogger(typeof(RenderFragmentSerializer).FullName!);
 
     private bool TryDeserializeCachedNodes(out List<RenderTreeNode>? nodes)
     {

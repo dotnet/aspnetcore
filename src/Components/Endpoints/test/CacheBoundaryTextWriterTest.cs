@@ -3,8 +3,10 @@
 
 #nullable enable
 
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -12,48 +14,77 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public class CacheBoundaryTextWriterTest
 {
     [Fact]
-    public void GetJson_HoleWithRenderFragmentParameter_Throws()
+    public void CreateHole_HoleWithRenderFragmentParameter_Throws()
     {
-        RenderFragment fragment = builder =>
+        var capture = new RenderFragmentCapture(CaptureFramesFor(builder =>
         {
             builder.OpenComponent<TestRenderFragmentHole>(7);
             builder.AddAttribute(8, "ChildContent", (RenderFragment)(b => b.AddContent(0, "inner")));
             builder.CloseComponent();
-        };
+        }));
 
-        var capture = new RenderFragmentCapture(fragment);
-        using var captureBuilder = new RenderTreeBuilder();
-        capture.Invoke(captureBuilder);
-        InvokeChildCaptures(capture);
-
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None, capture);
+        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
         writer.StartCapture();
-        writer.CreateHole(typeof(TestRenderFragmentHole), sequence: 7, componentKey: null, renderModeName: null);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => writer.GetJson(NullLogger.Instance));
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            writer.CreateHole(typeof(TestRenderFragmentHole), renderModeName: null, renderModePrerender: true, capture, NullLogger.Instance));
         Assert.Contains("RenderFragment parameter", ex.Message);
     }
 
     [Fact]
-    public void GetJson_HoleWithoutRenderFragmentParameter_DoesNotThrow()
+    public void CreateHole_HoleWithoutRenderFragmentParameter_SerializesNode()
     {
-        RenderFragment fragment = builder =>
+        var capture = new RenderFragmentCapture(CaptureFramesFor(builder =>
         {
             builder.OpenComponent<TestRenderFragmentHole>(7);
             builder.AddComponentParameter(8, "Title", "hello");
             builder.CloseComponent();
-        };
+        }));
 
-        var capture = new RenderFragmentCapture(fragment);
-        using var captureBuilder = new RenderTreeBuilder();
-        capture.Invoke(captureBuilder);
-
-        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None, capture);
+        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
         writer.StartCapture();
-        writer.CreateHole(typeof(TestRenderFragmentHole), sequence: 7, componentKey: null, renderModeName: null);
+        writer.CreateHole(typeof(TestRenderFragmentHole), renderModeName: null, renderModePrerender: true, capture, NullLogger.Instance);
+        writer.StopCapture();
 
-        var json = writer.GetJson(NullLogger.Instance);
+        var json = writer.GetJson();
         Assert.Contains(nameof(TestRenderFragmentHole), json);
+        Assert.Contains("hello", json);
+    }
+
+    [Fact]
+    public void GetJson_InterleavesMarkupAndHolesInRenderOrder()
+    {
+        var capture = new RenderFragmentCapture(CaptureFramesFor(builder =>
+        {
+            builder.OpenComponent<TestRenderFragmentHole>(7);
+            builder.AddComponentParameter(8, "Title", "hole-value");
+            builder.CloseComponent();
+        }));
+
+        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        writer.StartCapture();
+        writer.Write("<p>before</p>");
+        writer.PauseCapture();
+        writer.CreateHole(typeof(TestRenderFragmentHole), renderModeName: null, renderModePrerender: true, capture, NullLogger.Instance);
+        writer.StartCapture();
+        writer.Write("<p>after</p>");
+        writer.StopCapture();
+
+        var json = writer.GetJson();
+        var beforeIndex = json.IndexOf("before", StringComparison.Ordinal);
+        var holeIndex = json.IndexOf("hole-value", StringComparison.Ordinal);
+        var afterIndex = json.IndexOf("after", StringComparison.Ordinal);
+        Assert.True(beforeIndex >= 0 && holeIndex > beforeIndex && afterIndex > holeIndex);
+    }
+
+    private static RenderTreeFrame[] CaptureFramesFor(RenderFragment fragment)
+    {
+        using var builder = new RenderTreeBuilder();
+        fragment(builder);
+        var frames = builder.GetFrames();
+        var slice = new RenderTreeFrame[frames.Count];
+        Array.Copy(frames.Array, 0, slice, 0, frames.Count);
+        return slice;
     }
 
     [CacheBoundaryPolicy]
@@ -68,15 +99,5 @@ public class CacheBoundaryTextWriterTest
         }
 
         public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
-    }
-
-    private static void InvokeChildCaptures(RenderFragmentCapture capture)
-    {
-        foreach (var child in capture.ChildCaptures.Values)
-        {
-            using var builder = new RenderTreeBuilder();
-            child.Invoke(builder);
-            InvokeChildCaptures(child);
-        }
     }
 }

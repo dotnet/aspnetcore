@@ -3,6 +3,7 @@
 
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -13,21 +14,19 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
     private readonly StringBuilder _buffer = new();
     private readonly List<CacheCaptureEntry> _entries = [];
     private bool _capturing;
-    private bool _hasHoles;
     private bool _validateOnly;
 
-    public CacheBoundaryTextWriter(TextWriter inner, CacheBoundaryVaryBy varyBy, RenderFragmentCapture? capture)
+    public CacheBoundaryTextWriter(TextWriter inner, CacheBoundaryVaryBy varyBy)
     {
         _innerWriter = inner;
         VaryBy = varyBy;
-        Capture = capture;
     }
 
     public CacheBoundaryVaryBy VaryBy { get; set; }
 
     public bool IsCapturing => _capturing;
 
-    public RenderFragmentCapture? Capture { get; }
+    public bool IsValidationOnly => _validateOnly;
 
     public override Encoding Encoding => _innerWriter.Encoding;
 
@@ -66,10 +65,35 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         _validateOnly = true;
     }
 
-    public void CreateHole(Type componentType, int sequence, object? componentKey, string? renderModeName, bool renderModePrerender = true)
+    public void CreateHole(Type componentType, string? renderModeName, bool renderModePrerender, RenderFragmentCapture capture, ILogger renderFragmentSerializationLogger)
     {
-        _entries.Add(CacheCaptureEntry.Hole(componentType, sequence, componentKey, renderModeName, renderModePrerender));
-        _hasHoles = true;
+        ThrowIfHoleHasRenderFragmentParameter(componentType, capture);
+
+        RenderTreeNode? holeNode = null;
+        foreach (var node in RenderFragmentSerializer.SerializeFrames(capture, renderFragmentSerializationLogger))
+        {
+            if (node.Type is "component")
+            {
+                holeNode = node;
+                break;
+            }
+        }
+
+        if (holeNode is null)
+        {
+            throw new InvalidOperationException(
+                $"CacheBoundary could not serialize the hole component '{componentType.FullName}' from its parent's render tree.");
+        }
+
+        // The serializer fills RenderModeName from an inline @rendermode frame. For components that
+        // declare their render mode via [RenderModeAttribute] instead, patch it from the runtime value.
+        if (renderModeName is not null && holeNode.RenderModeName is null)
+        {
+            holeNode.RenderModeName = renderModeName;
+            holeNode.Prerender = renderModePrerender;
+        }
+
+        _entries.Add(CacheCaptureEntry.Hole(holeNode));
     }
 
     public void StopCapture()
@@ -78,81 +102,38 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         FlushBuffer();
     }
 
-    /// Produces the cache JSON for the captured render.
-    /// 1. Serialize the captured ChildContent frames into a component tree.
-    /// 2. Index all component nodes by (TypeName, Sequence) for fast lookup.
-    /// 3. Walk entries in render order, emitting markup nodes directly and resolving hole entries against the index.
-    public string GetJson(ILogger renderFragmentSerializationLogger)
+    // Assembles the cache JSON by walking the recorded entries in render order: markup segments become
+    // markup nodes and holes contribute the component node serialized at CreateHole time.
+    public string GetJson()
     {
-        Dictionary<(string, int), Queue<RenderTreeNode>>? componentIndex = null;
-
-        if (_hasHoles)
-        {
-            if (Capture is null)
-            {
-                throw new InvalidOperationException("CacheBoundary captured holes but no ChildContent capture was provided.");
-            }
-
-            var serializedNodes = RenderFragmentSerializer.SerializeFrames(Capture, renderFragmentSerializationLogger);
-            componentIndex = IndexComponentNodes(serializedNodes);
-        }
-
         var nodes = new List<RenderTreeNode>(_entries.Count);
 
         foreach (var entry in _entries)
         {
-            if (!entry.IsHole)
-            {
-                nodes.Add(new RenderTreeNode { Type = "markup", Content = entry.Markup });
-                continue;
-            }
-
-            var key = (entry.ComponentType!.FullName!, entry.Sequence);
-            if (!componentIndex!.TryGetValue(key, out var queue) || queue.Count == 0)
-            {
-                throw new InvalidOperationException(
-                    $"CacheBoundary could not locate component '{key.Item1}' (sequence {key.Item2}) in the serialized ChildContent tree. " +
-                    "This happens when a component marked with [CacheBoundaryPolicy] (a \"hole\") is emitted by an intermediate component's own BuildRenderTree rather than appearing directly inside the CacheBoundary's ChildContent or inside a RenderFragment parameter passed through it. " +
-                    "To fix this, either move the hole component so that it is a direct child of the CacheBoundary's content (or passed as a RenderFragment parameter), or annotate the intermediate wrapper component itself with [CacheBoundaryPolicy] so its entire subtree is treated as a hole.");
-            }
-
-            var componentNode = queue.Dequeue();
-
-            // The serializer fills RenderModeName from an inline @rendermode frame in the capture.
-            // For components that declare their render mode via [RenderModeAttribute] instead,
-            // the capture has no ComponentRenderMode frame, so we patch it from the runtime value.
-            if (entry.RenderModeName is not null && componentNode.RenderModeName is null)
-            {
-                componentNode.RenderModeName = entry.RenderModeName;
-                componentNode.Prerender = entry.RenderModePrerender;
-            }
-
-            // A plain [CacheBoundaryPolicy] hole (no render mode) cannot have a RenderFragment
-            // parameter. The hole re-renders on every request, but its parameters are captured once
-            // and replayed, so a RenderFragment parameter would be frozen to the content of the first
-            // render instead of being excluded from the cache. Interactive (render-mode) holes
-            // serialize their parameters for hydration, so they are exempt.
-            if (componentNode.RenderModeName is null && componentNode.ComponentParameters is { } parameters)
-            {
-                foreach (var parameter in parameters)
-                {
-                    if (string.Equals(parameter.TypeName, RenderFragmentSerializer.SerializedRenderFragmentValueType, StringComparison.Ordinal))
-                    {
-                        throw new InvalidOperationException(
-                            $"Component '{componentNode.TypeName}' is excluded from caching because it is annotated with [CacheBoundaryPolicy] (a \"hole\"), " +
-                            $"but it has a RenderFragment parameter '{parameter.Name}'. A hole is re-rendered on every request, but its parameters are captured " +
-                            "once and replayed, so a RenderFragment parameter cannot be supported (it would be frozen to the content of the first render). " +
-                            "Remove the RenderFragment parameter from the component, or do not place it inside a CacheBoundary.");
-                    }
-                }
-            }
-
-            nodes.Add(componentNode);
+            nodes.Add(entry.HoleNode ?? new RenderTreeNode { Type = "markup", Content = entry.Markup });
         }
 
         return JsonSerializer.Serialize(
             new SerializedRenderFragment { Nodes = nodes },
             ServerComponentSerializationSettings.JsonSerializationOptions);
+    }
+
+    // A hole is serialized from its parent's frames, which carry no nested RenderFragment captures, so a
+    // RenderFragment parameter could not be replayed correctly. Surface an actionable error before the
+    // generic serializer error fires.
+    private static void ThrowIfHoleHasRenderFragmentParameter(Type holeComponentType, RenderFragmentCapture capture)
+    {
+        foreach (ref readonly var frame in capture.GetCapturedFrames().AsSpan())
+        {
+            if (frame.FrameType is RenderTreeFrameType.Attribute && frame.AttributeValue is RenderFragment)
+            {
+                throw new InvalidOperationException(
+                    $"Component '{holeComponentType.FullName}' is excluded from caching because it is annotated with [CacheBoundaryPolicy] (a \"hole\"), " +
+                    $"but it has a RenderFragment parameter '{frame.AttributeName}'. A hole is re-rendered on every request, but its parameters are captured " +
+                    "once and replayed, so a RenderFragment parameter cannot be supported (it would be frozen to the content of the first render). " +
+                    "Remove the RenderFragment parameter from the component, or do not place it inside a CacheBoundary.");
+            }
+        }
     }
 
     private void FlushBuffer()
@@ -163,79 +144,22 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
             _buffer.Clear();
         }
     }
-
-    /// Builds a lookup of all component nodes in the serialized tree, keyed by (TypeName, Sequence).
-    /// Descends into element children and into serialized RenderFragment parameter values so that
-    /// components nested inside wrapper components (e.g., CascadingValue) are reachable.
-    private static Dictionary<(string, int), Queue<RenderTreeNode>> IndexComponentNodes(List<RenderTreeNode> nodes)
-    {
-        var index = new Dictionary<(string, int), Queue<RenderTreeNode>>();
-        IndexComponentNodesCore(nodes, index);
-        return index;
-    }
-
-    private static void IndexComponentNodesCore(List<RenderTreeNode> nodes, Dictionary<(string, int), Queue<RenderTreeNode>> index)
-    {
-        foreach (var node in nodes)
-        {
-            if (node.Type is "component")
-            {
-                if (node.TypeName is not null && node.Sequence is { } seq)
-                {
-                    var key = (node.TypeName, seq);
-                    if (!index.TryGetValue(key, out var queue))
-                    {
-                        queue = new Queue<RenderTreeNode>();
-                        index[key] = queue;
-                    }
-                    // We use queue here, because in recursive RenderFragments it's possible to have multiple nodes with the same (TypeName, Sequence) key, and they must be dequeued in the order they appear in the render.
-                    // We can be sure that we will have correct node for each hole, because we traverse the tree in render order, and holes are generated in html rendering pipeline in the same render order as well.
-                    queue.Enqueue(node);
-                }
-
-                if (node.ComponentParameters is { } parameters)
-                {
-                    foreach (var parameter in parameters)
-                    {
-                        if (parameter.Value is SerializedRenderFragment nested)
-                        {
-                            IndexComponentNodesCore(nested.Nodes, index);
-                        }
-                    }
-                }
-            }
-            else if (node.Children is { Count: > 0 } children)
-            {
-                IndexComponentNodesCore(children, index);
-            }
-        }
-    }
 }
 
 internal readonly struct CacheCaptureEntry
 {
-    public bool IsHole { get; }
     public string? Markup { get; }
-    public Type? ComponentType { get; }
-    public int Sequence { get; }
-    public object? ComponentKey { get; }
-    public string? RenderModeName { get; }
-    public bool RenderModePrerender { get; }
+    public RenderTreeNode? HoleNode { get; }
 
-    private CacheCaptureEntry(bool isHole, string? markup, Type? componentType, int sequence, object? componentKey, string? renderModeName, bool renderModePrerender)
+    private CacheCaptureEntry(string? markup, RenderTreeNode? holeNode)
     {
-        IsHole = isHole;
         Markup = markup;
-        ComponentType = componentType;
-        Sequence = sequence;
-        ComponentKey = componentKey;
-        RenderModeName = renderModeName;
-        RenderModePrerender = renderModePrerender;
+        HoleNode = holeNode;
     }
 
     public static CacheCaptureEntry MarkupEntry(string markup)
-        => new(isHole: false, markup, componentType: null, sequence: 0, componentKey: null, renderModeName: null, renderModePrerender: true);
+        => new(markup, holeNode: null);
 
-    public static CacheCaptureEntry Hole(Type componentType, int sequence, object? componentKey, string? renderModeName, bool renderModePrerender)
-        => new(isHole: true, markup: null, componentType, sequence, componentKey, renderModeName, renderModePrerender);
+    public static CacheCaptureEntry Hole(RenderTreeNode holeNode)
+        => new(markup: null, holeNode);
 }

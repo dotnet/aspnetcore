@@ -307,7 +307,7 @@ internal partial class EndpointHtmlRenderer
 
             if (output is not CacheBoundaryTextWriter)
             {
-                var validationWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions(), null);
+                var validationWriter = new CacheBoundaryTextWriter(output, cacheBoundary.GetVaryByOptions());
                 validationWriter.StartValidation();
                 base.WriteComponentHtml(componentId, validationWriter);
                 return;
@@ -324,7 +324,19 @@ internal partial class EndpointHtmlRenderer
             var (holeComponentType, renderModeName, renderModePrerender) = componentState.Component is SSRRenderModeBoundary boundary2
                 ? (boundary2.ComponentType, GetRenderModeNameOrThrowForCache(boundary2.RenderMode, boundary2.ComponentType), RenderFragmentSerializer.GetRenderModePrerender(boundary2.RenderMode))
                 : (componentState.Component.GetType(), (string?)null, true);
-            captureWriter.CreateHole(holeComponentType, sequenceAndKey.Sequence, sequenceAndKey.Key, renderModeName, renderModePrerender);
+
+            // A validation-only writer (a non-creator boundary) only needs the throws above to surface;
+            // it does not produce a cache entry, so skip the capture and serialization work.
+            if (!captureWriter.IsValidationOnly)
+            {
+                // The hole's parameters live in its render-tree parent's frames, whether it sits directly
+                // in the CacheBoundary's ChildContent or is emitted by an intermediate component's own
+                // BuildRenderTree. Capture them now, while we still hold its component state.
+                var holeCapture = TryCaptureHoleParameterFrames(componentState)
+                    ?? throw new InvalidOperationException(
+                        $"CacheBoundary could not locate the hole component '{holeComponentType.FullName}' in its parent's render tree.");
+                captureWriter.CreateHole(holeComponentType, renderModeName, renderModePrerender, holeCapture, GetRenderFragmentSerializationLogger());
+            }
         }
 
         ComponentEndMarker? endMarkerOrNull = default;
@@ -382,6 +394,34 @@ internal partial class EndpointHtmlRenderer
     }
 
     private static readonly ConcurrentDictionary<Type, CacheBoundaryPolicyAttribute?> _cachedCacheExclusions = new();
+
+    // Captures the frame range of a hole (the component frame plus its parameter attributes) from its
+    // render-tree parent. The hole's parameters live in the parent's frames whether the hole sits in the
+    // CacheBoundary's ChildContent or is emitted by an intermediate component's own BuildRenderTree.
+    // Returns null when the parent or frame cannot be located.
+    private RenderFragmentCapture? TryCaptureHoleParameterFrames(EndpointComponentState holeComponentState)
+    {
+        if (holeComponentState.ParentComponentState is not { } parentComponentState)
+        {
+            return null;
+        }
+
+        var frames = GetRenderTreeFrames(parentComponentState.ComponentId);
+        var array = frames.Array;
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref readonly var frame = ref array[i];
+            if (frame.FrameType is RenderTreeFrameType.Component && ReferenceEquals(frame.Component, holeComponentState.Component))
+            {
+                var length = frame.ComponentSubtreeLength;
+                var slice = new RenderTreeFrame[length];
+                Array.Copy(array, i, slice, 0, length);
+                return new RenderFragmentCapture(slice);
+            }
+        }
+
+        return null;
+    }
 
     internal static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
     {
