@@ -657,6 +657,34 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__idbResult") as string == "delivered");
     }
 
+    private void NavigateToBackgroundSyncPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-background-sync?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__swReady === true") is true);
+    }
+
+    [Fact]
+    public void BackgroundSync_EventDuringPause_DeliversResultOnReturn()
+    {
+        NavigateToBackgroundSyncPage();
+        var token = Browser.Exists(By.Id("start-sync")).GetDomAttribute("data-token");
+
+        Browser.Exists(By.Id("start-sync")).Click();
+        WaitForStreamStarted(token);
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__syncResult") as string == "pending");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        ReleaseGate(token);
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__syncResult") as string == "delivered");
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();
