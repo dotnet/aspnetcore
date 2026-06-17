@@ -56,7 +56,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
     [Theory]
     [InlineData(BrowserKind.Chromium)]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66708")]
     public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
     {
         var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"]);
