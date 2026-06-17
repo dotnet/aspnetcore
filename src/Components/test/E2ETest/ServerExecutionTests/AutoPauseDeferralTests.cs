@@ -690,34 +690,16 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData(true)]
     public void CustomElement_UnboundDirtyInputs_StatePreservedOnlyWithMitigation(bool useMitigation)
     {
-        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
-        Navigate($"/subdir/persistent-state/auto-pause-custom-element-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
-        Browser.Exists(By.Id("render-mode-interactive"));
-
-        // Type into shadow DOM inputs 1 and 2, leave 3 clean and focused.
-        var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteScript(@"
-            var shadow = document.getElementById('custom-form').shadowRoot;
-            shadow.getElementById('f1').value = 'aaa';
-            shadow.getElementById('f2').value = 'bbb';
-            shadow.getElementById('f3').focus();
-        ");
-
-        SetVisibility("hidden");
-        WaitForPausedUI();
-
-        SetVisibility("visible");
-        WaitForResumedUI();
-
-        var saved = js.ExecuteScript("return window.__savedFormValues") as string;
-        if (useMitigation)
-        {
-            Assert.Equal("aaa,bbb,", saved);
-        }
-        else
-        {
-            Assert.Null(saved);
-        }
+        RunRiskMitigationTest(
+            useMitigation,
+            page: "auto-pause-custom-element-risk",
+            setupScript: @"
+                var shadow = document.getElementById('custom-form').shadowRoot;
+                shadow.getElementById('f1').value = 'aaa';
+                shadow.getElementById('f2').value = 'bbb';
+                shadow.getElementById('f3').focus();",
+            savedVar: "__savedFormValues",
+            expectedWhenMitigated: "aaa,bbb,");
     }
 
     [Theory]
@@ -725,33 +707,19 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData(true)]
     public void Canvas_DrawingState_PreservedOnlyWithMitigation(bool useMitigation)
     {
-        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
-        Navigate($"/subdir/persistent-state/auto-pause-canvas-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
-        Browser.Exists(By.Id("render-mode-interactive"));
-
-        var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteScript(@"
-            var ctx = document.getElementById('test-canvas').getContext('2d');
-            ctx.fillStyle = 'red';
-            ctx.fillRect(0, 0, 50, 50);
-        ");
-
-        SetVisibility("hidden");
-        WaitForPausedUI();
-
-        SetVisibility("visible");
-        WaitForResumedUI();
-
-        var saved = ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__savedCanvasData") as string;
-        if (useMitigation)
-        {
-            Assert.NotNull(saved);
-            Assert.StartsWith("data:image/png", saved);
-        }
-        else
-        {
-            Assert.Null(saved);
-        }
+        RunRiskMitigationTest(
+            useMitigation,
+            page: "auto-pause-canvas-risk",
+            setupScript: @"
+                var ctx = document.getElementById('test-canvas').getContext('2d');
+                ctx.fillStyle = 'red';
+                ctx.fillRect(0, 0, 50, 50);",
+            savedVar: "__savedCanvasData",
+            assertMitigated: saved =>
+            {
+                Assert.NotNull(saved);
+                Assert.StartsWith("data:image/png", saved);
+            });
     }
 
     [Theory]
@@ -759,12 +727,27 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     [InlineData(true)]
     public void ClosedShadowDOM_InternalInputs_StatePreservedOnlyWithMitigation(bool useMitigation)
     {
+        RunRiskMitigationTest(
+            useMitigation,
+            page: "auto-pause-closed-shadow-risk",
+            setupScript: "document.getElementById('closed-form').setValues('secret1', 'secret2')",
+            savedVar: "__savedClosedFormValues",
+            expectedWhenMitigated: "secret1,secret2");
+    }
+
+    private void RunRiskMitigationTest(
+        bool useMitigation,
+        string page,
+        string setupScript,
+        string savedVar,
+        string expectedWhenMitigated = null,
+        Action<string> assertMitigated = null)
+    {
         var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
-        Navigate($"/subdir/persistent-state/auto-pause-closed-shadow-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
+        Navigate($"/subdir/persistent-state/{page}?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
         Browser.Exists(By.Id("render-mode-interactive"));
 
-        var js = (IJavaScriptExecutor)Browser;
-        js.ExecuteScript("document.getElementById('closed-form').setValues('secret1', 'secret2')");
+        ((IJavaScriptExecutor)Browser).ExecuteScript(setupScript);
 
         SetVisibility("hidden");
         WaitForPausedUI();
@@ -772,10 +755,17 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         SetVisibility("visible");
         WaitForResumedUI();
 
-        var saved = js.ExecuteScript("return window.__savedClosedFormValues") as string;
+        var saved = ((IJavaScriptExecutor)Browser).ExecuteScript($"return window.{savedVar}") as string;
         if (useMitigation)
         {
-            Assert.Equal("secret1,secret2", saved);
+            if (assertMitigated != null)
+            {
+                assertMitigated(saved);
+            }
+            else
+            {
+                Assert.Equal(expectedWhenMitigated, saved);
+            }
         }
         else
         {
