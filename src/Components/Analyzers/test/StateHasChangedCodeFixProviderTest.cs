@@ -85,6 +85,7 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         {
             protected override void OnInitialized()
             {
+                
             }
         }
     }" + ComponentDeclarations;
@@ -124,9 +125,11 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         {
             protected override async Task OnInitializedAsync()
             {
+                
                 await Task.Delay(1);
                 StateHasChanged();
                 await Task.Delay(1);
+                
             }
         }
     }" + ComponentDeclarations;

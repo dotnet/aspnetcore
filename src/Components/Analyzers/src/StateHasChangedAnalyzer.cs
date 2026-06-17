@@ -76,7 +76,7 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                 }
             }, OperationKind.Invocation);
 
-            // collect unncessary StateHasChanged calls
+            // collect unnecessary StateHasChanged calls
             context.RegisterSyntaxNodeAction(syntaxContext =>
             {
                 var methodDeclaration = (MethodDeclarationSyntax)syntaxContext.Node;

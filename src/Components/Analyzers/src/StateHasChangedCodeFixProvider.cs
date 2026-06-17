@@ -48,7 +48,7 @@ public class StateHasChangedCodeFixProvider : CodeFixProvider
             return;
         }
 
-        var title = Title.ToString(CultureInfo.InvariantCulture);
+        var title = Title.ToString(CultureInfo.CurrentCulture);
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: title,
@@ -65,7 +65,7 @@ public class StateHasChangedCodeFixProvider : CodeFixProvider
             ? (SyntaxNode)expressionStatement
             : invocation;
 
-        var newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepNoTrivia);
+        var newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepExteriorTrivia);
         return Task.FromResult(document.WithSyntaxRoot(newRoot));
     }
 }

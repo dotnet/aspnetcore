@@ -109,6 +109,7 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
     namespace ConsoleApplication1
     {
         using Microsoft.AspNetCore.Components;
+        using System.Threading.Tasks;
 
         class TestComponent : ComponentBase
         {
@@ -155,28 +156,28 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 13, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 23, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 29, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 30, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
                 Message = "StateHasChanged is unnecessary here and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 39, 17) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 40, 17) }
             });
     }
 
