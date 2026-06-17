@@ -735,19 +735,41 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             expectedWhenMitigated: "secret1,secret2");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CrossOriginIframe_InternalState_PreservedOnlyWithMitigation(bool useMitigation)
+    {
+        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
+        Navigate($"/subdir/persistent-state/auto-pause-cross-origin-iframe-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.__iframeReady === true"));
+
+        RunRiskMitigationTest(
+            useMitigation,
+            savedVar: "__savedIframeState",
+            expectedWhenMitigated: "iframe-state-42");
+    }
+
     private void RunRiskMitigationTest(
         bool useMitigation,
-        string page,
-        string setupScript,
         string savedVar,
+        string page = null,
+        string setupScript = null,
         string expectedWhenMitigated = null,
         Action<string> assertMitigated = null)
     {
-        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
-        Navigate($"/subdir/persistent-state/{page}?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
-        Browser.Exists(By.Id("render-mode-interactive"));
+        if (page != null)
+        {
+            var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
+            Navigate($"/subdir/persistent-state/{page}?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
+            Browser.Exists(By.Id("render-mode-interactive"));
+        }
 
-        ((IJavaScriptExecutor)Browser).ExecuteScript(setupScript);
+        if (setupScript != null)
+        {
+            ((IJavaScriptExecutor)Browser).ExecuteScript(setupScript);
+        }
 
         SetVisibility("hidden");
         WaitForPausedUI();
