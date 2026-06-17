@@ -18,5 +18,6 @@ export async function onRuntimeConfigLoaded(config) {
             }
         }
     } catch (error) {
+        console.warn('Failed to load the client configuration from the host:', error);
     }
 }
