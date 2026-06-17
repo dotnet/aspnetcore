@@ -8,6 +8,7 @@
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
     <Nullable>enable</Nullable>
     <WarnOnNullable>true</WarnOnNullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
