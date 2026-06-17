@@ -1,0 +1,43 @@
+@page "/persistent-state/auto-pause-indexeddb"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — IndexedDB survives pause</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<span id="idb-status"></span>
+<br/>
+<button id="start-idb" data-token="@_token" onclick="window.startGatedIndexedDB('@_token')">Start IDB transaction</button>
+
+<script>
+    window.__idbResult = window.__idbResult || 'idle';
+
+    window.startGatedIndexedDB = function (token) {
+        window.__idbResult = 'pending';
+
+        fetch('/subdir/autopause-test/js-gate/' + token)
+            .then(function (r) { return r.json(); })
+            .then(function () {
+                var req = indexedDB.open('autopause-test', 1);
+                req.onupgradeneeded = function (e) { e.target.result.createObjectStore('data'); };
+                req.onsuccess = function (e) {
+                    var db = e.target.result;
+                    var tx = db.transaction('data', 'readwrite');
+                    tx.objectStore('data').put('delivered', 'result');
+                    tx.oncomplete = function () {
+                        window.__idbResult = 'delivered';
+                        db.close();
+                    };
+                };
+            });
+    };
+</script>
+
+@code {
+    private readonly string _token = Guid.NewGuid().ToString("N");
+}

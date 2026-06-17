@@ -630,6 +630,33 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__swResult") as string == "delivered");
     }
 
+    private void NavigateToIndexedDBPage()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-indexeddb?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    [Fact]
+    public void IndexedDB_TransactionDuringPause_DeliversResultOnReturn()
+    {
+        NavigateToIndexedDBPage();
+        var token = Browser.Exists(By.Id("start-idb")).GetDomAttribute("data-token");
+
+        Browser.Exists(By.Id("start-idb")).Click();
+        WaitForStreamStarted(token);
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__idbResult") as string == "pending");
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        ReleaseGate(token);
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__idbResult") as string == "delivered");
+    }
+
     private void RunMediaDeferralTest(bool expectDeferral)
     {
         ClearBlazorLogs();
