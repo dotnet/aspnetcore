@@ -751,6 +751,22 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             expectedWhenMitigated: "iframe-state-42");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void WebRTC_ConnectionState_PreservedOnlyWithMitigation(bool useMitigation)
+    {
+        var mitigationParam = useMitigation ? "&use-mitigation=true" : "";
+        Navigate($"/subdir/persistent-state/auto-pause-webrtc-risk?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}{mitigationParam}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript("return window.__rtcReady === true"));
+
+        RunRiskMitigationTest(
+            useMitigation,
+            savedVar: "__savedWebRTCState",
+            expectedWhenMitigated: "connected");
+    }
+
     private void RunRiskMitigationTest(
         bool useMitigation,
         string savedVar,

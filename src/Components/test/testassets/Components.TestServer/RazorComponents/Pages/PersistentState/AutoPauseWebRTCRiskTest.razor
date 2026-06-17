@@ -1,0 +1,47 @@
+@page "/persistent-state/auto-pause-webrtc-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — WebRTC connection state risk</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<script>
+    if (!window.__webrtcHookInitialized) {
+        window.__webrtcHookInitialized = true;
+        window.__savedWebRTCState = null;
+        window.__rtcReady = false;
+
+        var pc1 = new RTCPeerConnection();
+        var pc2 = new RTCPeerConnection();
+        pc1.onicecandidate = function (e) { if (e.candidate) pc2.addIceCandidate(e.candidate); };
+        pc2.onicecandidate = function (e) { if (e.candidate) pc1.addIceCandidate(e.candidate); };
+        pc1.createDataChannel('test');
+        pc1.onconnectionstatechange = function () {
+            if (pc1.connectionState === 'connected') window.__rtcReady = true;
+        };
+        pc1.createOffer().then(function (offer) {
+            return pc1.setLocalDescription(offer).then(function () {
+                return pc2.setRemoteDescription(offer);
+            });
+        }).then(function () {
+            return pc2.createAnswer();
+        }).then(function (answer) {
+            return pc2.setLocalDescription(answer).then(function () {
+                return pc1.setRemoteDescription(answer);
+            });
+        });
+
+        window.__rtcPc1 = pc1;
+
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__onPauseRequestedHook = function () {
+                window.__savedWebRTCState = window.__rtcPc1.connectionState;
+            };
+        }
+    }
+</script>
