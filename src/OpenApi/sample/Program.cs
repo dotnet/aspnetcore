@@ -40,6 +40,7 @@ builder.Services.AddOpenApi("responses");
 builder.Services.AddOpenApi("forms");
 builder.Services.AddOpenApi("schemas-by-ref");
 builder.Services.AddOpenApi("xml");
+builder.Services.AddOpenApi("unions");
 builder.Services.AddOpenApi("localized", options =>
 {
     options.ShouldInclude = _ => true;
@@ -65,6 +66,7 @@ app.MapV2Endpoints();
 app.MapXmlEndpoints();
 app.MapSchemasEndpoints();
 app.MapResponseEndpoints();
+app.MapUnionsEndpoints();
 
 app.MapControllers();
 
