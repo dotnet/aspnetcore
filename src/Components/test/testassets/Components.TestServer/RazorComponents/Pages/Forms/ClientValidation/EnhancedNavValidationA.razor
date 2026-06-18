@@ -1,0 +1,34 @@
+@page "/forms/client-validation/enhanced-nav-a"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2 id="page-title">Enhanced navigation form A</h2>
+
+<style>
+    .validation-message { color: red; display: block; }
+    .field-validation-valid { display: none; }
+</style>
+
+<EditForm Model="Form" FormName="enhanced-nav-a" method="post">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="alpha">Alpha</label>
+        <InputText id="alpha" @bind-Value="Form!.Alpha" />
+        <ValidationMessage For="() => Form!.Alpha" />
+    </div>
+    <button type="submit" id="submit">Submit A</button>
+</EditForm>
+
+<a id="go-to-b" href="forms/client-validation/enhanced-nav-b">Go to form B</a>
+
+@code {
+    [SupplyParameterFromForm] private FormAModel? Form { get; set; }
+
+    protected override void OnInitialized() => Form ??= new FormAModel();
+
+    public class FormAModel
+    {
+        [Required(ErrorMessage = "Alpha is required.")]
+        public string? Alpha { get; set; }
+    }
+}
