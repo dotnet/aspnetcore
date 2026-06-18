@@ -10,26 +10,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-// Owns all coordination behind <see cref="CacheBoundary"/>: cache-key resolution, single-flight
-// stampede protection, store interaction, cached-content deserialization, capture-writer creation and
-// lifecycle, hole-policy decisions, background persistence, and the associated logging. The CacheBoundary
-// component and the CacheBoundaryTextWriter stay focused on rendering and writing respectively;
-// everything else lives here.
-internal sealed class CacheBoundaryService
+internal sealed partial class CacheBoundaryService
 {
-    // HttpContext.Items key for the per-request set of cache keys that currently have an in-flight
-    // creator (a CacheBoundary producing the entry during this render pass). Used so that a second
-    // boundary which resolves to the same key in the same request does not wait on the first (which
-    // would deadlock, since the creator's output is only produced during later HTML emission). On a warm
-    // request there is no in-flight creator, so both boundaries simply hit the shared entry.
     private static readonly object _inFlightCreatorKeysItemKey = new();
 
     private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
     private static readonly ComponentParametersTypeCache _parametersTypeCache = new();
-
-    // Caches the [CacheBoundaryPolicy] lookup per component type. Cleared on hot reload so attribute edits
-    // take effect without restarting.
     private static readonly ConcurrentDictionary<Type, CacheBoundaryPolicyAttribute?> _policyByComponentType = new();
+    private readonly ICacheBoundaryStore _store;
+    private readonly ILogger<CacheBoundary> _logger;
 
     static CacheBoundaryService()
     {
@@ -39,58 +28,39 @@ internal sealed class CacheBoundaryService
         }
     }
 
-    private readonly ICacheBoundaryStore _store;
-    private readonly ILogger<CacheBoundary> _logger;
-
     public CacheBoundaryService(ICacheBoundaryStore store, ILoggerFactory loggerFactory)
     {
         _store = store;
         _logger = loggerFactory.CreateLogger<CacheBoundary>();
     }
 
-    // Determines whether <paramref name="componentType"/> is a "hole" inside a CacheBoundary varying by
-    // <paramref name="varyBy"/>: a component annotated with [CacheBoundaryPolicy] whose VaryBy dimensions
-    // are not all covered. Throws when the component is annotated with Disallow and is not covered.
     public static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
     {
-        var attr = _policyByComponentType.GetOrAdd(
-            componentType,
-            static type => type.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true));
+        var attr = _policyByComponentType.GetOrAdd(componentType, static type => type.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true));
 
         if (attr is null)
         {
             return false;
         }
 
-        // A VaryBy of None means the component is never safe to include in the
-        // cached output regardless of what dimensions the boundary varies by.
         var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
 
         if (attr.Disallow && !varyByMatches)
         {
             throw new InvalidOperationException(
-                $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary in its current configuration. " +
-                $"It is annotated with [CacheBoundaryPolicy(Disallow = true, VaryBy = {attr.VaryBy})] " +
-                $"because its rendered output depends on per-request state that cannot be safely captured into a cache entry and replayed on later requests. " +
+                $"Component '{componentType.FullName}' cannot be used inside a CacheBoundary because its output depends on per-request state ([CacheBoundaryPolicy(Disallow = true, VaryBy = {attr.VaryBy})]) that cannot be safely cached and replayed. " +
                 (attr.VaryBy != CacheBoundaryVaryBy.None
-                    ? $"To use it inside a CacheBoundary, configure the boundary so that it varies by all of the following dimensions: {attr.VaryBy}. "
-                    : "") +
-                $"Alternatively, move this component outside the CacheBoundary, or wrap it in a component marked with [CacheBoundaryPolicy] so that its subtree is excluded from caching.");
+                    ? $"To fix this, configure the boundary to vary by {attr.VaryBy}, or move the component outside the CacheBoundary."
+                    : "To fix this, move the component outside the CacheBoundary."));
         }
 
-        // If Disallow is true we only reach here when varyByMatches is true (safe to cache).
-        // If Disallow is false, it's a hole only when VaryBy dimensions aren't covered.
         return !varyByMatches;
     }
 
-    // Phase 1 (component render): resolves the key and runs single-flight coordination, returning the
-    // render state that describes whether this render is a cache hit, the single-flight creator, or a
-    // same-request sibling that must render fresh. Returns null when caching is inactive for this render.
     public async Task<CacheBoundaryRenderState?> PrepareAsync(CacheBoundary boundary, HttpContext httpContext)
     {
-        // Never serve cached content for a POST. Form submissions render live; the cache is neither read
-        // nor written on a POST.
-        if (!boundary.Enabled || HttpMethods.IsPost(httpContext.Request.Method))
+        // Skip cache if method is not GET or caching is disabled
+        if (!boundary.Enabled || !HttpMethods.IsGet(httpContext.Request.Method))
         {
             return null;
         }
@@ -98,24 +68,17 @@ internal sealed class CacheBoundaryService
         var key = CacheBoundaryKeyResolver.ComputeKey(boundary, httpContext);
         var state = new CacheBoundaryRenderState(key, GetVaryBy(boundary))
         {
-            // Default to rendering the boundary's own content; the hit path below overrides this with the
-            // cached output. This way the component always renders state.Content without branching.
             Content = boundary.ChildContent,
         };
 
-        // Multiple CacheBoundary instances in one request can resolve to the same key (e.g. a reusable
-        // component containing a CacheBoundary used more than once, or a loop without an explicit
-        // CacheKey). They should share one cache entry. On a warm request both simply hit that entry. On
-        // a cold request, however, the first becomes the single-flight creator and its captured output is
-        // only produced during HTML emission (after this render pass reaches quiescence). A second
-        // boundary that waited on it would therefore deadlock, so instead it renders fresh this one time;
-        // the creator still populates the shared entry and every subsequent request serves both from it.
+        // Handles multiple CacheBoundary instances in the same request resolving to the same key (e.g. a
+        // component rendered twice, or a loop). Only one creates the cache entry; any duplicate in the
+        // same request renders fresh instead of deadlocking on the creator, then both hit the cache on
+        // later requests.
         var inFlightCreatorKeys = GetInFlightCreatorKeys(httpContext);
         if (inFlightCreatorKeys.Contains(key))
         {
-            _logger.LogDebug(
-                "Another CacheBoundary in the same request is currently creating cache key '{Key}'. Rendering this instance fresh to avoid waiting on the in-flight creator within a single render pass. It will share the cached entry on subsequent requests.",
-                key);
+            Log.DuplicateBoundaryRenderingFresh(_logger, key);
             return state;
         }
 
@@ -123,16 +86,21 @@ internal sealed class CacheBoundaryService
         return state;
     }
 
-    // Phase 2a (renderer, before emitting the subtree): decides how to wrap the output for this boundary
-    // and returns true when it installed a wrapper the renderer should write into.
-    // - Single-flight creator: returns a capture writer; the renderer calls <see cref="EndCapture"/>
-    //   afterward to produce the entry.
-    // - Any other boundary not already inside a capture writer: returns a validation-only writer that
-    //   surfaces hole/policy errors without producing an entry.
-    // - A boundary already inside a capture writer (nested): returns false and the renderer writes directly.
+    public static void ThrowIfNestedInsideCapturingBoundary(TextWriter output)
+    {
+        if (output is CacheBoundaryTextWriter { IsCapturing: true })
+        {
+            throw new InvalidOperationException(
+                "A CacheBoundary cannot be nested inside another CacheBoundary. The inner boundary's output " +
+                "would be frozen into the outer cache entry and replayed on later requests, which is unsafe for " +
+                "per-request content such as antiforgery tokens, authentication-dependent output, or interactive " +
+                "component markers. Move the CacheBoundary so it is not nested inside another one.");
+        }
+    }
+
     public static bool TryBeginWrite(CacheBoundaryRenderState? state, CacheBoundary boundary, TextWriter output, out TextWriter wrappedOutput)
     {
-        if (state is { IsCreator: true, CaptureCompletion: not null })
+        if (state is { CaptureCompletion: not null })
         {
             var captureWriter = new CacheBoundaryTextWriter(output, state.VaryBy);
             captureWriter.StartCapture();
@@ -153,11 +121,7 @@ internal sealed class CacheBoundaryService
         return false;
     }
 
-    // Phase 2b (renderer, after emitting the subtree): finalizes a capture, hands the captured JSON to the
-    // single-flight factory (which persists it), and observes persistence in the background. No-ops when
-    // there was no capture (a validation-only writer, a nested boundary, or caching inactive), so the
-    // renderer can call it unconditionally. Persistence failures are logged but do not fail the render.
-    public void EndCapture(CacheBoundaryRenderState? state)
+    public void EndCapture(CacheBoundaryRenderState? state, bool completed)
     {
         var writer = state?.ActiveWriter;
         if (state is null || writer is null)
@@ -170,6 +134,11 @@ internal sealed class CacheBoundaryService
 
         try
         {
+            if (!completed)
+            {
+                completion?.TrySetCanceled();
+                return;
+            }
             writer.StopCapture();
             completion?.TrySetResult(writer.GetJson());
         }
@@ -190,8 +159,6 @@ internal sealed class CacheBoundaryService
         }
     }
 
-    // Releases the single-flight reservation when a creator boundary is disposed before EndCapture runs
-    // (for example because the render was abandoned), so that waiters re-elect a new creator.
     public static void OnBoundaryDisposed(CacheBoundaryRenderState state)
     {
         var completion = state.CaptureCompletion;
@@ -205,7 +172,6 @@ internal sealed class CacheBoundaryService
         state.PendingStoreTask = null;
     }
 
-    // Computes the vary-by dimensions active on the boundary from its parameters.
     public static CacheBoundaryVaryBy GetVaryBy(CacheBoundary boundary)
     {
         var result = CacheBoundaryVaryBy.None;
@@ -261,10 +227,6 @@ internal sealed class CacheBoundaryService
             state.Key,
             async ct =>
             {
-                // We won the single-flight race; the renderer's live walk will produce the JSON. Mark
-                // this key as having an in-flight creator (synchronously, before this method suspends) so
-                // any same-request sibling that resolves to it renders fresh instead of waiting on us.
-                state.IsCreator = true;
                 inFlightCreatorKeys.Add(state.Key);
                 factoryStarted.TrySetResult();
                 return await captureCompletion.Task.WaitAsync(ct);
@@ -272,14 +234,13 @@ internal sealed class CacheBoundaryService
             options,
             cancellationToken).AsTask();
 
-        // Wait for whichever happens first: the cached value is available (hit or someone else's factory
-        // completed) OR our factory got invoked (we're the creator).
-        var first = await Task.WhenAny(inflight, factoryStarted.Task);
-        if (first == inflight)
+        // Wait for whichever happens first: the cached value is available or our factory got invoked (we're the creator).
+        var firstFinished = await Task.WhenAny(inflight, factoryStarted.Task);
+        if (firstFinished == inflight)
         {
-            // Cache hit (or waiter): render the stored output. A deserialization failure falls back to the
-            // boundary's content while still treating this as a hit (no capture), matching the behavior of
-            // a render that produced no cacheable entry.
+            // Cache hit: we are not the creator, so clear the capture reservation so TryBeginWrite does
+            // not capture this boundary's output.
+            state.CaptureCompletion = null;
             state.IsCacheHit = true;
             state.Content = DeserializeCachedContent(await inflight) ?? boundary.ChildContent;
         }
@@ -308,7 +269,7 @@ internal sealed class CacheBoundaryService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to restore CacheBoundary from cached data. Falling back to fresh render.");
+            Log.RestoreFromCacheFailed(_logger, ex);
             return null;
         }
     }
@@ -325,7 +286,7 @@ internal sealed class CacheBoundaryService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to persist CacheBoundary entry for key '{Key}'.", key);
+            Log.PersistFailed(_logger, key, ex);
         }
     }
 
@@ -338,5 +299,17 @@ internal sealed class CacheBoundaryService
         }
 
         return keys;
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Another CacheBoundary in the same request is already creating cache key '{Key}'. Rendering this instance fresh to avoid deadlocking on the in-flight creator; it will share the cached entry on subsequent requests.", EventName = "DuplicateBoundaryRenderingFresh")]
+        public static partial void DuplicateBoundaryRenderingFresh(ILogger logger, string key);
+
+        [LoggerMessage(2, LogLevel.Warning, "Failed to restore CacheBoundary from cached data. Falling back to fresh render.", EventName = "RestoreFromCacheFailed")]
+        public static partial void RestoreFromCacheFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(3, LogLevel.Warning, "Failed to persist CacheBoundary entry for key '{Key}'.", EventName = "PersistFailed")]
+        public static partial void PersistFailed(ILogger logger, string key, Exception exception);
     }
 }

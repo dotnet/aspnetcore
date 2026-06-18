@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -348,6 +349,88 @@ public class CacheBoundaryKeyResolverTest
         Assert.NotEqual(key1, key2);
     }
 
+    [Fact]
+    public void ComputeKey_TreePositionKey_CannotForgeCacheKeySection()
+    {
+        var legit = CreateComponent(cacheKey: "secret", treePositionKey: "P");
+        var forged = CreateComponent(treePositionKey: "P||CacheKey||\u0000\u0000\u0000\u0006secret");
+        var ctx = CreateHttpContext();
+
+        var keyLegit = CacheBoundaryKeyResolver.ComputeKey(legit, ctx);
+        var keyForged = CacheBoundaryKeyResolver.ComputeKey(forged, ctx);
+
+        Assert.NotEqual(keyLegit, keyForged);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByQuery_MultiValue_DoesNotCollideWithCommaJoinedValue()
+    {
+        var component = CreateComponent(varyByQuery: "a");
+        var ctxMulti = CreateHttpContext(queryString: "?a=1&a=2");
+        var ctxJoined = CreateHttpContext(queryString: "?a=1%2C2");
+
+        var keyMulti = CacheBoundaryKeyResolver.ComputeKey(component, ctxMulti);
+        var keyJoined = CacheBoundaryKeyResolver.ComputeKey(component, ctxJoined);
+
+        Assert.NotEqual(keyMulti, keyJoined);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByQuery_PresentButEmpty_DiffersFromAbsent()
+    {
+        var component = CreateComponent(varyByQuery: "a");
+        var ctxEmpty = CreateHttpContext(queryString: "?a=");
+        var ctxAbsent = CreateHttpContext(queryString: "?other=1");
+
+        var keyEmpty = CacheBoundaryKeyResolver.ComputeKey(component, ctxEmpty);
+        var keyAbsent = CacheBoundaryKeyResolver.ComputeKey(component, ctxAbsent);
+
+        Assert.NotEqual(keyEmpty, keyAbsent);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByHeader_MultiValue_DoesNotCollideWithCommaJoinedValue()
+    {
+        var component = CreateComponent(varyByHeader: "X-Test");
+
+        var ctxMulti = CreateHttpContext();
+        ctxMulti.Request.Headers["X-Test"] = new StringValues(new[] { "1", "2" });
+
+        var ctxJoined = CreateHttpContext();
+        ctxJoined.Request.Headers["X-Test"] = "1,2";
+
+        var keyMulti = CacheBoundaryKeyResolver.ComputeKey(component, ctxMulti);
+        var keyJoined = CacheBoundaryKeyResolver.ComputeKey(component, ctxJoined);
+
+        Assert.NotEqual(keyMulti, keyJoined);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByUser_SameNameIdDifferentIssuer_ProducesDifferentKeys()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var ctxA = CreateHttpContext(nameIdentifier: "shared", authType: "Bearer", nameIdentifierIssuer: "https://idp-a");
+        var ctxB = CreateHttpContext(nameIdentifier: "shared", authType: "Bearer", nameIdentifierIssuer: "https://idp-b");
+
+        var keyA = CacheBoundaryKeyResolver.ComputeKey(component, ctxA);
+        var keyB = CacheBoundaryKeyResolver.ComputeKey(component, ctxB);
+
+        Assert.NotEqual(keyA, keyB);
+    }
+
+    [Fact]
+    public void ComputeKey_VaryByUser_EmptyNameId_FallsBackToClaims()
+    {
+        var component = CreateComponent(varyByUser: true);
+        var ctxAlice = CreateHttpContext(userName: "alice", nameIdentifier: "");
+        var ctxBob = CreateHttpContext(userName: "bob", nameIdentifier: "");
+
+        var keyAlice = CacheBoundaryKeyResolver.ComputeKey(component, ctxAlice);
+        var keyBob = CacheBoundaryKeyResolver.ComputeKey(component, ctxBob);
+
+        Assert.NotEqual(keyAlice, keyBob);
+    }
+
     private static RenderFragment DefaultChildContent => builder => builder.AddContent(0, "test");
 
     private static CacheBoundary CreateComponent(
@@ -385,6 +468,7 @@ public class CacheBoundaryKeyResolverTest
         string cookieHeader = null,
         string userName = null,
         string nameIdentifier = null,
+        string nameIdentifierIssuer = null,
         string authType = "test")
     {
         var httpContext = new DefaultHttpContext();
@@ -421,7 +505,9 @@ public class CacheBoundaryKeyResolverTest
             }
             if (nameIdentifier is not null)
             {
-                claims.Add(new Claim(ClaimTypes.NameIdentifier, nameIdentifier));
+                claims.Add(nameIdentifierIssuer is null
+                    ? new Claim(ClaimTypes.NameIdentifier, nameIdentifier)
+                    : new Claim(ClaimTypes.NameIdentifier, nameIdentifier, ClaimValueTypes.String, nameIdentifierIssuer));
             }
             httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims, authType));
         }

@@ -172,11 +172,6 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 var clearMethod = storeType.GetMethod("Clear")
                     ?? throw new InvalidOperationException("ICacheBoundaryStore.Clear() method not found.");
                 clearMethod.Invoke(store, null);
-                Components.TestServer.RazorComponents.Pages.CacheBoundaryTest.InnerCachedComponent.ResetRenderCount();
-            });
-            endpoints.MapGet("cache-component/render-count", (string? testId) =>
-            {
-                return Results.Ok(Components.TestServer.RazorComponents.Pages.CacheBoundaryTest.InnerCachedComponent.GetRenderCount(testId ?? ""));
             });
         });
     }

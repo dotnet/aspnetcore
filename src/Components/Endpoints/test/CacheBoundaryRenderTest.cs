@@ -38,26 +38,6 @@ public class CacheBoundaryRenderTest
         Assert.NotNull(entry.Exception);
     }
 
-    private static HttpContext CreateHttpContext()
-    {
-        var context = new DefaultHttpContext();
-        context.Request.Scheme = "http";
-        context.Request.Host = new HostString("localhost");
-        context.Request.Path = "/test";
-        context.RequestServices = new TestServiceProviderWithLogger(new TestLogger());
-
-        return context;
-    }
-
-    private static async Task<ArrayRange<RenderTreeFrame>> RenderComponent(CacheBoundary component)
-    {
-        var renderer = new TestRenderer();
-        var id = renderer.AssignRootComponentId(component);
-        await renderer.RenderRootComponentAsync(id);
-
-        return renderer.GetCurrentRenderTreeFrames(id);
-    }
-
     private static void AssertContainsText(ArrayRange<RenderTreeFrame> frames, string expectedText)
     {
         for (var i = 0; i < frames.Count; i++)
@@ -143,6 +123,27 @@ public class CacheBoundaryRenderTest
         }
 
         public void Dispose() { }
+    }
+
+    private static HttpContext CreateHttpContext()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethods.Get;
+        context.Request.Scheme = "http";
+        context.Request.Host = new HostString("localhost");
+        context.Request.Path = "/test";
+        context.RequestServices = new TestServiceProviderWithLogger(new TestLogger());
+
+        return context;
+    }
+
+    private static async Task<ArrayRange<RenderTreeFrame>> RenderComponent(CacheBoundary component)
+    {
+        var renderer = new TestRenderer();
+        var id = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(id);
+
+        return renderer.GetCurrentRenderTreeFrames(id);
     }
 
     private sealed class TestLogger : ILogger

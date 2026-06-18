@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
-using Components.TestServer.RazorComponents.Pages.CacheBoundaryTest;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
@@ -277,11 +276,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 var clearMethod = storeType.GetMethod("Clear")
                     ?? throw new InvalidOperationException("ICacheBoundaryStore.Clear() method not found.");
                 clearMethod.Invoke(store, null);
-                InnerCachedComponent.ResetRenderCount();
-            });
-            endpoints.MapGet("cache-component/render-count", (string? testId) =>
-            {
-                return Results.Ok(InnerCachedComponent.GetRenderCount(testId ?? ""));
             });
 
             MapEnhancedNavigationEndpoints(endpoints);

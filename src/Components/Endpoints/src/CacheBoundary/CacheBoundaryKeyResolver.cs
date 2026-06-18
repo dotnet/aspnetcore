@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -16,7 +17,8 @@ internal static class CacheBoundaryKeyResolver
     internal static string ComputeKey(CacheBoundary cacheBoundary, HttpContext httpContext)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        AppendString(hash, cacheBoundary.TreePositionKey);
+
+        AppendLengthPrefixedString(hash, cacheBoundary.TreePositionKey ?? "");
 
         if (cacheBoundary.CacheKey is not null)
         {
@@ -85,15 +87,7 @@ internal static class CacheBoundaryKeyResolver
 
         foreach (var nameString in CollectSortedNames(separatedValues))
         {
-            var value = (string?)request.Query[nameString];
-            if (string.IsNullOrEmpty(value))
-            {
-                continue;
-            }
-            AppendString(hash, "||");
-            AppendString(hash, nameString);
-            AppendString(hash, "||");
-            AppendLengthPrefixedString(hash, value);
+            AppendNameStringValues(hash, nameString, request.Query[nameString]);
         }
 
         AppendString(hash, ")");
@@ -129,15 +123,7 @@ internal static class CacheBoundaryKeyResolver
 
         foreach (var nameString in CollectSortedNames(separatedValues))
         {
-            var value = (string?)request.Headers[nameString];
-            if (string.IsNullOrEmpty(value))
-            {
-                continue;
-            }
-            AppendString(hash, "||");
-            AppendString(hash, nameString);
-            AppendString(hash, "||");
-            AppendLengthPrefixedString(hash, value);
+            AppendNameStringValues(hash, nameString, request.Headers[nameString]);
         }
 
         AppendString(hash, ")");
@@ -197,15 +183,7 @@ internal static class CacheBoundaryKeyResolver
 
         foreach (var name in names)
         {
-            var value = (string?)request.Query[name];
-            if (string.IsNullOrEmpty(value))
-            {
-                continue;
-            }
-            AppendString(hash, "||");
-            AppendString(hash, name);
-            AppendString(hash, "||");
-            AppendLengthPrefixedString(hash, value);
+            AppendNameStringValues(hash, name, request.Query[name]);
         }
     }
 
@@ -224,11 +202,12 @@ internal static class CacheBoundaryKeyResolver
             return;
         }
 
-        var nameIdentifier = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (nameIdentifier is not null)
+        var nameIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (nameIdClaim is not null && !string.IsNullOrEmpty(nameIdClaim.Value))
         {
             AppendLengthPrefixedString(hash, "nameid");
-            AppendLengthPrefixedString(hash, nameIdentifier);
+            AppendLengthPrefixedString(hash, nameIdClaim.Value);
+            AppendLengthPrefixedString(hash, nameIdClaim.Issuer);
             return;
         }
 
@@ -240,6 +219,29 @@ internal static class CacheBoundaryKeyResolver
             AppendLengthPrefixedString(hash, claim.Value);
             AppendLengthPrefixedString(hash, claim.Issuer);
         }
+    }
+
+    private static void AppendNameStringValues(IncrementalHash hash, string name, StringValues values)
+    {
+        if (values.Count == 0)
+        {
+            return;
+        }
+
+        AppendString(hash, "||");
+        AppendLengthPrefixedString(hash, name);
+        AppendInt32(hash, values.Count);
+        foreach (var value in values)
+        {
+            AppendLengthPrefixedString(hash, value ?? "");
+        }
+    }
+
+    private static void AppendInt32(IncrementalHash hash, int value)
+    {
+        Span<byte> buffer = stackalloc byte[4];
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32BigEndian(buffer, value);
+        hash.AppendData(buffer);
     }
 
     private static void AppendLengthPrefixedString(IncrementalHash hash, string value)

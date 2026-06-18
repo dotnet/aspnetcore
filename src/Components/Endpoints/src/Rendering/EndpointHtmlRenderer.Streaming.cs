@@ -275,6 +275,8 @@ internal partial class EndpointHtmlRenderer
 
         if (componentState.Component is CacheBoundary cacheBoundary)
         {
+            CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(output);
+
             var renderState = cacheBoundary.RenderState;
 
             if (renderState?.IsCacheHit == true)
@@ -286,13 +288,15 @@ internal partial class EndpointHtmlRenderer
 
             if (CacheBoundaryService.TryBeginWrite(renderState, cacheBoundary, output, out var wrappedOutput))
             {
+                var captureCompletedSuccessfully = false;
                 try
                 {
                     base.WriteComponentHtml(componentId, wrappedOutput);
+                    captureCompletedSuccessfully = true;
                 }
                 finally
                 {
-                    GetCacheBoundaryService().EndCapture(renderState);
+                    GetCacheBoundaryService().EndCapture(renderState, captureCompletedSuccessfully);
                 }
                 return;
             }

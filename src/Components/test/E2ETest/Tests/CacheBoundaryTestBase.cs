@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -113,20 +112,6 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void NestedCacheBoundaryDoesNotExecuteOnOuterCacheHit()
-    {
-        Navigate(TestUrl("cache-component"));
-        Browser.Exists(By.Id("inner-cached"));
-        var renderCount = GetRenderCount();
-        Assert.Equal(1, renderCount);
-
-        Navigate(TestUrl("cache-component"));
-        Browser.Exists(By.Id("inner-cached"));
-        renderCount = GetRenderCount();
-        Assert.Equal(1, renderCount);
-    }
-
-    [Fact]
     public void CacheBoundaryInLoopUsesVaryByForDistinctEntries()
     {
         Navigate(TestUrl("cache-component"));
@@ -203,13 +188,6 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
         Navigate(TestUrl("cache-component"));
         Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".panel-static")).Text);
         Browser.NotEqual(holeGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".hardcoded-hole")).Text);
-    }
-
-    private int GetRenderCount()
-    {
-        Navigate(TestUrl("cache-component/render-count"));
-        var body = Browser.FindElement(By.TagName("body")).Text;
-        return int.Parse(body, CultureInfo.InvariantCulture);
     }
 
     private List<string> GetPanelTexts(string selector)

@@ -32,6 +32,23 @@ public class CacheBoundaryTextWriterTest
     }
 
     [Fact]
+    public void CreateHole_HoleWithGenericRenderFragment_Throws()
+    {
+        var capture = new RenderFragmentCapture(CaptureFramesFor(builder =>
+        {
+            builder.OpenComponent<TestRenderFragmentHole>(7);
+            builder.AddAttribute(8, "ItemTemplate", (RenderFragment<string>)(item => b => b.AddContent(0, item)));
+            builder.CloseComponent();
+        }));
+
+        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        writer.StartCapture();
+
+        var ex = Assert.Throws<InvalidOperationException>(() => writer.CreateHole(typeof(TestRenderFragmentHole), renderMode: null, capture, NullLogger.Instance));
+        Assert.Contains("RenderFragment", ex.Message);
+    }
+
+    [Fact]
     public void CreateHole_HoleWithoutRenderFragmentParameter_SerializesNode()
     {
         var capture = new RenderFragmentCapture(CaptureFramesFor(builder =>
@@ -93,6 +110,8 @@ public class CacheBoundaryTextWriterTest
         [Parameter] public string? Title { get; set; }
 
         [Parameter] public RenderFragment? ChildContent { get; set; }
+
+        [Parameter] public RenderFragment<string>? ItemTemplate { get; set; }
 
         public void Attach(RenderHandle renderHandle)
         {

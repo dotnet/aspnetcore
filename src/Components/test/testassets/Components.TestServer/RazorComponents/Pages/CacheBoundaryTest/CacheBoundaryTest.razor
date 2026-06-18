@@ -30,15 +30,6 @@
     </EditForm>
 </div>
 
-<div id="test-4">
-    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
-        <p id="outer-cached">@Guid.NewGuid()</p>
-        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
-            <InnerCachedComponent TestId="@TestId" />
-        </CacheBoundary>
-    </CacheBoundary>
-</div>
-
 <div id="test-5">
     @for (var i = 0; i < 3; i++)
     {
@@ -77,9 +68,4 @@
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]
     private string Message { get; set; } = "never";
-
-    // Each E2E test passes a unique testId so its CacheBoundary entries are isolated from other tests'
-    // entries, letting the suite run without depending on a shared, globally-cleared cache.
-    [SupplyParameterFromQuery]
-    private string? TestId { get; set; }
 }

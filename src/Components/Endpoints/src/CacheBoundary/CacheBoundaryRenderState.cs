@@ -19,8 +19,6 @@ internal sealed class CacheBoundaryRenderState
 
     public bool IsCacheHit { get; set; }
 
-    public bool IsCreator { get; set; }
-
     public TaskCompletionSource<string>? CaptureCompletion { get; set; }
 
     public Task<string>? PendingStoreTask { get; set; }
