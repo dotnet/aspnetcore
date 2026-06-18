@@ -62,8 +62,6 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        context.ValidationInitiator ??= this;
-
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
@@ -126,13 +124,13 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             }
         };
 
-        context.ValidationTasks.Enqueue(ValidationHelpers.ValidateAttributesAsync(
+        await ValidationHelpers.ValidateAttributesAsync(
             validationAttributes,
             value,
             context,
             (displayName, Name),
             onValidationError,
-            cancellationToken));
+            cancellationToken);
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
@@ -143,6 +141,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             // Note: cloning preserves the same validation options instance.
             var validationOptions = context.ValidationOptions;
 
+            List<Task>? tasks = null;
             foreach (var item in enumerable)
             {
                 if (item != null)
@@ -156,28 +155,33 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
                             context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                                 ? $"{Name}[{index}]"
                                 : $"{currentPrefix}.{Name}[{index}]";
-                            builtInValidatableTypeInfo.ValidateAsync(item, context, cancellationToken).GetAwaiter().GetResult();
+                            await builtInValidatableTypeInfo.ValidateAsync(item, context, cancellationToken);
                             context.CurrentValidationPath = currentPrefix;
                         }
                         else
                         {
-                            var clonedContext = context.Clone(withNewInitiator: null);
+                            var clonedContext = context.Clone();
                             clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                                 ? $"{Name}[{index}]"
                                 : $"{currentPrefix}.{Name}[{index}]";
                             var enumItemTask = validatableType.ValidateAsync(item, clonedContext, cancellationToken);
                             if (enumItemTask.IsCompleted)
                             {
-                                enumItemTask.GetAwaiter().GetResult();
+                                await enumItemTask;
                             }
                             else
                             {
-                                context.ValidationTasks.Enqueue(enumItemTask);
+                                (tasks ??= new()).Add(enumItemTask);
                             }
                         }
                     }
                 }
                 index++;
+            }
+
+            if (tasks is not null)
+            {
+                await Task.WhenAll(tasks);
             }
         }
         // If not enumerable, validate the single value
@@ -186,13 +190,8 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             var valueType = value.GetType();
             if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
             {
-                context.ValidationTasks.Enqueue(validatableType.ValidateAsync(value, context, cancellationToken));
+                await validatableType.ValidateAsync(value, context, cancellationToken);
             }
-        }
-
-        if (context.ValidationInitiator == this)
-        {
-            await Task.WhenAll(context.ValidationTasks);
         }
     }
 }

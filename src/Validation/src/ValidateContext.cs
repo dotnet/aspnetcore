@@ -15,26 +15,19 @@ public sealed class ValidateContext
 {
     private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors;
 
-    internal ConcurrentQueue<Task> ValidationTasks { get; }
-
-    internal object? ValidationInitiator { get; set; }
-
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
     /// </summary>
     public ValidateContext()
     {
         _validationErrors = new();
-        ValidationTasks = new();
     }
 
-    private ValidateContext(ValidateContext original, object? withNewInitiator)
+    private ValidateContext(ValidateContext original)
     {
         _validationErrors = original._validationErrors;
-        ValidationTasks = withNewInitiator is not null ? new ConcurrentQueue<Task>() : original.ValidationTasks;
         CurrentDepth = original.CurrentDepth;
         CurrentValidationPath = original.CurrentValidationPath;
-        ValidationInitiator = withNewInitiator ?? original.ValidationInitiator;
 
         if (original.OnValidationError?.GetInvocationList() is { } onValidationErrorDelegates)
         {
@@ -45,9 +38,9 @@ public sealed class ValidateContext
         }
     }
 
-    internal ValidateContext Clone(object? withNewInitiator)
+    internal ValidateContext Clone()
     {
-        var cloned = new ValidateContext(this, withNewInitiator)
+        var cloned = new ValidateContext(this)
         {
             ValidationContext = CloneValidationContext(),
             ValidationOptions = ValidationOptions,

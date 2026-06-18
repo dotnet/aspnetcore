@@ -191,93 +191,72 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
-        context.ValidationInitiator ??= this;
-
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
-        try
+        // This allows us to add validation tasks in this list locally (i.e, not the one in ValidateContext).
+        // Then, we can do .ContinueWith on that task.
+        List<Task>? localValidationTasks = null;
+
+        // First validate direct members
+        ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
+
+        var actualType = value.GetType();
+
+        // Then validate inherited members
+        foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
         {
-            // This allows us to add validation tasks in this list locally (i.e, not the one in ValidateContext).
-            // Then, we can do .ContinueWith on that task.
-            List<Task>? localValidationTasks = null;
+            superTypeInfo.ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
+        }
 
-            // First validate direct members
-            ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
-
-            var actualType = value.GetType();
-
-            // Then validate inherited members
-            foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
-            {
-                superTypeInfo.ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
-            }
-
-            // If any property-level validation errors were found, return early
-            // TODO: Count check here might not be correct when parallelizing.
-            if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
-            {
-                if (localValidationTasks is not null)
-                {
-                    context.ValidationTasks.Enqueue(Task.WhenAll(localValidationTasks));
-                }
-
-                return;
-            }
-
-            var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
-
-            // Validate type-level attributes
-            var typeValidationTask = ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
-            if (!typeValidationTask.IsCompleted)
-            {
-                localValidationTasks ??= new();
-                localValidationTasks.Add(typeValidationTask);
-            }
-
-            // If any type-level attribute errors were found, return early
-            // TODO: Count check here might not be correct when parallelizing.
-            if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
-            {
-                if (localValidationTasks is not null)
-                {
-                    context.ValidationTasks.Enqueue(Task.WhenAll(localValidationTasks));
-                }
-
-                return;
-            }
-
-            // Finally validate IValidatableObject if implemented
+        // If any property-level validation errors were found, return early
+        // TODO: Count check here might not be correct when parallelizing.
+        if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
+        {
             if (localValidationTasks is not null)
             {
-                async Task GetFinalValidationTask(List<Task> localValidationTasks)
-                {
-                    await Task.WhenAll(localValidationTasks);
-
-                    // After async property/type-level validations complete, skip IValidatableObject
-                    // if any errors were found (mirrors the sync early-return checks above).
-                    // TODO: Count check here might not be correct when parallelizing.
-                    if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
-                    {
-                        return;
-                    }
-
-                    await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
-                }
-
-                context.ValidationTasks.Enqueue(GetFinalValidationTask(localValidationTasks));
+                await Task.WhenAll(localValidationTasks);
             }
-            else
-            {
-                context.ValidationTasks.Enqueue(ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken));
-            }
+
+            return;
         }
-        finally
+
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+
+        // Validate type-level attributes
+        var typeValidationTask = ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
+        if (!typeValidationTask.IsCompleted)
         {
-            if (context.ValidationInitiator == this)
-            {
-                await Task.WhenAll(context.ValidationTasks);
-            }
+            localValidationTasks ??= new();
+            localValidationTasks.Add(typeValidationTask);
         }
+
+        // If any type-level attribute errors were found, return early
+        // TODO: Count check here might not be correct when parallelizing.
+        if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
+        {
+            if (localValidationTasks is not null)
+            {
+                await Task.WhenAll(localValidationTasks);
+            }
+
+            return;
+        }
+
+        // Finally validate IValidatableObject if implemented
+        if (localValidationTasks is not null)
+        {
+            await Task.WhenAll(localValidationTasks);
+        }
+
+        // After async property/type-level validations complete, skip IValidatableObject
+        // if any errors were found (mirrors the sync early-return checks above).
+        // TODO: Count check here might not be correct when parallelizing.
+        if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
+        {
+            return;
+        }
+
+        await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
     }
 
     private void ValidateMembers(object value, ValidateContext context, ref List<Task>? localValidationTasks, CancellationToken cancellationToken)

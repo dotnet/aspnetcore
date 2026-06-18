@@ -78,7 +78,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
 
         var hasAsync = HasAsyncAttribute(validationAttributes);
         var potentiallyClonedContext = hasAsync
-            ? context.Clone(withNewInitiator: this)
+            ? context.Clone()
             : context;
 
         // Calculate and save the current path
@@ -158,14 +158,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 }
             }, cancellationToken);
 
-        if (attributesValidationTask.IsCompleted || !hasAsync)
-        {
-            attributesValidationTask.GetAwaiter().GetResult();
-        }
-        else
-        {
-            potentiallyClonedContext.ValidationTasks.Enqueue(attributesValidationTask);
-        }
+        await attributesValidationTask;
 
         var validationOptions = potentiallyClonedContext.ValidationOptions;
 
@@ -189,6 +182,8 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 var index = 0;
                 var currentPrefix = potentiallyClonedContext.CurrentValidationPath;
 
+                List<Task>? tasks = null;
+
                 foreach (var item in enumerable)
                 {
                     if (item != null)
@@ -201,19 +196,24 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                             {
                                 potentiallyClonedContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
-                                validatableType.ValidateAsync(item, potentiallyClonedContext, cancellationToken).GetAwaiter().GetResult();
+                                await validatableType.ValidateAsync(item, potentiallyClonedContext, cancellationToken);
                             }
                             else
                             {
-                                var clonedContextForEnumerable = potentiallyClonedContext.Clone(withNewInitiator: null);
+                                var clonedContextForEnumerable = potentiallyClonedContext.Clone();
                                 clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
 
-                                await validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
+                                (tasks ??= new()).Add(validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken));
                             }
                         }
                     }
 
                     index++;
+                }
+
+                if (tasks is not null)
+                {
+                    await Task.WhenAll(tasks);
                 }
 
                 potentiallyClonedContext.CurrentValidationPath = currentPrefix;
@@ -227,11 +227,11 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                     if (validatableType is ValidatableTypeInfo builtInValidatableInfo &&
                         builtInValidatableInfo.IsGuaranteedToBeSynchronous(propertyValue, validationOptions, context.CurrentDepth))
                     {
-                        builtInValidatableInfo.ValidateAsync(propertyValue, potentiallyClonedContext, cancellationToken).GetAwaiter().GetResult();
+                        await builtInValidatableInfo.ValidateAsync(propertyValue, potentiallyClonedContext, cancellationToken);
                     }
                     else
                     {
-                        var clonedForComplexObject = potentiallyClonedContext.Clone(withNewInitiator: null);
+                        var clonedForComplexObject = potentiallyClonedContext.Clone();
                         await validatableType.ValidateAsync(propertyValue, clonedForComplexObject, cancellationToken);
                     }
                 }
@@ -239,8 +239,6 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
         finally
         {
-            await Task.WhenAll(potentiallyClonedContext.ValidationTasks);
-
             if (!hasAsync)
             {
                 potentiallyClonedContext.CurrentDepth--;
