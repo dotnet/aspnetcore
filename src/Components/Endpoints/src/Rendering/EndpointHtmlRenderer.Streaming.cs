@@ -382,7 +382,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    // Captures frames for a holec omponent from its parent's render tree
+    // Captures frames for a hole component from its parent's render tree
     private RenderFragmentCapture? TryCaptureHoleParameterFrames(EndpointComponentState holeComponentState)
     {
         if (holeComponentState.ParentComponentState is not { } parentComponentState)
