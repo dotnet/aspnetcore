@@ -28,6 +28,16 @@ public partial class Paginator : IDisposable
     [Parameter] public RenderFragment? SummaryTemplate { get; set; }
 
     /// <summary>
+    /// Triggered before the page changes; passes the target page index
+    /// </summary>
+    [Parameter] public EventCallback<int> OnPageChanging { get; set; }
+
+    /// <summary>
+    /// Triggered after the page has changed; passes the new page index.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    /// <summary>
     /// Constructs an instance of <see cref="Paginator" />.
     /// </summary>
     public Paginator()
@@ -73,10 +83,17 @@ public partial class Paginator : IDisposable
         var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
         if (pageFromQuery != State.CurrentPageIndex)
         {
-            return State.SetCurrentPageIndexAsync(pageFromQuery);
+            return HandlePageChangeAsync(pageFromQuery);
         }
 
         return Task.CompletedTask;
+    }
+
+    private async Task HandlePageChangeAsync(int newPageIndex)
+    {
+        await OnPageChanging.InvokeAsync(newPageIndex + 1);
+        await State.SetCurrentPageIndexAsync(newPageIndex);
+        await OnPageChanged.InvokeAsync(newPageIndex + 1);
     }
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -87,7 +104,7 @@ public partial class Paginator : IDisposable
         {
             if (pageFromQuery != State.CurrentPageIndex)
             {
-                await State.SetCurrentPageIndexAsync(pageFromQuery);
+                await HandlePageChangeAsync(pageFromQuery);
             }
             StateHasChanged();
         });

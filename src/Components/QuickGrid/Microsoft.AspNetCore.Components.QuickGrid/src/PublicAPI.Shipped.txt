@@ -83,6 +83,10 @@ Microsoft.AspNetCore.Components.QuickGrid.PaginationState.TotalItemCount.get -> 
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState.TotalItemCountChanged -> System.EventHandler<int?>?
 Microsoft.AspNetCore.Components.QuickGrid.Paginator
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.Dispose() -> void
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanged.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanging.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanging.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.Paginator() -> void
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.State.get -> Microsoft.AspNetCore.Components.QuickGrid.PaginationState!
 Microsoft.AspNetCore.Components.QuickGrid.Paginator.State.set -> void
