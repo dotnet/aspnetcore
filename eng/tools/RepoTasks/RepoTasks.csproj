@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
 
     <Reference Include="System.Security.Cryptography.Pkcs" />
+    <Reference Include="System.Security.Cryptography.Xml" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
