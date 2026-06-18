@@ -506,17 +506,15 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     {
         Debug.Assert(_builtApplication is not null);
 
-        // The 'WebApplication' case: give the middleware an on-demand endpoint matcher built from the routes.
         if (app.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
         {
             var endpointMatcher = RerouteHelper.Reroute(_builtApplication, routeBuilder, static _ => Task.CompletedTask);
             app.UseMiddleware<CsrfProtectionMiddleware>(new CsrfEndpointResolver(endpointMatcher));
-
-            return;
         }
-
-        // Non-WebApplication hosting: no route builder, so no endpoint metadata to honor. Behavior is unchanged.
-        app.UseMiddleware<CsrfProtectionMiddleware>();
+        else
+        {
+            app.UseMiddleware<CsrfProtectionMiddleware>();
+        }
     }
 
     void IHostApplicationBuilder.ConfigureContainer<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory, Action<TContainerBuilder>? configure) =>
