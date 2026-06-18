@@ -230,12 +230,10 @@ public class InputSelectTest
         Assert.Equal("model_NotNullableEnum", idAttribute.AttributeValue);
     }
 
-    // Regression test for: https://github.com/dotnet/aspnetcore/issues/XXXXX
     // InputSelect<string[]> with null value should not throw during render
     [Fact]
     public async Task InputSelectMultipleWithNullValue_RendersSuccessfully()
     {
-        // Arrange
         var model = new TestModel { StringArray = null };
         var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
         {
@@ -244,7 +242,6 @@ public class InputSelectTest
             Value = null
         };
 
-        // Act & Assert - Should not throw NullReferenceException during render
         var exception = await Record.ExceptionAsync(() => InputRenderer.RenderAndGetComponent(rootComponent));
         Assert.Null(exception);
     }
