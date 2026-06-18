@@ -685,6 +685,35 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript("return window.__syncResult") as string == "delivered");
     }
 
+    [Fact]
+    public void AbortSignal_IsAborted_WhenTabBecomesVisibleDuringCallback()
+    {
+        NavigateToTypingPage();
+        InstallHangingAbortHook();
+
+        SetVisibility("hidden");
+        WaitForAbortHookStarted();
+
+        SetVisibility("visible");
+
+        AssertAbortSignalFired();
+        AssertSignalWasNotAbortedOnEntry();
+    }
+
+    [Fact]
+    public void AbortSignal_IsAborted_WhenConnectionClosedDuringServerPause()
+    {
+        NavigateToServerPausePage();
+        InstallHangingAbortHookForServerPause();
+
+        TriggerServerPause();
+        WaitForServerAbortHookStarted(expectedCount: 1);
+
+        TriggerServerPause();
+
+        AssertServerAbortSignalFired(index: 0, expectedReason: "superseded by new pause request");
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1020,6 +1049,81 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         }
         var display = modals[0].GetCssValue("display");
         return display == "block";
+    }
+
+    private void NavigateToServerPausePage()
+    {
+        Navigate($"/subdir/persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+    }
+
+    private void InstallHangingAbortHook()
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            window.__abortResult = null;
+            window.__onPauseRequestedHook = (signal) => new Promise((resolve) => {
+                window.__abortResult = { started: true, abortedOnEntry: signal.aborted };
+                signal.addEventListener('abort', () => {
+                    window.__abortResult.abortedLater = true;
+                    resolve();
+                });
+            });
+        ");
+    }
+
+    private void WaitForAbortHookStarted()
+    {
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return window.__abortResult !== null && window.__abortResult.started === true"));
+    }
+
+    private void AssertAbortSignalFired()
+    {
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return window.__abortResult.abortedLater === true"));
+    }
+
+    private void AssertSignalWasNotAbortedOnEntry()
+    {
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return window.__abortResult.abortedOnEntry === false"));
+    }
+
+    private void InstallHangingAbortHookForServerPause()
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            window.__serverAbortResults = [];
+            window.__onPauseRequestedHook = (signal) => new Promise((resolve) => {
+                const idx = window.__serverAbortResults.length;
+                window.__serverAbortResults.push({ started: true, abortedOnEntry: signal.aborted });
+                signal.addEventListener('abort', () => {
+                    window.__serverAbortResults[idx].abortedLater = true;
+                    window.__serverAbortResults[idx].reason = signal.reason;
+                    resolve();
+                });
+            });
+        ");
+    }
+
+    private void TriggerServerPause()
+    {
+        var circuitId = Browser.Exists(By.Id("circuit-id")).Text;
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            $"DotNet.invokeMethodAsync('Components.TestServer', 'TriggerServerPause', '{circuitId}')");
+    }
+
+    private void WaitForServerAbortHookStarted(int expectedCount)
+    {
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            $"return window.__serverAbortResults.length === {expectedCount} && window.__serverAbortResults[{expectedCount - 1}].started === true"));
+    }
+
+    private void AssertServerAbortSignalFired(int index, string expectedReason)
+    {
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            $"return window.__serverAbortResults[{index}].abortedLater === true"));
+        Browser.True(() => ((IJavaScriptExecutor)Browser).ExecuteScript(
+            $"return window.__serverAbortResults[{index}].reason") as string == expectedReason);
     }
 
     private void SetVisibility(string state)

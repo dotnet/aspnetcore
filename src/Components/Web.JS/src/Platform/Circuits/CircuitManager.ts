@@ -548,11 +548,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._pauseAbortController?.abort('superseded by new pause request');
 
     const controller = new AbortController();
-    this._pauseAbortController = new AbortController();
+    this._pauseAbortController = controller;
     try {
       await this._options.onPauseRequested!(controller.signal);
     } finally {
-      // Prevent race condition
       if (this._pauseAbortController === controller) {
         this._pauseAbortController = undefined;
       }
