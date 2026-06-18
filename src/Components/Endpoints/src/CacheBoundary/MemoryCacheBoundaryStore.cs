@@ -66,16 +66,12 @@ internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
             }
             catch (Exception ex)
             {
-                // Remove the pending entry BEFORE faulting the TCS so that any future
-                // caller (after waiters observe the exception) gets a clean slate and
-                // re-runs the factory rather than re-binding to a faulted task.
                 _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
                 tcs.SetException(ex);
                 throw;
             }
             finally
             {
-                // No-op if we already removed it in the catch block.
                 _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
             }
         }

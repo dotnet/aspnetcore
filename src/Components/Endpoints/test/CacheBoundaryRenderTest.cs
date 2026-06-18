@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -99,7 +97,7 @@ public class CacheBoundaryRenderTest
     private sealed class TestCacheStore : ICacheBoundaryStore
     {
         public Dictionary<string, string> Data { get; } = new();
-        public string? ReturnForAnyKey { get; set; }
+        public string ReturnForAnyKey { get; set; }
 
         public async ValueTask<string> GetOrCreateAsync(
             string key,
@@ -150,16 +148,16 @@ public class CacheBoundaryRenderTest
     {
         public List<LogEntry> Entries { get; } = new();
 
-        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => null;
 
         public bool IsEnabled(LogLevel logLevel) => true;
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
             Entries.Add(new LogEntry(logLevel, formatter(state, exception), exception));
         }
 
-        public record LogEntry(LogLevel Level, string Message, Exception? Exception);
+        public record LogEntry(LogLevel Level, string Message, Exception Exception);
     }
 
     private sealed class TestServiceProviderWithLogger : IServiceProvider
@@ -171,7 +169,7 @@ public class CacheBoundaryRenderTest
             _logger = logger;
         }
 
-        public object? GetService(Type serviceType)
+        public object GetService(Type serviceType)
             => serviceType == typeof(ILoggerFactory) ? new TestLoggerFactory(_logger) : null;
     }
 

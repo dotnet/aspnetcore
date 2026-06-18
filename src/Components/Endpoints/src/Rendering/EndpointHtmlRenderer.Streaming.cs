@@ -310,7 +310,7 @@ internal partial class EndpointHtmlRenderer
             pausedCapture = true;
             captureWriter.PauseCapture();
 
-            // A validation-only writer (a non-creator boundary) records nothing; the hole-policy error
+            // A validation-only writer (a disabled boundary) records nothing; the hole-policy error
             // already surfaced in the condition above. Only a real capture records the hole.
             if (!captureWriter.IsValidationOnly)
             {
@@ -320,9 +320,6 @@ internal partial class EndpointHtmlRenderer
                 var holeBoundary = componentState.Component as SSRRenderModeBoundary;
                 var holeComponentType = holeBoundary?.ComponentType ?? componentState.Component.GetType();
 
-                // The hole's parameters live in its render-tree parent's frames, whether it sits directly
-                // in the CacheBoundary's ChildContent or is emitted by an intermediate component's own
-                // BuildRenderTree. Capture them now, while we still hold its component state.
                 var holeCapture = TryCaptureHoleParameterFrames(componentState)
                     ?? throw new InvalidOperationException(
                         $"CacheBoundary could not locate the hole component '{holeComponentType.FullName}' in its parent's render tree.");
@@ -385,10 +382,7 @@ internal partial class EndpointHtmlRenderer
         }
     }
 
-    // Captures the frame range of a hole (the component frame plus its parameter attributes) from its
-    // render-tree parent. The hole's parameters live in the parent's frames whether the hole sits in the
-    // CacheBoundary's ChildContent or is emitted by an intermediate component's own BuildRenderTree.
-    // Returns null when the parent or frame cannot be located.
+    // Captures frames for a holec omponent from its parent's render tree
     private RenderFragmentCapture? TryCaptureHoleParameterFrames(EndpointComponentState holeComponentState)
     {
         if (holeComponentState.ParentComponentState is not { } parentComponentState)

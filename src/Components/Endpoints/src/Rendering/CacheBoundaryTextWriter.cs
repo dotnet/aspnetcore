@@ -130,10 +130,9 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
             if (frame.FrameType is RenderTreeFrameType.Attribute && IsRenderFragmentParameter(frame.AttributeValue))
             {
                 throw new InvalidOperationException(
-                    $"Component '{holeComponentType.FullName}' is excluded from caching because it is annotated with [CacheBoundaryPolicy] (a \"hole\"), " +
-                    $"but it has a RenderFragment parameter '{frame.AttributeName}'. A hole is re-rendered on every request, but its parameters are captured " +
-                    "once and replayed, so a RenderFragment or RenderFragment<T> parameter cannot be supported (it would be frozen to the content of the first render). " +
-                    "Remove the RenderFragment parameter from the component, or do not place it inside a CacheBoundary.");
+                    $"The [CacheBoundaryPolicy] hole component '{holeComponentType.FullName}' cannot be used inside a CacheBoundary because its RenderFragment parameter" +
+                    "'{frame.AttributeName}' would be frozen to the first render's content (a hole's parameters are captured once and replayed). " +
+                    "To fix this, remove the RenderFragment parameter or move the component outside the CacheBoundary.");
             }
         }
     }
