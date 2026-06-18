@@ -11,10 +11,10 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableTypeInfo : IValidatableInfo
+public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 {
     private readonly int _membersCount;
-    private readonly List<Type> _superTypes;
+    private readonly Type[] _implementedInterfaces;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
@@ -34,7 +34,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         Members = members;
         DisplayNameInfo = displayNameInfo;
         _membersCount = members.Count;
-        _superTypes = type.GetAllImplementedTypes();
+        _implementedInterfaces = type.GetInterfaces();
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 
     /// <summary>
     /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
-    /// <paramref name="memberName"/>, including members inherited from base types or implemented
+    /// <paramref name="propertyName"/>, including members inherited from base types or implemented
     /// interfaces.
     /// </summary>
     /// <remarks>
@@ -72,29 +72,39 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// </para>
     /// <para>
     /// Inherited members are resolved by looking up each super-type via
-    /// <paramref name="options"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
+    /// <paramref name="validationOptions"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
     /// are not registered with a resolver are silently skipped.
     /// </para>
     /// </remarks>
-    /// <param name="memberName">The CLR name of the member to find.</param>
-    /// <param name="options">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
+    /// <param name="propertyName">The CLR name of the property to find.</param>
+    /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
     /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
     /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
-    internal ValidatablePropertyInfo? FindMember(string memberName, ValidationOptions options)
+    public IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions)
     {
-        if (FindLocalMember(memberName) is { } localMember)
+        if (FindLocalMember(propertyName) is { } localMember)
         {
             return localMember;
         }
 
-        foreach (var superType in _superTypes)
+        foreach (var @interface in _implementedInterfaces)
         {
-            if (options.TryGetValidatableTypeInfo(superType, out var superInfo)
-                && superInfo is ValidatableTypeInfo superTypeInfo
-                && superTypeInfo.FindLocalMember(memberName) is { } inheritedMember)
+            if (validationOptions.TryGetValidatableTypeInfo(@interface, out var interfaceTypeInfo) &&
+                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions) is { } interfaceProperty)
             {
-                return inheritedMember;
+                return interfaceProperty;
             }
+        }
+
+        var baseType = Type.BaseType;
+        while (baseType is not null)
+        {
+            if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
+            {
+                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions);
+            }
+
+            baseType = baseType.BaseType;
         }
 
         return null;
@@ -172,7 +182,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private async Task ValidateMembersAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private async Task ValidateMembersAsync(object value, ValidateContext context, CancellationToken cancellationToken)
     {
         var originalPrefix = context.CurrentValidationPath;
 
@@ -288,13 +298,35 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 
     private IEnumerable<ValidatableTypeInfo> GetSuperTypeInfos(Type actualType, ValidateContext context)
     {
-        foreach (var superType in _superTypes.Where(t => t.IsAssignableFrom(actualType)))
+        foreach (var @interface in _implementedInterfaces)
         {
-            if (context.ValidationOptions.TryGetValidatableTypeInfo(superType, out var found)
-                && found is ValidatableTypeInfo superTypeInfo)
+            if (TryGetValidatableTypeInfo(@interface, actualType, context.ValidationOptions) is { } superTypeInfo)
             {
                 yield return superTypeInfo;
             }
+        }
+
+        var baseType = Type.BaseType;
+        while (baseType is not null)
+        {
+            if (TryGetValidatableTypeInfo(baseType, actualType, context.ValidationOptions) is { } superTypeInfo)
+            {
+                yield return superTypeInfo;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        static ValidatableTypeInfo? TryGetValidatableTypeInfo(Type superType, Type actualType, ValidationOptions options)
+        {
+            if (superType.IsAssignableFrom(actualType) &&
+                options.TryGetValidatableTypeInfo(superType, out var found)
+                && found is ValidatableTypeInfo superTypeInfo)
+            {
+                return superTypeInfo;
+            }
+
+            return null;
         }
     }
 }
