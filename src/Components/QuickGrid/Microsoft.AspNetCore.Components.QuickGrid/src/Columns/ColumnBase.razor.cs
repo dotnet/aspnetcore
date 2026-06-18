@@ -129,16 +129,16 @@ public abstract partial class ColumnBase<TGridItem>
     {
         get
         {
-            var className = "col-options-button";
-            if (!string.IsNullOrEmpty(ColumnOptionsButtonClass))
+            var classes = new List<string> { "col-options-button" };
+            if (!string.IsNullOrWhiteSpace(ColumnOptionsButtonClass))
             {
-                className += " " + ColumnOptionsButtonClass;
+                classes.Add(ColumnOptionsButtonClass.Trim());
             }
             if (ColumnOptionsActive)
             {
-                className += " col-options-active";
+                classes.Add("col-options-active");
             }
-            return className;
+            return string.Join(" ", classes);
         }
     }
 }

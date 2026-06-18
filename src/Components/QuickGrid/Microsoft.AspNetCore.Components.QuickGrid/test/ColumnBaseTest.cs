@@ -114,4 +114,34 @@ public class ColumnBaseTest
         Assert.Contains("custom-class", cssClass);
         Assert.DoesNotContain("col-options-active", cssClass);
     }
+
+    [Fact]
+    public void ColumnOptionsButtonCssClass_WithWhitespaceInCustomClass_TrimsProperly()
+    {
+        var column = new TestColumn
+        {
+            ColumnOptionsButtonClass = "  custom-class  "
+        };
+        var cssClass = column.ColumnOptionsButtonCssClass;
+        Assert.DoesNotContain("   ", cssClass);
+    }
+
+    [Fact]
+    public void ColumnHeaderTemplate_RendersWithCorrectButtonClasses()
+    {
+        var column = new TestColumn
+        {
+            ColumnOptionsActive = true,
+            ColumnOptionsButtonClass = "my-filter-indicator"
+        };
+
+        var builder = new RenderTreeBuilder();
+        column.HeaderContent(builder);
+
+        var markup = builder.GetFrames();
+        Assert.DoesNotContain(markup.Array, frame =>
+            frame.FrameType == RenderTree.RenderTreeFrameType.Attribute &&
+            frame.AttributeName == "class" &&
+            frame.AttributeValue?.ToString()?.Contains("my-filter-indicator") == true);
+    }
 }
