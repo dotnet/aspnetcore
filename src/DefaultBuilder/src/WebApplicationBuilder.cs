@@ -501,14 +501,26 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     // RequireCors("name")) from the matched endpoint's metadata, so it needs the endpoint to be matched.
     // When the user calls app.UseRouting() explicitly, EndpointRoutingMiddleware lives only in the source
     // (inner) pipeline and runs AFTER this destination middleware, leaving HttpContext.GetEndpoint() null
-    // at CSRF time, which loses the named policy and wrongly rejects legitimate cross-origin POSTs.
+    // at CSRF time, which loses the named policy and wrongly rejects legitimate cross-origin POSTs (#67174).
     //
-    // Give the middleware a UseRouting() branch so it can match the endpoint on demand when routing hasn't
-    // run yet. This is the same RerouteHelper precedent used by UsePathBase, UseStatusCodePagesWithReExecute,
-    // UseExceptionHandler and UseRewriter. The branch only performs endpoint MATCHING (its terminal is a
-    // no-op), never endpoint execution, and the middleware restores the pre-routing state afterwards so that
-    // middleware ordered before the app's UseRouting() still observes a null endpoint. In the auto-routing
-    // case the endpoint is already matched before this middleware runs, so the branch is never used.
+    // Unlike UseAuthentication()/UseAuthorization(), CSRF protection is default-on, so the user never places
+    // it explicitly and it cannot use the "skip auto-injection when the user called it" mechanism (see
+    // AuthenticationMiddlewareSetKey/AuthorizationMiddlewareSetKey above) that lets auth middleware run inside
+    // the source pipeline after the user's UseRouting(). It must be auto-injected into the destination
+    // pipeline, which runs before the source pipeline. We therefore give the middleware a UseRouting() branch
+    // so it can match the endpoint on demand when routing hasn't run yet. This is the same RerouteHelper
+    // precedent used by UsePathBase, UseStatusCodePagesWithReExecute, UseExceptionHandler and UseRewriter.
+    //
+    // The branch only performs endpoint MATCHING (its terminal is a no-op), never endpoint execution, and the
+    // middleware restores the pre-routing state afterwards so that middleware ordered before the app's
+    // UseRouting() still observes a null endpoint (the CanAddMiddlewareBeforeUseRouting contract). That
+    // restore makes the source pipeline's EndpointRoutingMiddleware re-run matching, so the explicit-routing
+    // path matches twice; this is unavoidable without either moving CSRF into the source pipeline after the
+    // user's UseRouting() (no positional-insert API exists, and a placement after the source pipeline executes
+    // the endpoint before CSRF when the user calls UseEndpoints() explicitly) or changing core routing to
+    // cache the match (too large a blast radius for a security fix). Matching is cheap and re-entrant, and
+    // execution still happens exactly once. In the auto-routing case the endpoint is already matched before
+    // this middleware runs, so the branch is never used and there is no extra match.
     private void AddCsrfProtectionMiddleware(IApplicationBuilder app)
     {
         Debug.Assert(_builtApplication is not null);
