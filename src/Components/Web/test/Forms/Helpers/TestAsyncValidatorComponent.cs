@@ -75,7 +75,6 @@ internal sealed class TestAsyncValidator : IDisposable
         _store = new ValidationMessageStore(editContext);
         _editContext.OnFieldChanged += OnFieldChanged;
         _editContext.OnValidationRequested += OnValidationRequested;
-        _editContext.OnValidationRequestedAsync += OnValidationRequestedAsync;
     }
 
     public ValidationOutcome DefaultOutcome { get; set; } = ValidationOutcome.Valid;
@@ -138,7 +137,6 @@ internal sealed class TestAsyncValidator : IDisposable
         _disposed = true;
         _editContext.OnFieldChanged -= OnFieldChanged;
         _editContext.OnValidationRequested -= OnValidationRequested;
-        _editContext.OnValidationRequestedAsync -= OnValidationRequestedAsync;
     }
 
     private void OnFieldChanged(object sender, FieldChangedEventArgs args)
@@ -153,18 +151,15 @@ internal sealed class TestAsyncValidator : IDisposable
 
     private void OnValidationRequested(object sender, ValidationRequestedEventArgs args)
     {
-    }
-
-    private async Task OnValidationRequestedAsync(object sender, ValidationRequestedEventArgs args)
-    {
         FormValidationStartCount++;
         _store.Clear();
 
-        var tasks = _configs.Keys
-            .Select(field => RunValidationAsync(field, GetConfig(field), args.CancellationToken))
-            .ToArray();
-
-        await Task.WhenAll(tasks);
+        foreach (var field in _configs.Keys)
+        {
+            // Start each field's validation and hand the task to the framework. RunValidationAsync
+            // is an async method, so a synchronous throw is captured into the returned task.
+            args.AddValidationTask(RunValidationAsync(field, GetConfig(field), args.CancellationToken));
+        }
     }
 
     private async Task RunValidationAsync(FieldIdentifier field, ValidationConfig config, CancellationToken cancellationToken)
