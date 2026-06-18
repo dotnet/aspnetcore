@@ -18,6 +18,9 @@ internal sealed partial class CsrfProtectionMiddleware
     private readonly ILogger<CsrfProtectionMiddleware> _logger;
     private readonly CsrfEndpointResolver? _endpointResolver;
 
+    private static readonly CsrfValidationException ValidationFailedException
+        = new("Cross-site request forgery validation via Fetch Metadata headers failed");
+
     public CsrfProtectionMiddleware(
         RequestDelegate next,
         ICsrfProtection csrfProtection,
@@ -32,59 +35,70 @@ internal sealed partial class CsrfProtectionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (await IsRequestAllowedAsync(context))
+        // When the endpoint is already matched (auto-routing) or there's no matcher available, record the
+        // verdict in place against the current endpoint.
+        if (context.GetEndpoint() is not null || _endpointResolver is null)
         {
+            await RecordVerdictAsync(context);
             await _next(context);
             return;
         }
 
-        RequestDenied(_logger, context.Request.Method, context.Request.Path, context.Request.Headers.Origin.ToString());
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
-    }
-
-    private async ValueTask<bool> IsRequestAllowedAsync(HttpContext context)
-    {
-        // When the endpoint is already matched (auto-routing) or no matcher is available, evaluate in place.
-        if (context.GetEndpoint() is not null || _endpointResolver is null)
-        {
-            return await EvaluateAsync(context);
-        }
-
         // The app called UseRouting() explicitly, so routing runs after this middleware and the endpoint is
-        // not yet matched. Match it on demand so per-endpoint CORS/antiforgery metadata is honored, then
-        // restore the pre-routing state: middleware ordered before the app's UseRouting() must still observe
-        // a null endpoint, and the downstream routing middleware re-runs matching as usual.
+        // not yet matched. Match it on demand so per-endpoint CORS/antiforgery metadata is honored when
+        // recording the verdict, then restore the pre-routing state: middleware ordered before the app's
+        // UseRouting() must still observe a null endpoint, and the downstream routing middleware re-runs
+        // matching as usual. The verdict recorded on IAntiforgeryValidationFeature and the sentinel written to
+        // HttpContext.Items both survive the restore, so downstream consumers and the EndpointMiddleware
+        // security-metadata check still observe them.
         var originalRouteValues = context.Request.RouteValues;
         try
         {
             await _endpointResolver.MatchEndpoint(context);
-            return await EvaluateAsync(context);
+            await RecordVerdictAsync(context);
         }
         finally
         {
             context.SetEndpoint(null);
             context.Request.RouteValues = originalRouteValues;
         }
+
+        await _next(context);
     }
 
-    private ValueTask<bool> EvaluateAsync(HttpContext context)
+    // Records this middleware's CSRF verdict for the matched endpoint. It does not short-circuit: it only
+    // writes the verdict to IAntiforgeryValidationFeature for downstream consumers (minimal-API form binding,
+    // MVC's antiforgery filter, Razor Components) to act on. When the application also calls UseAntiforgery(),
+    // the later AntiforgeryMiddleware may overwrite this verdict with the result of token-based validation.
+    private async ValueTask RecordVerdictAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
+        if (endpoint is not null)
         {
-            return ValueTask.FromResult(true);
+            context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
         }
 
-        return CheckCsrfProtectionAsync(context);
+        // The endpoint opted out of antiforgery (e.g. DisableAntiforgery()); record no verdict.
+        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
+        {
+            return;
+        }
+
+        if (await _csrfProtection.ValidateAsync(context) is { IsAllowed: false })
+        {
+            RequestFailedValidation(_logger, context.Request.Method, context.Request.Path, context.Request.Headers.Origin.ToString());
+            context.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, ValidationFailedException));
+        }
+        else
+        {
+            context.Features.Set(AntiforgeryValidationFeature.Valid);
+        }
     }
 
-    private async ValueTask<bool> CheckCsrfProtectionAsync(HttpContext context)
-        => await _csrfProtection.ValidateAsync(context) is { IsAllowed: true };
-
     [LoggerMessage(EventId = 1, Level = LogLevel.Debug,
-        Message = "Cross-origin CSRF protection denied request {Method} {Path} from origin '{Origin}'.",
-        EventName = "CsrfRequestDenied")]
-    private static partial void RequestDenied(ILogger logger, string method, PathString path, string origin);
+        Message = "Cross-origin CSRF protection marked request {Method} {Path} from origin '{Origin}' as invalid.",
+        EventName = "CsrfValidationFailed")]
+    private static partial void RequestFailedValidation(ILogger logger, string method, PathString path, string origin);
 }
 
 /// <summary>
