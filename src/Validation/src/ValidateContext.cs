@@ -17,7 +17,7 @@ public sealed class ValidateContext
     /// This context provides access to service provider and other validation metadata.
     /// </summary>
     /// <remarks>
-    /// This property should be set by the consumer of the <see cref="IValidatableInfo"/>
+    /// This property should be set by the consumer of the validatable info
     /// interface to provide the necessary context for validation. The object should be initialized
     /// with the current object being validated, the display name, and the service provider to support
     /// the complete set of validation scenarios.

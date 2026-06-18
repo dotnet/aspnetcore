@@ -267,21 +267,21 @@ public class EditContextValidatableInfoFieldTest
                 _mappings = mappings;
             }
 
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
             {
                 if (_mappings.TryGetValue(type, out var info))
                 {
-                    validatableInfo = info;
+                    validatableTypeInfo = info;
                     return true;
                 }
 
-                validatableInfo = null;
+                validatableTypeInfo = null;
                 return false;
             }
 
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
             {
-                validatableInfo = null;
+                validatableParameterInfo = null;
                 return false;
             }
         }
