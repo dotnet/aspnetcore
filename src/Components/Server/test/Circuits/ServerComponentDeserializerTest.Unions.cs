@@ -38,23 +38,31 @@ public partial class ServerComponentDeserializerTest
     }
 
     [Fact]
-    public void Union_NullActiveCase_IsNotSupportedByPrerenderParameters_KnownGap()
+    public void Union_NullableNullCase_RoundTripsThroughPrerenderParameters()
     {
-        // Documents a known gap in the Server prerender parameter protocol (not a union-specific
-        // serialization problem). The protocol records a parameter's type from the runtime type of
-        // the boxed value: for a union holding a null case the box is non-null, so a non-null
-        // TypeName/Assembly is written. But the value serializes to JSON null on the wire, and on the
-        // read side ComponentParameterDeserializer unconditionally casts each parameter value to
-        // JsonElement (parameterValues come back as CLR null for JSON null), which throws and fails
-        // the whole descriptor. In other words the protocol conflates "value that serializes to null"
-        // with "absent/null parameter". This only surfaces for types whose converter can emit null for
-        // a non-null instance (such as a union whose active case is a null int? or null reference).
-        // The in-process, JSInterop and PersistentComponentState paths all round-trip this case fine.
+        // A union whose active case is a null int? serializes to JSON null on the wire. The prerender
+        // protocol still records a non-null type name (the union box itself is non-null), so the read
+        // side restores the value by routing the JSON null literal back through the union converter
+        // (ComponentParameterDeserializer special-cases JsonTypeInfoKind.Union for this).
         var markers = SerializeMarkers(CreateMarkers(
             (typeof(TestComponent), new Dictionary<string, object> { ["Value"] = new UnionNullableIntString((int?)null) })));
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
-        Assert.False(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out _));
+        Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+        var parameters = Assert.Single(descriptors).Parameters.ToDictionary();
+        Assert.Equal(new UnionNullableIntString((int?)null), parameters["Value"]);
+    }
+
+    [Fact]
+    public void Union_NullableIntCase_RoundTripsThroughPrerenderParameters()
+    {
+        var markers = SerializeMarkers(CreateMarkers(
+            (typeof(TestComponent), new Dictionary<string, object> { ["Value"] = new UnionNullableIntString(7) })));
+        var serverComponentDeserializer = CreateServerComponentDeserializer();
+
+        Assert.True(serverComponentDeserializer.TryDeserializeComponentDescriptorCollection(markers, out var descriptors));
+        var parameters = Assert.Single(descriptors).Parameters.ToDictionary();
+        Assert.Equal(new UnionNullableIntString(7), parameters["Value"]);
     }
 
     [Fact]
