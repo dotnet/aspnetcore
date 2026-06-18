@@ -56,6 +56,21 @@ public class PropertyAsParameterInfoTests
     }
 
     [Fact]
+    public void PropertyAsParameterInfoTests_WithConstructorArgument_UsesParameterCustomAttributes_Generic()
+    {
+        // Arrange
+        var propertyInfo = GetProperty(typeof(ArgumentList), nameof(ArgumentList.NoAttribute));
+        var parameter = GetParameter(nameof(ArgumentList.DefaultMethod), nameof(ArgumentList.WithTestAttribute));
+        var parameterInfo = new PropertyAsParameterInfo(propertyInfo, parameter);
+
+        // Act
+        var attributes = parameterInfo.GetCustomAttributes<TestAttribute>();
+
+        // Assert
+        Assert.Single(attributes);
+    }
+
+    [Fact]
     public void PropertyAsParameterInfoTests_WithConstructorArgument_FallbackToPropertyCustomAttributes()
     {
         // Arrange
