@@ -153,4 +153,19 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("people_sort=FirstName", Browser.Url);
         Assert.Contains("people_order=asc", Browser.Url);
     }
+
+    [Fact]
+    public void SortByTypeMismatchShowsClearError()
+    {
+        // When GridSort<TSortItem> doesn't match QuickGrid<TGridItem>,
+        // the error message should clearly identify both types
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        // The error boundary should catch the exception and display the error message
+        Browser.Exists(By.CssSelector("#type-mismatch-error"));
+
+        // Verify the error message contains both types for clear debugging
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message")).Text;
+        Assert.Equal("The Summary Column type mismatch: Column expects ValueTuple`2 but grid uses WeatherForecast.", errorMessage);
+    }
 }
