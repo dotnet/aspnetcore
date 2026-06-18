@@ -6,10 +6,10 @@ using System.Diagnostics.CodeAnalysis;
 namespace Microsoft.Extensions.Validation;
 
 /// <summary>
-/// Represents an interface for validating a value.
+/// Represents an interface for validating a value of a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public interface IValidatableInfo
+public interface IValidatableTypeInfo
 {
     /// <summary>
     /// Validates the specified <paramref name="value"/>.
@@ -19,4 +19,12 @@ public interface IValidatableInfo
     /// <param name="cancellationToken">A cancellation token to support cancellation of the validation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves the validatable property info for the specified property name.
+    /// </summary>
+    /// <param name="propertyName">The name of the property to find its validatable property info.</param>
+    /// <param name="validationOptions">The validation options.</param>
+    /// <returns>The validatable property info, or null if not found.</returns>
+    IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions);
 }
