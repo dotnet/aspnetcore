@@ -184,6 +184,9 @@
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+        <DotNetProjects Include="$(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj"
+                        Exclude="@(ProjectToBuild);@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' " />
         <!-- Only build the composite R2R runtime pack when we will actually ship it -->
         <DotNetProjects Include="$(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(TargetOsName)' != 'win' " />
@@ -203,6 +206,7 @@
                           $(RepoRoot)src\Security\**\src\*.csproj;
                           $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
                           $(RepoRoot)src\Tools\**\src\*.csproj;
+                          $(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj;
                           $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\src\*.csproj;
                           $(RepoRoot)src\Razor\**\src\*.csproj;
@@ -258,6 +262,7 @@
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
+                          $(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
