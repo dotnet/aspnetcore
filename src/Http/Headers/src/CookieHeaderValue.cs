@@ -117,7 +117,7 @@ public class CookieHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
     {
         var index = 0;
-        return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
+        return SingleValueParser.TryParseValue(input, index, out _, out parsedValue!);
     }
 
     /// <summary>
