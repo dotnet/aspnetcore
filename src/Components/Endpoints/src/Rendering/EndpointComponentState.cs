@@ -94,8 +94,8 @@ internal sealed class EndpointComponentState : ComponentState
             keyString);
     }
 
-    // We need this caclulation, because otherwise multiple CacheBoundary components under the same parent would have
-    // the same key and will point to the same cache entry, which is incorrect.
+        // We need this calculation because otherwise multiple CacheBoundary components under the same parent would have
+        // the same key and would point to the same cache entry, which is incorrect.
     private int FindSequenceInParent(ComponentState parentState, CacheBoundary target)
     {
         var frames = _renderer.GetRenderTreeFrames(parentState.ComponentId);
