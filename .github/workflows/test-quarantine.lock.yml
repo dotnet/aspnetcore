@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"7b4e394f7c7ce8f54cd369d90d96601f00f430f053fcc74cbabfd99ddb071936","body_hash":"ac72dfb70edc7ef34542f07fd82aea382686f3aeeec0ff891e488ac233ff8dc3","compiler_version":"v0.79.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.60"}}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"eda9a51233fadf48f7f3023feaa200064bcecd07b7bdf5d5b2888b90f6f18cad","body_hash":"ff86436a315101eff9d6c42544bf188b0a721724c9c4a59a174c579a41abd02e","compiler_version":"v0.79.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.60"}}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"df4cb1c069e1874edd31b4311f1884172cec0e10","version":"v6.0.3"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/github-script","sha":"d746ffe35508b1917358783b479e04febd2b8f71","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9","version":"v0.79.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2","digest":"sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2@sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2","digest":"sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2@sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2","digest":"sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2@sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.25","digest":"sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.25@sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa"},{"image":"ghcr.io/github/github-mcp-server:v1.1.2","digest":"sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c","pinned_image":"ghcr.io/github/github-mcp-server:v1.1.2@sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -417,6 +417,27 @@ on:
           # return out
       # 
       # 
+      # def list_completed_builds(definition, branch=None):
+          # """Return ALL completed build objects (any result) so we can reconstruct the
+          # per-pipeline timeline and detect PASSING runs between failures. Lightweight:
+          # build metadata only, no test-result calls."""
+          # mt = (datetime.datetime.utcnow() - datetime.timedelta(days=DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
+          # tok, out = None, []
+          # while True:
+              # p = {"definitions": definition, "statusFilter": "completed", "$top": 200,
+                   # "minTime": mt, "api-version": "7.1"}
+              # if branch:
+                  # p["branchName"] = branch
+              # if tok:
+                  # p["continuationToken"] = tok
+              # data, h = fetch(f"{ADO}/build/builds?{urllib.parse.urlencode(p)}")
+              # out += data.get("value", [])
+              # tok = h.get("x-ms-continuationtoken")
+              # if not tok:
+                  # break
+          # return out
+      # 
+      # 
       # def builds_by_ids(ids):
           # out = []
           # for k in range(0, len(ids), 100):
@@ -604,6 +625,86 @@ on:
           # return js
       # 
       # 
+      # def mark_intermittency(source_a, all_main_builds, bmeta):
+          # """Set `is_consistent_regression` on every individual test in source_a.
+      # 
+          # A test is a CONSISTENT REGRESSION (not flaky) when, on ANY `main` pipeline (def)
+          # where it failed 2+ times, its two most recent failures on that pipeline were in
+          # back-to-back runs with NO passing run in between. That is the signature of a real
+          # regression, so such a test must NOT be auto-quarantined under Case A — quarantining
+          # it would hide the regression. The check is conservative on purpose: a back-to-back
+          # failure streak on EITHER pipeline blocks quarantine, even if the test happened to
+          # look intermittent on the other pipeline (an intermittent pattern on one pipeline
+          # must never mask a hard regression on another).
+      # 
+          # A "pass" between two failures is a completed `main` build on the SAME def that
+          # SUCCEEDED or PARTIALLY SUCCEEDED (so tests actually ran), started strictly between
+          # the two failures, and in which this test did NOT fail (not in its failing-build
+          # set). `failed`/`canceled` builds are excluded — a compile/infra break produces no
+          # test results and must not be mistaken for a passing run.
+      # 
+          # A test with fewer than two failures on every single pipeline has too little
+          # evidence of consistency, so `is_consistent_regression` is False (the gate does not
+          # block it; it is judged on the other Case A criteria — e.g. PR-only flakes)."""
+          # PASS_RESULTS = ("succeeded", "partiallySucceeded")
+          # # Per-def ascending (startedUtc, id) timeline + result/def lookup. Seed the
+          # # start/def of every Source A failing build from `bmeta` first (it carries `def`
+          # # and `startedUtc` for each), so a failure always has a timestamp + pipeline even
+          # # if it falls outside the full-timeline window below; then layer the completed-build
+          # # timeline (the only source of `result`, needed to spot passing runs) on top.
+          # bstart, bdef, bresult, by_def = {}, {}, {}, {}
+          # for sid, mv in bmeta.items():
+              # try:
+                  # bid = int(sid)
+              # except (TypeError, ValueError):
+                  # continue
+              # if mv.get("startedUtc") and mv.get("def") is not None:
+                  # bstart[bid] = mv["startedUtc"]
+                  # bdef[bid] = mv["def"]
+          # for b in all_main_builds:
+              # bid = b.get("id")
+              # d = (b.get("definition") or {}).get("id")
+              # st = b.get("startTime")
+              # if bid is None or d is None or not st:
+                  # continue
+              # bstart[bid] = st
+              # bdef[bid] = d
+              # bresult[bid] = b.get("result")
+              # by_def.setdefault(d, []).append((st, bid))
+          # for d in by_def:
+              # by_def[d].sort()
+      # 
+          # for name, e in source_a.items():
+              # if name.endswith(WI_SUFFIX):
+                  # continue
+              # failset = set(e.get("builds", []))
+              # # Group this test's timestamped failures by the pipeline they ran on.
+              # fails_by_def = {}
+              # for bid in failset:
+                  # if bid in bstart and bid in bdef:
+                      # fails_by_def.setdefault(bdef[bid], []).append(bstart[bid])
+              # regression = False
+              # for d, fl in fails_by_def.items():
+                  # if len(fl) < 2:
+                      # continue
+                  # fl.sort()
+                  # t2, t1 = fl[-2], fl[-1]   # two most recent failures on this def
+                  # passed_here = False
+                  # for st, bid in by_def.get(d, []):
+                      # if st <= t2:
+                          # continue
+                      # if st >= t1:
+                          # break
+                      # if bid not in failset and bresult.get(bid) in PASS_RESULTS:
+                          # passed_here = True
+                          # break
+                  # if not passed_here:
+                      # # Back-to-back failures on this pipeline with no pass between -> regression.
+                      # regression = True
+                      # break
+              # e["is_consistent_regression"] = regression
+      # 
+      # 
       # def main():
           # # Source A: failed/partial builds on main, both pipelines, last 30 days.
           # a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
@@ -611,6 +712,10 @@ on:
           # for b in a_builds:
               # bmeta[str(b["id"])] = build_meta(b)
           # source_a = enrich(aggregate([b["id"] for b in a_builds]))
+          # # Flakiness signal: needs the FULL main timeline (incl. succeeded builds), not just
+          # # the failed/partial builds above, to spot a passing run between two failures.
+          # all_main_builds = [b for d in DEFS for b in list_completed_builds(d, branch="refs/heads/main")]
+          # mark_intermittency(source_a, all_main_builds, bmeta)
       # 
           # # Source B: preselected merged-PR build ids (env from the Verify Source B PRs step).
           # raw_ids = os.environ.get("SOURCE_B_BUILD_IDS", "").strip()
@@ -711,8 +816,11 @@ on:
               # "source_c_truncated": truncated,
           # }
           # js = emit(out)
+          # regr = sum(1 for n, e in source_a.items()
+                     # if not n.endswith(WI_SUFFIX) and e.get("is_consistent_regression"))
           # sys.stderr.write(f"part1: A={len(source_a)} tests, B={len(source_b)} tests, "
                            # f"C={len(source_c)} work items, builds={len(bmeta)}, "
+                           # f"main_builds={len(all_main_builds)}, regression_A={regr}, "
                            # f"output {len(js)/1024:.0f} KB, source_c_truncated={truncated}, "
                            # f"trim={out.get('trim')}\n")
           # return js
@@ -2630,6 +2738,27 @@ jobs:
               return out
 
 
+          def list_completed_builds(definition, branch=None):
+              """Return ALL completed build objects (any result) so we can reconstruct the
+              per-pipeline timeline and detect PASSING runs between failures. Lightweight:
+              build metadata only, no test-result calls."""
+              mt = (datetime.datetime.utcnow() - datetime.timedelta(days=DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
+              tok, out = None, []
+              while True:
+                  p = {"definitions": definition, "statusFilter": "completed", "$top": 200,
+                       "minTime": mt, "api-version": "7.1"}
+                  if branch:
+                      p["branchName"] = branch
+                  if tok:
+                      p["continuationToken"] = tok
+                  data, h = fetch(f"{ADO}/build/builds?{urllib.parse.urlencode(p)}")
+                  out += data.get("value", [])
+                  tok = h.get("x-ms-continuationtoken")
+                  if not tok:
+                      break
+              return out
+
+
           def builds_by_ids(ids):
               out = []
               for k in range(0, len(ids), 100):
@@ -2817,6 +2946,86 @@ jobs:
               return js
 
 
+          def mark_intermittency(source_a, all_main_builds, bmeta):
+              """Set `is_consistent_regression` on every individual test in source_a.
+
+              A test is a CONSISTENT REGRESSION (not flaky) when, on ANY `main` pipeline (def)
+              where it failed 2+ times, its two most recent failures on that pipeline were in
+              back-to-back runs with NO passing run in between. That is the signature of a real
+              regression, so such a test must NOT be auto-quarantined under Case A — quarantining
+              it would hide the regression. The check is conservative on purpose: a back-to-back
+              failure streak on EITHER pipeline blocks quarantine, even if the test happened to
+              look intermittent on the other pipeline (an intermittent pattern on one pipeline
+              must never mask a hard regression on another).
+
+              A "pass" between two failures is a completed `main` build on the SAME def that
+              SUCCEEDED or PARTIALLY SUCCEEDED (so tests actually ran), started strictly between
+              the two failures, and in which this test did NOT fail (not in its failing-build
+              set). `failed`/`canceled` builds are excluded — a compile/infra break produces no
+              test results and must not be mistaken for a passing run.
+
+              A test with fewer than two failures on every single pipeline has too little
+              evidence of consistency, so `is_consistent_regression` is False (the gate does not
+              block it; it is judged on the other Case A criteria — e.g. PR-only flakes)."""
+              PASS_RESULTS = ("succeeded", "partiallySucceeded")
+              # Per-def ascending (startedUtc, id) timeline + result/def lookup. Seed the
+              # start/def of every Source A failing build from `bmeta` first (it carries `def`
+              # and `startedUtc` for each), so a failure always has a timestamp + pipeline even
+              # if it falls outside the full-timeline window below; then layer the completed-build
+              # timeline (the only source of `result`, needed to spot passing runs) on top.
+              bstart, bdef, bresult, by_def = {}, {}, {}, {}
+              for sid, mv in bmeta.items():
+                  try:
+                      bid = int(sid)
+                  except (TypeError, ValueError):
+                      continue
+                  if mv.get("startedUtc") and mv.get("def") is not None:
+                      bstart[bid] = mv["startedUtc"]
+                      bdef[bid] = mv["def"]
+              for b in all_main_builds:
+                  bid = b.get("id")
+                  d = (b.get("definition") or {}).get("id")
+                  st = b.get("startTime")
+                  if bid is None or d is None or not st:
+                      continue
+                  bstart[bid] = st
+                  bdef[bid] = d
+                  bresult[bid] = b.get("result")
+                  by_def.setdefault(d, []).append((st, bid))
+              for d in by_def:
+                  by_def[d].sort()
+
+              for name, e in source_a.items():
+                  if name.endswith(WI_SUFFIX):
+                      continue
+                  failset = set(e.get("builds", []))
+                  # Group this test's timestamped failures by the pipeline they ran on.
+                  fails_by_def = {}
+                  for bid in failset:
+                      if bid in bstart and bid in bdef:
+                          fails_by_def.setdefault(bdef[bid], []).append(bstart[bid])
+                  regression = False
+                  for d, fl in fails_by_def.items():
+                      if len(fl) < 2:
+                          continue
+                      fl.sort()
+                      t2, t1 = fl[-2], fl[-1]   # two most recent failures on this def
+                      passed_here = False
+                      for st, bid in by_def.get(d, []):
+                          if st <= t2:
+                              continue
+                          if st >= t1:
+                              break
+                          if bid not in failset and bresult.get(bid) in PASS_RESULTS:
+                              passed_here = True
+                              break
+                      if not passed_here:
+                          # Back-to-back failures on this pipeline with no pass between -> regression.
+                          regression = True
+                          break
+                  e["is_consistent_regression"] = regression
+
+
           def main():
               # Source A: failed/partial builds on main, both pipelines, last 30 days.
               a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
@@ -2824,6 +3033,10 @@ jobs:
               for b in a_builds:
                   bmeta[str(b["id"])] = build_meta(b)
               source_a = enrich(aggregate([b["id"] for b in a_builds]))
+              # Flakiness signal: needs the FULL main timeline (incl. succeeded builds), not just
+              # the failed/partial builds above, to spot a passing run between two failures.
+              all_main_builds = [b for d in DEFS for b in list_completed_builds(d, branch="refs/heads/main")]
+              mark_intermittency(source_a, all_main_builds, bmeta)
 
               # Source B: preselected merged-PR build ids (env from the Verify Source B PRs step).
               raw_ids = os.environ.get("SOURCE_B_BUILD_IDS", "").strip()
@@ -2924,8 +3137,11 @@ jobs:
                   "source_c_truncated": truncated,
               }
               js = emit(out)
+              regr = sum(1 for n, e in source_a.items()
+                         if not n.endswith(WI_SUFFIX) and e.get("is_consistent_regression"))
               sys.stderr.write(f"part1: A={len(source_a)} tests, B={len(source_b)} tests, "
                                f"C={len(source_c)} work items, builds={len(bmeta)}, "
+                               f"main_builds={len(all_main_builds)}, regression_A={regr}, "
                                f"output {len(js)/1024:.0f} KB, source_c_truncated={truncated}, "
                                f"trim={out.get('trim')}\n")
               return js
