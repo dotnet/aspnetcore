@@ -15,7 +15,7 @@ public sealed class ValidateContext
 {
     private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors;
 
-    internal ConcurrentBag<Task> ValidationTasks { get; }
+    internal ConcurrentQueue<Task> ValidationTasks { get; }
 
     internal object? ValidationInitiator { get; set; }
 
@@ -31,7 +31,7 @@ public sealed class ValidateContext
     private ValidateContext(ValidateContext original, object? withNewInitiator)
     {
         _validationErrors = original._validationErrors;
-        ValidationTasks = withNewInitiator is not null ? new ConcurrentBag<Task>() : original.ValidationTasks;
+        ValidationTasks = withNewInitiator is not null ? new ConcurrentQueue<Task>() : original.ValidationTasks;
         CurrentDepth = original.CurrentDepth;
         CurrentValidationPath = original.CurrentValidationPath;
         ValidationInitiator = withNewInitiator ?? original.ValidationInitiator;

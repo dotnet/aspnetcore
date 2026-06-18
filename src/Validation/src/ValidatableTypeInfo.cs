@@ -218,7 +218,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             {
                 if (localValidationTasks is not null)
                 {
-                    context.ValidationTasks.Add(Task.WhenAll(localValidationTasks));
+                    context.ValidationTasks.Enqueue(Task.WhenAll(localValidationTasks));
                 }
 
                 return;
@@ -240,7 +240,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             {
                 if (localValidationTasks is not null)
                 {
-                    context.ValidationTasks.Add(Task.WhenAll(localValidationTasks));
+                    context.ValidationTasks.Enqueue(Task.WhenAll(localValidationTasks));
                 }
 
                 return;
@@ -264,11 +264,11 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
                     await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
                 }
 
-                context.ValidationTasks.Add(GetFinalValidationTask(localValidationTasks));
+                context.ValidationTasks.Enqueue(GetFinalValidationTask(localValidationTasks));
             }
             else
             {
-                context.ValidationTasks.Add(ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken));
+                context.ValidationTasks.Enqueue(ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken));
             }
         }
         finally

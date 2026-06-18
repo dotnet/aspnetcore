@@ -164,7 +164,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
         else
         {
-            potentiallyClonedContext.ValidationTasks.Add(attributesValidationTask);
+            potentiallyClonedContext.ValidationTasks.Enqueue(attributesValidationTask);
         }
 
         var validationOptions = potentiallyClonedContext.ValidationOptions;

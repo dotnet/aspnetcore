@@ -126,7 +126,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             }
         };
 
-        context.ValidationTasks.Add(ValidationHelpers.ValidateAttributesAsync(
+        context.ValidationTasks.Enqueue(ValidationHelpers.ValidateAttributesAsync(
             validationAttributes,
             value,
             context,
@@ -172,7 +172,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
                             }
                             else
                             {
-                                context.ValidationTasks.Add(enumItemTask);
+                                context.ValidationTasks.Enqueue(enumItemTask);
                             }
                         }
                     }
@@ -186,7 +186,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             var valueType = value.GetType();
             if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
             {
-                context.ValidationTasks.Add(validatableType.ValidateAsync(value, context, cancellationToken));
+                context.ValidationTasks.Enqueue(validatableType.ValidateAsync(value, context, cancellationToken));
             }
         }
 
