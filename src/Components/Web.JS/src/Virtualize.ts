@@ -85,6 +85,46 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     spacerAfter.style.display = 'table-row';
   }
 
+  // Applies one-time base style (flex-shrink) on first sight of an element.
+  const baseStylesAppliedProp = Symbol();
+  function ensureBaseStyles(el: HTMLElement): void {
+    if ((el as any)[baseStylesAppliedProp]) {
+      return;
+    }
+    (el as any)[baseStylesAppliedProp] = true;
+    el.style.flexShrink = '0';
+  }
+
+  const layoutAttrs = [
+    ['data-blazor-virtualize-reserved-height', 'height', (n: number) => `${n}px`],
+    ['data-blazor-virtualize-loop-breaker-transform', 'transform', (n: number) => `translateY(${n}px)`],
+  ] as const;
+  const layoutAttrNames = layoutAttrs.map(([a]) => a);
+  function applyLayoutAttrs(el: HTMLElement): void {
+    ensureBaseStyles(el);
+    for (const [attr, styleProp, format] of layoutAttrs) {
+      const raw = el.getAttribute(attr);
+      const n = raw ? Number(raw) : NaN;
+      if (Number.isFinite(n)) {
+        el.style.setProperty(styleProp, format(n));
+      } else {
+        el.style.removeProperty(styleProp);
+      }
+    }
+  }
+
+  // Apply layout attributes before the MutationObserver starts catching changes.
+  function applyLayoutAttrsBetweenSpacers(): void {
+    for (let el: Element | null = spacerBefore;
+         el && el !== spacerAfter.nextElementSibling;
+         el = el.nextElementSibling) {
+      if (layoutAttrNames.some(a => el!.hasAttribute(a))) {
+        applyLayoutAttrs(el as HTMLElement);
+      }
+    }
+  }
+  applyLayoutAttrsBetweenSpacers();
+
   if (useNativeAnchoring) {
     // Prevent spacers from being used as scroll anchors — only rendered items should anchor.
     spacerBefore.style.overflowAnchor = 'none';
@@ -93,6 +133,22 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     // Manual compensation path for tables and browsers without native anchoring.
     scrollElement.style.overflowAnchor = 'none';
   }
+
+  // Observe only the two spacers we already hold references to. Placeholders are siblings between them,
+  // so on each spacer mutation we walk the sibling chain to reapply styles.
+  const mutationObserver = new MutationObserver(applyLayoutAttrsBetweenSpacers);
+
+  function flushPendingStyleMutations(): void {
+    if (mutationObserver.takeRecords().length > 0) {
+      applyLayoutAttrsBetweenSpacers();
+    }
+  }
+  const spacerObserverOptions: MutationObserverInit = {
+    attributes: true,
+    attributeFilter: layoutAttrNames,
+  };
+  mutationObserver.observe(spacerBefore, spacerObserverOptions);
+  mutationObserver.observe(spacerAfter, spacerObserverOptions);
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
@@ -209,17 +265,6 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   resizeObserver.observe(spacerAfter);
 
   function refreshObservedElements(): void {
-    // C# style updates overwrite the entire style attribute. Re-apply what we need.
-    if (isTable) {
-      spacerBefore.style.display = 'table-row';
-      spacerAfter.style.display = 'table-row';
-    }
-
-    if (useNativeAnchoring) {
-      spacerBefore.style.overflowAnchor = 'none';
-      spacerAfter.style.overflowAnchor = 'none';
-    }
-
     // Ensure spacers are always observed (idempotent).
     resizeObserver.observe(spacerBefore);
     resizeObserver.observe(spacerAfter);
@@ -306,6 +351,9 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   // Corrects scrollTop after a render that shifted content, using the snapshot
   // saved by updateAnchorSnapshot() during the previous render cycle.
   function restoreAnchorForShift(): void {
+    // Apply styles before we read layout
+    flushPendingStyleMutations();
+
     const snapshot = observersByDotNetObjectId[id].anchorSnapshot;
     if (!snapshot) {
       return;
@@ -517,6 +565,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     beginProgrammaticScroll: beginProgrammaticScrollSuppression,
     anchorSnapshot: null as { anchorItemIndex: number; anchorOffset: number; scrollTop: number } | null,
     onDispose: () => {
+      mutationObserver.disconnect();
       stopConvergenceObserving();
       anchoredItems.clear();
       resizeObserver.disconnect();

@@ -212,6 +212,191 @@ public class NullableConverterTests
         Assert.False(returnValue);
     }
 
+    [Fact]
+    public void TryConvertValue_ForTimeSpanReturnsTrueWithNullForEmptyString()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<TimeSpan>(new ParsableConverter<TimeSpan>());
+        var reader = new FormDataReader(default, culture, default);
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, string.Empty, out var result);
+
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryRead_ForTimeSpanReturnsTrueWithNullForEmptyString()
+    {
+        const string prefixName = "field";
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var dictionary = new Dictionary<FormKey, StringValues>()
+        {
+            { new FormKey(prefixName.AsMemory()), (StringValues)string.Empty }
+        };
+        var buffer = prefixName.ToCharArray().AsMemory();
+        var reader = new FormDataReader(dictionary, culture, buffer);
+        reader.PushPrefix(prefixName);
+
+        var nullableConverter = new NullableConverter<TimeSpan>(new ParsableConverter<TimeSpan>());
+
+        var returnValue = nullableConverter.TryRead(ref reader, typeof(TimeSpan?), default, out var result, out var found);
+
+        Assert.True(found);
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForGuidReturnsTrueWithNullForEmptyString()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<Guid>(new ParsableConverter<Guid>());
+        var reader = new FormDataReader(default, culture, default);
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, string.Empty, out var result);
+
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryRead_ForGuidReturnsTrueWithNullForEmptyString()
+    {
+        const string prefixName = "field";
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var dictionary = new Dictionary<FormKey, StringValues>()
+        {
+            { new FormKey(prefixName.AsMemory()), (StringValues)string.Empty }
+        };
+        var buffer = prefixName.ToCharArray().AsMemory();
+        var reader = new FormDataReader(dictionary, culture, buffer);
+        reader.PushPrefix(prefixName);
+
+        var nullableConverter = new NullableConverter<Guid>(new ParsableConverter<Guid>());
+
+        var returnValue = nullableConverter.TryRead(ref reader, typeof(Guid?), default, out var result, out var found);
+
+        Assert.True(found);
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForInt128ReturnsTrueWithNullForEmptyString()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<Int128>(new ParsableConverter<Int128>());
+        var reader = new FormDataReader(default, culture, default);
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, string.Empty, out var result);
+
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryRead_ForInt128ReturnsTrueWithNullForEmptyString()
+    {
+        const string prefixName = "field";
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var dictionary = new Dictionary<FormKey, StringValues>()
+        {
+            { new FormKey(prefixName.AsMemory()), (StringValues)string.Empty }
+        };
+        var buffer = prefixName.ToCharArray().AsMemory();
+        var reader = new FormDataReader(dictionary, culture, buffer);
+        reader.PushPrefix(prefixName);
+
+        var nullableConverter = new NullableConverter<Int128>(new ParsableConverter<Int128>());
+
+        var returnValue = nullableConverter.TryRead(ref reader, typeof(Int128?), default, out var result, out var found);
+
+        Assert.True(found);
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForUInt128ReturnsTrueWithNullForEmptyString()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<UInt128>(new ParsableConverter<UInt128>());
+        var reader = new FormDataReader(default, culture, default);
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, string.Empty, out var result);
+
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryRead_ForUInt128ReturnsTrueWithNullForEmptyString()
+    {
+        const string prefixName = "field";
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var dictionary = new Dictionary<FormKey, StringValues>()
+        {
+            { new FormKey(prefixName.AsMemory()), (StringValues)string.Empty }
+        };
+        var buffer = prefixName.ToCharArray().AsMemory();
+        var reader = new FormDataReader(dictionary, culture, buffer);
+        reader.PushPrefix(prefixName);
+
+        var nullableConverter = new NullableConverter<UInt128>(new ParsableConverter<UInt128>());
+
+        var returnValue = nullableConverter.TryRead(ref reader, typeof(UInt128?), default, out var result, out var found);
+
+        Assert.True(found);
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryConvertValue_ForHalfReturnsTrueWithNullForEmptyString()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var nullableConverter = new NullableConverter<Half>(new ParsableConverter<Half>());
+        var reader = new FormDataReader(default, culture, default);
+
+        var returnValue = nullableConverter.TryConvertValue(ref reader, string.Empty, out var result);
+
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryRead_ForHalfReturnsTrueWithNullForEmptyString()
+    {
+        const string prefixName = "field";
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var dictionary = new Dictionary<FormKey, StringValues>()
+        {
+            { new FormKey(prefixName.AsMemory()), (StringValues)string.Empty }
+        };
+        var buffer = prefixName.ToCharArray().AsMemory();
+        var reader = new FormDataReader(dictionary, culture, buffer);
+        reader.PushPrefix(prefixName);
+
+        var nullableConverter = new NullableConverter<Half>(new ParsableConverter<Half>());
+
+        var returnValue = nullableConverter.TryRead(ref reader, typeof(Half?), default, out var result, out var found);
+
+        Assert.True(found);
+        Assert.True(returnValue);
+        Assert.Null(result);
+    }
+
     private struct ParsableTestStruct : IParsable<ParsableTestStruct>
     {
         public bool WasEmptyOrNull { get; set; }
