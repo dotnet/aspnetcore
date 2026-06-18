@@ -148,31 +148,19 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
                 {
                     if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        // Perf optimization, avoid cloning the context when we know we will completely synchronously.
-                        if (validatableType is ValidatableTypeInfo builtInValidatableTypeInfo &&
-                            builtInValidatableTypeInfo.IsGuaranteedToBeSynchronous(item, validationOptions, context.CurrentDepth))
+                        // TODO: Optimize to not always Clone.
+                        var clonedContext = context.Clone();
+                        clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                            ? $"{Name}[{index}]"
+                            : $"{currentPrefix}.{Name}[{index}]";
+                        var enumItemTask = validatableType.ValidateAsync(item, clonedContext, cancellationToken);
+                        if (enumItemTask.IsCompleted)
                         {
-                            context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                                ? $"{Name}[{index}]"
-                                : $"{currentPrefix}.{Name}[{index}]";
-                            await builtInValidatableTypeInfo.ValidateAsync(item, context, cancellationToken);
-                            context.CurrentValidationPath = currentPrefix;
+                            await enumItemTask;
                         }
                         else
                         {
-                            var clonedContext = context.Clone();
-                            clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
-                                ? $"{Name}[{index}]"
-                                : $"{currentPrefix}.{Name}[{index}]";
-                            var enumItemTask = validatableType.ValidateAsync(item, clonedContext, cancellationToken);
-                            if (enumItemTask.IsCompleted)
-                            {
-                                await enumItemTask;
-                            }
-                            else
-                            {
-                                (tasks ??= new()).Add(enumItemTask);
-                            }
+                            (tasks ??= new()).Add(enumItemTask);
                         }
                     }
                 }

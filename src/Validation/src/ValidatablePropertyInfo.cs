@@ -191,19 +191,17 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                         var itemType = item.GetType();
                         if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            if (validatableType is ValidatableTypeInfo builtInValidatableInfo &&
-                                builtInValidatableInfo.IsGuaranteedToBeSynchronous(item, validationOptions, context.CurrentDepth))
+                            // TODO: Optimize to not always clone.
+                            var clonedContextForEnumerable = potentiallyClonedContext.Clone();
+                            clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                            var task = validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
+                            if (task.IsCompleted)
                             {
-                                potentiallyClonedContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
-
-                                await validatableType.ValidateAsync(item, potentiallyClonedContext, cancellationToken);
+                                await task;
                             }
                             else
                             {
-                                var clonedContextForEnumerable = potentiallyClonedContext.Clone();
-                                clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
-
-                                (tasks ??= new()).Add(validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken));
+                                (tasks ??= new()).Add(task);
                             }
                         }
                     }
@@ -224,16 +222,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 var valueType = propertyValue.GetType();
                 if (validationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
                 {
-                    if (validatableType is ValidatableTypeInfo builtInValidatableInfo &&
-                        builtInValidatableInfo.IsGuaranteedToBeSynchronous(propertyValue, validationOptions, context.CurrentDepth))
-                    {
-                        await builtInValidatableInfo.ValidateAsync(propertyValue, potentiallyClonedContext, cancellationToken);
-                    }
-                    else
-                    {
-                        var clonedForComplexObject = potentiallyClonedContext.Clone();
-                        await validatableType.ValidateAsync(propertyValue, clonedForComplexObject, cancellationToken);
-                    }
+                    // TODO: Optimize to not always clone.
+                    var clonedForComplexObject = potentiallyClonedContext.Clone();
+                    await validatableType.ValidateAsync(propertyValue, clonedForComplexObject, cancellationToken);
                 }
             }
         }
@@ -258,50 +249,5 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
 
         return false;
-    }
-
-    internal bool IsGuaranteedToBeSynchronous(object containingObject, ValidationOptions options, int currentDepth)
-    {
-        foreach (var attr in GetValidationAttributes())
-        {
-            if (attr is AsyncValidationAttribute)
-            {
-                return false;
-            }
-        }
-
-        var propertyValue = Property.GetValue(containingObject);
-        if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
-        {
-            foreach (var item in enumerable)
-            {
-                if (item != null)
-                {
-                    var itemType = item.GetType();
-                    if (options.TryGetValidatableTypeInfo(itemType, out var validatableType))
-                    {
-                        if (validatableType is not ValidatableTypeInfo builtInInfo ||
-                            !builtInInfo.IsGuaranteedToBeSynchronous(item, options, currentDepth + 1))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-        else if (propertyValue != null)
-        {
-            var valueType = propertyValue.GetType();
-            if (options.TryGetValidatableTypeInfo(valueType, out var validatableType))
-            {
-                if (validatableType is not ValidatableTypeInfo builtInInfo ||
-                    !builtInInfo.IsGuaranteedToBeSynchronous(propertyValue, options, currentDepth + 1))
-                {
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 }
