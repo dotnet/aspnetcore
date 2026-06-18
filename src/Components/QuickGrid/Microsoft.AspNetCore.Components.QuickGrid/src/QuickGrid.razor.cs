@@ -189,6 +189,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private string PageQueryParameterName => QueryParameterNamePrefix == "" ? "page" : $"{QueryParameterNamePrefix}_page";
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier;
 
+    // Represents the current logical data load cycle.
+    // Incremented whenever a new load is initiated (initial load, refresh, or data source change).
+    private int _loadCycleId;
+
+    // Represents the load cycle for which OnDataLoaded has already been raised.
+    private int _lastNotifiedLoadCycleId;
+
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
     /// </summary>
@@ -435,6 +442,14 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync(bool raiseEvents = true)
     {
+
+        // Increment the load cycle for explicit or initial data loads.
+        // Internal updates such as sorting, pagination, or navigation pass raiseEvents: false and do not start a new load cycle.
+        if (raiseEvents)
+        {
+            _loadCycleId++;
+        }
+
         // Invoke the data loading event only if raiseEvents is true and a handler is attached
         if (raiseEvents && OnDataLoading.HasDelegate)
         {
@@ -481,73 +496,75 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         }
         finally
         {
-            // Invoke the data loaded event only if raiseEvents is true and a handler is attached
-            if (raiseEvents && OnDataLoaded.HasDelegate)
+            // For non-virtualized scenarios, raise OnDataLoaded after the data fetch completes.
+            // In virtualized mode, completion is handled separately in ProvideVirtualizedItems.
+            if (raiseEvents && OnDataLoaded.HasDelegate && !Virtualize && !thisLoadCts.IsCancellationRequested)
             {
                 await OnDataLoaded.InvokeAsync();
             }
         }
     }
 
-    /// <summary>
-    /// Handles the Virtualize component's loading completion callback. When Virtualize finishes loading items,
-    /// this forwards the event to the grid's OnDataLoaded callback so users get properly bracketed loading events even when using virtualization.
-    /// </summary>
-    private async Task HandleVirtualizationOnLoadingCompleted()
-    {
-        if (OnDataLoaded.HasDelegate)
-        {
-            await OnDataLoaded.InvokeAsync();
-        }
-    }
-
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
     private async ValueTask<ItemsProviderResult<(int, TGridItem)>> ProvideVirtualizedItems(ItemsProviderRequest request)
     {
-        _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
-
-        // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
-        // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
-        // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
-        await Task.Delay(100);
-        if (request.CancellationToken.IsCancellationRequested)
+        try
         {
+            _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
+
+            // Debounce the requests. This eliminates a lot of redundant queries at the cost of slight lag after interactions.
+            // TODO: Consider making this configurable, or smarter (e.g., doesn't delay on first call in a batch, then the amount
+            // of delay increases if you rapidly issue repeated requests, such as when scrolling a long way)
+            await Task.Delay(100);
+            if (request.CancellationToken.IsCancellationRequested)
+            {
+                return default;
+            }
+
+            // Combine the query parameters from Virtualize with the ones from PaginationState
+            var startIndex = request.StartIndex;
+            var count = request.Count;
+            if (Pagination is not null)
+            {
+                startIndex += Pagination.CurrentPageIndex * Pagination.ItemsPerPage;
+                count = Math.Min(request.Count, Pagination.ItemsPerPage - request.StartIndex);
+            }
+
+            var providerRequest = new GridItemsProviderRequest<TGridItem>(
+                startIndex, count, _sortByColumn, _sortByAscending, request.CancellationToken);
+            var providerResult = await ResolveItemsRequestAsync(providerRequest);
+
+            if (!request.CancellationToken.IsCancellationRequested)
+            {
+                // ARIA's rowcount is part of the UI, so it should reflect what the human user regards as the number of rows in the table,
+                // not the number of physical <tr> elements. For virtualization this means what's in the entire scrollable range, not just
+                // the current viewport. In the case where you're also paginating then it means what's conceptually on the current page.
+                // TODO: This currently assumes we always want to expand the last page to have ItemsPerPage rows, but the experience might
+                //       be better if we let the last page only be as big as its number of actual rows.
+                _ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
+
+                Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount);
+
+                // We're supplying the row index along with each row's data because we need it for aria-rowindex, and we have to account for
+                // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have
+                // to make sure it doesn't get out of sync with the rows being rendered.
+                return new ItemsProviderResult<(int, TGridItem)>(
+                    items: providerResult.Items.Select((x, i) => ValueTuple.Create(i + request.StartIndex + 2, x)),
+                    totalItemCount: _ariaBodyRowCount);
+            }
+
             return default;
         }
-
-        // Combine the query parameters from Virtualize with the ones from PaginationState
-        var startIndex = request.StartIndex;
-        var count = request.Count;
-        if (Pagination is not null)
+        finally
         {
-            startIndex += Pagination.CurrentPageIndex * Pagination.ItemsPerPage;
-            count = Math.Min(request.Count, Pagination.ItemsPerPage - request.StartIndex);
+            // In virtualized scenarios, OnDataLoaded is triggered after the first successful batch of data is returned for a given load cycle. Since Virtualize may issue multiple
+            // requests (e.g., during scrolling or overscan), we ensure the event is raised only once per load cycle using a load-cycle identifier.
+            if (OnDataLoaded.HasDelegate && !request.CancellationToken.IsCancellationRequested && _lastNotifiedLoadCycleId != _loadCycleId)
+            {
+                _lastNotifiedLoadCycleId = _loadCycleId;
+                await OnDataLoaded.InvokeAsync();
+            }
         }
-
-        var providerRequest = new GridItemsProviderRequest<TGridItem>(
-            startIndex, count, _sortByColumn, _sortByAscending, request.CancellationToken);
-        var providerResult = await ResolveItemsRequestAsync(providerRequest);
-
-        if (!request.CancellationToken.IsCancellationRequested)
-        {
-            // ARIA's rowcount is part of the UI, so it should reflect what the human user regards as the number of rows in the table,
-            // not the number of physical <tr> elements. For virtualization this means what's in the entire scrollable range, not just
-            // the current viewport. In the case where you're also paginating then it means what's conceptually on the current page.
-            // TODO: This currently assumes we always want to expand the last page to have ItemsPerPage rows, but the experience might
-            //       be better if we let the last page only be as big as its number of actual rows.
-            _ariaBodyRowCount = Pagination is null ? providerResult.TotalItemCount : Pagination.ItemsPerPage;
-
-            Pagination?.SetTotalItemCountAsync(providerResult.TotalItemCount);
-
-            // We're supplying the row index along with each row's data because we need it for aria-rowindex, and we have to account for
-            // the virtualized start index. It might be more performant just to have some _latestQueryRowStartIndex field, but we'd have
-            // to make sure it doesn't get out of sync with the rows being rendered.
-            return new ItemsProviderResult<(int, TGridItem)>(
-                 items: providerResult.Items.Select((x, i) => ValueTuple.Create(i + request.StartIndex + 2, x)),
-                 totalItemCount: _ariaBodyRowCount);
-        }
-
-        return default;
     }
 
     // Normalizes all the different ways of configuring a data source so they have common GridItemsProvider-shaped API

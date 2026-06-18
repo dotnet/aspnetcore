@@ -210,13 +210,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     [Parameter]
     public int InitialIndex { get; set; }
 
-    /// <summary>
-    /// Optional. A callback that may be invoked when the component finishes loading items from its ItemsProvider.
-    /// This is intended for framework use by parent components like QuickGrid to track loading completion.
-    /// </summary>
-    [Parameter]
-    public EventCallback OnLoadingCompleted { get; set; }
-
     private IEqualityComparer<TItem> _itemComparer = EqualityComparer<TItem>.Default;
 
     /// <summary>
@@ -907,13 +900,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 }
 
                 _loading = false;
-
-                // Fire internal callback to notify QuickGrid that loading has completed.
-                // This allows QuickGrid to properly bracket OnDataLoaded events.
-                if (OnLoadingCompleted.HasDelegate)
-                {
-                    await OnLoadingCompleted.InvokeAsync();
-                }
 
                 _skipNextDistributionRefresh = request.Count > 0;
 

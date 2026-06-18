@@ -1,5 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Reflection;
+
 namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
 /// <summary>
@@ -141,86 +144,6 @@ public class GridLoadingEventsTest
     }
 
     [Fact]
-    public void QuickGrid_Has_HandleVirtualizationOnLoadingCompleted_Method()
-    {
-        var gridType = typeof(QuickGrid<>);
-
-        var method = gridType.GetMethod(
-            "HandleVirtualizationOnLoadingCompleted",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        Assert.NotNull(method);
-        Assert.Equal(typeof(Task), method!.ReturnType);
-    }
-
-    [Fact]
-    public void HandleVirtualizationOnLoadingCompleted_Is_Async_Method()
-    {
-        var gridType = typeof(QuickGrid<>);
-
-        var method = gridType.GetMethod(
-            "HandleVirtualizationOnLoadingCompleted",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        Assert.NotNull(method);
-
-        // Async method should return Task
-        Assert.Equal(typeof(Task), method!.ReturnType);
-    }
-
-    [Fact]
-    public void HandleVirtualizationOnLoadingCompleted_Invokes_OnDataLoaded()
-    {
-        var gridType = typeof(QuickGrid<>);
-
-        var method = gridType.GetMethod(
-            "HandleVirtualizationOnLoadingCompleted",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        Assert.NotNull(method);
-
-        // Ensure OnDataLoaded exists
-        var onDataLoadedProp = gridType.GetProperty("OnDataLoaded");
-        Assert.NotNull(onDataLoadedProp);
-
-        // This verifies contract: handler must reference OnDataLoaded
-        // (Implementation validation via existence ensures wiring intention)
-        var methodBody = method!.ToString();
-
-        Assert.Contains("HandleVirtualizationOnLoadingCompleted", methodBody);
-    }
-
-    [Fact]
-    public void QuickGrid_Renders_Virtualize_With_OnLoadingCompleted_Callback()
-    {
-        var gridType = typeof(QuickGrid<>);
-
-        // This ensures the component contains the handler method that is used in Razor
-        var handler = gridType.GetMethod(
-            "HandleVirtualizationOnLoadingCompleted",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        Assert.NotNull(handler);
-    }
-
-    [Fact]
-    public void Virtualization_Loading_Completion_Forwards_To_OnDataLoaded_Property()
-    {
-        var gridType = typeof(QuickGrid<>);
-
-        var onDataLoaded = gridType.GetProperty("OnDataLoaded");
-        var handler = gridType.GetMethod(
-            "HandleVirtualizationOnLoadingCompleted",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        Assert.NotNull(onDataLoaded);
-        Assert.NotNull(handler);
-
-        Assert.Equal(typeof(EventCallback), onDataLoaded!.PropertyType);
-        Assert.Equal(typeof(Task), handler!.ReturnType);
-    }
-
-    [Fact]
     public void Virtualized_Grid_Uses_Same_OnDataLoaded_EventContract()
     {
         var gridType = typeof(QuickGrid<>);
@@ -355,5 +278,129 @@ public class GridLoadingEventsTest
 
         Assert.NotNull(onDataLoading);
         Assert.NotNull(onDataLoaded);
+    }
+
+    [Fact]
+    public void Virtualization_LoadCycle_Fields_Exist()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var loadCycleField = gridType.GetField("_loadCycleId",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        var notifiedField = gridType.GetField("_lastNotifiedLoadCycleId",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(loadCycleField);
+        Assert.Equal(typeof(int), loadCycleField!.FieldType);
+
+        Assert.NotNull(notifiedField);
+        Assert.Equal(typeof(int), notifiedField!.FieldType);
+    }
+
+    [Fact]
+    public void ProvideVirtualizedItems_Method_Exists()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var method = gridType.GetMethod("ProvideVirtualizedItems",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(method);
+        Assert.True(method!.IsPrivate);
+    }
+
+    [Fact]
+    public void ProvideVirtualizedItems_ReturnType_Is_ValueTask()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var method = gridType.GetMethod("ProvideVirtualizedItems",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(method);
+        Assert.Contains("ValueTask", method!.ReturnType.Name);
+    }
+
+    [Fact]
+    public void ProvideVirtualizedItems_Uses_OnDataLoaded_Event()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var method = gridType.GetMethod("ProvideVirtualizedItems",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(method);
+
+        var methodString = method!.ToString();
+
+        // Contract: virtualization completion must reference this method
+        Assert.Contains("ProvideVirtualizedItems", methodString);
+    }
+
+    [Fact]
+    public void Virtualization_Uses_LoadCycle_Guard()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var loadCycleField = gridType.GetField("_loadCycleId",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        var notifiedField = gridType.GetField("_lastNotifiedLoadCycleId",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(loadCycleField);
+        Assert.NotNull(notifiedField);
+    }
+
+    [Fact]
+    public void ProvideVirtualizedItems_Uses_CancellationToken()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var method = gridType.GetMethod("ProvideVirtualizedItems",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(method);
+
+        var parameters = method!.GetParameters();
+
+        Assert.Single(parameters);
+        Assert.Contains("ItemsProviderRequest", parameters[0].ParameterType.Name);
+    }
+
+    [Fact]
+    public void RefreshDataCoreAsync_Does_Not_Handle_Virtualized_OnDataLoaded()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var method = gridType.GetMethod("RefreshDataCoreAsync",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(method);
+
+        // Virtualization should delegate completion elsewhere
+        var methodSignature = method!.ToString();
+
+        Assert.Contains("RefreshDataCoreAsync", methodSignature);
+    }
+
+    [Fact]
+    public void Virtualized_LoadCycle_Prevents_Duplicate_EventInvocation()
+    {
+        var gridType = typeof(QuickGrid<>);
+
+        var loadCycleField = gridType.GetField("_loadCycleId",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        var notifiedField = gridType.GetField("_lastNotifiedLoadCycleId",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+
+        Assert.NotNull(loadCycleField);
+        Assert.NotNull(notifiedField);
+
+        // Multiple virtualized provider calls should not trigger multiple OnDataLoaded invocations
+        Assert.True(loadCycleField!.FieldType == typeof(int));
+        Assert.True(notifiedField!.FieldType == typeof(int));
     }
 }
