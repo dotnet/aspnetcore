@@ -65,12 +65,10 @@ internal sealed partial class CsrfProtectionMiddleware
     private async ValueTask RecordVerdictAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        if (endpoint is not null)
-        {
-            // Mark that CSRF protection observed this endpoint, even if it opts out below, so
-            // EndpointMiddleware's antiforgery-metadata check passes.
-            context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
-        }
+
+        // Mark that CSRF protection observed this endpoint, even if it opts out below, so
+        // EndpointMiddleware's antiforgery-metadata check passes.
+        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
 
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
         {
