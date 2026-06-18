@@ -404,9 +404,6 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task CsrfProtection_ExplicitUseRouting_NamedPolicy_TrustsAllowedOrigin()
     {
-        // Repro for #67174: a named CORS policy + explicit app.UseRouting() must still resolve the
-        // endpoint's policy at CSRF time, so a cross-origin POST from the allowed origin records a valid
-        // verdict and the consumer lets it through.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
@@ -430,8 +427,6 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task CsrfProtection_AutoRouting_NamedPolicy_TrustsAllowedOrigin()
     {
-        // Regression guard for the auto-routing case (no explicit app.UseRouting()): must keep working
-        // after the re-route fix for #67174.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
@@ -454,8 +449,6 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task CsrfProtection_ExplicitUseRouting_NamedPolicy_DeniesUntrustedOrigin()
     {
-        // The fix must not weaken protection: with explicit app.UseRouting() the endpoint is now resolved,
-        // but an origin outside the named policy still records an invalid verdict and is denied.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
@@ -479,8 +472,6 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task CsrfProtection_ExplicitUseRouting_AllowedRequest_ExecutesEndpointExactlyOnce()
     {
-        // The re-route only re-runs endpoint matching, never endpoint execution, so a trusted request
-        // must still hit the endpoint exactly once.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddCors(options =>
