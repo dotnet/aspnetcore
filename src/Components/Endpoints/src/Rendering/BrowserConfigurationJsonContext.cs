@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Components;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
 [JsonSerializable(typeof(BrowserConfiguration))]
+[JsonSerializable(typeof(AutoPauseBrowserOptions))]
 internal partial class BrowserConfigurationJsonContext : JsonSerializerContext
 {
 }

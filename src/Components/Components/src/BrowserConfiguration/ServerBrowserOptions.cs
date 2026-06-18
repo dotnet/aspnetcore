@@ -28,4 +28,10 @@ public sealed class ServerBrowserOptions
     /// Maps to <c>CircuitStartOptions.reconnectionOptions.dialogId</c>.
     /// </summary>
     public string? ReconnectionDialogId { get; set; }
+
+    /// <summary>
+    /// Auto-pause options for server circuits.
+    /// Maps to <c>CircuitStartOptions.autoPause</c>.
+    /// </summary>
+    public AutoPauseBrowserOptions AutoPause { get; set; } = new();
 }

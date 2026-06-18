@@ -11,6 +11,11 @@
     <HeadOutlet />
 </head>
 <body>
+    @if (AutoPause)
+    {
+        <ConfigureBrowser Configuration="@AutoPauseConfig" />
+    }
+
     <ServerApp @rendermode="@RenderMode.InteractiveServer" />
 
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
@@ -43,16 +48,10 @@
 
         function callBlazorStart() {
             const params = new URLSearchParams(location.search);
-            const autoPauseParam = params.get('auto-pause');
-            const autoPauseDelay = parseInt(params.get('auto-pause-delay-ms') ?? '0', 10);
             const circuitOptions = {
                 logLevel: 0
             };
-            if (autoPauseParam === 'true') {
-                circuitOptions.autoPause = {
-                    enabled: true,
-                    hiddenDelayMilliseconds: autoPauseDelay > 0 ? autoPauseDelay : 200,
-                };
+            if (params.get('auto-pause') === 'true') {
                 window.autoPauseEvents = [];
                 circuitOptions.onPauseRequested = async (signal) => {
                     window.autoPauseEvents.push({ phase: 'onPauseRequested', aborted: signal.aborted });
@@ -93,4 +92,18 @@
 
 @code {
     [SupplyParameterFromQuery(Name = "custom-reconnect-ui")] public bool CustomReconnectUI { get; set; }
+    [SupplyParameterFromQuery(Name = "auto-pause")] public bool AutoPause { get; set; }
+    [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")] public int AutoPauseDelayMs { get; set; }
+
+    private BrowserConfiguration AutoPauseConfig => new()
+    {
+        Server = new()
+        {
+            AutoPause = new()
+            {
+                Enabled = true,
+                HiddenDelayMilliseconds = AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200,
+            }
+        }
+    };
 }

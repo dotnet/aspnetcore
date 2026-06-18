@@ -61,6 +61,8 @@ public sealed class ConfigureBrowser : IComponent
         target.Server.ReconnectionMaxRetries = source.Server.ReconnectionMaxRetries ?? target.Server.ReconnectionMaxRetries;
         target.Server.ReconnectionRetryIntervalMilliseconds = source.Server.ReconnectionRetryIntervalMilliseconds ?? target.Server.ReconnectionRetryIntervalMilliseconds;
         target.Server.ReconnectionDialogId = source.Server.ReconnectionDialogId ?? target.Server.ReconnectionDialogId;
+        target.Server.AutoPause.Enabled = source.Server.AutoPause.Enabled ?? target.Server.AutoPause.Enabled;
+        target.Server.AutoPause.HiddenDelayMilliseconds = source.Server.AutoPause.HiddenDelayMilliseconds ?? target.Server.AutoPause.HiddenDelayMilliseconds;
 
         // SSR
         target.Ssr.DisableDomPreservation = source.Ssr.DisableDomPreservation ?? target.Ssr.DisableDomPreservation;

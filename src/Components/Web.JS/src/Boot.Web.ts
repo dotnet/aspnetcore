@@ -134,6 +134,15 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
       if (browserConfig.server.reconnectionDialogId !== undefined) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
       }
+      if (browserConfig.server.autoPause) {
+        const autoPauseOpts = circuitOpts.autoPause = circuitOpts.autoPause || {} as any;
+        if (browserConfig.server.autoPause.enabled !== undefined) {
+          autoPauseOpts.enabled = browserConfig.server.autoPause.enabled;
+        }
+        if (browserConfig.server.autoPause.hiddenDelayMilliseconds !== undefined) {
+          autoPauseOpts.hiddenDelayMilliseconds = browserConfig.server.autoPause.hiddenDelayMilliseconds;
+        }
+      }
     }
   }
 
