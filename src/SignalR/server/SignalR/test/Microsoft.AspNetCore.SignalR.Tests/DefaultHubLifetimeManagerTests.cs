@@ -220,26 +220,4 @@ public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
         }
     }
 
-    [Fact]
-    public async Task OnUserIdentifierChangedAsyncReroutesUserTargetedMessages()
-    {
-        using (var client = new TestClient())
-        {
-            var manager = CreateNewHubLifetimeManager();
-            var connection = HubConnectionContextUtils.Create(client.Connection, userIdentifier: "user1");
-            await manager.OnConnectedAsync(connection).DefaultTimeout();
-
-            var rekeyed = await manager.OnUserIdentifierChangedAsync(connection, "user1", "user2").DefaultTimeout();
-            Assert.True(rekeyed);
-            Assert.Equal("user2", connection.UserIdentifier);
-
-            // Sending to the old identifier no longer reaches the connection; sending to the new one does.
-            await manager.SendUserAsync("user1", "Old", new object[] { "x" }).DefaultTimeout();
-            await manager.SendUserAsync("user2", "New", new object[] { "y" }).DefaultTimeout();
-
-            var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
-            Assert.Equal("New", message.Target);
-            Assert.Equal("y", (string)message.Arguments[0]);
-        }
-    }
 }

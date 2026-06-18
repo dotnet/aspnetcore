@@ -25,12 +25,6 @@ internal static partial class HubConnectionHandlerLog
     [LoggerMessage(6, LogLevel.Debug, "OnConnectedAsync ending.", EventName = "ConnectedEnding")]
     public static partial void ConnectedEnding(ILogger logger);
 
-    [LoggerMessage(7, LogLevel.Warning, "Authentication refresh produced a different user identifier (old: '{PreviousUserIdentifier}', new: '{NewUserIdentifier}'), but the hub lifetime manager does not support changing a connection's user identifier. Aborting the connection.", EventName = "UserIdentifierChangedOnRefresh")]
+    [LoggerMessage(7, LogLevel.Warning, "Authentication refresh produced a different user identifier (old: '{PreviousUserIdentifier}', new: '{NewUserIdentifier}'). Changing a connection's user identifier during refresh is not supported, so the connection is aborted.", EventName = "UserIdentifierChangedOnRefresh")]
     public static partial void UserIdentifierChangedOnRefresh(ILogger logger, string? previousUserIdentifier, string? newUserIdentifier);
-
-    [LoggerMessage(8, LogLevel.Debug, "Authentication refresh changed the user identifier (old: '{PreviousUserIdentifier}', new: '{NewUserIdentifier}'). Re-keyed the connection's user-targeted routing.", EventName = "UserIdentifierRekeyedOnRefresh")]
-    public static partial void UserIdentifierRekeyedOnRefresh(ILogger logger, string? previousUserIdentifier, string? newUserIdentifier);
-
-    [LoggerMessage(9, LogLevel.Error, "Failed to re-key the connection's user-targeted routing after an authentication refresh changed the user identifier (old: '{PreviousUserIdentifier}', new: '{NewUserIdentifier}'). Aborting the connection.", EventName = "UserIdentifierRekeyFailed")]
-    public static partial void UserIdentifierRekeyFailed(ILogger logger, string? previousUserIdentifier, string? newUserIdentifier, Exception exception);
 }

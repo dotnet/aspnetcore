@@ -53,12 +53,9 @@ public partial class HubConnectionContext
     private bool _useStatefulReconnect;
     private DefaultHubCallerContext? _hubCallerContext;
     private string? _userIdentifier;
-    // Suppresses HubCallerContext snapshot publication while a lifetime manager rekeys UserIdentifier.
-    // ApplyUserState publishes the refreshed user and identifier together after routing state is updated.
-    private bool _stagingUserStateUpdate;
 
     // IUserIdProvider.GetUserId receives the connection, not the candidate principal. During refresh this
-    // lets that synchronous call see the pending principal without making it hub-visible yet.
+    // lets that synchronous call see the pending principal before publishing the refreshed hub state.
     [ThreadStatic]
     private static UserIdProviderUserState? t_userIdProviderUserState;
 
@@ -187,10 +184,7 @@ public partial class HubConnectionContext
         set
         {
             Volatile.Write(ref _userIdentifier, value);
-            if (!Volatile.Read(ref _stagingUserStateUpdate))
-            {
-                PublishHubCallerContext(new DefaultHubCallerContext(this, HubCallerContext.User ?? new ClaimsPrincipal(), value));
-            }
+            PublishHubCallerContext(new DefaultHubCallerContext(this, HubCallerContext.User ?? new ClaimsPrincipal(), value));
         }
     }
 
@@ -228,21 +222,10 @@ public partial class HubConnectionContext
         }
     }
 
-    internal void StageUserStateUpdate()
-    {
-        Volatile.Write(ref _stagingUserStateUpdate, true);
-    }
-
     internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier)
     {
         Volatile.Write(ref _userIdentifier, userIdentifier);
         PublishHubCallerContext(new DefaultHubCallerContext(this, user, userIdentifier));
-        Volatile.Write(ref _stagingUserStateUpdate, false);
-    }
-
-    internal void ClearStagedUserStateUpdate()
-    {
-        Volatile.Write(ref _stagingUserStateUpdate, false);
     }
 
     private sealed class UserIdProviderUserState

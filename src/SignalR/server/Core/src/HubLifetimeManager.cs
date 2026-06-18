@@ -118,25 +118,6 @@ public abstract class HubLifetimeManager<THub> where THub : Hub
     public abstract Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object?[] args, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Called when a connection's user identifier changes, for example after an authentication token refresh
-    /// produces a principal that maps to a different user. Implementations should update any user-targeted
-    /// routing state so that messages sent to <paramref name="newUserIdentifier"/> reach the connection and
-    /// messages sent to <paramref name="oldUserIdentifier"/> no longer do.
-    /// </summary>
-    /// <param name="connection">The connection whose user identifier changed.</param>
-    /// <param name="oldUserIdentifier">The previous user identifier, or <see langword="null"/> if the connection had none.</param>
-    /// <param name="newUserIdentifier">The new user identifier, or <see langword="null"/> if the connection no longer has one.</param>
-    /// <returns>
-    /// A <see cref="Task{TResult}"/> that completes with <see langword="true"/> if the change was handled and
-    /// user-targeted routing was updated; otherwise <see langword="false"/> to indicate the lifetime manager does
-    /// not support changing a connection's user identifier, in which case the caller should abort the connection.
-    /// </returns>
-    public virtual Task<bool> OnUserIdentifierChangedAsync(HubConnectionContext connection, string? oldUserIdentifier, string? newUserIdentifier)
-    {
-        return Task.FromResult(false);
-    }
-
-    /// <summary>
     /// Adds a connection to the specified group.
     /// </summary>
     /// <param name="connectionId">The connection ID to add to a group.</param>

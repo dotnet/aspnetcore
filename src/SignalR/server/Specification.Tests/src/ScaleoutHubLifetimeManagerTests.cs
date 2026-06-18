@@ -469,49 +469,6 @@ public abstract class ScaleoutHubLifetimeManagerTests<TBackplane> : HubLifetimeM
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
     [Fact]
-    public async Task OnUserIdentifierChangedAsyncReroutesUserMessagesAcrossBackplane()
-    {
-        var backplane = CreateBackplane();
-
-        // The connection lives on manager1; manager2 represents a second server that targets the user
-        // through the backplane, so this exercises the cross-server subscription rekey.
-        var manager1 = CreateNewHubLifetimeManager(backplane);
-        var manager2 = CreateNewHubLifetimeManager(backplane);
-
-        using (var client = new TestClient())
-        {
-            var connection = HubConnectionContextUtils.Create(client.Connection, userIdentifier: "userA");
-
-            await manager1.OnConnectedAsync(connection).DefaultTimeout();
-
-            // Before the change, the other server reaches the connection under the original user id.
-            await manager2.SendUserAsync("userA", "Hello", new object[] { "World" }).DefaultTimeout();
-            await AssertMessageAsync(client);
-
-            // Re-key the connection to a new user identifier.
-            var rekeyed = await manager1.OnUserIdentifierChangedAsync(connection, "userA", "userB").DefaultTimeout();
-            Assert.True(rekeyed);
-            Assert.Equal("userB", connection.UserIdentifier);
-
-            // The other server now reaches the connection under the new user id (backplane subscription moved).
-            await manager2.SendUserAsync("userB", "Hello", new object[] { "World" }).DefaultTimeout();
-            await AssertMessageAsync(client);
-
-            // The old user id no longer routes to the connection. Publish to the stale id (a no-op) followed
-            // by the new id; the next message read must be the new-id message, proving the stale-id message
-            // was never delivered.
-            await manager2.SendUserAsync("userA", "Stale", new object[] { "x" }).DefaultTimeout();
-            await manager2.SendUserAsync("userB", "Sentinel", new object[] { "y" }).DefaultTimeout();
-            var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().DefaultTimeout());
-            Assert.Equal("Sentinel", message.Target);
-        }
-    }
-
-    /// <summary>
-    /// Specification test for SignalR HubLifetimeManager.
-    /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous completion of the test.</returns>
-    [Fact]
     public async Task CanProcessClientReturnResultAcrossServers()
     {
         var backplane = CreateBackplane();

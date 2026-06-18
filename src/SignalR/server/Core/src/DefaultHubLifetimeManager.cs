@@ -330,15 +330,6 @@ public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub> where TH
         return SendToAllConnections(methodName, args, (connection, state) => ((IReadOnlyList<string>)state!).Contains(connection.UserIdentifier), userIds, cancellationToken);
     }
 
-    /// <inheritdoc />
-    public override Task<bool> OnUserIdentifierChangedAsync(HubConnectionContext connection, string? oldUserIdentifier, string? newUserIdentifier)
-    {
-        // User targeting scans live connection state (see SendUserAsync/SendUsersAsync), so updating the
-        // identifier is sufficient to re-key the connection; there is no separate index to maintain.
-        connection.UserIdentifier = newUserIdentifier;
-        return Task.FromResult(true);
-    }
-
     /// <inheritdoc/>
     public override async Task<T> InvokeConnectionAsync<T>(string connectionId, string methodName, object?[] args, CancellationToken cancellationToken)
     {

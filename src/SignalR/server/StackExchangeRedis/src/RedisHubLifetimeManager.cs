@@ -150,36 +150,6 @@ public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposab
     }
 
     /// <inheritdoc />
-    public override async Task<bool> OnUserIdentifierChangedAsync(HubConnectionContext connection, string? oldUserIdentifier, string? newUserIdentifier)
-    {
-        if (string.Equals(oldUserIdentifier, newUserIdentifier, StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        // If the bus is null then the Redis connection failed to be established and we cannot update the
-        // backplane subscriptions. Fail closed and let the caller abort rather than silently misroute messages.
-        if (_bus is null)
-        {
-            return false;
-        }
-
-        if (!string.IsNullOrEmpty(oldUserIdentifier))
-        {
-            await RemoveUserAsync(connection, oldUserIdentifier);
-        }
-
-        connection.UserIdentifier = newUserIdentifier;
-
-        if (!string.IsNullOrEmpty(newUserIdentifier))
-        {
-            await SubscribeToUser(connection, newUserIdentifier);
-        }
-
-        return true;
-    }
-
-    /// <inheritdoc />
     public override Task SendAllAsync(string methodName, object?[] args, CancellationToken cancellationToken = default)
     {
         var message = _protocol.WriteInvocation(methodName, args);

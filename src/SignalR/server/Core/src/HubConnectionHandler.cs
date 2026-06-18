@@ -191,36 +191,9 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
             if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
             {
                 var previousUserId = connection.UserIdentifier;
-
-                // Lifetime managers mutate connection.UserIdentifier while rekeying. Stage that mutation so
-                // hub-visible Context.User and Context.UserIdentifier are published atomically below.
-                connection.StageUserStateUpdate();
-                bool rekeyed;
-                try
-                {
-                    // SignalR's user-targeting (Clients.User) keys on the user identifier, so re-key the
-                    // connection in the lifetime manager to move it from the old user to the new one.
-                    rekeyed = await _lifetimeManager.OnUserIdentifierChangedAsync(connection, previousUserId, newUserId);
-                }
-                catch (Exception ex)
-                {
-                    Log.UserIdentifierRekeyFailed(_logger, previousUserId, newUserId, ex);
-                    connection.ClearStagedUserStateUpdate();
-                    connection.Abort();
-                    return;
-                }
-
-                if (!rekeyed)
-                {
-                    // The lifetime manager doesn't support changing a connection's user identifier, so the only
-                    // safe option is to drop the connection rather than leave it reachable under a stale identifier.
-                    Log.UserIdentifierChangedOnRefresh(_logger, previousUserId, newUserId);
-                    connection.ClearStagedUserStateUpdate();
-                    connection.Abort();
-                    return;
-                }
-
-                Log.UserIdentifierRekeyedOnRefresh(_logger, previousUserId, newUserId);
+                Log.UserIdentifierChangedOnRefresh(_logger, previousUserId, newUserId);
+                connection.Abort();
+                return;
             }
 
             connection.ApplyUserState(user, newUserId);

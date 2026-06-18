@@ -251,12 +251,12 @@ public partial class HubConnectionTests
 
     [Theory]
     [MemberData(nameof(TransportTypes))]
-    public async Task RefreshChangingUserIdentifierRekeysConnection(HttpTransportType transportType)
+    public async Task RefreshChangingUserIdentifierClosesConnection(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
         {
             // The SignalR UserIdentifier is derived from the JWT NameIdentifier claim, so changing
-            // the user name on refresh changes the connection's UserIdentifier and should re-key it.
+            // the user name on refresh changes the connection's UserIdentifier and should close it.
             var userName = "userA";
             async Task<string> AccessTokenProvider()
             {
@@ -276,6 +276,12 @@ public partial class HubConnectionTests
             try
             {
                 var received = Channel.CreateUnbounded<string>();
+                var closedTcs = new TaskCompletionSource<Exception>(TaskCreationOptions.RunContinuationsAsynchronously);
+                hubConnection.Closed += ex =>
+                {
+                    closedTcs.TrySetResult(ex);
+                    return Task.CompletedTask;
+                };
                 hubConnection.On<string>("Receive", message => received.Writer.TryWrite(message));
 
                 await hubConnection.StartAsync().DefaultTimeout();
@@ -288,16 +294,8 @@ public partial class HubConnectionTests
                 userName = "userB";
                 await hubConnection.RefreshAuthAsync().DefaultTimeout();
 
-                // The connection is now reachable under the new user id (it was re-keyed, not aborted).
-                await hubConnection.InvokeAsync(nameof(AuthRefreshHub.SendToUser), "userB", "after").DefaultTimeout();
-                Assert.Equal("after", await received.Reader.ReadAsync().AsTask().DefaultTimeout());
-
-                // The old user id no longer routes to this connection. Send to the stale id (a no-op)
-                // followed by the new id; the next message received must be the new-id "sentinel",
-                // proving the stale-id message was never delivered.
-                await hubConnection.InvokeAsync(nameof(AuthRefreshHub.SendToUser), "userA", "stale").DefaultTimeout();
-                await hubConnection.InvokeAsync(nameof(AuthRefreshHub.SendToUser), "userB", "sentinel").DefaultTimeout();
-                Assert.Equal("sentinel", await received.Reader.ReadAsync().AsTask().DefaultTimeout());
+                await closedTcs.Task.DefaultTimeout();
+                Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
             }
             catch (Exception ex)
             {

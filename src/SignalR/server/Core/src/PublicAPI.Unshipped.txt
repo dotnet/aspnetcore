@@ -1,4 +1,2 @@
 #nullable enable
 virtual Microsoft.AspNetCore.SignalR.Hub.OnAuthRefreshedAsync() -> System.Threading.Tasks.Task!
-virtual Microsoft.AspNetCore.SignalR.HubLifetimeManager<THub>.OnUserIdentifierChangedAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext! connection, string? oldUserIdentifier, string? newUserIdentifier) -> System.Threading.Tasks.Task<bool>!
-override Microsoft.AspNetCore.SignalR.DefaultHubLifetimeManager<THub>.OnUserIdentifierChangedAsync(Microsoft.AspNetCore.SignalR.HubConnectionContext! connection, string? oldUserIdentifier, string? newUserIdentifier) -> System.Threading.Tasks.Task<bool>!
