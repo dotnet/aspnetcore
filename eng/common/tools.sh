@@ -116,12 +116,6 @@ function InitializeDotNetCli {
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
   fi
 
-  # Keep repo builds isolated from machine-installed SDK state and workload advertising.
-  # This avoids preview SDK builds picking up mismatched workloads on CI images.
-  export DOTNET_MULTILEVEL_LOOKUP=0
-  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-  export DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE=1
-
   # LTTNG is the logging infrastructure used by Core CLR. Need this variable set
   # so it doesn't output warnings to the console.
   export LTTNG_HOME="$HOME"
@@ -167,9 +161,6 @@ function InitializeDotNetCli {
   Write-PipelinePrependPath -path "$dotnet_root"
 
   Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
-  Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
-  Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
-  Write-PipelineSetVariable -name "DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE" -value "1"
 
   # return value
   _InitializeDotNetCli="$dotnet_root"
@@ -373,7 +364,7 @@ function InitializeBuildTool {
   _InitializeBuildToolCommand="msbuild"
 }
 
-function GetNuGetPackageCachePath {
+function InitializeNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
       export NUGET_PACKAGES="$HOME/.nuget/packages/"
@@ -383,7 +374,7 @@ function GetNuGetPackageCachePath {
   fi
 
   # return value
-  _GetNuGetPackageCachePath=$NUGET_PACKAGES
+  _InitializeNuGetPackageCachePath=$NUGET_PACKAGES
 }
 
 function InitializeNativeTools() {
@@ -404,8 +395,6 @@ function InitializeToolset {
   if [[ -n "${_InitializeToolset:-}" ]]; then
     return
   fi
-
-  GetNuGetPackageCachePath
 
   ReadGlobalVersion "Microsoft.DotNet.Arcade.Sdk"
 
@@ -429,7 +418,7 @@ function InitializeToolset {
     ExitWithExitCode 2
   fi
 
-  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_GetNuGetPackageCachePath")
+  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_InitializeNuGetPackageCachePath")
   local nuget_config="${NUGET_CONFIG:-}"
   if [[ -z "$nuget_config" ]]; then
     # Search for any variation of nuget.config in the RepoRoot
@@ -446,7 +435,7 @@ function InitializeToolset {
   fi
   DotNet "${download_args[@]}"
 
-  local package_dir="$_GetNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
+  local package_dir="$_InitializeNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
 
   if [[ ! -d "$package_dir/toolset" ]]; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset folder: $package_dir"
@@ -502,28 +491,15 @@ function DotNet {
 }
 
 function MSBuild {
-  local args=( "$@" )
-
-  if [[ "$ci" == true ]]; then
-    InitializeToolset
-
-    export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
-    export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
-    Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
-    Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
-  fi
-
-  MSBuild-Core "${args[@]}"
-}
-
-function MSBuild-Core {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true && "$exclude_ci_binary_log" != true ]]; then
       Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the -noBinaryLog switch."
       ExitWithExitCode 1
     fi
 
-    if [[ "$node_reuse" == true ]]; then
+    # Node reuse must be disabled in CI builds unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
+    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
+    if [[ "$node_reuse" == true && "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
       Write-PipelineTelemetryError -category 'Build'  "Node reuse must be disabled in CI build."
       ExitWithExitCode 1
     fi
@@ -569,12 +545,7 @@ function MSBuild-Core {
     warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=$warn_not_as_error"
   fi
 
-  local workload_resolver_switch=""
-  if [[ "$ci" == true && -n "${_InitializeBuildToolCommand:-}" ]]; then
-    workload_resolver_switch="/p:MSBuildEnableWorkloadResolver=false"
-  fi
-
-  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch $workload_resolver_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
 function GetDarc {
@@ -665,3 +636,6 @@ fi
 if [[ -n "${useInstalledDotNetCli:-}" ]]; then
   use_installed_dotnet_cli="$useInstalledDotNetCli"
 fi
+
+# Initialize the nuget package cache vars
+InitializeNuGetPackageCachePath

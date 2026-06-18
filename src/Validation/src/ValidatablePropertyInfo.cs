@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a member of a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : IValidatableInfo
+public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
@@ -20,7 +20,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
     /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
     /// <param name="name">The property name.</param>
-    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// <param name="displayNameInfo">An optional strategy that resolves the
     /// display name for the property at validation time. When <see langword="null"/>, the
     /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatablePropertyInfo(
@@ -65,10 +65,12 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <inheritdoc />
-    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    public virtual async Task ValidateAsync(object containingObject, ValidateContext context, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(containingObject);
+
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
-        var propertyValue = property.GetValue(value);
+        var propertyValue = property.GetValue(containingObject);
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
@@ -103,7 +105,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
                 if (errorMessage is not null)
                 {
-                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], value);
+                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], containingObject);
                 }
 
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
@@ -112,7 +114,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, containingObject);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
