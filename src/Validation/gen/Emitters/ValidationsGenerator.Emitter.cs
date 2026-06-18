@@ -98,17 +98,17 @@ namespace Microsoft.Extensions.Validation.Generated
     {{GeneratedCodeAttribute}}
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
-        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableInfo = null;
+            validatableTypeInfo = null;
 {{EmitTypeChecks(validatableTypes)}}
             return false;
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
     }
@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _literal = literal;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
         {
             var localizer = context.ValidationOptions.Localizer;
             if (localizer is null)
@@ -221,7 +221,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
             {
-                DeclaringType = declaringType,
+                Type = type,
                 DisplayName = _literal,
                 MemberName = memberName,
             }) ?? _literal;
@@ -244,7 +244,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _propertyName = propertyName;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
             => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
     }
 
@@ -261,7 +261,7 @@ namespace Microsoft.Extensions.Validation.Generated
             _type = type;
         }
 
-        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? declaringType)
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
             => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
     }
 
@@ -355,7 +355,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var typeName = validatableType.TypeFQN;
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
-            cw.WriteLine($"validatableInfo = new GeneratedValidatableTypeInfo(");
+            cw.WriteLine($"validatableTypeInfo = new GeneratedValidatableTypeInfo(");
             cw.Indent++;
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
