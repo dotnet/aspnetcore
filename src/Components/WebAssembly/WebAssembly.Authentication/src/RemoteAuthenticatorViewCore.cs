@@ -224,7 +224,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 if (OnLogInSucceeded.HasDelegate)
                 {
                     Log.InvokingLoginCompletedCallback(Logger);
-                    await OnLogInSucceeded.InvokeAsync(result.State);
+                    await OnLogInSucceeded.InvokeAsync(result.State!);
                 }
                 var redirectUrl = GetReturnUrl(result.State, returnUrl);
                 Log.NavigatingToUrl(Logger, redirectUrl);
@@ -256,7 +256,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 if (OnLogInSucceeded.HasDelegate)
                 {
                     Log.InvokingLoginCompletedCallback(Logger);
-                    await OnLogInSucceeded.InvokeAsync(result.State);
+                    await OnLogInSucceeded.InvokeAsync(result.State!);
                 }
                 var redirectUrl = GetReturnUrl(result.State);
                 Log.NavigatingToUrl(Logger, redirectUrl);
@@ -307,7 +307,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                     if (OnLogOutSucceeded.HasDelegate)
                     {
                         Log.InvokingLogoutCompletedCallback(Logger);
-                        await OnLogOutSucceeded.InvokeAsync(result.State);
+                        await OnLogOutSucceeded.InvokeAsync(result.State!);
                     }
                     Log.NavigatingToUrl(Logger, returnUrl);
                     Navigation.NavigateTo(returnUrl, AuthenticationNavigationOptions);
@@ -344,7 +344,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
                 if (OnLogOutSucceeded.HasDelegate)
                 {
                     Log.InvokingLogoutCompletedCallback(Logger);
-                    await OnLogOutSucceeded.InvokeAsync(result.State);
+                    await OnLogOutSucceeded.InvokeAsync(result.State!);
                 }
                 var redirectUrl = GetReturnUrl(result.State, ApplicationPaths.LogOutSucceededPath);
                 Log.NavigatingToUrl(Logger, redirectUrl);
