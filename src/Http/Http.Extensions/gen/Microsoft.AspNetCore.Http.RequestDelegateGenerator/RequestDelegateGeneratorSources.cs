@@ -408,6 +408,7 @@ internal static class RequestDelegateGeneratorSources
         public override object? RawDefaultValue
             => _constructionParameterInfo?.RawDefaultValue;
 
+        [UnconditionalSuppressMessage("Aot", "IL3050:RequiresDynamicCode", Justification = "Creates an attribute array matching the requested runtime attribute type.")]
         public override object[] GetCustomAttributes(Type attributeType, bool inherit)
         {
             var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
@@ -419,11 +420,11 @@ internal static class RequestDelegateGeneratorSources
 
             var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
 
-            var mergedAttributes = new Attribute[constructorAttributes.Length + propertyAttributes.Length];
+            var mergedAttributes = Array.CreateInstance(attributeType, constructorAttributes.Length + propertyAttributes.Length);
             Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
             Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
 
-            return mergedAttributes;
+            return (object[])mergedAttributes;
         }
 
         public override object[] GetCustomAttributes(bool inherit)
