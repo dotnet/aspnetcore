@@ -35,8 +35,7 @@ internal sealed partial class CsrfProtectionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // When the endpoint is already matched (auto-routing) or there's no matcher available, record the
-        // verdict in place against the current endpoint.
+        // Endpoint already matched (auto-routing) or no matcher available: record the verdict in place.
         if (context.GetEndpoint() is not null || _endpointResolver is null)
         {
             await RecordVerdictAsync(context);
@@ -44,13 +43,10 @@ internal sealed partial class CsrfProtectionMiddleware
             return;
         }
 
-        // The app called UseRouting() explicitly, so routing runs after this middleware and the endpoint is
-        // not yet matched. Match it on demand so per-endpoint CORS/antiforgery metadata is honored when
-        // recording the verdict, then restore the pre-routing state: middleware ordered before the app's
-        // UseRouting() must still observe a null endpoint, and the downstream routing middleware re-runs
-        // matching as usual. The verdict recorded on IAntiforgeryValidationFeature and the sentinel written to
-        // HttpContext.Items both survive the restore, so downstream consumers and the EndpointMiddleware
-        // security-metadata check still observe them.
+        // The app called UseRouting() explicitly, so routing runs after this middleware. Borrow routing state
+        // to resolve per-endpoint CORS/antiforgery metadata, then restore it: middleware ordered before the
+        // app's UseRouting() must observe a null endpoint. The recorded verdict and sentinel live on
+        // HttpContext.Features/Items, so they survive the restore for downstream consumers to read.
         var originalRouteValues = context.Request.RouteValues;
         try
         {
@@ -66,24 +62,18 @@ internal sealed partial class CsrfProtectionMiddleware
         await _next(context);
     }
 
-    // Records this middleware's CSRF verdict for the matched endpoint. It does not short-circuit: it only
-    // writes the verdict to IAntiforgeryValidationFeature for downstream consumers (minimal-API form binding,
-    // MVC's antiforgery filter, Razor Components) to act on. When the application also calls UseAntiforgery(),
-    // the later AntiforgeryMiddleware may overwrite this verdict with the result of token-based validation.
+    // Records the CSRF verdict on IAntiforgeryValidationFeature without short-circuiting; downstream consumers
+    // (minimal-API form binding, MVC's antiforgery filter, Razor Components) act on it. A later
+    // UseAntiforgery() may overwrite the verdict with token-based validation.
     private async ValueTask RecordVerdictAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        if (endpoint is not null)
-        {
-            context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
-        }
-
-        // The endpoint opted out of antiforgery (e.g. DisableAntiforgery()); record no verdict.
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
         {
             return;
         }
 
+        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
         if (await _csrfProtection.ValidateAsync(context) is { IsAllowed: false })
         {
             RequestFailedValidation(_logger, context.Request.Method, context.Request.Path, context.Request.Headers.Origin.ToString());
