@@ -900,7 +900,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 }
 
                 _loading = false;
-
                 _skipNextDistributionRefresh = request.Count > 0;
 
                 if (renderOnSuccess)
