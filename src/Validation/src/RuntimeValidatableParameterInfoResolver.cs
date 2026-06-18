@@ -16,13 +16,13 @@ namespace Microsoft.Extensions.Validation;
 internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
 {
     // TODO: the implementation currently relies on static discovery of types.
-    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
     {
-        validatableInfo = null;
+        validatableTypeInfo = null;
         return false;
     }
 
-    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableParameterInfo)
     {
         if (parameterInfo.Name == null)
         {
@@ -33,7 +33,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         if (parameterInfo.GetCustomAttribute<SkipValidationAttribute>() != null ||
             parameterInfo.ParameterType.GetCustomAttribute<SkipValidationAttribute>() != null)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
 
@@ -46,13 +46,13 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         // validatable because we want to run the validations on the properties.
         if (validationAttributes.Length == 0 && !IsComplexType(parameterInfo.ParameterType))
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
 
         var displayNameInfo = ResolveDisplayInfo(parameterInfo);
 
-        validatableInfo = new RuntimeValidatableParameterInfo(
+        validatableParameterInfo = new RuntimeValidatableParameterInfo(
             parameterType: parameterInfo.ParameterType,
             name: parameterInfo.Name,
             displayNameInfo: displayNameInfo,
@@ -103,7 +103,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
 
     private sealed class LiteralDisplayName(string literal) : DisplayNameInfo
     {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
         {
             var localizer = context.ValidationOptions.Localizer;
             if (localizer is null)
@@ -115,7 +115,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             // name when the localizer can't translate.
             return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
             {
-                DeclaringType = declaringType,
+                Type = type,
                 DisplayName = literal,
                 MemberName = memberName,
             }) ?? literal;
@@ -124,7 +124,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
 
     private sealed class ParameterReflectionDisplayName(DisplayAttribute attribute) : DisplayNameInfo
     {
-        public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+        public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
             => attribute.GetName();
     }
 
