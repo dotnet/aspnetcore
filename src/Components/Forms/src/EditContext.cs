@@ -41,34 +41,18 @@ public sealed class EditContext
 
     /// <summary>
     /// An event that is raised when validation is requested. Validator components subscribe
-    /// to this event to perform synchronous validation.
+    /// to this event to perform validation.
     /// </summary>
     /// <remarks>
-    /// For a given source of validation, a validator component should subscribe to exactly one
-    /// of <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>.
-    /// Subscribing to both causes the same validator to run twice on <see cref="ValidateAsync"/>,
-    /// with the second pass overwriting the first.
-    /// <para>
-    /// New validator implementations are recommended to subscribe to
-    /// <see cref="OnValidationRequestedAsync"/> instead. This event remains supported for
-    /// existing sync validators and continues to be raised by both <see cref="Validate"/> and
-    /// <see cref="ValidateAsync"/>.
-    /// </para>
+    /// Handlers run synchronously in subscription order. A validator that performs asynchronous
+    /// work (for example a database lookup or a remote API call) starts that work from its handler
+    /// and registers the resulting <see cref="Task"/> via
+    /// <see cref="ValidationRequestedEventArgs.AddValidationTask(Task)"/>.
+    /// <see cref="ValidateAsync(CancellationToken)"/> awaits every registered task before completing;
+    /// <see cref="Validate"/> throws <see cref="InvalidOperationException"/> if any registered task
+    /// has not already completed.
     /// </remarks>
     public event EventHandler<ValidationRequestedEventArgs>? OnValidationRequested;
-
-    /// <summary>
-    /// An async event that is raised when validation is requested. Validator components
-    /// subscribe to this event to perform async validation (e.g., database lookups, remote API calls).
-    /// Handlers are awaited by <see cref="ValidateAsync"/>. <see cref="Validate"/> also invokes
-    /// these handlers but requires each to complete synchronously; if any returns an incomplete
-    /// <see cref="Task"/>, <see cref="Validate"/> throws <see cref="InvalidOperationException"/>.
-    /// </summary>
-    /// <remarks>
-    /// For a given source of validation, a validator component should subscribe to exactly one
-    /// of <see cref="OnValidationRequested"/> or <see cref="OnValidationRequestedAsync"/>.
-    /// </remarks>
-    public event Func<object, ValidationRequestedEventArgs, Task>? OnValidationRequestedAsync;
 
     /// <summary>
     /// An event that is raised when validation state has changed.
@@ -244,39 +228,38 @@ public sealed class EditContext
     /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
     /// <remarks>
     /// Validation must not be re-entered. Do not call <see cref="Validate"/> or
-    /// <see cref="ValidateAsync"/> from inside an <see cref="OnValidationRequested"/>,
-    /// <see cref="OnValidationRequestedAsync"/>, or <see cref="OnValidationStateChanged"/>
-    /// handler attached to the same <see cref="EditContext"/>; doing so produces undefined
-    /// behavior (in particular, it can cause infinite recursion via the validator's own
-    /// <see cref="NotifyValidationStateChanged"/> calls).
+    /// <see cref="ValidateAsync"/> from inside an <see cref="OnValidationRequested"/> or
+    /// <see cref="OnValidationStateChanged"/> handler attached to the same <see cref="EditContext"/>;
+    /// doing so produces undefined behavior (in particular, it can cause infinite recursion via the
+    /// validator's own <see cref="NotifyValidationStateChanged"/> calls).
     /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when an <see cref="OnValidationRequestedAsync"/> handler does not complete synchronously.
-    /// Use <see cref="ValidateAsync"/> instead when async validators are registered.
+    /// Thrown when an <see cref="OnValidationRequested"/> handler registers a validation task (via
+    /// <see cref="ValidationRequestedEventArgs.AddValidationTask(Task)"/>) that has not completed
+    /// synchronously. Use <see cref="ValidateAsync"/> instead when async validators are registered.
     /// </exception>
     public bool Validate()
     {
-        OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
+        var args = new ValidationRequestedEventArgs();
+        RaiseValidationRequested(args);
 
-        if (OnValidationRequestedAsync is { } asyncHandler)
+        var tasks = args.ValidationTasks;
+        for (var i = 0; i < tasks.Count; i++)
         {
-            var delegates = asyncHandler.GetInvocationList();
-            for (var i = 0; i < delegates.Length; i++)
+            var task = tasks[i];
+            if (!task.IsCompleted)
             {
-                var task = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
-                    .Invoke(this, ValidationRequestedEventArgs.Empty)
-                    ?? Task.CompletedTask;
-
-                if (!task.IsCompleted)
-                {
-                    throw new InvalidOperationException(
-                        $"An asynchronous validation handler did not complete synchronously. " +
-                        $"Use {nameof(ValidateAsync)} instead of {nameof(Validate)} when async validators are registered.");
-                }
-
-                // Surface synchronous faults. GetResult unwraps single exceptions (no AggregateException).
-                task.GetAwaiter().GetResult();
+                // A handler registered asynchronous work that has not finished. Validate cannot
+                // await it, so observe every registered task to suppress UnobservedTaskException
+                // and direct the caller to ValidateAsync.
+                ObserveAll(tasks);
+                throw new InvalidOperationException(
+                    $"An asynchronous validation handler did not complete synchronously. " +
+                    $"Use {nameof(ValidateAsync)} instead of {nameof(Validate)} when async validators are registered.");
             }
+
+            // Surface synchronous faults. GetResult unwraps single exceptions (no AggregateException).
+            task.GetAwaiter().GetResult();
         }
 
         return !GetValidationMessages().Any();
@@ -284,44 +267,42 @@ public sealed class EditContext
 
     /// <summary>
     /// Validates this <see cref="EditContext"/> asynchronously.
-    /// Cancels any pending field-level async validation tasks, invokes the synchronous
-    /// <see cref="OnValidationRequested"/> handlers, then invokes and awaits the asynchronous
-    /// <see cref="OnValidationRequestedAsync"/> handlers concurrently. Exceptions from synchronous
-    /// handlers propagate to the caller, matching <see cref="Validate"/>. Any non-cancellation
-    /// exception thrown by an asynchronous handler is contained: the form is marked as faulted
-    /// (observable via the parameterless <see cref="IsValidationFaulted()"/>) and the method
-    /// returns <c>false</c>.
-    /// While the asynchronous portion is in flight, the parameterless
-    /// <see cref="IsValidationPending()"/> returns <c>true</c> so applications can show a global
-    /// "validating..." indicator without wrapping the call themselves. The form-level
-    /// <see cref="IsValidationFaulted()"/> result is updated only when a pass completes; it is
-    /// preserved across caller-cancelled passes.
+    /// Cancels any pending field-level async validation tasks, raises the
+    /// <see cref="OnValidationRequested"/> event, then awaits any validation tasks that handlers
+    /// registered via <see cref="ValidationRequestedEventArgs.AddValidationTask(Task)"/>. Exceptions
+    /// thrown synchronously by a handler propagate to the caller, matching <see cref="Validate"/>.
+    /// Any exception other than cancellation observed on a registered task is contained: the form is
+    /// marked as faulted (observable via the parameterless <see cref="IsValidationFaulted()"/>) and the
+    /// method returns <c>false</c>.
+    /// While registered tasks are in flight, the parameterless <see cref="IsValidationPending()"/>
+    /// returns <c>true</c> so applications can show a global "validating..." indicator without wrapping
+    /// the call themselves. The form-level <see cref="IsValidationFaulted()"/> result is updated only
+    /// when a pass completes; it is preserved across passes cancelled by the caller.
     /// </summary>
     /// <param name="cancellationToken">A token that signals cancellation of this validation pass.
-    /// The token is exposed to async handlers via <see cref="ValidationRequestedEventArgs.CancellationToken"/>.
+    /// The token is exposed to handlers via <see cref="ValidationRequestedEventArgs.CancellationToken"/>.
     /// If the caller cancels the token, this method throws <see cref="OperationCanceledException"/>;
     /// the form is not marked as faulted in that case and the previous form-level fault state is preserved.
-    /// The token bounds the in-flight pass only; field-level validation tasks that start independently
+    /// The token bounds the in flight pass only; field-level validation tasks that start independently
     /// during the awaited window (for example, from user edits) are not linked to this token and
     /// continue running.</param>
-    /// <returns>True if there are no validation messages after validation and no async handler
+    /// <returns>True if there are no validation messages after validation and no registered task
     /// faulted; otherwise false.</returns>
     /// <remarks>
     /// Validation must not be re-entered. Do not call <see cref="Validate"/> or
-    /// <see cref="ValidateAsync"/> from inside an <see cref="OnValidationRequested"/>,
-    /// <see cref="OnValidationRequestedAsync"/>, or <see cref="OnValidationStateChanged"/>
-    /// handler attached to the same <see cref="EditContext"/>; doing so produces undefined
-    /// behavior.
+    /// <see cref="ValidateAsync"/> from inside an <see cref="OnValidationRequested"/> or
+    /// <see cref="OnValidationStateChanged"/> handler attached to the same <see cref="EditContext"/>;
+    /// doing so produces undefined behavior.
     /// </remarks>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/>
     /// is cancelled before or during the validation pass.</exception>
     public async Task<bool> ValidateAsync(CancellationToken cancellationToken = default)
     {
-        // Cancel all pending field-level async tasks - form-submit validation supersedes them
+        // Form submit validation supersedes any pending field level async tasks, so cancel them first.
         CancelAllPendingValidationTasks();
 
-        // Mark the pass as in-flight so apps can show a global "validating..." state via
-        // IsValidationPending() without wrapping this call. Notify so subscribers re-render.
+        // Mark the pass as in flight so apps can show a global "validating..." state via
+        // IsValidationPending() without wrapping this call. Notify so subscribers render again.
         _isFormValidationPending = true;
         NotifyValidationStateChanged();
 
@@ -329,47 +310,17 @@ public sealed class EditContext
 
         try
         {
-            // Sync handlers run unchanged - their exceptions propagate to the caller, matching Validate().
-            // This guarantees observable parity for apps that haven't introduced any async validators.
-            OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
+            // Raise the event once. Synchronous validators add messages inline; validators doing
+            // asynchronous work register their tasks via ValidationRequestedEventArgs.AddValidationTask.
+            // The same args instance, carrying the caller's token, reaches every handler. A handler
+            // that throws synchronously propagates to the caller, matching Validate().
+            var args = new ValidationRequestedEventArgs(cancellationToken);
+            RaiseValidationRequested(args);
 
-            if (OnValidationRequestedAsync is { } asyncHandler)
+            var tasks = args.ValidationTasks;
+            if (tasks.Count > 0)
             {
-                // Only allocate a new args instance when the caller actually supplied a cancellable token;
-                // otherwise reuse the shared Empty instance with None token.
-                var args = cancellationToken.CanBeCanceled
-                    ? new ValidationRequestedEventArgs(cancellationToken)
-                    : ValidationRequestedEventArgs.Empty;
-
-                var delegates = asyncHandler.GetInvocationList();
-                var tasks = new Task[delegates.Length];
-
-                for (var i = 0; i < delegates.Length; i++)
-                {
-                    try
-                    {
-                        tasks[i] = ((Func<object, ValidationRequestedEventArgs, Task>)delegates[i])
-                            .Invoke(this, args)
-                            ?? Task.CompletedTask;
-                    }
-                    catch (OperationCanceledException oce)
-                    {
-                        // Sync throw of OCE before the handler's first await - normalize to a
-                        // Canceled task (not Faulted) so the classification loop's IsFaulted scan
-                        // naturally excludes it, matching the post-await OCE semantics.
-                        tasks[i] = Task.FromCanceled(oce.CancellationToken.IsCancellationRequested
-                            ? oce.CancellationToken
-                            : new CancellationToken(canceled: true));
-                    }
-                    catch (Exception ex)
-                    {
-                        // Sync throw before the handler's first await - normalize to a faulted Task
-                        // so all handlers are observed uniformly via Task.WhenAll.
-                        tasks[i] = Task.FromException(ex);
-                    }
-                }
-
-                // Await completion; per-task outcomes are inspected below, so the aggregate
+                // Await completion; per task outcomes are inspected below, so the aggregate
                 // exception WhenAll would surface adds no information.
                 try
                 {
@@ -377,23 +328,23 @@ public sealed class EditContext
                 }
                 catch
                 {
-                    // Swallowed; classification happens below. Caller cancellation is re-thrown
+                    // Swallowed; classification happens below. Caller cancellation is rethrown
                     // via ThrowIfCancellationRequested before classification runs.
                 }
 
-                // Caller-requested cancellation propagates to the caller. The previous form-level
-                // fault state is preserved since no new result was produced. The finally block
+                // Cancellation requested by the caller propagates to the caller. The previous form
+                // level fault state is preserved since no new result was produced. The finally block
                 // still clears the pending flag.
                 cancellationToken.ThrowIfCancellationRequested();
 
-                // A handler-internal OperationCanceledException leaves its task in the Canceled
+                // A handler internal OperationCanceledException leaves its task in the Canceled
                 // state (IsFaulted == false), so it is naturally excluded from this scan.
                 //
-                // TODO (oroztocil): consider symmetry with the field-level fast path in AddValidationTask,
-                // which treats a Canceled task as a fault when our owning CTS was not the source of
-                // cancellation (e.g. an HttpClient timeout via the validator's own token). The
-                // form-level path here silently swallows such Canceled outcomes.
-                for (var i = 0; i < tasks.Length; i++)
+                // TODO (oroztocil): consider symmetry with the field level fast path in the per field
+                // AddValidationTask, which treats a Canceled task as a fault when our owning CTS was
+                // not the source of cancellation (for example an HttpClient timeout via the validator's
+                // own token). The form level path here treats such Canceled outcomes as non faults.
+                for (var i = 0; i < tasks.Count; i++)
                 {
                     if (tasks[i].IsFaulted)
                     {
@@ -404,15 +355,15 @@ public sealed class EditContext
             }
 
             // Pass completed (success, invalid, or contained handler fault). Assign the new fault
-            // result atomically so that consumers querying IsValidationFaulted() during the pass
-            // continue to see the previous result instead of a brief reset-then-set flicker.
+            // result in one step so that consumers querying IsValidationFaulted() during the pass
+            // continue to see the previous result instead of a brief reset then set flicker.
             _isFormValidationFaulted = faultedThisPass;
         }
         finally
         {
-            // Pending flag flips to false unconditionally - whether we completed normally,
-            // were cancelled by the caller, or a sync handler threw. Single end-of-pass
-            // notification covers both the pending change and any fault assignment above.
+            // Pending flag flips to false unconditionally, whether we completed normally, were
+            // cancelled by the caller, or a handler threw. A single end of pass notification covers
+            // both the pending change and any fault assignment above.
             _isFormValidationPending = false;
             NotifyValidationStateChanged();
         }
@@ -550,10 +501,12 @@ public sealed class EditContext
 
     /// <summary>
     /// Returns <c>true</c> if the most recent <see cref="ValidateAsync"/> pass observed an
-    /// unhandled exception from any <see cref="OnValidationRequestedAsync"/> handler. A subsequent
-    /// successful <see cref="ValidateAsync"/> pass clears the flag; a caller-cancelled pass
+    /// unhandled exception on a validation task that an <see cref="OnValidationRequested"/> handler
+    /// registered via <see cref="ValidationRequestedEventArgs.AddValidationTask(Task)"/>. A subsequent
+    /// successful <see cref="ValidateAsync"/> pass clears the flag; a pass cancelled by the caller
     /// preserves it. Use this to detect that validation itself failed (not just produced validation messages).
-    /// For per-field validator faults from <see cref="AddValidationTask"/>, use the <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
+    /// For per-field validator faults from <see cref="AddValidationTask(in FieldIdentifier, Task, CancellationTokenSource)"/>,
+    /// use the <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
     /// </summary>
     /// <returns><c>true</c> if the most recent <see cref="ValidateAsync"/> pass faulted; otherwise <c>false</c>.</returns>
     public bool IsValidationFaulted() => _isFormValidationFaulted;
@@ -573,6 +526,38 @@ public sealed class EditContext
         }
 
         return state;
+    }
+
+    private void RaiseValidationRequested(ValidationRequestedEventArgs args)
+    {
+        try
+        {
+            OnValidationRequested?.Invoke(this, args);
+        }
+        catch
+        {
+            // A synchronous handler threw, which stops the remaining handlers in the multicast
+            // chain from running. Tasks that earlier handlers already registered are now orphaned
+            // (started but never awaited by this pass). Observe them so a later fault does not
+            // surface as an UnobservedTaskException, then rethrow so the exception reaches the
+            // caller, matching the long standing behavior of the synchronous OnValidationRequested event.
+            ObserveAll(args.ValidationTasks);
+            throw;
+        }
+    }
+
+    private static void ObserveAll(IReadOnlyList<Task> tasks)
+    {
+        for (var i = 0; i < tasks.Count; i++)
+        {
+            // Read the Exception of any task that faults so it is observed. Tasks that complete
+            // successfully or are cancelled never run this continuation.
+            _ = tasks[i].ContinueWith(
+                static t => _ = t.Exception,
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                TaskScheduler.Default);
+        }
     }
 
     private void CancelAllPendingValidationTasks()

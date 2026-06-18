@@ -266,15 +266,28 @@ public class EditContextAsyncTest
     });
 
     [Fact]
-    public Task ValidateAsync_AsyncHandlerThrowsSynchronously_IsContained() => RunOnDispatcher(async () =>
+    public Task ValidateAsync_RegisteredAsyncTaskThrowsBeforeAwait_IsContainedAsFault() => RunOnDispatcher(async () =>
     {
+        // A validator starts its work with an async method, so an exception thrown before the
+        // first await is captured into the returned task and observed as a fault rather than
+        // propagating synchronously out of the handler.
         var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => throw new InvalidOperationException("sync failure");
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(ThrowBeforeAwaitAsync(shouldThrow: true));
 
         var result = await editContext.ValidateAsync();
 
         Assert.False(result);
         Assert.True(editContext.IsValidationFaulted());
+
+        static async Task ThrowBeforeAwaitAsync(bool shouldThrow)
+        {
+            if (shouldThrow)
+            {
+                throw new InvalidOperationException("failure");
+            }
+
+            await Task.CompletedTask;
+        }
     });
 
     [Fact]
@@ -331,7 +344,7 @@ public class EditContextAsyncTest
         Assert.True(editContext.IsValidationFaulted(() => model.StringProperty));
         Assert.False(editContext.IsValidationFaulted());
 
-        editContext.OnValidationRequestedAsync += (_, _) => Task.FromException(new InvalidOperationException("form failure"));
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.FromException(new InvalidOperationException("form failure")));
         Assert.False(await editContext.ValidateAsync());
         Assert.True(editContext.IsValidationFaulted());
         Assert.False(editContext.IsValidationFaulted(field));
@@ -435,11 +448,11 @@ public class EditContextAsyncTest
         var store = new ValidationMessageStore(editContext);
         var field = editContext.Field(nameof(TestModel.StringProperty));
         var handlerRan = false;
-        editContext.OnValidationRequestedAsync += (_, _) =>
+        editContext.OnValidationRequested += (_, args) =>
         {
             handlerRan = true;
             store.Add(field, "Async invalid");
-            return Task.CompletedTask;
+            args.AddValidationTask(Task.CompletedTask);
         };
 
         var result = editContext.Validate();
@@ -453,7 +466,7 @@ public class EditContextAsyncTest
     public void Validate_AsyncHandlerIncomplete_ThrowsInvalidOperationException()
     {
         var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => new TaskCompletionSource().Task;
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(new TaskCompletionSource().Task);
 
         var exception = Assert.Throws<InvalidOperationException>(() => editContext.Validate());
 
@@ -464,7 +477,7 @@ public class EditContextAsyncTest
     public void Validate_AsyncHandlerThrowsSynchronously_PropagatesOriginalException()
     {
         var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => throw new DivideByZeroException("boom");
+        editContext.OnValidationRequested += (_, _) => throw new DivideByZeroException("boom");
 
         var exception = Assert.Throws<DivideByZeroException>(() => editContext.Validate());
 
@@ -506,6 +519,20 @@ public class EditContextAsyncTest
     }
 
     [Fact]
+    public void ValidationRequestedEventArgs_AddValidationTask_NullTask_ThrowsArgumentNullException()
+    {
+        var args = new ValidationRequestedEventArgs();
+
+        Assert.Throws<ArgumentNullException>(() => args.AddValidationTask(null!));
+    }
+
+    [Fact]
+    public void ValidationRequestedEventArgs_Empty_AddValidationTask_ThrowsInvalidOperationException()
+    {
+        Assert.Throws<InvalidOperationException>(() => ValidationRequestedEventArgs.Empty.AddValidationTask(Task.CompletedTask));
+    }
+
+    [Fact]
     public void ValidationState_UnknownField_ReturnsFalse()
     {
         var editContext = new EditContext(new TestModel());
@@ -519,7 +546,7 @@ public class EditContextAsyncTest
     public Task ValidateAsync_AsyncHandlerReturnsFaultedTask_IsContained() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => Task.FromException(new InvalidOperationException("failure"));
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.FromException(new InvalidOperationException("failure")));
         var notificationCount = 0;
         editContext.OnValidationStateChanged += (_, _) => notificationCount++;
 
@@ -531,25 +558,10 @@ public class EditContextAsyncTest
     });
 
     [Fact]
-    public Task ValidateAsync_PreAwaitThrow_IsNormalizedToFaultedState() => RunOnDispatcher(async () =>
-    {
-        var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += ThrowBeforeReturningTask;
-
-        var result = await editContext.ValidateAsync();
-
-        Assert.False(result);
-        Assert.True(editContext.IsValidationFaulted());
-
-        static Task ThrowBeforeReturningTask(object sender, ValidationRequestedEventArgs args)
-            => throw new InvalidOperationException("pre-await");
-    });
-
-    [Fact]
     public Task ValidateAsync_HandlerCancellation_IsContainedAndNotFaulted() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => Task.FromCanceled(new CancellationToken(true));
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.FromCanceled(new CancellationToken(true)));
 
         var result = await editContext.ValidateAsync();
 
@@ -561,11 +573,11 @@ public class EditContextAsyncTest
     public Task ValidateAsync_SuccessAfterFault_ClearsFormFaultedState() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
-        Func<object, ValidationRequestedEventArgs, Task> handler = (_, _) => Task.FromException(new InvalidOperationException("failure"));
-        editContext.OnValidationRequestedAsync += handler;
+        EventHandler<ValidationRequestedEventArgs> handler = (_, args) => args.AddValidationTask(Task.FromException(new InvalidOperationException("failure")));
+        editContext.OnValidationRequested += handler;
         Assert.False(await editContext.ValidateAsync());
-        editContext.OnValidationRequestedAsync -= handler;
-        editContext.OnValidationRequestedAsync += (_, _) => Task.CompletedTask;
+        editContext.OnValidationRequested -= handler;
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.CompletedTask);
 
         var result = await editContext.ValidateAsync();
 
@@ -578,12 +590,14 @@ public class EditContextAsyncTest
     {
         var editContext = new EditContext(new TestModel());
         var otherCompleted = false;
-        editContext.OnValidationRequestedAsync += (_, _) => Task.FromException(new InvalidOperationException("failure"));
-        editContext.OnValidationRequestedAsync += async (_, _) =>
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.FromException(new InvalidOperationException("failure")));
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(MarkCompletedAsync());
+
+        async Task MarkCompletedAsync()
         {
             await Task.Yield();
             otherCompleted = true;
-        };
+        }
 
         var result = await editContext.ValidateAsync();
 
@@ -596,8 +610,8 @@ public class EditContextAsyncTest
     public Task ValidateAsync_OneHandlerCancelsAndAnotherFaults_MarksFormFaulted() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => Task.FromCanceled(new CancellationToken(true));
-        editContext.OnValidationRequestedAsync += (_, _) => Task.FromException(new InvalidOperationException("failure"));
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.FromCanceled(new CancellationToken(true)));
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.FromException(new InvalidOperationException("failure")));
 
         var result = await editContext.ValidateAsync();
 
@@ -618,6 +632,27 @@ public class EditContextAsyncTest
     });
 
     [Fact]
+    public Task ValidateAsync_SyncHandlerThrowsAfterTaskRegistered_PropagatesAndClearsPending() => RunOnDispatcher(async () =>
+    {
+        // When a later sync handler throws, the multicast chain aborts. The framework observes the
+        // task an earlier handler already registered (so a later fault does not surface as an
+        // UnobservedTaskException) and rethrows so the exception reaches the caller.
+        var editContext = new EditContext(new TestModel());
+        var registered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(registered.Task);
+        editContext.OnValidationRequested += (_, _) => throw new InvalidOperationException("sync failure");
+
+        var exception = await Record.ExceptionAsync(() => editContext.ValidateAsync());
+
+        Assert.IsType<InvalidOperationException>(exception);
+        Assert.Equal("sync failure", exception.Message);
+        Assert.False(editContext.IsValidationPending());
+
+        registered.SetException(new InvalidOperationException("orphan fault"));
+        await Task.Yield();
+    });
+
+    [Fact]
     public Task IsValidationFaulted_FieldFaultDoesNotSetParameterlessOverload() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
@@ -635,11 +670,7 @@ public class EditContextAsyncTest
     {
         var editContext = new EditContext(new TestModel());
         CancellationToken captured = default;
-        editContext.OnValidationRequestedAsync += (_, args) =>
-        {
-            captured = args.CancellationToken;
-            return Task.CompletedTask;
-        };
+        editContext.OnValidationRequested += (_, args) => captured = args.CancellationToken;
 
         Assert.True(await editContext.ValidateAsync());
 
@@ -647,16 +678,12 @@ public class EditContextAsyncTest
     });
 
     [Fact]
-    public Task ValidateAsync_CallerToken_IsExposedToAsyncHandlers() => RunOnDispatcher(async () =>
+    public Task ValidateAsync_CallerToken_IsExposedToHandlers() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
         using var cts = new CancellationTokenSource();
         CancellationToken captured = default;
-        editContext.OnValidationRequestedAsync += (_, args) =>
-        {
-            captured = args.CancellationToken;
-            return Task.CompletedTask;
-        };
+        editContext.OnValidationRequested += (_, args) => captured = args.CancellationToken;
 
         Assert.True(await editContext.ValidateAsync(cts.Token));
 
@@ -669,7 +696,7 @@ public class EditContextAsyncTest
     {
         var editContext = new EditContext(new TestModel());
         using var cts = new CancellationTokenSource();
-        editContext.OnValidationRequestedAsync += async (_, args) => await Task.Delay(Timeout.Infinite, args.CancellationToken);
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.Delay(Timeout.Infinite, args.CancellationToken));
 
         var task = editContext.ValidateAsync(cts.Token);
         await WaitUntilAsync(() => editContext.IsValidationPending());
@@ -696,10 +723,10 @@ public class EditContextAsyncTest
         var syncCount = 0;
         var asyncCount = 0;
         editContext.OnValidationRequested += (_, _) => syncCount++;
-        editContext.OnValidationRequestedAsync += (_, _) =>
+        editContext.OnValidationRequested += (_, args) =>
         {
             asyncCount++;
-            return Task.CompletedTask;
+            args.AddValidationTask(Task.CompletedTask);
         };
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -718,11 +745,13 @@ public class EditContextAsyncTest
         var editContext = new EditContext(new TestModel());
         using var handlerCts = new CancellationTokenSource();
         handlerCts.Cancel();
-        editContext.OnValidationRequestedAsync += async (_, _) =>
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(ThrowOceAsync());
+
+        async Task ThrowOceAsync()
         {
             await Task.Yield();
             throw new OperationCanceledException(handlerCts.Token);
-        };
+        }
 
         var result = await editContext.ValidateAsync();
 
@@ -765,7 +794,7 @@ public class EditContextAsyncTest
     {
         var editContext = new EditContext(new TestModel());
         var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        editContext.OnValidationRequestedAsync += async (_, _) => await gate.Task;
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(gate.Task);
 
         var task = editContext.ValidateAsync();
         await WaitUntilAsync(() => editContext.IsValidationPending());
@@ -797,12 +826,12 @@ public class EditContextAsyncTest
     public Task IsValidationFaulted_CallerCanceledRevalidation_PreservesPreviousFault() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
-        Func<object, ValidationRequestedEventArgs, Task> faulting = (_, _) => Task.FromException(new InvalidOperationException("failure"));
-        editContext.OnValidationRequestedAsync += faulting;
+        EventHandler<ValidationRequestedEventArgs> faulting = (_, args) => args.AddValidationTask(Task.FromException(new InvalidOperationException("failure")));
+        editContext.OnValidationRequested += faulting;
         Assert.False(await editContext.ValidateAsync());
-        editContext.OnValidationRequestedAsync -= faulting;
+        editContext.OnValidationRequested -= faulting;
         using var cts = new CancellationTokenSource();
-        editContext.OnValidationRequestedAsync += async (_, args) => await Task.Delay(Timeout.Infinite, args.CancellationToken);
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(Task.Delay(Timeout.Infinite, args.CancellationToken));
 
         var task = editContext.ValidateAsync(cts.Token);
         await WaitUntilAsync(() => editContext.IsValidationPending());
@@ -817,13 +846,13 @@ public class EditContextAsyncTest
     public Task IsValidationFaulted_DoesNotClearUntilSuccessfulRevalidationCompletes() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
-        Func<object, ValidationRequestedEventArgs, Task> faulting = (_, _) => Task.FromException(new InvalidOperationException("failure"));
-        editContext.OnValidationRequestedAsync += faulting;
+        EventHandler<ValidationRequestedEventArgs> faulting = (_, args) => args.AddValidationTask(Task.FromException(new InvalidOperationException("failure")));
+        editContext.OnValidationRequested += faulting;
         Assert.False(await editContext.ValidateAsync());
-        editContext.OnValidationRequestedAsync -= faulting;
+        editContext.OnValidationRequested -= faulting;
         var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var observed = new List<(bool Pending, bool Faulted)>();
-        editContext.OnValidationRequestedAsync += async (_, _) => await gate.Task;
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(gate.Task);
         editContext.OnValidationStateChanged += (_, _) => observed.Add((editContext.IsValidationPending(), editContext.IsValidationFaulted()));
 
         var task = editContext.ValidateAsync();
@@ -1087,11 +1116,13 @@ public class EditContextAsyncTest
         using var cts = new CancellationTokenSource();
         var handlerEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var handlerExit = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        editContext.OnValidationRequestedAsync += async (_, _) =>
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(HandlerAsync());
+
+        async Task HandlerAsync()
         {
             handlerEntered.SetResult();
             await handlerExit.Task;
-        };
+        }
 
         var task = editContext.ValidateAsync(cts.Token);
         await handlerEntered.Task;
@@ -1103,61 +1134,6 @@ public class EditContextAsyncTest
         Assert.False(editContext.IsValidationPending());
         Assert.False(editContext.IsValidationFaulted());
     });
-
-    [Fact]
-    public Task ValidateAsync_AsyncHandlerReturnsNull_TreatedAsCompletedTask() => RunOnDispatcher(async () =>
-    {
-        var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => null;
-
-        var result = await editContext.ValidateAsync();
-
-        Assert.True(result);
-        Assert.False(editContext.IsValidationFaulted());
-    });
-
-    [Fact]
-    public Task ValidateAsync_AsyncHandlerThrowsOperationCanceledExceptionSync_DoesNotMarkFormAsFaulted() => RunOnDispatcher(async () =>
-    {
-        // Sync throw of OCE before the handler's first await must be classified as cancellation,
-        // not as a fault, matching the post-await OCE semantics.
-        var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, args) =>
-        {
-            throw new OperationCanceledException();
-        };
-
-        var result = await editContext.ValidateAsync();
-
-        Assert.True(result);
-        Assert.False(editContext.IsValidationFaulted());
-    });
-
-    [Fact]
-    public Task ValidateAsync_OneAsyncHandlerThrowsOceSync_OtherHandlerFaults_IsClassifiedAsFault() => RunOnDispatcher(async () =>
-    {
-        // Cross-check: a sync OCE from one handler must not mask a real fault from another.
-        var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => throw new OperationCanceledException();
-        editContext.OnValidationRequestedAsync += (_, _) => Task.FromException(new InvalidOperationException("boom"));
-
-        var result = await editContext.ValidateAsync();
-
-        Assert.False(result);
-        Assert.True(editContext.IsValidationFaulted());
-    });
-
-    [Fact]
-    public void Validate_AsyncHandlerReturnsNull_TreatedAsCompletedTask()
-    {
-        var editContext = new EditContext(new TestModel());
-        editContext.OnValidationRequestedAsync += (_, _) => null;
-
-        var result = editContext.Validate();
-
-        Assert.True(result);
-        Assert.False(editContext.IsValidationFaulted());
-    }
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {

@@ -67,7 +67,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 : null;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _editContext.OnFieldChanged += OnFieldChanged;
-            _editContext.OnValidationRequestedAsync += OnValidationRequestedAsync;
+            _editContext.OnValidationRequested += OnValidationRequested;
 
             if (MetadataUpdater.IsSupported)
             {
@@ -96,20 +96,28 @@ public static partial class EditContextDataAnnotationsExtensions
             }
         }
 
-        private async Task OnValidationRequestedAsync(object sender, ValidationRequestedEventArgs e)
+        private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
-            //
             if (_validatorTypeInfo is not null)
             {
-                await ValidateFormAsync(_validatorTypeInfo, e.CancellationToken);
+                // Start the asynchronous validation and hand the task to the framework.
+                // ValidateAsync awaits it. Validate throws because the task does not complete synchronously.
+                e.AddValidationTask(ValidateFormAndNotifyAsync(_validatorTypeInfo, e.CancellationToken));
             }
             else
             {
                 ValidateForm();
+                _editContext.NotifyValidationStateChanged();
             }
+        }
 
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private async Task ValidateFormAndNotifyAsync(IValidatableTypeInfo validatableInfo, CancellationToken cancellationToken)
+        {
+            await ValidateFormAsync(validatableInfo, cancellationToken);
             _editContext.NotifyValidationStateChanged();
         }
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private void ValidateForm()
@@ -251,7 +259,7 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             _messages.Clear();
             _editContext.OnFieldChanged -= OnFieldChanged;
-            _editContext.OnValidationRequestedAsync -= OnValidationRequestedAsync;
+            _editContext.OnValidationRequested -= OnValidationRequested;
             _editContext.NotifyValidationStateChanged();
 
             if (MetadataUpdater.IsSupported)

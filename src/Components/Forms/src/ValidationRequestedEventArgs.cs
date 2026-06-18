@@ -8,10 +8,13 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public sealed class ValidationRequestedEventArgs : EventArgs
 {
+    private readonly bool _isReadOnly;
+    private List<Task>? _validationTasks;
+
     /// <summary>
     /// Gets a shared empty instance of <see cref="ValidationRequestedEventArgs"/>.
     /// </summary>
-    public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs();
+    public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs(isReadOnly: true);
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/>.
@@ -31,6 +34,11 @@ public sealed class ValidationRequestedEventArgs : EventArgs
         CancellationToken = cancellationToken;
     }
 
+    private ValidationRequestedEventArgs(bool isReadOnly)
+    {
+        _isReadOnly = isReadOnly;
+    }
+
     /// <summary>
     /// Gets a token that signals when the caller has requested cancellation of the in-flight
     /// async validation pass. Synchronous handlers can ignore this; async handlers that perform
@@ -38,4 +46,48 @@ public sealed class ValidationRequestedEventArgs : EventArgs
     /// APIs so the work can be aborted promptly.
     /// </summary>
     public CancellationToken CancellationToken { get; }
+
+    /// <summary>
+    /// Registers an asynchronous validation task to be awaited as part of the current validation pass.
+    /// </summary>
+    /// <param name="task">The asynchronous validation task to track for the current validation pass.</param>
+    /// <remarks>
+    /// A validator that needs to perform asynchronous work subscribes to
+    /// <see cref="EditContext.OnValidationRequested"/>, starts that work from its handler, and passes
+    /// the resulting <see cref="Task"/> to this method. <see cref="EditContext.ValidateAsync(CancellationToken)"/>
+    /// awaits every registered task before completing, while <see cref="EditContext.Validate"/> throws
+    /// <see cref="InvalidOperationException"/> if a registered task has not already completed.
+    /// <para>
+    /// Start the asynchronous work with an <c>async</c> method so that any exception thrown before its
+    /// first <c>await</c> is captured into the returned task rather than thrown from the handler.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// editContext.OnValidationRequested += (sender, args) =&gt;
+    /// {
+    ///     args.AddValidationTask(ValidateModelAsync(editContext.Model, args.CancellationToken));
+    /// };
+    /// </code>
+    /// </example>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException"><paramref name="task"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// This instance is the shared read only <see cref="Empty"/> instance, which does not collect tasks.
+    /// </exception>
+    public void AddValidationTask(Task task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+
+        if (_isReadOnly)
+        {
+            throw new InvalidOperationException(
+                $"Cannot register a validation task on the shared {nameof(ValidationRequestedEventArgs)}.{nameof(Empty)} instance. " +
+                $"Register tasks on the instance supplied to your {nameof(EditContext.OnValidationRequested)} handler instead.");
+        }
+
+        (_validationTasks ??= new List<Task>()).Add(task);
+    }
+
+    internal IReadOnlyList<Task> ValidationTasks
+        => _validationTasks is { } tasks ? tasks : Array.Empty<Task>();
 }
