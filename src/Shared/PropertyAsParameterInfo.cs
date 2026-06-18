@@ -140,15 +140,23 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
     public override object[] GetCustomAttributes(Type attributeType, bool inherit)
     {
         var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
-
-        if (constructorAttributes == null || constructorAttributes is { Length: 0 })
-        {
-            return _underlyingProperty.GetCustomAttributes(attributeType, inherit);
-        }
-
         var propertyAttributes = _underlyingProperty.GetCustomAttributes(attributeType, inherit);
 
-        var mergedAttributes = Array.CreateInstance(attributeType, constructorAttributes.Length + propertyAttributes.Length);
+        // We don't have constructor attributes, so we can safely return the property attributes.
+        if (constructorAttributes == null || constructorAttributes.Length == 0)
+        {
+            return propertyAttributes;
+        }
+
+        // We don't have property attributes, so we can safely return the constructor attributes.
+        if (propertyAttributes.Length == 0)
+        {
+            return constructorAttributes;
+        }
+
+        // We have both, and we need to merge (rare scenario).
+        var arrayType = constructorAttributes.GetType();
+        var mergedAttributes = Array.CreateInstanceFromArrayType(arrayType, constructorAttributes.Length + propertyAttributes.Length);
         Array.Copy(constructorAttributes, mergedAttributes, constructorAttributes.Length);
         Array.Copy(propertyAttributes, 0, mergedAttributes, constructorAttributes.Length, propertyAttributes.Length);
 
