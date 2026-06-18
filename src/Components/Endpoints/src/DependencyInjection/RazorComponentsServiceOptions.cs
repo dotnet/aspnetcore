@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -123,11 +122,4 @@ public sealed class RazorComponentsServiceOptions
 
     private long _cacheBoundarySizeLimit = 100_000_000;
     internal static readonly TimeSpan DefaultCacheBoundaryExpiration = TimeSpan.FromSeconds(30);
-
-    /// <summary>
-    /// Gets or sets the <see cref="HybridCache"/> instance used by <see cref="CacheBoundary"/> to store its
-    /// server-side rendering output, instead of the default in-memory cache.
-    /// When left unset, a <see cref="HybridCache"/> registered in the service collection is used automatically; otherwise the in-memory cache is used.
-    /// </summary>
-    public HybridCache? CacheBoundaryHybridCache { get; set; }
 }
