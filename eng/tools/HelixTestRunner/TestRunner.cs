@@ -28,17 +28,6 @@ public class TestRunner
             EnvironmentVariables.Add("PATH", Options.Path);
             EnvironmentVariables.Add("helix", Options.HelixQueue);
 
-            // Skip the .NET SDK first-run experience. On macOS Helix machines, the
-            // first-run HTTPS dev cert generation hangs for >2 minutes, causing the
-            // HelixTestRunner timeout to kill the dotnet process (exit code 130).
-            //
-            // DOTNET_SKIP_FIRST_TIME_EXPERIENCE is deprecated and no longer honored
-            // in .NET 8+. The replacement is individual controls:
-            // - DOTNET_NOLOGO: suppresses the welcome banner
-            // - DOTNET_GENERATE_ASPNET_CERTIFICATE: skips dev cert generation (the hang)
-            EnvironmentVariables.Add("DOTNET_NOLOGO", "1");
-            EnvironmentVariables.Add("DOTNET_GENERATE_ASPNET_CERTIFICATE", "false");
-
             ProcessUtil.PrintMessage($"Current Directory: {Options.HELIX_WORKITEM_ROOT}");
             var helixDir = Options.HELIX_WORKITEM_ROOT;
             ProcessUtil.PrintMessage($"Setting HELIX_DIR: {helixDir}");
