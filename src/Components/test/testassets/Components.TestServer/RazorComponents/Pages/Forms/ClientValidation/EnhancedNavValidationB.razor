@@ -1,0 +1,34 @@
+@page "/forms/client-validation/enhanced-nav-b"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2 id="page-title">Enhanced navigation form B</h2>
+
+<style>
+    .validation-message { color: red; display: block; }
+    .field-validation-valid { display: none; }
+</style>
+
+<EditForm Model="Form" FormName="enhanced-nav-b" method="post">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="beta">Beta</label>
+        <InputText id="beta" @bind-Value="Form!.Beta" />
+        <ValidationMessage For="() => Form!.Beta" />
+    </div>
+    <button type="submit" id="submit">Submit B</button>
+</EditForm>
+
+<a id="go-to-a" href="forms/client-validation/enhanced-nav-a">Go to form A</a>
+
+@code {
+    [SupplyParameterFromForm] private FormBModel? Form { get; set; }
+
+    protected override void OnInitialized() => Form ??= new FormBModel();
+
+    public class FormBModel
+    {
+        [Required(ErrorMessage = "Beta is required.")]
+        public string? Beta { get; set; }
+    }
+}
