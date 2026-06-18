@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Components;
 /// <see cref="RenderFragment"/> parameters are not supported on hole components, because the
 /// hole re-renders on every request while its parameters are captured once and replayed; a
 /// captured <see cref="RenderFragment"/> would be frozen to the content of the first render.
-        /// Encountering a hole with a <see cref="RenderFragment"/> parameter throws an
-        /// <see cref="InvalidOperationException"/>. To fix this, remove the <see cref="RenderFragment"/>
-        /// parameter or move the component outside the <see cref="CacheBoundary"/>.
+/// Encountering a hole with a <see cref="RenderFragment"/> parameter throws an
+/// <see cref="InvalidOperationException"/>. To fix this, remove the <see cref="RenderFragment"/>
+/// parameter or move the component outside the CacheBoundary.
 /// </para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
