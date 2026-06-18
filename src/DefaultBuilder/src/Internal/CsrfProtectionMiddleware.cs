@@ -62,18 +62,21 @@ internal sealed partial class CsrfProtectionMiddleware
         await _next(context);
     }
 
-    // Records the CSRF verdict on IAntiforgeryValidationFeature without short-circuiting; downstream consumers
-    // (minimal-API form binding, MVC's antiforgery filter, Razor Components) act on it. A later
-    // UseAntiforgery() may overwrite the verdict with token-based validation.
     private async ValueTask RecordVerdictAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
+        if (endpoint is not null)
+        {
+            // Mark that CSRF protection observed this endpoint, even if it opts out below, so
+            // EndpointMiddleware's antiforgery-metadata check passes.
+            context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
+        }
+
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
         {
             return;
         }
 
-        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
         if (await _csrfProtection.ValidateAsync(context) is { IsAllowed: false })
         {
             RequestFailedValidation(_logger, context.Request.Method, context.Request.Path, context.Request.Headers.Origin.ToString());
