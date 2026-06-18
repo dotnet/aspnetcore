@@ -137,7 +137,6 @@ internal sealed class PropertyAsParameterInfo : ParameterInfo
         return flattenedParameters is not null ? CollectionsMarshal.AsSpan(flattenedParameters) : parameters.AsSpan();
     }
 
-    [UnconditionalSuppressMessage("Aot", "IL3050:RequiresDynamicCode", Justification = "Creates an attribute array matching the requested runtime attribute type.")]
     public override object[] GetCustomAttributes(Type attributeType, bool inherit)
     {
         var constructorAttributes = _constructionParameterInfo?.GetCustomAttributes(attributeType, inherit);
