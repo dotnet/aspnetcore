@@ -65,7 +65,7 @@ public class ValidationOptions
     /// if the type was found; otherwise, <see langword="null" />.</param>
     /// <returns><see langword="true" /> if validation information was found for the specified type; otherwise, <see langword="false" />.</returns>
     [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableTypeInfo)
+    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableTypeInfo)
     {
         foreach (var resolver in Resolvers)
         {
@@ -87,7 +87,7 @@ public class ValidationOptions
     /// if validation information was found; otherwise, <see langword="null" />.</param>
     /// <returns><see langword="true" /> if validation information was found for the specified parameter; otherwise, <see langword="false" />.</returns>
     [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+    public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
     {
         foreach (var resolver in Resolvers)
         {
@@ -118,14 +118,13 @@ public class ValidationOptions
     /// visits members.
     /// </remarks>
     [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-    public bool TryGetValidatablePropertyInfo(Type type, string propertyName, [NotNullWhen(true)] out IValidatableInfo? validatablePropertyInfo)
+    public bool TryGetValidatablePropertyInfo(Type type, string propertyName, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
     {
         ArgumentNullException.ThrowIfNull(type);
         ArgumentNullException.ThrowIfNull(propertyName);
 
-        if (TryGetValidatableTypeInfo(type, out var info)
-            && info is ValidatableTypeInfo typeInfo
-            && typeInfo.FindMember(propertyName, this) is { } property)
+        if (TryGetValidatableTypeInfo(type, out var typeInfo)
+            && typeInfo.TryFindProperty(propertyName, this) is { } property)
         {
             validatablePropertyInfo = property;
             return true;
