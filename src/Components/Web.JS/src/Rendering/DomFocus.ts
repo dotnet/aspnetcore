@@ -2,8 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 const editableInputTypes = new Set<string>([
-  'text', 'search', 'email', 'url', 'tel', 'password',
-  'number', 'date', 'time', 'datetime-local', 'month', 'week',
+  'text', 'search', 'email', 'url', 'tel', 'password', 'number',
 ]);
 
 const contentEditableSnapshots = new WeakMap<Element, string>();

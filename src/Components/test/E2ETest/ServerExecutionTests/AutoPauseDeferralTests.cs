@@ -371,6 +371,26 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             verifyPreservation: () => AssertElementValueEquals("date", "2024-01-15"));
     }
 
+    [Fact]
+    // Focus is irrelevant: `change` fires on date selection.
+    public void Typing_DateInputFocusedAndDirty_DoesNotDeferAutoPause()
+    {
+        NavigateToTypingPage();
+        FocusAndSetValueWithoutBlur("date", "2024-06-15");
+        ClearBlazorLogs();
+        SetVisibility("hidden");
+        try
+        {
+            WaitForPausedUI();
+            AssertNoDeferralLogPresent();
+        }
+        finally
+        {
+            SetVisibility("visible");
+            WaitForResumedUI();
+        }
+    }
+
     private void NavigateToAdvancedEditablePage()
     {
         Navigate($"/subdir/persistent-state/auto-pause-advanced-editable?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
@@ -980,6 +1000,17 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         element.SendKeys(text);
     }
 
+    private void FocusAndSetValueWithoutBlur(string elementId, string value)
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            var el = document.getElementById(arguments[0]);
+            el.focus();
+            el.value = arguments[1];
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        ", elementId, value);
+    }
+
     private void ClickElement(string elementId)
     {
         Browser.Exists(By.Id(elementId)).Click();
@@ -1174,6 +1205,13 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             var modals = Browser.FindElements(By.Id("components-reconnect-modal"));
             return modals.Count == 0 ? "none" : modals[0].GetCssValue("display");
         });
+    }
+
+    private void AssertNoDeferralLogPresent()
+    {
+        var found = (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return !!(window.__blazorLogs && window.__blazorLogs.some(function (e) { return e.msg && e.msg.indexOf('Pause deferred:') >= 0; }));");
+        Assert.False(found, "Expected no 'Pause deferred:' log but one was present — the input type should not veto auto-pause.");
     }
 
     private void AssertNoConsoleErrors()
