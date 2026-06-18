@@ -501,7 +501,10 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     // RequireCors("name")) from the matched endpoint's metadata, so it needs the endpoint to be matched.
     // When the user calls app.UseRouting() explicitly, EndpointRoutingMiddleware lives only in the source
     // (inner) pipeline and runs AFTER this destination middleware, leaving HttpContext.GetEndpoint() null
-    // at CSRF time, which loses the named policy and wrongly rejects legitimate cross-origin POSTs (#67174).
+    // at CSRF time, which loses the named policy so the middleware records a wrong 'invalid' verdict on
+    // IAntiforgeryValidationFeature and downstream form consumers reject legitimate cross-origin POSTs
+    // (#67174). Matching the endpoint here also lets the middleware set the CsrfProtection sentinel that
+    // EndpointMiddleware's security-metadata check requires, avoiding a spurious antiforgery exception.
     //
     // Unlike UseAuthentication()/UseAuthorization(), CSRF protection is default-on, so the user never places
     // it explicitly and it cannot use the "skip auto-injection when the user called it" mechanism (see
