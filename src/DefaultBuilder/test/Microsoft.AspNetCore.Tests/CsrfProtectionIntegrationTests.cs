@@ -396,6 +396,111 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task CsrfProtection_ExplicitUseRouting_NamedPolicy_TrustsAllowedOrigin()
+    {
+        // Repro for #67174: a named CORS policy + explicit app.UseRouting() must still resolve the
+        // endpoint's policy at CSRF time, so a cross-origin POST from the allowed origin succeeds.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+        using var app = builder.Build();
+
+        app.UseRouting();
+        app.UseCors();
+        app.MapPost("/webhook", () => "ok").RequireCors("Webhook");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://stripe.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_AutoRouting_NamedPolicy_TrustsAllowedOrigin()
+    {
+        // Regression guard for the auto-routing case (no explicit app.UseRouting()): must keep working
+        // after the re-route fix for #67174.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+        using var app = builder.Build();
+
+        app.UseCors();
+        app.MapPost("/webhook", () => "ok").RequireCors("Webhook");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://stripe.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_ExplicitUseRouting_NamedPolicy_DeniesUntrustedOrigin()
+    {
+        // The fix must not weaken protection: with explicit app.UseRouting() the endpoint is now resolved,
+        // but an origin outside the named policy is still denied.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+        using var app = builder.Build();
+
+        app.UseRouting();
+        app.UseCors();
+        app.MapPost("/webhook", () => "ok").RequireCors("Webhook");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://evil.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_ExplicitUseRouting_AllowedRequest_ExecutesEndpointExactlyOnce()
+    {
+        // The re-route only re-runs endpoint matching, never endpoint execution, so a trusted request
+        // must still hit the endpoint exactly once.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddCors(options =>
+            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
+        using var app = builder.Build();
+
+        var invocationCount = 0;
+        app.UseRouting();
+        app.UseCors();
+        app.MapPost("/webhook", () =>
+        {
+            invocationCount++;
+            return "ok";
+        }).RequireCors("Webhook");
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://stripe.example.com");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(1, invocationCount);
+    }
+
     private static async Task<WebApplication> CreateApp()
     {
         var builder = WebApplication.CreateBuilder();

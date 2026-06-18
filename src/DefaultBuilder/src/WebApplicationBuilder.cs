@@ -463,7 +463,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 if (!_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
                 {
                     _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
-                    app.UseMiddleware<CsrfProtectionMiddleware>();
+                    AddCsrfProtectionMiddleware(app);
                 }
             }
         }
@@ -494,6 +494,43 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         {
             app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;
         }
+    }
+
+    // CsrfProtectionMiddleware resolves a per-endpoint CORS policy (e.g. [EnableCors("name")] /
+    // RequireCors("name")) from the matched endpoint's metadata, so it needs the endpoint to be matched.
+    // When the user calls app.UseRouting() explicitly, EndpointRoutingMiddleware lives only in the source
+    // (inner) pipeline and runs AFTER this destination middleware, leaving HttpContext.GetEndpoint() null
+    // at CSRF time, which loses the named policy and wrongly rejects legitimate cross-origin POSTs.
+    //
+    // Give the middleware an endpoint matcher (UseRouting() built into its own branch) so it can match the
+    // endpoint on demand when routing hasn't run yet. The matcher only performs endpoint MATCHING, never
+    // endpoint execution, and the middleware restores the pre-routing state afterwards so that middleware
+    // ordered before the app's UseRouting() still observes a null endpoint. In the auto-routing case the
+    // endpoint is already matched, so the matcher is never used.
+    private void AddCsrfProtectionMiddleware(IApplicationBuilder app)
+    {
+        Debug.Assert(_builtApplication is not null);
+
+        if (app.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out var routeBuilder) && routeBuilder is not null
+            && _builtApplication.Properties.TryGetValue(UseRoutingKey, out var useRouting)
+            && useRouting is Func<IApplicationBuilder, IApplicationBuilder> useRoutingFunc)
+        {
+            // Build a standalone UseRouting() branch that matches the endpoint and then stops (no endpoint
+            // execution). Reusing the global route builder preserves the existing routes and matching logic.
+            var branch = app.New();
+            branch.Properties[WebApplication.GlobalEndpointRouteBuilderKey] = routeBuilder;
+            useRoutingFunc(branch);
+            branch.Run(static _ => Task.CompletedTask);
+            var endpointMatcher = branch.Build();
+
+            app.UseMiddleware<CsrfProtectionMiddleware>(new CsrfEndpointResolver(endpointMatcher));
+
+            return;
+        }
+
+        // No global route builder (non-WebApplication hosting) or no endpoints/routing configured: there is
+        // no endpoint metadata to honor, so add the middleware without a matcher. Behavior is unchanged.
+        app.UseMiddleware<CsrfProtectionMiddleware>();
     }
 
     void IHostApplicationBuilder.ConfigureContainer<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory, Action<TContainerBuilder>? configure) =>
