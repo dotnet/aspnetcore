@@ -4232,7 +4232,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(500, true, false)]
     [InlineData(1, true, true)]
     [InlineData(500, true, true)]
-    public void InitialIndex_OpensAtTargetWithRealContent(int initialItemIndex, bool variableHeight, bool delay)
+    public void InitialIndex_OpensAtTargetWithRealContent(int initialIndex, bool variableHeight, bool delay)
     {
         MountAnchorModeForScrollToItem(variableHeight: variableHeight, delay: delay);
         var js = (IJavaScriptExecutor)Browser;
@@ -4240,11 +4240,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Exists(By.Id("unload-list")).Click();
         Browser.Exists(By.Id("list-not-loaded"));
         js.ExecuteScript("document.getElementById('scroll-container').scrollTop = 0;");
-        SetManualInitialIndex(initialItemIndex);
+        SetManualInitialIndex(initialIndex);
         Browser.Exists(By.Id("reload-with-initial-index")).Click();
 
         // The target item must sit at the top of the viewport even for small indices and with a delayed provider.
-        Browser.True(() => GetTopRenderedIndex(js) == initialItemIndex);
+        Browser.True(() => GetTopRenderedIndex(js) == initialIndex);
     }
 
     [Theory]
