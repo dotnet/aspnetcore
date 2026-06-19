@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <AssemblyName>Microsoft.AspNetCore.Tools.NativeAot.Tests</AssemblyName>
+    <TestGroupName>NativeAotToolTests</TestGroupName>
+    <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == '' AND '$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
+    <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == '' AND '$(TargetRuntimeIdentifier)' != ''">$(TargetRuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
+    <NativeAotToolPublishRuntimeIdentifier Condition="'$(NativeAotToolPublishRuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</NativeAotToolPublishRuntimeIdentifier>
+    <NativeAotToolPublishRoot>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'aspnetcoretools', '$(Configuration)', '$(TargetFramework)', '$(NativeAotToolPublishRuntimeIdentifier)', 'publish'))</NativeAotToolPublishRoot>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <SkipTests Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\NativeAotToolRunner.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\TemporaryCSharpProject.cs" />
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\TemporaryDirectory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.InternalTesting" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <!-- Sequence the aggregate tool build/publish before this test payload consumes its published files. -->
+    <ProjectReference Include="..\aspnetcoretools\aspnetcoretools.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      Targets="Build"
+                      Properties="RuntimeIdentifier=$(NativeAotToolPublishRuntimeIdentifier);TargetRuntimeIdentifier=$(NativeAotToolPublishRuntimeIdentifier)"
+                      Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="$(NativeAotToolPublishRoot)**" LinkBase="nativeaot-tools" />
+  </ItemGroup>
+
+</Project>

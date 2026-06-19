@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
@@ -11,6 +12,15 @@
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PublishAot>true</PublishAot>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true'">$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(DotNetBuild)' == 'true' and '$(RuntimeIdentifier)' == ''">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <Import Project="..\..\NativeAot\AspNetCoreTools.NativeAot.props" />
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" LinkBase="Shared" />
@@ -36,4 +46,5 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.JwtBearer.Tools.Tests" />
   </ItemGroup>
+
 </Project>
