@@ -5,13 +5,10 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Routing;
 
-/// <summary>
-/// Short circuit the endpoint(s).
-/// The execution of the endpoint will happen in UseRouting middleware.
-/// </summary>
+/// <inheritdoc/>
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 [DebuggerDisplay("{ToString(),nq}")]
-public sealed class ShortCircuitAttribute : Attribute
+public sealed class ShortCircuitAttribute : Attribute, IShortCircuitMetadata
 {
     /// <summary>
     /// Constructs an instance of <see cref="ShortCircuitAttribute"/>.
@@ -29,14 +26,6 @@ public sealed class ShortCircuitAttribute : Attribute
         StatusCode = statusCode;
     }
 
-    /// <summary>
-    /// The status code to set in the response.
-    /// </summary>
-    public int? StatusCode { get; }
-
     /// <inheritdoc/>
-    public override string ToString()
-    {
-        return "ShortCircuit";
-    }
+    public int? StatusCode { get; }
 }
