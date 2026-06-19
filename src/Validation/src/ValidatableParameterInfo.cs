@@ -160,7 +160,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
                 {
                     if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        var possiblyClonedContext = nextUseNeedsClone ? context.Clone(originalState) : context;
+                        var possiblyClonedContext = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
                         nextUseNeedsClone = false;
                         possiblyClonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                             ? $"{Name}[{index}]"

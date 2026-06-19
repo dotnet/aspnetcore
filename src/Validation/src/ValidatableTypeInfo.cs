@@ -215,7 +215,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         var needsClone = localValidationTasks is not null;
         for (var i = 0; i < _membersCount; i++)
         {
-            var possiblyCloned = needsClone ? context.Clone(originalState) : context;
+            var possiblyCloned = needsClone ? context.CopyWithState(originalState) : context;
             var task = Members[i].ValidateAsync(value, possiblyCloned, cancellationToken);
             if (!task.IsCompleted)
             {

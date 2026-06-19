@@ -38,7 +38,7 @@ public sealed class ValidateContext
         }
     }
 
-    internal ValidateContext Clone(ValidateContextMutableState state)
+    internal ValidateContext CopyWithState(ValidateContextMutableState state)
     {
         return new ValidateContext(this, state)
         {

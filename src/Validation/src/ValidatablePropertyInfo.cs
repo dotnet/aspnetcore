@@ -188,7 +188,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                         var itemType = item.GetType();
                         if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            var clonedContextForEnumerable = nextUseNeedsClone ? context.Clone(originalState) : context;
+                            var clonedContextForEnumerable = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
                             nextUseNeedsClone = false;
                             clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
                             var task = validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
