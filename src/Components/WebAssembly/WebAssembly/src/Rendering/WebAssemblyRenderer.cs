@@ -217,7 +217,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             }
 
             var batchBytes = arrayBuilder.Buffer.AsSpan(0, arrayBuilder.Count).ToArray();
-            RenderBatchOOP(RendererId, batchBytes);
+            RenderBatchOutOfProcess(RendererId, batchBytes);
         }
         finally
         {
@@ -269,6 +269,6 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     [JSImport("Blazor._internal.renderBatch", "blazor-internal")]
     private static unsafe partial void RenderBatch(int id, void* batch);
 
-    [JSImport("Blazor._internal.renderBatchOOP", "blazor-internal")]
-    private static partial void RenderBatchOOP(int rendererId, byte[] batchData);
+    [JSImport("Blazor._internal.renderBatchOutOfProcess", "blazor-internal")]
+    private static partial void RenderBatchOutOfProcess(int rendererId, byte[] batchData);
 }

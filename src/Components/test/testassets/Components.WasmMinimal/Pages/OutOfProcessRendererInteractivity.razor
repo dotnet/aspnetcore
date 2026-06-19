@@ -1,10 +1,10 @@
-@page "/oop-renderer-interactivity"
+@page "/out-of-process-renderer-interactivity"
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.JSInterop
 @rendermode RenderMode.InteractiveWebAssembly
 @inject IJSRuntime JSRuntime
 
-<h1>OOP Renderer Interactivity Test</h1>
+<h1>Out-of-Process Renderer Interactivity Test</h1>
 
 <p>
     Execution mode:
@@ -13,7 +13,7 @@
 
 <p>
     OOP Renderer active:
-    <strong id="oop-renderer-active">@oopRendererActive</strong>
+    <strong id="out-of-process-renderer-active">@outOfProcessRendererActive</strong>
 </p>
 
 <p>
@@ -51,7 +51,7 @@
 
 @code {
     private string executionMode = "static";
-    private string oopRendererActive = "(unknown)";
+    private string outOfProcessRendererActive = "(unknown)";
     private int currentCount;
     private string textValue = "";
     private string jsResult = "(none)";
@@ -63,7 +63,7 @@
         if (firstRender)
         {
             executionMode = OperatingSystem.IsBrowser() ? "webassembly" : "server";
-            oopRendererActive = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OOP_RENDERER") ?? "(not set)";
+            outOfProcessRendererActive = Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER") ?? "(not set)";
             StateHasChanged();
         }
     }

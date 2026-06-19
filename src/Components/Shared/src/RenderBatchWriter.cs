@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -244,7 +242,7 @@ internal sealed class RenderBatchWriter : IDisposable
         return startPos;
     }
 
-    void WriteString(string value, bool allowDeduplication)
+    void WriteString(string? value, bool allowDeduplication)
     {
         if (value == null)
         {

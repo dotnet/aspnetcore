@@ -12,28 +12,28 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
 
-public class WebAssemblyOOPRendererTest(
+public class WebAssemblyOutOfProcessRendererTest(
     BrowserFixture browserFixture,
-    OOPRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>> serverFixture,
+    OutOfProcessRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>> serverFixture,
     ITestOutputHelper output)
-    : ServerTestBase<OOPRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
+    : ServerTestBase<OutOfProcessRendererServerFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
     [Fact]
-    public void OOPRendererIsActiveAndComponentIsInteractive()
+    public void OutOfProcessRendererIsActiveAndComponentIsInteractive()
     {
-        Navigate($"{ServerPathBase}/oop-renderer-interactivity");
+        Navigate($"{ServerPathBase}/out-of-process-renderer-interactivity");
 
         // Wait for WebAssembly to be interactive
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         // Verify OOP renderer env var is active
-        Browser.Equal("true", () => Browser.Exists(By.Id("oop-renderer-active")).Text);
+        Browser.Equal("true", () => Browser.Exists(By.Id("out-of-process-renderer-active")).Text);
     }
 
     [Fact]
-    public void OOPRendererHandlesClickEvents()
+    public void OutOfProcessRendererHandlesClickEvents()
     {
-        Navigate($"{ServerPathBase}/oop-renderer-interactivity");
+        Navigate($"{ServerPathBase}/out-of-process-renderer-interactivity");
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         // Click counter button multiple times
@@ -46,9 +46,9 @@ public class WebAssemblyOOPRendererTest(
     }
 
     [Fact]
-    public void OOPRendererHandlesTextInputBinding()
+    public void OutOfProcessRendererHandlesTextInputBinding()
     {
-        Navigate($"{ServerPathBase}/oop-renderer-interactivity");
+        Navigate($"{ServerPathBase}/out-of-process-renderer-interactivity");
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         const string text = "Hello OOP Renderer";
@@ -60,9 +60,9 @@ public class WebAssemblyOOPRendererTest(
     }
 
     [Fact]
-    public void OOPRendererHandlesJSInterop()
+    public void OutOfProcessRendererHandlesJSInterop()
     {
-        Navigate($"{ServerPathBase}/oop-renderer-interactivity");
+        Navigate($"{ServerPathBase}/out-of-process-renderer-interactivity");
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         Browser.Exists(By.Id("jsinterop-button")).Click();
@@ -71,9 +71,9 @@ public class WebAssemblyOOPRendererTest(
     }
 
     [Fact]
-    public void OOPRendererHandlesConditionalRendering()
+    public void OutOfProcessRendererHandlesConditionalRendering()
     {
-        Navigate($"{ServerPathBase}/oop-renderer-interactivity");
+        Navigate($"{ServerPathBase}/out-of-process-renderer-interactivity");
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         // Content should be visible initially
@@ -89,9 +89,9 @@ public class WebAssemblyOOPRendererTest(
     }
 
     [Fact]
-    public void OOPRendererHandlesListRendering()
+    public void OutOfProcessRendererHandlesListRendering()
     {
-        Navigate($"{ServerPathBase}/oop-renderer-interactivity");
+        Navigate($"{ServerPathBase}/out-of-process-renderer-interactivity");
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
 
         // Initially 2 items

@@ -122,7 +122,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   };
 
-  Blazor._internal.renderBatchOOP = (browserRendererId: number, batchData: Uint8Array): void => {
+  Blazor._internal.renderBatchOutOfProcess = (browserRendererId: number, batchData: Uint8Array): void => {
     // No heap lock needed — batchData is a self-contained byte[] copy,
     // not a pointer into the .NET managed heap.
     // Uses UTF-16LE string table encoding to avoid UTF-8 transcoding on both sides.
