@@ -69,6 +69,13 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
 
         var validationAttributes = GetValidationAttributes();
 
+        // Skip validation if value is null and there are no validation attributes to apply.
+        // If validation attributes exist (including custom ones), they should be evaluated even for null values.
+        if (value == null && validationAttributes.Length == 0)
+        {
+            return;
+        }
+
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
             var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);

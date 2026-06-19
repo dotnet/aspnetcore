@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing;
@@ -1255,6 +1256,366 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         Assert.True(httpContext.Response.Body.Length == 0, "Response body should be empty");
         Assert.False(handlerExecuted, "Handler should not have been executed when parameter binding fails");
+    }
+
+    [Fact]
+    public async Task Validation_RunsForNullableValueType_WithNullArgument_WhenNoQueryParamProvided()
+    {
+        // Issue #67033: Validation attributes should run for nullable value types (int?, long?, etc.)
+        // even when no value is provided (model binder produces default = 0, not null)
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] int? id) =>
+        {
+            handlerExecuted = true;
+            return $"Hey {id}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        // No route values set - simulates no query parameter provided
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Validation should fail (null received for [Required] int?)
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        Assert.False(handlerExecuted, "Handler should not have been executed when validation fails");
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableValueType_WhenZeroValueProvided()
+    {
+        // Issue #67033: When ?id=0 is explicitly provided, validation should PASS (not fail with 400)
+        // This is different from "no query param" case where model binding produces default value
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] int? id) =>
+        {
+            handlerExecuted = true;
+            return $"Hey {id}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        // Explicitly set ?id=0 - this is a VALID value, not "no value provided"
+        httpContext.Request.QueryString = new QueryString("?id=0");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Validation should PASS when 0 is explicitly provided
+        // The [Required] attribute should validate 0 as a valid value
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted, "Handler should have been executed when validation passes");
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableValueType_WhenValidValueProvided()
+    {
+
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] int? id) =>
+        {
+            handlerExecuted = true;
+            return $"Hey {id}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString("?id=1");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Validation should pass when valid value provided
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableLongType_WhenValidValueProvided()
+    {
+        // Tests long? parameter type
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] long? id) =>
+        {
+            handlerExecuted = true;
+            return $"Hey {id}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString("?id=123");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableBoolType_WhenValidValueProvided()
+    {
+        // Tests bool? parameter type - default is false, should be treated as null for validation
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] bool? flag) =>
+        {
+            handlerExecuted = true;
+            return $"Flag: {flag}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString("?flag=true");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableDateTimeType_WhenValidValueProvided()
+    {
+        // Tests DateTime? parameter type
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] DateTime? dt) =>
+        {
+            handlerExecuted = true;
+            return $"DateTime: {dt}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString("?dt=2024-01-15");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableDecimalType_WhenValidValueProvided()
+    {
+        // Tests decimal? parameter type
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] decimal? amount) =>
+        {
+            handlerExecuted = true;
+            return $"Amount: {amount}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString("?amount=99.99");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableGuidType_WhenValidValueProvided()
+    {
+        // Tests Guid? parameter type
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+        var testGuid = Guid.NewGuid();
+
+        builder.MapGet("/test", ([Required] Guid? guid) =>
+        {
+            handlerExecuted = true;
+            return $"Guid: {guid}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString($"?guid={testGuid}");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_PassesForNullableStringType_WhenValidValueProvided()
+    {
+        // Tests string? (nullable reference type) parameter
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", ([Required] string? name) =>
+        {
+            handlerExecuted = true;
+            return $"Name: {name ?? "null"}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString("?name=test");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_SkipsForNonNullableType_WithNullArgument()
+    {
+        // Non-nullable types with null should skip validation (bound by model binding)
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", (int id) =>
+        {
+            handlerExecuted = true;
+            return $"Id: {id}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        // No query string - model binding will fail for non-nullable int
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        // Binding failure, not validation
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        Assert.False(handlerExecuted);
+    }
+
+    [Fact]
+    public async Task Validation_RunsForMultipleNullableParameters()
+    {
+        // Tests multiple nullable parameters on same endpoint
+        var services = new ServiceCollection().AddSingleton(LoggerFactory);
+        services.AddValidation();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+        var handlerExecuted = false;
+
+        builder.MapGet("/test", (int? id, long? bigId, string? name) =>
+        {
+            handlerExecuted = true;
+            return $"id: {id}, bigId: {bigId}, name: {name ?? "null"}";
+        });
+
+        var dataSource = GetBuilderEndpointDataSource(builder);
+        var endpoint = Assert.Single(dataSource.Endpoints);
+
+        var httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+        httpContext.Request.QueryString = new QueryString("?id=1&bigId=2&name=test");
+
+        await endpoint.RequestDelegate!(httpContext);
+
+        Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
+        Assert.True(handlerExecuted);
     }
 
     class MyService { }
