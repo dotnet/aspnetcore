@@ -80,7 +80,7 @@ public class ClientValidationTest : ClientValidationTestBase
         Assert.Single(Browser.FindElements(By.CssSelector("form blazor-client-validation-data")));
 
         var json = (string)((IJavaScriptExecutor)Browser).ExecuteScript(
-            "return document.querySelector('blazor-client-validation-data').textContent;");
+            "return document.querySelector('blazor-client-validation-data').getAttribute('data-rules');");
 
         using var document = JsonDocument.Parse(json);
         var fields = document.RootElement.GetProperty("fields").EnumerateArray().ToList();

@@ -80,7 +80,9 @@ internal sealed class ClientValidationData : IComponent
         _handle.Render(builder =>
         {
             builder.OpenElement(0, "blazor-client-validation-data");
-            builder.AddMarkupContent(1, json);
+            // The rules are carried in the data-rules attribute, not as element content, so the
+            // element renders nothing at all in the DOM.
+            builder.AddAttribute(1, "data-rules", json);
             builder.CloseElement();
         });
         return Task.CompletedTask;

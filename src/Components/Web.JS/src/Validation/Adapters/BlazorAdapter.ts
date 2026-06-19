@@ -7,6 +7,11 @@ import { ValidatableElement } from '../ValidationTypes';
 
 export const ClientValidationElementName = 'blazor-client-validation-data';
 
+// The attribute on the carrier element that holds the serialized validation rules. The payload
+// lives in an attribute (not text content) so the carrier element renders nothing - no CSS or
+// hidden attribute is needed to keep it out of the visible page.
+const ClientValidationRulesAttributeName = 'data-rules';
+
 interface ClientValidationFormDescriptor {
   fields: ClientValidationFieldDescriptor[];
 }
@@ -78,7 +83,7 @@ export function defineBlazorClientValidationDataElement(
         form.setAttribute('novalidate', '');
       }
 
-      const payload = this.textContent || '';
+      const payload = this.getAttribute(ClientValidationRulesAttributeName) || '';
       if (this.appliedPayload === payload) {
         // Rules unchanged - leave the existing registration and live error display intact.
         return;
