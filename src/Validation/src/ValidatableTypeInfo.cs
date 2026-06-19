@@ -173,17 +173,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
-        var typeValidationTask = ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
-        if (!typeValidationTask.IsCompleted)
-        {
-            localValidationTasks ??= new();
-            localValidationTasks.Add(typeValidationTask);
-        }
-
-        if (localValidationTasks is not null)
-        {
-            await Task.WhenAll(localValidationTasks);
-        }
+        await ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
 
         // If any type-level attribute errors were found, return early
         if (context.CurrentContextErrorCount > originalErrorCount)
