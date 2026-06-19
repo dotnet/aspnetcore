@@ -140,18 +140,18 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
-        var originalErrorCount = context.CurrentContextErrorCount;
+        var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
         // First validate direct members
         var originalState = context.CaptureMutableState();
-        List<Task>? localValidationTasks = await ValidateMembers(value, context, originalState, localValidationTasks: null, cancellationToken);
+        (List<Task>? localValidationTasks, List<ValidateContext>? clonedContexts) = await ValidateMembers(value, context, originalState, localValidationTasks: null, clonedContexts: null, cancellationToken);
 
         var actualType = value.GetType();
 
         // Then validate inherited members
         foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
         {
-            localValidationTasks = await superTypeInfo.ValidateMembers(value, context, originalState, localValidationTasks, cancellationToken);
+            (localValidationTasks, clonedContexts) = await superTypeInfo.ValidateMembers(value, context, originalState, localValidationTasks, clonedContexts, cancellationToken);
         }
 
         if (localValidationTasks is not null)
@@ -159,8 +159,31 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             await Task.WhenAll(localValidationTasks);
         }
 
+        var currentCount = context.ValidationErrors?.Count ?? 0;
+        if (clonedContexts is not null)
+        {
+            foreach (var clonedContext in clonedContexts)
+            {
+                if (clonedContext.ValidationErrors is not null)
+                {
+                    foreach (var validationError in clonedContext.ValidationErrors)
+                    {
+                        currentCount++;
+                        // Event is cloned and was already raised when the error got added to the cloned context.
+                        // We could avoid cloning the event so that cloned context never have event subscribers.
+                        // However, that will mean we need to store more information that are needed by
+                        // the event in the dictionary.
+                        // Note that the dictionary is a public API.
+                        // Maybe it actually makes sense to re-consider the public API shape and if the additional
+                        // information are needed?
+                        context.AddValidationErrorSuppressEvent(validationError.Key, validationError.Value);
+                    }
+                }
+            }
+        }
+
         // If any property-level validation errors were found, return early
-        if (context.CurrentContextErrorCount > originalErrorCount)
+        if (currentCount > originalErrorCount)
         {
             return;
         }
@@ -171,7 +194,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         await ValidateTypeAttributesAsync(value, context, displayName, cancellationToken);
 
         // If any type-level attribute errors were found, return early
-        if (context.CurrentContextErrorCount > originalErrorCount)
+        currentCount = context.ValidationErrors?.Count ?? 0;
+        if (currentCount > originalErrorCount)
         {
             return;
         }
@@ -180,33 +204,48 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
     }
 
-    private async Task<List<Task>?> ValidateMembers(
+    private async Task<(List<Task>?, List<ValidateContext>?)> ValidateMembers(
         object value,
         ValidateContext context,
         ValidateContextMutableState originalState,
         List<Task>? localValidationTasks,
+        List<ValidateContext>? clonedContexts,
         CancellationToken cancellationToken)
     {
-        // var needsClone = localValidationTasks is not null;
+        var needsClone = localValidationTasks is not null;
         for (var i = 0; i < _membersCount; i++)
         {
-            // var possiblyCloned = needsClone ? context.CopyWithState(originalState) : context;
-            var possiblyCloned = context.CopyWithState(originalState);
-            var task = Members[i].ValidateAsync(value, possiblyCloned, cancellationToken);
-            if (!task.IsCompleted)
+            var possiblyCloned = needsClone ? context.CopyWithState(originalState) : context;
+            if (needsClone)
             {
-                // needsClone = true;
-                localValidationTasks ??= new();
-                localValidationTasks.Add(task);
+                (clonedContexts ??= new()).Add(possiblyCloned);
             }
-            else
+
+            needsClone = false;
+
+            try
             {
-                // If the task completed as faulted, we want to ensure the exception isn't swallowed.
-                await task;
+                var task = Members[i].ValidateAsync(value, possiblyCloned, cancellationToken);
+                if (!task.IsCompletedSuccessfully)
+                {
+                    needsClone = true;
+                    localValidationTasks ??= new();
+                    localValidationTasks.Add(task);
+                }
+                else
+                {
+                    // If the task completed as faulted, we want to ensure the exception isn't swallowed.
+                    await task;
+                }
+            }
+            catch (Exception ex)
+            {
+                localValidationTasks ??= new();
+                localValidationTasks.Add(Task.FromException(ex));
             }
         }
 
-        return localValidationTasks;
+        return (localValidationTasks, clonedContexts);
     }
 
     private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)

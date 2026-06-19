@@ -13,22 +13,18 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors;
-    private int _currentContextErrorCount;
-    private readonly ValidateContext? _parentContext;
+    // TODO: Make lazy.
+    private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors = new();
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
     /// </summary>
     public ValidateContext()
     {
-        _validationErrors = new();
     }
 
     internal ValidateContext(ValidateContext original, ValidateContextMutableState state)
     {
-        _validationErrors = original._validationErrors;
-        _parentContext = original;
         CurrentDepth = state.Depth;
         CurrentValidationPath = state.Path;
 
@@ -102,12 +98,6 @@ public sealed class ValidateContext
     /// </summary>
     public event Action<ValidationErrorContext>? OnValidationError;
 
-    /// <summary>
-    /// Determines whether the current ValidateContext produced any errors.
-    /// This is different from <see cref="ValidationErrors"/> which might contain errors from validating other sub-trees.
-    /// </summary>
-    internal int CurrentContextErrorCount => _currentContextErrorCount;
-
     internal ValidateContext CopyWithState(ValidateContextMutableState state)
     {
         return new ValidateContext(this, state)
@@ -115,12 +105,6 @@ public sealed class ValidateContext
             ValidationOptions = this.ValidationOptions,
             ValidationContext = CloneValidationContextWithMutableState(state),
         };
-    }
-
-    private void InformValidationError()
-    {
-        Interlocked.Increment(ref _currentContextErrorCount);
-        _parentContext?.InformValidationError();
     }
 
     internal ValidateContextMutableState CaptureMutableState()
@@ -138,15 +122,18 @@ public sealed class ValidateContext
     /// <param name="validationErrorContext"></param>
     public void AddValidationError(ValidationErrorContext validationErrorContext)
     {
-        var existingErrors = (ConcurrentQueue<string>)_validationErrors.GetOrAdd(validationErrorContext.Path, static _ => new ConcurrentQueue<string>());
-        foreach (var error in validationErrorContext.Errors)
+        AddValidationErrorSuppressEvent(validationErrorContext.Path, validationErrorContext.Errors);
+
+        OnValidationError?.Invoke(validationErrorContext);
+    }
+
+    internal void AddValidationErrorSuppressEvent(string path, IEnumerable<string> errors)
+    {
+        var existingErrors = (ConcurrentQueue<string>)_validationErrors.GetOrAdd(path, static _ => new ConcurrentQueue<string>());
+        foreach (var error in errors)
         {
             existingErrors.Enqueue(error);
         }
-
-        InformValidationError();
-
-        OnValidationError?.Invoke(validationErrorContext);
     }
 
     internal string? ResolveAttributeErrorMessage(

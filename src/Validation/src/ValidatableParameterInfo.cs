@@ -142,6 +142,8 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             var validationOptions = context.ValidationOptions;
 
             List<Task>? tasks = null;
+            List<ValidateContext>? clonedContexts = null;
+
             var nextUseNeedsClone = false;
 
             // This is a small struct, so we shouldn't have a perf concern here.
@@ -161,19 +163,31 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
                     if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
                         var possiblyClonedContext = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
+                        if (nextUseNeedsClone)
+                        {
+                            (clonedContexts ??= new()).Add(possiblyClonedContext);
+                        }
+
                         nextUseNeedsClone = false;
                         possiblyClonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                             ? $"{Name}[{index}]"
                             : $"{currentPrefix}.{Name}[{index}]";
-                        var enumItemTask = validatableType.ValidateAsync(item, possiblyClonedContext, cancellationToken);
-                        if (enumItemTask.IsCompleted)
+                        try
                         {
-                            await enumItemTask;
+                            var enumItemTask = validatableType.ValidateAsync(item, possiblyClonedContext, cancellationToken);
+                            if (enumItemTask.IsCompletedSuccessfully)
+                            {
+                                await enumItemTask;
+                            }
+                            else
+                            {
+                                nextUseNeedsClone = true;
+                                (tasks ??= new()).Add(enumItemTask);
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            nextUseNeedsClone = true;
-                            (tasks ??= new()).Add(enumItemTask);
+                            (tasks ??= new()).Add(Task.FromException(ex));
                         }
                     }
                 }
@@ -183,6 +197,27 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             if (tasks is not null)
             {
                 await Task.WhenAll(tasks);
+            }
+
+            if (clonedContexts is not null)
+            {
+                foreach (var clonedContext in clonedContexts)
+                {
+                    if (clonedContext.ValidationErrors is not null)
+                    {
+                        foreach (var validationError in clonedContext.ValidationErrors)
+                        {
+                            // Event is cloned and was already raised when the error got added to the cloned context.
+                            // We could avoid cloning the event so that cloned context never have event subscribers.
+                            // However, that will mean we need to store more information that are needed by
+                            // the event in the dictionary.
+                            // Note that the dictionary is a public API.
+                            // Maybe it actually makes sense to re-consider the public API shape and if the additional
+                            // information are needed?
+                            context.AddValidationErrorSuppressEvent(validationError.Key, validationError.Value);
+                        }
+                    }
+                }
             }
         }
         // If not enumerable, validate the single value

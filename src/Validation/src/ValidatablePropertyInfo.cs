@@ -178,7 +178,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 var currentPrefix = context.CurrentValidationPath;
 
                 List<Task>? tasks = null;
-                //var nextUseNeedsClone = false;
+                List<ValidateContext>? clonedContexts = null;
+
+                var nextUseNeedsClone = false;
 
                 var originalState = context.CaptureMutableState();
                 foreach (var item in enumerable)
@@ -188,19 +190,31 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                         var itemType = item.GetType();
                         if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            //var clonedContextForEnumerable = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
-                            var clonedContextForEnumerable = context.CopyWithState(originalState);
-                            //nextUseNeedsClone = false;
-                            clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
-                            var task = validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
-                            if (task.IsCompleted)
+                            var clonedContextForEnumerable = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
+                            if (nextUseNeedsClone)
                             {
-                                await task;
+                                (clonedContexts ??= new()).Add(clonedContextForEnumerable);
                             }
-                            else
+
+                            nextUseNeedsClone = false;
+                            clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                            try
                             {
-                                // nextUseNeedsClone = true;
-                                (tasks ??= new()).Add(task);
+                                var task = validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
+
+                                if (task.IsCompletedSuccessfully)
+                                {
+                                    await task;
+                                }
+                                else
+                                {
+                                    nextUseNeedsClone = true;
+                                    (tasks ??= new()).Add(task);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                (tasks ??= new()).Add(Task.FromException(ex));
                             }
                         }
                     }
@@ -211,6 +225,27 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 if (tasks is not null)
                 {
                     await Task.WhenAll(tasks);
+                }
+
+                if (clonedContexts is not null)
+                {
+                    foreach (var clonedContext in clonedContexts)
+                    {
+                        if (clonedContext.ValidationErrors is not null)
+                        {
+                            foreach (var validationError in clonedContext.ValidationErrors)
+                            {
+                                // Event is cloned and was already raised when the error got added to the cloned context.
+                                // We could avoid cloning the event so that cloned context never have event subscribers.
+                                // However, that will mean we need to store more information that are needed by
+                                // the event in the dictionary.
+                                // Note that the dictionary is a public API.
+                                // Maybe it actually makes sense to re-consider the public API shape and if the additional
+                                // information are needed?
+                                context.AddValidationErrorSuppressEvent(validationError.Key, validationError.Value);
+                            }
+                        }
+                    }
                 }
 
                 context.CurrentValidationPath = currentPrefix;
