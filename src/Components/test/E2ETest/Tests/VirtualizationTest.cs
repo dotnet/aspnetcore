@@ -1190,7 +1190,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
         // At scrollTop=0, the natural floor prevents native anchoring from compensating — new items
-        // appear at the top and old items shift down. This is the default AnchorMode.Beginning behavior.
+        // appear at the top and old items shift down. This is the default AnchorMode.Start behavior.
         // In contrast, AnchorMode.None compensates scrollTop so old items stay in view.
         var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         Assert.True(scrollTopAfter < 50,
@@ -2673,7 +2673,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -2699,7 +2699,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_AppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_AppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -2724,7 +2724,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_SmallAppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_SmallAppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -2752,7 +2752,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_MidList_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -3082,7 +3082,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3155,7 +3155,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_PrependAfterLeavingTop_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_PrependAfterLeavingTop_DoesNotReengage(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3190,7 +3190,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3387,7 +3387,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_WindowScroll_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3408,7 +3408,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_WindowScroll_Beginning_AppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_AppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -3429,7 +3429,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_WindowScroll_Beginning_MidList_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -4408,7 +4408,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void ScrollToItem_AnchorBeginning_AtTop_LandsAtTarget()
+    public void ScrollToItem_AnchorStart_AtTop_LandsAtTarget()
     {
         // Anchor restore must NOT fight an active scroll.
         MountAnchorModeForScrollToItem();
