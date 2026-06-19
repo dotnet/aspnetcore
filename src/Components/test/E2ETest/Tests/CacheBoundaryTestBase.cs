@@ -26,8 +26,6 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     {
     }
 
-    public override Task InitializeAsync() => InitializeAsync(BrowserFixture.StreamingContext);
-
     protected override void InitializeAsyncCore()
     {
         ConfigureServerArguments();
@@ -115,7 +113,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     public void CacheBoundaryInLoopUsesVaryByForDistinctEntries()
     {
         Navigate(TestUrl("cache-component"));
-        var loopItems = Browser.FindElement(By.Id("test-5")).FindElements(By.CssSelector(".loop-item"));
+        var loopItems = Browser.FindElement(By.Id("test-4")).FindElements(By.CssSelector(".loop-item"));
         Assert.Equal(3, loopItems.Count);
 
         // Each iteration should have its own distinct cached value
@@ -132,7 +130,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
         {
             var index = i;
             Browser.Equal(firstRenderValues[index], () =>
-                Browser.FindElement(By.Id("test-5"))
+                Browser.FindElement(By.Id("test-4"))
                     .FindElements(By.CssSelector(".loop-item"))[index]
                     .FindElement(By.CssSelector(".cached-value")).Text);
         }
@@ -142,23 +140,23 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     public void CacheBoundaryMultipleHolesOfSameType_PreserveCorrectOrder()
     {
         Navigate(TestUrl("cache-component"));
-        Browser.Equal("first", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
-        Browser.Equal("second", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
-        var cachedContent = Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text;
+        Browser.Equal("first", () => Browser.FindElement(By.Id("test-5")).FindElement(By.CssSelector(".hole-0")).Text);
+        Browser.Equal("second", () => Browser.FindElement(By.Id("test-5")).FindElement(By.CssSelector(".hole-1")).Text);
+        var cachedContent = Browser.FindElement(By.Id("test-5")).FindElement(By.CssSelector(".cached-content")).Text;
 
         // Cache hit — holes with same (TypeName, Sequence) must not be swapped
         Navigate(TestUrl("cache-component"));
-        Browser.Equal(cachedContent, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-content")).Text);
-        Browser.Equal("first", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-0")).Text);
-        Browser.Equal("second", () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".hole-1")).Text);
+        Browser.Equal(cachedContent, () => Browser.FindElement(By.Id("test-5")).FindElement(By.CssSelector(".cached-content")).Text);
+        Browser.Equal("first", () => Browser.FindElement(By.Id("test-5")).FindElement(By.CssSelector(".hole-0")).Text);
+        Browser.Equal("second", () => Browser.FindElement(By.Id("test-5")).FindElement(By.CssSelector(".hole-1")).Text);
     }
 
     [Fact]
     public void ReusableComponentWithCacheBoundary_UsedTwice_SharesOneCacheEntry()
     {
         Navigate(TestUrl("cache-component"));
-        Browser.Exists(By.Id("test-9"));
-        Browser.Equal(2, () => Browser.FindElement(By.Id("test-9")).FindElements(By.CssSelector(".panel-content")).Count);
+        Browser.Exists(By.Id("test-6"));
+        Browser.Equal(2, () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".panel-content")).Count);
 
         // Cold render: each instance rendered its own content.
         Assert.Equal(new[] { "alpha", "beta" }, GetPanelTexts(".panel-content"));
@@ -167,8 +165,8 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
         // Warm reload: both boundaries share the one cached entry, so both show the creator's cached
         // content and the identical cached guid.
         Navigate(TestUrl("cache-component"));
-        Browser.Exists(By.Id("test-9"));
-        Browser.Equal(2, () => Browser.FindElement(By.Id("test-9")).FindElements(By.CssSelector(".panel-content")).Count);
+        Browser.Exists(By.Id("test-6"));
+        Browser.Equal(2, () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".panel-content")).Count);
 
         Browser.Equal(new[] { "alpha", "alpha" }, () => GetPanelTexts(".panel-content").ToArray());
         Assert.Equal(new[] { creatorGuid, creatorGuid }, GetPanelTexts(".panel-guid"));
@@ -178,7 +176,7 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     public void CacheBoundaryCachesHardcodedHole()
     {
         Navigate(TestUrl("cache-component"));
-        var panel = Browser.FindElement(By.Id("test-10"));
+        var panel = Browser.FindElement(By.Id("test-7"));
         var staticGuid = panel.FindElement(By.CssSelector(".panel-static")).Text;
         var holeGuid = panel.FindElement(By.CssSelector(".hardcoded-hole")).Text;
         Assert.NotEqual(staticGuid, holeGuid);
@@ -186,12 +184,35 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
         // Warm reload: the wrapper's static output (emitted around the hardcoded hole) is served from
         // the cache, while the hole itself re-renders fresh on every request.
         Navigate(TestUrl("cache-component"));
-        Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".panel-static")).Text);
-        Browser.NotEqual(holeGuid, () => Browser.FindElement(By.Id("test-10")).FindElement(By.CssSelector(".hardcoded-hole")).Text);
+        Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-7")).FindElement(By.CssSelector(".panel-static")).Text);
+        Browser.NotEqual(holeGuid, () => Browser.FindElement(By.Id("test-7")).FindElement(By.CssSelector(".hardcoded-hole")).Text);
+    }
+
+    [Fact]
+    public void CacheBoundaryTreatsStreamingChildAsHole()
+    {
+        Navigate(TestUrl("cache-component"));
+        var streamingGuid = Browser.Exists(By.CssSelector("#test-8 .streaming-hole")).Text;
+        var staticGuid = Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-static")).Text;
+        Assert.NotEqual(staticGuid, streamingGuid);
+
+        Navigate(TestUrl("cache-component"));
+        Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-static")).Text);
+        Browser.NotEqual(streamingGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".streaming-hole")).Text);
+    }
+
+    [Fact]
+    public void CacheBoundaryInsideStreamingComponent_IsCached()
+    {
+        Navigate(TestUrl("cache-component"));
+        var cachedGuid = Browser.Exists(By.CssSelector("#test-9 .stream-cached")).Text;
+
+        Navigate(TestUrl("cache-component"));
+        Browser.Equal(cachedGuid, () => Browser.FindElement(By.Id("test-9")).FindElement(By.CssSelector(".stream-cached")).Text);
     }
 
     private List<string> GetPanelTexts(string selector)
-        => Browser.FindElement(By.Id("test-9"))
+        => Browser.FindElement(By.Id("test-6"))
             .FindElements(By.CssSelector(selector))
             .Select(panel => panel.Text)
             .ToList();

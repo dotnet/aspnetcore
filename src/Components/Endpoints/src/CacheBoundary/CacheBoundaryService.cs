@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed partial class CacheBoundaryService
 {
-    private static readonly object _inFlightCreatorKeysItemKey = new();
+    private static readonly object _inFlightResolutionsItemKey = new();
 
     private static readonly JsonSerializerOptions _jsonOptions = ServerComponentSerializationSettings.JsonSerializationOptions;
     private static readonly ComponentParametersTypeCache _parametersTypeCache = new();
@@ -72,17 +72,18 @@ internal sealed partial class CacheBoundaryService
         };
 
         // Handles multiple CacheBoundary instances in the same request resolving to the same key (e.g. a
-        // component rendered twice, or a loop). Only one creates the cache entry; any duplicate in the
-        // same request renders fresh instead of deadlocking on the creator, then both hit the cache on
-        // later requests.
-        var inFlightCreatorKeys = GetInFlightCreatorKeys(httpContext);
-        if (inFlightCreatorKeys.Contains(key))
+        // component rendered twice, or a loop).
+        var resolutions = GetInFlightResolutions(httpContext);
+        if (resolutions.TryGetValue(key, out var existingResolution))
         {
-            Log.DuplicateBoundaryRenderingFresh(_logger, key);
+            await ApplyDuplicateResolutionAsync(state, key, existingResolution);
             return state;
         }
 
-        await ResolveOrBeginCreateAsync(boundary, state, inFlightCreatorKeys, httpContext.RequestAborted);
+        var resolution = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        resolutions[key] = resolution.Task;
+
+        await ResolveOrBeginCreateAsync(boundary, state, resolution, httpContext.RequestAborted);
         return state;
     }
 
@@ -209,7 +210,31 @@ internal sealed partial class CacheBoundaryService
         return result;
     }
 
-    private async Task ResolveOrBeginCreateAsync(CacheBoundary boundary, CacheBoundaryRenderState state, HashSet<string> inFlightCreatorKeys, CancellationToken cancellationToken)
+    private async Task ApplyDuplicateResolutionAsync(CacheBoundaryRenderState state, string key, Task<string?> resolution)
+    {
+        string? cachedJson;
+        try
+        {
+            cachedJson = await resolution;
+        }
+        catch
+        {
+            Log.DuplicateBoundaryRenderingFresh(_logger, key);
+            return;
+        }
+
+        if (cachedJson is not null && DeserializeCachedContent(cachedJson) is { } cachedContent)
+        {
+            state.IsCacheHit = true;
+            state.Content = cachedContent;
+        }
+        else
+        {
+            Log.DuplicateBoundaryRenderingFresh(_logger, key);
+        }
+    }
+
+    private async Task ResolveOrBeginCreateAsync(CacheBoundary boundary, CacheBoundaryRenderState state, TaskCompletionSource<string?> resolution, CancellationToken cancellationToken)
     {
         var captureCompletion = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
         var factoryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -223,30 +248,41 @@ internal sealed partial class CacheBoundaryService
             Priority = boundary.Priority,
         };
 
-        var inflight = _store.GetOrCreateAsync(
-            state.Key,
-            async ct =>
-            {
-                inFlightCreatorKeys.Add(state.Key);
-                factoryStarted.TrySetResult();
-                return await captureCompletion.Task.WaitAsync(ct);
-            },
-            options,
-            cancellationToken).AsTask();
+        try
+        {
+            var inflight = _store.GetOrCreateAsync(
+                state.Key,
+                async ct =>
+                {
+                    factoryStarted.TrySetResult();
+                    return await captureCompletion.Task.WaitAsync(ct);
+                },
+                options,
+                cancellationToken).AsTask();
 
-        // Wait for whichever happens first: the cached value is available or our factory got invoked (we're the creator).
-        var firstFinished = await Task.WhenAny(inflight, factoryStarted.Task);
-        if (firstFinished == inflight)
-        {
-            // Cache hit: we are not the creator, so clear the capture reservation so TryBeginWrite does
-            // not capture this boundary's output.
-            state.CaptureCompletion = null;
-            state.IsCacheHit = true;
-            state.Content = DeserializeCachedContent(await inflight) ?? boundary.ChildContent;
+            // Wait for whichever happens first: the cached value is available or our factory got invoked (we're the creator).
+            var firstFinished = await Task.WhenAny(inflight, factoryStarted.Task);
+            if (firstFinished == inflight)
+            {
+                // Cache hit: we are not the creator, so clear the capture reservation so TryBeginWrite does
+                // not capture this boundary's output. Duplicates reuse this same cached content.
+                state.CaptureCompletion = null;
+                state.IsCacheHit = true;
+                var cachedJson = await inflight;
+                state.Content = DeserializeCachedContent(cachedJson) ?? boundary.ChildContent;
+                resolution.TrySetResult(cachedJson);
+            }
+            else
+            {
+                // We are the creator: signal any same-key duplicates in this request to render fresh.
+                state.PendingStoreTask = inflight;
+                resolution.TrySetResult(null);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            state.PendingStoreTask = inflight;
+            resolution.TrySetException(ex);
+            throw;
         }
     }
 
@@ -290,15 +326,15 @@ internal sealed partial class CacheBoundaryService
         }
     }
 
-    private static HashSet<string> GetInFlightCreatorKeys(HttpContext httpContext)
+    private static Dictionary<string, Task<string?>> GetInFlightResolutions(HttpContext httpContext)
     {
-        if (httpContext.Items[_inFlightCreatorKeysItemKey] is not HashSet<string> keys)
+        if (httpContext.Items[_inFlightResolutionsItemKey] is not Dictionary<string, Task<string?>> resolutions)
         {
-            keys = new HashSet<string>(StringComparer.Ordinal);
-            httpContext.Items[_inFlightCreatorKeysItemKey] = keys;
+            resolutions = new Dictionary<string, Task<string?>>(StringComparer.Ordinal);
+            httpContext.Items[_inFlightResolutionsItemKey] = resolutions;
         }
 
-        return keys;
+        return resolutions;
     }
 
     private static partial class Log

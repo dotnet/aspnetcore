@@ -1,4 +1,4 @@
-﻿@page "/cache-component"
+@page "/cache-component"
 @page "/cache-component/vary"
 @using Microsoft.AspNetCore.Components.Forms
 
@@ -30,7 +30,7 @@
     </EditForm>
 </div>
 
-<div id="test-5">
+<div id="test-4">
     @for (var i = 0; i < 3; i++)
     {
         <div class="loop-item" data-index="@i">
@@ -41,7 +41,7 @@
     }
 </div>
 
-<div id="test-8">
+<div id="test-5">
     <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
         <p class="cached-content">@Guid.NewGuid()</p>
         @for (var i = 0; i < 2; i++)
@@ -53,15 +53,30 @@
     </CacheBoundary>
 </div>
 
-<div id="test-9">
+<div id="test-6">
     <ReusablePanel Label="alpha" />
     <ReusablePanel Label="beta" />
 </div>
 
-<div id="test-10">
+<div id="test-7">
     <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
         <HardcodedHolePanel />
     </CacheBoundary>
+</div>
+
+<div id="test-8">
+    <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
+        <p class="cached-static">@Guid.NewGuid()</p>
+        <StreamingHoleComponent CssClass="streaming-hole" />
+    </CacheBoundary>
+</div>
+
+<div id="test-9">
+    <StreamingCacheWrapper>
+        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
+            <p class="stream-cached">@Guid.NewGuid()</p>
+        </CacheBoundary>
+    </StreamingCacheWrapper>
 </div>
 
 @code
