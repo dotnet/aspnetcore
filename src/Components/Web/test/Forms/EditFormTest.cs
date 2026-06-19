@@ -301,14 +301,18 @@ public class EditFormTest
             OnValidSubmit = _ => validSubmitCount++,
         };
         await RenderAsyncRootAsync(rootComponent);
-        var pendingCts = new CancellationTokenSource();
+        CancellationToken capturedToken = default;
         var pendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var pendingRegistration = pendingCts.Token.Register(() => pendingTcs.TrySetCanceled(pendingCts.Token));
-        editContext.AddValidationTask(field, pendingTcs.Task, pendingCts);
+        editContext.TrackFieldValidation(field, token =>
+        {
+            capturedToken = token;
+            token.Register(() => pendingTcs.TrySetCanceled(token));
+            return pendingTcs.Task;
+        });
 
         await _testRenderer.DispatchEventAsync(GetSubmitEventHandlerId(), EventArgs.Empty).WaitAsync(DefaultAsyncTimeout);
 
-        Assert.True(pendingCts.IsCancellationRequested);
+        Assert.True(capturedToken.IsCancellationRequested);
         Assert.False(editContext.IsValidationPending(field));
         Assert.Equal(1, validator.FormValidationStartCount);
         Assert.Equal(1, validSubmitCount);

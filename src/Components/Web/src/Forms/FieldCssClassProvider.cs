@@ -19,8 +19,8 @@ public class FieldCssClassProvider
     /// optionally prefixed with <c>"modified "</c> when
     /// <see cref="EditContext.IsModified(in FieldIdentifier)"/> is <c>true</c>.
     /// <list type="bullet">
-    /// <item><c>"pending"</c> is emitted while an async validation task registered via
-    /// <see cref="EditContext.AddValidationTask"/> is in flight, and supersedes valid/invalid
+    /// <item><c>"pending"</c> is emitted while an async validation registered via
+    /// <see cref="EditContext.TrackFieldValidation"/> is in flight, and supersedes valid/invalid
     /// since the outcome is not yet known.</item>
     /// <item><c>"faulted"</c> is emitted when the field's last async validation threw a
     /// non-cancellation exception, and supersedes valid/invalid since the infrastructure

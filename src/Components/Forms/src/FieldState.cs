@@ -21,12 +21,13 @@ internal sealed class FieldState
     public bool IsModified { get; set; }
 
     // Async validation tracking: the currently-tracked async validation task for this field,
-    // the CancellationTokenSource that can cancel it, and whether the last task faulted.
-    // EditContext is dispatcher-bound (see remarks on EditContext), so plain reads/writes are
-    // sufficient — the dispatcher serializes access and provides the necessary happens-before.
+    // the CancellationTokenSource that can cancel it, and the exception (if any) from the last
+    // faulted task. EditContext is dispatcher-bound (see remarks on EditContext), so plain
+    // reads/writes are sufficient — the dispatcher serializes access and provides the necessary
+    // happens-before.
     internal Task? PendingValidationTask { get; set; }
     internal CancellationTokenSource? PendingValidationCts { get; set; }
-    internal bool IsValidationFaulted { get; set; }
+    internal Exception? ValidationException { get; set; }
 
     public IEnumerable<string> GetValidationMessages()
     {

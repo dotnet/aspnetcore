@@ -114,9 +114,7 @@ internal sealed class TestAsyncValidator : IDisposable
         var field = args.FieldIdentifier;
         var config = GetConfig(field);
         _store.Clear(field);
-        var cts = new CancellationTokenSource();
-        var task = RunValidationAsync(field, config, cts.Token);
-        _editContext.AddValidationTask(field, task, cts);
+        _editContext.TrackFieldValidation(field, token => RunValidationAsync(field, config, token));
     }
 
     private void OnValidationRequested(object sender, ValidationRequestedEventArgs args)
