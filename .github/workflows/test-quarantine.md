@@ -328,6 +328,34 @@ on:
 
         _ANSI = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
 
+        # Redact token-shaped strings from captured CI failure text before emitting it.
+        # Helix work-item upload steps log a live Azure DevOps bearer JWT on failure, which
+        # ends up inside the test stackTrace / [FAIL] console blocks we capture. GitHub's
+        # GITHUB_OUTPUT secret detector then skips the ENTIRE part1_data output
+        # ("Skip output 'part1_data' since it may contain secret"), starving the agent of all
+        # Part 1 data and producing a false noop. Scrubbing removes the trigger and avoids
+        # surfacing live tokens in the prompt and uploaded artifacts.
+        _SECRET_PATTERNS = [
+            re.compile(r'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}'),         # JWT (header.payload.signature)
+            re.compile(r'eyJ[A-Za-z0-9_-]{20,}'),                                               # bare JWT segment
+            re.compile(r'\bgh[pousr]_[A-Za-z0-9]{20,}\b'),                                      # GitHub token (ghp_/gho_/...)
+            re.compile(r'\bgithub_pat_[A-Za-z0-9_]{20,}\b'),                                    # GitHub fine-grained PAT
+            re.compile(r'(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{20,}'),                              # Authorization: Bearer <token>
+            re.compile(r'(?i)\bhttps?://[^/\s:@"]+:[^@\s/"]{6,}@'),                             # basic-auth credentials in URL
+            re.compile(r'(?i)[?&]sig=[A-Za-z0-9%/+_=-]{20,}'),                                  # Azure SAS signature
+            re.compile(r'(?i)\b(?:AccountKey|SharedAccessKey|AccessKey|Password|Pwd)=[^;\s"\']{12,}'),  # connection-string secret
+            re.compile(r'[A-Za-z0-9][A-Za-z0-9+/=_-]{51,}'),                                   # long high-entropy run (AzDO PAT, base64); must start with an alnum so it skips ===/--- separators
+        ]
+
+        def scrub_secrets(s):
+            # Replace token-shaped substrings with a placeholder. Patterns run in order;
+            # earlier, more specific rules win, and "[REDACTED]" is inert for later rules.
+            if not s:
+                return s
+            for _pat in _SECRET_PATTERNS:
+                s = _pat.sub("[REDACTED]", s)
+            return s
+
 
         def fetch(url, headers=None, retries=3, raw=False, timeout=120):
             hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
@@ -498,9 +526,9 @@ on:
                     if idx == 0 and not is_wi:
                         em, st = det.get("errorMessage"), det.get("stackTrace")
                         if em:
-                            e["error"] = em[:ERROR_CAP]
+                            e["error"] = scrub_secrets(em)[:ERROR_CAP]
                         if st:
-                            e["stack"] = st[:STACK_CAP]
+                            e["stack"] = scrub_secrets(st)[:STACK_CAP]
                 if is_wi:
                     e["probes"] = probes
             return agg
@@ -518,7 +546,7 @@ on:
                     j = i + 1
                     while j < len(lines) and not _MARKER.search(lines[j]):
                         j += 1
-                    blocks.append("\n".join(lines[i:j])[:BLOCK_CAP])
+                    blocks.append(scrub_secrets("\n".join(lines[i:j]))[:BLOCK_CAP])
                     i = j
                 else:
                     i += 1
@@ -780,7 +808,11 @@ on:
 
 
         if __name__ == "__main__":
-            js = main()
+            # Final safety net: scrub the fully serialized payload as well. GitHub skips the
+            # WHOLE part1_data output if any token pattern is detected, so a leaked secret in
+            # any field (not just the three scrubbed above) would starve the agent. Scrubbing
+            # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
+            js = scrub_secrets(main())
             gh_out = os.environ.get("GITHUB_OUTPUT")
             if not gh_out:
                 sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
