@@ -178,7 +178,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 var currentPrefix = context.CurrentValidationPath;
 
                 List<Task>? tasks = null;
-                var nextUseNeedsClone = false;
+                //var nextUseNeedsClone = false;
 
                 var originalState = context.CaptureMutableState();
                 foreach (var item in enumerable)
@@ -188,8 +188,9 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                         var itemType = item.GetType();
                         if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            var clonedContextForEnumerable = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
-                            nextUseNeedsClone = false;
+                            //var clonedContextForEnumerable = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
+                            var clonedContextForEnumerable = context.CopyWithState(originalState);
+                            //nextUseNeedsClone = false;
                             clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
                             var task = validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);
                             if (task.IsCompleted)
@@ -198,7 +199,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                             }
                             else
                             {
-                                nextUseNeedsClone = true;
+                                // nextUseNeedsClone = true;
                                 (tasks ??= new()).Add(task);
                             }
                         }
