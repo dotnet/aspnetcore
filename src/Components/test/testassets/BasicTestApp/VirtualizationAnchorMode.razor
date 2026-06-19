@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@InitialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@initialItemIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -38,7 +38,7 @@
         }
         else
         {
-            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialItemIndex="@InitialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
@@ -116,7 +116,7 @@
     private int providerCallIndex;
     private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
-    private int InitialItemIndex;
+    private int initialItemIndex;
     private int manualInitialIndex;
     private bool listLoaded = true;
     private int scrollTargetIndex = 200;
@@ -400,7 +400,7 @@
         listLoaded = false;
         StateHasChanged();
         await Task.Yield();
-        InitialItemIndex = manualInitialIndex;
+        initialItemIndex = manualInitialIndex;
         listLoaded = true;
     }
 
