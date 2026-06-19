@@ -12,7 +12,7 @@ internal class HeaderUserIdProvider : IUserIdProvider
     public string GetUserId(HubConnectionContext connection)
     {
         // Prefer the authenticated principal's NameIdentifier so the user id tracks the current
-        // token and changes when an auth refresh swaps in a principal with a different subject.
+        // token and changes when an authentication refresh swaps in a principal with a different subject.
         var nameIdentifier = connection.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (!string.IsNullOrEmpty(nameIdentifier))
         {

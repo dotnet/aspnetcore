@@ -17,7 +17,7 @@ public partial class HubConnectionTests
 {
     [Theory]
     [MemberData(nameof(TransportTypes))]
-    public async Task CanRefreshAuthAndContinueInvoking(HttpTransportType transportType)
+    public async Task CanRefreshAuthenticationAndContinueInvoking(HttpTransportType transportType)
     {
         await using (var server = await StartServer<Startup>())
         {
@@ -34,20 +34,20 @@ public partial class HubConnectionTests
                 {
                     options.AccessTokenProvider = AccessTokenProvider;
                 })
-                .WithAuthRefresh(o => o.EnableAutoRefresh = false)
+                .WithAuthenticationRefresh(o => o.EnableAutoRefresh = false)
                 .Build();
             try
             {
                 await hubConnection.StartAsync().DefaultTimeout();
 
-                var before = await hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.Echo), "hello").DefaultTimeout();
+                var before = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.Echo), "hello").DefaultTimeout();
                 Assert.Equal("hello", before);
 
-                var newTtl = await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                var newTtl = await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
                 Assert.NotNull(newTtl);
-                Assert.True(newTtl > 0, $"Expected a positive token lifetime but got {newTtl}.");
+                Assert.True(newTtl > TimeSpan.Zero, $"Expected a positive token lifetime but got {newTtl}.");
 
-                var after = await hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.Echo), "world").DefaultTimeout();
+                var after = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.Echo), "world").DefaultTimeout();
                 Assert.Equal("world", after);
             }
             catch (Exception ex)
@@ -83,26 +83,26 @@ public partial class HubConnectionTests
                 {
                     options.AccessTokenProvider = AccessTokenProvider;
                 })
-                .WithAuthRefresh(o => o.EnableAutoRefresh = false)
+                .WithAuthenticationRefresh(o => o.EnableAutoRefresh = false)
                 .Build();
             try
             {
                 await hubConnection.StartAsync().DefaultTimeout();
 
                 // Initial token has the scope claim, so the authorized method succeeds.
-                var result = await hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout();
+                var result = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.ScopeProtected)).DefaultTimeout();
                 Assert.Equal("ok", result);
 
                 // Refresh with a token that no longer carries the required claim.
                 includeScope = false;
-                await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
                 // The authorized method is now rejected by the server's policy.
                 await Assert.ThrowsAsync<HubException>(
-                    () => hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout());
+                    () => hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.ScopeProtected)).DefaultTimeout());
 
                 // An unauthorized method still works, proving the connection itself is alive.
-                var echo = await hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.Echo), "still here").DefaultTimeout();
+                var echo = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.Echo), "still here").DefaultTimeout();
                 Assert.Equal("still here", echo);
             }
             catch (Exception ex)
@@ -138,7 +138,7 @@ public partial class HubConnectionTests
                 {
                     options.AccessTokenProvider = AccessTokenProvider;
                 })
-                .WithAuthRefresh(o => o.EnableAutoRefresh = false)
+                .WithAuthenticationRefresh(o => o.EnableAutoRefresh = false)
                 .Build();
             try
             {
@@ -146,14 +146,14 @@ public partial class HubConnectionTests
 
                 // Initial token lacks the scope claim, so the authorized method is rejected.
                 await Assert.ThrowsAsync<HubException>(
-                    () => hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout());
+                    () => hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.ScopeProtected)).DefaultTimeout());
 
                 // Refresh with a token that now carries the required claim.
                 includeScope = true;
-                await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
                 // The authorized method now succeeds.
-                var result = await hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.ScopeProtected)).DefaultTimeout();
+                var result = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.ScopeProtected)).DefaultTimeout();
                 Assert.Equal("ok", result);
             }
             catch (Exception ex)
@@ -170,15 +170,15 @@ public partial class HubConnectionTests
 
     [Theory]
     [MemberData(nameof(TransportTypes))]
-    public async Task CanRefreshAuthAfterReconnect(HttpTransportType transportType)
+    public async Task CanRefreshAuthenticationAfterReconnect(HttpTransportType transportType)
     {
         bool ExpectedErrors(WriteContext writeContext)
         {
             return writeContext.LoggerName == typeof(HubConnection).FullName &&
                    (writeContext.EventId.Name == "ReconnectingWithError" ||
-                    // A stale one-shot auth-refresh timer may fire during the reconnect gap and
+                    // A stale one-shot authentication-refresh timer may fire during the reconnect gap and
                     // observe a non-active connection; this is logged and benign.
-                    writeContext.EventId.Name == "AuthRefreshFailed");
+                    writeContext.EventId.Name == "AuthenticationRefreshFailed");
         }
 
         await using (var server = await StartServer<Startup>(ExpectedErrors))
@@ -196,7 +196,7 @@ public partial class HubConnectionTests
                 {
                     options.AccessTokenProvider = AccessTokenProvider;
                 })
-                .WithAuthRefresh(o => o.EnableAutoRefresh = true)
+                .WithAuthenticationRefresh(o => o.EnableAutoRefresh = true)
                 .WithAutomaticReconnect()
                 .Build();
             try
@@ -219,7 +219,7 @@ public partial class HubConnectionTests
                 var initialConnectionId = hubConnection.ConnectionId;
 
                 // Refresh works on the original connection.
-                Assert.NotNull(await hubConnection.RefreshAuthAsync().DefaultTimeout());
+                Assert.NotNull(await hubConnection.RefreshAuthenticationAsync().DefaultTimeout());
 
                 // Force a reconnect.
                 hubConnection.OnServerTimeout();
@@ -229,12 +229,12 @@ public partial class HubConnectionTests
                 Assert.NotEqual(initialConnectionId, newConnectionId);
 
                 // Refresh must work against the freshly-established connection, proving the
-                // IAuthRefreshFeature was re-acquired (and the auto-refresh timer re-armed) on reconnect.
-                var newTtl = await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                // IAuthenticationRefreshFeature was re-acquired (and the auto-refresh timer re-armed) on reconnect.
+                var newTtl = await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
                 Assert.NotNull(newTtl);
-                Assert.True(newTtl > 0, $"Expected a positive token lifetime but got {newTtl}.");
+                Assert.True(newTtl > TimeSpan.Zero, $"Expected a positive token lifetime but got {newTtl}.");
 
-                var echo = await hubConnection.InvokeAsync<string>(nameof(AuthRefreshHub.Echo), "reconnected").DefaultTimeout();
+                var echo = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.Echo), "reconnected").DefaultTimeout();
                 Assert.Equal("reconnected", echo);
             }
             catch (Exception ex)
@@ -271,7 +271,7 @@ public partial class HubConnectionTests
                 {
                     options.AccessTokenProvider = AccessTokenProvider;
                 })
-                .WithAuthRefresh(o => o.EnableAutoRefresh = false)
+                .WithAuthenticationRefresh(o => o.EnableAutoRefresh = false)
                 .Build();
             try
             {
@@ -287,12 +287,12 @@ public partial class HubConnectionTests
                 await hubConnection.StartAsync().DefaultTimeout();
 
                 // Before refresh, the connection is reachable under the original user id.
-                await hubConnection.InvokeAsync(nameof(AuthRefreshHub.SendToUser), "userA", "before").DefaultTimeout();
+                await hubConnection.InvokeAsync(nameof(AuthenticationRefreshHub.SendToUser), "userA", "before").DefaultTimeout();
                 Assert.Equal("before", await received.Reader.ReadAsync().AsTask().DefaultTimeout());
 
                 // Refresh with a token carrying a different NameIdentifier, changing the UserIdentifier.
                 userName = "userB";
-                await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
                 await closedTcs.Task.DefaultTimeout();
                 Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);

@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Http.Connections;
 /// Metadata to identify the /refresh endpoint for HTTP connections, used to refresh
 /// authentication on an existing connection without reconnecting.
 /// </summary>
-public class AuthRefreshMetadata
+public class AuthenticationRefreshMetadata
 {
 }

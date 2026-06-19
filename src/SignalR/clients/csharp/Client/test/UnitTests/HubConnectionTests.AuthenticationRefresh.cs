@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
 public partial class HubConnectionTests
 {
-    public class AuthRefresh : VerifiableLoggedTest
+    public class AuthenticationRefresh : VerifiableLoggedTest
     {
         private static HubConnection BuildHubConnection(
             TestConnection connection,
@@ -42,20 +42,20 @@ public partial class HubConnectionTests
             return builder.Build();
         }
 
-        private static Timer GetAuthRefreshTimer(HubConnection hubConnection)
+        private static Timer GetAuthenticationRefreshTimer(HubConnection hubConnection)
         {
             var field = typeof(HubConnection).GetField("_authRefreshTimer", BindingFlags.NonPublic | BindingFlags.Instance);
             return (Timer)field.GetValue(hubConnection);
         }
 
-        private static TimeSpan GetLastAuthRefreshDelay(HubConnection hubConnection)
+        private static TimeSpan GetLastAuthenticationRefreshDelay(HubConnection hubConnection)
         {
-            var field = typeof(HubConnection).GetField("_lastAuthRefreshDelay", BindingFlags.NonPublic | BindingFlags.Instance);
+            var field = typeof(HubConnection).GetField("_lastAuthenticationRefreshDelay", BindingFlags.NonPublic | BindingFlags.Instance);
             return (TimeSpan)field.GetValue(hubConnection);
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncThrowsWhenConnectionNotActive()
+        public async Task RefreshAuthenticationAsyncThrowsWhenConnectionNotActive()
         {
             using (StartVerifiableLog())
             {
@@ -64,7 +64,7 @@ public partial class HubConnectionTests
                 try
                 {
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                        () => hubConnection.RefreshAuthAsync()).DefaultTimeout();
+                        () => hubConnection.RefreshAuthenticationAsync()).DefaultTimeout();
                     Assert.Contains("not active", ex.Message);
                 }
                 finally
@@ -76,7 +76,7 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncThrowsWhenFeatureMissing()
+        public async Task RefreshAuthenticationAsyncThrowsWhenFeatureMissing()
         {
             using (StartVerifiableLog())
             {
@@ -87,7 +87,7 @@ public partial class HubConnectionTests
                     await hubConnection.StartAsync().DefaultTimeout();
 
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                        () => hubConnection.RefreshAuthAsync()).DefaultTimeout();
+                        () => hubConnection.RefreshAuthenticationAsync()).DefaultTimeout();
                     Assert.Contains("HTTP-based connections", ex.Message);
                 }
                 finally
@@ -99,21 +99,21 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncInvokesFeatureAndReturnsTtl()
+        public async Task RefreshAuthenticationAsyncInvokesFeatureAndReturnsTtl()
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { NextTtlSeconds = 3600 };
+                var feature = new FakeAuthenticationRefreshFeature { NextTtl = TimeSpan.FromSeconds(3600) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
                 var hubConnection = BuildHubConnection(connection);
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    var ttl = await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                    var ttl = await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
-                    Assert.Equal(3600, ttl);
+                    Assert.Equal(TimeSpan.FromSeconds(3600), ttl);
                     Assert.Equal(1, feature.RefreshCallCount);
                 }
                 finally
@@ -125,21 +125,21 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncInvokesOnRefreshedCallback()
+        public async Task RefreshAuthenticationAsyncInvokesOnAuthenticationRefreshedCallback()
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { NextTtlSeconds = 1800 };
+                var feature = new FakeAuthenticationRefreshFeature { NextTtl = TimeSpan.FromSeconds(1800) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
-                AuthRefreshedContext capturedContext = null;
+                AuthenticationRefreshedContext capturedContext = null;
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o =>
+                    builder.WithAuthenticationRefresh(o =>
                     {
                         o.EnableAutoRefresh = false;
-                        o.OnRefreshed = ctx =>
+                        o.OnAuthenticationRefreshed = ctx =>
                         {
                             capturedContext = ctx;
                             return Task.CompletedTask;
@@ -149,11 +149,11 @@ public partial class HubConnectionTests
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
-                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                    await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
                     Assert.NotNull(capturedContext);
                     Assert.Same(hubConnection, capturedContext.HubConnection);
-                    Assert.Equal(1800, capturedContext.NewTokenLifetimeSeconds);
+                    Assert.Equal(TimeSpan.FromSeconds(1800), capturedContext.NewTokenLifetime);
                 }
                 finally
                 {
@@ -164,22 +164,22 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncInvokesOnRefreshFailedCallbackAndRethrows()
+        public async Task RefreshAuthenticationAsyncInvokesOnAuthenticationRefreshFailedCallbackAndRethrows()
         {
             using (StartVerifiableLog())
             {
                 var thrown = new InvalidOperationException("refresh boom");
-                var feature = new FakeAuthRefreshFeature { ExceptionToThrow = thrown };
+                var feature = new FakeAuthenticationRefreshFeature { ExceptionToThrow = thrown };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
-                AuthRefreshFailedContext capturedContext = null;
+                AuthenticationRefreshFailedContext capturedContext = null;
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o =>
+                    builder.WithAuthenticationRefresh(o =>
                     {
                         o.EnableAutoRefresh = false;
-                        o.OnRefreshFailed = ctx =>
+                        o.OnAuthenticationRefreshFailed = ctx =>
                         {
                             capturedContext = ctx;
                             return Task.CompletedTask;
@@ -191,7 +191,7 @@ public partial class HubConnectionTests
                     await hubConnection.StartAsync().DefaultTimeout();
 
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                        () => hubConnection.RefreshAuthAsync()).DefaultTimeout();
+                        () => hubConnection.RefreshAuthenticationAsync()).DefaultTimeout();
 
                     Assert.Same(thrown, ex);
                     Assert.NotNull(capturedContext);
@@ -207,24 +207,24 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncOnRefreshedCallbackExceptionIsSwallowed()
+        public async Task RefreshAuthenticationAsyncOnAuthenticationRefreshedCallbackExceptionIsSwallowed()
         {
             bool ExpectedErrors(WriteContext wc) =>
                 wc.LoggerName == typeof(HubConnection).FullName &&
-                wc.EventId.Name == "AuthRefreshCallbackFailed";
+                wc.EventId.Name == "AuthenticationRefreshCallbackFailed";
 
             using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
             {
-                var feature = new FakeAuthRefreshFeature { NextTtlSeconds = 1200 };
+                var feature = new FakeAuthenticationRefreshFeature { NextTtl = TimeSpan.FromSeconds(1200) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o =>
+                    builder.WithAuthenticationRefresh(o =>
                     {
                         o.EnableAutoRefresh = false;
-                        o.OnRefreshed = _ => throw new InvalidOperationException("callback boom");
+                        o.OnAuthenticationRefreshed = _ => throw new InvalidOperationException("callback boom");
                     });
                 });
                 try
@@ -232,8 +232,8 @@ public partial class HubConnectionTests
                     await hubConnection.StartAsync().DefaultTimeout();
 
                     // Should NOT throw - callback exception is logged & swallowed.
-                    var ttl = await hubConnection.RefreshAuthAsync().DefaultTimeout();
-                    Assert.Equal(1200, ttl);
+                    var ttl = await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
+                    Assert.Equal(TimeSpan.FromSeconds(1200), ttl);
                 }
                 finally
                 {
@@ -244,25 +244,25 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncOnRefreshFailedCallbackExceptionIsSwallowedAndOriginalRethrown()
+        public async Task RefreshAuthenticationAsyncOnAuthenticationRefreshFailedCallbackExceptionIsSwallowedAndOriginalRethrown()
         {
             bool ExpectedErrors(WriteContext wc) =>
                 wc.LoggerName == typeof(HubConnection).FullName &&
-                wc.EventId.Name == "AuthRefreshCallbackFailed";
+                wc.EventId.Name == "AuthenticationRefreshCallbackFailed";
 
             using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
             {
                 var original = new InvalidOperationException("refresh boom");
-                var feature = new FakeAuthRefreshFeature { ExceptionToThrow = original };
+                var feature = new FakeAuthenticationRefreshFeature { ExceptionToThrow = original };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o =>
+                    builder.WithAuthenticationRefresh(o =>
                     {
                         o.EnableAutoRefresh = false;
-                        o.OnRefreshFailed = _ => throw new InvalidOperationException("failed-callback boom");
+                        o.OnAuthenticationRefreshFailed = _ => throw new InvalidOperationException("failed-callback boom");
                     });
                 });
                 try
@@ -270,7 +270,7 @@ public partial class HubConnectionTests
                     await hubConnection.StartAsync().DefaultTimeout();
 
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                        () => hubConnection.RefreshAuthAsync()).DefaultTimeout();
+                        () => hubConnection.RefreshAuthenticationAsync()).DefaultTimeout();
 
                     Assert.Same(original, ex);
                 }
@@ -287,16 +287,16 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = 3600 };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromSeconds(3600) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection);
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.NotNull(GetAuthRefreshTimer(hubConnection));
+                    Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -311,19 +311,19 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = 3600 };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromSeconds(3600) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.EnableAutoRefresh = false);
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -344,7 +344,7 @@ public partial class HubConnectionTests
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -359,16 +359,16 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = 0 };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.Zero };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection);
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -383,16 +383,16 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = null };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = null };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection);
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -407,23 +407,23 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature
+                var feature = new FakeAuthenticationRefreshFeature
                 {
-                    InitialTokenLifetimeSeconds = 3600,
-                    NextTtlSeconds = 7200,
+                    InitialTokenLifetime = TimeSpan.FromSeconds(3600),
+                    NextTtl = TimeSpan.FromSeconds(7200),
                 };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection);
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
-                    var beforeTimer = GetAuthRefreshTimer(hubConnection);
+                    var beforeTimer = GetAuthenticationRefreshTimer(hubConnection);
                     Assert.NotNull(beforeTimer);
 
-                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
-                    var afterTimer = GetAuthRefreshTimer(hubConnection);
+                    await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
+                    var afterTimer = GetAuthenticationRefreshTimer(hubConnection);
 
                     Assert.NotNull(afterTimer);
                     Assert.NotSame(beforeTimer, afterTimer);
@@ -441,22 +441,22 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { NextTtlSeconds = 3600 };
+                var feature = new FakeAuthenticationRefreshFeature { NextTtl = TimeSpan.FromSeconds(3600) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.EnableAutoRefresh = false);
+                    builder.WithAuthenticationRefresh(o => o.EnableAutoRefresh = false);
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
 
-                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                    await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -471,20 +471,20 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = null };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = null };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                    builder.WithAuthenticationRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.NotNull(GetAuthRefreshTimer(hubConnection));
-                    Assert.Equal(TimeSpan.FromMinutes(20), GetLastAuthRefreshDelay(hubConnection));
+                    Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
+                    Assert.Equal(TimeSpan.FromMinutes(20), GetLastAuthenticationRefreshDelay(hubConnection));
                 }
                 finally
                 {
@@ -499,21 +499,21 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = 3600 };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromSeconds(3600) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                    builder.WithAuthenticationRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.NotNull(GetAuthRefreshTimer(hubConnection));
+                    Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
                     // Server TTL (3600s) minus the default 5 minute lead time wins over the 20 minute fallback.
-                    Assert.Equal(TimeSpan.FromSeconds(3600) - TimeSpan.FromMinutes(5), GetLastAuthRefreshDelay(hubConnection));
+                    Assert.Equal(TimeSpan.FromSeconds(3600) - TimeSpan.FromMinutes(5), GetLastAuthenticationRefreshDelay(hubConnection));
                 }
                 finally
                 {
@@ -528,20 +528,20 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = null };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = null };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromSeconds(5));
+                    builder.WithAuthenticationRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromSeconds(5));
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.NotNull(GetAuthRefreshTimer(hubConnection));
-                    Assert.Equal(TimeSpan.FromSeconds(30), GetLastAuthRefreshDelay(hubConnection));
+                    Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
+                    Assert.Equal(TimeSpan.FromSeconds(30), GetLastAuthenticationRefreshDelay(hubConnection));
                 }
                 finally
                 {
@@ -559,13 +559,13 @@ public partial class HubConnectionTests
                 var connection = new TestConnection();
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                    builder.WithAuthenticationRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -580,13 +580,13 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = null };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = null };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o =>
+                    builder.WithAuthenticationRefresh(o =>
                     {
                         o.EnableAutoRefresh = false;
                         o.FallbackRefreshInterval = TimeSpan.FromMinutes(20);
@@ -596,7 +596,7 @@ public partial class HubConnectionTests
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    Assert.Null(GetAuthRefreshTimer(hubConnection));
+                    Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -613,30 +613,30 @@ public partial class HubConnectionTests
             {
                 // Server never reports a token lifetime, so the fallback interval must keep the timer armed
                 // across refreshes rather than firing once and stopping.
-                var feature = new FakeAuthRefreshFeature
+                var feature = new FakeAuthenticationRefreshFeature
                 {
-                    InitialTokenLifetimeSeconds = null,
-                    NextTtlSeconds = null,
+                    InitialTokenLifetime = null,
+                    NextTtl = null,
                 };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                    builder.WithAuthenticationRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
-                    var beforeTimer = GetAuthRefreshTimer(hubConnection);
+                    var beforeTimer = GetAuthenticationRefreshTimer(hubConnection);
                     Assert.NotNull(beforeTimer);
 
-                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
-                    var afterTimer = GetAuthRefreshTimer(hubConnection);
+                    await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
+                    var afterTimer = GetAuthenticationRefreshTimer(hubConnection);
 
                     Assert.NotNull(afterTimer);
                     Assert.NotSame(beforeTimer, afterTimer);
-                    Assert.Equal(TimeSpan.FromMinutes(20), GetLastAuthRefreshDelay(hubConnection));
+                    Assert.Equal(TimeSpan.FromMinutes(20), GetLastAuthenticationRefreshDelay(hubConnection));
                 }
                 finally
                 {
@@ -651,26 +651,26 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature
+                var feature = new FakeAuthenticationRefreshFeature
                 {
-                    InitialTokenLifetimeSeconds = 3600,
-                    NextTtlSeconds = null,
+                    InitialTokenLifetime = TimeSpan.FromSeconds(3600),
+                    NextTtl = null,
                 };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection);
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
-                    var beforeTimer = GetAuthRefreshTimer(hubConnection);
+                    var beforeTimer = GetAuthenticationRefreshTimer(hubConnection);
                     Assert.NotNull(beforeTimer);
 
-                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                    await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
                     // No new TTL and no fallback interval means the timer is not re-armed; the existing
                     // one-shot timer is left in place (and will simply not fire again after it elapses).
-                    Assert.Same(beforeTimer, GetAuthRefreshTimer(hubConnection));
+                    Assert.Same(beforeTimer, GetAuthenticationRefreshTimer(hubConnection));
                 }
                 finally
                 {
@@ -685,26 +685,26 @@ public partial class HubConnectionTests
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature
+                var feature = new FakeAuthenticationRefreshFeature
                 {
-                    InitialTokenLifetimeSeconds = null,
-                    NextTtlSeconds = 7200,
+                    InitialTokenLifetime = null,
+                    NextTtl = TimeSpan.FromSeconds(7200),
                 };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection, builder =>
                 {
-                    builder.WithAuthRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
+                    builder.WithAuthenticationRefresh(o => o.FallbackRefreshInterval = TimeSpan.FromMinutes(20));
                 });
                 try
                 {
                     await hubConnection.StartAsync().DefaultTimeout();
 
-                    await hubConnection.RefreshAuthAsync().DefaultTimeout();
+                    await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
 
                     // The refresh returned a server TTL (7200s), which wins over the 20 minute fallback.
-                    Assert.Equal(TimeSpan.FromSeconds(7200) - TimeSpan.FromMinutes(5), GetLastAuthRefreshDelay(hubConnection));
+                    Assert.Equal(TimeSpan.FromSeconds(7200) - TimeSpan.FromMinutes(5), GetLastAuthenticationRefreshDelay(hubConnection));
                 }
                 finally
                 {
@@ -715,64 +715,64 @@ public partial class HubConnectionTests
         }
 
         [Fact]
-        public async Task DisposeDisposesAuthRefreshTimer()
+        public async Task DisposeDisposesAuthenticationRefreshTimer()
         {
             using (StartVerifiableLog())
             {
-                var feature = new FakeAuthRefreshFeature { InitialTokenLifetimeSeconds = 3600 };
+                var feature = new FakeAuthenticationRefreshFeature { InitialTokenLifetime = TimeSpan.FromSeconds(3600) };
                 var connection = new TestConnection();
-                connection.Features.Set<IAuthRefreshFeature>(feature);
+                connection.Features.Set<IAuthenticationRefreshFeature>(feature);
 
                 var hubConnection = BuildHubConnection(connection);
                 await hubConnection.StartAsync().DefaultTimeout();
-                Assert.NotNull(GetAuthRefreshTimer(hubConnection));
+                Assert.NotNull(GetAuthenticationRefreshTimer(hubConnection));
 
                 await hubConnection.DisposeAsync().DefaultTimeout();
                 await connection.DisposeAsync().DefaultTimeout();
 
-                Assert.Null(GetAuthRefreshTimer(hubConnection));
+                Assert.Null(GetAuthenticationRefreshTimer(hubConnection));
             }
         }
 
         [Fact]
-        public void WithAuthRefreshRegistersOptionsThroughDI()
+        public void WithAuthenticationRefreshRegistersOptionsThroughDI()
         {
             var builder = new HubConnectionBuilder().WithUrl("http://example.com");
-            builder.WithAuthRefresh(o =>
+            builder.WithAuthenticationRefresh(o =>
             {
                 o.EnableAutoRefresh = false;
                 o.RefreshBeforeExpiration = TimeSpan.FromMinutes(7);
             });
 
             var sp = builder.Services.BuildServiceProvider();
-            var options = sp.GetRequiredService<IOptions<AuthRefreshOptions>>().Value;
+            var options = sp.GetRequiredService<IOptions<AuthenticationRefreshOptions>>().Value;
 
             Assert.False(options.EnableAutoRefresh);
             Assert.Equal(TimeSpan.FromMinutes(7), options.RefreshBeforeExpiration);
         }
 
         [Fact]
-        public void WithAuthRefreshThrowsOnNullConfigure()
+        public void WithAuthenticationRefreshThrowsOnNullConfigure()
         {
             var builder = new HubConnectionBuilder().WithUrl("http://example.com");
-            Assert.Throws<ArgumentNullException>(() => builder.WithAuthRefresh(null));
+            Assert.Throws<ArgumentNullException>(() => builder.WithAuthenticationRefresh(null));
         }
 
-        private sealed class FakeAuthRefreshFeature : IAuthRefreshFeature
+        private sealed class FakeAuthenticationRefreshFeature : IAuthenticationRefreshFeature
         {
-            public int? InitialTokenLifetimeSeconds { get; set; }
-            public int? NextTtlSeconds { get; set; }
+            public TimeSpan? InitialTokenLifetime { get; set; }
+            public TimeSpan? NextTtl { get; set; }
             public Exception ExceptionToThrow { get; set; }
             public int RefreshCallCount { get; private set; }
 
-            public Task<int?> RefreshAuthAsync(CancellationToken cancellationToken = default)
+            public Task<TimeSpan?> RefreshAuthenticationAsync(CancellationToken cancellationToken = default)
             {
                 RefreshCallCount++;
                 if (ExceptionToThrow is not null)
                 {
-                    return Task.FromException<int?>(ExceptionToThrow);
+                    return Task.FromException<TimeSpan?>(ExceptionToThrow);
                 }
-                return Task.FromResult(NextTtlSeconds);
+                return Task.FromResult(NextTtl);
             }
         }
     }

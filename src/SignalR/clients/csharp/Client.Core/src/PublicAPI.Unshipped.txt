@@ -1,22 +1,22 @@
 #nullable enable
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.AuthRefreshOptions() -> void
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.EnableAutoRefresh.get -> bool
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.EnableAutoRefresh.set -> void
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.RefreshBeforeExpiration.get -> System.TimeSpan
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.RefreshBeforeExpiration.set -> void
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.FallbackRefreshInterval.get -> System.TimeSpan?
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.FallbackRefreshInterval.set -> void
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.OnRefreshed.get -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthRefreshedContext!, System.Threading.Tasks.Task!>?
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.OnRefreshed.set -> void
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.OnRefreshFailed.get -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthRefreshFailedContext!, System.Threading.Tasks.Task!>?
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions.OnRefreshFailed.set -> void
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshedContext
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshedContext.HubConnection.get -> Microsoft.AspNetCore.SignalR.Client.HubConnection!
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshedContext.NewTokenLifetimeSeconds.get -> int?
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshedContext.RefreshedAt.get -> System.DateTimeOffset
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshFailedContext
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshFailedContext.HubConnection.get -> Microsoft.AspNetCore.SignalR.Client.HubConnection!
-Microsoft.AspNetCore.SignalR.Client.AuthRefreshFailedContext.Exception.get -> System.Exception!
-Microsoft.AspNetCore.SignalR.Client.HubConnection.RefreshAuthAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int?>!
-static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAuthRefresh(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.Action<Microsoft.AspNetCore.SignalR.Client.AuthRefreshOptions!>! configure) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.AuthenticationRefreshOptions() -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.EnableAutoRefresh.get -> bool
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.EnableAutoRefresh.set -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.RefreshBeforeExpiration.get -> System.TimeSpan
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.RefreshBeforeExpiration.set -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.FallbackRefreshInterval.get -> System.TimeSpan?
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.FallbackRefreshInterval.set -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.OnAuthenticationRefreshed.get -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.OnAuthenticationRefreshed.set -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.OnAuthenticationRefreshFailed.get -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.OnAuthenticationRefreshFailed.set -> void
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext.HubConnection.get -> Microsoft.AspNetCore.SignalR.Client.HubConnection!
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext.NewTokenLifetime.get -> System.TimeSpan?
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext.RefreshedAt.get -> System.DateTimeOffset
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext.HubConnection.get -> Microsoft.AspNetCore.SignalR.Client.HubConnection!
+Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext.Exception.get -> System.Exception!
+Microsoft.AspNetCore.SignalR.Client.HubConnection.RefreshAuthenticationAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.TimeSpan?>!
+static Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderExtensions.WithAuthenticationRefresh(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder! hubConnectionBuilder, System.Action<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions!>! configure) -> Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder!

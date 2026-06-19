@@ -137,7 +137,7 @@ public class HttpConnectionDispatcherOptions
     /// authentication token without disconnecting. The server will re-authenticate the request and update
     /// the connection's <see cref="System.Security.Claims.ClaimsPrincipal"/>.
     /// </summary>
-    public bool EnableAuthRefresh { get; set; }
+    public bool EnableAuthenticationRefresh { get; set; }
 
     /// <summary>
     /// Gets or sets the grace period after token expiration during which refresh requests are still accepted.
@@ -146,11 +146,11 @@ public class HttpConnectionDispatcherOptions
     /// <remarks>
     /// This only has an effect when <see cref="CloseOnAuthenticationExpiration"/> is <c>true</c>. That option
     /// is what closes connections once their authentication expires; the grace period extends the close
-    /// deadline to <c>expiration + AuthRefreshGracePeriod</c> so an in-flight refresh can complete. When
+    /// deadline to <c>expiration + AuthenticationRefreshGracePeriod</c> so an in-flight refresh can complete. When
     /// <see cref="CloseOnAuthenticationExpiration"/> is <c>false</c> (the default), expired connections are
     /// never force-closed, so this value is ignored.
     /// </remarks>
-    public TimeSpan AuthRefreshGracePeriod { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan AuthenticationRefreshGracePeriod { get; set; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// An optional callback invoked when the <c>/refresh</c> endpoint has successfully re-authenticated
@@ -158,7 +158,7 @@ public class HttpConnectionDispatcherOptions
     /// principal, or <c>false</c> to reject the refresh. When rejected, the endpoint responds with
     /// HTTP 403 and the connection's current user remains in place.
     /// </summary>
-    public Func<AuthRefreshContext, ValueTask<bool>>? OnAuthRefresh { get; set; }
+    public Func<AuthenticationRefreshContext, ValueTask<bool>>? OnAuthenticationRefresh { get; set; }
 
     internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
 

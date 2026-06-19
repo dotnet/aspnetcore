@@ -153,18 +153,18 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         }
     }
 
-    public override Task OnAuthRefreshedAsync(HubConnectionContext connection)
+    public override Task OnAuthenticationRefreshedAsync(HubConnectionContext connection)
     {
-        // Acquire the per-connection invocation limit so that OnAuthRefreshedAsync interleaves with hub method
+        // Acquire the per-connection invocation limit so that OnAuthenticationRefreshedAsync interleaves with hub method
         // invocations the same way other invocations do (respecting MaximumParallelInvocations).
         return connection.ActiveInvocationLimit.RunAsync(static state =>
         {
             var (dispatcher, connection) = state;
-            return dispatcher.InvokeOnAuthRefreshedAsync(connection);
+            return dispatcher.InvokeOnAuthenticationRefreshedAsync(connection);
         }, (this, connection)).AsTask();
     }
 
-    private async Task<bool> InvokeOnAuthRefreshedAsync(HubConnectionContext connection)
+    private async Task<bool> InvokeOnAuthenticationRefreshedAsync(HubConnectionContext connection)
     {
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
 
@@ -176,15 +176,15 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             var hubCallerContext = connection.HubCallerContext;
             InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
 
-            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthRefreshedAsync), headers: null, _logger);
+            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthenticationRefreshedAsync), headers: null, _logger);
 
-            await hub.OnAuthRefreshedAsync();
+            await hub.OnAuthenticationRefreshedAsync();
         }
         catch (Exception ex)
         {
             // Must not throw out of a ChannelBasedSemaphore.RunAsync callback.
             SetActivityError(activity, ex);
-            Log.FailedInvokingHubMethod(_logger, nameof(Hub.OnAuthRefreshedAsync), ex);
+            Log.FailedInvokingHubMethod(_logger, nameof(Hub.OnAuthenticationRefreshedAsync), ex);
         }
         finally
         {

@@ -45,7 +45,7 @@ class Program
                     //return new Task<string>(() => "");
                 };
             })
-            .WithAuthRefresh(o =>
+            .WithAuthenticationRefresh(o =>
             {
                 o.RefreshBeforeExpiration = TimeSpan.FromSeconds(10);
             })

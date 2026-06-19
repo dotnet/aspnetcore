@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder;
 public static class ConnectionEndpointRouteBuilderExtensions
 {
     private static readonly NegotiateMetadata _negotiateMetadata = new NegotiateMetadata();
-    private static readonly AuthRefreshMetadata _authRefreshMetadata = new AuthRefreshMetadata();
+    private static readonly AuthenticationRefreshMetadata _authRefreshMetadata = new AuthenticationRefreshMetadata();
 
     /// <summary>
     /// Maps incoming requests with the specified path to the provided connection pipeline.
@@ -107,8 +107,8 @@ public static class ConnectionEndpointRouteBuilderExtensions
         negotiateBuilder.WithMetadata(_negotiateMetadata);
         negotiateBuilder.WithMetadata(options);
 
-        // Build the refresh handler for auth token refresh
-        if (options.EnableAuthRefresh)
+        // Build the refresh handler for authentication token refresh
+        if (options.EnableAuthenticationRefresh)
         {
             var refreshApp = endpoints.CreateApplicationBuilder();
             refreshApp.Run(c => dispatcher.ExecuteRefreshAsync(c, options));
@@ -116,7 +116,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
 
             var refreshBuilder = endpoints.Map(pattern + "/refresh", refreshHandler);
             conventionBuilders.Add(refreshBuilder);
-            // Add the auth refresh metadata so this endpoint can be identified (e.g. by Azure SignalR Service SDK)
+            // Add the authentication refresh metadata so this endpoint can be identified (e.g. by Azure SignalR Service SDK)
             refreshBuilder.WithMetadata(_authRefreshMetadata);
             refreshBuilder.WithMetadata(options);
         }

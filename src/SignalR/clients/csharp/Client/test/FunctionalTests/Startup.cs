@@ -46,7 +46,7 @@ public class Startup
                 policy.AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme);
                 policy.RequireClaim(ClaimTypes.Name);
             });
-            options.AddPolicy("AuthRefreshScope", policy =>
+            options.AddPolicy("AuthenticationRefreshScope", policy =>
             {
                 policy.AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme);
                 policy.RequireClaim("scope", "signalr:invoke");
@@ -108,7 +108,7 @@ public class Startup
             endpoints.MapHub<HubWithAuthorization2>("/windowsauthhub")
                   .RequireAuthorization(new AuthorizeAttribute(NegotiateDefaults.AuthenticationScheme));
 
-            endpoints.MapHub<AuthRefreshHub>("/authRefreshHub", o => o.EnableAuthRefresh = true)
+            endpoints.MapHub<AuthenticationRefreshHub>("/authRefreshHub", o => o.EnableAuthenticationRefresh = true)
                   .RequireAuthorization(new AuthorizeAttribute(JwtBearerDefaults.AuthenticationScheme));
 
             endpoints.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
@@ -129,7 +129,7 @@ public class Startup
             });
 
             // Like /generateJwtToken but optionally includes the "scope" claim required by the
-            // AuthRefreshScope policy. Pass ?scope=false to omit it (used to exercise auth changes on refresh).
+            // AuthenticationRefreshScope policy. Pass ?scope=false to omit it (used to exercise auth changes on refresh).
             endpoints.MapGet("/generateJwtTokenWithScope/{name?}", (HttpContext context, string name) =>
             {
                 var includeScope = context.Request.Query["scope"] != "false";

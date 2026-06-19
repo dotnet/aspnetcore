@@ -1,7 +1,7 @@
 #nullable enable
-Microsoft.AspNetCore.Connections.Features.IAuthRefreshFeature
-Microsoft.AspNetCore.Connections.Features.IAuthRefreshFeature.InitialTokenLifetimeSeconds.get -> int?
-Microsoft.AspNetCore.Connections.Features.IAuthRefreshFeature.RefreshAuthAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<int?>!
-Microsoft.AspNetCore.Connections.Features.IConnectionUserUpdateFeature
-Microsoft.AspNetCore.Connections.Features.IConnectionUserUpdateFeature.UserUpdated -> System.Action<System.Security.Claims.ClaimsPrincipal!>!
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.InitialTokenLifetime.get -> System.TimeSpan?
+Microsoft.AspNetCore.Connections.Features.IAuthenticationRefreshFeature.RefreshAuthenticationAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<System.TimeSpan?>!
+Microsoft.AspNetCore.Connections.Features.IConnectionUserRefreshFeature
+Microsoft.AspNetCore.Connections.Features.IConnectionUserRefreshFeature.OnUserRefreshed(System.Action<System.Security.Claims.ClaimsPrincipal!, object?>! callback, object? state) -> System.IDisposable!
 Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature.Exception.get -> System.Exception?

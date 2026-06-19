@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client;
 /// <summary>
 /// Used to make a connection to an ASP.NET Core ConnectionHandler using an HTTP-based transport.
 /// </summary>
-public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature, IAuthRefreshFeature
+public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature, IAuthenticationRefreshFeature
 {
     // Not configurable on purpose, high enough that if we reach here, it's likely
     // a buggy server
@@ -48,7 +48,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private readonly ITransportFactory _transportFactory;
     private string? _connectionId;
     private string? _connectionToken;
-    private int? _initialTokenLifetimeSeconds;
+    private TimeSpan? _initialTokenLifetime;
     private readonly ConnectionLogScope _logScope;
     private readonly ILoggerFactory _loggerFactory;
     private readonly Uri _url;
@@ -95,7 +95,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     bool IConnectionInherentKeepAliveFeature.HasInherentKeepAlive => _hasInherentKeepAlive;
 
     /// <inheritdoc />
-    int? IAuthRefreshFeature.InitialTokenLifetimeSeconds => _initialTokenLifetimeSeconds;
+    TimeSpan? IAuthenticationRefreshFeature.InitialTokenLifetime => _initialTokenLifetime;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnection"/> class.
@@ -164,7 +164,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         _logScope = new ConnectionLogScope();
 
         Features.Set<IConnectionInherentKeepAliveFeature>(this);
-        Features.Set<IAuthRefreshFeature>(this);
+        Features.Set<IAuthenticationRefreshFeature>(this);
     }
 
     // Used by unit tests
@@ -739,18 +739,18 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             negotiationResponse.ConnectionToken = _connectionId;
         }
         _connectionToken = negotiationResponse.ConnectionToken;
-        _initialTokenLifetimeSeconds = negotiationResponse.TokenLifetimeSeconds;
+        _initialTokenLifetime = negotiationResponse.TokenLifetime;
 
         _logScope.ConnectionId = _connectionId;
         return negotiationResponse;
     }
 
     /// <inheritdoc />
-    async Task<int?> IAuthRefreshFeature.RefreshAuthAsync(CancellationToken cancellationToken)
+    async Task<TimeSpan?> IAuthenticationRefreshFeature.RefreshAuthenticationAsync(CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(_connectionToken))
         {
-            throw new InvalidOperationException("Cannot refresh auth before the connection is started.");
+            throw new InvalidOperationException("Cannot refresh authentication before the connection is started.");
         }
 
         var refreshUri = CreateRefreshUrl(_url, _connectionToken);
@@ -778,7 +778,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     // Manually reads "tokenLifetimeSeconds" from the /refresh response with a Utf8JsonReader, consistent with
     // NegotiateProtocol.ParseResponse rather than materializing a JsonDocument for a single optional value.
-    private static int? ParseRefreshTokenLifetime(ReadOnlySpan<byte> content)
+    private static TimeSpan? ParseRefreshTokenLifetime(ReadOnlySpan<byte> content)
     {
         var reader = new System.Text.Json.Utf8JsonReader(content, isFinalBlock: true, state: default);
 
@@ -787,7 +787,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             throw new System.IO.InvalidDataException("Invalid refresh response JSON: expected an object.");
         }
 
-        int? tokenLifetimeSeconds = null;
+        TimeSpan? tokenLifetime = null;
         while (reader.Read())
         {
             switch (reader.TokenType)
@@ -798,7 +798,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         reader.Read();
                         if (reader.TokenType == System.Text.Json.JsonTokenType.Number)
                         {
-                            tokenLifetimeSeconds = reader.GetInt32();
+                            tokenLifetime = TimeSpan.FromSeconds(reader.GetInt32());
                         }
                     }
                     else
@@ -807,10 +807,10 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                     }
                     break;
                 case System.Text.Json.JsonTokenType.EndObject:
-                    return tokenLifetimeSeconds;
+                    return tokenLifetime;
             }
         }
 
-        return tokenLifetimeSeconds;
+        return tokenLifetime;
     }
 }

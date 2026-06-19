@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Http.Connections;
 
 /// <summary>
 /// Provides information about an in-flight authentication refresh to a
-/// <see cref="HttpConnectionDispatcherOptions.OnAuthRefresh"/> callback so the application
+/// <see cref="HttpConnectionDispatcherOptions.OnAuthenticationRefresh"/> callback so the application
 /// can accept or reject the refresh.
 /// </summary>
-public sealed class AuthRefreshContext
+public sealed class AuthenticationRefreshContext
 {
     /// <summary>
     /// The <see cref="Http.HttpContext"/> for the refresh request.
@@ -41,9 +41,4 @@ public sealed class AuthRefreshContext
     /// </summary>
     public required DateTimeOffset NewExpiration { get; init; }
 
-    /// <summary>
-    /// When the callback returns <c>false</c>, this value is returned as the
-    /// <c>error_description</c> in the response body. Optional.
-    /// </summary>
-    public string? DenyReason { get; set; }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Client;
 /// <summary>
 /// Configures automatic authentication token refresh for a <see cref="HubConnection"/>.
 /// </summary>
-public sealed class AuthRefreshOptions
+public sealed class AuthenticationRefreshOptions
 {
     /// <summary>
     /// Enables automatic token refresh before the server-reported token expiration.
@@ -20,7 +20,7 @@ public sealed class AuthRefreshOptions
     /// When enabled, the client schedules a refresh based on the <c>tokenLifetimeSeconds</c>
     /// reported by the server in the negotiate (and subsequent refresh) responses. If the server
     /// does not report a token lifetime, no automatic refresh is scheduled regardless of this setting;
-    /// the application may still call <see cref="HubConnection.RefreshAuthAsync"/> manually.
+    /// the application may still call <see cref="HubConnection.RefreshAuthenticationAsync"/> manually.
     /// </remarks>
     public bool EnableAutoRefresh { get; set; } = true;
 
@@ -45,37 +45,37 @@ public sealed class AuthRefreshOptions
     public TimeSpan? FallbackRefreshInterval { get; set; }
 
     /// <summary>
-    /// Optional callback invoked after a successful auth refresh.
+    /// Optional callback invoked after a successful authentication refresh.
     /// </summary>
-    public Func<AuthRefreshedContext, Task>? OnRefreshed { get; set; }
+    public Func<AuthenticationRefreshedContext, Task>? OnAuthenticationRefreshed { get; set; }
 
     /// <summary>
-    /// Optional callback invoked when an auth refresh attempt fails.
+    /// Optional callback invoked when an authentication refresh attempt fails.
     /// </summary>
-    public Func<AuthRefreshFailedContext, Task>? OnRefreshFailed { get; set; }
+    public Func<AuthenticationRefreshFailedContext, Task>? OnAuthenticationRefreshFailed { get; set; }
 }
 
 /// <summary>
-/// Context passed to <see cref="AuthRefreshOptions.OnRefreshed"/> after a successful refresh.
+/// Context passed to <see cref="AuthenticationRefreshOptions.OnAuthenticationRefreshed"/> after a successful refresh.
 /// </summary>
-public sealed class AuthRefreshedContext
+public sealed class AuthenticationRefreshedContext
 {
-    internal AuthRefreshedContext(HubConnection hubConnection, int? newTokenLifetimeSeconds)
+    internal AuthenticationRefreshedContext(HubConnection hubConnection, TimeSpan? newTokenLifetime)
     {
         HubConnection = hubConnection;
-        NewTokenLifetimeSeconds = newTokenLifetimeSeconds;
+        NewTokenLifetime = newTokenLifetime;
         RefreshedAt = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
-    /// Gets the <see cref="HubConnection"/> whose auth was refreshed.
+    /// Gets the <see cref="HubConnection"/> whose authentication was refreshed.
     /// </summary>
     public HubConnection HubConnection { get; }
 
     /// <summary>
-    /// Gets the new token lifetime in seconds reported by the server, or <c>null</c> if not provided.
+    /// Gets the new token lifetime reported by the server, or <c>null</c> if not provided.
     /// </summary>
-    public int? NewTokenLifetimeSeconds { get; }
+    public TimeSpan? NewTokenLifetime { get; }
 
     /// <summary>
     /// Gets the time at which the refresh completed.
@@ -84,11 +84,11 @@ public sealed class AuthRefreshedContext
 }
 
 /// <summary>
-/// Context passed to <see cref="AuthRefreshOptions.OnRefreshFailed"/> when a refresh attempt fails.
+/// Context passed to <see cref="AuthenticationRefreshOptions.OnAuthenticationRefreshFailed"/> when a refresh attempt fails.
 /// </summary>
-public sealed class AuthRefreshFailedContext
+public sealed class AuthenticationRefreshFailedContext
 {
-    internal AuthRefreshFailedContext(HubConnection hubConnection, Exception exception)
+    internal AuthenticationRefreshFailedContext(HubConnection hubConnection, Exception exception)
     {
         HubConnection = hubConnection;
         Exception = exception;

@@ -341,16 +341,16 @@ public partial class HubConnection
         [LoggerMessage(94, LogLevel.Error, "Failed to bind argument received in stream '{StreamId}'.", EventName = "StreamBindingFailure")]
         public static partial void StreamBindingFailure(ILogger logger, string? streamId, Exception exception);
 
-        [LoggerMessage(95, LogLevel.Debug, "Starting auth token refresh.", EventName = "AuthRefreshStarting")]
-        public static partial void AuthRefreshStarting(ILogger logger);
+        [LoggerMessage(95, LogLevel.Debug, "Starting authentication token refresh.", EventName = "AuthenticationRefreshStarting")]
+        public static partial void AuthenticationRefreshStarting(ILogger logger);
 
-        [LoggerMessage(96, LogLevel.Debug, "Auth token refresh completed. New TTL: {TokenLifetimeSeconds} seconds.", EventName = "AuthRefreshCompleted")]
-        public static partial void AuthRefreshCompleted(ILogger logger, int? tokenLifetimeSeconds);
+        [LoggerMessage(96, LogLevel.Debug, "Authentication token refresh completed. New TTL: {TokenLifetime}.", EventName = "AuthenticationRefreshCompleted")]
+        public static partial void AuthenticationRefreshCompleted(ILogger logger, TimeSpan? tokenLifetime);
 
-        [LoggerMessage(97, LogLevel.Error, "Auth token refresh failed.", EventName = "AuthRefreshFailed")]
-        public static partial void AuthRefreshFailed(ILogger logger, Exception exception);
+        [LoggerMessage(97, LogLevel.Error, "Authentication token refresh failed.", EventName = "AuthenticationRefreshFailed")]
+        public static partial void AuthenticationRefreshFailed(ILogger logger, Exception exception);
 
-        [LoggerMessage(98, LogLevel.Error, "Auth refresh user callback threw an exception.", EventName = "AuthRefreshCallbackFailed")]
-        public static partial void AuthRefreshCallbackFailed(ILogger logger, Exception exception);
+        [LoggerMessage(98, LogLevel.Error, "Authentication refresh user callback threw an exception.", EventName = "AuthenticationRefreshCallbackFailed")]
+        public static partial void AuthenticationRefreshCallbackFailed(ILogger logger, Exception exception);
     }
 }

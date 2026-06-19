@@ -93,9 +93,9 @@ public static class HubConnectionBuilderExtensions
     /// Configures automatic authentication token refresh for the <see cref="HubConnection" />.
     /// </summary>
     /// <param name="hubConnectionBuilder">The <see cref="IHubConnectionBuilder" /> to configure.</param>
-    /// <param name="configure">A delegate that configures the <see cref="AuthRefreshOptions"/>.</param>
+    /// <param name="configure">A delegate that configures the <see cref="AuthenticationRefreshOptions"/>.</param>
     /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
-    public static IHubConnectionBuilder WithAuthRefresh(this IHubConnectionBuilder hubConnectionBuilder, Action<AuthRefreshOptions> configure)
+    public static IHubConnectionBuilder WithAuthenticationRefresh(this IHubConnectionBuilder hubConnectionBuilder, Action<AuthenticationRefreshOptions> configure)
     {
         ArgumentNullThrowHelper.ThrowIfNull(configure);
 

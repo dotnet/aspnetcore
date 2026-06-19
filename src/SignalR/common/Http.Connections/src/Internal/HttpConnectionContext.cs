@@ -24,7 +24,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionItemsFeature,
                                      IConnectionTransportFeature,
                                      IConnectionUserFeature,
-                                     IConnectionUserUpdateFeature,
+                                     IConnectionUserRefreshFeature,
                                      IConnectionHeartbeatFeature,
                                      ITransferFormatFeature,
                                      IHttpContextFeature,
@@ -61,6 +61,8 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     // DisposeAsync so concurrent /refresh requests (or a /refresh racing connection teardown)
     // can't double-dispose or leak owned WindowsIdentity SafeHandles.
     private readonly object _userLock = new object();
+    private readonly object _userRefreshCallbackLock = new object();
+    private List<UserRefreshedCallbackRegistration>? _userRefreshedCallbacks;
     private bool _userIdentitiesDisposed;
     private readonly object _sendingLock = new object();
     internal CancellationToken SendingToken { get; private set; }
@@ -97,7 +99,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         // PERF: This type could just implement IFeatureCollection
         Features = new FeatureCollection();
         Features.Set<IConnectionUserFeature>(this);
-        Features.Set<IConnectionUserUpdateFeature>(this);
+        Features.Set<IConnectionUserRefreshFeature>(this);
         Features.Set<IConnectionItemsFeature>(this);
         Features.Set<IConnectionIdFeature>(this);
         Features.Set<IConnectionTransportFeature>(this);
@@ -145,9 +147,9 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
-    internal bool IsAuthRefreshEnabled => _options.EnableAuthRefresh;
+    internal bool IsAuthenticationRefreshEnabled => _options.EnableAuthenticationRefresh;
 
-    internal TimeSpan AuthRefreshGracePeriod => _options.AuthRefreshGracePeriod;
+    internal TimeSpan AuthenticationRefreshGracePeriod => _options.AuthenticationRefreshGracePeriod;
 
     public Task<bool>? TransportTask { get; set; }
 
@@ -260,6 +262,28 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         }
     }
 
+    public IDisposable OnUserRefreshed(Action<ClaimsPrincipal, object?> callback, object? state)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var registration = new UserRefreshedCallbackRegistration(this, callback, state);
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks ??= new List<UserRefreshedCallbackRegistration>();
+            _userRefreshedCallbacks.Add(registration);
+        }
+
+        return registration;
+    }
+
+    private void RemoveUserRefreshedCallback(UserRefreshedCallbackRegistration registration)
+    {
+        lock (_userRefreshCallbackLock)
+        {
+            _userRefreshedCallbacks?.Remove(registration);
+        }
+    }
+
     /// <summary>
     /// Updates the User/ClaimsPrincipal on this connection and refreshes the authentication expiration.
     /// </summary>
@@ -323,27 +347,38 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             }
         }
 
-        // Notify subscribers (e.g., the SignalR Hub layer) that the user has been updated. Invoke
-        // outside _userLock to avoid reentrancy/deadlock if a subscriber aborts/disposes the connection.
+        // Notify callbacks (e.g., the SignalR Hub layer) that the user has been updated. Invoke
+        // outside _userLock to avoid reentrancy/deadlock if a callback aborts/disposes the connection.
         // Intentionally do not surface the previous principal: its underlying resources
         // (for example a WindowsIdentity's SafeHandle) may be disposed below, making later access unsafe.
-        var handler = UserUpdated;
-        if (handler is not null)
+        UserRefreshedCallbackRegistration[]? callbacks = null;
+        lock (_userRefreshCallbackLock)
         {
-            try
+            if (_userRefreshedCallbacks is { Count: > 0 })
             {
-                handler(newUser);
-            }
-            catch (Exception ex)
-            {
-                Log.UserUpdatedHandlerFailed(_logger, ex);
+                callbacks = _userRefreshedCallbacks.ToArray();
             }
         }
 
-        // After subscribers have observed the swap (synchronously), dispose the previously owned
+        if (callbacks is not null)
+        {
+            foreach (var callback in callbacks)
+            {
+                try
+                {
+                    callback.Invoke(newUser);
+                }
+                catch (Exception ex)
+                {
+                    Log.UserRefreshedCallbackFailed(_logger, ex);
+                }
+            }
+        }
+
+        // After callbacks have observed the swap (synchronously), dispose the previously owned
         // WindowsIdentity SafeHandles. Each UpdateUser call disposes exactly the principal it swapped
         // out (captured under the lock), so concurrent refreshes can't double-dispose or leak.
-        // Subscribers are documented to be quick and synchronous, and anything they queue should read
+        // Callbacks are documented to be quick and synchronous, and anything they queue should read
         // from connection.User (the new principal) — not capture the previous one.
         if (previouslyOwned && previousUser is not null)
         {
@@ -411,9 +446,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             (identity as IDisposable)?.Dispose();
         }
     }
-
-    /// <inheritdoc />
-    public event Action<ClaimsPrincipal>? UserUpdated;
 
     public async Task DisposeAsync(bool closeGracefully = false)
     {
@@ -930,6 +962,28 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         return UseStatefulReconnect == true || TransportType == HttpTransportType.LongPolling;
     }
 
+    private sealed class UserRefreshedCallbackRegistration(
+        HttpConnectionContext connection,
+        Action<ClaimsPrincipal, object?> callback,
+        object? state) : IDisposable
+    {
+        private HttpConnectionContext? _connection = connection;
+
+        public void Invoke(ClaimsPrincipal user)
+        {
+            if (_connection is not null)
+            {
+                callback(user, state);
+            }
+        }
+
+        public void Dispose()
+        {
+            var connection = Interlocked.Exchange(ref _connection, null);
+            connection?.RemoveUserRefreshedCallback(this);
+        }
+    }
+
     internal enum SetTransportState
     {
         Success,
@@ -966,7 +1020,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         [LoggerMessage(9, LogLevel.Trace, "{Timeout}ms elapsed attempting to send a message to the transport. Closing connection {TransportConnectionId}.", EventName = "TransportSendTimeout")]
         public static partial void TransportSendTimeout(ILogger logger, TimeSpan timeout, string transportConnectionId);
 
-        [LoggerMessage(10, LogLevel.Error, "An IConnectionUserUpdateFeature.UserUpdated handler threw an exception.", EventName = "UserUpdatedHandlerFailed")]
-        public static partial void UserUpdatedHandlerFailed(ILogger logger, Exception exception);
+        [LoggerMessage(10, LogLevel.Error, "An IConnectionUserRefreshFeature.OnUserRefreshed callback threw an exception.", EventName = "UserRefreshedCallbackFailed")]
+        public static partial void UserRefreshedCallbackFailed(ILogger logger, Exception exception);
     }
 }

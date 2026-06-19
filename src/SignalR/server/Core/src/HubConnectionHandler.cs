@@ -146,14 +146,20 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
 
         // -- the connectionContext has been set up --
 
-        var userUpdateFeature = connection.Features.Get<IConnectionUserUpdateFeature>();
-        Action<ClaimsPrincipal>? userUpdatedHandler = null;
-        if (userUpdateFeature is not null)
+        var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+        IDisposable? userRefreshedRegistration = null;
+        if (userRefreshFeature is not null)
         {
-            // Serializes auth-refresh handling for this connection so concurrent refreshes don't race the re-key.
-            var authRefreshLock = new SemaphoreSlim(1, 1);
-            userUpdatedHandler = user => OnUserUpdated(connectionContext, user, authRefreshLock);
-            userUpdateFeature.UserUpdated += userUpdatedHandler;
+            // Serializes authentication-refresh handling for this connection so concurrent refreshes don't race the re-key.
+            var authenticationRefreshLock = new SemaphoreSlim(1, 1);
+            userRefreshedRegistration = userRefreshFeature.OnUserRefreshed(static (user, state) =>
+            {
+                var userRefreshedState = (UserRefreshedState)state!;
+                userRefreshedState.Handler.OnUserRefreshed(
+                    userRefreshedState.Connection,
+                    user,
+                    userRefreshedState.AuthenticationRefreshLock);
+            }, new UserRefreshedState(this, connectionContext, authenticationRefreshLock));
         }
 
         try
@@ -163,10 +169,7 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
         finally
         {
-            if (userUpdateFeature is not null && userUpdatedHandler is not null)
-            {
-                userUpdateFeature.UserUpdated -= userUpdatedHandler;
-            }
+            userRefreshedRegistration?.Dispose();
 
             connectionContext.Cleanup();
 
@@ -175,15 +178,15 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
     }
 
-    private void OnUserUpdated(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authRefreshLock)
+    private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
     {
-        // Fire and forget; HandleUserUpdatedAsync serializes work per connection through authRefreshLock.
-        _ = HandleUserUpdatedAsync(connection, user, authRefreshLock);
+        // Fire and forget; HandleUserRefreshedAsync serializes work per connection through authenticationRefreshLock.
+        _ = HandleUserRefreshedAsync(connection, user, authenticationRefreshLock);
     }
 
-    private async Task HandleUserUpdatedAsync(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authRefreshLock)
+    private async Task HandleUserRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
     {
-        await authRefreshLock.WaitAsync();
+        await authenticationRefreshLock.WaitAsync();
         try
         {
             // Recompute inside the lock so a concurrent refresh observes the latest principal and identifier.
@@ -200,12 +203,24 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
         finally
         {
-            authRefreshLock.Release();
+            authenticationRefreshLock.Release();
         }
 
         // Fire and forget; the dispatcher serializes through ActiveInvocationLimit so the work runs
         // alongside other hub invocations subject to the configured MaximumParallelInvocations.
-        _ = _dispatcher.OnAuthRefreshedAsync(connection);
+        _ = _dispatcher.OnAuthenticationRefreshedAsync(connection);
+    }
+
+    private sealed class UserRefreshedState(
+        HubConnectionHandler<THub> handler,
+        HubConnectionContext connection,
+        SemaphoreSlim authenticationRefreshLock)
+    {
+        public HubConnectionHandler<THub> Handler { get; } = handler;
+
+        public HubConnectionContext Connection { get; } = connection;
+
+        public SemaphoreSlim AuthenticationRefreshLock { get; } = authenticationRefreshLock;
     }
 
     private async Task RunHubAsync(HubConnectionContext connection)

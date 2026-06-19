@@ -37,12 +37,12 @@ internal sealed class AccessTokenHttpMessageHandler : DelegatingHandler
         {
             shouldRetry = false;
             // Negotiate redirects likely will have a new access token so let's always grab a (potentially) new access token on negotiate.
-            // Auth refresh exists specifically to obtain a new access token, so always re-fetch on refresh too.
+            // Authentication refresh exists specifically to obtain a new access token, so always re-fetch on refresh too.
             tokenForRequest = await _httpConnection.GetAccessTokenAsync().ConfigureAwait(false);
 
             // For negotiate (and the initial fetch) adopt the new token immediately. For refresh, defer
             // updating the cache until we know the server accepted the refresh (below): a rejected
-            // refresh (for example an OnAuthRefresh denial returning 403) must not poison the cache and
+            // refresh (for example an OnAuthenticationRefresh denial returning 403) must not poison the cache and
             // leak the rejected token onto subsequent transport requests (e.g. Long Polling polls/sends).
             if (!isRefresh)
             {

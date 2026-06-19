@@ -36,8 +36,8 @@ public static class NegotiateProtocol
     private static readonly JsonEncodedText NegotiateVersionPropertyNameBytes = JsonEncodedText.Encode(NegotiateVersionPropertyName);
     private const string StatefulReconnectPropertyName = "useStatefulReconnect";
     private static readonly JsonEncodedText StatefulReconnectPropertyNameBytes = JsonEncodedText.Encode(StatefulReconnectPropertyName);
-    private const string TokenLifetimeSecondsPropertyName = "tokenLifetimeSeconds";
-    private static readonly JsonEncodedText TokenLifetimeSecondsPropertyNameBytes = JsonEncodedText.Encode(TokenLifetimeSecondsPropertyName);
+    private const string TokenLifetimePropertyName = "tokenLifetimeSeconds";
+    private static readonly JsonEncodedText TokenLifetimePropertyNameBytes = JsonEncodedText.Encode(TokenLifetimePropertyName);
 
     // Used to detect ASP.NET SignalR Server connection attempt
     private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => "ProtocolVersion"u8;
@@ -94,9 +94,9 @@ public static class NegotiateProtocol
                 writer.WriteString(ConnectionTokenPropertyNameBytes, response.ConnectionToken);
             }
 
-            if (response.TokenLifetimeSeconds.HasValue && response.TokenLifetimeSeconds.Value > 0)
+            if (response.TokenLifetime is { } tokenLifetime && tokenLifetime > TimeSpan.Zero)
             {
-                writer.WriteNumber(TokenLifetimeSecondsPropertyNameBytes, response.TokenLifetimeSeconds.Value);
+                writer.WriteNumber(TokenLifetimePropertyNameBytes, (int)tokenLifetime.TotalSeconds);
             }
 
             writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
@@ -167,7 +167,7 @@ public static class NegotiateProtocol
             string? error = null;
             int version = 0;
             bool useStatefulReconnect = false;
-            int? tokenLifetimeSeconds = null;
+            TimeSpan? tokenLifetime = null;
 
             var completed = false;
             while (!completed && reader.CheckRead())
@@ -225,9 +225,9 @@ public static class NegotiateProtocol
                         {
                             useStatefulReconnect = reader.ReadAsBoolean(StatefulReconnectPropertyName);
                         }
-                        else if (reader.ValueTextEquals(TokenLifetimeSecondsPropertyNameBytes.EncodedUtf8Bytes))
+                        else if (reader.ValueTextEquals(TokenLifetimePropertyNameBytes.EncodedUtf8Bytes))
                         {
-                            tokenLifetimeSeconds = reader.ReadAsInt32(TokenLifetimeSecondsPropertyName);
+                            tokenLifetime = TimeSpan.FromSeconds(reader.ReadAsInt32(TokenLifetimePropertyName).GetValueOrDefault());
                         }
                         else
                         {
@@ -274,7 +274,7 @@ public static class NegotiateProtocol
                 Error = error,
                 Version = version,
                 UseStatefulReconnect = useStatefulReconnect,
-                TokenLifetimeSeconds = tokenLifetimeSeconds,
+                TokenLifetime = tokenLifetime,
             };
         }
         catch (Exception ex)

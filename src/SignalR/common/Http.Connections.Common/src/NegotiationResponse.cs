@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Abstractions;
@@ -55,8 +56,8 @@ public class NegotiationResponse
     public bool UseStatefulReconnect { get; set; }
 
     /// <summary>
-    /// The number of seconds until the authentication token expires. The client can use this to schedule a token refresh.
-    /// A null value indicates the server does not support auth refresh or the token lifetime is unknown.
+    /// The amount of time until the authentication token expires. The client can use this to schedule a token refresh.
+    /// A null value indicates the server does not support authentication refresh or the token lifetime is unknown.
     /// </summary>
-    public int? TokenLifetimeSeconds { get; set; }
+    public TimeSpan? TokenLifetime { get; set; }
 }

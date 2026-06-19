@@ -88,7 +88,7 @@ public abstract class Hub : IDisposable
 
     /// <summary>
     /// Called when the authenticated user on the connection has been refreshed, for example via the
-    /// SignalR auth-refresh endpoint. The new <see cref="System.Security.Claims.ClaimsPrincipal"/> is
+    /// SignalR authentication-refresh endpoint. The new <see cref="System.Security.Claims.ClaimsPrincipal"/> is
     /// available on <see cref="HubCallerContext.User"/>.
     /// </summary>
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
@@ -99,7 +99,7 @@ public abstract class Hub : IDisposable
     /// (for example a <see cref="System.Security.Principal.WindowsIdentity"/>'s <c>SafeHandle</c>)
     /// may already be disposed by the time this method runs.
     /// </remarks>
-    public virtual Task OnAuthRefreshedAsync()
+    public virtual Task OnAuthenticationRefreshedAsync()
     {
         return Task.CompletedTask;
     }

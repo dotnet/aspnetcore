@@ -175,11 +175,11 @@ internal sealed partial class HttpConnectionManager
                 if (connection.IsAuthenticationExpirationEnabled && connection.AuthenticationExpiration < now &&
                     !connection.ConnectionClosedRequested.IsCancellationRequested)
                 {
-                    // When auth refresh is enabled, allow a grace period for the client to refresh
+                    // When authentication refresh is enabled, allow a grace period for the client to refresh
                     // before closing the connection
-                    if (connection.IsAuthRefreshEnabled)
+                    if (connection.IsAuthenticationRefreshEnabled)
                     {
-                        var graceDeadline = connection.AuthenticationExpiration + connection.AuthRefreshGracePeriod;
+                        var graceDeadline = connection.AuthenticationExpiration + connection.AuthenticationRefreshGracePeriod;
                         if (graceDeadline < now)
                         {
                             Log.AuthenticationExpired(_logger, connection.ConnectionId);

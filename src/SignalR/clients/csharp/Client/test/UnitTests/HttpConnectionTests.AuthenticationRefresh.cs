@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 
 public partial class HttpConnectionTests
 {
-    public class RefreshAuth
+    public class RefreshAuthentication
     {
         private static void OnRefresh(TestHttpMessageHandler handler, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> onRefresh)
         {
@@ -32,10 +32,10 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncSendsFreshlyFetchedTokenNotCachedConnectToken()
+        public async Task RefreshAuthenticationAsyncSendsFreshlyFetchedTokenNotCachedConnectToken()
         {
             // Regression test: the AccessTokenHttpMessageHandler caches the access token captured when the
-            // connection started and overwrites the Authorization header on each request. RefreshAuthAsync must
+            // connection started and overwrites the Authorization header on each request. RefreshAuthenticationAsync must
             // force a fresh token to be fetched so the /refresh request carries the new token (and the cache is
             // updated for subsequent transport requests).
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
@@ -64,7 +64,7 @@ public partial class HttpConnectionTests
                     {
                         await connection.StartAsync().DefaultTimeout();
                         currentToken = "new-token";
-                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
                     });
             }
 
@@ -75,10 +75,10 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncUpdatesCachedTokenSoSubsequentTransportRequestsUseNewToken()
+        public async Task RefreshAuthenticationAsyncUpdatesCachedTokenSoSubsequentTransportRequestsUseNewToken()
         {
             // Regression test for the cache side-effect of the IsRefresh fix: AccessTokenHttpMessageHandler caches the
-            // access token captured when the connection started and applies it to every transport request. RefreshAuthAsync
+            // access token captured when the connection started and applies it to every transport request. RefreshAuthenticationAsync
             // must update that cache so subsequent Long Polling sends/polls carry the refreshed token, not the stale
             // connect-time token. Asserting only that the /refresh request carries the new token (see the test above) would
             // still pass if the cache update were dropped, silently reintroducing the original bug.
@@ -127,7 +127,7 @@ public partial class HttpConnectionTests
                         await firstPollReceivedTcs.Task.DefaultTimeout();
 
                         currentToken = "new-token";
-                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
 
                         // Allow the next poll to be issued now that the cache should hold the refreshed token.
                         releaseFirstPollTcs.TrySetResult();
@@ -139,9 +139,9 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncDoesNotUpdateCachedTokenWhenServerRejectsRefresh()
+        public async Task RefreshAuthenticationAsyncDoesNotUpdateCachedTokenWhenServerRejectsRefresh()
         {
-            // When the server rejects a refresh (for example an OnAuthRefresh policy denial returning 403), the freshly
+            // When the server rejects a refresh (for example an OnAuthenticationRefresh policy denial returning 403), the freshly
             // fetched token must NOT be committed to the handler's cache. Otherwise subsequent Long Polling polls/sends
             // would carry the rejected token and the server would pick it up on the normal poll path, bypassing the
             // refresh policy (and the UserIdentifier-change abort).
@@ -186,7 +186,7 @@ public partial class HttpConnectionTests
                     await firstPollReceivedTcs.Task.DefaultTimeout();
 
                     currentToken = "new-token";
-                    await Assert.ThrowsAsync<HttpRequestException>(() => ((IAuthRefreshFeature)connection).RefreshAuthAsync()).DefaultTimeout();
+                    await Assert.ThrowsAsync<HttpRequestException>(() => ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync()).DefaultTimeout();
 
                     // The rejected refresh must not have poisoned the cache; the next poll keeps the old token.
                     releaseFirstPollTcs.TrySetResult();
@@ -197,7 +197,7 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncThrowsBeforeConnectionStarted()
+        public async Task RefreshAuthenticationAsyncThrowsBeforeConnectionStarted()
         {
             using (var noErrorScope = new VerifyNoErrorsScope())
             {
@@ -205,8 +205,8 @@ public partial class HttpConnectionTests
                 try
                 {
                     var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                        () => ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout());
-                    Assert.Equal("Cannot refresh auth before the connection is started.", ex.Message);
+                        () => ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout());
+                    Assert.Equal("Cannot refresh authentication before the connection is started.", ex.Message);
                 }
                 finally
                 {
@@ -220,7 +220,7 @@ public partial class HttpConnectionTests
         [InlineData("http://fakeuri.org", "http://fakeuri.org/refresh?id=connection-token")]
         [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/refresh?id=connection-token")]
         [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/refresh?id=connection-token")]
-        public async Task RefreshAuthAsyncPostsToRefreshUrlWithConnectionToken(string requestedUrl, string expectedRefreshUrl)
+        public async Task RefreshAuthenticationAsyncPostsToRefreshUrlWithConnectionToken(string requestedUrl, string expectedRefreshUrl)
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -241,8 +241,8 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        var ttl = await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
-                        Assert.Equal(60, ttl);
+                        var ttl = await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
+                        Assert.Equal(TimeSpan.FromSeconds(60), ttl);
                     });
             }
 
@@ -252,7 +252,7 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncPostsToOriginalEndpointAfterRedirect()
+        public async Task RefreshAuthenticationAsyncPostsToOriginalEndpointAfterRedirect()
         {
             // When negotiate redirects the client (e.g. Azure SignalR Service), the transport connects to the
             // redirected endpoint, but /refresh is part of the auth plane and must target the ORIGINAL server
@@ -290,8 +290,8 @@ public partial class HttpConnectionTests
                         // The transport followed the redirect to the redirected endpoint.
                         Assert.Equal("http://redirected.example/hub", connection.RemoteEndPoint.ToString());
 
-                        var ttl = await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
-                        Assert.Equal(60, ttl);
+                        var ttl = await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
+                        Assert.Equal(TimeSpan.FromSeconds(60), ttl);
                     });
             }
             var request = await refreshRequestTcs.Task.DefaultTimeout();
@@ -300,7 +300,7 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncSendsBearerTokenWhenAccessTokenProviderConfigured()
+        public async Task RefreshAuthenticationAsyncSendsBearerTokenWhenAccessTokenProviderConfigured()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -328,7 +328,7 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
                     });
             }
 
@@ -340,7 +340,7 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncOmitsAuthorizationHeaderWhenAccessTokenProviderReturnsNull()
+        public async Task RefreshAuthenticationAsyncOmitsAuthorizationHeaderWhenAccessTokenProviderReturnsNull()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -361,7 +361,7 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
+                        await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
                     });
             }
 
@@ -370,7 +370,7 @@ public partial class HttpConnectionTests
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncReturnsNullWhenTokenLifetimeSecondsMissing()
+        public async Task RefreshAuthenticationAsyncReturnsNullWhenTokenLifetimeMissing()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -386,7 +386,7 @@ public partial class HttpConnectionTests
                     async connection =>
                     {
                         await connection.StartAsync().DefaultTimeout();
-                        var ttl = await ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout();
+                        var ttl = await ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout();
                         Assert.Null(ttl);
                     });
             }
@@ -396,7 +396,7 @@ public partial class HttpConnectionTests
         [InlineData(HttpStatusCode.Unauthorized)]
         [InlineData(HttpStatusCode.NotFound)]
         [InlineData(HttpStatusCode.Forbidden)]
-        public async Task RefreshAuthAsyncThrowsOnHttpErrorStatus(HttpStatusCode status)
+        public async Task RefreshAuthenticationAsyncThrowsOnHttpErrorStatus(HttpStatusCode status)
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -410,12 +410,12 @@ public partial class HttpConnectionTests
                 {
                     await connection.StartAsync().DefaultTimeout();
                     await Assert.ThrowsAsync<HttpRequestException>(
-                        () => ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout());
+                        () => ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout());
                 });
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncPropagatesNetworkException()
+        public async Task RefreshAuthenticationAsyncPropagatesNetworkException()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -429,13 +429,13 @@ public partial class HttpConnectionTests
                 {
                     await connection.StartAsync().DefaultTimeout();
                     var ex = await Assert.ThrowsAsync<HttpRequestException>(
-                        () => ((IAuthRefreshFeature)connection).RefreshAuthAsync().DefaultTimeout());
+                        () => ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync().DefaultTimeout());
                     Assert.Equal("network down", ex.Message);
                 });
         }
 
         [Fact]
-        public async Task RefreshAuthAsyncPropagatesCancellation()
+        public async Task RefreshAuthenticationAsyncPropagatesCancellation()
         {
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
@@ -456,7 +456,7 @@ public partial class HttpConnectionTests
                 {
                     await connection.StartAsync().DefaultTimeout();
                     using var cts = new CancellationTokenSource();
-                    var refreshTask = ((IAuthRefreshFeature)connection).RefreshAuthAsync(cts.Token);
+                    var refreshTask = ((IAuthenticationRefreshFeature)connection).RefreshAuthenticationAsync(cts.Token);
                     await requestReceivedTcs.Task.DefaultTimeout();
                     cts.Cancel();
                     await Assert.ThrowsAnyAsync<OperationCanceledException>(() => refreshTask.DefaultTimeout());

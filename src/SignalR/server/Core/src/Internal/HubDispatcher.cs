@@ -10,7 +10,7 @@ internal abstract class HubDispatcher<[DynamicallyAccessedMembers(Hub.Dynamicall
 {
     public abstract Task OnConnectedAsync(HubConnectionContext connection);
     public abstract Task OnDisconnectedAsync(HubConnectionContext connection, Exception? exception);
-    public abstract Task OnAuthRefreshedAsync(HubConnectionContext connection);
+    public abstract Task OnAuthenticationRefreshedAsync(HubConnectionContext connection);
     public abstract Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage);
     public abstract IReadOnlyList<Type> GetParameterTypes(string name);
     public abstract string? GetTargetName(ReadOnlySpan<byte> targetUtf8Bytes);

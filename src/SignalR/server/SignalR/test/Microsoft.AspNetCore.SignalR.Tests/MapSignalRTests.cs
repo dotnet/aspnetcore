@@ -150,7 +150,7 @@ public class MapSignalRTests
         var req = new TestRequirement();
         using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
         {
-            options.EnableAuthRefresh = true;
+            options.EnableAuthenticationRefresh = true;
         })
         .RequireAuthorization(policy1)
         .RequireAuthorization(policy => policy.AddRequirements(req))))
@@ -164,19 +164,19 @@ public class MapSignalRTests
                 {
                     Assert.Equal("/path/negotiate", endpoint.DisplayName);
                     AssertAuthMetadata(endpoint, policy1, req);
-                    Assert.Null(endpoint.Metadata.GetMetadata<AuthRefreshMetadata>());
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path/refresh", endpoint.DisplayName);
                     AssertAuthMetadata(endpoint, policy1, req);
-                    Assert.NotNull(endpoint.Metadata.GetMetadata<AuthRefreshMetadata>());
+                    Assert.NotNull(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
                 },
                 endpoint =>
                 {
                     Assert.Equal("/path", endpoint.DisplayName);
                     AssertAuthMetadata(endpoint, policy1, req);
-                    Assert.Null(endpoint.Metadata.GetMetadata<AuthRefreshMetadata>());
+                    Assert.Null(endpoint.Metadata.GetMetadata<AuthenticationRefreshMetadata>());
                 });
         }
     }
