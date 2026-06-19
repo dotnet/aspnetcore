@@ -19,10 +19,13 @@ Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.EnableClientValid
 Microsoft.Extensions.DependencyInjection.ClientValidationServiceCollectionExtensions
 static Microsoft.Extensions.DependencyInjection.ClientValidationServiceCollectionExtensions.AddClientValidation(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.AspNetCore.Components.Forms.EditContext.ValidateAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<bool>!
-Microsoft.AspNetCore.Components.Forms.EditContext.AddValidationTask(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, System.Threading.Tasks.Task! task, System.Threading.CancellationTokenSource! cts) -> void
+Microsoft.AspNetCore.Components.Forms.EditContext.TrackFieldValidation(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task!>! validate) -> void
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending() -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted() -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationException(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> System.Exception?
+Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationException<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> System.Exception?
+Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationException() -> System.Exception?

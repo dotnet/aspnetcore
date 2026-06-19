@@ -86,9 +86,9 @@ public static partial class EditContextDataAnnotationsExtensions
                 _validationOptions.TryGetValidatableTypeInfo(modelType, out var typeInfo) &&
                 typeInfo.TryFindProperty(fieldIdentifier.FieldName, _validationOptions, out var validatablePropertyInfo))
             {
-                var cts = new CancellationTokenSource();
-                var task = ValidateFieldAsync(fieldIdentifier, validatablePropertyInfo, cts.Token);
-                _editContext.AddValidationTask(fieldIdentifier, task, cts);
+                _editContext.TrackFieldValidation(
+                    fieldIdentifier,
+                    token => ValidateFieldAsync(fieldIdentifier, validatablePropertyInfo, token));
             }
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             else if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
@@ -234,7 +234,7 @@ public static partial class EditContextDataAnnotationsExtensions
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
                 // Task was cancelled (user re-edited field or form is submitting). The notification
-                // emitted by the superseding AddValidationTask call already reflects the cleared
+                // emitted by the superseding TrackFieldValidation call already reflects the cleared
                 // messages, so no extra notification is needed here.
                 return;
             }

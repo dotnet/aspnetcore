@@ -59,7 +59,10 @@ public sealed class ValidationRequestedEventArgs : EventArgs
     /// <see cref="InvalidOperationException"/> if a registered task has not already completed.
     /// <para>
     /// Start the asynchronous work with an <c>async</c> method so that any exception thrown before its
-    /// first <c>await</c> is captured into the returned task rather than thrown from the handler.
+    /// first <c>await</c> is captured into the returned task rather than thrown from the handler. Do not
+    /// subscribe an <c>async void</c> handler instead of calling this method: such a handler is not
+    /// awaited by <see cref="EditContext.ValidateAsync(CancellationToken)"/> and its validation is
+    /// silently skipped.
     /// </para>
     /// <example>
     /// <code>
@@ -85,7 +88,7 @@ public sealed class ValidationRequestedEventArgs : EventArgs
                 $"Register tasks on the instance supplied to your {nameof(EditContext.OnValidationRequested)} handler instead.");
         }
 
-        (_validationTasks ??= new List<Task>()).Add(task);
+        (_validationTasks ??= []).Add(task);
     }
 
     internal IReadOnlyList<Task> ValidationTasks
