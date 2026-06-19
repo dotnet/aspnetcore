@@ -62,7 +62,7 @@ internal class ShortCircuitMatcher : Matcher
     {
         var metadataList = new List<object>
         {
-            _statusCode.HasValue ? new ShortCircuitAttribute(_statusCode.Value) : new()
+            _statusCode.HasValue ? new ShortCircuitAttribute(_statusCode.Value) : new ShortCircuitAttribute()
         };
 
         if (_hasAuthMetadata)
