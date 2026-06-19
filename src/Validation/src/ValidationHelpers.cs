@@ -61,25 +61,32 @@ internal static class ValidationHelpers
         CancellationToken cancellationToken)
     {
         CancellationTokenSource? linkedCts = null;
-        List<Task>? validationResultTasks = null;
-
-        for (var i = 0; i < validationAttributes.Length; i++)
+        try
         {
-            var attribute = validationAttributes[i];
-            if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
+            List<Task>? validationResultTasks = null;
+
+            for (var i = 0; i < validationAttributes.Length; i++)
             {
-                continue;
+                var attribute = validationAttributes[i];
+                if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
+                {
+                    continue;
+                }
+
+                linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                validationResultTasks ??= new();
+                validationResultTasks.Add(
+                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken, linkedCts));
             }
 
-            linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            validationResultTasks ??= new();
-            validationResultTasks.Add(
-                GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken, linkedCts));
+            if (validationResultTasks is not null)
+            {
+                await Task.WhenAll(validationResultTasks);
+            }
         }
-
-        if (validationResultTasks is not null)
+        finally
         {
-            await Task.WhenAll(validationResultTasks);
+            linkedCts?.Dispose();
         }
     }
 
