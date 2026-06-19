@@ -9,6 +9,7 @@
   <ItemGroup Condition=" $(IsTestProject) ">
     <Reference Include="Microsoft.AspNetCore.InternalTesting" />
     <Reference Include="Moq" />
+    <Reference Include="NETStandard.Library" />
     <Compile Include="$(SharedSourceRoot)test\SuccessfulTests.cs" LinkBase="SharedTests" Visible="false" />
   </ItemGroup>
 
