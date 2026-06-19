@@ -862,6 +862,39 @@ public class AsyncValidationTests
     }
 
     [Fact]
+    public async Task AsyncValidation_MultipleAttributesOnSameProperty_RunInParallel()
+    {
+        // Two async attributes on the same property must run in parallel. The shared barrier only
+        // releases once BOTH attributes have entered validation; if they run sequentially the first
+        // blocks forever waiting for the second, the timeout cancels validation, and this test fails.
+        const int attributeCount = 2;
+        var allEnteredSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var barrier = new ParallelBarrierAsyncValidationAttribute(allEnteredSignal, attributeCount);
+
+        var recordType = new TestValidatableTypeInfo(
+            typeof(Record),
+            [
+                // The same barrier instance is applied twice, so it must be entered concurrently.
+                CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value", [barrier, barrier])
+            ]);
+
+        var record = new Record { Value = "VALID" };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Record), recordType }
+            }),
+            ValidationContext = new ValidationContext(record)
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        await recordType.ValidateAsync(record, context, cts.Token);
+
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+    }
+
+    [Fact]
     public async Task AsyncValidation_DeepNestedObjects_ValidateInParallel()
     {
         // Arrange
