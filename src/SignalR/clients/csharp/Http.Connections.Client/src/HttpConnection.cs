@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.WebSockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -18,7 +20,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
@@ -780,9 +781,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     // NegotiateProtocol.ParseResponse rather than materializing a JsonDocument for a single optional value.
     private static TimeSpan? ParseRefreshTokenLifetime(ReadOnlySpan<byte> content)
     {
-        var reader = new System.Text.Json.Utf8JsonReader(content, isFinalBlock: true, state: default);
+        var reader = new Utf8JsonReader(content, isFinalBlock: true, state: default);
 
-        if (!reader.Read() || reader.TokenType != System.Text.Json.JsonTokenType.StartObject)
+        if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
         {
             throw new System.IO.InvalidDataException("Invalid refresh response JSON: expected an object.");
         }
@@ -792,11 +793,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         {
             switch (reader.TokenType)
             {
-                case System.Text.Json.JsonTokenType.PropertyName:
+                case JsonTokenType.PropertyName:
                     if (reader.ValueTextEquals("tokenLifetimeSeconds"u8))
                     {
                         reader.Read();
-                        if (reader.TokenType == System.Text.Json.JsonTokenType.Number)
+                        if (reader.TokenType == JsonTokenType.Number)
                         {
                             tokenLifetime = TimeSpan.FromSeconds(reader.GetInt32());
                         }
@@ -806,7 +807,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
                         reader.Skip();
                     }
                     break;
-                case System.Text.Json.JsonTokenType.EndObject:
+                case JsonTokenType.EndObject:
                     return tokenLifetime;
             }
         }

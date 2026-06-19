@@ -555,18 +555,13 @@ public partial class HubConnection : IAsyncDisposable
         }
         startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
 
-        // Schedule automatic authentication refresh if enabled. The server-reported token lifetime takes
-        // precedence; when none is reported, fall back to the configured interval (if any).
+        // Schedule automatic authentication refresh if enabled and the server reported a token lifetime.
         if (_authenticationRefreshOptions.EnableAutoRefresh)
         {
             var authenticationRefreshFeature = connection.Features.Get<IAuthenticationRefreshFeature>();
             if (authenticationRefreshFeature?.InitialTokenLifetime is { } initialTokenLifetime && initialTokenLifetime > TimeSpan.Zero)
             {
                 ScheduleAuthenticationRefresh(initialTokenLifetime);
-            }
-            else if (authenticationRefreshFeature is not null && _authenticationRefreshOptions.FallbackRefreshInterval is { } fallbackInterval)
-            {
-                ScheduleAuthenticationRefreshAt(fallbackInterval);
             }
         }
 
@@ -617,18 +612,12 @@ public partial class HubConnection : IAsyncDisposable
             throw;
         }
 
-        // Reschedule the auto-refresh timer. The server-reported lifetime takes precedence; when the
-        // server does not report one, fall back to the configured interval (if any) so auto-refresh
-        // keeps firing.
+        // Reschedule the auto-refresh timer if the server reported a new lifetime.
         if (_authenticationRefreshOptions.EnableAutoRefresh)
         {
             if (newTtl is { } tokenLifetime && tokenLifetime > TimeSpan.Zero)
             {
                 ScheduleAuthenticationRefresh(tokenLifetime);
-            }
-            else if (_authenticationRefreshOptions.FallbackRefreshInterval is { } fallbackInterval)
-            {
-                ScheduleAuthenticationRefreshAt(fallbackInterval);
             }
         }
 

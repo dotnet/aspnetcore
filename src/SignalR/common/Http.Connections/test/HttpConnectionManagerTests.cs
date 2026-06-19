@@ -29,6 +29,7 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         Assert.Equal(65536, options.ApplicationMaxBufferSize);
         Assert.Equal(HttpTransports.All, options.Transports);
         Assert.False(options.CloseOnAuthenticationExpiration);
+        Assert.Equal(TimeSpan.FromMinutes(5), options.AuthenticationRefreshGracePeriod);
     }
 
     [Fact]
@@ -37,6 +38,14 @@ public class HttpConnectionManagerTests : VerifiableLoggedTest
         var httpOptions = new HttpConnectionDispatcherOptions();
         Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.TransportMaxBufferSize = -1);
         Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.ApplicationMaxBufferSize = -1);
+    }
+
+    [Fact]
+    public void HttpConnectionDispatcherOptionsNegativeAuthenticationRefreshGracePeriodThrows()
+    {
+        var httpOptions = new HttpConnectionDispatcherOptions();
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => httpOptions.AuthenticationRefreshGracePeriod = TimeSpan.FromTicks(-1));
     }
 
     [Fact]

@@ -144,8 +144,7 @@ internal sealed partial class HttpConnectionDispatcher
 
         if (!options.EnableAuthenticationRefresh)
         {
-            await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound,
-                "refresh_disabled", "Authentication refresh is not enabled for this endpoint.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound, "refresh_disabled");
             return;
         }
 
@@ -153,16 +152,14 @@ internal sealed partial class HttpConnectionDispatcher
         var connectionToken = GetConnectionToken(context);
         if (StringValues.IsNullOrEmpty(connectionToken))
         {
-            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest,
-                "missing_connection_token", "The 'id' query string parameter is required.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "missing_connection_token");
             return;
         }
 
         // Look up the connection by connection token (private, not the public connectionId)
         if (!_manager.TryGetConnection(connectionToken.ToString(), out var connection))
         {
-            await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound,
-                "connection_not_found", "No active connection with the specified ID.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status404NotFound, "connection_not_found");
             return;
         }
 
@@ -173,8 +170,7 @@ internal sealed partial class HttpConnectionDispatcher
         // Require v1+ (private token) to prevent unauthorized refreshes against known connection IDs.
         if (string.Equals(connection.ConnectionId, connection.ConnectionToken, StringComparison.Ordinal))
         {
-            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest,
-                "unsupported_negotiate_version", "Authentication refresh requires negotiate version 1 or later.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "unsupported_negotiate_version");
             return;
         }
 
@@ -187,16 +183,14 @@ internal sealed partial class HttpConnectionDispatcher
         var authResult = context.Features.Get<IAuthenticateResultFeature>()?.AuthenticateResult;
         if (authResult is null || !authResult.Succeeded)
         {
-            await WriteRefreshErrorAsync(context, StatusCodes.Status401Unauthorized,
-                "invalid_token", authResult?.Failure?.Message ?? "Authentication failed.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status401Unauthorized, "invalid_token");
             return;
         }
 
         var newPrincipal = authResult.Principal ?? context.User;
         if (HasWindowsIdentity(connection.User) || HasWindowsIdentity(newPrincipal))
         {
-            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest,
-                "windows_identity_not_supported", "Authentication refresh does not support WindowsIdentity-backed principals.");
+            await WriteRefreshErrorAsync(context, StatusCodes.Status400BadRequest, "windows_identity_not_supported");
             return;
         }
 
@@ -207,9 +201,7 @@ internal sealed partial class HttpConnectionDispatcher
             var accepted = await InvokeAuthenticationRefreshCallbackAsync(connection, context, callback, newPrincipal, newExpiration);
             if (!accepted)
             {
-                await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden,
-                    "permission_change_rejected",
-                    "Authentication refresh rejected by application policy.");
+                await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "permission_change_rejected");
                 return;
             }
         }
@@ -250,7 +242,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private static async Task WriteRefreshErrorAsync(HttpContext context, int statusCode, string error, string description)
+    private static async Task WriteRefreshErrorAsync(HttpContext context, int statusCode, string error)
     {
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
@@ -262,7 +254,6 @@ internal sealed partial class HttpConnectionDispatcher
             using var jsonWriter = new Utf8JsonWriter((IBufferWriter<byte>)writer);
             jsonWriter.WriteStartObject();
             jsonWriter.WriteString("error", error);
-            jsonWriter.WriteString("error_description", description);
             jsonWriter.WriteEndObject();
             jsonWriter.Flush();
 
@@ -983,8 +974,8 @@ internal sealed partial class HttpConnectionDispatcher
         }
         else if (useAuthenticationRefreshPath)
         {
-            // Run the same authentication-refresh logic as the /refresh endpoint so the OnAuthenticationRefresh callback and the
-            // UserRefreshed re-key logic run, instead of silently swapping connection.User on the poll.
+            // Run the same authentication-refresh logic as the /refresh endpoint so the OnAuthenticationRefresh callback and
+            // hub-layer refresh notification run, instead of silently swapping connection.User on the poll.
             if (options.OnAuthenticationRefresh is { } callback)
             {
                 var accepted = await InvokeAuthenticationRefreshCallbackAsync(connection, context, callback, newPrincipal!, newExpiration);
@@ -1003,9 +994,7 @@ internal sealed partial class HttpConnectionDispatcher
                     // The application rejected the refreshed principal. Tear the connection down rather than
                     // keep serving it with a token the client has rotated away from. The connection.User and
                     // the persisted HttpContext.User are intentionally left unchanged on this path.
-                    await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden,
-                        "permission_change_rejected",
-                        "Authentication refresh rejected by application policy.");
+                    await WriteRefreshErrorAsync(context, StatusCodes.Status403Forbidden, "permission_change_rejected");
                     connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false, HttpConnectionStopStatus.NormalClosure);
                     return false;
                 }
@@ -1032,8 +1021,6 @@ internal sealed partial class HttpConnectionDispatcher
             // Setup the connection state from the http context
             connection.User = connection.HttpContext?.User;
 
-            // Long polling clones the WindowsIdentity on first poll (see CloneUser) so the connection
-            // owns those SafeHandles and must dispose them when replaced or when it ends.
             if (transportType == HttpTransportType.LongPolling && connection.User?.Identity is WindowsIdentity)
             {
                 connection.MarkUserOwned();

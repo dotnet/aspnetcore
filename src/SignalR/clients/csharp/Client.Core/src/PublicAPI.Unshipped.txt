@@ -5,8 +5,6 @@ Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.EnableAutoRefre
 Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.EnableAutoRefresh.set -> void
 Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.RefreshBeforeExpiration.get -> System.TimeSpan
 Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.RefreshBeforeExpiration.set -> void
-Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.FallbackRefreshInterval.get -> System.TimeSpan?
-Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.FallbackRefreshInterval.set -> void
 Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.OnAuthenticationRefreshed.get -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshedContext!, System.Threading.Tasks.Task!>?
 Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.OnAuthenticationRefreshed.set -> void
 Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshOptions.OnAuthenticationRefreshFailed.get -> System.Func<Microsoft.AspNetCore.SignalR.Client.AuthenticationRefreshFailedContext!, System.Threading.Tasks.Task!>?

@@ -34,10 +34,9 @@ public partial class HttpConnectionTests
         [Fact]
         public async Task RefreshAuthenticationAsyncSendsFreshlyFetchedTokenNotCachedConnectToken()
         {
-            // Regression test: the AccessTokenHttpMessageHandler caches the access token captured when the
-            // connection started and overwrites the Authorization header on each request. RefreshAuthenticationAsync must
-            // force a fresh token to be fetched so the /refresh request carries the new token (and the cache is
-            // updated for subsequent transport requests).
+            // AccessTokenHttpMessageHandler caches the access token captured when the connection started
+            // and overwrites the Authorization header on each request. RefreshAuthenticationAsync must force
+            // a fresh token to be fetched so the /refresh request carries the new token.
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
             testHttpHandler.OnLongPoll(_ => ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
@@ -77,11 +76,8 @@ public partial class HttpConnectionTests
         [Fact]
         public async Task RefreshAuthenticationAsyncUpdatesCachedTokenSoSubsequentTransportRequestsUseNewToken()
         {
-            // Regression test for the cache side-effect of the IsRefresh fix: AccessTokenHttpMessageHandler caches the
-            // access token captured when the connection started and applies it to every transport request. RefreshAuthenticationAsync
-            // must update that cache so subsequent Long Polling sends/polls carry the refreshed token, not the stale
-            // connect-time token. Asserting only that the /refresh request carries the new token (see the test above) would
-            // still pass if the cache update were dropped, silently reintroducing the original bug.
+            // RefreshAuthenticationAsync must update the cached access token so subsequent Long Polling
+            // sends/polls carry the refreshed token, not the stale connect-time token.
             var testHttpHandler = new TestHttpMessageHandler(autoNegotiate: false);
             testHttpHandler.OnNegotiate((_, _) => ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationContent(negotiateVersion: 1)));
             testHttpHandler.OnLongPollDelete(_ => ResponseUtils.CreateResponse(HttpStatusCode.Accepted));

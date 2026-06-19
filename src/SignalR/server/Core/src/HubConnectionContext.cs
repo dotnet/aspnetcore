@@ -55,7 +55,8 @@ public partial class HubConnectionContext
     private string? _userIdentifier;
 
     // IUserIdProvider.GetUserId receives the connection, not the candidate principal. During refresh this
-    // lets that synchronous call see the pending principal before publishing the refreshed hub state.
+    // lets that synchronous call see the pending principal before publishing the refreshed hub state, so we
+    // can reject identifier changes without briefly exposing the new user to concurrent hub code.
     [ThreadStatic]
     private static UserIdProviderUserState? t_userIdProviderUserState;
 
@@ -141,10 +142,6 @@ public partial class HubConnectionContext
     /// <summary>
     /// Gets the user for this connection.
     /// </summary>
-    /// <remarks>
-    /// Authentication refresh updates this principal together with <see cref="UserIdentifier"/>, so hub
-    /// code does not observe a refreshed principal paired with a stale user identifier.
-    /// </remarks>
     public virtual ClaimsPrincipal User
     {
         get
@@ -184,7 +181,6 @@ public partial class HubConnectionContext
         set
         {
             Volatile.Write(ref _userIdentifier, value);
-            PublishHubCallerContext(new DefaultHubCallerContext(this, HubCallerContext.User ?? new ClaimsPrincipal(), value));
         }
     }
 
@@ -192,8 +188,7 @@ public partial class HubConnectionContext
     {
         var hubCallerContext = new DefaultHubCallerContext(
             this,
-            _connectionContext.Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal(),
-            UserIdentifier);
+            _connectionContext.Features.Get<IConnectionUserFeature>()?.User ?? new ClaimsPrincipal());
         var existing = Interlocked.CompareExchange(ref _hubCallerContext, hubCallerContext, null);
         if (existing is not null)
         {
@@ -225,7 +220,7 @@ public partial class HubConnectionContext
     internal void ApplyUserState(ClaimsPrincipal user, string? userIdentifier)
     {
         Volatile.Write(ref _userIdentifier, userIdentifier);
-        PublishHubCallerContext(new DefaultHubCallerContext(this, user, userIdentifier));
+        PublishHubCallerContext(new DefaultHubCallerContext(this, user));
     }
 
     private sealed class UserIdProviderUserState

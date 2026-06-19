@@ -19,9 +19,6 @@ public class HttpConnectionDispatcherOptions
 
     private PipeOptions? _transportPipeOptions;
     private PipeOptions? _appPipeOptions;
-    private TimeSpan _transportSendTimeout;
-    private long _transportMaxBufferSize;
-    private long _applicationMaxBufferSize;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
@@ -65,12 +62,12 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public long TransportMaxBufferSize
     {
-        get => _transportMaxBufferSize;
+        get;
         set
         {
             ArgumentOutOfRangeException.ThrowIfNegative(value);
 
-            _transportMaxBufferSize = value;
+            field = value;
         }
     }
 
@@ -82,12 +79,12 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public long ApplicationMaxBufferSize
     {
-        get => _applicationMaxBufferSize;
+        get;
         set
         {
             ArgumentOutOfRangeException.ThrowIfNegative(value);
 
-            _applicationMaxBufferSize = value;
+            field = value;
         }
     }
 
@@ -106,12 +103,12 @@ public class HttpConnectionDispatcherOptions
     /// </remarks>
     public TimeSpan TransportSendTimeout
     {
-        get => _transportSendTimeout;
+        get;
         set
         {
             ArgumentOutOfRangeException.ThrowIfEqual(value, TimeSpan.Zero);
 
-            _transportSendTimeout = value;
+            field = value;
         }
     }
 
@@ -150,7 +147,19 @@ public class HttpConnectionDispatcherOptions
     /// <see cref="CloseOnAuthenticationExpiration"/> is <c>false</c> (the default), expired connections are
     /// never force-closed, so this value is ignored.
     /// </remarks>
-    public TimeSpan AuthenticationRefreshGracePeriod { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan AuthenticationRefreshGracePeriod
+    {
+        get;
+        set
+        {
+            if (value < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be zero or greater.");
+            }
+
+            field = value;
+        }
+    } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// An optional callback invoked when the <c>/refresh</c> endpoint has successfully re-authenticated
@@ -160,7 +169,7 @@ public class HttpConnectionDispatcherOptions
     /// </summary>
     public Func<AuthenticationRefreshContext, ValueTask<bool>>? OnAuthenticationRefresh { get; set; }
 
-    internal bool TransportSendTimeoutEnabled => _transportSendTimeout != Timeout.InfiniteTimeSpan;
+    internal bool TransportSendTimeoutEnabled => TransportSendTimeout != Timeout.InfiniteTimeSpan;
 
     // We initialize these lazily based on the state of the options specified here.
     // Though these are mutable it's extremely rare that they would be mutated past the

@@ -176,7 +176,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             var hubCallerContext = connection.HubCallerContext;
             InitializeHub(hub, connection, hubCallerContext, invokeAllowed: false);
 
-            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthenticationRefreshedAsync), headers: null, _logger);
+            activity = StartActivity(SignalRServerActivitySource.OnAuthenticationRefreshed, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnAuthenticationRefreshedAsync), headers: null, _logger, connection);
 
             await hub.OnAuthenticationRefreshedAsync();
         }

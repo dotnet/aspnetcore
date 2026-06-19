@@ -57,8 +57,7 @@ public partial class HttpConnectionDispatcherTests
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
             Assert.Equal("application/json", context.Response.ContentType);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("refresh_disabled", json.Value<string>("error"));
-            Assert.False(string.IsNullOrEmpty(json.Value<string>("error_description")));
+            AssertRefreshError(json, "refresh_disabled");
         }
     }
 
@@ -78,7 +77,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("missing_connection_token", json.Value<string>("error"));
+            AssertRefreshError(json, "missing_connection_token");
         }
     }
 
@@ -102,7 +101,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("connection_not_found", json.Value<string>("error"));
+            AssertRefreshError(json, "connection_not_found");
         }
     }
 
@@ -132,7 +131,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("invalid_token", json.Value<string>("error"));
+            AssertRefreshError(json, "invalid_token");
         }
     }
 
@@ -252,7 +251,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("windows_identity_not_supported", json.Value<string>("error"));
+            AssertRefreshError(json, "windows_identity_not_supported");
             Assert.Same(originalUser, connection.User);
         }
     }
@@ -383,7 +382,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("invalid_token", json.Value<string>("error"));
+            AssertRefreshError(json, "invalid_token");
         }
     }
 
@@ -417,7 +416,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("unsupported_negotiate_version", json.Value<string>("error"));
+            AssertRefreshError(json, "unsupported_negotiate_version");
         }
     }
 
@@ -448,7 +447,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("connection_not_found", json.Value<string>("error"));
+            AssertRefreshError(json, "connection_not_found");
         }
     }
 
@@ -780,7 +779,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 EnableAuthenticationRefresh = true,
                 OnAuthenticationRefresh = ctx =>
-                {                    return ValueTask.FromResult(false);
+                {
+                    return ValueTask.FromResult(false);
                 },
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
@@ -808,8 +808,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("permission_change_rejected", json.Value<string>("error"));
-            Assert.Equal("Authentication refresh rejected by application policy.", json.Value<string>("error_description"));
+            AssertRefreshError(json, "permission_change_rejected");
 
             // Connection state must NOT have been swapped.
             Assert.Same(originalUser, connection.User);
@@ -818,7 +817,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public async Task RefreshDenyWithoutReasonUsesDefaultDescription()
+    public async Task RefreshDenyReturnsGenericError()
     {
         using (StartVerifiableLog())
         {
@@ -851,8 +850,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
             var json = ReadJson(context.Response.Body);
-            Assert.Equal("permission_change_rejected", json.Value<string>("error"));
-            Assert.Equal("Authentication refresh rejected by application policy.", json.Value<string>("error_description"));
+            AssertRefreshError(json, "permission_change_rejected");
         }
     }
 
@@ -911,46 +909,8 @@ public partial class HttpConnectionDispatcherTests
         }
     }
 
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    public void UpdateUserClonesWindowsIdentityAndDisposesPreviousWhenOwned()
-    {
-        using (StartVerifiableLog())
-        {
-            var manager = CreateConnectionManager(LoggerFactory);
-            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
-
-            // Pretend a previous /refresh already gave the connection an owned WindowsIdentity-backed user.
-            var firstWindowsIdentity = WindowsIdentity.GetAnonymous();
-            var firstUser = new WindowsPrincipal(firstWindowsIdentity);
-            connection.UpdateUser(firstUser, DateTimeOffset.UtcNow.AddMinutes(15));
-
-            var ownedFirst = (WindowsIdentity)connection.User.Identity;
-            Assert.NotSame(firstWindowsIdentity, ownedFirst);
-            Assert.False(ownedFirst.AccessToken.IsClosed);
-
-            // Now a second /refresh comes in with a fresh WindowsIdentity.
-            var secondWindowsIdentity = WindowsIdentity.GetAnonymous();
-            var secondUser = new WindowsPrincipal(secondWindowsIdentity);
-            connection.UpdateUser(secondUser, DateTimeOffset.UtcNow.AddMinutes(30));
-
-            // The connection's User must be a clone, not the incoming principal.
-            Assert.NotSame(secondUser, connection.User);
-            Assert.IsType<WindowsPrincipal>(connection.User);
-            var ownedSecond = (WindowsIdentity)connection.User.Identity;
-            Assert.NotSame(secondWindowsIdentity, ownedSecond);
-            Assert.False(ownedSecond.AccessToken.IsClosed);
-
-            // The first owned identity must have been disposed by the swap.
-            Assert.True(ownedFirst.AccessToken.IsClosed);
-
-            // The caller-provided WindowsIdentity must NOT be disposed (caller still owns it).
-            Assert.False(secondWindowsIdentity.AccessToken.IsClosed);
-        }
-    }
-
     [Fact]
-    public void UpdateUserWithNonWindowsIdentityDoesNotClone()
+    public void UpdateUserSetsUser()
     {
         using (StartVerifiableLog())
         {
@@ -960,34 +920,7 @@ public partial class HttpConnectionDispatcherTests
             var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("n", "v") }, "Test"));
             connection.UpdateUser(newUser, DateTimeOffset.UtcNow.AddMinutes(15));
 
-            // No clone for ordinary ClaimsIdentity.
             Assert.Same(newUser, connection.User);
-        }
-    }
-
-    [ConditionalFact]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-    public async Task DisposeAfterRefreshDisposesClonedWindowsIdentity()
-    {
-        using (StartVerifiableLog())
-        {
-            var manager = CreateConnectionManager(LoggerFactory);
-            var connection = manager.CreateConnection(new HttpConnectionDispatcherOptions(), negotiateVersion: 1);
-            connection.TransportType = HttpTransportType.WebSockets;
-
-            var windowsIdentity = WindowsIdentity.GetAnonymous();
-            var user = new WindowsPrincipal(windowsIdentity);
-            connection.UpdateUser(user, DateTimeOffset.UtcNow.AddMinutes(15));
-
-            var cloned = (WindowsIdentity)connection.User.Identity;
-            Assert.False(cloned.AccessToken.IsClosed);
-
-            await connection.DisposeAsync();
-
-            // The connection should dispose the clone it owns even though the transport isn't long-polling.
-            Assert.True(cloned.AccessToken.IsClosed);
-            // The caller-supplied identity must not have been touched.
-            Assert.False(windowsIdentity.AccessToken.IsClosed);
         }
     }
 
@@ -1077,8 +1010,7 @@ public partial class HttpConnectionDispatcherTests
 
             Assert.Equal(StatusCodes.Status403Forbidden, context2.Response.StatusCode);
             var json = ReadJson(context2.Response.Body);
-            Assert.Equal("permission_change_rejected", json.Value<string>("error"));
-            Assert.Equal("Authentication refresh rejected by application policy.", json.Value<string>("error_description"));
+            AssertRefreshError(json, "permission_change_rejected");
 
             // The connection principal must NOT have been swapped to the rejected one.
             Assert.Same(userA, connection.User);
@@ -1438,6 +1370,12 @@ public partial class HttpConnectionDispatcherTests
         body.Position = 0;
         using var reader = new StreamReader(body);
         return JObject.Parse(reader.ReadToEnd());
+    }
+
+    private static void AssertRefreshError(JObject json, string error)
+    {
+        Assert.Equal(error, json.Value<string>("error"));
+        Assert.Null(json["error_description"]);
     }
 
     private sealed class ThrowingAuthenticationService : IAuthenticationService

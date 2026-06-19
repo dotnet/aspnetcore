@@ -13,20 +13,18 @@ internal sealed class DefaultHubCallerContext : HubCallerContext
 {
     private readonly HubConnectionContext _connection;
     private readonly ClaimsPrincipal _user;
-    private readonly string? _userIdentifier;
 
-    public DefaultHubCallerContext(HubConnectionContext connection, ClaimsPrincipal user, string? userIdentifier)
+    public DefaultHubCallerContext(HubConnectionContext connection, ClaimsPrincipal user)
     {
         _connection = connection;
         _user = user;
-        _userIdentifier = userIdentifier;
     }
 
     /// <inheritdoc />
     public override string ConnectionId => _connection.ConnectionId;
 
     /// <inheritdoc />
-    public override string? UserIdentifier => _userIdentifier;
+    public override string? UserIdentifier => _connection.UserIdentifier;
 
     /// <inheritdoc />
     public override ClaimsPrincipal? User => _user;

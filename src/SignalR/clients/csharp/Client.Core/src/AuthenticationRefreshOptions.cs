@@ -29,20 +29,19 @@ public sealed class AuthenticationRefreshOptions
     /// The client schedules refresh at: <c>now + tokenLifetimeSeconds - RefreshBeforeExpiration</c>.
     /// Default is 5 minutes.
     /// </summary>
-    public TimeSpan RefreshBeforeExpiration { get; set; } = TimeSpan.FromMinutes(5);
+    public TimeSpan RefreshBeforeExpiration
+    {
+        get;
+        set
+        {
+            if (value < TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be zero or greater.");
+            }
 
-    /// <summary>
-    /// Optional fixed interval at which to refresh authentication when the server does not report
-    /// a token lifetime. Default is <c>null</c> (no fallback refresh is scheduled).
-    /// </summary>
-    /// <remarks>
-    /// When the server reports a token lifetime (via negotiate or a refresh response), that value
-    /// takes precedence and this interval is ignored. The interval is used only when no lifetime is
-    /// reported and <see cref="EnableAutoRefresh"/> is <c>true</c>. A fallback refresh only changes
-    /// the connection's credentials if the configured access token provider returns a new token;
-    /// otherwise the same token is re-sent to the server.
-    /// </remarks>
-    public TimeSpan? FallbackRefreshInterval { get; set; }
+            field = value;
+        }
+    } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Optional callback invoked after a successful authentication refresh.
