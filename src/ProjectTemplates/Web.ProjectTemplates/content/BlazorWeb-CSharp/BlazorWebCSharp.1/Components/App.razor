@@ -29,6 +29,9 @@
 </head>
 
 <body>
+    @*#if (UseServer)
+    <ConfigureBrowser Configuration="@(new BrowserConfiguration { Server = new() { AutoPause = new() { Enabled = true } } })" />
+    ##endif*@
     @*#if (!InteractiveAtRoot)
     <Routes />
     ##elseif (IndividualLocalAuth)
