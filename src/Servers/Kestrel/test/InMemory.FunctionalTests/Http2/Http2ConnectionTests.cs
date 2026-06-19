@@ -5907,7 +5907,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Theory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66309")]
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(int intFinalFrameType)
