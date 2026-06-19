@@ -817,20 +817,18 @@ public class AsyncValidationTests
     public async Task AsyncValidation_MultipleAttributesOnSameProperty_ShortCircuitsAfterFirstError()
     {
         // Arrange
-        // The second DelayedAsyncValidationAttribute waits until the semaphore can be entered.
-        // The semaphore initially can't be entered (initialCount = 0).
-        // Only when the first validation error is reached, it will release the semaphore, allowing
-        // the second validation to proceed. By then the first error has short-circuited validation
-        // and cancelled the sibling's (linked) cancellation token, so the second attribute is
-        // cancelled and its error is NOT collected.
-        using var signal = new SemaphoreSlim(0, 1);
+        // The second DelayedAsyncValidationAttribute waits on a signal that is only set when the
+        // first validation error is reached, allowing the second validation to proceed. By then the
+        // first error has short-circuited validation and cancelled the sibling's (linked)
+        // cancellation token, so the second attribute is cancelled and its error is NOT collected.
+        var signal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var recordType = new TestValidatableTypeInfo(
             typeof(Record),
             [
                 CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
                     [
                         new DelayedAsyncValidationAttribute { ShouldFail = true, ErrorMessage = "First async error" },
-                        new DelayedAsyncValidationAttribute(signal) { ShouldFail = true, ErrorMessage = "Second async error" }
+                        new DelayedAsyncValidationAttribute(signal.Task) { ShouldFail = true, ErrorMessage = "Second async error" }
                     ])
             ]);
 
@@ -848,7 +846,7 @@ public class AsyncValidationTests
         {
             if (context.Errors.Count == 1 && context.Errors[0] == "First async error")
             {
-                signal.Release();
+                signal.TrySetResult();
             }
         };
 
@@ -2048,13 +2046,13 @@ public class AsyncValidationTests
 
     private class DelayedAsyncValidationAttribute : AsyncValidationAttribute
     {
-        private readonly SemaphoreSlim? _signal;
+        private readonly Task? _signal;
 
         public DelayedAsyncValidationAttribute()
         {
         }
 
-        public DelayedAsyncValidationAttribute(SemaphoreSlim signal)
+        public DelayedAsyncValidationAttribute(Task signal)
         {
             _signal = signal;
         }
