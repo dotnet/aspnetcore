@@ -143,13 +143,24 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
 
             List<Task>? tasks = null;
             var nextUseNeedsClone = false;
+
+            // This is a small struct, so we shouldn't have a perf concern here.
+            // We need to capture the original state early before calling any ValidateAsync.
+            // Imagine:
+            // We call ValidateAsync, we find that it didn't complete synchronously.
+            // Then we know the context cannot be reused and we clone it.
+            // If we do that without capturing the original state, we will be cloning the context with
+            // potentially mutated values that are not wrong.
+            // So we capture the original state here and restore it later when we go async and we need to clone.
+            var originalState = context.CaptureMutableState();
+
             foreach (var item in enumerable)
             {
                 if (item != null)
                 {
                     if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        var possiblyClonedContext = nextUseNeedsClone ? context.Clone() : context;
+                        var possiblyClonedContext = nextUseNeedsClone ? context.Clone(originalState) : context;
                         nextUseNeedsClone = false;
                         possiblyClonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                             ? $"{Name}[{index}]"

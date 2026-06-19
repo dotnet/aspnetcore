@@ -179,6 +179,8 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
 
                 List<Task>? tasks = null;
                 var nextUseNeedsClone = false;
+
+                var originalState = context.CaptureMutableState();
                 foreach (var item in enumerable)
                 {
                     if (item != null)
@@ -186,7 +188,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                         var itemType = item.GetType();
                         if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            var clonedContextForEnumerable = nextUseNeedsClone ? context.Clone() : context;
+                            var clonedContextForEnumerable = nextUseNeedsClone ? context.Clone(originalState) : context;
                             nextUseNeedsClone = false;
                             clonedContextForEnumerable.CurrentValidationPath = $"{currentPrefix}[{index}]";
                             var task = validatableType.ValidateAsync(item, clonedContextForEnumerable, cancellationToken);

@@ -365,6 +365,105 @@ public class AsyncValidationTests
     }
 
     [Fact]
+    public async Task SiblingMember_WithSyncError_HasCorrectPath_WhenPrecedingMemberSuspendsAsync()
+    {
+        // Regression test for ValidateContext clone state leaking between sibling members.
+        //
+        // Members are validated sequentially, but when a member's validation does not complete
+        // synchronously, the validator clones the ValidateContext for the subsequent members so
+        // they don't race on shared mutable state. That clone must not inherit the *in-progress*
+        // CurrentValidationPath of the suspended sibling.
+        //
+        // Here 'First' parks on a gate while CurrentValidationPath has been mutated to "First"
+        // (its finally block that restores the path hasn't run yet). 'Second' is then validated
+        // on a clone and fails synchronously. Because 'Second' is a root-level sibling its error
+        // path must be "Second" - not "First.Second" - regardless of where 'First' is suspended.
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var modelType = new TestValidatableTypeInfo(
+            typeof(TwoStringModel),
+            [
+                CreatePropertyInfo(typeof(TwoStringModel), typeof(string), "First", "First",
+                    [new GatedSuccessAsyncAttribute(gate.Task)]),
+                CreatePropertyInfo(typeof(TwoStringModel), typeof(string), "Second", "Second",
+                    [new StringLengthAttribute(3) { ErrorMessage = "Second is too long" }])
+            ]);
+
+        var model = new TwoStringModel { First = "ok", Second = "way too long" };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(TwoStringModel), modelType }
+            }),
+            ValidationContext = new ValidationContext(model)
+        };
+
+        // Act - 'First' suspends on the gate during the synchronous portion of validation, then
+        // 'Second' is validated (and fails) on the cloned context. Release the gate afterwards.
+        var validateTask = modelType.ValidateAsync(model, context, default);
+        gate.SetResult();
+        await validateTask.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Second", error.Key);
+        Assert.Equal("Second is too long", error.Value.First());
+    }
+
+    [Fact]
+    public async Task SiblingMember_WithSyncError_HasCorrectPath_WhenPrecedingComplexMemberSuspendsAsync()
+    {
+        // Same clone-state-leak regression as above, but the suspended sibling is a *complex*
+        // member whose nested async validation parks while CurrentValidationPath has been pushed
+        // even deeper (and CurrentDepth has been incremented). The failing root-level sibling
+        // 'Title' must still report its error under "Title".
+        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var innerType = new TestValidatableTypeInfo(
+            typeof(GatedInner),
+            [
+                CreatePropertyInfo(typeof(GatedInner), typeof(string), "Value", "Value",
+                    [new GatedSuccessAsyncAttribute(gate.Task)])
+            ]);
+
+        var modelType = new TestValidatableTypeInfo(
+            typeof(ComplexThenStringModel),
+            [
+                CreatePropertyInfo(typeof(ComplexThenStringModel), typeof(GatedInner), "Inner", "Inner", []),
+                CreatePropertyInfo(typeof(ComplexThenStringModel), typeof(string), "Title", "Title",
+                    [new StringLengthAttribute(3) { ErrorMessage = "Title is too long" }])
+            ]);
+
+        var model = new ComplexThenStringModel
+        {
+            Inner = new GatedInner { Value = "ok" },
+            Title = "way too long"
+        };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(ComplexThenStringModel), modelType },
+                { typeof(GatedInner), innerType }
+            }),
+            ValidationContext = new ValidationContext(model)
+        };
+
+        // Act
+        var validateTask = modelType.ValidateAsync(model, context, default);
+        gate.SetResult();
+        await validateTask.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Title", error.Key);
+        Assert.Equal("Title is too long", error.Value.First());
+    }
+
+    [Fact]
     public async Task AsyncValidation_WithCancellation()
     {
         // Arrange
@@ -1225,6 +1324,23 @@ public class AsyncValidationTests
         public string? Content { get; set; }
     }
 
+    private class TwoStringModel
+    {
+        public string? First { get; set; }
+        public string? Second { get; set; }
+    }
+
+    private class GatedInner
+    {
+        public string? Value { get; set; }
+    }
+
+    private class ComplexThenStringModel
+    {
+        public GatedInner? Inner { get; set; }
+        public string? Title { get; set; }
+    }
+
     private class UserProfile : IAsyncValidatableObject
     {
         public string? Username { get; set; }
@@ -1696,6 +1812,33 @@ public class AsyncValidationTests
         {
             await Task.Delay(50, cancellationToken);
             _completionTcs.TrySetResult();
+            return ValidationResult.Success;
+        }
+    }
+
+    /// <summary>
+    /// Async attribute that parks on an external gate before succeeding. Used to deterministically
+    /// hold a member's validation in a suspended state (with the ValidateContext still mutated)
+    /// while sibling members are validated.
+    /// </summary>
+    private class GatedSuccessAsyncAttribute : AsyncValidationAttribute
+    {
+        private readonly Task _gate;
+
+        public GatedSuccessAsyncAttribute(Task gate)
+        {
+            _gate = gate;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            => throw new UnreachableException();
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value,
+            ValidationContext validationContext,
+            CancellationToken cancellationToken)
+        {
+            await _gate.WaitAsync(cancellationToken);
             return ValidationResult.Success;
         }
     }

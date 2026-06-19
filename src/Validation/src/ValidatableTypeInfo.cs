@@ -143,14 +143,15 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
         // First validate direct members
-        List<Task>? localValidationTasks = await ValidateMembers(value, context, localValidationTasks: null, cancellationToken);
+        var originalState = context.CaptureMutableState();
+        List<Task>? localValidationTasks = await ValidateMembers(value, context, originalState, localValidationTasks: null, cancellationToken);
 
         var actualType = value.GetType();
 
         // Then validate inherited members
         foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
         {
-            localValidationTasks = await superTypeInfo.ValidateMembers(value, context, localValidationTasks, cancellationToken);
+            localValidationTasks = await superTypeInfo.ValidateMembers(value, context, originalState, localValidationTasks, cancellationToken);
         }
 
         // If any property-level validation errors were found, return early
@@ -204,12 +205,17 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
     }
 
-    private async Task<List<Task>?> ValidateMembers(object value, ValidateContext context, List<Task>? localValidationTasks, CancellationToken cancellationToken)
+    private async Task<List<Task>?> ValidateMembers(
+        object value,
+        ValidateContext context,
+        ValidateContextMutableState originalState,
+        List<Task>? localValidationTasks,
+        CancellationToken cancellationToken)
     {
         var needsClone = localValidationTasks is not null;
         for (var i = 0; i < _membersCount; i++)
         {
-            var possiblyCloned = needsClone ? context.Clone() : context;
+            var possiblyCloned = needsClone ? context.Clone(originalState) : context;
             var task = Members[i].ValidateAsync(value, possiblyCloned, cancellationToken);
             if (!task.IsCompleted)
             {

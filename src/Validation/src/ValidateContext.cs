@@ -23,11 +23,11 @@ public sealed class ValidateContext
         _validationErrors = new();
     }
 
-    private ValidateContext(ValidateContext original)
+    internal ValidateContext(ValidateContext original, ValidateContextMutableState state)
     {
         _validationErrors = original._validationErrors;
-        CurrentDepth = original.CurrentDepth;
-        CurrentValidationPath = original.CurrentValidationPath;
+        CurrentDepth = state.Depth;
+        CurrentValidationPath = state.Path;
 
         if (original.OnValidationError?.GetInvocationList() is { } onValidationErrorDelegates)
         {
@@ -38,16 +38,23 @@ public sealed class ValidateContext
         }
     }
 
-    internal ValidateContext Clone()
+    internal ValidateContext Clone(ValidateContextMutableState state)
     {
-        var cloned = new ValidateContext(this)
+        return new ValidateContext(this, state)
         {
-            ValidationContext = CloneValidationContext(),
-            ValidationOptions = ValidationOptions,
+            ValidationOptions = this.ValidationOptions,
+            ValidationContext = CloneValidationContextWithMutableState(state),
         };
-
-        return cloned;
     }
+
+    internal ValidateContextMutableState CaptureMutableState()
+        => new ValidateContextMutableState()
+        {
+            Depth = CurrentDepth,
+            Path = CurrentValidationPath,
+            DisplayName = ValidationContext.DisplayName,
+            MemberName = ValidationContext.MemberName,
+        };
 
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
@@ -148,16 +155,16 @@ public sealed class ValidateContext
         return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
     }
 
-    private ValidationContext CloneValidationContext()
+    private ValidationContext CloneValidationContextWithMutableState(ValidateContextMutableState state)
     {
         var original = ValidationContext;
         return new ValidationContext(
             original.ObjectInstance,
-            original.DisplayName,
+            state.DisplayName,
             original,
             original.Items)
         {
-            MemberName = original.MemberName,
+            MemberName = state.MemberName,
         };
     }
 }
