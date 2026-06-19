@@ -33,6 +33,13 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <!-- Reference these abstractions explicitly so they resolve to the 9.0.x runtime packages.
+         Otherwise they float in transitively (System.IdentityModel.Tokens.Jwt -> Microsoft.IdentityModel.Tokens
+         -> Microsoft.Extensions.Logging.Abstractions -> Microsoft.Extensions.DependencyInjection.Abstractions)
+         at 8.0.0, which in source-build only exists as a reference-assembly package and would ship a poisoned
+         reference stub in the packed tool. -->
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
   </ItemGroup>
 
   <ItemGroup>
