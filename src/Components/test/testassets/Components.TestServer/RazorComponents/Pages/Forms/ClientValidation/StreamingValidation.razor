@@ -1,0 +1,49 @@
+@page "/forms/client-validation/streaming-validation"
+@attribute [StreamRendering]
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<h2 id="page-title">Streaming client-side validation</h2>
+
+<style>
+    .validation-message { color: red; display: block; }
+    .field-validation-valid { display: none; }
+</style>
+
+@if (_ready)
+{
+    <EditForm Model="Form" FormName="streaming-validation" method="post">
+        <DataAnnotationsValidator />
+        <div>
+            <label for="gamma">Gamma</label>
+            <InputText id="gamma" @bind-Value="Form!.Gamma" />
+            <ValidationMessage For="() => Form!.Gamma" />
+        </div>
+        <button type="submit" id="submit">Submit</button>
+    </EditForm>
+}
+else
+{
+    <p id="streaming-placeholder">Streaming...</p>
+}
+
+@code {
+    private bool _ready;
+
+    [SupplyParameterFromForm] private StreamingModel? Form { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Form ??= new StreamingModel();
+        // Defer rendering the form so it is delivered in a streaming update (going through the
+        // DOM-merge + 'enhancedload' path) rather than in the initial response.
+        await Task.Delay(100);
+        _ready = true;
+    }
+
+    public class StreamingModel
+    {
+        [Required(ErrorMessage = "Gamma is required.")]
+        public string? Gamma { get; set; }
+    }
+}

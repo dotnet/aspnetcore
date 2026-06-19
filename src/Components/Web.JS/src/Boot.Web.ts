@@ -31,6 +31,7 @@ import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 import { createValidationService, ValidationOptions } from './Validation';
 import { ClientValidationElementName } from './Validation/Adapters/BlazorAdapter';
+import { refreshValidationService } from './Validation/ValidationService';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -167,6 +168,10 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
 function initFormValidationIfNeeded(validationOptions?: ValidationOptions): void {
   if (Blazor.formValidation) {
+    // The service already exists. An enhanced-navigation update may have reused/updated carrier
+    // elements in place (without re-firing their connectedCallback), so reconcile them against
+    // the current DOM.
+    refreshValidationService();
     return;
   }
 

@@ -100,21 +100,101 @@ public class ClientValidationTest : ClientValidationTestBase
         Assert.Contains("email", emailRules);
     }
 
-    [Fact(Skip = "Reveals a real limitation: enhanced navigation reuses the <blazor-client-validation-data> carrier via DOM morphing, so connectedCallback does not re-fire and the destination form is left without client validation (and without novalidate). Tracked in client-validation-rework-todos.md. Unskip once Boot.Web re-processes carriers on 'enhancedload'.")]
-    public void EnhancedNavigation_RevalidatesNewForm()
+    // Enhanced navigation updates the page by DOM morphing, which reuses the carrier element
+    // (its connectedCallback does not re-fire) and strips the JS-added novalidate. The
+    // 'enhancedload' reconcile in the validation service must re-register the destination form.
+    // These tests cover every transition: form->form, form->form->back, form->no-form->form,
+    // and no-form->form.
+
+    [Fact]
+    public void EnhancedNavigation_FormToForm_RevalidatesNewForm()
     {
         NavigateToClientValidationPage("enhanced-nav-a");
+        MarkEnhancedNavProbe();
 
-        // Enhanced-navigate to form B (no full page reload; the document-level submit
-        // interceptor installed for form A persists).
         Browser.Exists(By.Id("go-to-b")).Click();
         Browser.Equal("Enhanced navigation form B", () => Browser.Exists(By.Id("page-title")).Text);
-        Browser.Exists(By.CssSelector("form[novalidate]"));
+        AssertWasEnhancedNavigation();
 
-        // Submitting form B uses form B's rules: its carrier was registered and form A's
-        // unregistered during the DOM swap.
+        // The morph reused the carrier and stripped novalidate; the reconcile must re-apply it
+        // and register form B's rules.
+        Browser.Exists(By.CssSelector("form[novalidate]"));
         Browser.Exists(By.Id("submit")).Click();
         Browser.Equal("Beta is required.", () => FieldMessage("Form.Beta"));
+    }
+
+    [Fact]
+    public void EnhancedNavigation_FormToFormAndBack_EachValidatesOwnRules()
+    {
+        NavigateToClientValidationPage("enhanced-nav-a");
+        MarkEnhancedNavProbe();
+
+        // A -> B
+        Browser.Exists(By.Id("go-to-b")).Click();
+        Browser.Equal("Enhanced navigation form B", () => Browser.Exists(By.Id("page-title")).Text);
+        Browser.Exists(By.Id("submit")).Click();
+        Browser.Equal("Beta is required.", () => FieldMessage("Form.Beta"));
+
+        // B -> A: the reused carrier's payload changes back to A's rules.
+        Browser.Exists(By.Id("go-to-a")).Click();
+        Browser.Equal("Enhanced navigation form A", () => Browser.Exists(By.Id("page-title")).Text);
+        AssertWasEnhancedNavigation();
+        Browser.Exists(By.CssSelector("form[novalidate]"));
+        Browser.Exists(By.Id("submit")).Click();
+        Browser.Equal("Alpha is required.", () => FieldMessage("Form.Alpha"));
+    }
+
+    [Fact]
+    public void EnhancedNavigation_FormToNoFormAndBack_RevalidatesForm()
+    {
+        NavigateToClientValidationPage("enhanced-nav-a");
+        MarkEnhancedNavProbe();
+
+        // A -> no-form page: the carrier is removed; nothing should remain tracked.
+        Browser.Exists(By.Id("go-to-noform")).Click();
+        Browser.Equal("Enhanced navigation no-form page", () => Browser.Exists(By.Id("page-title")).Text);
+        AssertWasEnhancedNavigation();
+        Browser.DoesNotExist(By.CssSelector("blazor-client-validation-data"));
+
+        // no-form -> A: the form must be (re-)registered even though the service already exists.
+        Browser.Exists(By.Id("go-to-a")).Click();
+        Browser.Equal("Enhanced navigation form A", () => Browser.Exists(By.Id("page-title")).Text);
+        Browser.Exists(By.CssSelector("form[novalidate]"));
+        Browser.Exists(By.Id("submit")).Click();
+        Browser.Equal("Alpha is required.", () => FieldMessage("Form.Alpha"));
+    }
+
+    [Fact]
+    public void EnhancedNavigation_NoFormToForm_RegistersValidation()
+    {
+        // Start on a page with no carrier (the service is not created on this page).
+        Navigate("subdir/forms/client-validation/enhanced-nav-noform");
+        Browser.Exists(By.Id("blazor-started"));
+        Browser.Equal("Enhanced navigation no-form page", () => Browser.Exists(By.Id("page-title")).Text);
+        MarkEnhancedNavProbe();
+
+        // no-form -> form A: the service is created on first carrier sighting and registers A.
+        Browser.Exists(By.Id("go-to-a")).Click();
+        Browser.Equal("Enhanced navigation form A", () => Browser.Exists(By.Id("page-title")).Text);
+        AssertWasEnhancedNavigation();
+        Browser.Exists(By.CssSelector("form[novalidate]"));
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "document.addEventListener('submit', function (e) { e.preventDefault(); }, false);");
+        Browser.Exists(By.Id("submit")).Click();
+        Browser.Equal("Alpha is required.", () => FieldMessage("Form.Alpha"));
+    }
+
+    [Fact]
+    public void StreamingRendering_FormDeliveredViaStream_RegistersValidation()
+    {
+        // The form is rendered after a streaming delay, so it arrives via a streamed DOM update
+        // (the same merge + 'enhancedload' path as enhanced navigation). The helper waits for
+        // form[novalidate], which only appears once the streamed form is registered.
+        NavigateToClientValidationPage("streaming-validation");
+
+        Browser.Exists(By.Id("submit")).Click();
+        Browser.Equal("Gamma is required.", () => FieldMessage("Form.Gamma"));
     }
 
     [Fact]
@@ -203,4 +283,14 @@ public class ClientValidationTest : ClientValidationTestBase
         element.Clear();
         element.SendKeys(text);
     }
+
+    // Sets a window-scoped flag. Enhanced navigation preserves the JS context, so the flag
+    // survives; a full page reload would clear it. Used to assert a transition was an enhanced
+    // navigation (i.e. went through the DOM-merge path this fix targets), not a full reload.
+    private void MarkEnhancedNavProbe()
+        => ((IJavaScriptExecutor)Browser).ExecuteScript("window.__enhancedNavProbe = true;");
+
+    private void AssertWasEnhancedNavigation()
+        => Browser.True(() => (bool?)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return window.__enhancedNavProbe === true;") == true);
 }
