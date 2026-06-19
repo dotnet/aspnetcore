@@ -167,10 +167,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
     /// <summary>
     /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
-    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Beginning"/>.
+    /// of the list when new items arrive. The default is <see cref="VirtualizeAnchorMode.Start"/>.
     /// </summary>
     [Parameter]
-    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Beginning;
+    public VirtualizeAnchorMode AnchorMode { get; set; } = VirtualizeAnchorMode.Start;
 
     /// <summary>
     /// Gets or sets a comparer used to detect whether items were prepended or appended
