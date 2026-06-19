@@ -1,4 +1,4 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"eda9a51233fadf48f7f3023feaa200064bcecd07b7bdf5d5b2888b90f6f18cad","body_hash":"ff86436a315101eff9d6c42544bf188b0a721724c9c4a59a174c579a41abd02e","compiler_version":"v0.79.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.60"}}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"030f6993927475412c7cfff971115c05198c409252f2b2f4613344c182b0cb38","body_hash":"ff86436a315101eff9d6c42544bf188b0a721724c9c4a59a174c579a41abd02e","compiler_version":"v0.79.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.60"}}
 # gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"df4cb1c069e1874edd31b4311f1884172cec0e10","version":"v6.0.3"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/github-script","sha":"d746ffe35508b1917358783b479e04febd2b8f71","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9","version":"v0.79.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2","digest":"sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2@sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2","digest":"sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2@sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2","digest":"sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2@sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.25","digest":"sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.25@sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa"},{"image":"ghcr.io/github/github-mcp-server:v1.1.2","digest":"sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c","pinned_image":"ghcr.io/github/github-mcp-server:v1.1.2@sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c"}]}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
@@ -32,7 +32,7 @@
 #   - GITHUB_TOKEN
 #
 # Custom actions used:
-#   - actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+#   - actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 #   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0 (source v9)
@@ -375,6 +375,34 @@ on:
       # 
       # _ANSI = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
       # 
+      # # Redact token-shaped strings from captured CI failure text before emitting it.
+      # # Helix work-item upload steps log a live Azure DevOps bearer JWT on failure, which
+      # # ends up inside the test stackTrace / [FAIL] console blocks we capture. GitHub's
+      # # GITHUB_OUTPUT secret detector then skips the ENTIRE part1_data output
+      # # ("Skip output 'part1_data' since it may contain secret"), starving the agent of all
+      # # Part 1 data and producing a false noop. Scrubbing removes the trigger and avoids
+      # # surfacing live tokens in the prompt and uploaded artifacts.
+      # _SECRET_PATTERNS = [
+          # re.compile(r'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}'),         # JWT (header.payload.signature)
+          # re.compile(r'eyJ[A-Za-z0-9_-]{20,}'),                                               # bare JWT segment
+          # re.compile(r'\bgh[pousr]_[A-Za-z0-9]{20,}\b'),                                      # GitHub token (ghp_/gho_/...)
+          # re.compile(r'\bgithub_pat_[A-Za-z0-9_]{20,}\b'),                                    # GitHub fine-grained PAT
+          # re.compile(r'(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{20,}'),                              # Authorization: Bearer <token>
+          # re.compile(r'(?i)\bhttps?://[^/\s:@"]+:[^@\s/"]{6,}@'),                             # basic-auth credentials in URL
+          # re.compile(r'(?i)[?&]sig=[A-Za-z0-9%/+_=-]{20,}'),                                  # Azure SAS signature
+          # re.compile(r'(?i)\b(?:AccountKey|SharedAccessKey|AccessKey|Password|Pwd)=[^;\s"\']{12,}'),  # connection-string secret
+          # re.compile(r'[A-Za-z0-9+/=_-]{52,}'),                                               # long high-entropy run (AzDO PAT, base64)
+      # ]
+      # 
+      # def scrub_secrets(s):
+          # # Replace token-shaped substrings with a placeholder. Patterns run in order;
+          # # earlier, more specific rules win, and "[REDACTED]" is inert for later rules.
+          # if not s:
+              # return s
+          # for _pat in _SECRET_PATTERNS:
+              # s = _pat.sub("[REDACTED]", s)
+          # return s
+      # 
       # 
       # def fetch(url, headers=None, retries=3, raw=False, timeout=120):
           # hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
@@ -545,9 +573,9 @@ on:
                   # if idx == 0 and not is_wi:
                       # em, st = det.get("errorMessage"), det.get("stackTrace")
                       # if em:
-                          # e["error"] = em[:ERROR_CAP]
+                          # e["error"] = scrub_secrets(em)[:ERROR_CAP]
                       # if st:
-                          # e["stack"] = st[:STACK_CAP]
+                          # e["stack"] = scrub_secrets(st)[:STACK_CAP]
               # if is_wi:
                   # e["probes"] = probes
           # return agg
@@ -565,7 +593,7 @@ on:
                   # j = i + 1
                   # while j < len(lines) and not _MARKER.search(lines[j]):
                       # j += 1
-                  # blocks.append("\n".join(lines[i:j])[:BLOCK_CAP])
+                  # blocks.append(scrub_secrets("\n".join(lines[i:j]))[:BLOCK_CAP])
                   # i = j
               # else:
                   # i += 1
@@ -827,7 +855,11 @@ on:
       # 
       # 
       # if __name__ == "__main__":
-          # js = main()
+          # # Final safety net: scrub the fully serialized payload as well. GitHub skips the
+          # # WHOLE part1_data output if any token pattern is detected, so a leaked secret in
+          # # any field (not just the three scrubbed above) would starve the agent. Scrubbing
+          # # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
+          # js = scrub_secrets(main())
           # gh_out = os.environ.get("GITHUB_OUTPUT")
           # if not gh_out:
               # sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
@@ -942,7 +974,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Checkout .github and .agents folders
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           sparse-checkout: |
@@ -1209,7 +1241,7 @@ jobs:
             echo "GH_AW_SAFE_OUTPUTS_TOOLS_PATH=${RUNNER_TEMP}/gh-aw/safeoutputs/tools.json"
           } >> "$GITHUB_OUTPUT"
       - name: Checkout repository
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -2145,7 +2177,7 @@ jobs:
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_OUTPUT"
       - name: Checkout repository for patch context
         if: needs.agent.outputs.has_patch == 'true'
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
       # --- Threat Detection ---
@@ -2696,6 +2728,34 @@ jobs:
 
           _ANSI = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
 
+          # Redact token-shaped strings from captured CI failure text before emitting it.
+          # Helix work-item upload steps log a live Azure DevOps bearer JWT on failure, which
+          # ends up inside the test stackTrace / [FAIL] console blocks we capture. GitHub's
+          # GITHUB_OUTPUT secret detector then skips the ENTIRE part1_data output
+          # ("Skip output 'part1_data' since it may contain secret"), starving the agent of all
+          # Part 1 data and producing a false noop. Scrubbing removes the trigger and avoids
+          # surfacing live tokens in the prompt and uploaded artifacts.
+          _SECRET_PATTERNS = [
+              re.compile(r'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{6,}\.[A-Za-z0-9_-]{6,}'),         # JWT (header.payload.signature)
+              re.compile(r'eyJ[A-Za-z0-9_-]{20,}'),                                               # bare JWT segment
+              re.compile(r'\bgh[pousr]_[A-Za-z0-9]{20,}\b'),                                      # GitHub token (ghp_/gho_/...)
+              re.compile(r'\bgithub_pat_[A-Za-z0-9_]{20,}\b'),                                    # GitHub fine-grained PAT
+              re.compile(r'(?i)\bbearer\s+[A-Za-z0-9._~+/=-]{20,}'),                              # Authorization: Bearer <token>
+              re.compile(r'(?i)\bhttps?://[^/\s:@"]+:[^@\s/"]{6,}@'),                             # basic-auth credentials in URL
+              re.compile(r'(?i)[?&]sig=[A-Za-z0-9%/+_=-]{20,}'),                                  # Azure SAS signature
+              re.compile(r'(?i)\b(?:AccountKey|SharedAccessKey|AccessKey|Password|Pwd)=[^;\s"\']{12,}'),  # connection-string secret
+              re.compile(r'[A-Za-z0-9+/=_-]{52,}'),                                               # long high-entropy run (AzDO PAT, base64)
+          ]
+
+          def scrub_secrets(s):
+              # Replace token-shaped substrings with a placeholder. Patterns run in order;
+              # earlier, more specific rules win, and "[REDACTED]" is inert for later rules.
+              if not s:
+                  return s
+              for _pat in _SECRET_PATTERNS:
+                  s = _pat.sub("[REDACTED]", s)
+              return s
+
 
           def fetch(url, headers=None, retries=3, raw=False, timeout=120):
               hdrs = {"User-Agent": "aspnetcore-test-quarantine"}
@@ -2866,9 +2926,9 @@ jobs:
                       if idx == 0 and not is_wi:
                           em, st = det.get("errorMessage"), det.get("stackTrace")
                           if em:
-                              e["error"] = em[:ERROR_CAP]
+                              e["error"] = scrub_secrets(em)[:ERROR_CAP]
                           if st:
-                              e["stack"] = st[:STACK_CAP]
+                              e["stack"] = scrub_secrets(st)[:STACK_CAP]
                   if is_wi:
                       e["probes"] = probes
               return agg
@@ -2886,7 +2946,7 @@ jobs:
                       j = i + 1
                       while j < len(lines) and not _MARKER.search(lines[j]):
                           j += 1
-                      blocks.append("\n".join(lines[i:j])[:BLOCK_CAP])
+                      blocks.append(scrub_secrets("\n".join(lines[i:j]))[:BLOCK_CAP])
                       i = j
                   else:
                       i += 1
@@ -3148,7 +3208,11 @@ jobs:
 
 
           if __name__ == "__main__":
-              js = main()
+              # Final safety net: scrub the fully serialized payload as well. GitHub skips the
+              # WHOLE part1_data output if any token pattern is detected, so a leaked secret in
+              # any field (not just the three scrubbed above) would starve the agent. Scrubbing
+              # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
+              js = scrub_secrets(main())
               gh_out = os.environ.get("GITHUB_OUTPUT")
               if not gh_out:
                   sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
@@ -3246,7 +3310,7 @@ jobs:
             await main();
       - name: Checkout repository (trusted default branch for comment events)
         if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request') && (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment')
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.repository.default_branch }}
           token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -3254,7 +3318,7 @@ jobs:
           fetch-depth: 0
       - name: Checkout repository
         if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'create_pull_request') && github.event_name != 'issue_comment' && github.event_name != 'pull_request_review_comment'
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: main
           token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
