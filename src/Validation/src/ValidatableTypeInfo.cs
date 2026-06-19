@@ -166,6 +166,11 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             return;
         }
 
+        if (localValidationTasks is not null)
+        {
+            context = context.CopyWithState(originalState);
+        }
+
         var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
 
         // Validate type-level attributes
@@ -192,6 +197,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         if (localValidationTasks is not null)
         {
             await Task.WhenAll(localValidationTasks);
+
+            context = context.CopyWithState(originalState);
         }
 
         // After async property/type-level validations complete, skip IValidatableObject
