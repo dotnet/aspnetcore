@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -40,8 +40,8 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
 
             compilationContext.RegisterOperationBlockStartAction(blockContext =>
             {
-                var componentStack = new Stack<ComponentState>();
-                var completedVirtualizeComponents = new List<ComponentState>();
+                var componentStack = new ConcurrentStack<ComponentState>();
+                var completedVirtualizeComponents = new ConcurrentBag<ComponentState>();
 
                 blockContext.RegisterOperationAction(operationContext =>
                 {
@@ -79,7 +79,7 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
                             break;
 
                         case "AddComponentParameter":
-                            if (componentStack.Count > 0 && componentStack.Peek().IsVirtualize)
+                            if (componentStack.TryPeek(out var current) && current.IsVirtualize)
                             {
                                 if (invocation.Arguments.Length >= 2)
                                 {
@@ -87,15 +87,14 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
                                     if (nameArg.Value.ConstantValue.HasValue &&
                                         nameArg.Value.ConstantValue.Value is string paramName)
                                     {
-                                        var state = componentStack.Peek();
                                         if (paramName == "ItemsProvider")
                                         {
-                                            state.HasItemsProvider = true;
-                                            state.ItemsProviderLocation = invocation.Syntax.GetLocation();
+                                            current.HasItemsProvider = true;
+                                            current.ItemsProviderLocation = invocation.Syntax.GetLocation();
                                         }
                                         else if (paramName == "ItemComparer")
                                         {
-                                            state.HasItemComparer = true;
+                                            current.HasItemComparer = true;
                                         }
                                     }
                                 }
@@ -103,9 +102,8 @@ public sealed class VirtualizeItemComparerAnalyzer : DiagnosticAnalyzer
                             break;
 
                         case "CloseComponent":
-                            if (componentStack.Count > 0)
+                            if (componentStack.TryPop(out var state))
                             {
-                                var state = componentStack.Pop();
                                 if (state.IsVirtualize)
                                 {
                                     completedVirtualizeComponents.Add(state);
