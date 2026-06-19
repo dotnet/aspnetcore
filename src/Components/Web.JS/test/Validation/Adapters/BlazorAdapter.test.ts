@@ -1,6 +1,7 @@
 import { expect, test, describe, beforeAll, afterEach } from '@jest/globals';
 import {
   registerValidationData,
+  reconcileValidationElements,
   defineBlazorClientValidationDataElement,
   ClientValidationElementName,
 } from '../../../src/Validation/Adapters/BlazorAdapter';
@@ -138,31 +139,86 @@ describe('registerValidationData', () => {
   });
 });
 
-describe('blazor-client-validation-data custom element lifecycle', () => {
-  // Smoke test of the form-associated custom element shell (with the attachInternals
-  // polyfill): connect registers the form's inputs; disconnect unregisters them, which is
-  // the cleanup contract enhanced-navigation / streaming DOM swaps depend on.
-  test('registers inputs on connect and unregisters on disconnect', () => {
-    const { engine, eventManager } = makeHarness();
+// The form-associated custom element owns each carrier's lifecycle: connect registers the form's
+// inputs, disconnect unregisters them, and reconcile (driven by refreshValidationService on
+// enhanced navigation) re-applies rules when a reused carrier's payload changed and re-asserts the
+// novalidate a DOM morph strips. customElements.define is global and irreversible, so the element
+// is defined once - bound to this shared engine - and every test in this block runs against it,
+// relying on the afterEach DOM clear to fire disconnectedCallback and reset engine state.
+describe('blazor-client-validation-data custom element', () => {
+  let engine: ValidationEngine;
 
+  beforeAll(() => {
+    const harness = makeHarness();
+    engine = harness.engine;
+    defineBlazorClientValidationDataElement(engine, harness.eventManager);
+  });
+
+  function makeCarrierForm(inputName: string, payload: string): { form: HTMLFormElement; input: HTMLInputElement; carrier: HTMLElement } {
     const form = document.createElement('form');
     const input = document.createElement('input');
-    input.name = 'Name';
+    input.name = inputName;
     form.appendChild(input);
 
     const carrier = document.createElement(ClientValidationElementName);
-    carrier.textContent = fieldPayload('Name', [{ name: 'required', message: 'Required.' }]);
+    carrier.textContent = payload;
     form.appendChild(carrier);
-    document.body.appendChild(form);
 
-    // Define after the carrier is in the DOM, mirroring SSR HTML present before JS boots.
-    defineBlazorClientValidationDataElement(engine, eventManager);
-    customElements.upgrade(document);
+    document.body.appendChild(form);
+    return { form, input, carrier };
+  }
+
+  // Connect registers the form's inputs; disconnect unregisters them, which is the cleanup
+  // contract enhanced-navigation DOM swaps depend on (a removed carrier tears down its form).
+  test('registers inputs on connect and unregisters on disconnect', () => {
+    const { input, carrier } = makeCarrierForm(
+      'Name',
+      fieldPayload('Name', [{ name: 'required', message: 'Required.' }]),
+    );
 
     expect(engine.getElementState(input)).toBeDefined();
 
     carrier.remove();
 
     expect(engine.getElementState(input)).toBeUndefined();
+  });
+
+  // A reused carrier whose payload changed (form A -> form B after a morph) must drop the old
+  // form's rules and re-register with the new ones, and re-apply the novalidate the morph stripped.
+  test('reconcile rebuilds and re-asserts novalidate when the carrier payload changes', () => {
+    const { form, input, carrier } = makeCarrierForm(
+      'Alpha',
+      fieldPayload('Alpha', [{ name: 'required', message: 'Alpha required.' }]),
+    );
+
+    expect(engine.getElementState(input)?.rules[0].errorMessage).toBe('Alpha required.');
+
+    // Simulate the morph: same input element reused but renamed, novalidate stripped, payload changed.
+    input.name = 'Beta';
+    form.removeAttribute('novalidate');
+    carrier.textContent = fieldPayload('Beta', [{ name: 'required', message: 'Beta required.' }]);
+
+    reconcileValidationElements();
+
+    expect(form.hasAttribute('novalidate')).toBe(true);
+    expect(engine.getElementState(input)?.rules).toEqual([
+      { ruleName: 'required', errorMessage: 'Beta required.', params: {} },
+    ]);
+  });
+
+  // An unchanged carrier payload must be a no-op so a preserved form's live state is not cleared,
+  // while novalidate is still re-asserted (the morph strips it even when rules are unchanged).
+  test('reconcile leaves the form untouched when the payload is unchanged but re-asserts novalidate', () => {
+    const { form, input } = makeCarrierForm(
+      'Gamma',
+      fieldPayload('Gamma', [{ name: 'required', message: 'Required.' }]),
+    );
+    const stateBefore = engine.getElementState(input);
+
+    form.removeAttribute('novalidate');
+    reconcileValidationElements();
+
+    expect(engine.getElementState(input)).toBe(stateBefore);
+    expect(form.hasAttribute('novalidate')).toBe(true);
   });
 });

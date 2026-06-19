@@ -150,10 +150,13 @@ export class ErrorDisplay {
         summaryElement.appendChild(ul);
       }
 
-      // Add non-duplicate error messages to the summary.
+      // Add non-duplicate error messages to the summary. Mirror the server-rendered
+      // ValidationSummary markup (<li class="validation-message">) so client- and
+      // server-produced summaries are styled identically.
       const uniqueErrorMessages = new Set<string>(errors.values());
       for (const errorMessage of uniqueErrorMessages) {
         const li = document.createElement('li');
+        li.className = 'validation-message';
         li.textContent = errorMessage;
         ul.appendChild(li);
       }

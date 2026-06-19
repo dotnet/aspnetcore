@@ -22,6 +22,10 @@ interface ClientValidationRule {
   params?: Record<string, string>;
 }
 
+interface ReconcilableValidationElement extends Element {
+  reconcile?: () => void;
+}
+
 export function defineBlazorClientValidationDataElement(
   engine: ValidationEngine,
   eventManager: EventManager,
@@ -30,12 +34,16 @@ export function defineBlazorClientValidationDataElement(
     return;
   }
 
-  class BlazorClientValidationDataElement extends HTMLElement {
+  class BlazorClientValidationDataElement extends HTMLElement implements ReconcilableValidationElement {
     static formAssociated = true;
 
     private internals: ElementInternals;
 
     private registeredInputs: ValidatableElement[] = [];
+
+    // The payload last applied to the form, used to skip a rebuild when an enhanced-navigation
+    // morph reused this carrier without changing its rules (preserving the form's live state).
+    private appliedPayload: string | null = null;
 
     constructor() {
       super();
@@ -43,28 +51,75 @@ export function defineBlazorClientValidationDataElement(
     }
 
     connectedCallback(): void {
+      this.applyRules();
+    }
+
+    disconnectedCallback(): void {
+      this.teardown();
+    }
+
+    // Re-runs registration against the current DOM. Called after an enhanced-navigation update,
+    // where the morph reuses this carrier (so connectedCallback does not re-fire), may update its
+    // payload in place, and strips the JS-added novalidate from the form.
+    reconcile(): void {
+      this.applyRules();
+    }
+
+    private applyRules(): void {
       const form = this.internals.form;
 
       if (!form) {
         return;
       }
 
-      const registered = registerValidationData(form, this.textContent || '', engine, eventManager);
-      this.registeredInputs.push(...registered);
+      // Re-assert novalidate: an enhanced-navigation morph reconciles the form's attributes to the
+      // server HTML, which strips the novalidate we add. This is cheap and idempotent.
+      if (!form.hasAttribute('novalidate')) {
+        form.setAttribute('novalidate', '');
+      }
+
+      const payload = this.textContent || '';
+      if (this.appliedPayload === payload) {
+        // Rules unchanged - leave the existing registration and live error display intact.
+        return;
+      }
+
+      this.teardown();
+      this.registeredInputs = registerValidationData(form, payload, engine, eventManager);
+      this.appliedPayload = payload;
     }
 
-    disconnectedCallback(): void {
+    private teardown(): void {
       for (const input of this.registeredInputs) {
         engine.unregisterElement(input);
       }
 
       this.registeredInputs = [];
+      this.appliedPayload = null;
     }
   }
 
   customElements.define(ClientValidationElementName, BlazorClientValidationDataElement);
 }
 
+/**
+ * Reconciles every carrier currently in the page after an enhanced-navigation update. The DOM
+ * morph reuses existing carriers (so their connectedCallback does not re-fire) and may strip the
+ * form's novalidate or update a carrier's payload in place; carriers it removed or added during the
+ * morph were already handled by their disconnected/connected callbacks.
+ */
+export function reconcileValidationElements(): void {
+  document.querySelectorAll(ClientValidationElementName).forEach(element => {
+    (element as ReconcilableValidationElement).reconcile?.();
+  });
+}
+
+/**
+ * Parses a `<blazor-client-validation-data>` payload and registers each described field's input
+ * with the validation engine, attaching its event listeners. Inputs not found in the form, or
+ * already registered, are skipped. Also sets `novalidate` on the form so the browser's native
+ * validation does not interfere. Returns the inputs registered by this call.
+ */
 export function registerValidationData(
   form: HTMLFormElement,
   payloadText: string,

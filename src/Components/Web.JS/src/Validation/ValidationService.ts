@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { defineBlazorClientValidationDataElement } from './Adapters/BlazorAdapter';
+import { defineBlazorClientValidationDataElement, reconcileValidationElements } from './Adapters/BlazorAdapter';
 import { registerCoreValidators } from './CoreValidators';
 import { ErrorDisplay } from './ErrorDisplay';
 import { EventManager } from './EventManager';
@@ -37,4 +37,16 @@ export function createValidationService(options?: ValidationOptions): Validation
     validateField: (element: ValidatableElement) => engine.validateElement(element),
     validateForm: (form: HTMLFormElement) => engine.validateForm(form).size === 0,
   };
+}
+
+/**
+ * Reconciles client validation after an enhanced-navigation update (the `enhancedload` event,
+ * which fires once the DOM morph completes). The morph reuses existing carrier elements rather
+ * than recreating them, so their connectedCallback does not re-fire and the morph also strips the
+ * JS-added `novalidate`. This re-runs each in-page carrier's reconcile so a reused carrier whose
+ * payload changed is rebuilt and `novalidate` is re-asserted; carriers the morph removed or added
+ * were already handled by their disconnected/connected callbacks.
+ */
+export function refreshValidationService(): void {
+  reconcileValidationElements();
 }
