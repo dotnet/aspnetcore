@@ -156,25 +156,27 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             // So we capture the original state here and restore it later when we go async and we need to clone.
             var originalState = context.CaptureMutableState();
 
+            var currentContext = context;
             foreach (var item in enumerable)
             {
                 if (item != null)
                 {
                     if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        var possiblyClonedContext = nextUseNeedsClone ? context.CopyWithState(originalState) : context;
                         if (nextUseNeedsClone)
                         {
-                            (clonedContexts ??= new()).Add(possiblyClonedContext);
+                            currentContext = context.CopyWithState(originalState);
+                            (clonedContexts ??= new()).Add(currentContext);
+                            nextUseNeedsClone = false;
                         }
 
                         nextUseNeedsClone = false;
-                        possiblyClonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                        currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                             ? $"{Name}[{index}]"
                             : $"{currentPrefix}.{Name}[{index}]";
                         try
                         {
-                            var enumItemTask = validatableType.ValidateAsync(item, possiblyClonedContext, cancellationToken);
+                            var enumItemTask = validatableType.ValidateAsync(item, currentContext, cancellationToken);
                             if (enumItemTask.IsCompletedSuccessfully)
                             {
                                 await enumItemTask;

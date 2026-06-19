@@ -212,20 +212,20 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         List<ValidateContext>? clonedContexts,
         CancellationToken cancellationToken)
     {
+        var originalContext = context;
         var needsClone = localValidationTasks is not null;
         for (var i = 0; i < _membersCount; i++)
         {
-            var possiblyCloned = needsClone ? context.CopyWithState(originalState) : context;
             if (needsClone)
             {
-                (clonedContexts ??= new()).Add(possiblyCloned);
+                context = originalContext.CopyWithState(originalState);
+                (clonedContexts ??= new()).Add(context);
+                needsClone = false;
             }
-
-            needsClone = false;
 
             try
             {
-                var task = Members[i].ValidateAsync(value, possiblyCloned, cancellationToken);
+                var task = Members[i].ValidateAsync(value, context, cancellationToken);
                 if (!task.IsCompletedSuccessfully)
                 {
                     needsClone = true;
