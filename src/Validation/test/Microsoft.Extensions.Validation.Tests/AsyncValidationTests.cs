@@ -788,8 +788,8 @@ public class AsyncValidationTests
             [
                 CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
                     [
-                        new DelayedAsyncValidationAttribute(50) { ShouldFail = false },
-                        new DelayedAsyncValidationAttribute(100) { ShouldFail = true, ErrorMessage = "Delayed validation failed" }
+                        new DelayedAsyncValidationAttribute { ShouldFail = false },
+                        new DelayedAsyncValidationAttribute { ShouldFail = true, ErrorMessage = "Delayed validation failed" }
                     ])
             ]);
 
@@ -829,8 +829,8 @@ public class AsyncValidationTests
             [
                 CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
                     [
-                        new DelayedAsyncValidationAttribute(10) { ShouldFail = true, ErrorMessage = "First async error" },
-                        new DelayedAsyncValidationAttribute(10, signal) { ShouldFail = true, ErrorMessage = "Second async error" }
+                        new DelayedAsyncValidationAttribute { ShouldFail = true, ErrorMessage = "First async error" },
+                        new DelayedAsyncValidationAttribute(signal) { ShouldFail = true, ErrorMessage = "Second async error" }
                     ])
             ]);
 
@@ -1552,7 +1552,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            await Task.Delay(10, cancellationToken);
+            await Task.Yield();
 
             if (Username == "taken")
             {
@@ -1580,7 +1580,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            await Task.Delay(10, cancellationToken);
+            await Task.Yield();
 
             if (Password != ConfirmPassword)
             {
@@ -1619,7 +1619,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            await Task.Delay(10, cancellationToken);
+            await Task.Yield();
 
             if (Bio is null || Bio.Length < 10)
             {
@@ -1696,7 +1696,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            await Task.Delay(10, cancellationToken);
+            await Task.Yield();
 
             if (Bio is not null && Bio.Length < 10)
             {
@@ -1796,7 +1796,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(50, cancellationToken);
+            await Task.Yield();
 
             if (value is string email && email == "duplicate@example.com")
             {
@@ -1817,7 +1817,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(30, cancellationToken);
+            await Task.Yield();
 
             if (value is string sku && sku.Contains("DUPLICATE"))
             {
@@ -1847,7 +1847,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(10, cancellationToken);
+            await Task.Yield();
             _validationOrder.Enqueue(_name);
             return ValidationResult.Success;
         }
@@ -1881,7 +1881,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(20, cancellationToken);
+            await Task.Yield();
 
             if (value is string zip && zip == "INVALID")
             {
@@ -1902,7 +1902,8 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(5000, cancellationToken);
+            // Block until cancellation is requested (deterministic; no fixed delay).
+            await new TaskCompletionSource().Task.WaitAsync(cancellationToken);
             return ValidationResult.Success;
         }
     }
@@ -1917,7 +1918,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(30, cancellationToken);
+            await Task.Yield();
 
             if (value is string username && username == "taken")
             {
@@ -1938,7 +1939,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(20, cancellationToken);
+            await Task.Yield();
 
             if (value is OrderWithTypeValidation order)
             {
@@ -1962,7 +1963,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(20, cancellationToken);
+            await Task.Yield();
 
             if (value is string code && code == "DUPLICATE")
             {
@@ -2024,7 +2025,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(10, cancellationToken);
+            await Task.Yield();
             throw new InvalidOperationException("Async validation failed");
         }
     }
@@ -2047,17 +2048,14 @@ public class AsyncValidationTests
 
     private class DelayedAsyncValidationAttribute : AsyncValidationAttribute
     {
-        private readonly int _delayMs;
         private readonly SemaphoreSlim? _signal;
 
-        public DelayedAsyncValidationAttribute(int delayMs)
+        public DelayedAsyncValidationAttribute()
         {
-            _delayMs = delayMs;
         }
 
-        public DelayedAsyncValidationAttribute(int delayMs, SemaphoreSlim signal)
+        public DelayedAsyncValidationAttribute(SemaphoreSlim signal)
         {
-            _delayMs = delayMs;
             _signal = signal;
         }
 
@@ -2073,10 +2071,17 @@ public class AsyncValidationTests
         {
             if (_signal is not null)
             {
-                await _signal.WaitAsync();
-            }
+                await _signal.WaitAsync(cancellationToken);
 
-            await Task.Delay(_delayMs, cancellationToken);
+                // The sibling attribute's first error short-circuits validation by cancelling the
+                // linked token. Block until that cancellation is observed so this attribute's error
+                // is not collected (deterministic; no fixed delay).
+                await new TaskCompletionSource().Task.WaitAsync(cancellationToken);
+            }
+            else
+            {
+                await Task.Yield();
+            }
 
             if (ShouldFail)
             {
@@ -2151,7 +2156,7 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Delay(50, cancellationToken);
+            await Task.Yield();
             _completionTcs.TrySetResult();
             return ValidationResult.Success;
         }
