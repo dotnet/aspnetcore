@@ -13,8 +13,7 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    // TODO: Make lazy.
-    private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors = new();
+    private ConcurrentDictionary<string, IEnumerable<string>>? _validationErrors;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -129,7 +128,14 @@ public sealed class ValidateContext
 
     internal void AddValidationErrorSuppressEvent(string path, IEnumerable<string> errors)
     {
-        var existingErrors = (ConcurrentQueue<string>)_validationErrors.GetOrAdd(path, static _ => new ConcurrentQueue<string>());
+        var validationErrors = _validationErrors;
+        if (validationErrors is null)
+        {
+            var newDictionary = new ConcurrentDictionary<string, IEnumerable<string>>();
+            validationErrors = Interlocked.CompareExchange(ref _validationErrors, newDictionary, null) ?? newDictionary;
+        }
+
+        var existingErrors = (ConcurrentQueue<string>)validationErrors.GetOrAdd(path, static _ => new ConcurrentQueue<string>());
         foreach (var error in errors)
         {
             existingErrors.Enqueue(error);
