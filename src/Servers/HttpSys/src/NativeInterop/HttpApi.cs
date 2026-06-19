@@ -72,10 +72,12 @@ internal static partial class HttpApi
     internal static bool SupportsClientHello { get; }
     internal static bool SupportsQueryTlsCipherInfo { get; }
     internal static bool Supported { get; }
+    internal static uint HttpInitializeStatusCode { get; }
 
     static unsafe HttpApi()
     {
         var statusCode = PInvoke.HttpInitialize(Version, HTTP_INITIALIZE.HTTP_INITIALIZE_SERVER | HTTP_INITIALIZE.HTTP_INITIALIZE_CONFIG);
+        HttpInitializeStatusCode = statusCode;
 
         if (statusCode == ErrorCodes.ERROR_SUCCESS)
         {

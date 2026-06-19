@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
 
@@ -17,8 +18,11 @@ namespace BlazorWasm.ServiceDefaults1;
 /// </summary>
 internal sealed class BackgroundExportHandler(
     ResiliencePipeline<HttpResponseMessage> pipeline,
-    ILogger logger) : DelegatingHandler(new HttpClientHandler())
+    IServiceProvider serviceProvider) : DelegatingHandler(new HttpClientHandler())
 {
+    private ILogger? _logger;
+    private ILogger Logger => _logger ??= serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Aspire.OtlpExport");
+
     protected override Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
@@ -27,7 +31,7 @@ internal sealed class BackgroundExportHandler(
         var snapshot = RequestSnapshot.Capture(request);
 
         // Send the real request with retries in the background.
-        _ = SendWithRetryAsync(snapshot, cancellationToken);
+        _ = SendWithRetryAsync(snapshot, CancellationToken.None);
 
         // Return 200 immediately so the SDK's sync .GetResult() unblocks.
         return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
@@ -46,7 +50,7 @@ internal sealed class BackgroundExportHandler(
 
             if (!response.IsSuccessStatusCode)
             {
-                logger.LogWarning(
+                Logger.LogWarning(
                     "OTLP export to {Uri} completed with status {StatusCode} after retries.",
                     snapshot.RequestUri, response.StatusCode);
             }
@@ -55,7 +59,7 @@ internal sealed class BackgroundExportHandler(
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogWarning(ex,
+            Logger.LogWarning(ex,
                 "OTLP export to {Uri} failed after retries.", snapshot.RequestUri);
         }
     }

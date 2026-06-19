@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Validation.Tests;
 /// </summary>
 internal sealed class TestLiteralDisplayName(string literal) : DisplayNameInfo
 {
-    public override string? GetDisplayName(ValidateContext context, string memberName, Type? declaringType)
+    public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
     {
         var localizer = context.ValidationOptions.Localizer;
         if (localizer is null)
@@ -23,7 +23,7 @@ internal sealed class TestLiteralDisplayName(string literal) : DisplayNameInfo
         // Literal acts as both lookup key and fallback display name when the localizer doesn't translate.
         return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
         {
-            DeclaringType = declaringType,
+            Type = type,
             DisplayName = literal,
             MemberName = memberName,
         }) ?? literal;

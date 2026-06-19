@@ -122,7 +122,7 @@ public static partial class SnapshotTestHelper
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
-                ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
+                ? Path.Combine(AppContext.BaseDirectory, "snapshots")
                 : "snapshots");
     }
 
