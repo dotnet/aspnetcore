@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed partial class CacheBoundaryService
+internal sealed partial class CacheBoundaryService : IDisposable
 {
     private static readonly object _inFlightResolutionsItemKey = new();
 
@@ -32,6 +32,19 @@ internal sealed partial class CacheBoundaryService
     {
         _store = store;
         _logger = loggerFactory.CreateLogger<CacheBoundary>();
+
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _store.Clear;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied -= _store.Clear;
+        }
     }
 
     public static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)

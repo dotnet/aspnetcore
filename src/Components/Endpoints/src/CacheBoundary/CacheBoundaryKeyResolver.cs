@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
@@ -13,6 +15,15 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal static class CacheBoundaryKeyResolver
 {
+    private static readonly ConcurrentDictionary<string, string[]> _sortedNamesByRawValue = new(StringComparer.Ordinal);
+
+    static CacheBoundaryKeyResolver()
+    {
+        if (HotReloadManager.IsSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _sortedNamesByRawValue.Clear;
+        }
+    }
 
     internal static string ComputeKey(CacheBoundary cacheBoundary, HttpContext httpContext)
     {
@@ -151,21 +162,22 @@ internal static class CacheBoundaryKeyResolver
         AppendString(hash, ")");
     }
 
-    private static List<string> CollectSortedNames(string separatedValues)
-    {
-        var names = new List<string>();
-        foreach (var segment in separatedValues.AsSpan().Split(','))
+    private static string[] CollectSortedNames(string separatedValues)
+        => _sortedNamesByRawValue.GetOrAdd(separatedValues, static raw =>
         {
-            var name = separatedValues.AsSpan()[segment].Trim();
-            if (!name.IsEmpty)
+            var names = new List<string>();
+            foreach (var segment in raw.AsSpan().Split(','))
             {
-                names.Add(name.ToString());
+                var name = raw.AsSpan()[segment].Trim();
+                if (!name.IsEmpty)
+                {
+                    names.Add(name.ToString());
+                }
             }
-        }
 
-        names.Sort(StringComparer.Ordinal);
-        return names;
-    }
+            names.Sort(StringComparer.Ordinal);
+            return names.ToArray();
+        });
 
     private static void AppendAllQueryValues(IncrementalHash hash, HttpRequest request)
     {

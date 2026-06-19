@@ -161,18 +161,6 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         {
             endpoints.MapRazorComponents<TRootComponent>()
                 .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
-
-            endpoints.MapGet("cache-component/clear", (HttpContext context) =>
-            {
-                var storeType = typeof(RazorComponentsServiceOptions).Assembly
-                    .GetType("Microsoft.AspNetCore.Components.Endpoints.ICacheBoundaryStore")
-                    ?? throw new InvalidOperationException("ICacheBoundaryStore type not found. The internal type may have been renamed or moved.");
-                var store = context.RequestServices.GetService(storeType)
-                    ?? throw new InvalidOperationException("ICacheBoundaryStore is not registered in DI.");
-                var clearMethod = storeType.GetMethod("Clear")
-                    ?? throw new InvalidOperationException("ICacheBoundaryStore.Clear() method not found.");
-                clearMethod.Invoke(store, null);
-            });
         });
     }
 }

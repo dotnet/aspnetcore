@@ -66,7 +66,6 @@ internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
             }
             catch (Exception ex)
             {
-                _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
                 tcs.SetException(ex);
                 throw;
             }
