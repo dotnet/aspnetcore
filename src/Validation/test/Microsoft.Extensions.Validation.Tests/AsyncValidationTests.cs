@@ -748,9 +748,11 @@ public class AsyncValidationTests
         Assert.False(validated); // Type-level validation should not run due to property error
     }
 
-    [Fact(Skip = "Not longer applicable. Consider deleting or adjusting it to pass.")]
-    public async Task AsyncValidation_PropertyWithAsyncFailure_CanRunInParallelWithTypeLevelAttribute()
+    [Fact]
+    public async Task AsyncValidation_PropertyWithAsyncFailure_ShortCircuitsTypeLevelAttribute()
     {
+        // A failing member (here a property with a failing async attribute) short-circuits
+        // object-level validation: the type-level attribute must not run.
         var typeLevelValidated = false;
         var entityType = new TestValidatableTypeInfo(
             typeof(UserWithAsyncValidation),
@@ -774,7 +776,7 @@ public class AsyncValidationTests
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Contains("Email", context.ValidationErrors.Keys);
-        Assert.True(typeLevelValidated);
+        Assert.False(typeLevelValidated);
     }
 
     [Fact]
@@ -1008,57 +1010,6 @@ public class AsyncValidationTests
         Assert.Equal("Getter throws", ex.InnerException.Message);
     }
 
-    [Fact(Skip = "No longer relevant. Decide to delete or slightly change the test so that it passes.")]
-    public async Task AsyncAttributeOnProperty_WithComplexValue_SeesCorrectDisplayName()
-    {
-        using var typeValidationStarted = new SemaphoreSlim(0, 1);
-        var capturedDisplayNames = new ConcurrentBag<string>();
-
-        var innerType = new TestValidatableTypeInfo(
-            typeof(InnerComplexType),
-            [
-                CreatePropertyInfo(typeof(InnerComplexType), typeof(string), "Data", "Data", [])
-            ],
-            [new SignalingAsyncTypeLevelAttribute(typeValidationStarted)]);
-
-        // The outer type has a property "Inner" whose display name is "Shipping Address".
-        // The property carries an async attribute that waits for the type-level validation
-        // to start (ensuring DisplayName has been changed), then captures whatever
-        // DisplayName it sees on the ValidationContext.
-        var outerType = new TestValidatableTypeInfo(
-            typeof(OuterWithComplexProp),
-            [
-                new TestValidatablePropertyInfo(
-                    typeof(OuterWithComplexProp),
-                    typeof(InnerComplexType),
-                    "Inner",
-                    "Shipping Address",
-                    [new DisplayNameCapturingAsyncAttribute(typeValidationStarted, capturedDisplayNames)])
-            ]);
-
-        var instance = new OuterWithComplexProp
-        {
-            Inner = new InnerComplexType { Data = "test" }
-        };
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(OuterWithComplexProp), outerType },
-                { typeof(InnerComplexType), innerType }
-            }),
-            ValidationContext = new ValidationContext(instance)
-        };
-
-        await outerType.ValidateAsync(instance, context, default);
-
-        // The async attribute on the property should see the property's display name
-        // ("Shipping Address"), not the type's display name ("InnerComplexType").
-        var captured = Assert.Single(capturedDisplayNames);
-        Assert.Equal("Shipping Address", captured);
-    }
-
     [Fact]
     public async Task AsyncValidation_OnParameterCollection_AwaitsAsyncValidatorsOnItems()
     {
@@ -1099,121 +1050,40 @@ public class AsyncValidationTests
         Assert.True(completionTcs.Task.IsCompletedSuccessfully);
     }
 
-    [Fact(Skip = "Not longer applicable. Consider deleting or adjusting it to pass.")]
-    public async Task TypeLevelAsyncValidation_DoesNotCorruptSharedContext_OfInFlightPropertyValidation()
+    [Fact]
+    public async Task TypeLevelAttributeValidation_RunsOnlyAfterMemberValidationCompletes()
     {
-        // Regression test for a data race in ValidatableTypeInfo.ValidateAsync.
-        // The first member is validated using the *shared* ValidateContext. When that member's
-        // validation does not complete synchronously, the shared context is still "owned" by the
-        // in-flight property task. The parent, however, starts type-level attribute validation on
-        // that same shared context before awaiting the member task, so ValidateTypeAttributesAsync
-        // mutates ValidationContext.MemberName/DisplayName out from under the suspended property
-        // validator. A correct (isolated/cloned) implementation must leave the property validator's
-        // context untouched.
-        var propertyEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseProperty = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var propertyReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var typeLevelEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseTypeLevel = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        var propertyAttribute = new GatedContextCapturingAsyncAttribute(propertyEntered, releaseProperty.Task, propertyReadDone);
+        // Type-level attribute validation must not run in parallel with member validation; all
+        // member tasks must complete first. (Mirrors
+        // IAsyncValidatableObject_DoesNotRunInParallelWithPropertyValidation for type-level attributes.)
+        var propertyValidationCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var propertyWasCompleteWhenTypeLevelRan = false;
 
         var modelType = new TestValidatableTypeInfo(
-            typeof(TypeLevelContextRaceModel),
+            typeof(Record),
             [
-                CreatePropertyInfo(typeof(TypeLevelContextRaceModel), typeof(string), "Name", "Name", [propertyAttribute])
+                CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value",
+                    [new CompletionTrackingAsyncAttribute(propertyValidationCompleted)])
             ],
-            [new GatedTypeLevelAsyncAttribute(typeLevelEntered, releaseTypeLevel.Task)]);
+            [new TrackingTypeLevelAttribute(
+                () => propertyWasCompleteWhenTypeLevelRan = propertyValidationCompleted.Task.IsCompletedSuccessfully)]);
 
-        var model = new TypeLevelContextRaceModel { Name = "value" };
+        var model = new Record { Value = "test" };
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
-                { typeof(TypeLevelContextRaceModel), modelType }
+                { typeof(Record), modelType }
             }),
             ValidationContext = new ValidationContext(model)
         };
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await modelType.ValidateAsync(model, context, default);
 
-        // Act
-        var validateTask = modelType.ValidateAsync(model, context, cts.Token);
-
-        // The property's async validator has run synchronously up to its first await: it has set
-        // ValidationContext.MemberName/DisplayName to "Name" and is now suspended.
-        await propertyEntered.Task.WaitAsync(cts.Token);
-
-        // Type-level validation has now started on the *same* shared context: it has set
-        // MemberName = null and DisplayName = the type name, and is parked while holding that state.
-        await typeLevelEntered.Task.WaitAsync(cts.Token);
-
-        // Resume the property validator and let it observe the (possibly corrupted) shared context.
-        releaseProperty.SetResult();
-        await propertyReadDone.Task.WaitAsync(cts.Token);
-
-        // Let everything finish.
-        releaseTypeLevel.SetResult();
-        await validateTask;
-
-        // Assert - the property validator must still see its own member/display name, not the
-        // type-level validation's mutations to the shared context.
-        Assert.Equal("Name", propertyAttribute.CapturedMemberName);
-        Assert.Equal("Name", propertyAttribute.CapturedDisplayName);
-    }
-
-    [Fact(Skip = "Not longer applicable. Consider deleting or adjusting it to pass.")]
-    public async Task TypeLevelAsyncValidation_DoesNotCorruptInFlightPropertyErrorMessage()
-    {
-        // End-to-end symptom of the same data race: a property's async attribute builds an error
-        // message from ValidationContext.DisplayName. While that attribute is suspended, concurrent
-        // type-level validation rewrites the shared DisplayName to the type name, so the property's
-        // reported error message ends up referencing the wrong member.
-        var propertyEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseProperty = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var propertyReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var typeLevelEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var releaseTypeLevel = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        var propertyAttribute = new GatedContextCapturingAsyncAttribute(propertyEntered, releaseProperty.Task, propertyReadDone)
-        {
-            ReportFailure = true
-        };
-
-        var modelType = new TestValidatableTypeInfo(
-            typeof(TypeLevelContextRaceModel),
-            [
-                CreatePropertyInfo(typeof(TypeLevelContextRaceModel), typeof(string), "Name", "Name", [propertyAttribute])
-            ],
-            [new GatedTypeLevelAsyncAttribute(typeLevelEntered, releaseTypeLevel.Task)]);
-
-        var model = new TypeLevelContextRaceModel { Name = "value" };
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(TypeLevelContextRaceModel), modelType }
-            }),
-            ValidationContext = new ValidationContext(model)
-        };
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-
-        // Act
-        var validateTask = modelType.ValidateAsync(model, context, cts.Token);
-
-        await propertyEntered.Task.WaitAsync(cts.Token);
-        await typeLevelEntered.Task.WaitAsync(cts.Token);
-        releaseProperty.SetResult();
-        await propertyReadDone.Task.WaitAsync(cts.Token);
-        releaseTypeLevel.SetResult();
-        await validateTask;
-
-        // Assert - the property's error message must reference its own display name ("Name"),
-        // not the type-level display name leaked through the shared context.
-        Assert.NotNull(context.ValidationErrors);
-        Assert.True(context.ValidationErrors.ContainsKey("Name"));
-        Assert.Equal("Name is invalid", context.ValidationErrors["Name"].Single());
+        Assert.True(propertyValidationCompleted.Task.IsCompletedSuccessfully);
+        Assert.True(
+            propertyWasCompleteWhenTypeLevelRan,
+            "Type-level attribute validation should run only after all member validation completes.");
     }
 
     [Fact]
@@ -1647,78 +1517,6 @@ public class AsyncValidationTests
     private class TypeWithThrowingGetter
     {
         public string ThrowingProp => throw new InvalidOperationException("Getter throws");
-    }
-
-    private class InnerComplexType
-    {
-        public string? Data { get; set; }
-    }
-
-    private class OuterWithComplexProp
-    {
-        public InnerComplexType? Inner { get; set; }
-    }
-
-    private class TypeLevelContextRaceModel
-    {
-        public string? Name { get; set; }
-    }
-
-    /// <summary>
-    /// Type-level async attribute that signals a semaphore when it starts running,
-    /// then delays to hold the ValidationContext in a modified state.
-    /// </summary>
-    private class SignalingAsyncTypeLevelAttribute : AsyncValidationAttribute
-    {
-        private readonly SemaphoreSlim _signal;
-
-        public SignalingAsyncTypeLevelAttribute(SemaphoreSlim signal) => _signal = signal;
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
-        {
-            // Signal that type-level validation has started (DisplayName is now the type name)
-            _signal.Release();
-            await Task.Delay(200, cancellationToken);
-            return ValidationResult.Success;
-        }
-    }
-
-    /// <summary>
-    /// Async attribute that waits for a signal, then captures validationContext.DisplayName.
-    /// Used to observe what DisplayName the property's async attribute sees when a
-    /// concurrent type-level validation is modifying the shared ValidationContext.
-    /// </summary>
-    private class DisplayNameCapturingAsyncAttribute : AsyncValidationAttribute
-    {
-        private readonly SemaphoreSlim _waitForSignal;
-        private readonly System.Collections.Concurrent.ConcurrentBag<string> _capturedNames;
-
-        public DisplayNameCapturingAsyncAttribute(
-            SemaphoreSlim waitForSignal,
-            System.Collections.Concurrent.ConcurrentBag<string> capturedNames)
-        {
-            _waitForSignal = waitForSignal;
-            _capturedNames = capturedNames;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
-        {
-            // Wait for the type-level validation to start (which changes DisplayName)
-            await _waitForSignal.WaitAsync(cancellationToken);
-            // Small delay to ensure we read AFTER the type modifies DisplayName
-            await Task.Delay(10, cancellationToken);
-            // Capture whatever DisplayName is on the context right now
-            _capturedNames.Add(validationContext.DisplayName);
-            return ValidationResult.Success;
-        }
     }
 
     private class UserWithAsyncValidation
@@ -2434,34 +2232,6 @@ public class AsyncValidationTests
                     [validationContext.MemberName ?? string.Empty]);
             }
 
-            return ValidationResult.Success;
-        }
-    }
-
-    /// <summary>
-    /// Type-level async attribute that signals when it begins running (after the framework has set
-    /// the type's DisplayName/MemberName on the shared context) and then parks on a gate, holding the
-    /// context in that mutated state until released.
-    /// </summary>
-    private sealed class GatedTypeLevelAsyncAttribute : AsyncValidationAttribute
-    {
-        private readonly TaskCompletionSource _entered;
-        private readonly Task _release;
-
-        public GatedTypeLevelAsyncAttribute(TaskCompletionSource entered, Task release)
-        {
-            _entered = entered;
-            _release = release;
-        }
-
-        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
-            => throw new UnreachableException();
-
-        protected override async Task<ValidationResult?> IsValidAsync(
-            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
-        {
-            _entered.SetResult();
-            await _release.WaitAsync(cancellationToken);
             return ValidationResult.Success;
         }
     }
