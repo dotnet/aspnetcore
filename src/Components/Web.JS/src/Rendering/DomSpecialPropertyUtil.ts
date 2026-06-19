@@ -98,6 +98,11 @@ function tryApplyValueProperty(element: Element, value: string | null): boolean 
       return true;
     }
     default:
+      // Support contenteditable elements - set textContent as the value
+      if (element instanceof HTMLElement && element.isContentEditable) {
+        element.textContent = value || '';
+        return true;
+      }
       return false;
   }
 }
