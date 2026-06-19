@@ -142,24 +142,26 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             var validationOptions = context.ValidationOptions;
 
             List<Task>? tasks = null;
+            var nextUseNeedsClone = false;
             foreach (var item in enumerable)
             {
                 if (item != null)
                 {
                     if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        // TODO: Optimize to not always Clone.
-                        var clonedContext = context.Clone();
-                        clonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                        var possiblyClonedContext = nextUseNeedsClone ? context.Clone() : context;
+                        nextUseNeedsClone = false;
+                        possiblyClonedContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                             ? $"{Name}[{index}]"
                             : $"{currentPrefix}.{Name}[{index}]";
-                        var enumItemTask = validatableType.ValidateAsync(item, clonedContext, cancellationToken);
+                        var enumItemTask = validatableType.ValidateAsync(item, possiblyClonedContext, cancellationToken);
                         if (enumItemTask.IsCompleted)
                         {
                             await enumItemTask;
                         }
                         else
                         {
+                            nextUseNeedsClone = true;
                             (tasks ??= new()).Add(enumItemTask);
                         }
                     }

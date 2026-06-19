@@ -272,11 +272,6 @@ public class AsyncValidationTests
     [Fact]
     public async Task AsyncValidation_OnNestedIAsyncValidatableObjectProperty()
     {
-        // Arrange
-        // A property whose value implements IAsyncValidatableObject must be routed through the
-        // asynchronous validation path (it is not "guaranteed to be synchronous"). This guards
-        // against IsGuaranteedToBeSynchronous incorrectly treating an IAsyncValidatableObject as
-        // synchronous, which would block on async work via sync-over-async.
         var profileType = new TestValidatableTypeInfo(typeof(AsyncValidatableProfile), []);
 
         var customerType = new TestValidatableTypeInfo(

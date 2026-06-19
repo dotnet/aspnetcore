@@ -142,19 +142,15 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
-        // This allows us to add validation tasks in this list locally (i.e, not the one in ValidateContext).
-        // Then, we can do .ContinueWith on that task.
-        List<Task>? localValidationTasks = null;
-
         // First validate direct members
-        ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
+        List<Task>? localValidationTasks = await ValidateMembers(value, context, localValidationTasks: null, cancellationToken);
 
         var actualType = value.GetType();
 
         // Then validate inherited members
         foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
         {
-            superTypeInfo.ValidateMembers(value, context, ref localValidationTasks, cancellationToken);
+            localValidationTasks = await superTypeInfo.ValidateMembers(value, context, localValidationTasks, cancellationToken);
         }
 
         // If any property-level validation errors were found, return early
@@ -208,22 +204,27 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
     }
 
-    private void ValidateMembers(object value, ValidateContext context, ref List<Task>? localValidationTasks, CancellationToken cancellationToken)
+    private async Task<List<Task>?> ValidateMembers(object value, ValidateContext context, List<Task>? localValidationTasks, CancellationToken cancellationToken)
     {
+        var needsClone = localValidationTasks is not null;
         for (var i = 0; i < _membersCount; i++)
         {
-            var task = Members[i].ValidateAsync(value, context, cancellationToken);
+            var possiblyCloned = needsClone ? context.Clone() : context;
+            var task = Members[i].ValidateAsync(value, possiblyCloned, cancellationToken);
             if (!task.IsCompleted)
             {
+                needsClone = true;
                 localValidationTasks ??= new();
                 localValidationTasks.Add(task);
             }
             else
             {
                 // If the task completed as faulted, we want to ensure the exception isn't swallowed.
-                task.GetAwaiter().GetResult();
+                await task;
             }
         }
+
+        return localValidationTasks;
     }
 
     private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)
