@@ -161,7 +161,7 @@ describe('blazor-client-validation-data custom element', () => {
     form.appendChild(input);
 
     const carrier = document.createElement(ClientValidationElementName);
-    carrier.textContent = payload;
+    carrier.setAttribute('data-rules', payload);
     form.appendChild(carrier);
 
     document.body.appendChild(form);
@@ -196,7 +196,7 @@ describe('blazor-client-validation-data custom element', () => {
     // Simulate the morph: same input element reused but renamed, novalidate stripped, payload changed.
     input.name = 'Beta';
     form.removeAttribute('novalidate');
-    carrier.textContent = fieldPayload('Beta', [{ name: 'required', message: 'Beta required.' }]);
+    carrier.setAttribute('data-rules', fieldPayload('Beta', [{ name: 'required', message: 'Beta required.' }]));
 
     reconcileValidationElements();
 
