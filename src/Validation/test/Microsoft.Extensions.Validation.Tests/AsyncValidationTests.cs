@@ -1469,6 +1469,52 @@ public class AsyncValidationTests
     }
 
     [Fact]
+    public async Task MixedSyncAsyncMembers_DoNotReuseAParkedContext()
+    {
+        var firstEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var firstAttr = new GatedContextCapturingAsyncAttribute(firstEntered, releaseFirst.Task, firstReadDone);
+
+        var modelType = new TestValidatableTypeInfo(
+            typeof(MixedSyncAsyncModel),
+            [
+                // member[0]: async -> parks on the original (shared) context.
+                CreatePropertyInfo(typeof(MixedSyncAsyncModel), typeof(string), "First", "First", [firstAttr]),
+                // member[1]: synchronous -> validated on a clone (member[0] already went async).
+                CreatePropertyInfo(typeof(MixedSyncAsyncModel), typeof(string), "Second", "Second", []),
+                // member[2]: synchronous -> must NOT reuse the parked original context.
+                CreatePropertyInfo(typeof(MixedSyncAsyncModel), typeof(string), "Third", "Third", [])
+            ]);
+
+        var model = new MixedSyncAsyncModel { First = "a", Second = "b", Third = "c" };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(MixedSyncAsyncModel), modelType }
+            }),
+            ValidationContext = new ValidationContext(model)
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        // Act - member[0] parks; member[1] and member[2] run synchronously during the loop.
+        var validateTask = modelType.ValidateAsync(model, context, cts.Token);
+
+        await firstEntered.Task.WaitAsync(cts.Token);
+        releaseFirst.SetResult();
+        await firstReadDone.Task.WaitAsync(cts.Token);
+        await validateTask;
+
+        // member[0]'s context must still reflect "First"; a later synchronous member reusing/mutating
+        // the parked context would leave it showing "Third".
+        Assert.Equal("First", firstAttr.CapturedMemberName);
+        Assert.Equal("First", firstAttr.CapturedDisplayName);
+    }
+
+    [Fact]
     public async Task PropertyErrorOnClonedMember_StillShortCircuitsTypeLevelValidation()
     {
         // The property-error short-circuit (skip type-level/IValidatableObject when a member fails)
@@ -1547,6 +1593,13 @@ public class AsyncValidationTests
     private class BadChild
     {
         public string? Value { get; set; }
+    }
+
+    private class MixedSyncAsyncModel
+    {
+        public string? First { get; set; }
+        public string? Second { get; set; }
+        public string? Third { get; set; }
     }
 
     private class CrossTalkRoot
