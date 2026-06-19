@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Primitives;
+
 namespace Microsoft.Net.Http.Headers;
 
 public class EntityTagHeaderValueTest
@@ -488,6 +490,39 @@ public class EntityTagHeaderValueTest
                 "W/\"tag\"",
             };
         Assert.False(EntityTagHeaderValue.TryParseStrictList(inputs, out var results));
+    }
+
+    [Theory]
+    // Regression for https://github.com/dotnet/aspnetcore/issues/66668. An opening quote followed
+    // by quoted-pair sequences and a trailing backslash makes the per-element parser's failure
+    // path O(N) — it scans the whole remainder looking for a closing quote. The recovery loop
+    // must invoke the per-element parser exactly once and then skip past the malformed span.
+    [InlineData("\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\\"\\")]
+    [InlineData("\"\\\"\\\"\\\"\\")]
+    [InlineData("\"\\")]
+    public void TryParseValues_PathologicalUnterminatedQuotedStringIsParsedInOneAttempt(string input)
+    {
+        var parser = new CountingEntityTagParser(supportsMultipleValues: true);
+
+        parser.PublicTryParseValues(new[] { input }, out _);
+
+        Assert.Equal(1, parser.GetParsedValueLengthCallCount);
+    }
+
+    private sealed class CountingEntityTagParser : BaseHeaderParser<EntityTagHeaderValue>
+    {
+        public CountingEntityTagParser(bool supportsMultipleValues) : base(supportsMultipleValues) { }
+
+        public int GetParsedValueLengthCallCount { get; private set; }
+
+        protected override int GetParsedValueLength(StringSegment value, int startIndex, out EntityTagHeaderValue? parsedValue)
+        {
+            GetParsedValueLengthCallCount++;
+            return EntityTagHeaderValue.GetEntityTagLength(value, startIndex, out parsedValue);
+        }
+
+        public bool PublicTryParseValues(IList<string>? values, out IList<EntityTagHeaderValue>? parsedValues)
+            => TryParseValues(values, out parsedValues);
     }
 
     private void CheckValidParse(string? input, EntityTagHeaderValue expectedResult)

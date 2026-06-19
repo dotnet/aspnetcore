@@ -90,7 +90,7 @@ public class SumLimitAttribute : ValidationAttribute
             await InvalidClassAttributeCheck_ProducesError(validatableTypeInfo);
             await InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(validatableTypeInfo);
 
-            async Task InvalidPropertyAttributeCheck_ProducesError_AndShortCircuits(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyAttributeCheck_ProducesError_AndShortCircuits(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("X")?.SetValue(instance, 16);
@@ -110,7 +110,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.Equal("The field X must be between 0 and 15.", propertyAttributeError.Value.Single());
             }
 
-            async Task ValidClassAttributeCheck_DoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task ValidClassAttributeCheck_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
 
@@ -125,7 +125,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidClassAttributeCheck_ProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidClassAttributeCheck_ProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("X")?.SetValue(instance, 11);
@@ -145,7 +145,7 @@ public class SumLimitAttribute : ValidationAttribute
                 Assert.Equal("Sum is too high", classAttributeError.Value.Single());
             }
 
-            async Task InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(IValidatableInfo validatableInfo)
+            async Task InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("ObjectProperty").GetValue(instance);
