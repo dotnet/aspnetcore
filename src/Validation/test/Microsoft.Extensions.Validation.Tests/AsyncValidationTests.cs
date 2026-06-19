@@ -1216,7 +1216,215 @@ public class AsyncValidationTests
         Assert.Equal("Name is invalid", context.ValidationErrors["Name"].Single());
     }
 
+    [Fact]
+    public async Task SiblingSubtreeError_DoesNotSuppress_UnrelatedTypesValidatableObject()
+    {
+        // Regression test for cross-subtree contamination of the early-return error check.
+        // ValidatableTypeInfo.ValidateAsync captures `originalErrorCount` per invocation but compares
+        // it against the GLOBAL, shared ValidationErrors dictionary. When two sibling subtrees are
+        // validated in parallel, an error produced by one subtree inflates the global count seen by
+        // the other, causing the unrelated subtree to wrongly skip its own IValidatableObject
+        // validation even though none of *its* members failed.
+        var firstEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFirst = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var firstReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseSecond = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        // The first sibling's member fails; the second sibling's member passes.
+        var firstMember = new GatedContextCapturingAsyncAttribute(firstEntered, releaseFirst.Task, firstReadDone)
+        {
+            ReportFailure = true
+        };
+        var secondMember = new GatedContextCapturingAsyncAttribute(secondEntered, releaseSecond.Task, secondReadDone);
+
+        var secondObjectValidateRan = false;
+
+        var firstType = new TestValidatableTypeInfo(
+            typeof(CrossTalkFirst),
+            [CreatePropertyInfo(typeof(CrossTalkFirst), typeof(string), "Value", "Value", [firstMember])]);
+        var secondType = new TestValidatableTypeInfo(
+            typeof(CrossTalkSecond),
+            [CreatePropertyInfo(typeof(CrossTalkSecond), typeof(string), "Value", "Value", [secondMember])]);
+        var rootType = new TestValidatableTypeInfo(
+            typeof(CrossTalkRoot),
+            [
+                CreatePropertyInfo(typeof(CrossTalkRoot), typeof(CrossTalkFirst), "First", "First", []),
+                CreatePropertyInfo(typeof(CrossTalkRoot), typeof(CrossTalkSecond), "Second", "Second", [])
+            ]);
+
+        var model = new CrossTalkRoot
+        {
+            First = new CrossTalkFirst { Value = "a" },
+            Second = new CrossTalkSecond
+            {
+                Value = "b",
+                OnValidateCalled = () => secondObjectValidateRan = true
+            }
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(CrossTalkRoot), rootType },
+                { typeof(CrossTalkFirst), firstType },
+                { typeof(CrossTalkSecond), secondType }
+            }),
+            ValidationContext = new ValidationContext(model)
+        };
+
+        var firstErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        context.OnValidationError += errorContext =>
+        {
+            if (errorContext.Path == "First.Value")
+            {
+                firstErrorRecorded.TrySetResult();
+            }
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        // Act
+        var validateTask = rootType.ValidateAsync(model, context, cts.Token);
+
+        // Both sibling subtrees have begun validating their members and are now suspended.
+        await firstEntered.Task.WaitAsync(cts.Token);
+        await secondEntered.Task.WaitAsync(cts.Token);
+
+        // Let the first sibling fail and record its error into the shared dictionary.
+        releaseFirst.SetResult();
+        await firstErrorRecorded.Task.WaitAsync(cts.Token);
+
+        // Now let the second sibling finish. Its own members produced no errors, so its
+        // IValidatableObject validation must still run.
+        releaseSecond.SetResult();
+        await validateTask;
+
+        Assert.True(
+            secondObjectValidateRan,
+            "CrossTalkSecond has no member-level errors, so its IValidatableObject.Validate must run; " +
+            "a sibling subtree's error must not short-circuit it via the shared error count.");
+    }
+
+    [Fact]
+    public async Task CollectionItemError_DoesNotSuppress_SiblingItemsValidatableObject()
+    {
+        // Same root cause as SiblingSubtreeError_* but via the collection/enumerable parallel path in
+        // ValidatablePropertyInfo (item[0] uses the shared context, item[1..] use clones). A failing
+        // item must not suppress a sibling item's IValidatableObject validation through the shared,
+        // global ValidationErrors count.
+        var failingEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFailing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var passingEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releasePassing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var itemMember = new CollectionItemGatedAsyncAttribute(
+            failingEntered, releaseFailing.Task, passingEntered, releasePassing.Task);
+
+        var itemType = new TestValidatableTypeInfo(
+            typeof(CrossTalkItem),
+            [CreatePropertyInfo(typeof(CrossTalkItem), typeof(string), "Value", "Value", [itemMember])]);
+        var listType = new TestValidatableTypeInfo(
+            typeof(CrossTalkItemList),
+            [CreatePropertyInfo(typeof(CrossTalkItemList), typeof(List<CrossTalkItem>), "Items", "Items", [])]);
+
+        var passingItemValidateRan = false;
+        var list = new CrossTalkItemList
+        {
+            Items =
+            [
+                new CrossTalkItem { Value = "fail" },
+                new CrossTalkItem { Value = "pass", OnValidateCalled = () => passingItemValidateRan = true }
+            ]
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(CrossTalkItemList), listType },
+                { typeof(CrossTalkItem), itemType }
+            }),
+            ValidationContext = new ValidationContext(list)
+        };
+
+        var failingItemErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        context.OnValidationError += errorContext =>
+        {
+            if (errorContext.Path == "Items[0].Value")
+            {
+                failingItemErrorRecorded.TrySetResult();
+            }
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        // Act
+        var validateTask = listType.ValidateAsync(list, context, cts.Token);
+
+        // Both collection items are validating their members in parallel and are suspended.
+        await failingEntered.Task.WaitAsync(cts.Token);
+        await passingEntered.Task.WaitAsync(cts.Token);
+
+        // Let the first item fail and record its error into the shared dictionary.
+        releaseFailing.SetResult();
+        await failingItemErrorRecorded.Task.WaitAsync(cts.Token);
+
+        // Now let the valid sibling item finish; its IValidatableObject must still run.
+        releasePassing.SetResult();
+        await validateTask;
+
+        Assert.True(
+            passingItemValidateRan,
+            "The valid collection item has no member-level errors, so its IValidatableObject.Validate must run; " +
+            "a sibling item's error must not short-circuit it via the shared error count.");
+    }
+
     // Test model classes
+    private class CrossTalkRoot
+    {
+        public CrossTalkFirst? First { get; set; }
+        public CrossTalkSecond? Second { get; set; }
+    }
+
+    private class CrossTalkFirst
+    {
+        public string? Value { get; set; }
+    }
+
+    private class CrossTalkSecond : IValidatableObject
+    {
+        public string? Value { get; set; }
+
+        public Action? OnValidateCalled { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            OnValidateCalled?.Invoke();
+            return Array.Empty<ValidationResult>();
+        }
+    }
+
+    private class CrossTalkItemList
+    {
+        public List<CrossTalkItem>? Items { get; set; }
+    }
+
+    private class CrossTalkItem : IValidatableObject
+    {
+        public string? Value { get; set; }
+
+        public Action? OnValidateCalled { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            OnValidateCalled?.Invoke();
+            return Array.Empty<ValidationResult>();
+        }
+    }
+
     private class TypeWithThrowingGetter
     {
         public string ThrowingProp => throw new InvalidOperationException("Getter throws");
@@ -2035,6 +2243,49 @@ public class AsyncValidationTests
         {
             _entered.SetResult();
             await _release.WaitAsync(cancellationToken);
+            return ValidationResult.Success;
+        }
+    }
+
+    /// <summary>
+    /// Async attribute for collection items that gates the "fail" and "pass" items independently
+    /// (keyed off the value being validated), so a test can deterministically order a failing item's
+    /// error before a sibling item completes.
+    /// </summary>
+    private sealed class CollectionItemGatedAsyncAttribute : AsyncValidationAttribute
+    {
+        private readonly TaskCompletionSource _failingEntered;
+        private readonly Task _releaseFailing;
+        private readonly TaskCompletionSource _passingEntered;
+        private readonly Task _releasePassing;
+
+        public CollectionItemGatedAsyncAttribute(
+            TaskCompletionSource failingEntered,
+            Task releaseFailing,
+            TaskCompletionSource passingEntered,
+            Task releasePassing)
+        {
+            _failingEntered = failingEntered;
+            _releaseFailing = releaseFailing;
+            _passingEntered = passingEntered;
+            _releasePassing = releasePassing;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            => throw new UnreachableException();
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value, ValidationContext validationContext, CancellationToken cancellationToken)
+        {
+            if ((string?)value == "fail")
+            {
+                _failingEntered.SetResult();
+                await _releaseFailing.WaitAsync(cancellationToken);
+                return new ValidationResult("item failed", [validationContext.MemberName ?? string.Empty]);
+            }
+
+            _passingEntered.SetResult();
+            await _releasePassing.WaitAsync(cancellationToken);
             return ValidationResult.Success;
         }
     }
