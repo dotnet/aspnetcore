@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialIndex="@initialIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@InitialItemIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -38,7 +38,7 @@
         }
         else
         {
-            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialIndex="@initialIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialItemIndex="@InitialItemIndex" Context="item">
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
@@ -116,7 +116,7 @@
     private int providerCallIndex;
     private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
-    private int initialIndex;
+    private int InitialItemIndex;
     private int manualInitialIndex;
     private bool listLoaded = true;
     private int scrollTargetIndex = 200;
@@ -400,7 +400,7 @@
         listLoaded = false;
         StateHasChanged();
         await Task.Yield();
-        initialIndex = manualInitialIndex;
+        InitialItemIndex = manualInitialIndex;
         listLoaded = true;
     }
 
@@ -416,7 +416,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex}...";
         try
         {
-            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex);
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex);
             scrollStatus = $"Completed: {scrollTargetIndex}";
             lock (providerEvents) providerEvents.Add("scroll-complete");
         }
@@ -439,11 +439,11 @@
         // Superseded tasks complete normally — only the final target lands in the viewport.
         var tasks = new[]
         {
-            virtualizeRef.ScrollToIndexAsync(50),
-            virtualizeRef.ScrollToIndexAsync(400),
-            virtualizeRef.ScrollToIndexAsync(100),
-            virtualizeRef.ScrollToIndexAsync(350),
-            virtualizeRef.ScrollToIndexAsync(250),
+            virtualizeRef.ScrollToItemAsync(50),
+            virtualizeRef.ScrollToItemAsync(400),
+            virtualizeRef.ScrollToItemAsync(100),
+            virtualizeRef.ScrollToItemAsync(350),
+            virtualizeRef.ScrollToItemAsync(250),
         };
         foreach (var t in tasks) { await SafeAwait(t); }
         var canceled = tasks.Count(t => t.IsCanceled);
@@ -465,7 +465,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex} (cancellable)...";
         try
         {
-            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex, _userScrollCts.Token);
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex, _userScrollCts.Token);
             scrollStatus = $"Completed: {scrollTargetIndex}";
         }
         catch (OperationCanceledException)
