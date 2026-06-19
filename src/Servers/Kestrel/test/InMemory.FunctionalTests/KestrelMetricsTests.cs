@@ -488,6 +488,83 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task Http1Connection_BareLineFeedTerminatorRejected_RecordsMetricWithRejectedOutcome()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var bareLineFeedRequests = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.bare_line_feed_requests");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: true, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            // Bare LF terminator on the request line is rejected when bare LF terminators are disabled.
+            await connection.Send("GET / HTTP/1.1\nHost:\r\n\r\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 400 Bad Request",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Collection(bareLineFeedRequests.GetMeasurementSnapshot(), m => AssertBareLineFeed(m, rejected: true));
+    }
+
+    [Fact]
+    public async Task Http1Connection_BareLineFeedTerminatorAccepted_RecordsMetricOncePerRequest()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var bareLineFeedRequests = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.bare_line_feed_requests");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: false, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            // Every line uses a bare LF terminator, but the metric is only recorded once for the request.
+            await connection.Send("GET / HTTP/1.1\nHost:\nConnection: close\n\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Collection(bareLineFeedRequests.GetMeasurementSnapshot(), m => AssertBareLineFeed(m, rejected: false));
+    }
+
+    [Fact]
+    public async Task Http1Connection_CrlfTerminators_DoesNotRecordBareLineFeedMetric()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var bareLineFeedRequests = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Server.Kestrel", "kestrel.bare_line_feed_requests");
+
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: true, metrics: new KestrelMetrics(testMeterFactory));
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send("GET / HTTP/1.1\r\nHost:\r\nConnection: close\r\n\r\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 200 OK",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Empty(bareLineFeedRequests.GetMeasurementSnapshot());
+    }
+
+    [Fact]
     public async Task Http1Connection_Upgrade()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -1004,5 +1081,12 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
         {
             Assert.DoesNotContain("network.type", measurement.Tags.Keys);
         }
+    }
+
+    private static void AssertBareLineFeed(CollectedMeasurement<long> measurement, bool rejected)
+    {
+        Assert.Equal(1, measurement.Value);
+        Assert.Equal(rejected ? "rejected" : "accepted", (string)measurement.Tags["kestrel.bare_line_feed.outcome"]);
+        Assert.Equal("127.0.0.1", (string)measurement.Tags["server.address"]);
     }
 }

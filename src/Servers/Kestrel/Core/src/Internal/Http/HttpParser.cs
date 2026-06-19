@@ -63,6 +63,15 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     private const int MinTlsRequestSize = 1; // We need at least 1 byte to check for a proper TLS request line
     private static ReadOnlySpan<byte> RequestLineDelimiters => [ByteLF, 0];
 
+    // Notifies the handler that a request used a bare LF line terminator instead of CRLF.
+    private static void SignalBareLineFeedTerminator(TRequestHandler handler, bool rejected)
+    {
+        if (handler is IBareLineFeedTracker tracker)
+        {
+            tracker.OnBareLineFeedTerminator(rejected);
+        }
+    }
+
     /// <summary>
     /// This API supports framework infrastructure and is not intended to be used
     /// directly from application code.
@@ -174,6 +183,7 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                 if (_disableHttp1LineFeedTerminators)
                 {
                     // LF only but disabled
+                    SignalBareLineFeedTerminator(handler, rejected: true);
                     return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, baseOffset, length + 1);
                 }
             }
@@ -190,11 +200,13 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
         else if (_disableHttp1LineFeedTerminators)
         {
             // The terminator is an LF and we don't allow it.
+            SignalBareLineFeedTerminator(handler, rejected: true);
             return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, baseOffset, length + 1);
         }
         else
         {
             // First EOL char is LF. only include this one
+            SignalBareLineFeedTerminator(handler, rejected: false);
             length += 1;
             header = currentSlice.Slice(0, length);
         }
@@ -500,10 +512,19 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
             // LF should have been dropped prior to method call
             // If !_disableHttp1LineFeedTerminators and offset + 8 is .Length,
             // then requestLine is valid since it means LF was the next char
-            if (_disableHttp1LineFeedTerminators || (uint)offset + 8 != (uint)requestLine.Length)
+            var lineFeedTerminated = (uint)offset + 8 == (uint)requestLine.Length;
+            if (_disableHttp1LineFeedTerminators || !lineFeedTerminated)
             {
+                if (lineFeedTerminated)
+                {
+                    // A bare LF terminated request line that is not allowed.
+                    SignalBareLineFeedTerminator(handler, rejected: true);
+                }
                 return GetRequestLineError(requestLine, baseOffset);
             }
+
+            // The request line is valid but terminated by a bare LF instead of CRLF.
+            SignalBareLineFeedTerminator(handler, rejected: false);
         }
 
         // Version
@@ -646,8 +667,11 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
                     var lfIndex = lfOrCrIndex;
                     if (_disableHttp1LineFeedTerminators)
                     {
+                        SignalBareLineFeedTerminator(handler, rejected: true);
                         return HttpParseResult.Error(RequestRejectionReason.InvalidRequestHeader, headerLineStart, lfIndex + 1);
                     }
+
+                    SignalBareLineFeedTerminator(handler, rejected: false);
 
                     reader.Advance(lfIndex + 1);
 

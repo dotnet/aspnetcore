@@ -69,6 +69,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
     // Tracks whether a HTTP/2 preface was detected during the first request.
     private bool _http2PrefaceDetected;
 
+    // Tracks whether a bare LF line terminator was seen for the current request
+    private bool _sawBareLineFeedTerminator;
+
     public Http1Connection(HttpConnectionContext context)
     {
         Initialize(context);
@@ -388,6 +391,18 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             reader.Advance(trimmedReader.Consumed);
             return HttpParseResult.Complete;
         }
+    }
+
+    public void OnBareLineFeedTerminator(bool rejected)
+    {
+        // Only record the metric once per request even if multiple lines use a bare LF terminator.
+        if (_sawBareLineFeedTerminator)
+        {
+            return;
+        }
+
+        _sawBareLineFeedTerminator = true;
+        ServiceContext.Metrics.BareLineFeedRequest(MetricsContext, rejected);
     }
 
     public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
@@ -816,6 +831,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTargetForm = HttpRequestTarget.Unknown;
         _absoluteRequestTarget = null;
         _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
+        _sawBareLineFeedTerminator = false;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 

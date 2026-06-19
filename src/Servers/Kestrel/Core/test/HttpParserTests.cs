@@ -126,6 +126,89 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
+    [Fact]
+    public void ParseRequestLine_SignalsAcceptedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: false);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.1\n"));
+        var requestHandler = new RequestHandler();
+
+        Assert.True(ParseRequestLine(parser, requestHandler, buffer, out _, out _));
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.False(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseRequestLine_SignalsRejectedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.1\n"));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+            ParseRequestLine(parser, requestHandler, buffer, out _, out _));
+
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.True(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseRequestLine_DoesNotSignalForCrlfTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\n"));
+        var requestHandler = new RequestHandler();
+
+        Assert.True(ParseRequestLine(parser, requestHandler, buffer, out _, out _));
+        Assert.Equal(0, requestHandler.BareLineFeedTerminatorCount);
+    }
+
+    [Fact]
+    public void ParseHeaders_SignalsAcceptedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: false);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a: b\n\r\n"));
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+
+        Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.False(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseHeaders_SignalsRejectedBareLineFeedTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a: b\n\r\n"));
+        var requestHandler = new RequestHandler();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+
+        Assert.Equal(1, requestHandler.BareLineFeedTerminatorCount);
+        Assert.True(requestHandler.BareLineFeedRejected);
+    }
+
+    [Fact]
+    public void ParseHeaders_DoesNotSignalForCrlfTerminator()
+    {
+        var parser = CreateParser(_nullTrace, disableHttp1LineFeedTerminators: true);
+        var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a: b\r\n\r\n"));
+        var requestHandler = new RequestHandler();
+        var reader = new SequenceReader<byte>(buffer);
+
+        Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+        Assert.Equal(0, requestHandler.BareLineFeedTerminatorCount);
+    }
+
     [Theory]
     [MemberData(nameof(MethodWithNonTokenCharData))]
     public void ParseRequestLineThrowsOnNonTokenCharsInCustomMethod(string method)
@@ -1083,7 +1166,7 @@ public class HttpParserTests : LoggedTest
 
     public static IEnumerable<object[]> RequestHeaderInvalidDataLineFeedTerminator => HttpParsingData.RequestHeaderInvalidDataLineFeedTerminator;
 
-    private class RequestHandler : IHttpRequestLineHandler, IHttpHeadersHandler
+    private class RequestHandler : IHttpRequestLineHandler, IHttpHeadersHandler, IBareLineFeedTracker
     {
         public string Method { get; set; }
 
@@ -1099,9 +1182,19 @@ public class HttpParserTests : LoggedTest
 
         public Dictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
+        public int BareLineFeedTerminatorCount { get; private set; }
+
+        public bool? BareLineFeedRejected { get; private set; }
+
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             Headers[name.GetAsciiString()] = value.GetAsciiString();
+        }
+
+        public void OnBareLineFeedTerminator(bool rejected)
+        {
+            BareLineFeedTerminatorCount++;
+            BareLineFeedRejected = rejected;
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }
