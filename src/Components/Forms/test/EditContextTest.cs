@@ -336,6 +336,125 @@ public class EditContextTest
         Assert.Throws<KeyNotFoundException>(() => editContext.Properties[key]);
     }
 
+    [Fact]
+    public void NotifyValidationStateChanged_WhenInvalidState_EventArgsHasIsValidFalse()
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var field = editContext.Field("field");
+
+        bool? result = null;
+
+        editContext.OnValidationStateChanged += (sender, args) =>
+        {
+            result = args.IsValid;
+        };
+
+        messages.Add(field, "Error");
+        editContext.NotifyValidationStateChanged();
+
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void NotifyValidationStateChanged_WhenValidBecomesInvalid_TriggersEventOnce()
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var field = editContext.Field("field");
+
+        int count = 0;
+
+        editContext.OnValidationStateChanged += (s, e) =>
+        {
+            count++;
+            Assert.False(e.IsValid);
+        };
+
+        messages.Add(field, "Error");
+        editContext.NotifyValidationStateChanged();
+
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public void NotifyValidationStateChanged_WhenInvalidBecomesValid_TriggersEvent()
+    {
+        var editContext = new EditContext(new object());
+        var messages = new ValidationMessageStore(editContext);
+        var field = editContext.Field("field");
+
+        bool last = false;
+
+        editContext.OnValidationStateChanged += (s, e) =>
+        {
+            last = e.IsValid;
+        };
+
+        // Invalid
+        messages.Add(field, "Error");
+        editContext.NotifyValidationStateChanged();
+
+        // Valid
+        messages.Clear();
+        editContext.NotifyValidationStateChanged();
+
+        Assert.True(last);
+    }
+
+    [Fact]
+    public void NotifyValidationStateChanged_WhenStateUnchanged_TriggersEvent()
+    {
+        var editContext = new EditContext(new object());
+        int count = 0;
+        editContext.OnValidationStateChanged += (s, e) =>
+        {
+            count++;
+        };
+        editContext.NotifyValidationStateChanged();
+        editContext.NotifyValidationStateChanged();
+        Assert.Equal(2, count);
+    }
+
+    [Fact]
+    public void NotifyValidationStateChanged_IsValidMatchesValidationMessages()
+    {
+        var editContext = new EditContext(new object());
+        var store = new ValidationMessageStore(editContext);
+        var field = editContext.Field("field");
+        bool result = true;
+        editContext.OnValidationStateChanged += (s, e) =>
+        {
+            result = e.IsValid;
+        };
+
+        store.Add(field, "Error");
+        editContext.NotifyValidationStateChanged();
+        Assert.Equal(!editContext.GetValidationMessages().Any(), result);
+    }
+
+    [Fact]
+    public async Task ValidateAsync_WhenValidationFails_EventArgsIsValidFalse()
+    {
+        var editContext = new EditContext(new object());
+        var field = editContext.Field("field");
+        bool? result = null;
+
+        editContext.OnValidationStateChanged += (s, e) =>
+        {
+            result = e.IsValid;
+        };
+
+        editContext.OnValidationRequested += (s, e) =>
+        {
+            var store = new ValidationMessageStore(editContext);
+            store.Add(field, "Error");
+        };
+
+        await editContext.ValidateAsync();
+        Assert.False(result);
+    }
+
     class EquatableModel : IEquatable<EquatableModel>
     {
         public string Property { get; set; } = "";

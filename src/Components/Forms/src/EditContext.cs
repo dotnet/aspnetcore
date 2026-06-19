@@ -20,6 +20,11 @@ public sealed class EditContext
     private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
     private bool _isFormValidationFaulted;
     private bool _isFormValidationPending;
+    private bool _isValid = true;
+    private bool ComputeIsValid()
+    {
+        return !GetValidationMessages().Any();
+    }
 
     /// <summary>
     /// Constructs an instance of <see cref="EditContext"/>.
@@ -114,7 +119,12 @@ public sealed class EditContext
     /// </summary>
     public void NotifyValidationStateChanged()
     {
-        OnValidationStateChanged?.Invoke(this, ValidationStateChangedEventArgs.Empty);
+        bool isValid = ComputeIsValid();
+        if (isValid != _isValid)
+        {
+            _isValid = isValid;
+        }
+        OnValidationStateChanged?.Invoke(this, new ValidationStateChangedEventArgs(_isValid));
     }
 
     /// <summary>

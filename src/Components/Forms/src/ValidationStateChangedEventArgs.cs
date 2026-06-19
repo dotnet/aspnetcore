@@ -9,14 +9,18 @@ namespace Microsoft.AspNetCore.Components.Forms;
 public sealed class ValidationStateChangedEventArgs : EventArgs
 {
     /// <summary>
-    /// Gets a shared empty instance of <see cref="ValidationStateChangedEventArgs"/>.
+    /// Gets a value indicating whether the current validation state is valid.
     /// </summary>
-    public static new readonly ValidationStateChangedEventArgs Empty = new ValidationStateChangedEventArgs();
+    public bool IsValid { get; }
 
     /// <summary>
-    /// Creates a new instance of <see cref="ValidationStateChangedEventArgs" />
+    /// Creates a new instance of <see cref="ValidationStateChangedEventArgs"/> with the specified validation state.
     /// </summary>
-    public ValidationStateChangedEventArgs()
+    /// <param name="isValid">
+    /// A value indicating whether the <see cref="EditContext"/> is valid at the time the event is raised.
+    /// </param>
+    public ValidationStateChangedEventArgs(bool isValid)
     {
+        IsValid = isValid;
     }
 }
