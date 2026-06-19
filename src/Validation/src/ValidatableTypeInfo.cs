@@ -192,18 +192,6 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         }
 
         // Finally validate IValidatableObject if implemented
-        if (localValidationTasks is not null)
-        {
-            context = context.CopyWithState(originalState);
-        }
-
-        // After async property/type-level validations complete, skip IValidatableObject
-        // if any errors were found (mirrors the sync early-return checks above).
-        if (context.CurrentContextErrorCount > originalErrorCount)
-        {
-            return;
-        }
-
         await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
     }
 

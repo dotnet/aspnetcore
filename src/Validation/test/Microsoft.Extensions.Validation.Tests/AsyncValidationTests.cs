@@ -1382,7 +1382,117 @@ public class AsyncValidationTests
             "a sibling item's error must not short-circuit it via the shared error count.");
     }
 
+    [Fact]
+    public async Task FirstMemberSubtree_NotSuppressed_ByLaterSiblingError()
+    {
+        // Variant of the cross-talk bug targeting member[0], which is validated on the *shared*
+        // parent context (no clone). A later sibling (member[1], validated on a clone) records an
+        // error that propagates UP into the shared parent counter via _parentContext. The first
+        // member's subtree reads that same counter, so it must not be fooled into short-circuiting
+        // its own IValidatableObject validation.
+        var victimEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseVictim = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var victimReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var badEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseBad = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var badReadDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var victimMember = new GatedContextCapturingAsyncAttribute(victimEntered, releaseVictim.Task, victimReadDone);
+        var badMember = new GatedContextCapturingAsyncAttribute(badEntered, releaseBad.Task, badReadDone)
+        {
+            ReportFailure = true
+        };
+
+        var victimType = new TestValidatableTypeInfo(
+            typeof(VictimChild),
+            [CreatePropertyInfo(typeof(VictimChild), typeof(string), "Value", "Value", [victimMember])]);
+        var badType = new TestValidatableTypeInfo(
+            typeof(BadChild),
+            [CreatePropertyInfo(typeof(BadChild), typeof(string), "Value", "Value", [badMember])]);
+
+        // Victim is member[0] (validated on the shared context); Bad is member[1] (validated on a clone).
+        var rootType = new TestValidatableTypeInfo(
+            typeof(FirstMemberVictimRoot),
+            [
+                CreatePropertyInfo(typeof(FirstMemberVictimRoot), typeof(VictimChild), "Victim", "Victim", []),
+                CreatePropertyInfo(typeof(FirstMemberVictimRoot), typeof(BadChild), "Bad", "Bad", [])
+            ]);
+
+        var victimValidateRan = false;
+        var model = new FirstMemberVictimRoot
+        {
+            Victim = new VictimChild { Value = "v", OnValidateCalled = () => victimValidateRan = true },
+            Bad = new BadChild { Value = "b" }
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(FirstMemberVictimRoot), rootType },
+                { typeof(VictimChild), victimType },
+                { typeof(BadChild), badType }
+            }),
+            ValidationContext = new ValidationContext(model)
+        };
+
+        var badErrorRecorded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        context.OnValidationError += errorContext =>
+        {
+            if (errorContext.Path == "Bad.Value")
+            {
+                badErrorRecorded.TrySetResult();
+            }
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        // Act
+        var validateTask = rootType.ValidateAsync(model, context, cts.Token);
+
+        await victimEntered.Task.WaitAsync(cts.Token);
+        await badEntered.Task.WaitAsync(cts.Token);
+
+        // Let the later sibling fail first and record its error (which propagates up the parent chain).
+        releaseBad.SetResult();
+        await badErrorRecorded.Task.WaitAsync(cts.Token);
+
+        // Now let the first member finish; its own members produced no errors, so its
+        // IValidatableObject must still run.
+        releaseVictim.SetResult();
+        await validateTask;
+
+        Assert.True(
+            victimValidateRan,
+            "VictimChild (member[0]) has no member-level errors, so its IValidatableObject.Validate must run; " +
+            "a later sibling's error propagated into the shared parent counter must not short-circuit it.");
+    }
+
     // Test model classes
+    private class FirstMemberVictimRoot
+    {
+        public VictimChild? Victim { get; set; }
+        public BadChild? Bad { get; set; }
+    }
+
+    private class VictimChild : IValidatableObject
+    {
+        public string? Value { get; set; }
+
+        public Action? OnValidateCalled { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            OnValidateCalled?.Invoke();
+            return Array.Empty<ValidationResult>();
+        }
+    }
+
+    private class BadChild
+    {
+        public string? Value { get; set; }
+    }
+
     private class CrossTalkRoot
     {
         public CrossTalkFirst? First { get; set; }
