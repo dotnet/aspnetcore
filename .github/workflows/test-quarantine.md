@@ -344,7 +344,7 @@ on:
             re.compile(r'(?i)\bhttps?://[^/\s:@"]+:[^@\s/"]{6,}@'),                             # basic-auth credentials in URL
             re.compile(r'(?i)[?&]sig=[A-Za-z0-9%/+_=-]{20,}'),                                  # Azure SAS signature
             re.compile(r'(?i)\b(?:AccountKey|SharedAccessKey|AccessKey|Password|Pwd)=[^;\s"\']{12,}'),  # connection-string secret
-            re.compile(r'[A-Za-z0-9+/=_-]{52,}'),                                               # long high-entropy run (AzDO PAT, base64)
+            re.compile(r'[A-Za-z0-9][A-Za-z0-9+/=_-]{51,}'),                                   # long high-entropy run (AzDO PAT, base64); must start with an alnum so it skips ===/--- separators
         ]
 
         def scrub_secrets(s):
