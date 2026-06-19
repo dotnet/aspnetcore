@@ -370,6 +370,27 @@ on:
             return out
 
 
+        def list_completed_builds(definition, branch=None):
+            """Return ALL completed build objects (any result) so we can reconstruct the
+            per-pipeline timeline and detect PASSING runs between failures. Lightweight:
+            build metadata only, no test-result calls."""
+            mt = (datetime.datetime.utcnow() - datetime.timedelta(days=DAYS)).strftime("%Y-%m-%dT%H:%M:%SZ")
+            tok, out = None, []
+            while True:
+                p = {"definitions": definition, "statusFilter": "completed", "$top": 200,
+                     "minTime": mt, "api-version": "7.1"}
+                if branch:
+                    p["branchName"] = branch
+                if tok:
+                    p["continuationToken"] = tok
+                data, h = fetch(f"{ADO}/build/builds?{urllib.parse.urlencode(p)}")
+                out += data.get("value", [])
+                tok = h.get("x-ms-continuationtoken")
+                if not tok:
+                    break
+            return out
+
+
         def builds_by_ids(ids):
             out = []
             for k in range(0, len(ids), 100):
@@ -557,6 +578,86 @@ on:
             return js
 
 
+        def mark_intermittency(source_a, all_main_builds, bmeta):
+            """Set `is_consistent_regression` on every individual test in source_a.
+
+            A test is a CONSISTENT REGRESSION (not flaky) when, on ANY `main` pipeline (def)
+            where it failed 2+ times, its two most recent failures on that pipeline were in
+            back-to-back runs with NO passing run in between. That is the signature of a real
+            regression, so such a test must NOT be auto-quarantined under Case A — quarantining
+            it would hide the regression. The check is conservative on purpose: a back-to-back
+            failure streak on EITHER pipeline blocks quarantine, even if the test happened to
+            look intermittent on the other pipeline (an intermittent pattern on one pipeline
+            must never mask a hard regression on another).
+
+            A "pass" between two failures is a completed `main` build on the SAME def that
+            SUCCEEDED or PARTIALLY SUCCEEDED (so tests actually ran), started strictly between
+            the two failures, and in which this test did NOT fail (not in its failing-build
+            set). `failed`/`canceled` builds are excluded — a compile/infra break produces no
+            test results and must not be mistaken for a passing run.
+
+            A test with fewer than two failures on every single pipeline has too little
+            evidence of consistency, so `is_consistent_regression` is False (the gate does not
+            block it; it is judged on the other Case A criteria — e.g. PR-only flakes)."""
+            PASS_RESULTS = ("succeeded", "partiallySucceeded")
+            # Per-def ascending (startedUtc, id) timeline + result/def lookup. Seed the
+            # start/def of every Source A failing build from `bmeta` first (it carries `def`
+            # and `startedUtc` for each), so a failure always has a timestamp + pipeline even
+            # if it falls outside the full-timeline window below; then layer the completed-build
+            # timeline (the only source of `result`, needed to spot passing runs) on top.
+            bstart, bdef, bresult, by_def = {}, {}, {}, {}
+            for sid, mv in bmeta.items():
+                try:
+                    bid = int(sid)
+                except (TypeError, ValueError):
+                    continue
+                if mv.get("startedUtc") and mv.get("def") is not None:
+                    bstart[bid] = mv["startedUtc"]
+                    bdef[bid] = mv["def"]
+            for b in all_main_builds:
+                bid = b.get("id")
+                d = (b.get("definition") or {}).get("id")
+                st = b.get("startTime")
+                if bid is None or d is None or not st:
+                    continue
+                bstart[bid] = st
+                bdef[bid] = d
+                bresult[bid] = b.get("result")
+                by_def.setdefault(d, []).append((st, bid))
+            for d in by_def:
+                by_def[d].sort()
+
+            for name, e in source_a.items():
+                if name.endswith(WI_SUFFIX):
+                    continue
+                failset = set(e.get("builds", []))
+                # Group this test's timestamped failures by the pipeline they ran on.
+                fails_by_def = {}
+                for bid in failset:
+                    if bid in bstart and bid in bdef:
+                        fails_by_def.setdefault(bdef[bid], []).append(bstart[bid])
+                regression = False
+                for d, fl in fails_by_def.items():
+                    if len(fl) < 2:
+                        continue
+                    fl.sort()
+                    t2, t1 = fl[-2], fl[-1]   # two most recent failures on this def
+                    passed_here = False
+                    for st, bid in by_def.get(d, []):
+                        if st <= t2:
+                            continue
+                        if st >= t1:
+                            break
+                        if bid not in failset and bresult.get(bid) in PASS_RESULTS:
+                            passed_here = True
+                            break
+                    if not passed_here:
+                        # Back-to-back failures on this pipeline with no pass between -> regression.
+                        regression = True
+                        break
+                e["is_consistent_regression"] = regression
+
+
         def main():
             # Source A: failed/partial builds on main, both pipelines, last 30 days.
             a_builds = [b for d in DEFS for b in list_failed_builds(d, branch="refs/heads/main")]
@@ -564,6 +665,10 @@ on:
             for b in a_builds:
                 bmeta[str(b["id"])] = build_meta(b)
             source_a = enrich(aggregate([b["id"] for b in a_builds]))
+            # Flakiness signal: needs the FULL main timeline (incl. succeeded builds), not just
+            # the failed/partial builds above, to spot a passing run between two failures.
+            all_main_builds = [b for d in DEFS for b in list_completed_builds(d, branch="refs/heads/main")]
+            mark_intermittency(source_a, all_main_builds, bmeta)
 
             # Source B: preselected merged-PR build ids (env from the Verify Source B PRs step).
             raw_ids = os.environ.get("SOURCE_B_BUILD_IDS", "").strip()
@@ -664,8 +769,11 @@ on:
                 "source_c_truncated": truncated,
             }
             js = emit(out)
+            regr = sum(1 for n, e in source_a.items()
+                       if not n.endswith(WI_SUFFIX) and e.get("is_consistent_regression"))
             sys.stderr.write(f"part1: A={len(source_a)} tests, B={len(source_b)} tests, "
                              f"C={len(source_c)} work items, builds={len(bmeta)}, "
+                             f"main_builds={len(all_main_builds)}, regression_A={regr}, "
                              f"output {len(js)/1024:.0f} KB, source_c_truncated={truncated}, "
                              f"trim={out.get('trim')}\n")
             return js
@@ -773,7 +881,7 @@ The injected object has this shape:
 
 - `generated_utc` — when the data was collected.
 - `builds` — a compact metadata map keyed by build ID (as a string), covering every build referenced below. Each value has `def` (83 or 87), `startedUtc`/`finishedUtc`, `sourceVersion` (the commit the build ran), and `pr` (the PR number for a merged-PR build, or `null` for a `main` build). Use it for the time- and PR-based checks in Step 1.2 (below) so you never need an AzDO call.
-- `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net11.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `error` and `stack` (the real failure message and stack trace, capped).
+- `source_a` — **main branch failures**: an object keyed by test name. Each value has `count` (total failures across defs 83 + 87 on `refs/heads/main` in the last 30 days), `assembly` (e.g. `InMemory.FunctionalTests--net11.0`), `builds` (every Azure DevOps build ID in which this test failed), `helix` (`{job, workitem}` Helix coordinates for the representative failure; present only when both were resolvable), and — for individual test cases — `error` and `stack` (the real failure message and stack trace, capped). Individual test cases also carry `is_consistent_regression` — a precomputed boolean that is `true` **only when, on a pipeline (def) where the test failed 2 or more times on `main`, its two most recent failures were in back-to-back runs with no passing run in between**. That is the signature of a real regression (a test that recently started failing *consistently*), so a `true` value means the test must **not** be auto-quarantined under **Case A**. It is computed from the full per-pipeline `main` build timeline: a completed `main` build on that same pipeline that **succeeded or partially succeeded** (so tests actually ran), started strictly between the two failures, and in which the test did not fail, counts as a passing run that *clears* the streak (`failed`/`canceled` builds — e.g. compile/infra breaks that ran no tests — do not count as a pass). The check is conservative: a back-to-back streak on **either** pipeline sets it `true`, so an intermittent pattern on one pipeline can never mask a hard regression on another. A test with fewer than two failures on every single pipeline (e.g. it only flaked in Source B/PR builds) is `false`.
 - `source_b` — **merged-PR failures**: same shape as `source_a`, computed from the already-selected merged-into-`main` PR builds (the `Verify Source B PRs` step did the full B1–B4 selection). It may be empty (`{}`) if no qualifying PR builds failed this run. Source B captures flaky tests that only manifest in PR builds: (1) a PR retried until it passed, and (2) a PR merged on red because the only failures were unrelated flaky tests.
 - `source_c` — **work-item crash investigation**: a list, one entry per crashed work item (test name ending in `.WorkItemExecution`). Each entry has `workitem`, `build`, `job`, and either `fail_block_count` + `fail_blocks` (the extracted `[FAIL]` blocks from the Helix console log, capped per block and overall) or a `note` explaining why no blocks were extracted. **A work item with `fail_block_count` of 0 is almost always macOS-hang / "test host process crashed" infrastructure flakiness with no clean test-level failure — it is NOT a quarantine signal on its own; do not invent a culprit test from it.**
 - `source_c_truncated` — `true` if the global Source C size cap was hit and some work items were omitted; call this out in your analysis if it affects a decision.
@@ -794,6 +902,7 @@ A test is a candidate for quarantining if it meets **either** of the following c
 All of the following are true:
 - It is an **individual test case** (not a `.WorkItemExecution`)
 - It has failed **2 or more times** total across all sources
+- It is **flaky, not a consistent regression**. Its `source_a` entry must **not** have `is_consistent_regression == true`. A `true` value means that, on a pipeline where the test failed 2+ times on `main`, its two most recent `main` failures occurred in **back-to-back runs with no passing run in between** — it is failing *consistently*, the signature of a real regression, so it must **not** be quarantined (auto-quarantining it would hide the regression). Wait until evidence of intermittency accumulates (a later passing run lands between failures) before quarantining. When `is_consistent_regression` is `false` (or absent) this gate does not block the candidate — including a test that only flaked in Source B/PR builds, which is not a `main` regression — so judge it on the other criteria. This gate applies to **Case A only**; it never applies to Case B and relaxes no other Case A requirement.
 - It is **not already quarantined** (check the source code for existing `[QuarantinedTest]` attributes)
 - The failures are **not** from a PR that modified the test itself. For a Source B failure, map each of its `builds` IDs to `builds[<id>].pr` / `builds[<id>].sourceVersion` and, using the checked-out repo, check whether that change touched the test's file; exclude the failure if so.
 
@@ -809,8 +918,8 @@ After identifying individual quarantine candidates from either case above, also 
 
 1. For each failure in the class, read the error message and stack trace **from the injected Part 1 data** — the per-test `error`/`stack` fields in `source_a`/`source_b` for individual methods, and the `fail_blocks` in `source_c` for any crashed work item. Do not download the Helix console log; the relevant `[FAIL]` content is already extracted for you.
 2. Compare the error messages and stack traces across all failing methods in the class. Look for the same exception type, similar call chains, or a shared root cause.
-3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods.
-4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold.
+3. If the errors are similar (e.g., all show the same exception type or share a common stack frame), quarantine the entire class instead of individual methods — but **only when quarantining under Case A** (a new quarantine). Apply the same **flaky-not-a-consistent-regression** gate at the class level: do **not** quarantine the class if **any** contributing method has `is_consistent_regression == true`. Even one consistently-failing method means the class contains a real regression that whole-class quarantine would hide — in that situation, quarantine only the individually eligible methods (those without `is_consistent_regression == true`), not the class. (This gate does not apply to Case B re-quarantine, which keeps its existing rule.)
+4. If the errors are unrelated, treat each method as an independent candidate using the individual 2-failure threshold (and the same Case A flakiness gate).
 
 ### Step 1.3 — Group related failures
 
