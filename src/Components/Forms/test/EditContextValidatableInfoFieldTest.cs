@@ -177,7 +177,7 @@ public class EditContextValidatableInfoFieldTest
     }
 
     // Runs a test body under Blazor's default dispatcher to simulate the renderer threading model:
-    // validator continuations, the framework's ObserveValidationTaskAsync continuation, and the test
+    // validator continuations, the framework's ObserveFieldValidationTask continuation, and the test
     // body's polling/assertions all serialize through a single logical thread. This matches
     // EditContext's documented threading model (see EditContext class XML remarks) and removes
     // incidental cross-thread races that would otherwise occur when raw EditContext is exercised on

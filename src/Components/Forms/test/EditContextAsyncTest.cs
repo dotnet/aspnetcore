@@ -85,7 +85,7 @@ public class EditContextAsyncTest
             ObserveCancellation = false,
             Custom = async (_, _) =>
             {
-                // Yield so we go through the ObserveValidationTaskAsync path (rather than
+                // Yield so we go through the ObserveFieldValidationTask path (rather than
                 // settling synchronously via TrackFieldValidation's fast path).
                 await Task.Yield();
                 using var unrelated = new CancellationTokenSource();
@@ -544,6 +544,56 @@ public class EditContextAsyncTest
 
         Assert.Throws<ArgumentNullException>(() => editContext.TrackFieldValidation(field, null!));
     }
+
+    [Fact]
+    public Task TrackFieldValidation_FactoryThrows_SupersedesPriorPendingValidation() => RunOnDispatcher(async () =>
+    {
+        // If the validate factory throws, the prior pending validation must still be superseded
+        // (cancelled and cleared) so the field does not stay stuck in the pending state.
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        CancellationToken priorToken = default;
+        var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        editContext.TrackFieldValidation(field, token =>
+        {
+            priorToken = token;
+            token.Register(() => pending.TrySetCanceled(token));
+            return pending.Task;
+        });
+        Assert.True(editContext.IsValidationPending(field));
+
+        Assert.Throws<InvalidOperationException>(
+            () => editContext.TrackFieldValidation(field, _ => throw new InvalidOperationException("factory failure")));
+
+        Assert.True(priorToken.IsCancellationRequested);
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.False(editContext.IsValidationFaulted(field));
+
+        await WaitUntilAsync(() => pending.Task.IsCompleted);
+    });
+
+    [Fact]
+    public Task TrackFieldValidation_FactoryReturnsNull_SupersedesPriorPendingValidation() => RunOnDispatcher(async () =>
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        CancellationToken priorToken = default;
+        var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        editContext.TrackFieldValidation(field, token =>
+        {
+            priorToken = token;
+            token.Register(() => pending.TrySetCanceled(token));
+            return pending.Task;
+        });
+        Assert.True(editContext.IsValidationPending(field));
+
+        Assert.Throws<ArgumentNullException>(() => editContext.TrackFieldValidation(field, _ => null!));
+
+        Assert.True(priorToken.IsCancellationRequested);
+        Assert.False(editContext.IsValidationPending(field));
+
+        await WaitUntilAsync(() => pending.Task.IsCompleted);
+    });
 
     [Fact]
     public void ValidationRequestedEventArgs_AddValidationTask_NullTask_ThrowsArgumentNullException()
@@ -1281,7 +1331,7 @@ public class EditContextAsyncTest
     }
 
     // Runs a test body under Blazor's default dispatcher to simulate the renderer threading model:
-    // validator continuations, the framework's ObserveValidationTaskAsync continuation, and the test
+    // validator continuations, the framework's ObserveFieldValidationTask continuation, and the test
     // body's polling/assertions all serialize through a single logical thread. This matches
     // EditContext's documented threading model (see EditContext class XML remarks) and removes
     // incidental cross-thread races that would otherwise occur when raw EditContext is exercised on

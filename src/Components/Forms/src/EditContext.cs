@@ -267,7 +267,7 @@ public sealed class EditContext
                 // A handler registered asynchronous work that has not finished. Validate cannot
                 // await it, so observe every registered task to suppress UnobservedTaskException
                 // and direct the caller to ValidateAsync.
-                ObserveAll(tasks);
+                ObserveOrphanedTasks(tasks);
                 throw new InvalidOperationException(
                     $"An asynchronous validation handler did not complete synchronously. " +
                     $"Use {nameof(ValidateAsync)} instead of {nameof(Validate)} when async validators are registered.");
@@ -277,7 +277,7 @@ public sealed class EditContext
         // Every registered task has completed. Classify and contain faults the same way
         // ValidateAsync does, so the two methods surface validator faults identically via
         // IsValidationFaulted()/GetValidationException() rather than Validate rethrowing them.
-        var faulted = ClassifyAndStoreFormFault(tasks);
+        var faulted = ObserveFormValidationTasks(tasks);
 
         return !faulted && !GetValidationMessages().Any();
     }
@@ -345,8 +345,8 @@ public sealed class EditContext
                 }
                 catch
                 {
-                    // Swallowed; classification happens below. Caller cancellation is rethrown
-                    // via ThrowIfCancellationRequested before classification runs.
+                    // Exception is swallowed here and classified below.
+                    // Caller cancellation is rethrown via ThrowIfCancellationRequested before classification runs.
                 }
 
                 // Cancellation requested by the caller propagates to the caller. The previous form
@@ -356,9 +356,9 @@ public sealed class EditContext
 
                 // Caller cancellation was already honored above, so any task that completed in the
                 // Canceled state here was cancelled by a source other than the caller's token (for
-                // example the validator's own timeout). ClassifyAndStoreFormFault treats both faulted
-                // and such canceled tasks as faults, mirroring the per-field ObserveValidationTaskAsync path.
-                faultedThisPass = ClassifyAndStoreFormFault(tasks);
+                // example the validator's own timeout). ObserveFormValidationTasks treats both faulted
+                // and such canceled tasks as faults, mirroring the per-field ObserveFieldValidationTask path.
+                faultedThisPass = ObserveFormValidationTasks(tasks);
             }
             else
             {
@@ -397,6 +397,9 @@ public sealed class EditContext
     /// <see cref="GetValidationException(in FieldIdentifier)"/>) rather than thrown from this method.
     /// If the returned task is already completed, it is settled synchronously: the field is never
     /// observably parked in the pending state and the token source is disposed before this method returns.
+    /// If <paramref name="validate"/> throws synchronously or returns a <see langword="null"/> task, any
+    /// prior validation tracked for the field is still superseded (cancelled and cleared) before the
+    /// exception propagates.
     /// </para>
     /// <para>
     /// Validators are expected to clear any prior validation messages for the field up-front (before
@@ -426,20 +429,45 @@ public sealed class EditContext
         }
         catch
         {
+            // The new validation failed to start, so the observer will not run.
+            // Clear the prior validation here so the field does not stay stuck in the
+            // pending state with an outdated validator still in flight.
             cts.Dispose();
+            ClearPendingFieldValidation(state);
             throw;
         }
 
         if (task is null)
         {
             cts.Dispose();
+            ClearPendingFieldValidation(state);
             throw new ArgumentNullException(nameof(validate), "The validation factory returned a null task.");
         }
 
         // Supersession, parking, settle, notification, and CTS disposal all flow through the single
         // observer below. For an already-completed task the await resumes synchronously, so the
         // field's pending/faulted state and the CTS disposal are visible before this method returns.
-        _ = ObserveValidationTaskAsync(state, task, cts);
+        _ = ObserveFieldValidationTask(state, task, cts);
+    }
+
+    // Cancels and clears any validation currently tracked for a field, leaving it idle. Used when a
+    // new validation fails to start (the factory threw or returned null) so that the old task is still cleared.
+    // The prior validation's observer disposes its own CTS when its (now cancelled) task
+    // settles, and its ReferenceEquals guard prevents it from stomping the cleared slot.
+    private void ClearPendingFieldValidation(FieldState state)
+    {
+        var wasPending = state.PendingValidationTask is not null;
+        var wasFaulted = state.ValidationException is not null;
+
+        state.PendingValidationCts?.Cancel();
+        state.PendingValidationTask = null;
+        state.PendingValidationCts = null;
+        state.ValidationException = null;
+
+        if (wasPending || wasFaulted)
+        {
+            NotifyValidationStateChanged();
+        }
     }
 
     /// <summary>
@@ -572,12 +600,12 @@ public sealed class EditContext
             // (started but never awaited by this pass). Observe them so a later fault does not
             // surface as an UnobservedTaskException, then rethrow so the exception reaches the
             // caller, matching the long standing behavior of the synchronous OnValidationRequested event.
-            ObserveAll(args.ValidationTasks);
+            ObserveOrphanedTasks(args.ValidationTasks);
             throw;
         }
     }
 
-    private static void ObserveAll(IReadOnlyList<Task> tasks)
+    private static void ObserveOrphanedTasks(IReadOnlyList<Task> tasks)
     {
         for (var i = 0; i < tasks.Count; i++)
         {
@@ -595,7 +623,7 @@ public sealed class EditContext
     // _formValidationException. Shared by Validate and ValidateAsync so both surface validator faults
     // identically: a single faulted task exposes its exception, several expose an AggregateException,
     // and a pass with no faulted task clears the form-level fault. Returns whether the pass faulted.
-    private bool ClassifyAndStoreFormFault(IReadOnlyList<Task> tasks)
+    private bool ObserveFormValidationTasks(IReadOnlyList<Task> tasks)
     {
         List<Exception>? faults = null;
         for (var i = 0; i < tasks.Count; i++)
@@ -610,7 +638,7 @@ public sealed class EditContext
                 // Callers reach this only after caller cancellation has been honored, so a Canceled
                 // task was cancelled by a source other than the caller (e.g. the validator's own
                 // timeout) and is treated as an infrastructure fault, mirroring the per-field
-                // ObserveValidationTaskAsync path. A Canceled task carries no Exception object, so
+                // ObserveFieldValidationTask path. A Canceled task carries no Exception object, so
                 // synthesize a TaskCanceledException so the fault is retrievable via GetValidationException().
                 (faults ??= new List<Exception>()).Add(new TaskCanceledException(task));
             }
@@ -660,10 +688,8 @@ public sealed class EditContext
         }
     }
 
-    private async Task ObserveValidationTaskAsync(FieldState state, Task task, CancellationTokenSource cts)
+    private async Task ObserveFieldValidationTask(FieldState state, Task task, CancellationTokenSource cts)
     {
-        // --- Synchronous prologue (runs before the first await) ---
-
         // Supersede any previously tracked task for this field. Its own observer disposes its CTS
         // when it settles, so we must not dispose it here while it may still be in flight.
         state.PendingValidationCts?.Cancel();
@@ -682,8 +708,6 @@ public sealed class EditContext
         {
             NotifyValidationStateChanged();
         }
-
-        // --- Await + settle ---
 
         Exception? fault = null;
         try
