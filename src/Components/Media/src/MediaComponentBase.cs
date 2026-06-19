@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Media;
+namespace Microsoft.AspNetCore.Components.Media;
 
 /// <summary>
 /// Base component that handles turning a media stream into an object URL plus caching and lifetime management.
