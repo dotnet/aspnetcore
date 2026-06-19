@@ -1468,7 +1468,63 @@ public class AsyncValidationTests
             "a later sibling's error propagated into the shared parent counter must not short-circuit it.");
     }
 
+    [Fact]
+    public async Task PropertyErrorOnClonedMember_StillShortCircuitsTypeLevelValidation()
+    {
+        // The property-error short-circuit (skip type-level/IValidatableObject when a member fails)
+        // must work regardless of which member fails. After member[0] goes async, member[1] is
+        // validated on a CLONED context. If the parent only inspects its own context's error count
+        // (no roll-up from clones), member[1]'s failure becomes invisible and type-level validation
+        // wrongly runs. This mirrors AsyncValidation_ShortCircuitsOnPropertyError but with the
+        // failing property as a (cloned) non-first member.
+        var releaseAsyncMember = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var typeLevelRan = false;
+        var modelType = new TestValidatableTypeInfo(
+            typeof(ShortCircuitModel),
+            [
+                // member[0]: async + passing -> forces member[1] onto a cloned context.
+                CreatePropertyInfo(typeof(ShortCircuitModel), typeof(string), "AsyncOk", "AsyncOk",
+                    [new GatedSuccessAsyncAttribute(releaseAsyncMember.Task)]),
+                // member[1]: synchronously fails Required (validated on a clone).
+                CreatePropertyInfo(typeof(ShortCircuitModel), typeof(string), "BadName", "BadName",
+                    [new RequiredAttribute { ErrorMessage = "BadName is required" }])
+            ],
+            [new TrackingTypeLevelAttribute(() => typeLevelRan = true)]);
+
+        var model = new ShortCircuitModel { AsyncOk = "ok", BadName = null };
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(ShortCircuitModel), modelType }
+            }),
+            ValidationContext = new ValidationContext(model)
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+        // Act
+        var validateTask = modelType.ValidateAsync(model, context, cts.Token);
+        releaseAsyncMember.SetResult();
+        await validateTask;
+
+        // Assert - BadName (a cloned member) failed, so type-level validation must be skipped.
+        Assert.NotNull(context.ValidationErrors);
+        Assert.True(context.ValidationErrors.ContainsKey("BadName"));
+        Assert.False(
+            typeLevelRan,
+            "A failing property must short-circuit type-level validation even when that property is " +
+            "validated on a cloned member context.");
+    }
+
     // Test model classes
+    private class ShortCircuitModel
+    {
+        public string? AsyncOk { get; set; }
+        public string? BadName { get; set; }
+    }
+
     private class FirstMemberVictimRoot
     {
         public VictimChild? Victim { get; set; }
