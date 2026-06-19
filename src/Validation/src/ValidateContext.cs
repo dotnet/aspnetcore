@@ -14,6 +14,8 @@ namespace Microsoft.Extensions.Validation;
 public sealed class ValidateContext
 {
     private readonly ConcurrentDictionary<string, IEnumerable<string>> _validationErrors;
+    private int _currentContextErrorCount;
+    private readonly ValidateContext? _parentContext;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -26,6 +28,7 @@ public sealed class ValidateContext
     internal ValidateContext(ValidateContext original, ValidateContextMutableState state)
     {
         _validationErrors = original._validationErrors;
+        _parentContext = original;
         CurrentDepth = state.Depth;
         CurrentValidationPath = state.Path;
 
@@ -37,24 +40,6 @@ public sealed class ValidateContext
             }
         }
     }
-
-    internal ValidateContext CopyWithState(ValidateContextMutableState state)
-    {
-        return new ValidateContext(this, state)
-        {
-            ValidationOptions = this.ValidationOptions,
-            ValidationContext = CloneValidationContextWithMutableState(state),
-        };
-    }
-
-    internal ValidateContextMutableState CaptureMutableState()
-        => new ValidateContextMutableState()
-        {
-            Depth = CurrentDepth,
-            Path = CurrentValidationPath,
-            DisplayName = ValidationContext.DisplayName,
-            MemberName = ValidationContext.MemberName,
-        };
 
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
@@ -118,6 +103,36 @@ public sealed class ValidateContext
     public event Action<ValidationErrorContext>? OnValidationError;
 
     /// <summary>
+    /// Determines whether the current ValidateContext produced any errors.
+    /// This is different from <see cref="ValidationErrors"/> which might contain errors from validating other sub-trees.
+    /// </summary>
+    internal int CurrentContextErrorCount => _currentContextErrorCount;
+
+    internal ValidateContext CopyWithState(ValidateContextMutableState state)
+    {
+        return new ValidateContext(this, state)
+        {
+            ValidationOptions = this.ValidationOptions,
+            ValidationContext = CloneValidationContextWithMutableState(state),
+        };
+    }
+
+    private void InformValidationError()
+    {
+        Interlocked.Increment(ref _currentContextErrorCount);
+        _parentContext?.InformValidationError();
+    }
+
+    internal ValidateContextMutableState CaptureMutableState()
+        => new ValidateContextMutableState()
+        {
+            Depth = CurrentDepth,
+            Path = CurrentValidationPath,
+            DisplayName = ValidationContext.DisplayName,
+            MemberName = ValidationContext.MemberName,
+        };
+
+    /// <summary>
     /// Adds a validation error to <see cref="ValidationErrors"/> and raises the <see cref="OnValidationError"/> event.
     /// </summary>
     /// <param name="validationErrorContext"></param>
@@ -128,6 +143,8 @@ public sealed class ValidateContext
         {
             existingErrors.Enqueue(error);
         }
+
+        InformValidationError();
 
         OnValidationError?.Invoke(validationErrorContext);
     }

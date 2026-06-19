@@ -140,7 +140,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
 
-        var originalErrorCount = context.ValidationErrors?.Count ?? 0;
+        var originalErrorCount = context.CurrentContextErrorCount;
 
         // First validate direct members
         var originalState = context.CaptureMutableState();
@@ -154,15 +154,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             localValidationTasks = await superTypeInfo.ValidateMembers(value, context, originalState, localValidationTasks, cancellationToken);
         }
 
-        // If any property-level validation errors were found, return early
-        // TODO: Count check here might not be correct when parallelizing.
-        if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
+        if (localValidationTasks is not null)
         {
-            if (localValidationTasks is not null)
-            {
-                await Task.WhenAll(localValidationTasks);
-            }
+            await Task.WhenAll(localValidationTasks);
+        }
 
+        // If any property-level validation errors were found, return early
+        if (context.CurrentContextErrorCount > originalErrorCount)
+        {
             return;
         }
 
@@ -181,30 +180,26 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             localValidationTasks.Add(typeValidationTask);
         }
 
-        // If any type-level attribute errors were found, return early
-        // TODO: Count check here might not be correct when parallelizing.
-        if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
+        if (localValidationTasks is not null)
         {
-            if (localValidationTasks is not null)
-            {
-                await Task.WhenAll(localValidationTasks);
-            }
+            await Task.WhenAll(localValidationTasks);
+        }
 
+        // If any type-level attribute errors were found, return early
+        if (context.CurrentContextErrorCount > originalErrorCount)
+        {
             return;
         }
 
         // Finally validate IValidatableObject if implemented
         if (localValidationTasks is not null)
         {
-            await Task.WhenAll(localValidationTasks);
-
             context = context.CopyWithState(originalState);
         }
 
         // After async property/type-level validations complete, skip IValidatableObject
         // if any errors were found (mirrors the sync early-return checks above).
-        // TODO: Count check here might not be correct when parallelizing.
-        if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
+        if (context.CurrentContextErrorCount > originalErrorCount)
         {
             return;
         }
