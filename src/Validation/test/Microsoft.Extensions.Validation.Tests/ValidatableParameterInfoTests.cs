@@ -296,7 +296,7 @@ public class ValidatableParameterInfoTests
         return new TestValidatableParameterInfo(
             parameterType,
             name,
-            displayName,
+            new TestLiteralDisplayName(displayName),
             validationAttributes);
     }
 
@@ -320,9 +320,9 @@ public class ValidatableParameterInfoTests
         public TestValidatableParameterInfo(
             Type parameterType,
             string name,
-            string displayName,
+            DisplayNameInfo? displayNameInfo,
             ValidationAttribute[] validationAttributes)
-            : base(parameterType, name, displayName)
+            : base(parameterType, name, displayNameInfo)
         {
             _validationAttributes = validationAttributes;
         }
@@ -340,7 +340,7 @@ public class ValidatableParameterInfoTests
             string name,
             string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name, new TestLiteralDisplayName(displayName))
         {
             _validationAttributes = validationAttributes;
         }
@@ -381,7 +381,7 @@ public class ValidatableParameterInfoTests
                 return null;
             }
 
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableInfo)
             {
                 if (_typeInfoMappings.TryGetValue(type, out var validatableTypeInfo))
                 {
@@ -392,7 +392,7 @@ public class ValidatableParameterInfoTests
                 return false;
             }
 
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
             {
                 validatableInfo = null;
                 return false;

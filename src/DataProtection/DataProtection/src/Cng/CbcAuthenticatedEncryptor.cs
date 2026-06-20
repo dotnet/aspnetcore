@@ -185,8 +185,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
 #if NET
         byte[]? rentedBuffer = null;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
@@ -382,8 +382,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
 #if NET
         byte[] rentedBuffer = null!;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);

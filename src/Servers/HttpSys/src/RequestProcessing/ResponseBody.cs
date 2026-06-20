@@ -475,6 +475,11 @@ internal sealed partial class ResponseBody : Stream
             }
         }
 
+        if (!_requestContext.Request.KeepAlive)
+        {
+            flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+        }
+
         if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
         {
             flags |= PInvoke.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
