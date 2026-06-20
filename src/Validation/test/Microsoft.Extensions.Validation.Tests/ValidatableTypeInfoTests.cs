@@ -649,31 +649,6 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_ThrowsArgumentNullException_WhenTypeIsNull()
-    {
-        var options = new ValidationOptions();
-
-        Assert.Throws<ArgumentNullException>("type", () => options.TryGetValidatablePropertyInfo(null!, "Name", out _));
-    }
-
-    [Fact]
-    public void TryGetValidatablePropertyInfo_ThrowsArgumentNullException_WhenPropertyNameIsNull()
-    {
-        var options = new ValidationOptions();
-
-        Assert.Throws<ArgumentNullException>("propertyName", () => options.TryGetValidatablePropertyInfo(typeof(Person), null!, out _));
-    }
-
-    [Fact]
-    public void TryGetValidatablePropertyInfo_ReturnsFalse_WhenTypeNotRegistered()
-    {
-        var options = new ValidationOptions();
-
-        Assert.False(options.TryGetValidatablePropertyInfo(typeof(Person), "Name", out var propertyInfo));
-        Assert.Null(propertyInfo);
-    }
-
-    [Fact]
     public void TryGetValidatablePropertyInfo_ReturnsFalse_WhenPropertyNotFound()
     {
         var typeInfo = new TestValidatableTypeInfo(typeof(Person), []);
@@ -682,8 +657,7 @@ public class ValidatableTypeInfoTests
             { typeof(Person), typeInfo },
         });
 
-        Assert.False(options.TryGetValidatablePropertyInfo(typeof(Person), "NonExistent", out var propertyInfo));
-        Assert.Null(propertyInfo);
+        Assert.Null(typeInfo.TryFindProperty("NonExistent", options));
     }
 
     [Fact]
@@ -696,8 +670,9 @@ public class ValidatableTypeInfoTests
             { typeof(Person), typeInfo },
         });
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(Person), "Name", out var propertyInfo));
-        Assert.Same(nameProperty, propertyInfo);
+        var retrievedNameProperty = typeInfo.TryFindProperty("Name", options);
+        Assert.NotNull(retrievedNameProperty);
+        Assert.Same(nameProperty, retrievedNameProperty);
     }
 
     [Fact]
@@ -716,13 +691,15 @@ public class ValidatableTypeInfoTests
             { typeof(DerivedEntity), derivedType },
         });
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var localProperty));
+        var localProperty = derivedType.TryFindProperty("Name", options);
+        Assert.NotNull(localProperty);
         Assert.Same(nameProperty, localProperty);
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var inheritedProperty));
+        var inheritedProperty = derivedType.TryFindProperty("Id", options);
+        Assert.NotNull(inheritedProperty);
         Assert.Same(idProperty, inheritedProperty);
 
-        Assert.False(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "NonExistent", out var missingProperty));
+        var missingProperty = derivedType.TryFindProperty("NonExistent", options);
         Assert.Null(missingProperty);
     }
 
@@ -742,7 +719,8 @@ public class ValidatableTypeInfoTests
             { typeof(DerivedEntity), derivedType },
         });
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var propertyInfo));
+        var propertyInfo = derivedType.TryFindProperty("Name", options);
+        Assert.NotNull(propertyInfo);
         Assert.Same(derivedNameProperty, propertyInfo);
     }
 
@@ -759,10 +737,11 @@ public class ValidatableTypeInfoTests
             { typeof(DerivedEntity), derivedType },
         });
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var localProperty));
+        var localProperty = derivedType.TryFindProperty("Name", options);
+        Assert.NotNull(localProperty);
         Assert.Same(nameProperty, localProperty);
 
-        Assert.False(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var inheritedProperty));
+        var inheritedProperty = derivedType.TryFindProperty("Id", options);
         Assert.Null(inheritedProperty);
     }
 
@@ -782,13 +761,18 @@ public class ValidatableTypeInfoTests
             { typeof(DerivedEntity), new TestValidatableTypeInfo(typeof(DerivedEntity), [nameProperty]) },
         });
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var fromDerived));
+        Assert.True(options.TryGetValidatableTypeInfo(typeof(DerivedEntity), out var derivedEntityInfo));
+
+        var fromDerived = derivedEntityInfo.TryFindProperty("Name", options);
+        Assert.NotNull(fromDerived);
         Assert.Same(nameProperty, fromDerived);
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "CreatedAt", out var fromIntermediate));
+        var fromIntermediate = derivedEntityInfo.TryFindProperty("CreatedAt", options);
+        Assert.NotNull(fromIntermediate);
         Assert.Same(createdAtProperty, fromIntermediate);
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var fromBase));
+        var fromBase = derivedEntityInfo.TryFindProperty("Id", options);
+        Assert.NotNull(fromBase);
         Assert.Same(idProperty, fromBase);
     }
 
@@ -808,7 +792,8 @@ public class ValidatableTypeInfoTests
             { typeof(AuditableThing), thingTypeInfo },
         });
 
-        Assert.True(options.TryGetValidatablePropertyInfo(typeof(AuditableThing), "CreatedAt", out var resolved));
+        var resolved = thingTypeInfo.TryFindProperty("CreatedAt", options);
+        Assert.NotNull(resolved);
         Assert.Same(auditedProperty, resolved);
     }
 

@@ -49,6 +49,5 @@ Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.T
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableInfo) -> bool
-Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatablePropertyInfo(System.Type! type, string! propertyName, out Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo) -> bool
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo) -> bool
 virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
