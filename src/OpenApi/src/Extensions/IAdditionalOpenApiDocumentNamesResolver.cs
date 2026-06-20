@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// <summary>
 /// An interface that lets users provide additional OpenAPI document names.
 /// </summary>
-public interface IAdditionalOpenApiDocumentNamesResolver
+public interface IAdditionalOpenApiDocumentNameResolver
 {
     /// <summary>
     /// Gets the additional document names.

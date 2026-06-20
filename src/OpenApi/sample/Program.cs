@@ -21,7 +21,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 });
 
 builder.Services.AddOpenApiCore(options => { });
-builder.Services.AddSingleton<IAdditionalOpenApiDocumentNamesResolver, AdditionalDocumentNamesResolver>();
+builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameResolver, AdditionalDocumentNamesResolver>();
 
 builder.Services.AddOpenApi("v1", options =>
 {
@@ -86,7 +86,7 @@ app.Run();
 // against sample app using WebApplicationFactory.
 public partial class Program { }
 
-internal sealed class AdditionalDocumentNamesResolver : IAdditionalOpenApiDocumentNamesResolver
+internal sealed class AdditionalDocumentNamesResolver : IAdditionalOpenApiDocumentNameResolver
 {
     public IEnumerable<string> ResolveDocumentNames()
         => ["first-doc", "second-doc"];

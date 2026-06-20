@@ -146,6 +146,6 @@ public static class OpenApiServiceCollectionExtensions
             => options.DocumentName = name ?? throw new UnreachableException();
 
         public void Configure(OpenApiOptions options)
-            => throw new NotImplementedException();
+            => throw new UnreachableException();
     }
 }
