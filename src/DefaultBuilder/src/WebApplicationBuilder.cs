@@ -210,7 +210,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
     }
 
-    // TODO: Validate if that's reasonable.
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
         Justification = "The values being passed into Write are being consumed by the application already.")]
     private void OnHostApplicationBuilderConstructed()
