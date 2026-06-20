@@ -259,6 +259,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 {
                     config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
                     config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
+                        || Configuration.GetValue<bool>("EnableOutOfProcessRenderer"))
+                    {
+                        config.WebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
+                    }
                 });
 
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
