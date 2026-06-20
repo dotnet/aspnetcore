@@ -895,6 +895,52 @@ public class AsyncValidationTests
     }
 
     [Fact]
+    public async Task MultipleAsyncAttributesOnSameProperty_FailingConcurrently_RecordAllErrors()
+    {
+        // Two async attributes on one property fail concurrently. A shared barrier forces both to be
+        // in-flight simultaneously, so both errors are written to the same context error collection
+        // (same key) at the same time. This exercises the concurrent write path; a non-thread-safe
+        // error collection would intermittently lose a write (or throw). Stressed over many iterations
+        // because data races are non-deterministic.
+        const int attributeCount = 100;
+        const int iterations = 1000;
+
+        for (var i = 0; i < iterations; i++)
+        {
+            var allEnteredSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var barrier = new ConcurrentFailingBarrierAttribute(allEnteredSignal, attributeCount);
+
+            var propertyAttributes = new ValidationAttribute[attributeCount];
+            Array.Fill(propertyAttributes, barrier);
+
+            var recordType = new TestValidatableTypeInfo(
+                typeof(Record),
+                [
+                    // Same barrier instance applied twice: both invocations must be in-flight together,
+                    // then both fail and write to the "Value" entry concurrently.
+                    CreatePropertyInfo(typeof(Record), typeof(string), "Value", "Value", propertyAttributes)
+                ]);
+
+            var record = new Record { Value = "DUPLICATE" }; // makes both attributes fail
+            var context = new ValidateContext
+            {
+                ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+                {
+                    { typeof(Record), recordType }
+                }),
+                ValidationContext = new ValidationContext(record)
+            };
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await recordType.ValidateAsync(record, context, cts.Token);
+
+            Assert.NotNull(context.ValidationErrors);
+            Assert.True(context.ValidationErrors.ContainsKey("Value"));
+            Assert.Equal(attributeCount, context.ValidationErrors["Value"].Count());
+        }
+    }
+
+    [Fact]
     public async Task AsyncValidation_DeepNestedObjects_ValidateInParallel()
     {
         // Arrange
@@ -2043,6 +2089,42 @@ public class AsyncValidationTests
             }
 
             return ValidationResult.Success;
+        }
+    }
+
+    /// <summary>
+    /// Barrier attribute that waits until every expected invocation is in-flight and then fails.
+    /// It waits with a timeout (not the cancellation token), so the short-circuit cancellation from a
+    /// sibling's first failure does NOT cancel it - forcing every failure to be reported concurrently
+    /// to the same error key, which exercises the concurrent error-collection write path.
+    /// </summary>
+    private sealed class ConcurrentFailingBarrierAttribute : AsyncValidationAttribute
+    {
+        private readonly TaskCompletionSource _allEnteredSignal;
+        private readonly int _expectedCount;
+        private int _enteredCount;
+
+        public ConcurrentFailingBarrierAttribute(TaskCompletionSource allEnteredSignal, int expectedCount)
+        {
+            _allEnteredSignal = allEnteredSignal;
+            _expectedCount = expectedCount;
+        }
+
+        protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+            => throw new UnreachableException();
+
+        protected override async Task<ValidationResult?> IsValidAsync(
+            object? value,
+            ValidationContext validationContext,
+            CancellationToken cancellationToken)
+        {
+            if (Interlocked.Increment(ref _enteredCount) == _expectedCount)
+            {
+                _allEnteredSignal.SetResult();
+            }
+
+            await _allEnteredSignal.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            return new ValidationResult("Concurrent error");
         }
     }
 
