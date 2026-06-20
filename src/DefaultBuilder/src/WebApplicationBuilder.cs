@@ -50,8 +50,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             Configuration = configuration,
         });
 
-        OnHostApplicationBuilderConstructed();
-
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
         {
@@ -81,6 +79,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+
+        OnHostApplicationBuilderConstructed();
     }
 
     internal WebApplicationBuilder(WebApplicationOptions options, bool slim, Action<IHostBuilder>? configureDefaults = null)
@@ -106,8 +106,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             ContentRootPath = options.ContentRootPath,
             Configuration = configuration,
         });
-
-        OnHostApplicationBuilderConstructed();
 
         // Ensure the same behavior of the non-slim WebApplicationBuilder by adding the default "app" Configuration sources
         ApplyDefaultAppConfigurationSlim(_hostApplicationBuilder.Environment, configuration, options.Args);
@@ -151,6 +149,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+
+        OnHostApplicationBuilderConstructed();
     }
 
     internal WebApplicationBuilder(WebApplicationOptions options, bool slim, bool empty, Action<IHostBuilder>? configureDefaults = null)
