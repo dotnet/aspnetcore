@@ -65,6 +65,8 @@ public class OpenApiServiceCollectionExtensions
         // Arrange
         var services = new ServiceCollection();
 
+        services.AddOptions();
+
         // Act
         var returnedServices = services.AddOpenApiCore();
 
