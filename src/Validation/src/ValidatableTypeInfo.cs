@@ -160,30 +160,9 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         }
 
         var currentCount = context.ValidationErrors?.Count ?? 0;
-        if (clonedContexts is not null)
-        {
-            foreach (var clonedContext in clonedContexts)
-            {
-                if (clonedContext.ValidationErrors is not null)
-                {
-                    foreach (var validationError in clonedContext.ValidationErrors)
-                    {
-                        currentCount++;
-                        // Event is cloned and was already raised when the error got added to the cloned context.
-                        // We could avoid cloning the event so that cloned context never have event subscribers.
-                        // However, that will mean we need to store more information that are needed by
-                        // the event in the dictionary.
-                        // Note that the dictionary is a public API.
-                        // Maybe it actually makes sense to re-consider the public API shape and if the additional
-                        // information are needed?
-                        context.AddValidationErrorSuppressEvent(validationError.Key, validationError.Value);
-                    }
-                }
-            }
-        }
-
+        var clonedContextsHasErrors = context.MergeErrorsFromClonedContexts(clonedContexts);
         // If any property-level validation errors were found, return early
-        if (currentCount > originalErrorCount)
+        if (currentCount > originalErrorCount || clonedContextsHasErrors)
         {
             return;
         }

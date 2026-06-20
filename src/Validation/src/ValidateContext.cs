@@ -126,7 +126,40 @@ public sealed class ValidateContext
         OnValidationError?.Invoke(validationErrorContext);
     }
 
-    internal void AddValidationErrorSuppressEvent(string path, IEnumerable<string> errors)
+    internal bool MergeErrorsFromClonedContexts(List<ValidateContext>? clonedContexts)
+    {
+        if (clonedContexts is null)
+        {
+            return false;
+        }
+
+        bool hasErrors = false;
+        foreach (var clonedContext in clonedContexts)
+        {
+            if (clonedContext.ValidationErrors is null)
+            {
+                continue;
+            }
+
+            foreach (var validationError in clonedContext.ValidationErrors)
+            {
+                hasErrors = true;
+
+                // Event is cloned and was already raised when the error got added to the cloned context.
+                // We could avoid cloning the event so that cloned context never have event subscribers.
+                // However, that will mean we need to store more information that are needed by
+                // the event in the dictionary.
+                // Note that the dictionary is a public API.
+                // Maybe it actually makes sense to re-consider the public API shape and if the additional
+                // information are needed?
+                AddValidationErrorSuppressEvent(validationError.Key, validationError.Value);
+            }
+        }
+
+        return hasErrors;
+    }
+
+    private void AddValidationErrorSuppressEvent(string path, IEnumerable<string> errors)
     {
         var validationErrors = _validationErrors;
         if (validationErrors is null)
