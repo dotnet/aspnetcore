@@ -20,7 +20,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
 });
 
-builder.Services.AddOpenApiCore(options => { });
+builder.Services.AddOpenApiCore();
 builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameResolver, AdditionalDocumentNamesResolver>();
 
 builder.Services.AddOpenApi("v1", options =>

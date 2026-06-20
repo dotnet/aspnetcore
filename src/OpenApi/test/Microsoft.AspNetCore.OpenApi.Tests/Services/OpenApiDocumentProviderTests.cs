@@ -110,10 +110,12 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.AddOpenApiCore(options =>
+        builder.Services.AddOpenApiCore();
+        builder.Services.Configure<OpenApiOptions>(null, options =>
         {
             options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from doc transformer."));
         });
+
         builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameResolver>(
             new MultiDocumentNameResolver(["products", "orders"]));
 
@@ -175,17 +177,15 @@ public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.AddOpenApiCore(options =>
+        builder.Services.AddOpenApiCore();
+
+        builder.Services.Configure<OpenApiOptions>(null, options =>
         {
             options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from doc transformer."));
         });
 
         builder.Services.AddOpenApi(options =>
         {
-            // IMPORTANT: Currently, when resolving the options for "v1", the
-            // lambda for the null document name also gets applied.
-            // They are called in the same order of registration.
-            // We need to decide if this is a reasonable behavior?
             options.AddDocumentTransformer(new TestTitleDocumentTransformer("Updated title from v1 doc transformer."));
         });
 

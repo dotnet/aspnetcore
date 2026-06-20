@@ -111,20 +111,22 @@ public static class OpenApiServiceCollectionExtensions
     /// Adds the core OpenAPI services, not tied to a specific document name, to the specified <see cref="IServiceCollection"/> with the specified options.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/> to register services onto.</param>
-    /// <param name="configureOptions">A delegate used to configure the target <see cref="OpenApiOptions"/>.</param>
-    public static IServiceCollection AddOpenApiCore(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
+    public static IServiceCollection AddOpenApiCore(this IServiceCollection services)
     {
+        // NOTE, we don't have a public AddOpenApiCore yet that allows users to configure options.
+        // Today, callers can do services.Configure<OpenApiOptions>(...) themselves.
+        // We can consider in the future if we want to add an overload of AddOpenApiCore that
+        // takes in an Action<OpenApiOptions> to allow users to configure core OpenAPI options
+        // that aren't specific to a document.
+        // If we did that in the future, we should decide what option we want to go:
+        // 1. ensure that such configuration callback called **BEFORE** the document-specific configuration callbacks.
+        // 2. ensure that the global configuration is only applied to document names that are not explicitly registered.
+        // Note that services.Configure<OpenApiOptions>(null, ...) will make the callback apply to all document names.
+        // But also it's dependent on the order of registration.
+        // To avoid answering this potential design question, we are not shipping the overload with configureOptions.
+        // We are waiting for user feedback to understand if there is really a need to ship it and what the behavior should be.
         ArgumentNullException.ThrowIfNull(services);
-        ArgumentNullException.ThrowIfNull(configureOptions);
 
-        services.AddOpenApiCore();
-
-        services.Configure<OpenApiOptions>(null, configureOptions);
-        return services;
-    }
-
-    private static IServiceCollection AddOpenApiCore(this IServiceCollection services)
-    {
         services.AddEndpointsApiExplorer();
         services.TryAddKeyedSingleton<OpenApiSchemaService>(KeyedService.AnyKey);
         services.TryAddKeyedSingleton<OpenApiDocumentService>(KeyedService.AnyKey);

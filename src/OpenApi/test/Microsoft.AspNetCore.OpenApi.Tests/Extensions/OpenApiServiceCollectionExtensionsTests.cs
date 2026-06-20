@@ -60,13 +60,13 @@ public class OpenApiServiceCollectionExtensions
     }
 
     [Fact]
-    public void AddOpenApiCore_WithConfigureOptions_ReturnsServiceCollection()
+    public void AddOpenApiCore_ReturnsServiceCollection()
     {
         // Arrange
         var services = new ServiceCollection();
 
         // Act
-        var returnedServices = services.AddOpenApiCore(options => { });
+        var returnedServices = services.AddOpenApiCore();
 
         // Assert
         Assert.IsAssignableFrom<IServiceCollection>(returnedServices);
