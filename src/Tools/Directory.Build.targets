@@ -13,6 +13,9 @@
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
 
+  <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
+      Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
   <Target Name="CleanPublishDir" AfterTargets="CoreClean">

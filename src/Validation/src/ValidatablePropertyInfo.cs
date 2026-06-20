@@ -10,58 +10,67 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a member of a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : IValidatableInfo
+public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
     /// </summary>
+    /// <param name="declaringType">The <see cref="Type"/> that declares the property.</param>
+    /// <param name="propertyType">The <see cref="Type"/> of the property.</param>
+    /// <param name="name">The property name.</param>
+    /// <param name="displayNameInfo">An optional strategy that resolves the
+    /// display name for the property at validation time. When <see langword="null"/>, the
+    /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatablePropertyInfo(
         [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
         Type declaringType,
         Type propertyType,
         string name,
-        string displayName)
+        DisplayNameInfo? displayNameInfo = null)
     {
         DeclaringType = declaringType;
         PropertyType = propertyType;
         Name = name;
-        DisplayName = displayName;
+        DisplayNameInfo = displayNameInfo;
     }
 
     /// <summary>
-    /// Gets the member type.
+    /// Gets the type that declares the property.
     /// </summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
     internal Type DeclaringType { get; }
 
     /// <summary>
-    /// Gets the member type.
+    /// Gets the property type.
     /// </summary>
     internal Type PropertyType { get; }
 
     /// <summary>
-    /// Gets the member name.
+    /// Gets the property name.
     /// </summary>
     internal string Name { get; }
 
     /// <summary>
-    /// Gets the display name for the member as designated by the <see cref="DisplayAttribute"/>.
+    /// Gets the strategy that resolves the display name for the property at validation time,
+    /// or <see langword="null"/> when no display name information was supplied.
     /// </summary>
-    internal string DisplayName { get; }
+    internal DisplayNameInfo? DisplayNameInfo { get; }
 
     /// <summary>
-    /// Gets the validation attributes for this member.
+    /// Gets the validation attributes for this property.
     /// </summary>
-    /// <returns>An array of validation attributes to apply to this member.</returns>
+    /// <returns>An array of validation attributes to apply to this property.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <inheritdoc />
-    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    public virtual async Task ValidateAsync(object containingObject, ValidateContext context, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(containingObject);
+
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
-        var propertyValue = property.GetValue(value);
+        var propertyValue = property.GetValue(containingObject);
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
@@ -75,7 +84,9 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first
@@ -83,16 +94,27 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         {
             var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
 
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                context.AddValidationError(Name, context.CurrentValidationPath, [result.ErrorMessage], value);
+                var errorMessage = context.ResolveAttributeErrorMessage(
+                    memberName: Name,
+                    displayName,
+                    declaringType: DeclaringType,
+                    attribute: _requiredAttribute,
+                    result);
+
+                if (errorMessage is not null)
+                {
+                    context.AddValidationError(Name, context.CurrentValidationPath, [errorMessage], containingObject);
+                }
+
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, containingObject);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -158,10 +180,20 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 try
                 {
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+                    if (result is not null && result != ValidationResult.Success)
                     {
-                        var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
+                        var errorMessage = context.ResolveAttributeErrorMessage(
+                            memberName: Name,
+                            displayName,
+                            declaringType: DeclaringType,
+                            attribute,
+                            result);
+
+                        if (errorMessage is not null)
+                        {
+                            var key = errorPrefix.TrimStart('.');
+                            context.AddOrExtendValidationErrors(name, key, [errorMessage], container);
+                        }
                     }
                 }
                 catch (Exception ex)

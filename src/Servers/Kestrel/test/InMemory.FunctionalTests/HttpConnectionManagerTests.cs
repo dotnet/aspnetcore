@@ -21,6 +21,7 @@ public class HttpConnectionManagerTests : LoggedTest
 #if !DEBUG
     [ConditionalFact]
     [NoDebuggerCondition]
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126735")]
     public async Task CriticalErrorLoggedIfApplicationDoesntComplete()
     {
         ////////////////////////////////////////////////////////////////////////////////////////

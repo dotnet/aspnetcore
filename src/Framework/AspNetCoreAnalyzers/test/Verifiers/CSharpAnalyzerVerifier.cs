@@ -51,7 +51,7 @@ public static partial class CSharpAnalyzerVerifier<TAnalyzer>
     {
         var nugetConfigPath = SkipOnHelixAttribute.OnHelix() ?
             Path.Combine(
-                Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"),
+                AppContext.BaseDirectory,
                 "NuGet.config") :
             Path.Combine(TestData.GetRepoRoot(), "NuGet.config");
         var net11Ref = new ReferenceAssemblies(

@@ -11,30 +11,36 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableTypeInfo : IValidatableInfo
+public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 {
     private readonly int _membersCount;
-    private readonly List<Type> _superTypes;
+    private readonly Type[] _implementedInterfaces;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
     /// </summary>
     /// <param name="type">The type being validated.</param>
     /// <param name="members">The members that can be validated.</param>
+    /// <param name="displayNameInfo">An optional strategy that resolves the
+    /// display name for the type at validation time. When <see langword="null"/>, the validation
+    /// pipeline uses <see cref="System.Reflection.MemberInfo.Name"/> of <paramref name="type"/>
+    /// as the display name.</param>
     protected ValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
-        IReadOnlyList<ValidatablePropertyInfo> members)
+        IReadOnlyList<ValidatablePropertyInfo> members,
+        DisplayNameInfo? displayNameInfo = null)
     {
         Type = type;
         Members = members;
+        DisplayNameInfo = displayNameInfo;
         _membersCount = members.Count;
-        _superTypes = type.GetAllImplementedTypes();
+        _implementedInterfaces = type.GetInterfaces();
     }
 
     /// <summary>
-    /// Gets the validation attributes for this member.
+    /// Gets the validation attributes applied to this type.
     /// </summary>
-    /// <returns>An array of validation attributes to apply to this member.</returns>
+    /// <returns>An array of validation attributes to apply to this type.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
     /// <summary>
@@ -46,6 +52,76 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// The members that can be validated.
     /// </summary>
     internal IReadOnlyList<ValidatablePropertyInfo> Members { get; }
+
+    /// <summary>
+    /// Gets the strategy that resolves the display name for the type at validation time,
+    /// or <see langword="null"/> when no display name information was supplied.
+    /// </summary>
+    internal DisplayNameInfo? DisplayNameInfo { get; }
+
+    /// <summary>
+    /// Finds the <see cref="ValidatablePropertyInfo"/> for a member with the specified
+    /// <paramref name="propertyName"/>, including members inherited from base types or implemented
+    /// interfaces.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Members declared directly on <see cref="Type"/> take precedence over members inherited
+    /// from super-types, matching the order in which <see cref="ValidateAsync(object?, ValidateContext, CancellationToken)"/>
+    /// visits members.
+    /// </para>
+    /// <para>
+    /// Inherited members are resolved by looking up each super-type via
+    /// <paramref name="validationOptions"/>'s <see cref="ValidationOptions.Resolvers"/>. Super-types that
+    /// are not registered with a resolver are silently skipped.
+    /// </para>
+    /// </remarks>
+    /// <param name="propertyName">The CLR name of the property to find.</param>
+    /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
+    /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
+    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
+    public IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions)
+    {
+        if (FindLocalMember(propertyName) is { } localMember)
+        {
+            return localMember;
+        }
+
+        foreach (var @interface in _implementedInterfaces)
+        {
+            if (validationOptions.TryGetValidatableTypeInfo(@interface, out var interfaceTypeInfo) &&
+                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions) is { } interfaceProperty)
+            {
+                return interfaceProperty;
+            }
+        }
+
+        var baseType = Type.BaseType;
+        while (baseType is not null)
+        {
+            if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
+            {
+                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions);
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        return null;
+    }
+
+    private ValidatablePropertyInfo? FindLocalMember(string memberName)
+    {
+        for (var i = 0; i < _membersCount; i++)
+        {
+            if (string.Equals(Members[i].Name, memberName, StringComparison.Ordinal))
+            {
+                return Members[i];
+            }
+        }
+
+        return null;
+    }
 
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
@@ -86,8 +162,10 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 return;
             }
 
+            var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+
             // Validate type-level attributes
-            ValidateTypeAttributes(value, context);
+            ValidateTypeAttributes(value, context, displayName);
 
             // If any type-level attribute errors were found, return early
             if (context.ValidationErrors is not null && context.ValidationErrors.Count > originalErrorCount)
@@ -96,7 +174,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
             }
 
             // Finally validate IValidatableObject if implemented
-            ValidateValidatableObjectInterface(value, context);
+            ValidateValidatableObjectInterface(value, context, displayName);
         }
         finally
         {
@@ -104,7 +182,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private async Task ValidateMembersAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private async Task ValidateMembersAsync(object value, ValidateContext context, CancellationToken cancellationToken)
     {
         var originalPrefix = context.CurrentValidationPath;
 
@@ -122,45 +200,73 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         }
     }
 
-    private void ValidateTypeAttributes(object? value, ValidateContext context)
+    private void ValidateTypeAttributes(object? value, ValidateContext context, string displayName)
     {
         var validationAttributes = GetValidationAttributes();
         var errorPrefix = context.CurrentValidationPath;
+
+        var originalDisplayName = context.ValidationContext.DisplayName;
+        var originalMemberName = context.ValidationContext.MemberName;
+
+        context.ValidationContext.DisplayName = displayName;
+        context.ValidationContext.MemberName = null;
 
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
             var result = attribute.GetValidationResult(value, context.ValidationContext);
-            if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
+            if (result is not null && result != ValidationResult.Success)
             {
-                // Create a validation error for each member name that is provided
                 foreach (var memberName in result.MemberNames)
                 {
-                    var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                    context.AddOrExtendValidationError(memberName, key, result.ErrorMessage, value);
+                    // Create a validation error for each member name that is provided
+                    var errorMessage = context.ResolveAttributeErrorMessage(
+                        memberName,
+                        displayName,
+                        declaringType: Type,
+                        attribute,
+                        result);
+
+                    if (errorMessage is not null)
+                    {
+                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                        context.AddOrExtendValidationError(memberName, key, errorMessage, value);
+                    }
                 }
 
                 if (!result.MemberNames.Any())
                 {
                     // If no member names are specified, then treat this as a top-level error
-                    context.AddOrExtendValidationError(string.Empty, errorPrefix, result.ErrorMessage, value);
+                    var errorMessage = context.ResolveAttributeErrorMessage(
+                        memberName: Type.Name,
+                        displayName,
+                        declaringType: Type,
+                        attribute,
+                        result);
+
+                    if (errorMessage is not null)
+                    {
+                        context.AddOrExtendValidationError(string.Empty, errorPrefix, errorMessage, value);
+                    }
                 }
             }
         }
+
+        context.ValidationContext.DisplayName = originalDisplayName;
+        context.ValidationContext.MemberName = originalMemberName;
     }
 
-    private void ValidateValidatableObjectInterface(object? value, ValidateContext context)
+    private void ValidateValidatableObjectInterface(object? value, ValidateContext context, string displayName)
     {
         if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
         {
-            // Important: Set the DisplayName to the type name for top-level validations
-            // and restore the original validation context properties
+            // Important: Set the DisplayName to the type's resolved display name for top-level
+            // validations, and restore the original validation context properties when done.
             var originalDisplayName = context.ValidationContext.DisplayName;
             var originalMemberName = context.ValidationContext.MemberName;
             var errorPrefix = context.CurrentValidationPath;
 
-            // Set the display name to the class name for IValidatableObject validation
-            context.ValidationContext.DisplayName = Type.Name;
+            context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;
 
             var validationResults = validatable.Validate(context.ValidationContext);
@@ -169,6 +275,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
                 {
                     // Create a validation error for each member name that is provided
+                    // We don't support automatic localization of IValidatableObject messages
                     foreach (var memberName in validationResult.MemberNames)
                     {
                         var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
@@ -191,13 +298,35 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
 
     private IEnumerable<ValidatableTypeInfo> GetSuperTypeInfos(Type actualType, ValidateContext context)
     {
-        foreach (var superType in _superTypes.Where(t => t.IsAssignableFrom(actualType)))
+        foreach (var @interface in _implementedInterfaces)
         {
-            if (context.ValidationOptions.TryGetValidatableTypeInfo(superType, out var found)
-                && found is ValidatableTypeInfo superTypeInfo)
+            if (TryGetValidatableTypeInfo(@interface, actualType, context.ValidationOptions) is { } superTypeInfo)
             {
                 yield return superTypeInfo;
             }
+        }
+
+        var baseType = Type.BaseType;
+        while (baseType is not null)
+        {
+            if (TryGetValidatableTypeInfo(baseType, actualType, context.ValidationOptions) is { } superTypeInfo)
+            {
+                yield return superTypeInfo;
+            }
+
+            baseType = baseType.BaseType;
+        }
+
+        static ValidatableTypeInfo? TryGetValidatableTypeInfo(Type superType, Type actualType, ValidationOptions options)
+        {
+            if (superType.IsAssignableFrom(actualType) &&
+                options.TryGetValidatableTypeInfo(superType, out var found)
+                && found is ValidatableTypeInfo superTypeInfo)
+            {
+                return superTypeInfo;
+            }
+
+            return null;
         }
     }
 }

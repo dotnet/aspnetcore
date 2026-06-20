@@ -1,0 +1,14 @@
+@page "/forms/client-validation/no-validation"
+
+@*
+    Plain form with NO data-val="true" elements. Used to verify that the JS
+    library does NOT intercept submission of untracked forms (no novalidate
+    attribute set, form posts normally).
+*@
+
+<h2 id="page-title">Form without validation attributes</h2>
+
+<form id="plain-form" method="post">
+    <input id="name" name="Name" type="text" />
+    <button type="submit" id="submit">Submit</button>
+</form>
