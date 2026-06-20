@@ -117,19 +117,26 @@ public class AsyncValidationTests
     public async Task AsyncValidation_RespectsValidationOrder()
     {
         // Arrange
-        var validationOrder = new ConcurrentQueue<string>();
+        var async1Completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var async2Completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var sync1Attribute = new TrackingSyncAttribute();
+        var sync2Attribute = new TrackingSyncAttribute(() => Assert.True(sync1Attribute.Started));
+        var async1Attribute = new TrackingAsyncAttribute(async1Completion.Task, () => Assert.True(sync1Attribute.Started));
+        var async2Attribute = new TrackingAsyncAttribute(async2Completion.Task, () => Assert.True(sync2Attribute.Started));
+
         var orderType = new TestValidatableTypeInfo(
             typeof(OrderWithTracking),
             [
                 CreatePropertyInfo(typeof(OrderWithTracking), typeof(string), "Field1", "Field1",
                     [
-                        new TrackingSyncAttribute(validationOrder, "Field1-Sync"),
-                        new TrackingAsyncAttribute(validationOrder, "Field1-Async")
+                        sync1Attribute,
+                        async1Attribute
                     ]),
                 CreatePropertyInfo(typeof(OrderWithTracking), typeof(string), "Field2", "Field2",
                     [
-                        new TrackingSyncAttribute(validationOrder, "Field2-Sync"),
-                        new TrackingAsyncAttribute(validationOrder, "Field2-Async")
+                        sync2Attribute,
+                        async2Attribute
                     ])
             ]);
 
@@ -144,24 +151,18 @@ public class AsyncValidationTests
         };
 
         // Act
-        await orderType.ValidateAsync(order, context, default);
+        var validationTask = orderType.ValidateAsync(order, context, default);
 
-        // Assert - Within each property, sync validations run before async
-        Assert.Equal(4, validationOrder.Count);
+        Assert.True(sync1Attribute.Started);
+        Assert.True(sync2Attribute.Started);
 
-        var validationOrderArray = validationOrder.ToArray();
-        Assert.Equal("Field1-Sync", validationOrderArray[0]);
-        Assert.Equal("Field2-Sync", validationOrderArray[1]);
+        await async1Attribute.Started;
+        await async2Attribute.Started;
 
-        if (validationOrderArray[2] == "Field1-Async")
-        {
-            Assert.Equal("Field2-Async", validationOrderArray[3]);
-        }
-        else
-        {
-            Assert.Equal("Field2-Async", validationOrderArray[2]);
-            Assert.Equal("Field1-Async", validationOrderArray[3]);
-        }
+        async1Completion.SetResult();
+        async2Completion.SetResult();
+
+        await validationTask;
     }
 
     [Fact]
@@ -1907,13 +1908,14 @@ public class AsyncValidationTests
 
     private class TrackingAsyncAttribute : AsyncValidationAttribute
     {
-        private readonly ConcurrentQueue<string> _validationOrder;
-        private readonly string _name;
+        private readonly Task _waitsFor;
+        private readonly Action _assertOnStart;
+        private readonly TaskCompletionSource _startedTcs = new();
 
-        public TrackingAsyncAttribute(ConcurrentQueue<string> validationOrder, string name)
+        public TrackingAsyncAttribute(Task waitsFor, Action assertOnStart)
         {
-            _validationOrder = validationOrder;
-            _name = name;
+            _waitsFor = waitsFor;
+            _assertOnStart = assertOnStart;
         }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
@@ -1924,26 +1926,27 @@ public class AsyncValidationTests
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            await Task.Yield();
-            _validationOrder.Enqueue(_name);
+            _startedTcs.SetResult();
+            await _waitsFor;
             return ValidationResult.Success;
         }
+
+        public Task Started => _startedTcs.Task;
     }
 
     private class TrackingSyncAttribute : ValidationAttribute
     {
-        private readonly ConcurrentQueue<string> _validationOrder;
-        private readonly string _name;
+        private readonly Action? _assertOnStart;
 
-        public TrackingSyncAttribute(ConcurrentQueue<string> validationOrder, string name)
-        {
-            _validationOrder = validationOrder;
-            _name = name;
-        }
+        public TrackingSyncAttribute(Action? assertOnStart = null)
+            => _assertOnStart = assertOnStart;
+
+        public bool Started { get; private set; }
 
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            _validationOrder.Enqueue(_name);
+            _assertOnStart?.Invoke();
+            Started = true;
             return ValidationResult.Success;
         }
     }
