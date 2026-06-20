@@ -139,6 +139,11 @@ public static class OpenApiServiceCollectionExtensions
 
         // Required to support JSON serializations
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<JsonOptions>, OpenApiSchemaJsonOptions>());
+
+        // Historically before we added AddOpenApiCore, we used to always configure OpenApiOptions.
+        // This means that users could be relying already on things like GetRequiredService<IOptionsMonitor<OpenApiOptions>>
+        // To ensure that GetRequiredService can find a service to return, we must add a configuration for OpenApiOptions.
+        services.Configure<OpenApiOptions>(null, options => { });
         return services;
     }
 
