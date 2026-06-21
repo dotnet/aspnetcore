@@ -17,6 +17,7 @@ The conventions the `@dotnet/aspnet-api-review` team applies. Each rule cites is
 - [Breaking changes & obsoletion](#breaking-changes--obsoletion)
 - [Generics](#generics)
 - [Ref-assembly hygiene](#ref-assembly-hygiene)
+- [Patterns confirmed across the shipped surface](#patterns-confirmed-across-the-shipped-surface)
 
 ## Should this exist (need + audience)
 
@@ -41,6 +42,7 @@ The conventions the `@dotnet/aspnet-api-review` team applies. Each rule cites is
 - Niche/less-common types belong in a **feature sub-namespace**, not the root or a default global-using namespace (#46937, #47854). Concrete implementations live **beside their interface's namespace** (#47994). Built-in `IResult` types go in `Microsoft.AspNetCore.Http.HttpResults` (#47096).
 - **Infrastructure** types not meant to be called externally go in a `*.Infrastructure` namespace (#62376, #62455). Group DTOs in a `*.Data` namespace and seal them (#50009, #49424).
 - Consolidate `Add*` registrations into an existing well-known extension class rather than a new single-purpose one (#47228). Don't duplicate attributes across namespaces (#65066).
+- **Place registration/builder extensions by mechanism, not by feature.** DI registration (`Add*`/`Configure*`) extensions go in `Microsoft.Extensions.DependencyInjection`; middleware (`Use*`) and endpoint (`Map*`/`Require*`/`With*`) extensions go in `Microsoft.AspNetCore.Builder` — **even when the feature itself lives in another namespace** — so they light up with the common `using` everyone already has. (Confirmed across the shipped surface; see [below](#patterns-confirmed-across-the-shipped-surface).)
 
 ## Async & cancellation
 
@@ -105,3 +107,21 @@ The conventions the `@dotnet/aspnet-api-review` team applies. Each rule cites is
 ## Ref-assembly hygiene
 
 - Proposals are reviewed in **ref-assembly format** (signatures only, no bodies/docs) — include public member attributes like `[Parameter]` so reviewers see the real shape (#46789, #47096). Annotate trimming attributes (`[DynamicallyAccessedMembers]`) and pair reflection/object-accepting overloads with trim/AOT warnings and a safe alternative (#24723, #47096).
+
+## Patterns confirmed across the shipped surface
+
+These are quantified from the repo's shipped public API (`src/**/PublicAPI.Shipped.txt`, 172 files / ~24k members). They corroborate the rules above with what the surface actually does — use them as the "what we already ship looks like" baseline a new proposal should match.
+
+- **Async returns are `Task` by default** (≈82% of ~1090 async members; `ValueTask` ≈18%, reserved for hot paths and `DisposeAsync`). Methods returning `Task`/`ValueTask` carry the **`Async` suffix** (≈79%).
+- **`CancellationToken` is the last parameter, named `cancellationToken`, with `= default`** (defaulted in ≈65% of its uses). Add it for cancellable I/O; it's legitimately omitted when a token already flows on a context object the method receives.
+- **Method-name families carry a fixed responsibility, receiver, return, and namespace** — a proposed method of a family should match all four:
+  - `Add*` — **registers services** into `IServiceCollection` (calls `services.Add…/TryAdd…/Configure…`); returns the `IServiceCollection` for chaining, or a feature builder (`IMvcBuilder`, `AuthenticationBuilder`) when there's follow-on feature setup; declared in `Microsoft.Extensions.DependencyInjection`.
+  - `Configure*` — **registers an `Action<TOptions>`** into the options system; receiver/return `IServiceCollection`; `Microsoft.Extensions.DependencyInjection`.
+  - `Use*` — **inserts middleware** into the pipeline (`app.UseMiddleware<T>()`); receiver/return `IApplicationBuilder`; `Microsoft.AspNetCore.Builder`.
+  - `Map*` — **registers endpoints** on `IEndpointRouteBuilder`; returns an endpoint convention builder (`RouteHandlerBuilder`/`IEndpointConventionBuilder`/`RouteGroupBuilder`) so conventions chain after it; `Microsoft.AspNetCore.Builder`.
+  - `With*` — **attaches metadata/conventions** to an already-created endpoint (`builder.Add(b => b.Metadata.Add(…))`); receiver is `IEndpointConventionBuilder` (often generic `TBuilder`); returns the same builder.
+  - `Create*` = static factory; `Build*` = construct/finalize; `Try*` = `bool` + `out`. Extension-method classes end in `Extensions` and are `static`.
+- **Type-name suffixes encode the role** — pick the one that matches: `Options` (sealed config with get/set properties), `Context` (state passed to a callback), `Feature`/`I*Feature` (capability on a collection), `Provider`/`I*Provider` (pluggable factory/service), `Result`, `Factory`, `Builder`, `Metadata`, `Handler`, `Attribute`, `EventArgs`, `Exception`, and `Defaults` (a `static` class of default constants such as scheme names).
+- **Returns favor read-only interfaces** — `IEnumerable<T>`, `IReadOnlyList<T>`, `IReadOnlyCollection<T>`; `IList`/`IDictionary` are rare in public returns, and concrete `List<T>`/`Dictionary<T>` appear only where mutation is intentional. Expose maps as **`IReadOnlyDictionary<,>`**, not a concrete `Dictionary`.
+- **Nullability is deliberate, not default** — about a quarter of properties are nullable; use `?` only for genuinely optional/absent values and keep required outputs non-null.
+- **Extension methods on a builder/convention/service interface are the dominant extensibility *and* registration mechanism** (≈1.4k of them), returning that interface so calls **chain**; use a generic `TBuilder` to chain across builder types. Generic **arity is almost always 1**, with a pragmatic tail to ~8.
