@@ -412,5 +412,23 @@ InitializeToolset
 
 restore=$_tmp_restore=
 
+# TEMPORARY (diagnostic, DO NOT MERGE): overlay a custom Microsoft.Build.Tasks.Core.dll that
+# logs "MSB-COPY-DELETE: ..." right before the Copy task deletes an existing destination.
+# Investigating intermittent MSB3030 in parallel builds (dotnet/msbuild#12927, dotnet/aspnetcore#62807).
+_bootstrap_dir="$repo_root/eng/msbuild-bootstrap"
+if [[ -f "$_bootstrap_dir/Microsoft.Build.Tasks.Core.dll" ]]; then
+  _sdk_version=$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$repo_root/global.json" | head -1)
+  _target_dll="$DOTNET_INSTALL_DIR/sdk/$_sdk_version/Microsoft.Build.Tasks.Core.dll"
+  if [[ -f "$_target_dll" ]]; then
+    echo "=== MSBuild Bootstrap Overlay (dotnet/msbuild#12927) ==="
+    echo "Original: $(sha256sum "$_target_dll")"
+    cp "$_bootstrap_dir/Microsoft.Build.Tasks.Core.dll" "$_target_dll"
+    echo "Replaced: $(sha256sum "$_target_dll")"
+    echo "=== Overlay complete ==="
+  else
+    echo "WARNING: SDK target not found at $_target_dll - skipping MSBuild overlay"
+  fi
+fi
+
 MSBuild $_InitializeToolset -p:RepoRoot="$repo_root" ${msbuild_args[@]+"${msbuild_args[@]}"}
 ExitWithExitCode 0

@@ -465,6 +465,26 @@ try {
 
     $restore = $tmpRestore
 
+    # TEMPORARY (diagnostic, DO NOT MERGE): overlay a custom Microsoft.Build.Tasks.Core.dll that
+    # logs "MSB-COPY-DELETE: ..." right before the Copy task deletes an existing destination.
+    # Investigating intermittent MSB3030 in parallel builds (dotnet/msbuild#12927, dotnet/aspnetcore#62807).
+    $bootstrapDir = Join-Path (Join-Path $RepoRoot "eng") "msbuild-bootstrap"
+    $bootstrapDll = Join-Path $bootstrapDir "Microsoft.Build.Tasks.Core.dll"
+    if (Test-Path $bootstrapDll) {
+        $dotnetDir = if ($env:DOTNET_INSTALL_DIR) { $env:DOTNET_INSTALL_DIR } else { Join-Path $RepoRoot ".dotnet" }
+        $sdkVersion = (Get-Content (Join-Path $RepoRoot "global.json") | ConvertFrom-Json).sdk.version
+        $targetDll = Join-Path (Join-Path (Join-Path $dotnetDir "sdk") $sdkVersion) "Microsoft.Build.Tasks.Core.dll"
+        if (Test-Path $targetDll) {
+            Write-Host "=== MSBuild Bootstrap Overlay (dotnet/msbuild#12927) ==="
+            Write-Host "Original: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
+            Copy-Item $bootstrapDll $targetDll -Force
+            Write-Host "Replaced: $((Get-FileHash $targetDll -Algorithm SHA256).Hash) $targetDll"
+            Write-Host "=== Overlay complete ==="
+        } else {
+            Write-Host "WARNING: SDK target not found at $targetDll - skipping MSBuild overlay"
+        }
+    }
+
     if ($ci) {
         $global:VerbosePreference = 'Continue'
     }
