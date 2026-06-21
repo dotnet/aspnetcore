@@ -9,14 +9,15 @@ namespace Microsoft.AspNetCore.Components;
 public sealed class SsrBrowserOptions
 {
     /// <summary>
-    /// When true, disables DOM preservation during enhanced navigation.
+    /// Gets or sets a value indicating whether the DOM is preserved during enhanced navigation.
+    /// When <see langword="false"/>, DOM preservation is disabled. <see langword="null"/> leaves the value unset.
     /// Maps to <c>SsrStartOptions.disableDomPreservation</c>.
     /// </summary>
-    public bool? DisableDomPreservation { get; set; }
+    public bool? PreserveDom { get; set; }
 
     /// <summary>
-    /// Timeout in milliseconds before an inactive circuit is disposed.
+    /// Gets or sets the timeout before an inactive circuit is disposed.
     /// Maps to <c>SsrStartOptions.circuitInactivityTimeoutMs</c>.
     /// </summary>
-    public int? CircuitInactivityTimeoutMs { get; set; }
+    public TimeSpan? CircuitInactivityTimeout { get; set; }
 }

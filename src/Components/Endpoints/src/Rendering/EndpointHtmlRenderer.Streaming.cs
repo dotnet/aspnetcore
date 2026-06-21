@@ -344,7 +344,7 @@ internal partial class EndpointHtmlRenderer
 
         _browserConfigurationEmitted = true;
 
-        var config = _httpContext.GetBrowserConfiguration();
+        var config = _httpContext.GetBrowserOptions();
 
         // Apply framework defaults: environment name and tooling env vars
         var hostEnvironment = _httpContext.RequestServices.GetRequiredService<IHostEnvironment>();
@@ -360,7 +360,8 @@ internal partial class EndpointHtmlRenderer
             config.WebAssembly.EnvironmentVariables.TryAdd("__ASPNETCORE_BROWSER_TOOLS", s_aspnetcoreBrowserTools);
         }
 
-        var configJson = JsonSerializer.Serialize(config, BrowserConfigurationJsonContext.Default.BrowserConfiguration);
+        var wireModel = BrowserConfigurationWireModel.FromOptions(config);
+        var configJson = JsonSerializer.Serialize(wireModel, BrowserConfigurationJsonContext.Default.BrowserConfigurationWireModel);
         var configBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(configJson));
         output.Write("<!--Blazor-Configuration:");
         output.Write(configBase64);

@@ -3,12 +3,12 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-[JsonSerializable(typeof(BrowserConfiguration))]
+[JsonSerializable(typeof(BrowserConfigurationWireModel))]
 internal partial class BrowserConfigurationJsonContext : JsonSerializerContext
 {
 }
