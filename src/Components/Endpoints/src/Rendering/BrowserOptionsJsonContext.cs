@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
-[JsonSerializable(typeof(BrowserConfigurationWireModel))]
-internal partial class BrowserConfigurationJsonContext : JsonSerializerContext
+[JsonSerializable(typeof(BrowserOptions))]
+internal partial class BrowserOptionsJsonContext : JsonSerializerContext
 {
 }

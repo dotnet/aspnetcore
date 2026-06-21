@@ -360,8 +360,7 @@ internal partial class EndpointHtmlRenderer
             config.WebAssembly.EnvironmentVariables.TryAdd("__ASPNETCORE_BROWSER_TOOLS", s_aspnetcoreBrowserTools);
         }
 
-        var wireModel = BrowserConfigurationWireModel.FromOptions(config);
-        var configJson = JsonSerializer.Serialize(wireModel, BrowserConfigurationJsonContext.Default.BrowserConfigurationWireModel);
+        var configJson = JsonSerializer.Serialize(config, BrowserOptionsJsonContext.Default.BrowserOptions);
         var configBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(configJson));
         output.Write("<!--Blazor-Configuration:");
         output.Write(configBase64);

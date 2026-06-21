@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
@@ -21,6 +23,8 @@ public sealed class InteractiveServerBrowserOptions
     /// The function form <c>(retryCount, currentMs) => number</c> requires JS.
     /// Maps to <c>CircuitStartOptions.reconnectionOptions.retryIntervalMilliseconds</c>.
     /// </summary>
+    [JsonPropertyName("reconnectionRetryIntervalMilliseconds")]
+    [JsonConverter(typeof(TimeSpanMillisecondsJsonConverter))]
     public TimeSpan? ReconnectionRetryInterval { get; set; }
 
     /// <summary>
