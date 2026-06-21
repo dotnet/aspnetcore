@@ -1,5 +1,7 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"68d2fbc00b0a1b1938d734808a391db548f0480d81bab27a2fea9fa8bab3a762","body_hash":"ff86436a315101eff9d6c42544bf188b0a721724c9c4a59a174c579a41abd02e","compiler_version":"v0.79.7","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.60"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"df4cb1c069e1874edd31b4311f1884172cec0e10","version":"v6.0.3"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/github-script","sha":"d746ffe35508b1917358783b479e04febd2b8f71","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9","version":"v0.79.7"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2","digest":"sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2@sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2","digest":"sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2@sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2","digest":"sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2@sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.25","digest":"sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.25@sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa"},{"image":"ghcr.io/github/github-mcp-server:v1.1.2","digest":"sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c","pinned_image":"ghcr.io/github/github-mcp-server:v1.1.2@sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c"}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"0ab535fe0f8a38cd2a5bf419c1e592ab9d62e3dc8093635bacb5fff7b6265f0a","body_hash":"b264b208843b9b6ba8ae912b44e565897db8e3263f7a02de596108935c1b8bae","compiler_version":"v0.79.8","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.60"}}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_GITHUB_TOKEN","GH_AW_CI_TRIGGER_TOKEN","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/checkout","sha":"df4cb1c069e1874edd31b4311f1884172cec0e10","version":"v6.0.3"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/github-script","sha":"d746ffe35508b1917358783b479e04febd2b8f71","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e","version":"v6.4.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"c0338fef4749d08c21f8f975fb0e37efa17dda47","version":"v0.79.8"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2","digest":"sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.2@sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2","digest":"sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.2@sha256:ee39841d980878ebbb87592903b06d31a1af500c71525c9616f7e8e2a27041a4"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2","digest":"sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.2@sha256:2e3a717e5f19a654cd9a2263beb52012b56bcb68562ec5ae2e42f9d156b49591"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.3.25","digest":"sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.3.25@sha256:c10331ad17668ef89f38f5e356678788a40b0cd5fef96e8f92e1d9c1de47cbaa"},{"image":"ghcr.io/github/github-mcp-server:v1.1.2","digest":"sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c","pinned_image":"ghcr.io/github/github-mcp-server:v1.1.2@sha256:30197479d8036c7811892bc07e06f9a05c9ef3cdd79bc59f256d50647f95788c"}]}
+# This file was automatically generated by gh-aw (v0.79.8). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
+#
 #    ___                   _   _      
 #   / _ \                 | | (_)     
 #  | |_| | __ _  ___ _ __ | |_ _  ___ 
@@ -14,7 +16,6 @@
 # \  /\  / (_) | | | | ( | | | | (_) \ V  V /\__ \
 #  \/  \/ \___/|_| |_|\_\|_| |_|\___/ \_/\_/ |___/
 #
-# This file was automatically generated by gh-aw (v0.79.7). DO NOT EDIT.
 #
 # To update this file, edit the corresponding .md file and run:
 #   gh aw compile
@@ -39,7 +40,7 @@
 #   - actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
 #   - actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-#   - github/gh-aw-actions/setup@c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9 # v0.79.7
+#   - github/gh-aw-actions/setup@c0338fef4749d08c21f8f975fb0e37efa17dda47 # v0.79.8
 #
 # Container images used:
 #   - ghcr.io/github/gh-aw-firewall/agent:0.27.2@sha256:f88e5b17b6b7a600117bc121114d6ce2155c88c983c0c939c5df884f730fa1d6
@@ -854,9 +855,45 @@ on:
           # return js
       # 
       # 
+      # # The agent prompt receives this JSON through the part1_data_N job outputs, which gh-aw
+      # # interpolates into the prompt and passes to the prompt-building steps as ENVIRONMENT
+      # # VARIABLES. Linux caps a single env-var string at MAX_ARG_STRLEN (32 * 4 KiB page =
+      # # 131072 bytes) when starting a process; a value larger than that makes the prompt step
+      # # die with "Argument list too long" (E2BIG) before it even runs — which is exactly what
+      # # happened once the data started flowing at full size. So the payload is split into a
+      # # fixed number of byte-bounded chunks (each well under the limit) written to separate
+      # # outputs; the prompt concatenates the chunks back together with no separator,
+      # # reconstructing the JSON verbatim.
+      # PART1_CHUNKS = 16          # MUST match the count of part1_data_N refs in the prompt body
+      # PART1_CHUNK_BYTES = 80000  # << 131072 MAX_ARG_STRLEN, leaving ample room for the var name
+      # 
+      # 
+      # def write_part1_chunks(f, js):
+          # """Split `js` into <=PART1_CHUNKS pieces of <=PART1_CHUNK_BYTES bytes each, never cutting
+          # a multi-byte UTF-8 sequence, and write them as part1_data_0..part1_data_{N-1} outputs.
+          # Unused slots are emitted empty so the prompt's fixed set of placeholders always resolves."""
+          # data = js.encode("utf-8")
+          # chunks = []
+          # i, n = 0, len(data)
+          # while i < n:
+              # end = min(i + PART1_CHUNK_BYTES, n)
+              # # back off to a UTF-8 character boundary (continuation bytes are 0b10xxxxxx)
+              # while end < n and (data[end] & 0xC0) == 0x80:
+                  # end -= 1
+              # chunks.append(data[i:end].decode("utf-8"))
+              # i = end
+          # if len(chunks) > PART1_CHUNKS:
+              # sys.exit(f"FATAL: part1_data needs {len(chunks)} chunks but only {PART1_CHUNKS} "
+                       # f"output slots exist — raise PART1_CHUNKS and add matching "
+                       # f"part1_data_N references in the prompt body")
+          # for k in range(PART1_CHUNKS):
+              # chunk = chunks[k] if k < len(chunks) else ""
+              # f.write(f"part1_data_{k}<<PART1_EOF\n{chunk}\nPART1_EOF\n")
+      # 
+      # 
       # if __name__ == "__main__":
-          # # Final safety net: scrub the fully serialized payload as well. GitHub skips the
-          # # WHOLE part1_data output if any token pattern is detected, so a leaked secret in
+          # # Final safety net: scrub the fully serialized payload as well. GitHub skips a
+          # # part1_data_N output if any token pattern is detected, so a leaked secret in
           # # any field (not just the three scrubbed above) would starve the agent. Scrubbing
           # # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
           # js = scrub_secrets(main())
@@ -864,7 +901,7 @@ on:
           # if not gh_out:
               # sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
           # with open(gh_out, "a") as f:
-              # f.write(f"part1_data<<PART1_EOF\n{js}\nPART1_EOF\n")
+              # write_part1_chunks(f, js)
       # SCRIPT
   workflow_dispatch:
     inputs:
@@ -911,7 +948,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9 # v0.79.7
+        uses: github/gh-aw-actions/setup@c0338fef4749d08c21f8f975fb0e37efa17dda47 # v0.79.8
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -932,7 +969,7 @@ jobs:
           GH_AW_INFO_MODEL: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'claude-sonnet-4.6' }}
           GH_AW_INFO_VERSION: "1.0.60"
           GH_AW_INFO_AGENT_VERSION: "1.0.60"
-          GH_AW_INFO_CLI_VERSION: "v0.79.7"
+          GH_AW_INFO_CLI_VERSION: "v0.79.8"
           GH_AW_INFO_WORKFLOW_NAME: "Daily Test Quarantine Management"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
@@ -1010,7 +1047,7 @@ jobs:
       - name: Check compile-agentic version
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
         env:
-          GH_AW_COMPILED_VERSION: "v0.79.7"
+          GH_AW_COMPILED_VERSION: "v0.79.8"
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -1029,7 +1066,22 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA: ${{ needs.pre_activation.outputs.part1_data }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: ${{ needs.pre_activation.outputs.part1_data_0 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: ${{ needs.pre_activation.outputs.part1_data_1 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: ${{ needs.pre_activation.outputs.part1_data_10 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_11: ${{ needs.pre_activation.outputs.part1_data_11 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_12: ${{ needs.pre_activation.outputs.part1_data_12 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_13: ${{ needs.pre_activation.outputs.part1_data_13 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_14: ${{ needs.pre_activation.outputs.part1_data_14 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_15: ${{ needs.pre_activation.outputs.part1_data_15 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_2: ${{ needs.pre_activation.outputs.part1_data_2 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_3: ${{ needs.pre_activation.outputs.part1_data_3 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_4: ${{ needs.pre_activation.outputs.part1_data_4 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_5: ${{ needs.pre_activation.outputs.part1_data_5 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_6: ${{ needs.pre_activation.outputs.part1_data_6 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_7: ${{ needs.pre_activation.outputs.part1_data_7 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_8: ${{ needs.pre_activation.outputs.part1_data_8 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_9: ${{ needs.pre_activation.outputs.part1_data_9 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: ${{ needs.pre_activation.outputs.requarantine_data }}
         # poutine:ignore untrusted_checkout_exec
         run: |
@@ -1105,7 +1157,22 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_ENGINE_ID: "copilot"
-          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA: ${{ needs.pre_activation.outputs.part1_data }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: ${{ needs.pre_activation.outputs.part1_data_0 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: ${{ needs.pre_activation.outputs.part1_data_1 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: ${{ needs.pre_activation.outputs.part1_data_10 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_11: ${{ needs.pre_activation.outputs.part1_data_11 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_12: ${{ needs.pre_activation.outputs.part1_data_12 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_13: ${{ needs.pre_activation.outputs.part1_data_13 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_14: ${{ needs.pre_activation.outputs.part1_data_14 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_15: ${{ needs.pre_activation.outputs.part1_data_15 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_2: ${{ needs.pre_activation.outputs.part1_data_2 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_3: ${{ needs.pre_activation.outputs.part1_data_3 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_4: ${{ needs.pre_activation.outputs.part1_data_4 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_5: ${{ needs.pre_activation.outputs.part1_data_5 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_6: ${{ needs.pre_activation.outputs.part1_data_6 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_7: ${{ needs.pre_activation.outputs.part1_data_7 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_8: ${{ needs.pre_activation.outputs.part1_data_8 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_9: ${{ needs.pre_activation.outputs.part1_data_9 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: ${{ needs.pre_activation.outputs.requarantine_data }}
         with:
           script: |
@@ -1127,7 +1194,22 @@ jobs:
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_MCP_CLI_SERVERS_LIST: '- `safeoutputs` — run `safeoutputs --help` to see available tools'
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
-          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA: ${{ needs.pre_activation.outputs.part1_data }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: ${{ needs.pre_activation.outputs.part1_data_0 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: ${{ needs.pre_activation.outputs.part1_data_1 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: ${{ needs.pre_activation.outputs.part1_data_10 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_11: ${{ needs.pre_activation.outputs.part1_data_11 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_12: ${{ needs.pre_activation.outputs.part1_data_12 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_13: ${{ needs.pre_activation.outputs.part1_data_13 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_14: ${{ needs.pre_activation.outputs.part1_data_14 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_15: ${{ needs.pre_activation.outputs.part1_data_15 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_2: ${{ needs.pre_activation.outputs.part1_data_2 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_3: ${{ needs.pre_activation.outputs.part1_data_3 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_4: ${{ needs.pre_activation.outputs.part1_data_4 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_5: ${{ needs.pre_activation.outputs.part1_data_5 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_6: ${{ needs.pre_activation.outputs.part1_data_6 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_7: ${{ needs.pre_activation.outputs.part1_data_7 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_8: ${{ needs.pre_activation.outputs.part1_data_8 }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_9: ${{ needs.pre_activation.outputs.part1_data_9 }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: ${{ needs.pre_activation.outputs.requarantine_data }}
         with:
           script: |
@@ -1150,7 +1232,22 @@ jobs:
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
                 GH_AW_MCP_CLI_SERVERS_LIST: process.env.GH_AW_MCP_CLI_SERVERS_LIST,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_0,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_1,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_10,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_11: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_11,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_12: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_12,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_13: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_13,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_14: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_14,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_15: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_15,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_2: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_2,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_3: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_3,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_4: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_4,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_5: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_5,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_6: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_6,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_7: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_7,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_8: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_8,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_9: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_PART1_DATA_9,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_REQUARANTINE_DATA
               }
             });
@@ -1220,7 +1317,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9 # v0.79.7
+        uses: github/gh-aw-actions/setup@c0338fef4749d08c21f8f975fb0e37efa17dda47 # v0.79.8
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1615,7 +1712,7 @@ jobs:
           DOCKER_SOCK_GID=$(stat -c '%g' "$DOCKER_SOCK_PATH" 2>/dev/null || echo '0')
           export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host --add-host host.docker.internal:127.0.0.1 --user '"${MCP_GATEWAY_UID}"':'"${MCP_GATEWAY_GID}"' --group-add '"${DOCKER_SOCK_GID}"' -v '"${DOCKER_SOCK_PATH}"':/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DOCKER_HOST=unix:///var/run/docker.sock -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.3.25'
           
-          mkdir -p /home/runner/.copilot
+          mkdir -p "$HOME/.copilot"
           GH_AW_NODE=$(which node 2>/dev/null || command -v node 2>/dev/null || echo node)
           cat << GH_AW_MCP_CONFIG_9e67cdeae05834e9_EOF | "$GH_AW_NODE" "${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.cjs"
           {
@@ -1716,9 +1813,11 @@ jobs:
         run: |
           set -o pipefail
           printf '%s' "$(date +%s%3N)" > /tmp/gh-aw/agent_cli_start_ms.txt
-          trap 'rm -f /home/runner/.copilot/settings.json' EXIT
-          mkdir -p /home/runner/.copilot
-          printf '%s' '{"builtInAgents":{"rubberDuck":false}}' > /home/runner/.copilot/settings.json
+          trap 'rm -f "$HOME/.copilot/settings.json"' EXIT
+          mkdir -p "$HOME/.copilot"
+          printf '%s' '{"builtInAgents":{"rubberDuck":false}}' > "$HOME/.copilot/settings.json"
+          export XDG_CONFIG_HOME="$HOME"
+          export GH_AW_MCP_CONFIG="$HOME/.copilot/mcp-config.json"
           touch /tmp/gh-aw/agent-step-summary.md
           GH_AW_NODE_BIN=$(command -v node 2>/dev/null || true)
           export GH_AW_NODE_BIN
@@ -1750,12 +1849,11 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           COPILOT_MODEL: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'claude-sonnet-4.6' }}
           GH_AW_MAX_TURNS: ${{ vars.GH_AW_DEFAULT_MAX_TURNS || '' }}
-          GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PHASE: agent
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
           GH_AW_TIMEOUT_MINUTES: 90
-          GH_AW_VERSION: v0.79.7
+          GH_AW_VERSION: v0.79.8
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_AW: true
           GITHUB_COPILOT_INTEGRATION_ID: agentic-workflows
@@ -1770,7 +1868,6 @@ jobs:
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           RUNNER_TEMP: ${{ runner.temp }}
-          XDG_CONFIG_HOME: /home/runner
       - name: Detect agent errors
         if: always()
         id: detect-agent-errors
@@ -1957,7 +2054,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9 # v0.79.7
+        uses: github/gh-aw-actions/setup@c0338fef4749d08c21f8f975fb0e37efa17dda47 # v0.79.8
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -2149,7 +2246,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9 # v0.79.7
+        uses: github/gh-aw-actions/setup@c0338fef4749d08c21f8f975fb0e37efa17dda47 # v0.79.8
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -2205,7 +2302,7 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         run: |
           rm -f "${RUNNER_TEMP}/gh-aw/mcp-config/mcp-servers.json"
-          rm -f /home/runner/.copilot/mcp-config.json
+          rm -f "$HOME/.copilot/mcp-config.json"
           rm -f "$GITHUB_WORKSPACE/.gemini/settings.json"
       - name: Prepare threat detection files
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
@@ -2263,9 +2360,10 @@ jobs:
         run: |
           set -o pipefail
           printf '%s' "$(date +%s%3N)" > /tmp/gh-aw/agent_cli_start_ms.txt
-          trap 'rm -f /home/runner/.copilot/settings.json' EXIT
-          mkdir -p /home/runner/.copilot
-          printf '%s' '{"builtInAgents":{"rubberDuck":false}}' > /home/runner/.copilot/settings.json
+          trap 'rm -f "$HOME/.copilot/settings.json"' EXIT
+          mkdir -p "$HOME/.copilot"
+          printf '%s' '{"builtInAgents":{"rubberDuck":false}}' > "$HOME/.copilot/settings.json"
+          export XDG_CONFIG_HOME="$HOME"
           touch /tmp/gh-aw/agent-step-summary.md
           GH_AW_NODE_BIN=$(command -v node 2>/dev/null || true)
           export GH_AW_NODE_BIN
@@ -2301,7 +2399,7 @@ jobs:
           GH_AW_PHASE: detection
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_TIMEOUT_MINUTES: 20
-          GH_AW_VERSION: v0.79.7
+          GH_AW_VERSION: v0.79.8
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_AW: true
           GITHUB_COPILOT_INTEGRATION_ID: agentic-workflows
@@ -2315,7 +2413,6 @@ jobs:
           GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
           GIT_COMMITTER_NAME: github-actions[bot]
           RUNNER_TEMP: ${{ runner.temp }}
-          XDG_CONFIG_HOME: /home/runner
       - name: Parse threat detection token usage for step summary
         id: parse_detection_token_usage
         if: always()
@@ -2375,7 +2472,22 @@ jobs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
       matched_command: ''
       part1_aggregate_result: ${{ steps.part1_aggregate.outcome }}
-      part1_data: ${{ steps.part1_aggregate.outputs.part1_data }}
+      part1_data_0: ${{ steps.part1_aggregate.outputs.part1_data_0 }}
+      part1_data_1: ${{ steps.part1_aggregate.outputs.part1_data_1 }}
+      part1_data_10: ${{ steps.part1_aggregate.outputs.part1_data_10 }}
+      part1_data_11: ${{ steps.part1_aggregate.outputs.part1_data_11 }}
+      part1_data_12: ${{ steps.part1_aggregate.outputs.part1_data_12 }}
+      part1_data_13: ${{ steps.part1_aggregate.outputs.part1_data_13 }}
+      part1_data_14: ${{ steps.part1_aggregate.outputs.part1_data_14 }}
+      part1_data_15: ${{ steps.part1_aggregate.outputs.part1_data_15 }}
+      part1_data_2: ${{ steps.part1_aggregate.outputs.part1_data_2 }}
+      part1_data_3: ${{ steps.part1_aggregate.outputs.part1_data_3 }}
+      part1_data_4: ${{ steps.part1_aggregate.outputs.part1_data_4 }}
+      part1_data_5: ${{ steps.part1_aggregate.outputs.part1_data_5 }}
+      part1_data_6: ${{ steps.part1_aggregate.outputs.part1_data_6 }}
+      part1_data_7: ${{ steps.part1_aggregate.outputs.part1_data_7 }}
+      part1_data_8: ${{ steps.part1_aggregate.outputs.part1_data_8 }}
+      part1_data_9: ${{ steps.part1_aggregate.outputs.part1_data_9 }}
       requarantine_data: ${{ steps.requarantine_prs.outputs.requarantine_data }}
       requarantine_prs_result: ${{ steps.requarantine_prs.outcome }}
       setup-parent-span-id: ${{ steps.setup.outputs.parent-span-id || steps.setup.outputs.span-id }}
@@ -2386,7 +2498,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9 # v0.79.7
+        uses: github/gh-aw-actions/setup@c0338fef4749d08c21f8f975fb0e37efa17dda47 # v0.79.8
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -3207,9 +3319,45 @@ jobs:
               return js
 
 
+          # The agent prompt receives this JSON through the part1_data_N job outputs, which gh-aw
+          # interpolates into the prompt and passes to the prompt-building steps as ENVIRONMENT
+          # VARIABLES. Linux caps a single env-var string at MAX_ARG_STRLEN (32 * 4 KiB page =
+          # 131072 bytes) when starting a process; a value larger than that makes the prompt step
+          # die with "Argument list too long" (E2BIG) before it even runs — which is exactly what
+          # happened once the data started flowing at full size. So the payload is split into a
+          # fixed number of byte-bounded chunks (each well under the limit) written to separate
+          # outputs; the prompt concatenates the chunks back together with no separator,
+          # reconstructing the JSON verbatim.
+          PART1_CHUNKS = 16          # MUST match the count of part1_data_N refs in the prompt body
+          PART1_CHUNK_BYTES = 80000  # << 131072 MAX_ARG_STRLEN, leaving ample room for the var name
+
+
+          def write_part1_chunks(f, js):
+              """Split `js` into <=PART1_CHUNKS pieces of <=PART1_CHUNK_BYTES bytes each, never cutting
+              a multi-byte UTF-8 sequence, and write them as part1_data_0..part1_data_{N-1} outputs.
+              Unused slots are emitted empty so the prompt's fixed set of placeholders always resolves."""
+              data = js.encode("utf-8")
+              chunks = []
+              i, n = 0, len(data)
+              while i < n:
+                  end = min(i + PART1_CHUNK_BYTES, n)
+                  # back off to a UTF-8 character boundary (continuation bytes are 0b10xxxxxx)
+                  while end < n and (data[end] & 0xC0) == 0x80:
+                      end -= 1
+                  chunks.append(data[i:end].decode("utf-8"))
+                  i = end
+              if len(chunks) > PART1_CHUNKS:
+                  sys.exit(f"FATAL: part1_data needs {len(chunks)} chunks but only {PART1_CHUNKS} "
+                           f"output slots exist — raise PART1_CHUNKS and add matching "
+                           f"part1_data_N references in the prompt body")
+              for k in range(PART1_CHUNKS):
+                  chunk = chunks[k] if k < len(chunks) else ""
+                  f.write(f"part1_data_{k}<<PART1_EOF\n{chunk}\nPART1_EOF\n")
+
+
           if __name__ == "__main__":
-              # Final safety net: scrub the fully serialized payload as well. GitHub skips the
-              # WHOLE part1_data output if any token pattern is detected, so a leaked secret in
+              # Final safety net: scrub the fully serialized payload as well. GitHub skips a
+              # part1_data_N output if any token pattern is detected, so a leaked secret in
               # any field (not just the three scrubbed above) would starve the agent. Scrubbing
               # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
               js = scrub_secrets(main())
@@ -3217,7 +3365,7 @@ jobs:
               if not gh_out:
                   sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
               with open(gh_out, "a") as f:
-                  f.write(f"part1_data<<PART1_EOF\n{js}\nPART1_EOF\n")
+                  write_part1_chunks(f, js)
           SCRIPT
         env:
           SOURCE_B_BUILD_IDS: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
@@ -3266,7 +3414,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@c71b1e20fb7b3dc52409b0088673d7ba3e3c22b9 # v0.79.7
+        uses: github/gh-aw-actions/setup@c0338fef4749d08c21f8f975fb0e37efa17dda47 # v0.79.8
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
