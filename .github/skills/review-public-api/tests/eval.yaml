@@ -1,0 +1,89 @@
+# Held-out API-review scenarios for the review-public-api skill.
+# Each prompt presents a real proposed ASP.NET Core API (paraphrased from a decided issue the skill
+# was NOT trained on). Prompts never name the skill. Rubrics score whether the agent reaches the same
+# add/don't-add decision and shape guidance the @dotnet/aspnet-api-review team actually landed on.
+
+scenarios:
+  - name: "Add CancellationToken to a shipped public interface (ITicketStore)"
+    prompt: |
+      I'm proposing a change to the public ITicketStore interface in ASP.NET Core cookie auth. Today
+      its four async methods don't accept a CancellationToken, so callers can't cancel store I/O:
+
+        public interface ITicketStore
+        {
+            Task<string> StoreAsync(AuthenticationTicket ticket);
+            Task RenewAsync(string key, AuthenticationTicket ticket);
+            Task<AuthenticationTicket?> RetrieveAsync(string key);
+            Task RemoveAsync(string key);
+        }
+
+      I want to add CancellationToken to each method. Review this as an API change for the repo — is it
+      a good idea, and what exact shape should it take?
+    assertions:
+      - type: "output_matches"
+        pattern: "(?i)cancellationtoken"
+      - type: "output_matches"
+        pattern: "(?i)(default interface|default implementation|overload|breaking|binary)"
+    rubric:
+      - "Supports adding CancellationToken support to the async methods"
+      - "Recognizes ITicketStore is a public interface with external implementers, so adding members outright is a binary-breaking change"
+      - "Recommends a non-breaking shape: default interface methods that delegate to the existing methods (or new overloads), rather than changing the existing signatures"
+      - "Notes the CancellationToken should be flowed through and is the standard for async public methods"
+    timeout: 300
+
+  - name: "Add terser Get/GetOrdered methods to EndpointMetadataCollection"
+    prompt: |
+      EndpointMetadataCollection already has GetMetadata<T>() and GetOrderedMetadata<T>(). I want to add
+      Get<T>() and GetOrdered<T>() as shorter aliases (same behavior, just without the 'Metadata' suffix)
+      so calling code is terser. Should we add these to the public API, and how would you shape it?
+    assertions:
+      - type: "output_matches"
+        pattern: "(?i)(extension method|terse|justif|needed|need)"
+    rubric:
+      - "Is skeptical that terseness alone justifies new public instance members on the type"
+      - "Suggests extension methods as the better mechanism if the convenience is wanted, rather than adding instance methods"
+      - "Treats the consistency/terseness argument as weak and asks for a stronger justification (leans needs-work / not adding as-is)"
+      - "Frames it as low-commonality convenience rather than a happy-path need"
+    timeout: 300
+
+  - name: "Expand a shipped default API convention with 409 Conflict"
+    prompt: |
+      DefaultApiConventions.Post currently documents 201 and 400 response codes but not 409 Conflict,
+      which is common for POST when a resource already exists. I'd like to add 409 to the built-in
+      DefaultApiConventions.Post convention so it's covered by default. Can we make this change?
+    assertions:
+      - type: "output_matches"
+        pattern: "(?i)(breaking|default|custom|convention)"
+    rubric:
+      - "Identifies that changing a shipped, on-by-default convention is a breaking change to existing behavior"
+      - "Recommends against modifying the built-in default convention"
+      - "Points the requester to defining their own custom API conventions instead"
+    timeout: 300
+
+  - name: "Add ValueTask overloads to EventCallback<T>"
+    prompt: |
+      Blazor's EventCallback<T> only works with Task-returning handlers. I want to add ValueTask
+      overloads/support to EventCallback and EventCallbackFactory so handlers can return ValueTask. Is
+      this a good addition to the framework, and what should the API look like?
+    assertions:
+      - type: "output_matches"
+        pattern: "(?i)(extension|community|valuetask|need|justif)"
+    rubric:
+      - "Leans against adding this to the framework surface absent a demonstrated need"
+      - "Notes it can be achieved as an extension method / community library (e.g. converting ValueTask to Task) rather than new framework API"
+      - "Does not treat ValueTask support as automatically warranted; questions the real-world demand"
+    timeout: 300
+
+  - name: "Add a Description to ProducesResponseType attributes"
+    prompt: |
+      I'd like to add a Description property to the [ProducesResponseType], [Produces], and
+      [ProducesDefaultResponseType] attributes so developers can set the response description that shows
+      up in the generated OpenAPI document directly from the attribute. Review this proposed addition.
+    assertions:
+      - type: "output_matches"
+        pattern: "(?i)(description|openapi|consistent|reasonable|approv|good)"
+    rubric:
+      - "Assesses this as a reasonable, common end-app-developer convenience consistent with the existing attributes"
+      - "Leans toward approving it (looks good, or with only minor shape notes) rather than rejecting"
+      - "If it raises anything, it's a minor consistency/shape point, not a need-to-justify objection"
+    timeout: 300
