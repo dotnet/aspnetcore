@@ -21,7 +21,7 @@ For code-fix tests, alias `CSharpCodeFixVerifier<TAnalyzer, TCodeFix>` instead.
 
 ## Analyzer tests
 
-- Embed the test source as a string. The expected diagnostic location is marked inline with `{|#0:...|}` (location `0`, `1`, ...). The verifier sets `OutputKind = ConsoleApplication`, so **top-level statements work** — write programs the way users do.
+- Embed the test source as a string. The expected diagnostic location is marked inline with `{|#0:...|}` (location `0`, `1`, ...). The verifier sets `OutputKind = ConsoleApplication`, so **top-level statements work**, so write programs the way users do.
 - Assert with `new DiagnosticResult(DiagnosticDescriptors.MyRule).WithLocation(0)`, optionally `.WithMessage(...)` (use the generated `Resources.Format<Key>(args...)` helper) and `.WithArguments(...)`.
 
 ```csharp
@@ -63,8 +63,8 @@ await VerifyCS.VerifyCodeFixAsync(
     fixedSource);           // expected code after the fix
 ```
 
-- Optional args on the repo helper: `expectedIterations` (`NumberOfFixAllIterations` for FixAll), `usageSource` (an extra unchanged source file), and `codeActionEquivalenceKey` (to pin which fix when several are offered — must match the analyzer's `equivalenceKey`).
-- `fixedSource` must compile and be correctly formatted — trailing trivia/indentation matters.
+- Optional args on the repo helper: `expectedIterations` (`NumberOfFixAllIterations` for FixAll), `usageSource` (an extra unchanged source file), and `codeActionEquivalenceKey` (to pin which fix when several are offered; must match the analyzer's `equivalenceKey`).
+- `fixedSource` must compile and be correctly formatted; trailing trivia/indentation matters.
 
 ## What to cover
 
