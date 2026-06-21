@@ -807,9 +807,45 @@ on:
             return js
 
 
+        # The agent prompt receives this JSON through the part1_data_N job outputs, which gh-aw
+        # interpolates into the prompt and passes to the prompt-building steps as ENVIRONMENT
+        # VARIABLES. Linux caps a single env-var string at MAX_ARG_STRLEN (32 * 4 KiB page =
+        # 131072 bytes) when starting a process; a value larger than that makes the prompt step
+        # die with "Argument list too long" (E2BIG) before it even runs — which is exactly what
+        # happened once the data started flowing at full size. So the payload is split into a
+        # fixed number of byte-bounded chunks (each well under the limit) written to separate
+        # outputs; the prompt concatenates the chunks back together with no separator,
+        # reconstructing the JSON verbatim.
+        PART1_CHUNKS = 16          # MUST match the count of part1_data_N refs in the prompt body
+        PART1_CHUNK_BYTES = 80000  # << 131072 MAX_ARG_STRLEN, leaving ample room for the var name
+
+
+        def write_part1_chunks(f, js):
+            """Split `js` into <=PART1_CHUNKS pieces of <=PART1_CHUNK_BYTES bytes each, never cutting
+            a multi-byte UTF-8 sequence, and write them as part1_data_0..part1_data_{N-1} outputs.
+            Unused slots are emitted empty so the prompt's fixed set of placeholders always resolves."""
+            data = js.encode("utf-8")
+            chunks = []
+            i, n = 0, len(data)
+            while i < n:
+                end = min(i + PART1_CHUNK_BYTES, n)
+                # back off to a UTF-8 character boundary (continuation bytes are 0b10xxxxxx)
+                while end < n and (data[end] & 0xC0) == 0x80:
+                    end -= 1
+                chunks.append(data[i:end].decode("utf-8"))
+                i = end
+            if len(chunks) > PART1_CHUNKS:
+                sys.exit(f"FATAL: part1_data needs {len(chunks)} chunks but only {PART1_CHUNKS} "
+                         f"output slots exist — raise PART1_CHUNKS and add matching "
+                         f"part1_data_N references in the prompt body")
+            for k in range(PART1_CHUNKS):
+                chunk = chunks[k] if k < len(chunks) else ""
+                f.write(f"part1_data_{k}<<PART1_EOF\n{chunk}\nPART1_EOF\n")
+
+
         if __name__ == "__main__":
-            # Final safety net: scrub the fully serialized payload as well. GitHub skips the
-            # WHOLE part1_data output if any token pattern is detected, so a leaked secret in
+            # Final safety net: scrub the fully serialized payload as well. GitHub skips a
+            # part1_data_N output if any token pattern is detected, so a leaked secret in
             # any field (not just the three scrubbed above) would starve the agent. Scrubbing
             # only ever shrinks the payload, so it stays under the GITHUB_OUTPUT size cap.
             js = scrub_secrets(main())
@@ -817,7 +853,7 @@ on:
             if not gh_out:
                 sys.exit("ERROR: GITHUB_OUTPUT is not set, cannot pass Part 1 data to agent")
             with open(gh_out, "a") as f:
-                f.write(f"part1_data<<PART1_EOF\n{js}\nPART1_EOF\n")
+                write_part1_chunks(f, js)
         SCRIPT
 
 jobs:
@@ -825,7 +861,24 @@ jobs:
     outputs:
       requarantine_data: ${{ steps.requarantine_prs.outputs.requarantine_data }}
       source_b_build_ids: ${{ steps.source_b_prs.outputs.source_b_build_ids }}
-      part1_data: ${{ steps.part1_aggregate.outputs.part1_data }}
+      # part1_data is chunked across fixed outputs to stay under the 131072-byte MAX_ARG_STRLEN
+      # per-env-var limit (see write_part1_chunks above); the prompt concatenates them back.
+      part1_data_0: ${{ steps.part1_aggregate.outputs.part1_data_0 }}
+      part1_data_1: ${{ steps.part1_aggregate.outputs.part1_data_1 }}
+      part1_data_2: ${{ steps.part1_aggregate.outputs.part1_data_2 }}
+      part1_data_3: ${{ steps.part1_aggregate.outputs.part1_data_3 }}
+      part1_data_4: ${{ steps.part1_aggregate.outputs.part1_data_4 }}
+      part1_data_5: ${{ steps.part1_aggregate.outputs.part1_data_5 }}
+      part1_data_6: ${{ steps.part1_aggregate.outputs.part1_data_6 }}
+      part1_data_7: ${{ steps.part1_aggregate.outputs.part1_data_7 }}
+      part1_data_8: ${{ steps.part1_aggregate.outputs.part1_data_8 }}
+      part1_data_9: ${{ steps.part1_aggregate.outputs.part1_data_9 }}
+      part1_data_10: ${{ steps.part1_aggregate.outputs.part1_data_10 }}
+      part1_data_11: ${{ steps.part1_aggregate.outputs.part1_data_11 }}
+      part1_data_12: ${{ steps.part1_aggregate.outputs.part1_data_12 }}
+      part1_data_13: ${{ steps.part1_aggregate.outputs.part1_data_13 }}
+      part1_data_14: ${{ steps.part1_aggregate.outputs.part1_data_14 }}
+      part1_data_15: ${{ steps.part1_aggregate.outputs.part1_data_15 }}
 
 description: "Daily quarantine/unquarantine flaky tests based on Azure DevOps pipeline analytics"
 
@@ -904,7 +957,7 @@ Also check for recently closed (not merged) `[test-quarantine]` PRs from the pas
 **All Part 1 failure data has already been gathered for you** by the deterministic `Aggregate Part 1 failures` pre-activation step, which ran outside the firewall at zero token cost. It queried both CI pipelines — **aspnetcore-ci** (definition **83**, the main CI pipeline) and **components-e2e** (definition **87**, which runs both quarantined and non-quarantined tests) — and assembled Sources A, B and C below into a single JSON object, injected here:
 
 ```json
-${{ needs.pre_activation.outputs.part1_data }}
+${{ needs.pre_activation.outputs.part1_data_0 }}${{ needs.pre_activation.outputs.part1_data_1 }}${{ needs.pre_activation.outputs.part1_data_2 }}${{ needs.pre_activation.outputs.part1_data_3 }}${{ needs.pre_activation.outputs.part1_data_4 }}${{ needs.pre_activation.outputs.part1_data_5 }}${{ needs.pre_activation.outputs.part1_data_6 }}${{ needs.pre_activation.outputs.part1_data_7 }}${{ needs.pre_activation.outputs.part1_data_8 }}${{ needs.pre_activation.outputs.part1_data_9 }}${{ needs.pre_activation.outputs.part1_data_10 }}${{ needs.pre_activation.outputs.part1_data_11 }}${{ needs.pre_activation.outputs.part1_data_12 }}${{ needs.pre_activation.outputs.part1_data_13 }}${{ needs.pre_activation.outputs.part1_data_14 }}${{ needs.pre_activation.outputs.part1_data_15 }}
 ```
 
 **Do NOT call Azure DevOps or Helix for Part 1.** No `resultsbyBuild`, no build list, no build timeline, and no Helix `files`/console-log download for any source below. Re-gathering this data inside the agent loop is the single biggest token sink in this workflow and is exactly what exhausted the per-run token budget before any output was ever created — it is **prohibited**. Everything you need to identify quarantine candidates is already in the injected object; simply parse and analyze it.
