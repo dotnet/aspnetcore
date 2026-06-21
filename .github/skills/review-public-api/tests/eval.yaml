@@ -1,13 +1,13 @@
 # Held-out, complex API-review scenarios for the review-public-api skill.
-# Sources: the open `api-ready-for-review` queue (#66830, #66391, #66393 — never used to write the
+# Sources: the open `api-ready-for-review` queue (#66830, #66391, #66393, never used to write the
 # rules) plus two decided held-out issues with known outcomes (#42467 declined, #32443 approved).
 # Prompts present a real multi-type proposal and never name the skill. Rubrics score independently
-# verifiable design outcomes a competent API reviewer reaches — not the skill's vocabulary.
+# verifiable design outcomes a competent API reviewer reaches, not the skill's vocabulary.
 
 scenarios:
-  - name: "Review a Blazor media-component suite (Image/Video/FileDownload)"
+  - name: "Review a media-component suite (Image/Video/FileDownload)"
     prompt: |
-      Review this proposed public API for ASP.NET Core Blazor. It adds a suite of components that
+      Review this proposed public API for an ASP.NET Core web UI framework. It adds a suite of components that
       render images/videos and trigger downloads from non-HTTP sources (byte arrays, streams, DB BLOBs)
       via streaming JS interop and the browser Cache Storage API, in a new package
       Microsoft.AspNetCore.Components.Media:
@@ -38,17 +38,17 @@ scenarios:
         pattern: "(?i)(parameter|cancellationtoken|IReadOnly|IDictionary|cachekey|\\bid\\b)"
     rubric:
       - "Recommends sealing the concrete component/options/DTO/context types unless extensibility is justified"
-      - "Reasons about where the input data and the cacheKey actually come from (e.g. blob storage / database / uploads usually already provide a stable id), and concludes the required key is not real friction — keep it, make it easy to pass, and do NOT synthesize one expensively (e.g. hashing the whole stream)"
-      - "Flags that these components rely on JS interop and are therefore inert in static SSR / prerendering, or otherwise scopes the 'consumable from any renderer' claim"
+      - "Reasons about where the input data and the cacheKey actually come from (e.g. blob storage / database / uploads usually already provide a stable id), and concludes the required key is not real friction: keep it, make it easy to pass, and do NOT synthesize one expensively (e.g. hashing the whole stream)"
+      - "Flags that these components rely on JS interop and are therefore inert when the app is server-rendered without client interactivity, or otherwise scopes the 'consumable from any renderer' claim"
       - "Catches at least one concrete shape bug: the FileDownload usage uses Source but the API declares none; and/or component parameters lack [Parameter]; and/or AdditionalAttributes should be an IReadOnlyDictionary, not a concrete Dictionary"
       - "Suggests a CancellationToken on the async download/operation"
       - "Reaches a 'changes recommended' verdict and treats the feature itself as justified (long-requested, no good workaround)"
     timeout: 420
 
-  - name: "Review server-to-client configuration model for Blazor"
+  - name: "Review a server-to-client configuration model for a web app"
     prompt: |
-      Review this proposed public API for ASP.NET Core Blazor. It flows configuration from the server
-      to the browser client via an HTML comment, across all render modes:
+      Review this proposed public API for an ASP.NET Core web UI framework. It flows configuration from the server
+      to the browser client via an HTML comment, across server-rendered and browser/client execution:
 
         namespace Microsoft.AspNetCore.Components;
         public class BrowserConfiguration {
@@ -80,7 +80,7 @@ scenarios:
     rubric:
       - "Flags that LogLevel typed as int? lets callers pass magic numbers and should be a strongly-typed enum (the existing LogLevel enum)"
       - "Recommends sealing the configuration/options classes and renaming toward the Options convention (e.g. BrowserOptions) consistent with the rest of ASP.NET Core"
-      - "Identifies the nested Server/Ssr/WebAssembly sub-objects must be initialized (non-null) so the shown usage (Server.X = ...) doesn't null-reference — a common-path pit of failure"
+      - "Identifies the nested Server/Ssr/WebAssembly sub-objects must be initialized (non-null) so the shown usage (Server.X = ...) doesn't null-reference, a common-path pit of failure"
       - "Flags duration values expressed as int milliseconds should be TimeSpan, and/or the concrete Dictionary should be a non-null map interface, and/or the component parameters need [Parameter]"
       - "Reasons about the HttpContext accessor extension: a feature-specific HttpContext helper should NOT sit in the broad Microsoft.AspNetCore.Http namespace (it would surface on every HttpContext); the endpoint-builder With* extension in Microsoft.AspNetCore.Builder is correctly placed"
       - "Reaches a 'changes recommended' verdict and treats the feature as a justified common end-developer need"
@@ -88,9 +88,9 @@ scenarios:
 
   - name: "Review URL-driven sort/pagination state for a data grid"
     prompt: |
-      Review this proposed public API change for ASP.NET Core Blazor's QuickGrid. Today sort column,
-      sort direction, and page index live in memory, so the grid is broken under static SSR (sorting and
-      paging rely on @onclick which the static renderer doesn't wire up) and the state isn't bookmarkable.
+      Review this proposed public API change for ASP.NET Core's QuickGrid data-grid component. Today sort column,
+      sort direction, and page index live in memory, so the grid is broken when the app is server-rendered without
+      interactivity (sorting and paging rely on @onclick which the static renderer doesn't wire up) and the state isn't bookmarkable.
       The change persists sort/page state in URL query parameters (?sort=...&order=...&page=...); when
       enabled (the default) headers and paginator controls render as <a> links instead of <button>.
       The stated GOAL is that sort/page state be bookmarkable, shareable via URL, and stable across navigation.
@@ -115,7 +115,7 @@ scenarios:
       - type: "output_matches"
         pattern: "(?i)(breaking|override|bookmark|stable)"
     rubric:
-      - "Concludes the empty-string QueryParameterNamePrefix default is acceptable because one grid per page is the common case and multi-grid is a rarer opt-in scenario — and does NOT recommend auto-generating a prefix (which would defeat the bookmarkable/stable-URL goal)"
+      - "Concludes the empty-string QueryParameterNamePrefix default is acceptable because one grid per page is the common case and multi-grid is a rarer opt-in scenario, and does NOT recommend auto-generating a prefix (which would defeat the bookmarkable/stable-URL goal)"
       - "Identifies that keying the sort query value on the column's display Title is fragile (renames and localization break shared/bookmarked URLs; title-less columns can't sort) and proposes a stable, opt-in column identifier with Title as fallback"
       - "Recognizes the OnParametersSet -> OnParametersSetAsync change is behaviorally breaking for subclasses, and/or that these protected lifecycle overrides are implementation details rather than genuinely new public API surface"
       - "Treats the default button-to-link rendering change as a breaking default change that needs an escape hatch and a major version (the AppContext opt-out is the right mechanism)"
@@ -149,7 +149,7 @@ scenarios:
           Task RemoveAsync(string key);
         }
 
-      I want to add CancellationToken to each method. Review this as an API change — is it a good idea,
+      I want to add CancellationToken to each method. Review this as an API change: is it a good idea,
       and what exact shape should it take?
     assertions:
       - type: "output_matches"
