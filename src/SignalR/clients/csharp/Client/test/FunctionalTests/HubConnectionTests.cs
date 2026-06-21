@@ -2843,6 +2843,7 @@ public partial class HubConnectionTests : FunctionalTestBase
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67344")]
     public async Task ServerWithOldProtocolVersionClientWithNewProtocolVersionWorksDoesNotAllowStatefulReconnect()
     {
         bool ExpectedErrors(WriteContext writeContext)
