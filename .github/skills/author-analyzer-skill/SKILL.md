@@ -34,7 +34,7 @@ Pick the project matching the API area you are guarding. Most new work lands in 
 ## Decision: should this be an analyzer?
 
 Write one only when **all** hold (details in [references/process.md](references/process.md)):
-- The mistake is detectable at compile time from syntax/symbols/operations **without false positives**.
+- The mistake is detectable at compile time from the current compilation's syntax/symbols/operations, at least for the common cases, **without false positives** (it need not catch every instance; see step 1).
 - It is actionable: the message (or a code fix) tells the user exactly what to change.
 - It is not already caught by the C# compiler.
 
@@ -42,11 +42,12 @@ Runtime-only or highly context-dependent concerns belong in tests or docs, not a
 
 ## Authoring workflow
 
-1. **Reserve the ID & design the diagnostic.** Pick the next free ID in the area's prefix, choose a [category](references/process.md#categories) and [severity](references/process.md#severity), and register it in `docs/list-of-diagnostics.md`. Add the descriptor to the area's `DiagnosticDescriptors.cs` using `CreateLocalizableResourceString(nameof(Resources.<Key>))` for title/message and the shared `GetHelpLinkUri(id)` helper. Add the strings to `Resources.resx`.
-2. **Write the analyzer.** Follow the canonical shape below. Prefer `IOperation`/symbol analysis over raw syntax. Cache well-known types once via the shared `WellKnownTypes` infra.
-3. **Write the code fix** (optional but encouraged) in the CodeFixes project.
-4. **Write tests** with the `CSharpAnalyzerVerifier`/`CSharpCodeFixVerifier` helpers and `{|#0:...|}` markup. See [references/testing.md](references/testing.md).
-5. **Build & test the area:** activate the local SDK first (`. ./activate.ps1` on Windows, `source activate.sh` otherwise), then run that area's `build.sh -test`, e.g. `./src/Framework/build.sh -test`.
+1. **Analyze the cases.** Partition inputs into four buckets before coding: **should fire** (each a positive test); **should not fire** (look-alikes that are correct/intentional, each a negative test); **detectable but too expensive** (needs whole-program or deep data-flow analysis, e.g. following a call graph to arbitrary depth; out of scope); and **undecidable from here** (depends on a referenced assembly's *implementation* or another project's source). An analyzer reasons over the current compilation's source plus referenced **symbols/metadata**, never referenced **bodies**. For fully decidable behavior in code that compiles, be **precise with no false positives**; otherwise make a **reasonable effort** (80/20) and record the skipped cases as non-goals. When deeper analysis is worth it but costly, gate it behind a configurable **effort/strictness option** (`.editorconfig`/`AnalyzerConfigOptions`): conservative by default for live IDE use, stricter in CI. Document all four buckets in the PR description and pin the gaps with negative tests. See [process.md](references/process.md#1-analyze-the-cases-and-document-them).
+2. **Reserve the ID & design the diagnostic.** Pick the next free ID in the area's prefix, choose a [category](references/process.md#categories) and [severity](references/process.md#severity), and register it in `docs/list-of-diagnostics.md`. Add the descriptor to the area's `DiagnosticDescriptors.cs` using `CreateLocalizableResourceString(nameof(Resources.<Key>))` for title/message and the shared `GetHelpLinkUri(id)` helper. Add the strings to `Resources.resx`.
+3. **Write the analyzer.** Follow the canonical shape below. Prefer `IOperation`/symbol analysis over raw syntax. Cache well-known types once via the shared `WellKnownTypes` infra.
+4. **Write the code fix** (optional but encouraged) in the CodeFixes project.
+5. **Write tests** with the `CSharpAnalyzerVerifier`/`CSharpCodeFixVerifier` helpers and `{|#0:...|}` markup. See [references/testing.md](references/testing.md).
+6. **Build & test the area:** activate the local SDK first (`. ./activate.ps1` on Windows, `source activate.sh` otherwise), then run that area's `build.sh -test`, e.g. `./src/Framework/build.sh -test`.
 
 ### Canonical analyzer shape
 
