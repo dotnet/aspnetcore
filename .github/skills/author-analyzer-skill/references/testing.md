@@ -70,7 +70,7 @@ await VerifyCS.VerifyCodeFixAsync(
 
 - ✅ Positive cases at the exact `{|#0:...|}` span, including each variant that should trigger.
 - ✅ Negative cases: similar-but-correct code, unrelated types, generated code, partial/erroneous code.
-- ✅ Boundary cases you deliberately don't handle: a `_NoDiagnostic` test for an out-of-scope/too-expensive pattern and for a cross-assembly/undecidable case (the rule depends on a referenced assembly's implementation). These pin the gaps so a future change can't silently start firing on them or stop firing on a real case.
+- ✅ Boundary cases you chose not to cover: a `_NoDiagnostic` test for a case left to an opt-in (the expensive/complex long tail) and for an intractable cross-assembly case (the rule would need a referenced assembly's implementation). These pin the line you drew so a future change can't silently start firing on them or stop firing on a real case.
 - ✅ If the rule exposes a configurable effort/strictness option, test both the default (lenient) behavior and the strict mode, so the extra cases the strict mode catches stay verified.
 - ✅ Message arguments via the `Resources.Format...` helper so localization stays in sync.
 - ✅ Code fix: before → after for each shape, plus a FixAll iteration test when `BatchFixer` is used.

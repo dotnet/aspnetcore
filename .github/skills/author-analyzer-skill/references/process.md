@@ -12,18 +12,23 @@ Map the cases first, build to that boundary, then document the analyzer in its P
 
 ## 1. Analyze the cases (and document them)
 
-Before coding, map the input space. This both bounds the implementation and becomes the analyzer's documentation. Partition every input into four buckets:
+Before coding, map the input space. This both bounds the implementation and becomes the analyzer's documentation. Start with the two concrete test sets:
 
 - **Should fire (true positives)**: each concrete pattern the rule flags. Enumerate the variants; each becomes a positive test.
 - **Should not fire (true negatives)**: look-alikes that are correct or intentional: already-correct code, a similar-but-different API, an explicit opt-out. Each becomes a negative test and is a false-positive guard.
-- **Detectable but too expensive**: patterns the rule *could* catch only with whole-program or deep data-flow analysis (e.g. following a call graph to an arbitrary depth). Decide explicitly not to handle them.
-- **Undecidable from here**: facts that depend on a referenced assembly's *implementation* or another project's source. An analyzer reasons over the current compilation's source plus the **symbols/metadata** of its references, never their **bodies**, so it can't know what referenced code does at runtime or values computed elsewhere.
 
-Design to this boundary:
+For everything beyond those two sets, coverage is a **return-on-investment call, not a binary include/exclude**. Default to being **aggressive: try to detect the issue.** Bail out of a case only when you can name a concrete reason the return doesn't justify the cost, grounded in:
 
-- **Be precise where the answer is decidable.** For code that compiles, if the pattern is unambiguously right or wrong from the current compilation, aim to flag *all* of it with *no* false positives.
-- **Make a reasonable effort elsewhere, and apply 80/20.** A non-comprehensive analyzer is valuable if it catches the common error cases cheaply and never cries wolf. Record the cases you skip as explicit non-goals rather than reporting on a guess.
-- **Gate expensive depth behind a configurable effort/strictness option.** When deeper, costlier analysis would catch more, expose it as an option read from `.editorconfig`/`AnalyzerConfigOptions` (a `dotnet_diagnostic`-style key or a `build_property`), read once in `RegisterCompilationStartAction`. Default it conservative so live IDE editing stays fast, and let non-interactive runs (CI) opt into the stricter, deeper analysis. The IDE's per-keystroke budget is the constraint to protect; a batch build can afford more.
+- **Effort and complexity**: the runtime cost in the per-keystroke IDE budget, and the implementation/maintenance complexity of detecting it reliably.
+- **Commonality and impact**: how often the case occurs and how much the mistake hurts.
+
+Investing where the return is high and skipping the low-return long tail is what 80/20 means here.
+
+- **Cheap and decidable: go for full coverage.** If the current compilation can decide the case unambiguously and cheaply, for code that compiles, flag all of it with no false positives.
+- **Common cases cheap, long tail expensive or complex: cover the common cases, make the rest opt-in.** Handle the common cases reliably, and offer the deeper analysis that catches the long tail behind a **configuration option** (an effort/strictness key read from `.editorconfig`/`AnalyzerConfigOptions`, e.g. a `dotnet_diagnostic`-style key or a `build_property`, read once in `RegisterCompilationStartAction`) with a conservative default, rather than dropping it silently or paying its cost for everyone. Live IDE editing stays fast; CI can opt into deeper, stricter analysis.
+- **Reliable detection impossible from here: stop, and say so.** When a case depends on a referenced assembly's *implementation*, runtime values, or whole-program reasoning that can't be made sound, detection isn't tractable. An analyzer reasons over the current compilation's source plus the **symbols/metadata** of its references, never their **bodies**, so cross-assembly facts usually fall here. Document it as a known limitation; offer an opt-in heuristic only if it earns its keep.
+
+**Give the developer the call, and show your work.** Record where you drew the line and why (effort, complexity, commonality) in the analyzer's documentation, and expose a configuration knob wherever the right answer depends on the consumer's context, so they can push for more or less detection.
 
 **Document the analyzer using the proposal template as the follow-up PR description.** The `60_analyzer_proposal.md` template (`.github/ISSUE_TEMPLATE/60_analyzer_proposal.md`, labels `api-suggestion`, `analyzer`) is the structure to explain the analyzer in its PR:
 
@@ -31,7 +36,7 @@ Design to this boundary:
 - **Analyzer behavior and message**: when it fires and the exact message text.
 - **Category** and **severity** (from the lists below).
 - **Usage scenarios**: the *should-fire* and *should-not-fire* buckets, mirrored 1:1 by the tests.
-- **Non-goals and limitations**: the *too-expensive* and *undecidable* buckets, with the 80/20 rationale and any effort-option behavior.
+- **Non-goals and limitations**: the cases you chose not to detect (or made opt-in) and why, grounded in effort, complexity, and commonality, plus any configuration knob and its default.
 - **Risks**: false-positive surface, breaking changes, perf.
 
 Browse open issues labeled `analyzer` for prior art and to avoid duplicates. When a rule does go through formal review, it usually follows the [API review process](https://github.com/dotnet/aspnetcore/blob/main/docs/APIReviewProcess.md).
@@ -68,7 +73,7 @@ See [configuring severity](https://learn.microsoft.com/visualstudio/code-quality
 
 ## Checklist
 
-- [ ] Cases analyzed: should-fire / should-not-fire / too-expensive / undecidable buckets enumerated; non-goals recorded.
+- [ ] Cases analyzed: should-fire and should-not-fire enumerated; coverage trade-offs (effort, complexity, commonality) decided, with any non-goals and configuration knobs recorded.
 - [ ] Design reviewed, or a proposal filed (template `60_analyzer_proposal.md`), if the rule is opinionated or behavior-changing.
 - [ ] ID reserved in `docs/list-of-diagnostics.md`; descriptor added to `DiagnosticDescriptors.cs`.
 - [ ] Title/message in `Resources.resx`; title has no period, message ends with one.
