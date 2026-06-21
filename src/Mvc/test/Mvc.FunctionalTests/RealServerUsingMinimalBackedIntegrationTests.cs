@@ -50,6 +50,7 @@ public class RealServerUsingMinimalBackedIntegrationTests : IClassFixture<Kestre
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67340")]
     public void CanResolveServices()
     {
         // Act
