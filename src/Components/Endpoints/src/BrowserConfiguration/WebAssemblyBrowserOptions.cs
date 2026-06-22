@@ -11,20 +11,20 @@ namespace Microsoft.AspNetCore.Components;
 public sealed class WebAssemblyBrowserOptions
 {
     /// <summary>
-    /// Hosting environment name (e.g., "Development", "Production").
+    /// Gets or sets the hosting environment name (e.g., "Development", "Production").
     /// Maps to <c>WebAssemblyStartOptions.environment</c>.
     /// </summary>
     public string? EnvironmentName { get; set; }
 
     /// <summary>
-    /// Application culture in BCP 47 format (e.g., "en-US").
+    /// Gets or sets the application culture in BCP 47 format (e.g., "en-US").
     /// Maps to <c>WebAssemblyStartOptions.applicationCulture</c>.
     /// </summary>
     public string? ApplicationCulture { get; set; }
 
     /// <summary>
-    /// Environment variables for the .NET WebAssembly runtime.
+    /// Gets the environment variables for the .NET WebAssembly runtime.
     /// Use for OTEL endpoints, service URLs, etc.
     /// </summary>
-    public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
+    public IDictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
 }
