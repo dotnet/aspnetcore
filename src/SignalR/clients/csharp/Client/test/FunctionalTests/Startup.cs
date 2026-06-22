@@ -108,7 +108,11 @@ public class Startup
             endpoints.MapHub<HubWithAuthorization2>("/windowsauthhub")
                   .RequireAuthorization(new AuthorizeAttribute(NegotiateDefaults.AuthenticationScheme));
 
-            endpoints.MapHub<AuthenticationRefreshHub>("/authRefreshHub", o => o.EnableAuthenticationRefresh = true)
+            endpoints.MapHub<AuthenticationRefreshHub>("/authRefreshHub", o =>
+            {
+                o.EnableAuthenticationRefresh = true;
+                o.AllowStatefulReconnects = true;
+            })
                   .RequireAuthorization(new AuthorizeAttribute(JwtBearerDefaults.AuthenticationScheme));
 
             endpoints.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);

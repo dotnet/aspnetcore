@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using System.Net.WebSockets;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
@@ -236,6 +237,74 @@ public partial class HubConnectionTests
 
                 var echo = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.Echo), "reconnected").DefaultTimeout();
                 Assert.Equal("reconnected", echo);
+            }
+            catch (Exception ex)
+            {
+                LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                throw;
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
+    public async Task StatefulReconnectWithChangedAuthenticationUpdatesHubUser()
+    {
+        await using (var server = await StartServer<Startup>(w => w.EventId.Name == "ReceivedUnexpectedResponse"))
+        {
+            var includeScope = false;
+            async Task<string> AccessTokenProvider()
+            {
+                var url = server.Url + "/generateJwtTokenWithScope?scope=" + (includeScope ? "true" : "false");
+                var httpResponse = await new HttpClient().GetAsync(url);
+                httpResponse.EnsureSuccessStatusCode();
+                return await httpResponse.Content.ReadAsStringAsync();
+            }
+
+            var websocket = new ClientWebSocket();
+            var connectedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var hubConnection = new HubConnectionBuilder()
+                .WithLoggerFactory(LoggerFactory)
+                .WithUrl(server.Url + "/authRefreshHub", HttpTransportType.WebSockets, options =>
+                {
+                    options.AccessTokenProvider = AccessTokenProvider;
+                    options.WebSocketFactory = async (context, token) =>
+                    {
+                        var current = websocket;
+                        var accessToken = await AccessTokenProvider();
+                        current.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                        await current.ConnectAsync(context.Uri, token);
+                        connectedTcs.SetResult();
+                        return current;
+                    };
+                    options.UseStatefulReconnect = true;
+                })
+                .WithAuthenticationRefresh(o => o.EnableAutoRefresh = false)
+                .Build();
+            try
+            {
+                await hubConnection.StartAsync().DefaultTimeout();
+                await connectedTcs.Task.DefaultTimeout();
+
+                var originalConnectionId = hubConnection.ConnectionId;
+                await Assert.ThrowsAsync<HubException>(
+                    () => hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.ScopeProtected)).DefaultTimeout());
+
+                includeScope = true;
+                connectedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                var originalWebsocket = websocket;
+                websocket = new ClientWebSocket();
+                originalWebsocket.Dispose();
+
+                await connectedTcs.Task.DefaultTimeout();
+
+                Assert.Equal(originalConnectionId, hubConnection.ConnectionId);
+                var result = await hubConnection.InvokeAsync<string>(nameof(AuthenticationRefreshHub.ScopeProtected)).DefaultTimeout();
+                Assert.Equal("ok", result);
             }
             catch (Exception ex)
             {

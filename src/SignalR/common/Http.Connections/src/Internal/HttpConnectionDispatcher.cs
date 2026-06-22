@@ -872,10 +872,14 @@ internal sealed partial class HttpConnectionDispatcher
             connection.HttpContext = context;
         }
 
-        // On Long Polling each poll is a separate request that may carry a refreshed (or rotated) token,
-        // so the principal can legitimately change between polls. For the other transports the request is
-        // long-lived and the principal is only established once. The incoming principal for this request is
-        // context.User; for non-Long Polling it is the same as the connection.HttpContext.User we just set.
+        var isStatefulReconnect = transportType == HttpTransportType.WebSockets
+            && connection.UseStatefulReconnect
+            && connection.ApplicationTask is not null;
+
+        // On Long Polling each poll is a separate request that may carry a refreshed (or rotated) token.
+        // Stateful WebSocket reconnects also carry a fresh HTTP request after the SignalR handshake, so
+        // process changed principals through the authentication-refresh path instead of silently swapping
+        // only the lower-level HTTP connection user.
         var newPrincipal = transportType == HttpTransportType.LongPolling ? context.User : connection.HttpContext?.User;
         var newExpiration = GetAuthenticationExpiration(connection, context);
 
@@ -892,32 +896,32 @@ internal sealed partial class HttpConnectionDispatcher
                 Log.UserNameChanged(_logger, originalName, newName);
             }
 
-            // A refreshed token presents either different claims or a different expiration; a poll that
-            // carries the same token (same claims and expiration) is not treated as a refresh so we don't
-            // run the callback or fire UserRefreshed on every poll.
-            var principalChanged = !ClaimsPrincipalContentEquals(currentUser, newPrincipal)
-                || newExpiration != connection.AuthenticationExpiration;
-
-            // A poll that arrives carrying an older token than the one already applied (e.g. a poll that raced
-            // an explicit /refresh) is stale: applying it would roll the connection back to an older identity.
-            var stale = newExpiration != DateTimeOffset.MaxValue
-                && connection.AuthenticationExpiration != DateTimeOffset.MaxValue
-                && newExpiration < connection.AuthenticationExpiration;
-
             // WindowsIdentity is cloned on first poll and must not be swapped here (disposing the old
             // SafeHandles could race the application), so those connections keep the legacy behavior below.
             var authRefreshEligible = options.EnableAuthenticationRefresh
-                && transportType == HttpTransportType.LongPolling
+                && (transportType == HttpTransportType.LongPolling || isStatefulReconnect)
                 && !HasWindowsIdentity(newPrincipal)
                 && !HasWindowsIdentity(currentUser);
 
             if (authRefreshEligible)
             {
-                // Auth-refresh-eligible long-polling polls never fall through to the legacy raw swap below:
-                // that swap reads connection.User/HttpContext and rewrites it outside any lock, so it could
-                // roll back a token a concurrent /refresh just applied. Only a genuinely changed, non-stale
-                // token runs the refresh path; a stale (older) token or an idempotent (same) token leaves the
-                // connection's current principal/expiration untouched.
+                // A refreshed token presents either different claims or a different expiration; a request that
+                // carries the same token (same claims and expiration) is not treated as a refresh so we don't
+                // run the callback or fire UserRefreshed on every poll/reconnect.
+                var principalChanged = !ClaimsPrincipalContentEquals(currentUser, newPrincipal)
+                    || newExpiration != connection.AuthenticationExpiration;
+
+                // A request that arrives carrying an older token than the one already applied (e.g. a poll that
+                // raced an explicit /refresh) is stale: applying it would roll the connection back to an older identity.
+                var stale = newExpiration != DateTimeOffset.MaxValue
+                    && connection.AuthenticationExpiration != DateTimeOffset.MaxValue
+                    && newExpiration < connection.AuthenticationExpiration;
+
+                // Auth-refresh-eligible requests never fall through to the legacy raw swap below: that swap
+                // reads connection.User/HttpContext and rewrites it outside any lock, so it could roll back a
+                // token a concurrent /refresh just applied. Only a genuinely changed, non-stale token runs
+                // the refresh path; a stale (older) token or an idempotent (same) token leaves the connection's
+                // current principal/expiration untouched.
                 if (principalChanged && !stale)
                 {
                     useAuthenticationRefreshPath = true;
@@ -931,21 +935,25 @@ internal sealed partial class HttpConnectionDispatcher
 
         if (skipUserRefresh)
         {
-            // Intentionally leave connection.User and AuthenticationExpiration untouched: either this poll
+            // Intentionally leave connection.User and AuthenticationExpiration untouched: either this request
             // carries the same token already applied, or it lost the race against a newer token (e.g. an
             // explicit /refresh). Rewriting the connection here would risk rolling it back to an older identity.
+            if (connection.HttpContext is { } httpContext)
+            {
+                httpContext.User = currentUser!;
+            }
         }
         else if (useAuthenticationRefreshPath)
         {
             // Run the same authentication-refresh logic as the /refresh endpoint so the OnAuthenticationRefresh callback and
-            // hub-layer refresh notification run, instead of silently swapping connection.User on the poll.
+            // hub-layer refresh notification run, instead of silently swapping connection.User on the poll/reconnect request.
             if (options.OnAuthenticationRefresh is { } callback)
             {
                 var accepted = await InvokeAuthenticationRefreshCallbackAsync(connection, context, callback, newPrincipal!, newExpiration);
                 if (!accepted)
                 {
                     // If a concurrent /refresh applied a newer token while the (possibly slow) callback ran,
-                    // this poll's token is now stale. Don't tear down a connection that already holds a valid
+                    // this request's token is now stale. Don't tear down a connection that already holds a valid
                     // newer token over a rejection of an older one; just let the poll continue.
                     if (newExpiration != DateTimeOffset.MaxValue
                         && connection.AuthenticationExpiration != DateTimeOffset.MaxValue

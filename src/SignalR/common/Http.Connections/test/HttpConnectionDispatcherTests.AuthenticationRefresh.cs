@@ -7,6 +7,7 @@ using System.Security.Principal;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Abstractions;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Features;
@@ -1267,6 +1268,119 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
+    public async Task StatefulReconnectRefreshedPrincipalInvokesOnAuthenticationRefreshAndUpdatesUser()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions
+            {
+                AllowStatefulReconnects = true,
+                EnableAuthenticationRefresh = true,
+            };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            AuthenticationRefreshContext captured = null;
+            options.OnAuthenticationRefresh = ctx =>
+            {
+                captured = ctx;
+                return ValueTask.FromResult(true);
+            };
+
+            var services = new ServiceCollection();
+            var app = BuildReconnectConnectionHandlerApp(services);
+
+            var userA = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var expA = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context1 = BuildAuthReconnectContext(connection, services, userA, expA);
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context1, options, app);
+            var websocketFeature = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+
+            Assert.Same(userA, connection.User);
+            Assert.Equal(expA, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+
+            var userB = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "userA"),
+                new Claim(ClaimTypes.Role, "writer"),
+            }, "Test"));
+            var expB = DateTimeOffset.UtcNow.AddMinutes(30);
+            var context2 = BuildAuthReconnectContext(connection, services, userB, expB);
+            var reconnectWebSocketTask = dispatcher.ExecuteAsync(context2, options, app);
+
+            await initialWebSocketTask.DefaultTimeout();
+            websocketFeature = (TestWebSocketConnectionFeature)context2.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+
+            Assert.NotNull(captured);
+            Assert.Same(userA, captured.PreviousUser);
+            Assert.Same(userB, captured.NewUser);
+            Assert.Equal(expB, captured.NewExpiration, TimeSpan.FromSeconds(1));
+            Assert.Same(userB, connection.User);
+            Assert.Equal(expB, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
+
+            connection.Abort();
+            await reconnectWebSocketTask.DefaultTimeout();
+        }
+    }
+
+    [Fact]
+    public async Task StatefulReconnectCarryingSameTokenDoesNotInvokeOnAuthenticationRefresh()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions
+            {
+                AllowStatefulReconnects = true,
+                EnableAuthenticationRefresh = true,
+            };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+
+            var refreshCount = 0;
+            options.OnAuthenticationRefresh = _ =>
+            {
+                refreshCount++;
+                return ValueTask.FromResult(true);
+            };
+
+            var services = new ServiceCollection();
+            var app = BuildReconnectConnectionHandlerApp(services);
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var exp = DateTimeOffset.UtcNow.AddMinutes(5);
+            var context1 = BuildAuthReconnectContext(connection, services, user, exp);
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context1, options, app);
+            var websocketFeature = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+
+            Assert.Same(user, connection.User);
+
+            var samePrincipalDifferentInstance = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userA") }, "Test"));
+            var context2 = BuildAuthReconnectContext(connection, services, samePrincipalDifferentInstance, exp);
+            var reconnectWebSocketTask = dispatcher.ExecuteAsync(context2, options, app);
+
+            await initialWebSocketTask.DefaultTimeout();
+            websocketFeature = (TestWebSocketConnectionFeature)context2.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+
+            Assert.Equal(0, refreshCount);
+            Assert.Same(user, connection.User);
+            Assert.Same(user, connection.HttpContext.User);
+
+            connection.Abort();
+            await reconnectWebSocketTask.DefaultTimeout();
+        }
+    }
+
+    [Fact]
     public void UpdateUserSkipsOlderToken()
     {
         using (StartVerifiableLog())
@@ -1313,6 +1427,13 @@ public partial class HttpConnectionDispatcherTests
         return builder.Build();
     }
 
+    private static ConnectionDelegate BuildReconnectConnectionHandlerApp(IServiceCollection services)
+    {
+        var builder = new ConnectionBuilder(services.BuildServiceProvider());
+        builder.UseConnectionHandler<AuthenticationRefreshReconnectConnectionHandler>();
+        return builder.Build();
+    }
+
     private static DefaultHttpContext BuildAuthPollContext(HttpConnectionContext connection, IServiceProvider serviceProvider, ClaimsPrincipal user, DateTimeOffset expiration)
     {
         var context = new DefaultHttpContext();
@@ -1326,6 +1447,18 @@ public partial class HttpConnectionDispatcherTests
             ["negotiateVersion"] = "1",
         };
         context.Request.Query = new QueryCollection(values);
+        context.User = user;
+
+        var props = new AuthenticationProperties { ExpiresUtc = expiration };
+        var ticket = new AuthenticationTicket(user, props, "Test");
+        context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+        return context;
+    }
+
+    private static DefaultHttpContext BuildAuthReconnectContext(HttpConnectionContext connection, IServiceCollection services, ClaimsPrincipal user, DateTimeOffset expiration)
+    {
+        var context = MakeRequest("/foo", connection, services);
+        SetTransport(context, HttpTransportType.WebSockets);
         context.User = user;
 
         var props = new AuthenticationProperties { ExpiresUtc = expiration };
@@ -1401,5 +1534,23 @@ public partial class HttpConnectionDispatcherTests
         public Task<AuthenticationScheme> GetSchemeAsync(string name) => Task.FromResult<AuthenticationScheme>(null);
         public void AddScheme(AuthenticationScheme scheme) { }
         public void RemoveScheme(string name) { }
+    }
+
+    private sealed class AuthenticationRefreshReconnectConnectionHandler : ConnectionHandler
+    {
+        public override async Task OnConnectedAsync(ConnectionContext connection)
+        {
+#pragma warning disable CA2252 // This API requires opting into preview features
+            connection.Features.Get<IStatefulReconnectFeature>()?.OnReconnected(_ => Task.CompletedTask);
+#pragma warning restore CA2252 // This API requires opting into preview features
+
+            try
+            {
+                await Task.Delay(Timeout.InfiniteTimeSpan, connection.ConnectionClosed);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
     }
 }
