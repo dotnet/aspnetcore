@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
@@ -435,37 +434,61 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // Process authorization and authentication middlewares independently to avoid
         // registering middlewares for services that do not exist
         var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
-        if (serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true)
+
+        var addAuthentication = serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true
+            && !_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey);
+
+        var addAuthorization = serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true
+            && !_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey);
+
+        var addCsrfProtection = !WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"])
+            && serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true
+            && !_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey);
+
+        // Record that the framework owns these middleware so they aren't auto-injected again
+        // (e.g. by StartupFilters re-running ConfigureApplication).
+        if (addAuthentication)
         {
-            // Don't add more than one instance of the middleware
-            if (!_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
+            // The Use invocations below set the property on the outer pipeline,
+            // but we want to set it on the inner pipeline as well.
+            _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
+        }
+
+        if (addAuthorization)
+        {
+            _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
+        }
+
+        if (addCsrfProtection)
+        {
+            _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
+        }
+
+        // When the app calls UseRouting() explicitly, the framework skips adding its own UseRouting() above, so
+        // routing runs later, inside the source pipeline. The implicit authentication/authorization/CSRF middleware
+        // must still run AFTER routing so they observe the matched endpoint (e.g. CSRF reads a per-endpoint CORS
+        // policy such as RequireCors("name"), #67174). Defer them into a block that the app's explicit UseRouting()
+        // runs immediately after matching, mirroring the order used when the framework adds UseRouting() itself.
+        if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
+        {
+            _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingMiddleware] =
+                CreatePostRoutingMiddleware(app, addAuthentication, addAuthorization, addCsrfProtection);
+        }
+        else
+        {
+            if (addAuthentication)
             {
-                // The Use invocations will set the property on the outer pipeline,
-                // but we want to set it on the inner pipeline as well.
-                _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
                 app.UseAuthentication();
             }
-        }
 
-        if (serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true)
-        {
-            if (!_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
+            if (addAuthorization)
             {
-                _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
                 app.UseAuthorization();
             }
-        }
 
-        // Auto-inject cross-origin CSRF protection after auth.
-        if (!WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"]))
-        {
-            if (serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true)
+            if (addCsrfProtection)
             {
-                if (!_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
-                {
-                    _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
-                    AddCsrfProtectionMiddleware(app);
-                }
+                app.UseMiddleware<CsrfProtectionMiddleware>();
             }
         }
 
@@ -497,24 +520,37 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         }
     }
 
-    // CSRF protection needs the matched endpoint to read its per-endpoint CORS policy (e.g. RequireCors("name")).
-    // Because it is default-on, the user never places it explicitly, so unlike UseAuthentication/UseAuthorization
-    // it cannot skip auto-injection and run in the source pipeline after the user's UseRouting(); it lives in the
-    // destination pipeline, which runs first. When the app calls UseRouting() explicitly, routing is downstream
-    // and GetEndpoint() is null at CSRF time (#67174).
-    private void AddCsrfProtectionMiddleware(IApplicationBuilder app)
+    // Builds the framework's implicit post-routing middleware (authentication, authorization, CSRF protection) as a
+    // pipeline segment so it can run after the app's explicit UseRouting(). The segment is built lazily (when the
+    // pipeline is composed) on a branch off the destination builder so it shares the same services and properties.
+    private static Func<RequestDelegate, RequestDelegate> CreatePostRoutingMiddleware(
+        IApplicationBuilder app,
+        bool addAuthentication,
+        bool addAuthorization,
+        bool addCsrfProtection)
     {
-        Debug.Assert(_builtApplication is not null);
+        return next =>
+        {
+            var branch = app.New();
 
-        if (app.Properties.TryGetValue(WebApplication.GlobalEndpointRouteBuilderKey, out var routeBuilder) && routeBuilder is not null)
-        {
-            var endpointMatcher = RerouteHelper.Reroute(_builtApplication, routeBuilder, static _ => Task.CompletedTask);
-            app.UseMiddleware<CsrfProtectionMiddleware>(new CsrfEndpointResolver(endpointMatcher));
-        }
-        else
-        {
-            app.UseMiddleware<CsrfProtectionMiddleware>();
-        }
+            if (addAuthentication)
+            {
+                branch.UseAuthentication();
+            }
+
+            if (addAuthorization)
+            {
+                branch.UseAuthorization();
+            }
+
+            if (addCsrfProtection)
+            {
+                branch.UseMiddleware<CsrfProtectionMiddleware>();
+            }
+
+            branch.Run(next);
+            return branch.Build();
+        };
     }
 
     void IHostApplicationBuilder.ConfigureContainer<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory, Action<TContainerBuilder>? configure) =>

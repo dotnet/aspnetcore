@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -47,8 +48,23 @@ internal sealed partial class EndpointRoutingMiddleware
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
         _metrics = metrics;
-        _next = next ?? throw new ArgumentNullException(nameof(next));
+        ArgumentNullException.ThrowIfNull(next);
         _routeOptions = routeOptions.Value;
+
+        // When the app calls UseRouting() explicitly, the framework defers its implicit post-routing middleware
+        // (authentication, authorization, CSRF protection) into a block stored on the global route builder's
+        // properties. Compose it into the pipeline immediately after this middleware so those middleware observe the
+        // matched endpoint, matching the behavior of the framework's implicit UseRouting(). See #67174.
+        if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
+            applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingMiddleware, out var value) &&
+            value is Func<RequestDelegate, RequestDelegate> postRoutingMiddleware)
+        {
+            // Consume the block so additional UseRouting() calls don't run it again.
+            applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingMiddleware);
+            next = postRoutingMiddleware(next);
+        }
+
+        _next = next;
 
         // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
         // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
