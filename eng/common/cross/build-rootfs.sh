@@ -76,7 +76,7 @@ __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
 __FreeBSDBase="13.5-RELEASE"
-__FreeBSDPkg="1.21.3"
+__FreeBSDPkg="2.7.5"
 __FreeBSDABI="13"
 __FreeBSDPackages="libunwind"
 __FreeBSDPackages+=" icu"
@@ -577,7 +577,7 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
     ./autogen.sh && ./configure --prefix="$__RootfsDir"/host && make -j "$JOBS" && make install
     rm -rf "$__RootfsDir/tmp/pkg-${__FreeBSDPkg}"
     # install packages we need.
-    INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf update
+    INSTALL_AS_USER=$(whoami) IGNORE_OSVERSION=yes "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf update
     # shellcheck disable=SC2086
     INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
 elif [[ "$__CodeName" == "openbsd" ]]; then
@@ -618,15 +618,15 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
         [[ -z "$PKG_FILE" ]] && { echo "ERROR: Package $pkg not found"; exit 1; }
 
         if [[ "$__hasWget" == 1 ]]; then
-            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
+            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
         else
-            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir" -xzpf -
+            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
         fi
     done
 
     echo "Creating versionless symlinks for shared libraries..."
     # Find all versioned .so files and create the base .so symlink
-    for lib in "$__RootfsDir/usr/lib/libc++.so."* "$__RootfsDir/usr/lib/libc++abi.so."* "$__RootfsDir/usr/lib/libpthread.so."*; do
+    for lib in "$__RootfsDir"/usr/lib/lib*.so.*; do
         if [ -f "$lib" ]; then
             # Extract the filename (e.g., libc++.so.12.0)
             VERSIONED_NAME=$(basename "$lib")
@@ -636,6 +636,10 @@ elif [[ "$__CodeName" == "openbsd" ]]; then
             ln -sf "$VERSIONED_NAME" "$__RootfsDir/usr/lib/$BASE_NAME"
         fi
     done
+
+    echo "Cleaning up unnecessary paths"
+    # we don't use executables and kernel in rootfs (as we use host's compiler with -sysroot)
+    rm -rf "$__RootfsDir/usr/share" "$__RootfsDir/usr/bin"
 elif [[ "$__CodeName" == "illumos" ]]; then
     mkdir "$__RootfsDir/tmp"
     pushd "$__RootfsDir/tmp"
