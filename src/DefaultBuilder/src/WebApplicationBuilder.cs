@@ -172,8 +172,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             Configuration = configuration,
         });
 
-        OnHostApplicationBuilderConstructed();
-
         // Set WebRootPath if necessary
         if (options.WebRootPath is not null)
         {
@@ -208,6 +206,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+
+        OnHostApplicationBuilderConstructed();
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
