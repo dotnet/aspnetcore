@@ -464,16 +464,11 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
                 {
                     _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
 
-                    // CSRF protection must observe the matched endpoint so it can read a per-endpoint CORS policy
-                    // (e.g. RequireCors("name"), #67174). When the app calls UseRouting() explicitly, the framework
-                    // skips adding its own UseRouting() above, so routing runs later inside the source pipeline. Defer
-                    // CSRF into a post-routing block that the app's explicit UseRouting() runs immediately after
-                    // matching, mirroring the order used when the framework adds UseRouting() itself. Otherwise routing
-                    // already ran on the destination pipeline above, so add CSRF inline as before.
+                    // CSRF protection must observe the matched endpoint so it can read a per-endpoint CORS policy (e.g. RequireCors("name")). See #67174.
+                    // Therefore deferring CsrfMiddleware to run after Routing middleware has executed.
                     if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
                     {
-                        _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingMiddleware] =
-                            CreatePostRoutingMiddleware(app);
+                        _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingMiddleware] = CreatePostRoutingMiddleware(app);
                     }
                     else
                     {
@@ -514,8 +509,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     // Builds the framework's implicit CSRF protection as a pipeline segment so it can run after the app's explicit
     // UseRouting(). The segment is built lazily (when the pipeline is composed) on a branch off the destination
     // builder so it shares the same services and properties. EndpointRoutingMiddleware consumes the stored block and
-    // runs it right after matching; the block is intentionally a general post-routing hook, but today only CSRF needs
-    // the matched endpoint, so authentication/authorization are left untouched at the head of the pipeline.
+    // runs it right after matching;
     private static Func<RequestDelegate, RequestDelegate> CreatePostRoutingMiddleware(IApplicationBuilder app)
     {
         return next =>
