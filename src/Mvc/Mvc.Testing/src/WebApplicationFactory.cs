@@ -6,7 +6,6 @@ using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -252,7 +251,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private bool GetIsConfigureHostApplicationBuilderOverridden()
     {
-        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(WebApplicationBuilder)]);
+        var method = this.GetType().GetMethod(nameof(ConfigureHostApplicationBuilder), BindingFlags.NonPublic | BindingFlags.Instance, [typeof(IHostApplicationBuilder)]);
         var declaringType = method!.DeclaringType;
         if (declaringType!.IsGenericType)
         {
@@ -312,7 +311,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 { "HostApplicationBuilderConstructed", hostApplicationBuilder =>
                     {
                         receivedBuilderConstructed = true;
-                        ConfigureHostApplicationBuilder((WebApplicationBuilder)hostApplicationBuilder!);
+                        ConfigureHostApplicationBuilder((IHostApplicationBuilder)hostApplicationBuilder!);
                     }
                 }
             };
@@ -680,7 +679,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// This method will be called very early, during the entrypoint's call to WebApplication.CreateBuilder.
     /// </summary>
     /// <param name="hostApplicationBuilder">The host application builder to configure.</param>
-    protected virtual void ConfigureHostApplicationBuilder(WebApplicationBuilder hostApplicationBuilder)
+    protected virtual void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
     {
     }
 
