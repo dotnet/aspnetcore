@@ -185,6 +185,43 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
+    public async Task RefreshClampsTokenLifetimeToMaxInt()
+    {
+        using (StartVerifiableLog())
+        {
+            var manager = CreateConnectionManager(LoggerFactory);
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var options = new HttpConnectionDispatcherOptions { EnableAuthenticationRefresh = true };
+            var connection = manager.CreateConnection(options, negotiateVersion: 1);
+
+            connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "old") }, "Test"));
+            connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(1);
+
+            var newUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "new") }, "Test"));
+            var authProps = new AuthenticationProperties { ExpiresUtc = DateTimeOffset.UtcNow.AddYears(100) };
+            var ticket = new AuthenticationTicket(newUser, authProps, "Test");
+
+            var context = new DefaultHttpContext();
+            context.Request.Path = "/foo/refresh";
+            context.Request.Method = "POST";
+            context.Response.Body = new MemoryStream();
+            context.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
+            {
+                ["id"] = connection.ConnectionToken,
+            });
+
+            context.Features.Set<IAuthenticateResultFeature>(new TestAuthenticateResultFeature(AuthenticateResult.Success(ticket)));
+
+            await dispatcher.ExecuteRefreshAsync(context, options);
+
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+
+            var json = ReadJson(context.Response.Body);
+            Assert.Equal(int.MaxValue, json.Value<int?>("tokenLifetimeSeconds"));
+        }
+    }
+
+    [Fact]
     public async Task RefreshSucceedsWithoutExpiresUtcOmitsTokenLifetime()
     {
         using (StartVerifiableLog())
@@ -944,7 +981,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 EnableAuthenticationRefresh = true,
                 OnAuthenticationRefresh = ctx =>
-                {                    return ValueTask.FromResult(false);
+                {
+                    return ValueTask.FromResult(false);
                 },
             };
 

@@ -215,7 +215,7 @@ internal sealed partial class HttpConnectionDispatcher
             var ttl = newExpiration - DateTimeOffset.UtcNow;
             if (ttl.TotalSeconds > 0)
             {
-                tokenLifetimeSeconds = (int)ttl.TotalSeconds;
+                tokenLifetimeSeconds = (int)Math.Min(ttl.TotalSeconds, int.MaxValue);
             }
         }
 

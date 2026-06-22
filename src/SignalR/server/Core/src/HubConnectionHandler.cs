@@ -201,6 +201,12 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
 
             connection.ApplyUserState(user, newUserId);
         }
+        catch (Exception ex)
+        {
+            Log.ErrorApplyingAuthenticationRefresh(_logger, ex);
+            connection.Abort();
+            return;
+        }
         finally
         {
             authenticationRefreshLock.Release();

@@ -330,6 +330,36 @@ public partial class HubConnectionHandlerTests
     }
 
     [Fact]
+    public async Task UserIdProviderExceptionOnRefreshIsLoggedAndAbortsConnection()
+    {
+        using (StartVerifiableLog(write => write.EventId.Name == "ErrorApplyingAuthenticationRefresh"))
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(
+                services => services.AddSingleton<IUserIdProvider, ThrowingRefreshUserIdProvider>(),
+                LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient(userIdentifier: "stable-user"))
+            {
+                var feature = new TestConnectionUserRefreshFeature();
+                client.Connection.Features.Set<IConnectionUserRefreshFeature>(feature);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var refreshedUser = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, "stable-user"),
+                    new Claim("throw", "true"),
+                }, "Test"));
+                client.Connection.User = refreshedUser;
+                feature.Raise(refreshedUser);
+
+                await connectionHandlerTask.DefaultTimeout();
+            }
+        }
+    }
+
+    [Fact]
     public async Task RefreshAddingRequiredClaimAllowsAuthorizedHubMethod()
     {
         using (StartVerifiableLog())
@@ -559,6 +589,19 @@ public partial class HubConnectionHandlerTests
                 throw new InvalidOperationException("boom from OnAuthenticationRefreshedAsync");
             }
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class ThrowingRefreshUserIdProvider : IUserIdProvider
+    {
+        public string? GetUserId(HubConnectionContext connection)
+        {
+            if (connection.User.HasClaim("throw", "true"))
+            {
+                throw new InvalidOperationException("boom from IUserIdProvider");
+            }
+
+            return connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
     }
 }

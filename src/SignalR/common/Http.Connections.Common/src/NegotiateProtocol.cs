@@ -96,7 +96,7 @@ public static class NegotiateProtocol
 
             if (response.TokenLifetime is { } tokenLifetime && tokenLifetime > TimeSpan.Zero)
             {
-                writer.WriteNumber(TokenLifetimePropertyNameBytes, (int)tokenLifetime.TotalSeconds);
+                writer.WriteNumber(TokenLifetimePropertyNameBytes, (int)Math.Min(tokenLifetime.TotalSeconds, int.MaxValue));
             }
 
             writer.WriteStartArray(AvailableTransportsPropertyNameBytes);

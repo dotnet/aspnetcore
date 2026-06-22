@@ -136,6 +136,25 @@ public class NegotiateProtocolTests
     }
 
     [Fact]
+    public void WriteNegotiateResponseClampsTokenLifetimeToMaxInt()
+    {
+        using (MemoryBufferWriter writer = new MemoryBufferWriter())
+        {
+            NegotiateProtocol.WriteResponse(new NegotiationResponse
+            {
+                ConnectionId = "abc",
+                ConnectionToken = "tok",
+                Version = 1,
+                TokenLifetime = TimeSpan.FromSeconds((double)int.MaxValue + 1),
+            }, writer);
+
+            string json = Encoding.UTF8.GetString(writer.ToArray());
+
+            Assert.Contains($"\"tokenLifetimeSeconds\":{int.MaxValue}", json);
+        }
+    }
+
+    [Fact]
     public void WriteNegotiateResponseOmitsTokenLifetimeWhenNullOrZero()
     {
         using (MemoryBufferWriter writer = new MemoryBufferWriter())
