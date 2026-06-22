@@ -1034,6 +1034,31 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiRequestBody_NullableEnumWithGlobalNamingPolicy_BodySchemaEnumIncludesNull()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        builder.MapPost("/body-enum", ([FromBody] Priority? priority) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/body-enum"].Operations[HttpMethod.Post];
+            var schema = operation.RequestBody.Content["application/json"].Schema;
+
+            Assert.Collection(schema.Enum,
+                value => Assert.Equal("high-priority", value.GetValue<string>()),
+                value => Assert.Equal("medium-priority", value.GetValue<string>()),
+                value => Assert.Equal("low-priority", value.GetValue<string>()),
+                value => Assert.Null(value));
+        });
+    }
+
     [ApiController]
     [Produces("application/json")]
     public class TestBodyController

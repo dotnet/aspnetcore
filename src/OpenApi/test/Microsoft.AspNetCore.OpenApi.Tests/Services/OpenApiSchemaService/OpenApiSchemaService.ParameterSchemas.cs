@@ -776,6 +776,31 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiParameters_NullableEnumWithGlobalNamingPolicy_NonBodySchemaEnumIncludesNull()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        builder.MapGet("/api/query", (Priority? priority) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/query"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+
+            Assert.Collection(parameter.Schema.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()),
+                value => Assert.Null(value));
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiParameters_EnumWithGlobalNamingPolicy_HandlesQueryAndBodyUsage()
     {
         // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
