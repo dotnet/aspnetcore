@@ -143,24 +143,21 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
         // First validate direct members
-        var originalState = context.CaptureMutableState();
-        (List<Task>? localValidationTasks, List<ValidateContext>? clonedContexts) = await ValidateMembers(value, context, originalState, localValidationTasks: null, clonedContexts: null, cancellationToken);
+        var tracker = context.TrackAsyncValidations();
+        tracker = ValidateMembers(value, tracker, cancellationToken);
 
         var actualType = value.GetType();
 
         // Then validate inherited members
         foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
         {
-            (localValidationTasks, clonedContexts) = await superTypeInfo.ValidateMembers(value, context, originalState, localValidationTasks, clonedContexts, cancellationToken);
+            tracker = superTypeInfo.ValidateMembers(value, tracker, cancellationToken);
         }
 
-        if (localValidationTasks is not null)
-        {
-            await Task.WhenAll(localValidationTasks);
-        }
-
+        var clonedContextsHasErrors = await tracker.CompleteAsync();
+        
         var currentCount = context.ValidationErrors?.Count ?? 0;
-        var clonedContextsHasErrors = context.MergeErrorsFromClonedContexts(clonedContexts);
+
         // If any property-level validation errors were found, return early
         if (currentCount > originalErrorCount || clonedContextsHasErrors)
         {
@@ -183,48 +180,26 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
     }
 
-    private async Task<(List<Task>?, List<ValidateContext>?)> ValidateMembers(
+    private ValidateContext.AsyncValidationTracker ValidateMembers(
         object value,
-        ValidateContext context,
-        ValidateContextMutableState originalState,
-        List<Task>? localValidationTasks,
-        List<ValidateContext>? clonedContexts,
+        ValidateContext.AsyncValidationTracker tracker,
         CancellationToken cancellationToken)
     {
-        var originalContext = context;
-        var needsClone = localValidationTasks is not null;
         for (var i = 0; i < _membersCount; i++)
         {
-            if (needsClone)
-            {
-                context = originalContext.CopyWithState(originalState);
-                (clonedContexts ??= new()).Add(context);
-                needsClone = false;
-            }
+            var context = tracker.NextContext();
 
             try
             {
-                var task = Members[i].ValidateAsync(value, context, cancellationToken);
-                if (!task.IsCompletedSuccessfully)
-                {
-                    needsClone = true;
-                    localValidationTasks ??= new();
-                    localValidationTasks.Add(task);
-                }
-                else
-                {
-                    // If the task completed as faulted, we want to ensure the exception isn't swallowed.
-                    await task;
-                }
+                tracker.Track(Members[i].ValidateAsync(value, context, cancellationToken));
             }
             catch (Exception ex)
             {
-                localValidationTasks ??= new();
-                localValidationTasks.Add(Task.FromException(ex));
+                tracker.Track(Task.FromException(ex));
             }
         }
 
-        return (localValidationTasks, clonedContexts);
+        return tracker;
     }
 
     private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)

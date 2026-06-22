@@ -138,70 +138,35 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             var index = 0;
             var currentPrefix = context.CurrentValidationPath;
 
-            // Note: cloning preserves the same validation options instance.
             var validationOptions = context.ValidationOptions;
 
-            List<Task>? tasks = null;
-            List<ValidateContext>? clonedContexts = null;
+            var tracker = context.TrackAsyncValidations();
 
-            var nextUseNeedsClone = false;
-
-            // This is a small struct, so we shouldn't have a perf concern here.
-            // We need to capture the original state early before calling any ValidateAsync.
-            // Imagine:
-            // We call ValidateAsync, we find that it didn't complete synchronously.
-            // Then we know the context cannot be reused and we clone it.
-            // If we do that without capturing the original state, we will be cloning the context with
-            // potentially mutated values that are not wrong.
-            // So we capture the original state here and restore it later when we go async and we need to clone.
-            var originalState = context.CaptureMutableState();
-
-            var currentContext = context;
             foreach (var item in enumerable)
             {
                 if (item != null)
                 {
                     if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
                     {
-                        if (nextUseNeedsClone)
-                        {
-                            currentContext = context.CopyWithState(originalState);
-                            (clonedContexts ??= new()).Add(currentContext);
-                            nextUseNeedsClone = false;
-                        }
+                        var currentContext = tracker.NextContext();
 
-                        nextUseNeedsClone = false;
                         currentContext.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                             ? $"{Name}[{index}]"
                             : $"{currentPrefix}.{Name}[{index}]";
                         try
                         {
-                            var enumItemTask = validatableType.ValidateAsync(item, currentContext, cancellationToken);
-                            if (enumItemTask.IsCompletedSuccessfully)
-                            {
-                                await enumItemTask;
-                            }
-                            else
-                            {
-                                nextUseNeedsClone = true;
-                                (tasks ??= new()).Add(enumItemTask);
-                            }
+                            tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                         }
                         catch (Exception ex)
                         {
-                            (tasks ??= new()).Add(Task.FromException(ex));
+                            tracker.Track(Task.FromException(ex));
                         }
                     }
                 }
                 index++;
             }
 
-            if (tasks is not null)
-            {
-                await Task.WhenAll(tasks);
-            }
-
-            context.MergeErrorsFromClonedContexts(clonedContexts);
+            await tracker.CompleteAsync();
         }
         // If not enumerable, validate the single value
         else if (value != null)

@@ -177,13 +177,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                 var index = 0;
                 var currentPrefix = context.CurrentValidationPath;
 
-                List<Task>? tasks = null;
-                List<ValidateContext>? clonedContexts = null;
-
-                var nextUseNeedsClone = false;
-
-                var originalState = context.CaptureMutableState();
-                var currentContext = context;
+                var tracker = context.TrackAsyncValidations();
                 foreach (var item in enumerable)
                 {
                     if (item != null)
@@ -191,31 +185,16 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                         var itemType = item.GetType();
                         if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
                         {
-                            if (nextUseNeedsClone)
-                            {
-                                currentContext = context.CopyWithState(originalState);
-                                (clonedContexts ??= new()).Add(currentContext);
-                                nextUseNeedsClone = false;
-                            }
+                            var currentContext = tracker.NextContext();
 
                             currentContext.CurrentValidationPath = $"{currentPrefix}[{index}]";
                             try
                             {
-                                var task = validatableType.ValidateAsync(item, currentContext, cancellationToken);
-
-                                if (task.IsCompletedSuccessfully)
-                                {
-                                    await task;
-                                }
-                                else
-                                {
-                                    nextUseNeedsClone = true;
-                                    (tasks ??= new()).Add(task);
-                                }
+                                tracker.Track(validatableType.ValidateAsync(item, currentContext, cancellationToken));
                             }
                             catch (Exception ex)
                             {
-                                (tasks ??= new()).Add(Task.FromException(ex));
+                                tracker.Track(Task.FromException(ex));
                             }
                         }
                     }
@@ -223,12 +202,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
                     index++;
                 }
 
-                if (tasks is not null)
-                {
-                    await Task.WhenAll(tasks);
-                }
-
-                context.MergeErrorsFromClonedContexts(clonedContexts);
+                await tracker.CompleteAsync();
 
                 context.CurrentValidationPath = currentPrefix;
             }
