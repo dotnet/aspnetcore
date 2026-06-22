@@ -361,9 +361,20 @@ public partial class HubConnectionTests
 
                 // Refresh with a token carrying a different NameIdentifier, changing the UserIdentifier.
                 userName = "userB";
-                await hubConnection.RefreshAuthenticationAsync().DefaultTimeout();
+                var refreshTask = hubConnection.RefreshAuthenticationAsync();
 
                 await closedTcs.Task.DefaultTimeout();
+                try
+                {
+                    await refreshTask.DefaultTimeout();
+                }
+                catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or OperationCanceledException)
+                {
+                    // The connection is expected to close when the refreshed principal maps to a different
+                    // SignalR UserIdentifier. Depending on timing, the manual refresh request can observe that
+                    // close before it completes.
+                }
+
                 Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
             }
             catch (Exception ex)
