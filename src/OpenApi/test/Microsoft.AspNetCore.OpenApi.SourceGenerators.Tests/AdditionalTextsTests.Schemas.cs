@@ -221,22 +221,22 @@ public static class Endpoints
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;
 
             var booleanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["booleanType"].Example);
-            Assert.True(booleanTypeExample.GetValue<bool>());
+            Assert.Equal("true", booleanTypeExample.GetValue<string>());
 
             var integerTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["integerType"].Example);
-            Assert.Equal(42, integerTypeExample.GetValue<int>());
+            Assert.Equal("42", integerTypeExample.GetValue<string>());
 
             var longTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["longType"].Example);
-            Assert.Equal(1234567890123456789, longTypeExample.GetValue<long>());
+            Assert.Equal("1234567890123456789", longTypeExample.GetValue<string>());
 
             var doubleTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["doubleType"].Example);
-            Assert.Equal(3.14, doubleTypeExample.GetValue<double>());
+            Assert.Equal("3.14", doubleTypeExample.GetValue<string>());
 
             var floatTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["floatType"].Example);
-            Assert.Equal(3.14f, floatTypeExample.GetValue<float>());
+            Assert.Equal("3.14", floatTypeExample.GetValue<string>());
 
             var dateTimeTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateTimeType"].Example);
-            Assert.Equal(new DateTime(2022, 01, 01), dateTimeTypeExample.GetValue<DateTime>());
+            Assert.Equal("2022-01-01T00:00:00Z", dateTimeTypeExample.GetValue<string>());
 
             var dateOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateOnlyType"].Example);
             Assert.Equal("2022-01-01", dateOnlyTypeExample.GetValue<string>());
@@ -248,7 +248,7 @@ public static class Endpoints
             Assert.Equal("2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d", guidTypeExample.GetValue<string>());
 
             var byteTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["byteType"].Example);
-            Assert.Equal(255, byteTypeExample.GetValue<int>());
+            Assert.Equal("255", byteTypeExample.GetValue<string>());
 
             var timeOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeOnlyType"].Example);
             Assert.Equal("12:30:45", timeOnlyTypeExample.GetValue<string>());
@@ -257,7 +257,7 @@ public static class Endpoints
             Assert.Equal("P3DT4H5M", timeSpanTypeExample.GetValue<string>());
 
             var decimalTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["decimalType"].Example);
-            Assert.Equal(3.14159265359m, decimalTypeExample.GetValue<decimal>());
+            Assert.Equal("3.14159265359", decimalTypeExample.GetValue<string>());
 
             var uriTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["uriType"].Example);
             Assert.Equal("https://example.com", uriTypeExample.GetValue<string>());

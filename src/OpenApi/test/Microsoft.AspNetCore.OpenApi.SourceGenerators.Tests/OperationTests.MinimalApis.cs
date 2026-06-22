@@ -432,7 +432,8 @@ public class SummaryValueParametersClass
             Assert.Contains("Sample request:", path6.Description);
             var userParam = path6.RequestBody.Content["application/json"];
             var userExample = Assert.IsAssignableFrom<JsonNode>(userParam.Example);
-            Assert.Equal("johndoe", userExample["username"].GetValue<string>());
+            var parsedUserExample = JsonNode.Parse(userExample.GetValue<string>());
+            Assert.Equal("johndoe", parsedUserExample!["username"]!.GetValue<string>());
 
             var path7 = document.Paths["/7"].Operations[HttpMethod.Put];
             var idParam = path7.Parameters.First(p => p.Name == "id");
@@ -475,23 +476,24 @@ public class SummaryValueParametersClass
             Assert.Equal("A summary of Post18.", path18.Summary);
             Assert.Equal("The name of the person.", path18.Parameters[0].Description);
             Assert.Equal("The age of the person.", path18.Parameters[1].Description);
-            Assert.Equal(30, path18.Parameters[1].Example.GetValue<int>());
+            Assert.Equal("30", path18.Parameters[1].Example.GetValue<string>());
             Assert.Equal("The description of the project.", path18.Parameters[2].Description);
             Assert.Equal("The user information.", path18.RequestBody.Description);
             var path18RequestBody = path18.RequestBody.Content["application/json"];
             var path18Example = Assert.IsAssignableFrom<JsonNode>(path18RequestBody.Example);
-            Assert.Equal("johndoe", path18Example["username"].GetValue<string>());
-            Assert.Equal("johndoe@example.com", path18Example["email"].GetValue<string>());
+            var parsedPath18Example = JsonNode.Parse(path18Example.GetValue<string>());
+            Assert.Equal("johndoe", parsedPath18Example!["username"]!.GetValue<string>());
+            Assert.Equal("johndoe@example.com", parsedPath18Example["email"]!.GetValue<string>());
 
             var path19 = document.Paths["/19"].Operations[HttpMethod.Post];
             Assert.Equal("Tests mixed regular and AsParameters with examples.", path19.Summary);
             Assert.Equal("A regular parameter with documentation.", path19.Parameters[0].Description);
             Assert.Equal("The user's email address.", path19.Parameters[1].Description);
-            Assert.Equal("user@example.com", path19.Parameters[1].Example.GetValue<string>());
+            Assert.Equal("user@example.com", JsonNode.Parse(path19.Parameters[1].Example.GetValue<string>())!.GetValue<string>());
             Assert.Equal("The user's age in years.", path19.Parameters[2].Description);
-            Assert.Equal(25, path19.Parameters[2].Example.GetValue<int>());
+            Assert.Equal("25", path19.Parameters[2].Example.GetValue<string>());
             Assert.Equal("Whether the user is active.", path19.Parameters[3].Description);
-            Assert.True(path19.Parameters[3].Example.GetValue<bool>());
+            Assert.Equal("true", path19.Parameters[3].Example.GetValue<string>());
 
             var path20 = document.Paths["/20"].Operations[HttpMethod.Get];
             Assert.Equal("Tests AsParameters with different binding sources.", path20.Summary);

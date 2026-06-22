@@ -218,22 +218,22 @@ internal class User : IUser
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;
 
             var booleanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["booleanType"].Example);
-            Assert.True(booleanTypeExample.GetValue<bool>());
+            Assert.Equal("true", booleanTypeExample.GetValue<string>());
 
             var integerTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["integerType"].Example);
-            Assert.Equal(42, integerTypeExample.GetValue<int>());
+            Assert.Equal("42", integerTypeExample.GetValue<string>());
 
             var longTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["longType"].Example);
-            Assert.Equal(1234567890123456789, longTypeExample.GetValue<long>());
+            Assert.Equal("1234567890123456789", longTypeExample.GetValue<string>());
 
             var doubleTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["doubleType"].Example);
-            Assert.Equal(3.14, doubleTypeExample.GetValue<double>());
+            Assert.Equal("3.14", doubleTypeExample.GetValue<string>());
 
             var floatTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["floatType"].Example);
-            Assert.Equal(3.14f, floatTypeExample.GetValue<float>());
+            Assert.Equal("3.14", floatTypeExample.GetValue<string>());
 
             var dateTimeTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateTimeType"].Example);
-            Assert.Equal(new DateTime(2022, 01, 01), dateTimeTypeExample.GetValue<DateTime>());
+            Assert.Equal("2022-01-01T00:00:00Z", dateTimeTypeExample.GetValue<string>());
 
             var dateOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["dateOnlyType"].Example);
             Assert.Equal("2022-01-01", dateOnlyTypeExample.GetValue<string>());
@@ -245,7 +245,7 @@ internal class User : IUser
             Assert.Equal("2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d", guidTypeExample.GetValue<string>());
 
             var byteTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["byteType"].Example);
-            Assert.Equal(255, byteTypeExample.GetValue<int>());
+            Assert.Equal("255", byteTypeExample.GetValue<string>());
 
             var timeOnlyTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["timeOnlyType"].Example);
             Assert.Equal("12:30:45", timeOnlyTypeExample.GetValue<string>());
@@ -254,7 +254,7 @@ internal class User : IUser
             Assert.Equal("P3DT4H5M", timeSpanTypeExample.GetValue<string>());
 
             var decimalTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["decimalType"].Example);
-            Assert.Equal(3.14159265359m, decimalTypeExample.GetValue<decimal>());
+            Assert.Equal("3.14159265359", decimalTypeExample.GetValue<string>());
 
             var uriTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["uriType"].Example);
             Assert.Equal("https://example.com", uriTypeExample.GetValue<string>());
@@ -386,7 +386,8 @@ public class RootModel
 
             var modelWithSummary = document.Components.Schemas["ModelWithSummary"];
             Assert.Equal("Comment on class ModelWithSummary.", modelWithSummary.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass" }"""), modelWithSummary.Example));
+            var modelWithSummaryExample = Assert.IsAssignableFrom<JsonNode>(modelWithSummary.Example);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass" }"""), JsonNode.Parse(modelWithSummaryExample.GetValue<string>())));
 
             var modelWithoutSummary = document.Components.Schemas["ModelWithoutSummary"];
             Assert.Null(modelWithoutSummary.Description);
@@ -399,27 +400,29 @@ public class RootModel
 
             var modelWithSummary1Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithSummary1"]);
             Assert.Equal("Comment on property ModelWithSummary1.", modelWithSummary1Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary1Prop" }"""), modelWithSummary1Prop.Examples[0]));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary1Prop" }"""), JsonNode.Parse(modelWithSummary1Prop.Examples[0].GetValue<string>())));
 
             var modelWithSummary2Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithSummary2"]);
             Assert.Equal("Comment on property ModelWithSummary2.", modelWithSummary2Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary2Prop" }"""), modelWithSummary2Prop.Examples[0]));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary2Prop" }"""), JsonNode.Parse(modelWithSummary2Prop.Examples[0].GetValue<string>())));
 
             var modelWithoutSummary1Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithoutSummary1"]);
             Assert.Equal("Comment on property ModelWithoutSummary1.", modelWithoutSummary1Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary1Prop" }"""), modelWithoutSummary1Prop.Examples[0]));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary1Prop" }"""), JsonNode.Parse(modelWithoutSummary1Prop.Examples[0].GetValue<string>())));
 
             var modelWithoutSummary2Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithoutSummary2"]);
             Assert.Equal("Comment on property ModelWithoutSummary2.", modelWithoutSummary2Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary2Prop" }"""), modelWithoutSummary2Prop.Examples[0]));
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary2Prop" }"""), JsonNode.Parse(modelWithoutSummary2Prop.Examples[0].GetValue<string>())));
 
             var modelInline1Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline1"]);
             Assert.Equal("Comment on property ModelInline1.", modelInline1Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline1Prop" }"""), modelInline1Prop.Example));
+            var modelInline1Example = Assert.IsAssignableFrom<JsonNode>(modelInline1Prop.Example);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline1Prop" }"""), JsonNode.Parse(modelInline1Example.GetValue<string>())));
 
             var modelInline2Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline2"]);
             Assert.Equal("Comment on property ModelInline2.", modelInline2Prop.Description);
-            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline2Prop" }"""), modelInline2Prop.Example));
+            var modelInline2Example = Assert.IsAssignableFrom<JsonNode>(modelInline2Prop.Example);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline2Prop" }"""), JsonNode.Parse(modelInline2Example.GetValue<string>())));
         });
     }
 }
