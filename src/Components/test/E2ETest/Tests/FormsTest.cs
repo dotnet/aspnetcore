@@ -1075,8 +1075,15 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement, string messageSelector = ".validation-message")
     {
+        // TODO: In SSR form, ValidationMessage renders an empty placeholder <div class="validation-message">
+        // for every field that has a ValidationMessage but no current error.
+        // This is done so that JS client-side validation can locate the slot for validation errors.
+        // So we filter out empty-text matches and assert only the fields that
+        // actually have a server validation error. If the empty-placeholder approach changes in
+        // the future to avoid the "validation-message" class, revisit this filter.
         return () => appElement.FindElements(By.CssSelector(messageSelector))
             .Select(x => x.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .OrderBy(x => x)
             .ToArray();
     }

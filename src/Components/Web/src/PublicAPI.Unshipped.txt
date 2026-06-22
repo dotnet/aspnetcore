@@ -1,4 +1,14 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationProvider.GetFormDescriptor(Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.Collections.Generic.IReadOnlyDictionary<Microsoft.AspNetCore.Components.Forms.FieldIdentifier, string!>! renderedFields) -> Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFormDescriptor?
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor.ClientValidationFieldDescriptor(string! name, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule!>! rules) -> void
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor.Name.get -> string!
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor.Rules.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule!>!
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFormDescriptor
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFormDescriptor.ClientValidationFormDescriptor(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor!>! fields) -> void
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFormDescriptor.Fields.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationFieldDescriptor!>!
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationProvider
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationProvider.ClientValidationProvider() -> void
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.ChildContent.set -> void
@@ -72,3 +82,10 @@ Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.Label() -> void
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule.ClientValidationRule(string! name, string! errorMessage, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? parameters = null) -> void
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule.ErrorMessage.get -> string!
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule.Name.get -> string!
+Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>?
+Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationAdapter
+Microsoft.AspNetCore.Components.Forms.ClientValidation.IClientValidationAdapter.GetClientValidationRules(string! errorMessage) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Components.Forms.ClientValidation.ClientValidationRule!>!

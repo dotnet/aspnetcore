@@ -51,9 +51,16 @@ public class AddValidationIntegrationTest : ServerTestBase<BasicTestAppServerSit
 
         Assert.Equal(expected, messages);
 
-        // Individual field messages
+        // Individual field messages.
+        // TODO: In SSR form, ValidationMessage renders an empty placeholder <div class="validation-message">
+        // for every field that has a ValidationMessage but no current error.
+        // This is done so that JS client-side validation can locate the slot for validation errors.
+        // So we filter out empty-text matches and assert only the fields that
+        // actually have a server validation error. If the empty-placeholder approach changes in
+        // the future to avoid the "validation-message" class, revisit this filter.
         var individual = Browser.FindElements(By.CssSelector(".mb-3 > .validation-message"))
             .Select(element => element.Text)
+            .Where(text => !string.IsNullOrEmpty(text))
             .ToList();
 
         Assert.Equal(expected, individual);

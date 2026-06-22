@@ -5,7 +5,7 @@ import { ErrorDisplay } from './ErrorDisplay';
 import { findMessageElements, shouldSkipElement } from './DomUtils';
 import { ValidatableElement, ValidationContext, ValidationResult, ValidatorRegistry } from './ValidationTypes';
 
-/** A parsed validation rule from data-val-* attributes on an element. */
+/** A validation rule definition. */
 export type ValidationRule = {
   ruleName: string;
   errorMessage: string;
@@ -17,7 +17,6 @@ export interface ElementState {
   rules: ValidationRule[];
   form: HTMLFormElement; // Owning form, stored at registration to avoid DOM traversal on disconnect
   triggerEvents: string; // 'default' | 'submit' | space-separated event types
-  fingerprint: string; // Hash of data-val* attributes for change detection during re-scan
   listenerController: AbortController;
   currentError?: string;
   hasBeenInvalid: boolean; // Enables eager recovery (input-level validation after first error)
@@ -29,17 +28,17 @@ export interface FormState {
   hasBeenSubmitted: boolean; // Enables input-level validation after first submit attempt
 }
 
-/** CSS selector for elements that opt into client-side validation via data-val="true". */
-export const validatableElementSelector = 'input[data-val="true"], select[data-val="true"], textarea[data-val="true"]';
-
 /**
  * Central validation coordinator. Manages per-form and per-element state, runs validator
  * functions against field values, and delegates UI updates to ErrorDisplay.
  *
  * Invariants:
  * - Each validatable element is tracked in exactly one form's trackedElements set.
- * - An element's rules are immutable after registration; attribute changes trigger
- *   unregister + re-register via DomScanner's fingerprint comparison.
+ * - An element's rules are immutable after registration. Re-registration is driven by the
+ *   browser's custom-element lifecycle: when the owning <blazor-client-validation-data> element
+ *   is removed and re-added during a DOM swap (enhanced navigation / streaming), its
+ *   disconnectedCallback unregisters the elements and the new element's connectedCallback
+ *   registers them again.
  * - setCustomValidity() is called on every validated element to drive the browser's
  *   Constraint Validation API (:valid/:invalid pseudo-classes).
  */

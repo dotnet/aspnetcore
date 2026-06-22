@@ -43,6 +43,8 @@ export class EventManager {
       return;
     }
 
+    // In order to support radio buttons, we need to attach listeners to all radio buttons in the group.
+    const targets = getListenerTargets(element);
     const signal = state.listenerController.signal;
 
     const validate = () => {
@@ -50,11 +52,13 @@ export class EventManager {
       this.engine.updateValidationSummary(form);
     };
 
-    // Explicit data-valevent override: listen to the specified event(s), no gating.
+    // Explicit triggerEvents override: listen to the specified event(s), no gating.
     if (state.triggerEvents !== 'default') {
       for (const eventType of state.triggerEvents.split(/\s+/)) {
         if (eventType) {
-          element.addEventListener(eventType, validate, { signal });
+          for (const t of targets) {
+            t.addEventListener(eventType, validate, { signal });
+          }
         }
       }
       return;
@@ -69,8 +73,10 @@ export class EventManager {
       }
     };
 
-    element.addEventListener('change', validate, { signal });
-    element.addEventListener('input', validateGated, { signal });
+    for (const t of targets) {
+      t.addEventListener('change', validate, { signal });
+      t.addEventListener('input', validateGated, { signal });
+    }
   }
 
   /** Attaches document-level submit and reset interceptors (capture phase). */
@@ -144,4 +150,14 @@ function dispatchValidationComplete(form: HTMLFormElement, valid: boolean, error
     bubbles: true,
     detail: { valid, errors },
   }));
+}
+
+function getListenerTargets(element: ValidatableElement): ValidatableElement[] {
+  if (element instanceof HTMLInputElement && element.type === 'radio' && element.name) {
+    const form = element.closest('form');
+    if (form) {
+      return Array.from(form.querySelectorAll<HTMLInputElement>(`input[type="radio"][name="${CSS.escape(element.name)}"]`));
+    }
+  }
+  return [element];
 }

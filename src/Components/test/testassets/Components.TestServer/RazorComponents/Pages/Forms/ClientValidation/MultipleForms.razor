@@ -1,28 +1,53 @@
 @page "/forms/client-validation/multiple-forms"
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
 
 <h2 id="page-title">Multiple independent forms</h2>
 
 <style>
-    .field-validation-error { color: red; }
+    .validation-message { color: red; display: block; }
     .field-validation-valid { display: none; }
-    .validation-summary-errors { color: red; }
-    .validation-summary-valid { display: none; }
 </style>
 
-<form id="form-a" method="post">
-    <div data-valmsg-summary="true" class="validation-summary-valid"><ul></ul></div>
-    <input id="name-a" name="Name" type="text"
-           data-val="true"
-           data-val-required="Name A is required." />
-    <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+<EditForm id="form-a" Model="FormA" FormName="form-a" method="post">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="name-a">Name A</label>
+        <InputText id="name-a" @bind-Value="FormA!.Name" />
+        <ValidationMessage For="() => FormA!.Name" />
+    </div>
     <button type="submit" id="submit-a">Submit A</button>
-</form>
+</EditForm>
 
-<form id="form-b" method="post">
-    <div data-valmsg-summary="true" class="validation-summary-valid"><ul></ul></div>
-    <input id="name-b" name="Name" type="text"
-           data-val="true"
-           data-val-required="Name B is required." />
-    <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+<EditForm id="form-b" Model="FormB" FormName="form-b" method="post">
+    <DataAnnotationsValidator />
+    <div>
+        <label for="name-b">Name B</label>
+        <InputText id="name-b" @bind-Value="FormB!.Name" />
+        <ValidationMessage For="() => FormB!.Name" />
+    </div>
     <button type="submit" id="submit-b">Submit B</button>
-</form>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm(FormName = "form-a")] private FormAModel? FormA { get; set; }
+    [SupplyParameterFromForm(FormName = "form-b")] private FormBModel? FormB { get; set; }
+
+    protected override void OnInitialized()
+    {
+        FormA ??= new FormAModel();
+        FormB ??= new FormBModel();
+    }
+
+    public class FormAModel
+    {
+        [Required(ErrorMessage = "Name A is required.")]
+        public string? Name { get; set; }
+    }
+
+    public class FormBModel
+    {
+        [Required(ErrorMessage = "Name B is required.")]
+        public string? Name { get; set; }
+    }
+}
