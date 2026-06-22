@@ -7,13 +7,13 @@ using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.AspNetCore.Components.Media;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.Web.Media;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Web.Media.Tests;
+namespace Microsoft.AspNetCore.Components.Media.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="FileDownload"/> focusing only on behaviors not covered by Image/Video tests.
