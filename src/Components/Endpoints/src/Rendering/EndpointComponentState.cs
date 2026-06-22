@@ -50,6 +50,9 @@ internal sealed class EndpointComponentState : ComponentState
 
         if (component is CacheBoundary cacheBoundary && parentComponentState is not null)
         {
+            // Output caching inside a streaming render context is not yet supported.
+            cacheBoundary.IsInStreamingContext = StreamRendering;
+
             var ancestorTypeName = parentComponentState.Component?.GetType().FullName ?? "";
             cacheBoundary.TreePositionKeyFactory = () =>
             {

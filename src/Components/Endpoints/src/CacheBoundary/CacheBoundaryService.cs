@@ -72,8 +72,9 @@ internal sealed partial class CacheBoundaryService : IDisposable
 
     public async Task<CacheBoundaryRenderState?> PrepareAsync(CacheBoundary boundary, HttpContext httpContext)
     {
-        // Skip cache if method is not GET or caching is disabled
-        if (!boundary.Enabled || !HttpMethods.IsGet(httpContext.Request.Method))
+        // Skip cache if method is not GET, caching is disabled, or the boundary is rendered inside a
+        // streaming render context (not yet supported).
+        if (!boundary.Enabled || !HttpMethods.IsGet(httpContext.Request.Method) || boundary.IsInStreamingContext)
         {
             return null;
         }

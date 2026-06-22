@@ -110,6 +110,8 @@ public sealed class CacheBoundary : IComponent, IDisposable
     internal Func<string>? TreePositionKeyFactory { get; set; }
     internal string? TreePositionKey => TreePositionKeyFactory?.Invoke();
 
+    internal bool IsInStreamingContext { get; set; }
+
     // The per-render coordination state produced by CacheBoundaryService. Null when caching is inactive
     // for this render; the renderer reads it to drive capture.
     internal CacheBoundaryRenderState? RenderState { get; private set; }

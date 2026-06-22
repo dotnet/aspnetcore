@@ -71,14 +71,6 @@
     </CacheBoundary>
 </div>
 
-<div id="test-9">
-    <StreamingCacheWrapper>
-        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
-            <p class="stream-cached">@Guid.NewGuid()</p>
-        </CacheBoundary>
-    </StreamingCacheWrapper>
-</div>
-
 @code
 {
     [SupplyParameterFromForm(FormName = "editFormTest")]

@@ -26,6 +26,10 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     {
     }
 
+    // The streaming context uses PageLoadStrategy.None so navigation does not block on the load event while
+    // content is still streaming in. This is required by the tests that assert on streaming-rendered content.
+    public override Task InitializeAsync() => InitializeAsync(BrowserFixture.StreamingContext);
+
     protected override void InitializeAsyncCore()
     {
         ConfigureServerArguments();
@@ -192,23 +196,16 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     public void CacheBoundaryTreatsStreamingChildAsHole()
     {
         Navigate(TestUrl("cache-component"));
+        // The streaming component is rendered via a streaming batch, so wait for it to arrive.
         var streamingGuid = Browser.Exists(By.CssSelector("#test-8 .streaming-hole")).Text;
         var staticGuid = Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-static")).Text;
         Assert.NotEqual(staticGuid, streamingGuid);
 
+        // Warm reload: the static content around the streaming component is served from the cache, while
+        // the streaming component is treated as a hole and re-renders fresh on every request.
         Navigate(TestUrl("cache-component"));
         Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-static")).Text);
         Browser.NotEqual(streamingGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".streaming-hole")).Text);
-    }
-
-    [Fact]
-    public void CacheBoundaryInsideStreamingComponent_IsCached()
-    {
-        Navigate(TestUrl("cache-component"));
-        var cachedGuid = Browser.Exists(By.CssSelector("#test-9 .stream-cached")).Text;
-
-        Navigate(TestUrl("cache-component"));
-        Browser.Equal(cachedGuid, () => Browser.FindElement(By.Id("test-9")).FindElement(By.CssSelector(".stream-cached")).Text);
     }
 
     private List<string> GetPanelTexts(string selector)
