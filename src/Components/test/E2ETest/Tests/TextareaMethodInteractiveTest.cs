@@ -9,7 +9,7 @@ using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 public class TextareaMethodInteractiveTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
@@ -21,16 +21,16 @@ public class TextareaMethodInteractiveTest : ServerTestBase<BasicTestAppServerSi
     {
     }
 
-    protected override void InitializeAsyncCore()
+    [Theory]
+    [InlineData("server")]
+    [InlineData("wasm")]
+    public void TextareaAndTextbox_BehaviorAcrossMethodSwitching(string mode)
     {
-        Navigate($"{ServerPathBase}/textarea-method-interactive");
-    }
+        Navigate($"{ServerPathBase}/textarea-method-interactive?mode={mode}");
 
-    [Fact]
-    public void TextareaAndTextbox_BehaviorAcrossMethodSwitching()
-    {
         // Method 1: initial values shown in both textarea and textbox
         Browser.Click(By.Id("method1-link"));
+        Browser.Equal("True", () => Browser.Exists(By.Id("is-interactive")).Text);
         Browser.Equal("Initial value for method 1", () => Browser.Exists(By.Id("textArea")).GetDomProperty("value"));
         Browser.Equal("Initial value for method 1", () => Browser.Exists(By.Id("textBox")).GetDomProperty("value"));
 
