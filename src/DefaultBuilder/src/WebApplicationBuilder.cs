@@ -464,33 +464,29 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
         }
 
-        // Authentication and authorization keep their established position at the head of the destination
-        // pipeline. Their ordering is unchanged for every app, including when UseRouting() is called explicitly.
-        if (addAuthentication)
+        // When the app calls UseRouting() explicitly, the framework skips adding its own UseRouting() above, so
+        // routing runs later, inside the source pipeline. The implicit authentication/authorization/CSRF middleware
+        // must still run AFTER routing so they observe the matched endpoint (e.g. CSRF reads a per-endpoint CORS
+        // policy such as RequireCors("name"), #67174). Defer them into a block that the app's explicit UseRouting()
+        // runs immediately after matching, mirroring the order used when the framework adds UseRouting() itself.
+        if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
         {
-            app.UseAuthentication();
+            _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingMiddleware] =
+                CreatePostRoutingMiddleware(app, addAuthentication, addAuthorization, addCsrfProtection);
         }
-
-        if (addAuthorization)
+        else
         {
-            app.UseAuthorization();
-        }
-
-        if (addCsrfProtection)
-        {
-            // CSRF protection must observe the matched endpoint so it can read a per-endpoint CORS policy
-            // (e.g. RequireCors("name"), #67174). When the app calls UseRouting() explicitly, the framework skips
-            // adding its own UseRouting() above, so routing runs later inside the source pipeline. Defer CSRF into a
-            // post-routing block that the app's explicit UseRouting() runs immediately after matching, mirroring the
-            // order used when the framework adds UseRouting() itself. Otherwise routing already ran on the destination
-            // pipeline above, so add CSRF inline. Authentication/authorization are intentionally left in place above;
-            // the post-routing block stays general so other middleware can opt into running after routing in future.
-            if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
+            if (addAuthentication)
             {
-                _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingMiddleware] =
-                    CreatePostRoutingMiddleware(app, addAuthentication: false, addAuthorization: false, addCsrfProtection: true);
+                app.UseAuthentication();
             }
-            else
+
+            if (addAuthorization)
+            {
+                app.UseAuthorization();
+            }
+
+            if (addCsrfProtection)
             {
                 app.UseMiddleware<CsrfProtectionMiddleware>();
             }
