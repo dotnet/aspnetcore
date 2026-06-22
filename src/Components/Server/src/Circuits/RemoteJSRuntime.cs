@@ -62,9 +62,29 @@ internal partial class RemoteJSRuntime : JSRuntime
         UnhandledException?.Invoke(this, ex);
     }
 
-    protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
+    private void EnsureClientProxyAvailable()
     {
         if (_clientProxy is null)
+        {
+            if (_permanentlyDisconnected)
+            {
+                throw new JSDisconnectedException(
+                    "JavaScript interop calls cannot be issued at this time. This is because the circuit has disconnected " +
+                    "and is being disposed.");
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "JavaScript interop calls cannot be issued at this time. This is because the component is being " +
+                    "statically rendered. When prerendering is enabled, JavaScript interop calls can only be performed " +
+                    "during the OnAfterRenderAsync lifecycle method.");
+            }
+        }
+    }
+
+    protected override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
+    {
+        if (_clientProxy is null || _permanentlyDisconnected)
         {
             Log.InvokeDotNetMethodSkippedAfterDisposal(_logger, invocationInfo.CallId);
             return;
@@ -107,6 +127,7 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     protected override void SendByteArray(int id, byte[] data)
     {
+        EnsureClientProxyAvailable();
         _clientProxy.SendAsync("JS.ReceiveByteArray", id, data);
     }
 
@@ -127,23 +148,7 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
     {
-        if (_clientProxy is null)
-        {
-            if (_permanentlyDisconnected)
-            {
-                throw new JSDisconnectedException(
-               "JavaScript interop calls cannot be issued at this time. This is because the circuit has disconnected " +
-               "and is being disposed.");
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    "JavaScript interop calls cannot be issued at this time. This is because the component is being " +
-                    "statically rendered. When prerendering is enabled, JavaScript interop calls can only be performed " +
-                    "during the OnAfterRenderAsync lifecycle method.");
-            }
-        }
-
+        EnsureClientProxyAvailable();
         Log.BeginInvokeJS(_logger, invocationInfo.AsyncHandle, invocationInfo.Identifier);
 
         _clientProxy.SendAsync(
@@ -180,6 +185,8 @@ internal partial class RemoteJSRuntime : JSRuntime
 
     protected override async Task TransmitStreamAsync(long streamId, DotNetStreamReference dotNetStreamReference)
     {
+        EnsureClientProxyAvailable();
+
         var cancelableStreamReference = new CancelableDotNetStreamReference(dotNetStreamReference);
         if (!_pendingDotNetToJSStreams.TryAdd(streamId, cancelableStreamReference))
         {

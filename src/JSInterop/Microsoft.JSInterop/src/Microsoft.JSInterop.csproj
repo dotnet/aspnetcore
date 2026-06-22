@@ -23,6 +23,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.JSInterop.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server.Tests" />
   </ItemGroup>
 
 </Project>

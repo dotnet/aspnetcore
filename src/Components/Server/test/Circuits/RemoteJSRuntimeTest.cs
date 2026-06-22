@@ -101,6 +101,7 @@ public class RemoteJSRuntimeTest
     [Fact]
     public void EndInvokeDotNet_AfterCircuitDisposal_WithFailedResult()
     {
+
         var jsRuntime = CreateTestRemoteJSRuntime();
         var singleClientProxy = Mock.Of<ISingleClientProxy>(
             c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()) == Task.CompletedTask);
@@ -113,11 +114,12 @@ public class RemoteJSRuntimeTest
             dotNetObjectId: 123,
             callId: "test-call-id");
         var testException = new InvalidOperationException("Test error");
-        var invocationResult = jsRuntime.TestCreateResult(testException);
+        var invocationResult = new DotNetInvocationResult(testException, errorKind: null);
 
         jsRuntime.MarkPermanentlyDisconnected();
 
-        jsRuntime.TestEndInvokeDotNet(invocationInfo, invocationResult);
+        var exception = Record.Exception(() => jsRuntime.TestEndInvokeDotNet(invocationInfo, invocationResult));
+        Assert.Null(exception);
     }
 
     private static TestRemoteJSRuntime CreateTestRemoteJSRuntime(long? componentHubMaximumIncomingBytes = 32 * 1024)
@@ -147,16 +149,6 @@ public class RemoteJSRuntimeTest
         public void TestEndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
         {
             EndInvokeDotNet(invocationInfo, invocationResult);
-        }
-
-        public DotNetInvocationResult TestCreateResult(Exception exception)
-        {
-            var constructor = typeof(DotNetInvocationResult).GetConstructor(
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance,
-                null,
-                new[] { typeof(Exception), typeof(string) },
-                null);
-            return (DotNetInvocationResult)constructor!.Invoke(new object[] { exception, null });
         }
     }
 }
