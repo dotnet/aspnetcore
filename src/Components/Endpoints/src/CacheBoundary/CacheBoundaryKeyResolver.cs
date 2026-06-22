@@ -113,7 +113,7 @@ internal static class CacheBoundaryKeyResolver
         foreach (var nameString in CollectSortedNames(separatedValues))
         {
             var value = request.RouteValues[nameString]?.ToString();
-            if (string.IsNullOrEmpty(value))
+            if (value is null)
             {
                 continue;
             }
@@ -149,7 +149,7 @@ internal static class CacheBoundaryKeyResolver
         foreach (var nameString in CollectSortedNames(separatedValues))
         {
             var value = request.Cookies[nameString];
-            if (string.IsNullOrEmpty(value))
+            if (value is null)
             {
                 continue;
             }
