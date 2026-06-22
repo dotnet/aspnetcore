@@ -199,9 +199,39 @@ public class EditContextDataAnnotationsExtensionsTest
         {
             model.OrderID = 150 + i;
             editContext.NotifyFieldChanged(orderIdIdentifier);
+            Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
         }
         model.OrderID = 150;
         editContext.NotifyFieldChanged(orderIdIdentifier);
+        Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void DoesNotMatchProperty_WhenCaseIsDifferent()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, "orderid"); // incorrect case
+
+        editContext.NotifyFieldChanged(field);
+
+        // Should not resolve property → no validation
+        Assert.Empty(editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void MatchesProperty_WhenCaseIsCorrect()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, "OrderID"); // correct case
+
+        editContext.NotifyFieldChanged(field);
+
         Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
     }
 

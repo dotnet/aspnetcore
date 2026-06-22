@@ -271,7 +271,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 // If we can't find it, cache 'null' so we don't have to try again next time
                 try
                 {
-                    propertyInfo = cacheKey.ModelType.GetProperty(cacheKey.FieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                    propertyInfo = cacheKey.ModelType.GetProperty(cacheKey.FieldName, BindingFlags.Public | BindingFlags.Instance);
                 }
                 catch (AmbiguousMatchException)
                 {
@@ -279,7 +279,7 @@ public static partial class EditContextDataAnnotationsExtensions
                     // GetProperty can throw AmbiguousMatchException. In this case, get the property
                     // declared on the derived type specifically. This is the correct property to use
                     // for validation since it's the one the user is interacting with in the model.
-                    propertyInfo = cacheKey.ModelType.GetProperty(cacheKey.FieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase | BindingFlags.DeclaredOnly);
+                    propertyInfo = cacheKey.ModelType.GetProperty(cacheKey.FieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
                 }
 
                 // No need to lock, because it doesn't matter if we write the same value twice
