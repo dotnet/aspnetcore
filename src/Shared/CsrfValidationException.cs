@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 
 /// <summary>
 /// The <see cref="Exception"/> recorded on <see cref="IAntiforgeryValidationFeature"/> when the
-/// cross-origin CSRF protection middleware marks a request as invalid.
+/// cross-origin CSRF protection marks a request as invalid.
 /// </summary>
 internal sealed class CsrfValidationException : Exception
 {

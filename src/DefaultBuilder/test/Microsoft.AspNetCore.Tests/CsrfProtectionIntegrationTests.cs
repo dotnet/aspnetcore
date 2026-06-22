@@ -530,7 +530,7 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task CsrfProtection_FailedValidation_LogsDebug()
     {
-        var captureProvider = new CaptureLoggerProvider("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", LogLevel.Debug);
+        var captureProvider = new CaptureLoggerProvider("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", LogLevel.Debug);
 
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -548,7 +548,7 @@ public class CsrfProtectionIntegrationTests
         var response = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-        var entry = Assert.Single(captureProvider.Entries);
+        var entry = Assert.Single(captureProvider.Entries, e => e.Message.Contains("marked request"));
         Assert.Equal(LogLevel.Debug, entry.Level);
         Assert.Contains("marked request POST /protected", entry.Message);
         Assert.Contains("https://evil.example.com", entry.Message);

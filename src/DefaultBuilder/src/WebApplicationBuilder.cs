@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +24,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string EndpointRouteBuilderKey = "__EndpointRouteBuilder";
     private const string AuthenticationMiddlewareSetKey = "__AuthenticationMiddlewareSet";
     private const string AuthorizationMiddlewareSetKey = "__AuthorizationMiddlewareSet";
-    private const string CsrfProtectionMiddlewareSetKey = "__CsrfProtectionMiddlewareSet";
     private const string UseRoutingKey = "__UseRouting";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
@@ -455,28 +453,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             }
         }
 
-        // Auto-inject cross-origin CSRF protection after auth.
-        if (!WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"]))
-        {
-            if (serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true)
-            {
-                if (!_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
-                {
-                    _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
-
-                    // CSRF protection must observe the matched endpoint so it can read a per-endpoint CORS policy (e.g. RequireCors("name")). See #67174.
-                    // Therefore deferring CsrfMiddleware to run after Routing middleware has executed.
-                    if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
-                    {
-                        _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingMiddleware] = CreatePostRoutingMiddleware(app);
-                    }
-                    else
-                    {
-                        app.UseMiddleware<CsrfProtectionMiddleware>();
-                    }
-                }
-            }
-        }
+        // Auto-injected cross-origin CSRF protection runs inside EndpointRoutingMiddleware (see #67174) so it always
+        // observes the matched endpoint, regardless of whether the app calls UseRouting() explicitly. No middleware is
+        // added here; the opt-out (DisableCsrfProtection) is honored inside EndpointRoutingMiddleware.
 
         // Wire the source pipeline to run in the destination pipeline
         var wireSourcePipeline = new WireSourcePipeline(_builtApplication);
@@ -504,21 +483,6 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         {
             app.Properties[EndpointRouteBuilderKey] = priorRouteBuilder;
         }
-    }
-
-    // Builds the framework's implicit CSRF protection as a pipeline segment so it can run after the app's explicit
-    // UseRouting(). The segment is built lazily (when the pipeline is composed) on a branch off the destination
-    // builder so it shares the same services and properties. EndpointRoutingMiddleware consumes the stored block and
-    // runs it right after matching;
-    private static Func<RequestDelegate, RequestDelegate> CreatePostRoutingMiddleware(IApplicationBuilder app)
-    {
-        return next =>
-        {
-            var branch = app.New();
-            branch.UseMiddleware<CsrfProtectionMiddleware>();
-            branch.Run(next);
-            return branch.Build();
-        };
     }
 
     void IHostApplicationBuilder.ConfigureContainer<TContainerBuilder>(IServiceProviderFactory<TContainerBuilder> factory, Action<TContainerBuilder>? configure) =>
