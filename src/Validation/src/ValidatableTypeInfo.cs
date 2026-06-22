@@ -212,7 +212,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;
 
-            await ValidationHelpers.ValidateAttributesAsync(value, value, this, context, cancellationToken);
+            await context.ValidateAttributesAsync(value, value, this, cancellationToken);
         }
         finally
         {

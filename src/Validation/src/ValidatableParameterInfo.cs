@@ -81,7 +81,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
         }
 
         // Validate against validation attributes
-        await ValidationHelpers.ValidateAttributesAsync(value, null, this, context, cancellationToken);
+        await context.ValidateAttributesAsync(value, null, this, cancellationToken);
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)

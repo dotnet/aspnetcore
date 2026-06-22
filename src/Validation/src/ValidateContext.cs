@@ -211,6 +211,117 @@ public sealed class ValidateContext
         };
     }
 
+    internal async Task ValidateAttributesAsync(
+        object? value,
+        object? container,
+        IValidationErrorReporter reporter,
+        CancellationToken cancellationToken)
+    {
+        // NOTE: In case there are no async validation attributes, there should be no performance impact.
+        // The async state machine is a class only in Debug builds. But in Release it's a struct.
+        // So it will be efficient.
+        // And if this method completed synchronously because no async validation attributes exist, this
+        // will returned the same cached instance as Task.CompletedTask.
+        var validationAttributes = reporter.GetValidationAttributes();
+        if (ValidateSynchronousOnly(validationAttributes, value, container, reporter))
+        {
+            // Only validate async attributes if synchronous validation passed.
+            await ValidateAsynchronousOnlyAsync(validationAttributes, value, container, reporter, cancellationToken);
+        }
+    }
+
+    private bool ValidateSynchronousOnly(
+        ValidationAttribute[] validationAttributes,
+        object? value,
+        object? container,
+        IValidationErrorReporter reporter)
+    {
+        bool hasErrors = false;
+        for (var i = 0; i < validationAttributes.Length; i++)
+        {
+            var attribute = validationAttributes[i];
+
+            if (attribute is AsyncValidationAttribute)
+            {
+                continue;
+            }
+
+            var result = attribute.GetValidationResult(value, ValidationContext);
+            if (result is not null && result != ValidationResult.Success)
+            {
+                hasErrors = true;
+                reporter.ReportError(this, container, attribute, result);
+            }
+        }
+
+        return !hasErrors;
+    }
+
+    private async Task ValidateAsynchronousOnlyAsync(
+        ValidationAttribute[] validationAttributes,
+        object? value,
+        object? container,
+        IValidationErrorReporter reporter,
+        CancellationToken cancellationToken)
+    {
+        CancellationTokenSource? linkedCts = null;
+        try
+        {
+            List<Task>? validationResultTasks = null;
+
+            for (var i = 0; i < validationAttributes.Length; i++)
+            {
+                var attribute = validationAttributes[i];
+                if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
+                {
+                    continue;
+                }
+
+                linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                validationResultTasks ??= new();
+                validationResultTasks.Add(
+                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, reporter, cancellationToken, linkedCts));
+            }
+
+            if (validationResultTasks is not null)
+            {
+                await Task.WhenAll(validationResultTasks);
+            }
+        }
+        finally
+        {
+            linkedCts?.Dispose();
+        }
+    }
+
+    private async Task GetValidationResultTaskCoreAsync(
+        AsyncValidationAttribute attribute,
+        object? value,
+        object? container,
+        IValidationErrorReporter reporter,
+        CancellationToken originalCancellationToken,
+        CancellationTokenSource linkedCancellationTokenSource)
+    {
+        // originalCancellationToken is the cancellation token passed to ValidateAttributesAsync.
+        // linkedCancellationToken is a LinkedCancellationToken that combines:
+        // 1. the original cancellation token, and
+        // 2. cancellation when we want to short-circuit on first error.
+        try
+        {
+            var result = await attribute.GetValidationResultAsync(value, ValidationContext, linkedCancellationTokenSource.Token);
+            if (result is not null && result != ValidationResult.Success)
+            {
+                reporter.ReportError(this, container, attribute, result);
+                linkedCancellationTokenSource.Cancel();
+            }
+        }
+        catch (OperationCanceledException) when (linkedCancellationTokenSource.IsCancellationRequested && !originalCancellationToken.IsCancellationRequested)
+        {
+            // If the original token wasn't cancelled, but ours is cancelled, it means we cancelled to short-circuit.
+            // In this case, we want to just ignore this cancellation.
+        }
+    }
+
     internal AsyncValidationTracker TrackAsyncValidations()
         => new AsyncValidationTracker(this);
 

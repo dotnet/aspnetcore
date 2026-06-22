@@ -110,7 +110,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
 
         // Validate any other attributes
-        await ValidationHelpers.ValidateAttributesAsync(propertyValue, containingObject, this, context, cancellationToken);
+        await context.ValidateAttributesAsync(propertyValue, containingObject, this, cancellationToken);
 
         var validationOptions = context.ValidationOptions;
 
