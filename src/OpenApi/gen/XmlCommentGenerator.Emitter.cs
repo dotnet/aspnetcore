@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                             targetOperationParameter.Description = parameterComment.Description;
                             if (parameterComment.Example is { } jsonString)
                             {
-                                targetOperationParameter.Example = jsonString.Parse();
+                                targetOperationParameter.Example = JsonValue.Create(jsonString);
                             }
                             targetOperationParameter.Deprecated = parameterComment.Deprecated;
                         }
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                     }
                                     foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
-                                        mediaType.Example = jsonString.Parse();
+                                        mediaType.Example = JsonValue.Create(jsonString);
                                     }
                                 }
                             }
@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                     {
                                         continue;
                                     }
-                                    var parsedExample = jsonString.Parse();
+                                    var parsedExample = JsonValue.Create(jsonString);
                                     foreach (var mediaType in content.OfType<OpenApiMediaType>())
                                     {
                                         mediaType.Example = parsedExample;
@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                             targetOperationParameter.Description = description;
                             if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                             {
-                                targetOperationParameter.Example = jsonString.Parse();
+                                targetOperationParameter.Example = JsonValue.Create(jsonString);
                             }
                         }
                     }
@@ -534,7 +534,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
                 {
-                    schema.Example = jsonString.Parse();
+                    schema.Example = JsonValue.Create(jsonString);
                 }
             }
 
@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         schema.Description = description;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
-                            schema.Example = jsonString.Parse();
+                            schema.Example = JsonValue.Create(jsonString);
                         }
                     }
                     else
@@ -572,41 +572,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         }
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
-                            schema.Metadata["x-ref-example"] = jsonString.Parse()!;
+                            schema.Metadata["x-ref-example"] = JsonValue.Create(jsonString);
                         }
                     }
                 }
             }
             return Task.CompletedTask;
-        }
-    }
-
-    {{GeneratedCodeAttribute}}
-    file static class JsonNodeExtensions
-    {
-        public static JsonNode? Parse(this string? json)
-        {
-            if (json is null)
-            {
-                return null;
-            }
-
-            try
-            {
-                return JsonNode.Parse(json);
-            }
-            catch (JsonException)
-            {
-                try
-                {
-                    // If parsing fails, try wrapping in quotes to make it a valid JSON string
-                    return JsonNode.Parse($"\"{json.Replace("\"", "\\\"")}\"");
-                }
-                catch (JsonException)
-                {
-                    return null;
-                }
-            }
         }
     }
 
