@@ -281,6 +281,11 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         var hostBuilder = CreateHostBuilder();
         if (hostBuilder is not null)
         {
+            if (isOverridden)
+            {
+                throw new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+            }
+
             ConfigureHostBuilder(hostBuilder);
             return;
         }
@@ -320,7 +325,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                     {
                         if (isOverridden && !receivedBuilderConstructed)
                         {
-                            ex = new InvalidOperationException("Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.");
+                            ex = new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
                         }
 
                         deferredHostBuilder.EntryPointCompleted(ex);
@@ -347,6 +352,11 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
         else
         {
+            if (isOverridden)
+            {
+                throw new InvalidOperationException(Resources.ConfigureHostApplicationBuilderNotSupported);
+            }
+
             SetContentRoot(builder);
             _configuration(builder);
             if (_useKestrel)
