@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -13,6 +15,13 @@ namespace Microsoft.AspNetCore.Components;
 internal static partial class RenderFragmentSerializer
 {
     internal const string SerializedRenderFragmentValueType = "#RenderFragment";
+
+    private static readonly ConcurrentDictionary<(Type, string), bool> _serializationPolicyCache = new();
+
+    [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = "Component types referenced in serialized RenderFragments are expected to be preserved by the application.")]
+    internal static bool HasSerializationExecutionPolicy(Type componentType, string parameterName) =>
+        _serializationPolicyCache.GetOrAdd((componentType, parameterName),
+            static key => key.Item1.GetProperty(key.Item2, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase)?.GetCustomAttribute<SerializationExecutionPolicyAttribute>() is not null);
 
     /// Converts the captured render tree frames from a <see cref="RenderFragmentCapture"/> into a
     /// JSON-serializable tree of <see cref="RenderTreeNode"/> objects. This is the entry point for
@@ -175,11 +184,20 @@ internal static partial class RenderFragmentSerializer
         {
             if (!currentCapture.ChildCaptures.TryGetValue(frameIndex, out var nestedCapture))
             {
-                // If we get here, then it means that wrapping didn't happen, or it was not executed (e.g. SSRRenderBoundary in the case of disabled prerendering).
-                // TODO: https://github.com/dotnet/aspnetcore/issues/66739 - Add an opt-in annotation that tells the
-                // serializer to execute the RenderFragment directly when it wasn't invoked during prerendering.
-                throw new InvalidOperationException(
-                    $"Cannot serialize RenderFragment parameter '{frame.AttributeName}' because it was not captured during rendering.");
+                throw new InvalidOperationException($"Cannot serialize RenderFragment parameter '{frame.AttributeName}' because it was not captured during rendering.");
+            }
+
+            if (!nestedCapture.HasCapturedFrames)
+            {
+                if (nestedCapture.HasSerializationExecutionPolicy)
+                {
+                    nestedCapture.EnsureCaptured();
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot serialize RenderFragment parameter '{frame.AttributeName}' because it was not captured during rendering.");
+                }
             }
 
             result = new RenderTreeAttribute
