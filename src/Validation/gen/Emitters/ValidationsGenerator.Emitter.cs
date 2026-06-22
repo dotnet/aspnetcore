@@ -43,7 +43,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 namespace System.Runtime.CompilerServices
 {
     {{GeneratedCodeAttribute}}
-    [global::System.AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)

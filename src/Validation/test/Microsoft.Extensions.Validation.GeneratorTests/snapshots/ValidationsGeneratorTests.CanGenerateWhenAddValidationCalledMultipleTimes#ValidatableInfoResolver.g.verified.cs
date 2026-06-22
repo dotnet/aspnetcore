@@ -14,7 +14,7 @@
 namespace System.Runtime.CompilerServices
 {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    [global::System.AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
     file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)
