@@ -880,13 +880,14 @@ internal sealed partial class HttpConnectionDispatcher
         // Stateful WebSocket reconnects also carry a fresh HTTP request after the SignalR handshake, so
         // process changed principals through the authentication-refresh path instead of silently swapping
         // only the lower-level HTTP connection user.
-        var newPrincipal = transportType == HttpTransportType.LongPolling ? context.User : connection.HttpContext?.User;
+        var newPrincipal = (transportType == HttpTransportType.LongPolling ? context.User : connection.HttpContext?.User)
+            ?? new ClaimsPrincipal();
         var newExpiration = GetAuthenticationExpiration(connection, context);
 
         var useAuthenticationRefreshPath = false;
         var skipUserRefresh = false;
         var currentUser = connection.User;
-        if (currentUser is not null && newPrincipal is not null)
+        if (currentUser is not null)
         {
             var originalName = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var newName = newPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -938,9 +939,9 @@ internal sealed partial class HttpConnectionDispatcher
             // Intentionally leave connection.User and AuthenticationExpiration untouched: either this request
             // carries the same token already applied, or it lost the race against a newer token (e.g. an
             // explicit /refresh). Rewriting the connection here would risk rolling it back to an older identity.
-            if (connection.HttpContext is { } httpContext)
+            if (currentUser is not null && connection.HttpContext is { } httpContext)
             {
-                httpContext.User = currentUser!;
+                httpContext.User = currentUser;
             }
         }
         else if (useAuthenticationRefreshPath)
@@ -949,7 +950,7 @@ internal sealed partial class HttpConnectionDispatcher
             // hub-layer refresh notification run, instead of silently swapping connection.User on the poll/reconnect request.
             if (options.OnAuthenticationRefresh is { } callback)
             {
-                var accepted = await InvokeAuthenticationRefreshCallbackAsync(connection, context, callback, newPrincipal!, newExpiration);
+                var accepted = await InvokeAuthenticationRefreshCallbackAsync(connection, context, callback, newPrincipal, newExpiration);
                 if (!accepted)
                 {
                     // If a concurrent /refresh applied a newer token while the (possibly slow) callback ran,
@@ -975,7 +976,7 @@ internal sealed partial class HttpConnectionDispatcher
             // AuthenticationExpiration, so no separate swap or UpdateExpiration call is needed on this path.
             // If a concurrent /refresh applied a newer token between the stale check and here, UpdateUser skips
             // the rollback atomically with the swap.
-            connection.UpdateUser(newPrincipal!, newExpiration);
+            connection.UpdateUser(newPrincipal, newExpiration);
         }
         else
         {

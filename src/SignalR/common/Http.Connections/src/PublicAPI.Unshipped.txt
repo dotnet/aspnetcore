@@ -1,8 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationRefresh.get -> bool
 Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.EnableAuthenticationRefresh.set -> void
-Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthenticationRefreshGracePeriod.get -> System.TimeSpan
-Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions.AuthenticationRefreshGracePeriod.set -> void
 Microsoft.AspNetCore.Http.Connections.AuthenticationRefreshMetadata
 Microsoft.AspNetCore.Http.Connections.AuthenticationRefreshMetadata.AuthenticationRefreshMetadata() -> void
 Microsoft.AspNetCore.Http.Connections.AuthenticationRefreshContext

@@ -137,31 +137,6 @@ public class HttpConnectionDispatcherOptions
     public bool EnableAuthenticationRefresh { get; set; }
 
     /// <summary>
-    /// Gets or sets the grace period after token expiration during which refresh requests are still accepted.
-    /// Default is 5 minutes.
-    /// </summary>
-    /// <remarks>
-    /// This only has an effect when <see cref="CloseOnAuthenticationExpiration"/> is <c>true</c>. That option
-    /// is what closes connections once their authentication expires; the grace period extends the close
-    /// deadline to <c>expiration + AuthenticationRefreshGracePeriod</c> so an in-flight refresh can complete. When
-    /// <see cref="CloseOnAuthenticationExpiration"/> is <c>false</c> (the default), expired connections are
-    /// never force-closed, so this value is ignored.
-    /// </remarks>
-    public TimeSpan AuthenticationRefreshGracePeriod
-    {
-        get;
-        set
-        {
-            if (value < TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be zero or greater.");
-            }
-
-            field = value;
-        }
-    } = TimeSpan.FromMinutes(5);
-
-    /// <summary>
     /// An optional callback invoked when the <c>/refresh</c> endpoint has successfully re-authenticated
     /// the request but before the connection's user is replaced. Return <c>true</c> to accept the new
     /// principal, or <c>false</c> to reject the refresh. When rejected, the endpoint responds with

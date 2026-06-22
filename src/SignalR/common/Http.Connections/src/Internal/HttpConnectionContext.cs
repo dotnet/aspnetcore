@@ -142,10 +142,6 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
 
     internal bool IsAuthenticationExpirationEnabled => _options.CloseOnAuthenticationExpiration;
 
-    internal bool IsAuthenticationRefreshEnabled => _options.EnableAuthenticationRefresh;
-
-    internal TimeSpan AuthenticationRefreshGracePeriod => _options.AuthenticationRefreshGracePeriod;
-
     public Task<bool>? TransportTask { get; set; }
 
     public Task PreviousPollTask { get; set; } = Task.CompletedTask;

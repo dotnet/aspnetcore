@@ -70,7 +70,6 @@ public class Startup
             {
                 o.EnableAuthenticationRefresh = true;
                 o.CloseOnAuthenticationExpiration = true;
-                o.AuthenticationRefreshGracePeriod = TimeSpan.FromSeconds(10);
             });
             endpoints.MapGet("/generatetoken", context =>
             {

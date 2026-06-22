@@ -567,7 +567,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void ScanDoesNotCloseExpiredConnectionDuringAuthenticationRefreshGracePeriod()
+    public async Task ScanClosesExpiredConnectionWhenAuthenticationRefreshEnabled()
     {
         using (StartVerifiableLog())
         {
@@ -576,54 +576,8 @@ public partial class HttpConnectionDispatcherTests
             {
                 CloseOnAuthenticationExpiration = true,
                 EnableAuthenticationRefresh = true,
-                AuthenticationRefreshGracePeriod = TimeSpan.FromMinutes(5),
             };
             var connection = manager.CreateConnection(options, negotiateVersion: 1);
-            // Expired 1 minute ago, still inside the 5-minute grace period.
-            connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(-1);
-
-            manager.Scan();
-
-            Assert.False(connection.ConnectionClosedRequested.IsCancellationRequested);
-        }
-    }
-
-    [Fact]
-    public async Task ScanClosesExpiredConnectionAfterAuthenticationRefreshGracePeriod()
-    {
-        using (StartVerifiableLog())
-        {
-            var manager = CreateConnectionManager(LoggerFactory);
-            var options = new HttpConnectionDispatcherOptions
-            {
-                CloseOnAuthenticationExpiration = true,
-                EnableAuthenticationRefresh = true,
-                AuthenticationRefreshGracePeriod = TimeSpan.FromMinutes(1),
-            };
-            var connection = manager.CreateConnection(options, negotiateVersion: 1);
-            // Expired well outside the grace period.
-            connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddMinutes(-10);
-
-            manager.Scan();
-
-            // RequestClose() queues cancellation on the ThreadPool; wait for it.
-            await connection.ConnectionClosedRequested.WaitForCancellationAsync().DefaultTimeout();
-        }
-    }
-
-    [Fact]
-    public async Task ScanClosesExpiredConnectionImmediatelyWhenAuthenticationRefreshDisabled()
-    {
-        using (StartVerifiableLog())
-        {
-            var manager = CreateConnectionManager(LoggerFactory);
-            var options = new HttpConnectionDispatcherOptions
-            {
-                CloseOnAuthenticationExpiration = true,
-                EnableAuthenticationRefresh = false,
-            };
-            var connection = manager.CreateConnection(options, negotiateVersion: 1);
-            // Expired 1 second ago — no grace period since authentication refresh is off.
             connection.AuthenticationExpiration = DateTimeOffset.UtcNow.AddSeconds(-1);
 
             manager.Scan();
