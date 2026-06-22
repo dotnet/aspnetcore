@@ -5074,6 +5074,48 @@ public class RendererTest
     }
 
     [Fact]
+    public async Task HotReload_ShouldRenderBypassScopedToFirstRender_TerminatesCyclicRenderLoop()
+    {
+        // Arrange: two root components where each triggers the other's StateHasChanged inside
+        // BuildRenderTree. ComponentB returns false from ShouldRender() to break the cycle during
+        // normal operation, but without the fix the hot-reload ShouldRender-bypass removes that
+        // brake for the entire pass, causing an unbounded re-render loop (OOM in production).
+
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+
+        await using var renderer = new TestRenderer();
+        var hotReloadManager = new HotReloadManager();
+        renderer.HotReloadManager = hotReloadManager;
+
+        CyclicHotReloadComponent compA = null;
+        CyclicHotReloadComponent compB = null;
+
+        // Each component triggers the other's StateHasChanged during BuildRenderTree.
+        compA = new CyclicHotReloadComponent("A", shouldRender: false, getSibling: () => compB);
+        compB = new CyclicHotReloadComponent("B", shouldRender: false, getSibling: () => compA);
+
+        var idA = renderer.AssignRootComponentId(compA);
+        var idB = renderer.AssignRootComponentId(compB);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(idA));
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(idB));
+
+        var batchCountAfterInitialRender = renderer.Batches.Count;
+        Assert.Equal(1, compA.RenderCount);
+        Assert.Equal(1, compB.RenderCount);
+
+        // Act: simulate a hot-reload delta; this must complete without looping.
+        var thread = new Thread(() => hotReloadManager.TriggerOnDeltaApplied());
+        thread.Start();
+        thread.Join();
+
+        // Assert: each component rendered exactly once more (the forced hot-reload re-render).
+        // Before the fix both components would loop indefinitely and throw after MaxRenderCount.
+        Assert.Equal(2, compA.RenderCount);
+        Assert.Equal(2, compB.RenderCount);
+        Assert.True(renderer.Batches.Count > batchCountAfterInitialRender, "Hot reload should have produced at least one new render batch.");
+    }
+
+    [Fact]
     public void ThrowsForUnknownRenderMode_OnComponentType()
     {
         // Arrange
@@ -6360,5 +6402,49 @@ public class RendererTest
         Value1,
         Value2,
         Value3
+    }
+
+    /// <summary>
+    /// A <see cref="ComponentBase"/> subclass used by
+    /// <see cref="HotReload_ShouldRenderBypassScopedToFirstRender_TerminatesCyclicRenderLoop"/>.
+    /// During <see cref="BuildRenderTree"/> it synchronously calls
+    /// <see cref="TriggerStateHasChanged"/> on a sibling component to create the re-render cycle
+    /// that hot-reload's <c>ShouldRender</c> bypass previously made unbounded.
+    /// </summary>
+    private sealed class CyclicHotReloadComponent : ComponentBase
+    {
+        private const int MaxRenderCount = 10;
+
+        private readonly string _name;
+        private readonly bool _shouldRender;
+        private readonly Func<CyclicHotReloadComponent> _getSibling;
+
+        public int RenderCount { get; private set; }
+
+        public CyclicHotReloadComponent(string name, bool shouldRender, Func<CyclicHotReloadComponent> getSibling)
+        {
+            _name = name;
+            _shouldRender = shouldRender;
+            _getSibling = getSibling;
+        }
+
+        protected override bool ShouldRender() => _shouldRender;
+
+        public void TriggerStateHasChanged() => StateHasChanged();
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (++RenderCount > MaxRenderCount)
+            {
+                throw new InvalidOperationException(
+                    $"CyclicHotReloadComponent '{_name}' rendered more than {MaxRenderCount} times, " +
+                    "indicating an unbounded hot-reload re-render loop.");
+            }
+
+            builder.AddContent(0, $"{_name}:{RenderCount}");
+
+            // Synchronously trigger the sibling — this is the action that forms the cycle.
+            _getSibling()?.TriggerStateHasChanged();
+        }
     }
 }
