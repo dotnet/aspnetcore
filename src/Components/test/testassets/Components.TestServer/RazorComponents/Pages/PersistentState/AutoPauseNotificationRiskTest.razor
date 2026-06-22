@@ -22,10 +22,10 @@
         ];
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            window.__onPauseRequestedHook = function () {
+            Blazor.pause.waitFor(function () {
                 window.__savedNotificationState = window.__activeNotifications
                     .map(function (n) { return n.tag; }).join(',');
-            };
+            });
         }
     }
 </script>

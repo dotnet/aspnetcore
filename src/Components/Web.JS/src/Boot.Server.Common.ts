@@ -77,8 +77,11 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
 
   Blazor.pauseCircuit = async () => {
     if (circuit.didRenderingFail()) {
-      // We can't pause after a failure, so exit early.
       return false;
+    }
+
+    if (autoPauseManager) {
+      await autoPauseManager.invokeHandlers();
     }
 
     if (!(await circuit.pause())) {
@@ -136,11 +139,22 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   if (options.autoPause?.enabled) {
     autoPauseManager = new AutoPauseManager(
       options.autoPause,
-      options.onPauseRequested,
       () => Blazor.pauseCircuit!(),
       () => Blazor.resumeCircuit!(),
       logger,
     );
+
+    (Blazor as any).pause = {
+      waitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.register(fn),
+      cancelWaitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.unregister(fn),
+    };
+
+    options.circuitHandlers.push({
+      onCircuitClosed: () => {
+        autoPauseManager?.dispose();
+        autoPauseManager = undefined;
+      },
+    });
   }
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');

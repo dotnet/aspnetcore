@@ -1,4 +1,4 @@
-﻿@using Components.TestServer.RazorComponents.Pages.Forms
+@using Components.TestServer.RazorComponents.Pages.Forms
 @using Microsoft.AspNetCore.Components.Endpoints
 @using Microsoft.AspNetCore.Components.Web
 
@@ -53,12 +53,6 @@
             };
             if (params.get('auto-pause') === 'true') {
                 window.autoPauseEvents = [];
-                circuitOptions.onPauseRequested = async (signal) => {
-                    window.autoPauseEvents.push({ phase: 'onPauseRequested', aborted: signal.aborted });
-                    if (window.__onPauseRequestedHook) {
-                        await window.__onPauseRequestedHook(signal);
-                    }
-                };
             }
             Blazor.start({
                 ssr: {
@@ -70,6 +64,12 @@
                     },
                 },
                 circuit: circuitOptions,
+            }).then(() => {
+                if (params.get('auto-pause') === 'true' && Blazor.pause) {
+                    Blazor.pause.waitFor(async (signal) => {
+                        window.autoPauseEvents.push({ phase: 'testLog:handlerInvoked', aborted: signal.aborted });
+                    });
+                }
             });
         }
 

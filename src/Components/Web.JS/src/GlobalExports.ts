@@ -43,6 +43,10 @@ export interface IBlazor {
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
   pauseCircuit?: () => Promise<boolean>;
   resumeCircuit?: () => Promise<boolean>;
+  pause?: {
+    waitFor: (handler: (signal: AbortSignal) => void | Promise<void>) => void;
+    cancelWaitFor: (handler: (signal: AbortSignal) => void | Promise<void>) => void;
+  };
   defaultReconnectionHandler?: DefaultReconnectionHandler;
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>) | ((options?: Partial<WebStartOptions>) => Promise<void>);
   platform?: Platform;

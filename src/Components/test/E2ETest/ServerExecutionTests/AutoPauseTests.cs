@@ -39,7 +39,7 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
 
         WaitForPausedUI();
 
-        // onPauseRequested fired before pause.
+        // Pause handler fired before pause.
         Assert.NotEmpty(GetAutoPauseEvents());
 
         SetVisibility("visible");
@@ -66,7 +66,7 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
 
         // If the circuit had auto-paused, this click would not reach the server
         // (the reconnect modal would intercept) and the count would not advance.
-        // Successful increment plus no recorded onPauseRequested invocation is
+        // Successful increment plus no recorded pause handler invocation is
         // the deterministic proof that no pause occurred.
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
         Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);

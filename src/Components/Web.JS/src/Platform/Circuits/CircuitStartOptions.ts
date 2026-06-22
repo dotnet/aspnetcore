@@ -21,7 +21,6 @@ export interface CircuitStartOptions {
   initializers : ServerInitializers;
   circuitHandlers: CircuitHandler[];
   autoPause: AutoPauseOptions;
-  onPauseRequested?: (signal: AbortSignal) => void | Promise<void>;
 }
 
 export interface AutoPauseOptions {

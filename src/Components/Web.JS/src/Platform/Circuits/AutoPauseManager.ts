@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { Logger, LogLevel } from '../Logging/Logger';
-import { AutoPauseOptions, CircuitStartOptions } from './CircuitStartOptions';
+import { AutoPauseOptions } from './CircuitStartOptions';
 import { isFocusedElementEdited } from '../../Rendering/DomFocus';
 import { isMediaPlaying, isPictureInPictureActive, queryWebLockHeld } from '../../Rendering/FreezeBlockers';
 
 export class AutoPauseManager {
   private readonly _options: AutoPauseOptions;
 
-  private readonly _onPauseRequested?: CircuitStartOptions['onPauseRequested'];
+  private readonly _pauseHandlers = new Set<(signal: AbortSignal) => void | Promise<void>>();
 
   private readonly _pauseCircuit: () => Promise<boolean>;
 
@@ -31,13 +31,11 @@ export class AutoPauseManager {
 
   public constructor(
     options: AutoPauseOptions,
-    onPauseRequested: CircuitStartOptions['onPauseRequested'],
     pauseCircuit: () => Promise<boolean>,
     resumeCircuit: () => Promise<boolean>,
     logger: Logger,
   ) {
     this._options = options;
-    this._onPauseRequested = onPauseRequested;
     this._pauseCircuit = pauseCircuit;
     this._resumeCircuit = resumeCircuit;
     this._logger = logger;
@@ -47,6 +45,25 @@ export class AutoPauseManager {
 
     if (document.visibilityState === 'hidden') {
       this.startHiddenTimer();
+    }
+  }
+
+  public register(handler: (signal: AbortSignal) => void | Promise<void>): void {
+    this._pauseHandlers.add(handler);
+  }
+
+  public unregister(handler: (signal: AbortSignal) => void | Promise<void>): void {
+    this._pauseHandlers.delete(handler);
+  }
+
+  public async invokeHandlers(signal?: AbortSignal): Promise<void> {
+    if (this._pauseHandlers.size > 0) {
+      if (!signal) {
+        const controller = new AbortController();
+        this._activeAbortController = controller;
+        signal = controller.signal;
+      }
+      await Promise.all([...this._pauseHandlers].map(fn => Promise.resolve(fn(signal!))));
     }
   }
 
@@ -142,12 +159,8 @@ export class AutoPauseManager {
         return;
       }
 
-      if (this._onPauseRequested) {
-        await this._onPauseRequested(controller.signal);
-      }
+      await this.invokeHandlers(controller.signal);
 
-      // The user may have returned to the tab while the callback was running;
-      // skip the pause in that case.
       if (controller.signal.aborted || document.visibilityState !== 'hidden' || this._disposed) {
         this._logger.log(LogLevel.Trace, 'Auto-pause: aborted before pausing (tab became visible).');
         return;

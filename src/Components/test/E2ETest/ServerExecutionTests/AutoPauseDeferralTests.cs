@@ -710,14 +710,20 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         NavigateToTypingPage();
         InstallHangingAbortHook();
+        try
+        {
+            SetVisibility("hidden");
+            WaitForAbortHookStarted();
 
-        SetVisibility("hidden");
-        WaitForAbortHookStarted();
+            SetVisibility("visible");
 
-        SetVisibility("visible");
-
-        AssertAbortSignalFired();
-        AssertSignalWasNotAbortedOnEntry();
+            AssertAbortSignalFired();
+            AssertSignalWasNotAbortedOnEntry();
+        }
+        finally
+        {
+            UninstallHangingAbortHook();
+        }
     }
 
     [Fact]
@@ -725,13 +731,19 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         NavigateToServerPausePage();
         InstallHangingAbortHookForServerPause();
+        try
+        {
+            TriggerServerPause();
+            WaitForServerAbortHookStarted(expectedCount: 1);
 
-        TriggerServerPause();
-        WaitForServerAbortHookStarted(expectedCount: 1);
+            TriggerServerPause();
 
-        TriggerServerPause();
-
-        AssertServerAbortSignalFired(index: 0, expectedReason: "superseded by new pause request");
+            AssertServerAbortSignalFired(index: 0, expectedReason: "superseded by new pause request");
+        }
+        finally
+        {
+            UninstallHangingAbortHookForServerPause();
+        }
     }
 
     [Theory]
@@ -1092,13 +1104,24 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             window.__abortResult = null;
-            window.__onPauseRequestedHook = (signal) => new Promise((resolve) => {
+            window.__abortHandler = (signal) => new Promise((resolve) => {
                 window.__abortResult = { started: true, abortedOnEntry: signal.aborted };
                 signal.addEventListener('abort', () => {
                     window.__abortResult.abortedLater = true;
                     resolve();
                 });
             });
+            Blazor.pause.waitFor(window.__abortHandler);
+        ");
+    }
+
+    private void UninstallHangingAbortHook()
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            if (window.__abortHandler) {
+                Blazor.pause.cancelWaitFor(window.__abortHandler);
+                window.__abortHandler = null;
+            }
         ");
     }
 
@@ -1124,7 +1147,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             window.__serverAbortResults = [];
-            window.__onPauseRequestedHook = (signal) => new Promise((resolve) => {
+            window.__serverAbortHandler = (signal) => new Promise((resolve) => {
                 const idx = window.__serverAbortResults.length;
                 window.__serverAbortResults.push({ started: true, abortedOnEntry: signal.aborted });
                 signal.addEventListener('abort', () => {
@@ -1133,6 +1156,17 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
                     resolve();
                 });
             });
+            Blazor.pause.waitFor(window.__serverAbortHandler);
+        ");
+    }
+
+    private void UninstallHangingAbortHookForServerPause()
+    {
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            if (window.__serverAbortHandler) {
+                Blazor.pause.cancelWaitFor(window.__serverAbortHandler);
+                window.__serverAbortHandler = null;
+            }
         ");
     }
 

@@ -17,10 +17,10 @@
         window.__savedCanvasData = null;
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            window.__onPauseRequestedHook = function () {
+            Blazor.pause.waitFor(function () {
                 var c = document.getElementById('test-canvas');
                 if (c) window.__savedCanvasData = c.toDataURL();
-            };
+            });
         }
     }
 </script>

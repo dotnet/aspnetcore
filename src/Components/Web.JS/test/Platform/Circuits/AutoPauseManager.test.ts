@@ -48,7 +48,10 @@ describe('AutoPauseManager', () => {
     onPauseRequested?: PauseRequestedCallback,
     options: AutoPauseOptions = defaultOptions,
   ): AutoPauseManager {
-    manager = new AutoPauseManager(options, onPauseRequested, pauseCircuit, resumeCircuit, NullLogger.instance);
+    manager = new AutoPauseManager(options, pauseCircuit, resumeCircuit, NullLogger.instance);
+    if (onPauseRequested) {
+      manager.register(onPauseRequested);
+    }
     return manager;
   }
 
@@ -121,6 +124,29 @@ describe('AutoPauseManager', () => {
     expect(onPauseRequested).toHaveBeenCalledTimes(1);
     const [signal] = onPauseRequested.mock.calls[0];
     expect(signal).toBeInstanceOf(AbortSignal);
+  });
+
+  test('unregister prevents handler from being called on subsequent pause', async () => {
+    const handler = jest.fn<PauseRequestedCallback>(async () => { /* noop */ });
+    create();
+    manager!.register(handler);
+
+    // First pause: handler is called
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    // Resume and unregister
+    setVisibility('visible');
+    await flushPromises();
+    manager!.unregister(handler);
+
+    // Second pause: handler is NOT called
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 
   test('aborts the signal and skips pausing if page becomes visible during callback', async () => {

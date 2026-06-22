@@ -23,10 +23,10 @@
         };
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            window.__onPauseRequestedHook = function () {
+            Blazor.pause.waitFor(function () {
                 var s = window.__mockXRSession;
                 window.__savedXRState = s.mode + ',' + s.visibilityState + ',' + s.ended;
-            };
+            });
         }
     }
 </script>

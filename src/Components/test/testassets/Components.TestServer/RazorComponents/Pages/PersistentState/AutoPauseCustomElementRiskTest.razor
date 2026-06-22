@@ -36,9 +36,9 @@
         window.__savedFormValues = null;
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            window.__onPauseRequestedHook = function () {
+            Blazor.pause.waitFor(function () {
                 window.__savedFormValues = document.getElementById('custom-form').getValues();
-            };
+            });
         }
     }
 </script>

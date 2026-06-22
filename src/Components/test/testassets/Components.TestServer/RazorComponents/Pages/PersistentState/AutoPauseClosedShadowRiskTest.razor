@@ -39,9 +39,9 @@
         window.__savedClosedFormValues = null;
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            window.__onPauseRequestedHook = function () {
+            Blazor.pause.waitFor(function () {
                 window.__savedClosedFormValues = document.getElementById('closed-form').getValues();
-            };
+            });
         }
     }
 </script>
