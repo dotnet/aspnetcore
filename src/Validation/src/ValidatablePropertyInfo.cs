@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a member of a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
+public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValidationErrorReporter
 {
     private RequiredAttribute? _requiredAttribute;
 
@@ -100,24 +100,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = context.ResolveAttributeErrorMessage(
-                    memberName: Name,
-                    displayName,
-                    declaringType: DeclaringType,
-                    attribute: _requiredAttribute,
-                    result);
-
-                if (errorMessage is not null)
-                {
-                    var errorContext = new ValidationErrorContext()
-                    {
-                        Name = Name,
-                        Path = context.CurrentValidationPath,
-                        Errors = [errorMessage],
-                        Container = containingObject,
-                    };
-                    context.AddValidationError(errorContext);
-                }
+                ((IValidationErrorReporter)this).ReportError(context, containingObject, _requiredAttribute, result);
 
                 // Restore the validation path mutated above before returning early so that sibling
                 // members validated with the same (shared) context observe the original prefix.
@@ -127,33 +110,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         }
 
         // Validate any other attributes
-        var attributesValidationTask = ValidationHelpers.ValidateAttributesAsync(validationAttributes, propertyValue, context, (Name, displayName, DeclaringType, containingObject),
-            static (context, result, attribute, state) =>
-            {
-                var (name, displayName, declaringType, container) = state;
-                var errorMessage = context.ResolveAttributeErrorMessage(
-                    memberName: name,
-                    displayName,
-                    declaringType: declaringType,
-                    attribute,
-                    result);
-
-                if (errorMessage is not null)
-                {
-                    var errorPrefix = context.CurrentValidationPath;
-                    var key = errorPrefix.TrimStart('.');
-                    var errorContext = new ValidationErrorContext()
-                    {
-                        Name = name,
-                        Path = key,
-                        Errors = [errorMessage],
-                        Container = container,
-                    };
-                    context.AddValidationError(errorContext);
-                }
-            }, cancellationToken);
-
-        await attributesValidationTask;
+        await ValidationHelpers.ValidateAttributesAsync(propertyValue, containingObject, this, context, cancellationToken);
 
         var validationOptions = context.ValidationOptions;
 
@@ -220,6 +177,33 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo
         {
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
+        }
+    }
+
+    ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
+    {
+        return GetValidationAttributes();
+    }
+
+    void IValidationErrorReporter.ReportError(ValidateContext context, object? container, ValidationAttribute attribute, ValidationResult result)
+    {
+        var errorMessage = context.ResolveAttributeErrorMessage(
+            memberName: Name,
+            context.ValidationContext.DisplayName,
+            declaringType: DeclaringType,
+            attribute,
+            result);
+
+        if (errorMessage is not null)
+        {
+            var errorContext = new ValidationErrorContext()
+            {
+                Name = Name,
+                Path = context.CurrentValidationPath,
+                Errors = [errorMessage],
+                Container = container,
+            };
+            context.AddValidationError(errorContext);
         }
     }
 }

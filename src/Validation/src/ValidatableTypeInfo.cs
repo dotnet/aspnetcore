@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a type.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableTypeInfo : IValidatableTypeInfo
+public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErrorReporter
 {
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
@@ -204,9 +204,6 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
 
     private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)
     {
-        var validationAttributes = GetValidationAttributes();
-        var errorPrefix = context.CurrentValidationPath;
-
         var originalDisplayName = context.ValidationContext.DisplayName;
         var originalMemberName = context.ValidationContext.MemberName;
 
@@ -215,58 +212,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             context.ValidationContext.DisplayName = displayName;
             context.ValidationContext.MemberName = null;
 
-            await ValidationHelpers.ValidateAttributesAsync(validationAttributes, value, context, (displayName, Type, errorPrefix, value),
-                onValidationError: static (context, result, attribute, state) =>
-                {
-                    var (displayName, type, errorPrefix, value) = state;
-                    foreach (var memberName in result.MemberNames)
-                    {
-                        // Create a validation error for each member name that is provided
-                        var errorMessage = context.ResolveAttributeErrorMessage(
-                            memberName,
-                            displayName,
-                            declaringType: type,
-                            attribute,
-                            result);
-
-                        if (errorMessage is not null)
-                        {
-                            var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                            var errorContext = new ValidationErrorContext()
-                            {
-                                Name = memberName,
-                                Path = key,
-                                Errors = [errorMessage],
-                                Container = value,
-                            };
-                            context.AddValidationError(errorContext);
-                        }
-                    }
-
-                    if (!result.MemberNames.Any())
-                    {
-                        // If no member names are specified, then treat this as a top-level error
-                        var errorMessage = context.ResolveAttributeErrorMessage(
-                            memberName: type.Name,
-                            displayName,
-                            declaringType: type,
-                            attribute,
-                            result);
-
-                        if (errorMessage is not null)
-                        {
-                            var errorContext = new ValidationErrorContext()
-                            {
-                                Name = string.Empty,
-                                Path = errorPrefix,
-                                Errors = [errorMessage],
-                                Container = value,
-                            };
-                            context.AddValidationError(errorContext);
-                        }
-                    }
-                },
-                cancellationToken);
+            await ValidationHelpers.ValidateAttributesAsync(value, value, this, context, cancellationToken);
         }
         finally
         {
@@ -379,6 +325,61 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
             }
 
             return null;
+        }
+    }
+
+    ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
+    {
+        return GetValidationAttributes();
+    }
+
+    void IValidationErrorReporter.ReportError(ValidateContext context, object? container, ValidationAttribute attribute, ValidationResult result)
+    {
+        foreach (var memberName in result.MemberNames)
+        {
+            // Create a validation error for each member name that is provided
+            var errorMessage = context.ResolveAttributeErrorMessage(
+                memberName,
+                context.ValidationContext.DisplayName,
+                declaringType: Type,
+                attribute,
+                result);
+
+            if (errorMessage is not null)
+            {
+                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? memberName : $"{context.CurrentValidationPath}.{memberName}";
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = memberName,
+                    Path = key,
+                    Errors = [errorMessage],
+                    Container = container,
+                };
+                context.AddValidationError(errorContext);
+            }
+        }
+
+        if (!result.MemberNames.Any())
+        {
+            // If no member names are specified, then treat this as a top-level error
+            var errorMessage = context.ResolveAttributeErrorMessage(
+                memberName: Type.Name,
+                context.ValidationContext.DisplayName,
+                declaringType: Type,
+                attribute,
+                result);
+
+            if (errorMessage is not null)
+            {
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = string.Empty,
+                    Path = context.CurrentValidationPath,
+                    Errors = [errorMessage],
+                    Container = container,
+                };
+                context.AddValidationError(errorContext);
+            }
         }
     }
 }

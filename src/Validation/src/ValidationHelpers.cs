@@ -9,27 +9,27 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 internal static class ValidationHelpers
 {
-    internal static async Task ValidateAttributesAsync<TState>(
-        ValidationAttribute[] validationAttributes,
+    internal static async Task ValidateAttributesAsync(
         object? value,
+        object? container,
+        IValidationErrorReporter reporter,
         ValidateContext context,
-        TState state,
-        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
         CancellationToken cancellationToken)
     {
-        if (ValidateSynchronousOnly(validationAttributes, value, context, state, onValidationError))
+        var validationAttributes = reporter.GetValidationAttributes();
+        if (ValidateSynchronousOnly(validationAttributes, value, container, reporter, context))
         {
             // Only validate async attributes if synchronous validation passed.
-            await ValidateAsynchronousOnlyAsync(validationAttributes, value, context, state, onValidationError, cancellationToken);
+            await ValidateAsynchronousOnlyAsync(validationAttributes, value, container, reporter, context, cancellationToken);
         }
     }
 
-    private static bool ValidateSynchronousOnly<TState>(
+    private static bool ValidateSynchronousOnly(
         ValidationAttribute[] validationAttributes,
         object? value,
-        ValidateContext context,
-        TState state,
-        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError)
+        object? container,
+        IValidationErrorReporter reporter,
+        ValidateContext context)
     {
         bool hasErrors = false;
         for (var i = 0; i < validationAttributes.Length; i++)
@@ -45,19 +45,19 @@ internal static class ValidationHelpers
             if (result is not null && result != ValidationResult.Success)
             {
                 hasErrors = true;
-                onValidationError(context, result, attribute, state);
+                reporter.ReportError(context, container, attribute, result);
             }
         }
 
         return !hasErrors;
     }
 
-    private static async Task ValidateAsynchronousOnlyAsync<TState>(
+    private static async Task ValidateAsynchronousOnlyAsync(
         ValidationAttribute[] validationAttributes,
         object? value,
+        object? container,
+        IValidationErrorReporter reporter,
         ValidateContext context,
-        TState state,
-        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
         CancellationToken cancellationToken)
     {
         CancellationTokenSource? linkedCts = null;
@@ -76,7 +76,7 @@ internal static class ValidationHelpers
                 linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 validationResultTasks ??= new();
                 validationResultTasks.Add(
-                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, context, state, onValidationError, cancellationToken, linkedCts));
+                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, reporter, context, cancellationToken, linkedCts));
             }
 
             if (validationResultTasks is not null)
@@ -90,12 +90,12 @@ internal static class ValidationHelpers
         }
     }
 
-    private static async Task GetValidationResultTaskCoreAsync<TState>(
+    private static async Task GetValidationResultTaskCoreAsync(
         AsyncValidationAttribute attribute,
         object? value,
+        object? container,
+        IValidationErrorReporter reporter,
         ValidateContext context,
-        TState state,
-        Action<ValidateContext, ValidationResult, ValidationAttribute, TState> onValidationError,
         CancellationToken originalCancellationToken,
         CancellationTokenSource linkedCancellationTokenSource)
     {
@@ -108,7 +108,7 @@ internal static class ValidationHelpers
             var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, linkedCancellationTokenSource.Token);
             if (result is not null && result != ValidationResult.Success)
             {
-                onValidationError(context, result, attribute, state);
+                reporter.ReportError(context, container, attribute, result);
                 linkedCancellationTokenSource.Cancel();
             }
         }

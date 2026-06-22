@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a parameter.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableParameterInfo : IValidatableParameterInfo
+public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IValidationErrorReporter
 {
     private RequiredAttribute? _requiredAttribute;
 
@@ -75,62 +75,13 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
 
             if (result is not null && result != ValidationResult.Success)
             {
-                var errorMessage = context.ResolveAttributeErrorMessage(
-                    memberName: Name,
-                    displayName,
-                    declaringType: null,
-                    attribute: _requiredAttribute,
-                    result);
-
-                if (errorMessage is not null)
-                {
-                    var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
-                    var errorContext = new ValidationErrorContext()
-                    {
-                        Name = Name,
-                        Path = key,
-                        Errors = [errorMessage],
-                        Container = null,
-                    };
-                    context.AddValidationError(errorContext);
-                }
-
+                ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
                 return;
             }
         }
 
         // Validate against validation attributes
-        Action<ValidateContext, ValidationResult, ValidationAttribute, (string displayName, string Name)> onValidationError = static (context, result, attribute, state) =>
-        {
-            var (displayName, name) = state;
-            var errorMessage = context.ResolveAttributeErrorMessage(
-                memberName: name,
-                displayName,
-                declaringType: null,
-                attribute,
-                result);
-
-            if (errorMessage is not null)
-            {
-                var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? name : $"{context.CurrentValidationPath}.{name}";
-                var errorContext = new ValidationErrorContext()
-                {
-                    Name = name,
-                    Path = key,
-                    Errors = [errorMessage],
-                    Container = null,
-                };
-                context.AddValidationError(errorContext);
-            }
-        };
-
-        await ValidationHelpers.ValidateAttributesAsync(
-            validationAttributes,
-            value,
-            context,
-            (displayName, Name),
-            onValidationError,
-            cancellationToken);
+        await ValidationHelpers.ValidateAttributesAsync(value, null, this, context, cancellationToken);
 
         // If the parameter is a collection, validate each item
         if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
@@ -176,6 +127,34 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo
             {
                 await validatableType.ValidateAsync(value, context, cancellationToken);
             }
+        }
+    }
+
+    ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
+    {
+        return GetValidationAttributes();
+    }
+
+    void IValidationErrorReporter.ReportError(ValidateContext context, object? container, ValidationAttribute attribute, ValidationResult result)
+    {
+        var errorMessage = context.ResolveAttributeErrorMessage(
+            memberName: Name,
+            context.ValidationContext.DisplayName,
+            declaringType: null,
+            attribute,
+            result);
+
+        if (errorMessage is not null)
+        {
+            var key = string.IsNullOrEmpty(context.CurrentValidationPath) ? Name : $"{context.CurrentValidationPath}.{Name}";
+            var errorContext = new ValidationErrorContext()
+            {
+                Name = Name,
+                Path = key,
+                Errors = [errorMessage],
+                Container = null,
+            };
+            context.AddValidationError(errorContext);
         }
     }
 }
