@@ -15,7 +15,7 @@ internal class EndpointAntiforgeryStateProvider(IAntiforgery antiforgery) : Defa
     internal void SetRequestContext(HttpContext context)
     {
         _context = context;
-        _canGenerateToken = true;
+        _canGenerateToken = context.Items.ContainsKey(MiddlewareInvokedKeys.Antiforgery);
     }
 
     public override AntiforgeryRequestToken? GetAntiforgeryToken()
