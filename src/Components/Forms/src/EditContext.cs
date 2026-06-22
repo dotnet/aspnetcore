@@ -76,6 +76,11 @@ public sealed class EditContext
     public event EventHandler<ValidationStateChangedEventArgs>? OnValidationStateChanged;
 
     /// <summary>
+    /// An event that is raised when a reset operation is requested.
+    /// </summary>
+    public event EventHandler? OnReset;
+
+    /// <summary>
     /// Supplies a <see cref="FieldIdentifier"/> corresponding to a specified field name
     /// on this <see cref="EditContext"/>'s <see cref="Model"/>.
     /// </summary>
@@ -115,6 +120,14 @@ public sealed class EditContext
     public void NotifyValidationStateChanged()
     {
         OnValidationStateChanged?.Invoke(this, ValidationStateChangedEventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Signals that the form state should be reset.
+    /// </summary>
+    public void NotifyResetRequested()
+    {
+        OnReset?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

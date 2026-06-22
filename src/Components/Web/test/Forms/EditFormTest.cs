@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -118,9 +119,10 @@ public class EditFormTest
         //  - Does not set any "method" attribute
         //  - Does not assign any name to the submit event
         Assert.Collection(editFormFrames.AsEnumerable(),
-            frame => AssertFrame.Region(frame, 7),
-            frame => AssertFrame.Element(frame, "form", 6),
+            frame => AssertFrame.Region(frame, 8),
+            frame => AssertFrame.Element(frame, "form", 7),
             frame => AssertFrame.Attribute(frame, "onsubmit"),
+            frame => AssertFrame.Attribute(frame, "onreset"),
             frame => AssertFrame.Component<CascadingValue<EditContext>>(frame, 4),
             frame => AssertFrame.Attribute(frame, "IsFixed", true),
             frame => AssertFrame.Attribute(frame, "Value"),
@@ -147,14 +149,15 @@ public class EditFormTest
 
         // Assert
         Assert.Collection(editFormFrames.AsEnumerable(),
-            frame => AssertFrame.Region(frame, 13),
-            frame => AssertFrame.Element(frame, "form", 12),
+            frame => AssertFrame.Region(frame, 14),
+            frame => AssertFrame.Element(frame, "form", 13),
 
             // Sets "method" to "post" by default
             frame => AssertFrame.Attribute(frame, "method", "post"),
 
             // Assigns name to the submit event
             frame => AssertFrame.Attribute(frame, "onsubmit"),
+            frame => AssertFrame.Attribute(frame, "onreset"),
             frame => AssertFrame.NamedEvent(frame, "onsubmit", "my-form"),
 
             frame => AssertFrame.Region(frame, 4),
@@ -314,6 +317,88 @@ public class EditFormTest
         Assert.Equal(1, validSubmitCount);
     }
 
+    [Fact]
+    public void Reset_UpdatesBoundValue()
+    {
+        var model = new TestModel { Value = "Initial" };
+        var editContext = new EditContext(model);
+
+        var input = new TestInputComponent
+        {
+            Value = model.Value
+        };
+
+        input.Initialize(editContext, () => model.Value);
+
+        editContext.NotifyResetRequested();
+
+        Assert.Null(input.GetValue());
+    }
+
+    [Fact]
+
+    public void Reset_Updates_AllInputs()
+    {
+        var model = new MultiModel
+        {
+            Name = "Initial",
+            Description = "InitialDesc"
+        };
+
+        var editContext = new EditContext(model);
+
+        var input1 = new TestInputComponent { Value = model.Name };
+        var input2 = new TestInputComponent { Value = model.Description };
+
+        input1.Initialize(editContext, () => model.Name);
+        input2.Initialize(editContext, () => model.Description);
+
+        input1.SetCurrentValue("Changed1");
+        input2.SetCurrentValue("Changed2");
+
+        editContext.NotifyResetRequested();
+
+        Assert.Null(input1.GetValue());
+        Assert.Null(input2.GetValue());
+    }
+
+    [Fact]
+    public void Reset_Works_Without_CustomHandler()
+    {
+        var model = new TestModel { Value = "Initial" };
+        var editContext = new EditContext(model);
+
+        var input = new TestInputComponent { Value = model.Value };
+
+        input.Initialize(editContext, () => model.Value);
+
+        input.SetCurrentValue("Changed");
+
+        editContext.NotifyResetRequested();
+
+        Assert.Null(input.GetValue());
+    }
+
+    [Fact]
+    public void Reset_Clears_InputValue_Even_With_PreviousState()
+    {
+        var model = new TestModel { Value = "Initial" };
+        var editContext = new EditContext(model);
+
+        var input = new TestInputComponent
+        {
+            Value = model.Value
+        };
+
+        input.Initialize(editContext, () => model.Value);
+
+        input.SetCurrentValue("InvalidValue");
+
+        editContext.NotifyResetRequested();
+
+        Assert.Null(input.GetValue());
+    }
+
     private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
     {
         var componentId = _testRenderer.AssignRootComponentId(rootComponent);
@@ -400,9 +485,16 @@ public class EditFormTest
         return FindEditFormComponent(_testRenderer.Batches.Single());
     }
 
+    private class MultiModel
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+    }
+
     class TestModel
     {
         public string StringProperty { get; set; }
+        public string Value { get; set; }
     }
 
     class TestEditFormHostComponent : AutoRenderComponent
@@ -457,5 +549,40 @@ public class EditFormTest
     {
         public bool CanMap(Type valueType, string mappingScopeName, string formName) => false;
         public void Map(FormValueMappingContext context) { }
+    }
+
+    private class TestInputComponent : InputBase<string>
+    {
+        public void Initialize(EditContext editContext, Expression<Func<string>> valueExpression)
+        {
+            EditContext = editContext;
+
+            // Required for FieldIdentifier
+            ValueExpression = valueExpression;
+            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+
+            // simulate subscription
+            editContext.OnReset += (sender, args) =>
+            {
+                CurrentValue = default!;
+            };
+        }
+
+        public void SetCurrentValue(string value)
+        {
+            CurrentValue = value;
+        }
+
+        public string GetValue() => Value;
+
+        protected override bool TryParseValueFromString(
+            string value,
+            out string result,
+            out string validationErrorMessage)
+        {
+            result = value;
+            validationErrorMessage = null;
+            return true;
+        }
     }
 }
