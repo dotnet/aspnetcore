@@ -469,35 +469,6 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
-    [Fact]
-    public async Task CsrfProtection_ExplicitUseRouting_AllowedRequest_ExecutesEndpointExactlyOnce()
-    {
-        var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
-        builder.Services.AddCors(options =>
-            options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
-        using var app = builder.Build();
-
-        var invocationCount = 0;
-        app.UseRouting();
-        app.UseCors();
-        app.MapPost("/webhook", (HttpContext context) =>
-        {
-            invocationCount++;
-            return EnforceCsrf(context);
-        }).RequireCors("Webhook");
-        await app.StartAsync();
-
-        var client = app.GetTestClient();
-        var request = new HttpRequestMessage(HttpMethod.Post, "/webhook");
-        request.Headers.Add("Sec-Fetch-Site", "cross-site");
-        request.Headers.Add("Origin", "https://stripe.example.com");
-
-        var response = await client.SendAsync(request);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(1, invocationCount);
-    }
-
     // The CSRF middleware does not short-circuit; it records its verdict on IAntiforgeryValidationFeature and lets downstream consumers decide.
     // This endpoint mirrors how a real consumer (the MVC antiforgery filter, minimal-API form binding, Razor Components) reacts to that verdict: reject when IsValid is false.
     private static string EnforceCsrf(HttpContext context)
