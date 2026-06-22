@@ -30,7 +30,7 @@
 
 <body>
     @*#if (UseServer)
-    <ConfigureBrowser Configuration="@(new BrowserConfiguration { Server = new() { AutoPause = new() { Enabled = true } } })" />
+    <ConfigureBrowser Options="@(new BrowserOptions { Server = { AutoPause = { Enabled = true } } })" />
     ##endif*@
     @*#if (!InteractiveAtRoot)
     <Routes />

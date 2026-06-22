@@ -13,7 +13,7 @@
 <body>
     @if (AutoPause)
     {
-        <ConfigureBrowser Configuration="@AutoPauseConfig" />
+        <ConfigureBrowser Options="@AutoPauseConfig" />
     }
 
     <ServerApp @rendermode="@RenderMode.InteractiveServer" />
@@ -95,11 +95,11 @@
     [SupplyParameterFromQuery(Name = "auto-pause")] public bool AutoPause { get; set; }
     [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")] public int AutoPauseDelayMs { get; set; }
 
-    private BrowserConfiguration AutoPauseConfig => new()
+    private BrowserOptions AutoPauseConfig => new()
     {
-        Server = new()
+        Server =
         {
-            AutoPause = new()
+            AutoPause =
             {
                 Enabled = true,
                 HiddenDelayMilliseconds = AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200,

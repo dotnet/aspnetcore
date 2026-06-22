@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// A component that configures the Blazor browser runtime by merging
-/// configuration into the <see cref="BrowserConfiguration"/> on the current
-/// <see cref="HttpContext"/>. The merged configuration is emitted as
+/// options into the <see cref="BrowserOptions"/> on the current
+/// <see cref="HttpContext"/>. The merged options are emitted as
 /// a <c>&lt;!--Blazor-Configuration:{...}--&gt;</c> DOM comment by the renderer.
 /// </summary>
 public sealed class ConfigureBrowser : IComponent
@@ -16,10 +16,10 @@ public sealed class ConfigureBrowser : IComponent
     private RenderHandle _renderHandle;
 
     /// <summary>
-    /// Gets or sets the <see cref="BrowserConfiguration"/> to merge.
+    /// Gets or sets the <see cref="BrowserOptions"/> to merge.
     /// </summary>
     [Parameter, EditorRequired]
-    public BrowserConfiguration Configuration { get; set; } = default!;
+    public BrowserOptions Options { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the <see cref="HttpContext"/> for the current request.
@@ -38,14 +38,14 @@ public sealed class ConfigureBrowser : IComponent
 
         if (HttpContext is not null)
         {
-            var existing = HttpContext.GetBrowserConfiguration();
-            MergeInto(existing, Configuration);
+            var existing = HttpContext.GetBrowserOptions();
+            MergeInto(existing, Options);
         }
 
         return Task.CompletedTask;
     }
 
-    internal static void MergeInto(BrowserConfiguration target, BrowserConfiguration source)
+    internal static void MergeInto(BrowserOptions target, BrowserOptions source)
     {
         target.LogLevel = source.LogLevel ?? target.LogLevel;
 
@@ -59,13 +59,13 @@ public sealed class ConfigureBrowser : IComponent
 
         // Server
         target.Server.ReconnectionMaxRetries = source.Server.ReconnectionMaxRetries ?? target.Server.ReconnectionMaxRetries;
-        target.Server.ReconnectionRetryIntervalMilliseconds = source.Server.ReconnectionRetryIntervalMilliseconds ?? target.Server.ReconnectionRetryIntervalMilliseconds;
+        target.Server.ReconnectionRetryInterval = source.Server.ReconnectionRetryInterval ?? target.Server.ReconnectionRetryInterval;
         target.Server.ReconnectionDialogId = source.Server.ReconnectionDialogId ?? target.Server.ReconnectionDialogId;
         target.Server.AutoPause.Enabled = source.Server.AutoPause.Enabled ?? target.Server.AutoPause.Enabled;
         target.Server.AutoPause.HiddenDelayMilliseconds = source.Server.AutoPause.HiddenDelayMilliseconds ?? target.Server.AutoPause.HiddenDelayMilliseconds;
 
         // SSR
-        target.Ssr.DisableDomPreservation = source.Ssr.DisableDomPreservation ?? target.Ssr.DisableDomPreservation;
-        target.Ssr.CircuitInactivityTimeoutMs = source.Ssr.CircuitInactivityTimeoutMs ?? target.Ssr.CircuitInactivityTimeoutMs;
+        target.Ssr.PreserveDom = source.Ssr.PreserveDom ?? target.Ssr.PreserveDom;
+        target.Ssr.CircuitInactivityTimeout = source.Ssr.CircuitInactivityTimeout ?? target.Ssr.CircuitInactivityTimeout;
     }
 }
