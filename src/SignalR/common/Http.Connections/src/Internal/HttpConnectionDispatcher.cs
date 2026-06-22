@@ -206,7 +206,7 @@ internal sealed partial class HttpConnectionDispatcher
             }
         }
 
-        connection.UpdateUser(newPrincipal, newExpiration, requireMonotonicExpiration: true);
+        connection.UpdateUser(newPrincipal, newExpiration);
 
         // Compute TTL for the response
         int? tokenLifetimeSeconds = null;
@@ -292,22 +292,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static bool ClaimsPrincipalContentEquals(ClaimsPrincipal current, ClaimsPrincipal incoming)
     {
-        var currentIdentities = current.Identities.ToArray();
-        var incomingIdentities = incoming.Identities.ToArray();
-        if (currentIdentities.Length != incomingIdentities.Length)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < currentIdentities.Length; i++)
-        {
-            if (!ClaimsIdentityContentEquals(currentIdentities[i], incomingIdentities[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return SequenceEqual(current.Identities, incoming.Identities, ClaimsIdentityContentEquals);
     }
 
     private static bool ClaimsIdentityContentEquals(ClaimsIdentity current, ClaimsIdentity incoming)
@@ -320,54 +305,7 @@ internal sealed partial class HttpConnectionDispatcher
             return false;
         }
 
-        var currentClaims = current.Claims.ToArray();
-        var incomingClaims = incoming.Claims.ToArray();
-        if (currentClaims.Length != incomingClaims.Length)
-        {
-            return false;
-        }
-
-        Array.Sort(currentClaims, CompareClaims);
-        Array.Sort(incomingClaims, CompareClaims);
-
-        for (var i = 0; i < currentClaims.Length; i++)
-        {
-            if (!ClaimContentEquals(currentClaims[i], incomingClaims[i]))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static int CompareClaims(Claim? current, Claim? incoming)
-    {
-        var result = string.CompareOrdinal(current?.Type, incoming?.Type);
-        if (result != 0)
-        {
-            return result;
-        }
-
-        result = string.CompareOrdinal(current?.Value, incoming?.Value);
-        if (result != 0)
-        {
-            return result;
-        }
-
-        result = string.CompareOrdinal(current?.ValueType, incoming?.ValueType);
-        if (result != 0)
-        {
-            return result;
-        }
-
-        result = string.CompareOrdinal(current?.Issuer, incoming?.Issuer);
-        if (result != 0)
-        {
-            return result;
-        }
-
-        return string.CompareOrdinal(current?.OriginalIssuer, incoming?.OriginalIssuer);
+        return SequenceEqual(current.Claims, incoming.Claims, ClaimContentEquals);
     }
 
     private static bool ClaimContentEquals(Claim current, Claim incoming)
@@ -377,6 +315,31 @@ internal sealed partial class HttpConnectionDispatcher
             && string.Equals(current.ValueType, incoming.ValueType, StringComparison.Ordinal)
             && string.Equals(current.Issuer, incoming.Issuer, StringComparison.Ordinal)
             && string.Equals(current.OriginalIssuer, incoming.OriginalIssuer, StringComparison.Ordinal);
+    }
+
+    private static bool SequenceEqual<T>(IEnumerable<T> current, IEnumerable<T> incoming, Func<T, T, bool> equals)
+    {
+        using var currentEnumerator = current.GetEnumerator();
+        using var incomingEnumerator = incoming.GetEnumerator();
+
+        while (true)
+        {
+            var currentHasValue = currentEnumerator.MoveNext();
+            if (currentHasValue != incomingEnumerator.MoveNext())
+            {
+                return false;
+            }
+
+            if (!currentHasValue)
+            {
+                return true;
+            }
+
+            if (!equals(currentEnumerator.Current, incomingEnumerator.Current))
+            {
+                return false;
+            }
+        }
     }
 
     private async Task ExecuteAsync(HttpContext context, ConnectionDelegate connectionDelegate, HttpConnectionDispatcherOptions options, ConnectionLogScope logScope)
@@ -1002,9 +965,9 @@ internal sealed partial class HttpConnectionDispatcher
 
             // UpdateUser swaps connection.User and connection.HttpContext.User under the user lock and updates
             // AuthenticationExpiration, so no separate swap or UpdateExpiration call is needed on this path.
-            // requireMonotonicExpiration makes the swap atomic with the stale check above: if a concurrent
-            // /refresh applied a newer token between the check and here, the rollback is skipped.
-            connection.UpdateUser(newPrincipal!, newExpiration, requireMonotonicExpiration: true);
+            // If a concurrent /refresh applied a newer token between the stale check and here, UpdateUser skips
+            // the rollback atomically with the swap.
+            connection.UpdateUser(newPrincipal!, newExpiration);
         }
         else
         {

@@ -1248,7 +1248,8 @@ public partial class HttpConnectionDispatcherTests
             options.OnAuthenticationRefresh = ctx =>
             {
                 // Simulate a concurrent /refresh landing a newer token mid-callback.
-                connection.UpdateUser(newerUser, newerExpiration);                return ValueTask.FromResult(false);
+                connection.UpdateUser(newerUser, newerExpiration);
+                return ValueTask.FromResult(false);
             };
 
             var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userB") }, "Test"));
@@ -1266,7 +1267,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public void UpdateUserWithRequireMonotonicExpirationSkipsOlderToken()
+    public void UpdateUserSkipsOlderToken()
     {
         using (StartVerifiableLog())
         {
@@ -1281,18 +1282,18 @@ public partial class HttpConnectionDispatcherTests
             var notified = 0;
             feature.OnUserRefreshed((_, state) => notified++, state: null);
 
-            // An older token with the monotonic guard must be skipped (no swap, no notification).
+            // An older token must be skipped (no swap, no notification).
             var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "B") }, "Test"));
-            connection.UpdateUser(userB, DateTimeOffset.UtcNow.AddMinutes(5), requireMonotonicExpiration: true);
+            connection.UpdateUser(userB, DateTimeOffset.UtcNow.AddMinutes(5));
 
             Assert.Same(userA, connection.User);
             Assert.Equal(laterExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));
             Assert.Equal(0, notified);
 
-            // A newer token with the monotonic guard is still applied.
+            // A newer token is still applied.
             var userC = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("name", "C") }, "Test"));
             var newerExpiration = DateTimeOffset.UtcNow.AddMinutes(60);
-            connection.UpdateUser(userC, newerExpiration, requireMonotonicExpiration: true);
+            connection.UpdateUser(userC, newerExpiration);
 
             Assert.Same(userC, connection.User);
             Assert.Equal(newerExpiration, connection.AuthenticationExpiration, TimeSpan.FromSeconds(1));

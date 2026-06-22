@@ -284,13 +284,13 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
     /// </summary>
     /// <param name="user">The refreshed principal to apply to the connection.</param>
     /// <param name="authenticationExpiration">The expiration of the refreshed authentication.</param>
-    /// <param name="requireMonotonicExpiration">
-    /// When <see langword="true"/>, the update is skipped if <paramref name="authenticationExpiration"/> is
-    /// older than the currently applied <see cref="AuthenticationExpiration"/>. This makes the staleness check
-    /// and the swap atomic so a caller racing a concurrent refresh that
-    /// already applied a newer token can't roll the connection back to an older identity.
-    /// </param>
-    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration, bool requireMonotonicExpiration = false)
+    /// <remarks>
+    /// The update is skipped if <paramref name="authenticationExpiration"/> is older than the currently
+    /// applied <see cref="AuthenticationExpiration"/>. This makes the staleness check and the swap atomic
+    /// so a caller racing a concurrent refresh that already applied a newer token can't roll the connection
+    /// back to an older identity.
+    /// </remarks>
+    internal void UpdateUser(ClaimsPrincipal user, DateTimeOffset authenticationExpiration)
     {
         ClaimsPrincipal? previouslyOwnedUser = null;
 
@@ -299,8 +299,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
             // A concurrent refresh (for example the /refresh endpoint racing a long-polling poll) may have
             // already applied a newer token. Don't roll the connection back to an older one. Checking this
             // under _userLock makes the decision atomic with the swap below.
-            if (requireMonotonicExpiration
-                && authenticationExpiration != DateTimeOffset.MaxValue
+            if (authenticationExpiration != DateTimeOffset.MaxValue
                 && AuthenticationExpiration != DateTimeOffset.MaxValue
                 && authenticationExpiration < AuthenticationExpiration)
             {
