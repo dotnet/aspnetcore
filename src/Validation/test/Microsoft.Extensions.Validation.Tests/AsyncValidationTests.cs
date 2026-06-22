@@ -1620,9 +1620,7 @@ public class AsyncValidationTests
         public string? Email { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            return Array.Empty<ValidationResult>();
-        }
+            => throw new NotImplementedException();
 
         public async IAsyncEnumerable<ValidationResult> ValidateAsync(
             ValidationContext validationContext,
@@ -1648,9 +1646,7 @@ public class AsyncValidationTests
         public string? ConfirmPassword { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            return Array.Empty<ValidationResult>();
-        }
+            => throw new NotImplementedException();
 
         public async IAsyncEnumerable<ValidationResult> ValidateAsync(
             ValidationContext validationContext,
@@ -1689,7 +1685,7 @@ public class AsyncValidationTests
         public string? Bio { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => Array.Empty<ValidationResult>();
+            => throw new NotImplementedException();
 
         public async IAsyncEnumerable<ValidationResult> ValidateAsync(
             ValidationContext validationContext,
@@ -1720,7 +1716,7 @@ public class AsyncValidationTests
         public string? CapturedMemberName { get; private set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-            => Array.Empty<ValidationResult>();
+            => throw new NotImplementedException();
 
         public async IAsyncEnumerable<ValidationResult> ValidateAsync(
             ValidationContext validationContext,
@@ -1764,9 +1760,7 @@ public class AsyncValidationTests
         public string? Bio { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            return Array.Empty<ValidationResult>();
-        }
+            => throw new NotImplementedException();
 
         public async IAsyncEnumerable<ValidationResult> ValidateAsync(
             ValidationContext validationContext,
@@ -1847,9 +1841,7 @@ public class AsyncValidationTests
         public string? Name { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            return Array.Empty<ValidationResult>();
-        }
+            => throw new NotImplementedException();
 
         public async IAsyncEnumerable<ValidationResult> ValidateAsync(
             ValidationContext validationContext,
