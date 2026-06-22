@@ -28,6 +28,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string CsrfProtectionMiddlewareSetKey = "__CsrfProtectionMiddlewareSet";
     private const string UseRoutingKey = "__UseRouting";
 
+    // Note: Mvc.Testing listens for this event. This private const is a cross-assembly contract.
     private const string HostApplicationBuilderConstructedEventName = "HostApplicationBuilderConstructed";
 
     private readonly HostApplicationBuilder _hostApplicationBuilder;
