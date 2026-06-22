@@ -16,6 +16,11 @@ internal static class ValidationHelpers
         ValidateContext context,
         CancellationToken cancellationToken)
     {
+        // NOTE: In case there are no async validation attributes, there should be no performance impact.
+        // The async state machine is a class only in Debug builds. But in Release it's a struct.
+        // So it will be efficient.
+        // And if this method completed synchronously because no async validation attributes exist, this
+        // will returned the same cached instance as Task.CompletedTask.
         var validationAttributes = reporter.GetValidationAttributes();
         if (ValidateSynchronousOnly(validationAttributes, value, container, reporter, context))
         {
