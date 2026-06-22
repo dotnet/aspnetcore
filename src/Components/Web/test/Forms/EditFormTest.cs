@@ -323,20 +323,17 @@ public class EditFormTest
         var model = new TestModel { Value = "Initial" };
         var editContext = new EditContext(model);
 
-        var input = new TestInputComponent
-        {
-            Value = model.Value
-        };
-
+        var input = new TestInputComponent { Value = model.Value };
         input.Initialize(editContext, () => model.Value);
 
-        editContext.NotifyResetRequested();
+        input.SetCurrentValue("Changed");
 
-        Assert.Null(input.GetValue());
+        editContext.NotifyResetRequested();
+        Assert.True(string.IsNullOrEmpty(input.GetValue()));
+        Assert.True(string.IsNullOrEmpty(model.Value));
     }
 
     [Fact]
-
     public void Reset_Updates_AllInputs()
     {
         var model = new MultiModel
@@ -358,8 +355,10 @@ public class EditFormTest
 
         editContext.NotifyResetRequested();
 
-        Assert.Null(input1.GetValue());
-        Assert.Null(input2.GetValue());
+        Assert.True(string.IsNullOrEmpty(input1.GetValue()));
+        Assert.True(string.IsNullOrEmpty(input2.GetValue()));
+        Assert.True(string.IsNullOrEmpty(model.Name));
+        Assert.True(string.IsNullOrEmpty(model.Description));
     }
 
     [Fact]
@@ -369,14 +368,14 @@ public class EditFormTest
         var editContext = new EditContext(model);
 
         var input = new TestInputComponent { Value = model.Value };
-
         input.Initialize(editContext, () => model.Value);
 
         input.SetCurrentValue("Changed");
 
         editContext.NotifyResetRequested();
 
-        Assert.Null(input.GetValue());
+        Assert.True(string.IsNullOrEmpty(input.GetValue()));
+        Assert.True(string.IsNullOrEmpty(model.Value));
     }
 
     [Fact]
@@ -385,18 +384,15 @@ public class EditFormTest
         var model = new TestModel { Value = "Initial" };
         var editContext = new EditContext(model);
 
-        var input = new TestInputComponent
-        {
-            Value = model.Value
-        };
-
+        var input = new TestInputComponent { Value = model.Value };
         input.Initialize(editContext, () => model.Value);
 
-        input.SetCurrentValue("InvalidValue");
+        input.SetCurrentValue("Invalid");
 
         editContext.NotifyResetRequested();
 
-        Assert.Null(input.GetValue());
+        Assert.True(string.IsNullOrEmpty(input.GetValue()));
+        Assert.True(string.IsNullOrEmpty(model.Value));
     }
 
     private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
@@ -557,15 +553,45 @@ public class EditFormTest
         {
             EditContext = editContext;
 
-            // Required for FieldIdentifier
             ValueExpression = valueExpression;
             FieldIdentifier = FieldIdentifier.Create(ValueExpression);
 
-            // simulate subscription
+            // simulate InputBase lifecycle subscription
             editContext.OnReset += (sender, args) =>
             {
-                CurrentValue = default!;
+                CurrentValueAsString = string.Empty;
             };
+
+            // simulate binding
+            ValueChanged = new EventCallback<string>(
+                null,
+                new Func<string, Task>(v =>
+                {
+                    var member = (MemberExpression)valueExpression.Body;
+
+                    // Get the model instance safely
+                    object model;
+                    if (member.Expression is ConstantExpression constant)
+                    {
+                        model = constant.Value;
+                    }
+                    else
+                    {
+                        // fallback: compile expression
+                        var objectLambda = Expression.Lambda(member.Expression);
+                        var getter = objectLambda.Compile();
+                        model = getter.DynamicInvoke();
+                    }
+
+                    var property = (System.Reflection.PropertyInfo)member.Member;
+                    property.SetValue(model, v);
+
+                    // update component state
+                    Value = v;
+
+                    return Task.CompletedTask;
+                })
+            );
         }
 
         public void SetCurrentValue(string value)
@@ -575,10 +601,7 @@ public class EditFormTest
 
         public string GetValue() => Value;
 
-        protected override bool TryParseValueFromString(
-            string value,
-            out string result,
-            out string validationErrorMessage)
+        protected override bool TryParseValueFromString(string value, out string result, out string validationErrorMessage)
         {
             result = value;
             validationErrorMessage = null;

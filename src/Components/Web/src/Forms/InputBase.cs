@@ -300,8 +300,14 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     private void HandleReset(object? sender, EventArgs e)
     {
-        // Sync model with browser reset behavior
-        CurrentValue = default!;
+        CurrentValueAsString = string.Empty;
+
+        // Clear parsing validation messages
+        _parsingValidationMessages?.Clear();
+
+        // Clear validation + modified state
+        EditContext?.MarkAsUnmodified();
+        EditContext?.NotifyValidationStateChanged();
     }
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
