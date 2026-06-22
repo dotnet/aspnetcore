@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Media;
+namespace Microsoft.AspNetCore.Components.Media;
 
 /* This is equivalent to a .razor file containing:
  *
