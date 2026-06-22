@@ -468,12 +468,12 @@ public class AsyncValidationTests
     public async Task AsyncValidation_WithCancellation()
     {
         // Arrange
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         var documentType = new TestValidatableTypeInfo(
             typeof(Document),
             [
                 CreatePropertyInfo(typeof(Document), typeof(string), "Content", "Content",
-                    [new SlowAsyncValidationAttribute()])
+                    [new CanceledAsyncValidationAttribute()])
             ]);
 
         var document = new Document { Content = "test" };
@@ -486,8 +486,7 @@ public class AsyncValidationTests
             ValidationContext = new ValidationContext(document)
         };
 
-        // Cancel after a short delay
-        cts.CancelAfter(100);
+        cts.Cancel();
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
@@ -500,12 +499,12 @@ public class AsyncValidationTests
     public async Task MultipleAsyncValidation_WithCancellation()
     {
         // Arrange
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         var documentType = new TestValidatableTypeInfo(
             typeof(Document),
             [
                 CreatePropertyInfo(typeof(Document), typeof(string), "Content", "Content",
-                    [new SlowAsyncValidationAttribute(), new SlowAsyncValidationAttribute()])
+                    [new CanceledAsyncValidationAttribute(), new CanceledAsyncValidationAttribute()])
             ]);
 
         var document = new Document { Content = "test" };
@@ -518,8 +517,7 @@ public class AsyncValidationTests
             ValidationContext = new ValidationContext(document)
         };
 
-        // Cancel after a short delay
-        cts.CancelAfter(100);
+        cts.Cancel();
 
         // Act & Assert
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
@@ -1910,7 +1908,7 @@ public class AsyncValidationTests
     {
         private readonly Task _waitsFor;
         private readonly Action _assertOnStart;
-        private readonly TaskCompletionSource _startedTcs = new();
+        private readonly TaskCompletionSource _startedTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public TrackingAsyncAttribute(Task waitsFor, Action assertOnStart)
         {
@@ -1927,6 +1925,7 @@ public class AsyncValidationTests
             CancellationToken cancellationToken)
         {
             _startedTcs.SetResult();
+            _assertOnStart();
             await _waitsFor;
             return ValidationResult.Success;
         }
@@ -1972,19 +1971,22 @@ public class AsyncValidationTests
         }
     }
 
-    private class SlowAsyncValidationAttribute : AsyncValidationAttribute
+    private class CanceledAsyncValidationAttribute : AsyncValidationAttribute
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
             => throw new UnreachableException();
 
-        protected override async Task<ValidationResult?> IsValidAsync(
+        protected override Task<ValidationResult?> IsValidAsync(
             object? value,
             ValidationContext validationContext,
             CancellationToken cancellationToken)
         {
-            // Block until cancellation is requested (deterministic; no fixed delay).
-            await new TaskCompletionSource().Task.WaitAsync(cancellationToken);
-            return ValidationResult.Success;
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.FromCanceled<ValidationResult?>(cancellationToken);
+            }
+
+            return Task.FromResult(ValidationResult.Success);
         }
     }
 
