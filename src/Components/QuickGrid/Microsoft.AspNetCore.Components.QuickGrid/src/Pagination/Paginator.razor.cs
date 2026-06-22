@@ -28,12 +28,20 @@ public partial class Paginator : IDisposable
     [Parameter] public RenderFragment? SummaryTemplate { get; set; }
 
     /// <summary>
-    /// Triggered before the page changes; passes the target page index
+    /// A callback that is invoked immediately before the page changes.
+    /// The callback receives the target page number as a 1-based, user-facing value
+    /// (for example, the first page is <c>1</c>, not <c>0</c>).
+    /// This is invoked before <see cref="PaginationState.SetCurrentPageIndexAsync(int)"/> is called,
+    /// so <see cref="PaginationState.CurrentPageIndex"/> still reflects the previous page when the callback runs.
     /// </summary>
     [Parameter] public EventCallback<int> OnPageChanging { get; set; }
 
     /// <summary>
-    /// Triggered after the page has changed; passes the new page index.
+    /// A callback that is invoked immediately after the page has changed.
+    /// The callback receives the new page number as a 1-based, user-facing value
+    /// (for example, the first page is <c>1</c>, not <c>0</c>).
+    /// This is invoked after <see cref="PaginationState.SetCurrentPageIndexAsync(int)"/> has completed,
+    /// so <see cref="PaginationState.CurrentPageIndex"/> reflects the new page when the callback runs.
     /// </summary>
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
@@ -89,7 +97,7 @@ public partial class Paginator : IDisposable
         return Task.CompletedTask;
     }
 
-    private async Task HandlePageChangeAsync(int newPageIndex)
+    internal async Task HandlePageChangeAsync(int newPageIndex)
     {
         await OnPageChanging.InvokeAsync(newPageIndex + 1);
         await State.SetCurrentPageIndexAsync(newPageIndex);
