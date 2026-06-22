@@ -12,9 +12,15 @@ const disposedEventHandlerIdsEntryLength = 8; // Each is an int64 giving the ID
 const editsEntryLength = 16; // 4 ints
 const stringTableEntryLength = 4; // Each is an int32 giving the string data location, or -1 for null
 
+interface OutOfProcessStringReaderInterface {
+  readString(index: number): string | null;
+}
+
 export class OutOfProcessRenderBatch implements RenderBatch {
-  constructor(private batchData: Uint8Array) {
-    const stringReader = new OutOfProcessStringReader(batchData);
+  constructor(private batchData: Uint8Array, useUtf16StringTable?: boolean) {
+    const stringReader = useUtf16StringTable
+      ? new OutOfProcessStringReaderUtf16(batchData)
+      : new OutOfProcessStringReader(batchData);
 
     this.arrayRangeReader = new OutOfProcessArrayRangeReader(batchData);
     this.arrayBuilderSegmentReader = new OutOfProcessArrayBuilderSegmentReader(batchData);
@@ -89,7 +95,7 @@ class OutOfProcessRenderTreeDiffReader implements RenderTreeDiffReader {
 }
 
 class OutOfProcessRenderTreeEditReader implements RenderTreeEditReader {
-  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReader) {
+  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReaderInterface) {
   }
 
   editType(edit: RenderTreeEdit) {
@@ -115,7 +121,7 @@ class OutOfProcessRenderTreeEditReader implements RenderTreeEditReader {
 }
 
 class OutOfProcessRenderTreeFrameReader implements RenderTreeFrameReader {
-  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReader) {
+  constructor(private batchDataUint8: Uint8Array, private stringReader: OutOfProcessStringReaderInterface) {
   }
 
   // For render frames, the 2nd-4th ints have different meanings depending on frameType.
@@ -192,6 +198,36 @@ class OutOfProcessStringReader {
         numUtf8Bytes
       );
       return decodeUtf8(utf8Data);
+    }
+  }
+}
+
+class OutOfProcessStringReaderUtf16 {
+  private static textDecoder: TextDecoder | undefined;
+  private stringTableStartIndex: number;
+
+  private static getTextDecoder(): TextDecoder {
+    return OutOfProcessStringReaderUtf16.textDecoder ??= new TextDecoder('utf-16le');
+  }
+
+  constructor(private batchDataUint8: Uint8Array) {
+    // Final int gives start position of the string table (same layout as UTF-8 variant)
+    this.stringTableStartIndex = readInt32LE(batchDataUint8, batchDataUint8.length - 4);
+  }
+
+  readString(index: number): string | null {
+    if (index === -1) { // Special value encodes 'null'
+      return null;
+    } else {
+      const stringTableEntryPos = readInt32LE(this.batchDataUint8, this.stringTableStartIndex + index * stringTableEntryLength);
+
+      // UTF-16LE format: [int32 charCount][UTF-16LE chars]
+      // Both C# and JS strings are natively UTF-16, so this avoids two transcoding passes.
+      const charCount = readInt32LE(this.batchDataUint8, stringTableEntryPos);
+      const charsStart = stringTableEntryPos + 4;
+      const byteLength = charCount * 2;
+      const utf16Bytes = new Uint8Array(this.batchDataUint8.buffer, this.batchDataUint8.byteOffset + charsStart, byteLength);
+      return OutOfProcessStringReaderUtf16.getTextDecoder().decode(utf16Bytes);
     }
   }
 }
