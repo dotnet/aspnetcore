@@ -36,13 +36,13 @@ public class HttpParser<TRequestHandler> : IHttpParser<TRequestHandler> where TR
     /// directly from application code.
     /// </summary>
     /// <remarks>
-    /// Bare LF line terminators are rejected by default. Set the
+    /// Bare LF line terminators are accepted by default. Set the
     /// <c>Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators</c> AppContext switch
-    /// to <c>false</c> to accept bare LF terminators.
+    /// to <c>true</c> to reject them and require CRLF.
     /// </remarks>
     public HttpParser(bool showErrorDetails)
         : this(showErrorDetails,
-              !AppContext.TryGetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) || disabled)
+              AppContext.TryGetSwitch(KestrelServerOptions.DisableHttp1LineFeedTerminatorsSwitchKey, out var disabled) && disabled)
     {
     }
 

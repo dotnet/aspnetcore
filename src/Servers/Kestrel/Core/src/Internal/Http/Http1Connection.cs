@@ -395,14 +395,24 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     public void OnBareLineFeedTerminator(bool rejected)
     {
-        // Only record the metric once per request even if multiple lines use a bare LF terminator.
+        // Only record the metric and log once per request even if multiple lines use a bare LF terminator.
         if (_sawBareLineFeedTerminator)
         {
             return;
         }
 
         _sawBareLineFeedTerminator = true;
-        ServiceContext.Metrics.BareLineFeedRequest(MetricsContext, rejected);
+
+        // Bare LF terminators only exist in HTTP/1.x. The per-request version is not always known yet
+        // (e.g. when the request line itself is rejected), so fall back to the representative HTTP/1.x value.
+        var httpVersion = _httpVersion switch
+        {
+            Http.HttpVersion.Http10 => KestrelMetrics.Http10,
+            _ => KestrelMetrics.Http11,
+        };
+
+        Log.Http1BareLineFeedTerminator(ConnectionId, httpVersion, rejected);
+        ServiceContext.Metrics.BareLineFeedRequest(MetricsContext, rejected, httpVersion);
     }
 
     public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)

@@ -565,6 +565,28 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
+    public async Task Http1Connection_BareLineFeedTerminator_LogsDetails()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory, disableHttp1LineFeedTerminators: true);
+
+        await using var server = new TestServer(context => Task.CompletedTask, serviceContext);
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send("GET / HTTP/1.1\nHost:\r\n\r\n").DefaultTimeout();
+            await connection.ReceiveEnd(
+                "HTTP/1.1 400 Bad Request",
+                "Content-Length: 0",
+                "Connection: close",
+                $"Date: {serviceContext.DateHeaderValue}",
+                "",
+                "").DefaultTimeout();
+        }
+
+        Assert.Contains(TestSink.Writes, w => w.EventId.Name == "Http1BareLineFeedTerminator");
+    }
+
+    [Fact]
     public async Task Http1Connection_Upgrade()
     {
         var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -1087,6 +1109,8 @@ public class KestrelMetricsTests : TestApplicationErrorLoggerLoggedTest
     {
         Assert.Equal(1, measurement.Value);
         Assert.Equal(rejected ? "rejected" : "accepted", (string)measurement.Tags["kestrel.bare_line_feed.outcome"]);
+        Assert.Equal("http", (string)measurement.Tags["network.protocol.name"]);
+        Assert.Equal("1.1", (string)measurement.Tags["network.protocol.version"]);
         Assert.Equal("127.0.0.1", (string)measurement.Tags["server.address"]);
     }
 }

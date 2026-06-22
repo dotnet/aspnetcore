@@ -1068,12 +1068,18 @@ public class HttpParserTests : LoggedTest
 
     [ConditionalFact]
     [RemoteExecutionSupported]
-    public void HttpParser_DefaultsToCrlfOnlyWhenSwitchNotSet()
+    public void HttpParser_DefaultsToAcceptingBareLineFeedWhenSwitchNotSet()
     {
         using var remoteHandle = RemoteExecutor.Invoke(static () =>
         {
             var parser = new HttpParser<RequestHandler>(showErrorDetails: true);
-            AssertRejectsBareLineFeedHeader(parser);
+            var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes("a:b\n\r\n"));
+            var requestHandler = new RequestHandler();
+            var reader = new SequenceReader<byte>(buffer);
+
+            Assert.True(parser.ParseHeaders(requestHandler, ref reader));
+            Assert.Single(requestHandler.Headers);
+            Assert.Equal("b", requestHandler.Headers["a"]);
         });
     }
 

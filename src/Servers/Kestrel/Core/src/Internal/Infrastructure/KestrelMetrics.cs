@@ -25,6 +25,7 @@ internal sealed class KestrelMetrics
     public const string BareLineFeedOutcomeAccepted = "accepted";
     public const string BareLineFeedOutcomeRejected = "rejected";
 
+    public const string Http10 = "1.0";
     public const string Http11 = "1.1";
     public const string Http2 = "2";
     public const string Http3 = "3";
@@ -173,7 +174,7 @@ internal sealed class KestrelMetrics
         _rejectedConnectionsCounter.Add(1, tags);
     }
 
-    public void BareLineFeedRequest(ConnectionMetricsContext metricsContext, bool rejected)
+    public void BareLineFeedRequest(ConnectionMetricsContext metricsContext, bool rejected, string httpVersion)
     {
         if (!_bareLineFeedRequestsCounter.Enabled)
         {
@@ -182,6 +183,8 @@ internal sealed class KestrelMetrics
 
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
         tags.TryAddTag(BareLineFeedOutcomeAttributeName, rejected ? BareLineFeedOutcomeRejected : BareLineFeedOutcomeAccepted);
         _bareLineFeedRequestsCounter.Add(1, tags);
     }
