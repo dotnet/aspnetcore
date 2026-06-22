@@ -24,7 +24,7 @@ describe('Virtualize exports', () => {
     expect(typeof Virtualize.restoreAnchor).toBe('function');
   });
 
-  test('init does not warn for valid spacer elements', () => {
+  test('init warns when spacer is div inside tbody', () => {
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const originalCss = globalThis.CSS;
     const originalIntersectionObserver = globalThis.IntersectionObserver;
@@ -59,6 +59,104 @@ describe('Virtualize exports', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         'Virtualize is rendering inside <table> or <tbody>. Set SpacerElement="tr" to avoid invalid markup.',
       );
+    } finally {
+      warnSpy.mockRestore();
+      scrollContainer.remove();
+      mockGlobalProperty('CSS', originalCss as typeof globalThis.CSS);
+      mockGlobalProperty('IntersectionObserver', originalIntersectionObserver as typeof globalThis.IntersectionObserver);
+      mockGlobalProperty('ResizeObserver', originalResizeObserver as typeof globalThis.ResizeObserver);
+    }
+  });
+
+  test('init warns when spacer is div inside ul instead of li', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const originalCss = globalThis.CSS;
+    const originalIntersectionObserver = globalThis.IntersectionObserver;
+    const originalResizeObserver = globalThis.ResizeObserver;
+
+    mockGlobalProperty('CSS', {
+      supports: jest.fn(() => false),
+    } as unknown as typeof globalThis.CSS);
+
+    mockGlobalProperty(
+      'IntersectionObserver',
+      createNoopObserver() as unknown as typeof globalThis.IntersectionObserver
+    );
+    mockGlobalProperty(
+      'ResizeObserver',
+      createNoopObserver() as unknown as typeof globalThis.ResizeObserver
+    );
+
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.overflowY = 'auto';
+
+    const list = document.createElement('ul');
+
+    const spacerBefore = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+
+    list.append(spacerBefore, spacerAfter);
+    scrollContainer.append(list);
+    document.body.append(scrollContainer);
+
+    const dotNetHelper = {
+      _callDispatcher: {},
+      _id: 1,
+      dispose: () => {},
+    };
+
+    try {
+      Virtualize.init(dotNetHelper as any, spacerBefore, spacerAfter);
+      expect(warnSpy).toHaveBeenCalledWith('Virtualize is rendering inside <ul> or <ol>. Set SpacerElement="li" to avoid invalid markup.');
+    } finally {
+      warnSpy.mockRestore();
+      scrollContainer.remove();
+      mockGlobalProperty('CSS', originalCss as typeof globalThis.CSS);
+      mockGlobalProperty('IntersectionObserver', originalIntersectionObserver as typeof globalThis.IntersectionObserver);
+      mockGlobalProperty('ResizeObserver', originalResizeObserver as typeof globalThis.ResizeObserver);
+    }
+  });
+
+  test('init warns when spacer is div inside ol instead of li', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const originalCss = globalThis.CSS;
+    const originalIntersectionObserver = globalThis.IntersectionObserver;
+    const originalResizeObserver = globalThis.ResizeObserver;
+
+    mockGlobalProperty('CSS', {
+      supports: jest.fn(() => false),
+    } as unknown as typeof globalThis.CSS);
+
+    mockGlobalProperty(
+      'IntersectionObserver',
+      createNoopObserver() as unknown as typeof globalThis.IntersectionObserver
+    );
+    mockGlobalProperty(
+      'ResizeObserver',
+      createNoopObserver() as unknown as typeof globalThis.ResizeObserver
+    );
+
+    const scrollContainer = document.createElement('div');
+    scrollContainer.style.overflowY = 'auto';
+
+    const list = document.createElement('ul');
+
+    const spacerBefore = document.createElement('div');
+    const spacerAfter = document.createElement('div');
+
+    list.append(spacerBefore, spacerAfter);
+    scrollContainer.append(list);
+    document.body.append(scrollContainer);
+
+    const dotNetHelper = {
+      _callDispatcher: {},
+      _id: 1,
+      dispose: () => {},
+    };
+
+    try {
+      Virtualize.init(dotNetHelper as any, spacerBefore, spacerAfter);
+      expect(warnSpy).toHaveBeenCalledWith('Virtualize is rendering inside <ul> or <ol>. Set SpacerElement="li" to avoid invalid markup.');
     } finally {
       warnSpy.mockRestore();
       scrollContainer.remove();
