@@ -184,6 +184,10 @@ public class GridSortTest
     /// StringLengthComparer sorts strings by length (longer first), then alphabetically.
     /// Used to verify that comparer overloads work correctly.
     /// </summary>
+    /// <remarks>
+    /// Note: This comparer sorts nulls last (unlike default Comparer<string>
+    /// which sorts nulls first).
+    /// </remarks>
     private class StringLengthComparer : System.Collections.Generic.IComparer<string>
     {
         public static readonly StringLengthComparer Instance = new();
@@ -311,5 +315,29 @@ public class GridSortTest
         Assert.Single(propertyList);
         Assert.Equal("Name", propertyList.First().PropertyName);
         Assert.Equal(SortDirection.Descending, propertyList.First().Direction);
+    }
+
+    [Fact]
+    public void ByAscending_WithComparer_ToggleDescending_ReversesOrder()
+    {
+        var data = new[]
+        {
+            new TestEntity { Name = "Alice" },
+            new TestEntity { Name = "Bob" },
+            new TestEntity { Name = "Charlie" }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByAscending(
+            x => x.Name,
+            StringLengthComparer.Instance);
+
+        var ascending = gridSort.Apply(data, true).ToArray();
+        var descending = gridSort.Apply(data, false).ToArray();
+
+        Assert.Equal(new[] { "Charlie", "Alice", "Bob" },
+            ascending.Select(x => x.Name));
+
+        Assert.Equal(new[] { "Bob", "Alice", "Charlie" },
+            descending.Select(x => x.Name));
     }
 }
