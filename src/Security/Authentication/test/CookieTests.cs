@@ -77,6 +77,85 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         Assert.StartsWith("/", responded.Single());
     }
 
+    [Theory]
+    [InlineData("/\tfoo")]
+    [InlineData("/\rfoo")]
+    [InlineData("/\nfoo")]
+    [InlineData("/\r\nfoo")]
+    [InlineData("/\0foo")]
+    [InlineData("/\u0001foo")]
+    [InlineData("/\u001Ffoo")]
+    [InlineData("/\u007Ffoo")]
+    [InlineData("/foo\r\nLocation:%20evil")]
+    [InlineData("/foo\tbar")]
+    public async Task LogoutReturnUrlWithControlCharacterIsRejected(string returnUrl)
+    {
+        using var host = await CreateHost(o => o.LogoutPath = "/signout");
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(
+            server,
+            "http://example.com/signout?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        Assert.False(transaction.Response.Headers.Contains("Location"));
+    }
+
+    [Theory]
+    [InlineData("/")]
+    [InlineData("/foo")]
+    [InlineData("/foo/bar")]
+    [InlineData("/foo?x=1#y")]
+    public async Task LogoutReturnUrlWithoutControlCharacterIsHonored(string returnUrl)
+    {
+        using var host = await CreateHost(o => o.LogoutPath = "/signout");
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(
+            server,
+            "http://example.com/signout?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        var location = Assert.Single(transaction.Response.Headers.GetValues("Location"));
+        Assert.Equal(returnUrl, location);
+    }
+
+    [Theory]
+    // Protocol-relative URLs (path[1] == '/').
+    [InlineData("//www.example.com")]
+    [InlineData("//www.example.com/foobar.html")]
+    [InlineData("///www.example.com")]
+    [InlineData("//////www.example.com")]
+    // Forward-then-backslash (path[1] == '\\').
+    [InlineData("/\\")]
+    [InlineData("/\\foo")]
+    [InlineData("/\\evil.com")]
+    // Application-relative (~) is rejected — cookie auth never resolves PathBase like MVC's IUrlHelper.Content does.
+    [InlineData("~/")]
+    [InlineData("~/foo")]
+    [InlineData("~/foo.html")]
+    // Absolute URLs (path[0] != '/').
+    [InlineData("http://www.example.com")]
+    [InlineData("https://www.example.com")]
+    [InlineData("HtTpS://www.example.com")]
+    [InlineData("http://localhost/foobar.html")]
+    [InlineData("javascript:alert(1)")]
+    // Relative URLs (path[0] != '/').
+    [InlineData("foo.html")]
+    [InlineData("../foo.html")]
+    [InlineData("fold/foo.html")]
+    // Single-slash scheme confusion.
+    [InlineData("http:/foo.html")]
+    [InlineData("hTtP:foo.html")]
+    // Whitespace-only (length 1, path[0] != '/').
+    [InlineData(" ")]
+    public async Task LogoutReturnUrlNonHostRelativeIsRejected(string returnUrl)
+    {
+        using var host = await CreateHost(o => o.LogoutPath = "/signout");
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(
+            server,
+            "http://example.com/signout?ReturnUrl=" + Uri.EscapeDataString(returnUrl));
+
+        Assert.False(transaction.Response.Headers.Contains("Location"));
+    }
+
     [Fact]
     public async Task AjaxChallengeRedirectTurnsInto200WithLocationHeader()
     {

@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -446,17 +447,9 @@ public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAut
     }
 
     private static bool IsHostRelative(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-        {
-            return false;
-        }
-        if (path.Length == 1)
-        {
-            return path[0] == '/';
-        }
-        return path[0] == '/' && path[1] != '/' && path[1] != '\\';
-    }
+        => !string.IsNullOrEmpty(path)
+            && path[0] == '/' // Suppresses the "~/..." branch of SharedUrlHelper.IsLocalUrl so only true host-relative paths are accepted.
+            && SharedUrlHelper.IsLocalUrl(path);
 
     /// <inheritdoc />
     protected override async Task HandleForbiddenAsync(AuthenticationProperties properties)
