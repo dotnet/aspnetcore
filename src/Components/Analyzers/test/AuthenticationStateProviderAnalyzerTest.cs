@@ -186,6 +186,51 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
+    public void Diagnostic_WhenOnlyUnsubscribedToAuthenticationStateChanged()
+    {
+        var test = @"
+    using Microsoft.AspNetCore.Components.Authorization;
+    using System.Threading.Tasks;
+
+    namespace TestApp
+    {
+        class MyComponent : System.IDisposable
+        {
+            private AuthenticationStateProvider _provider;
+
+            public MyComponent(AuthenticationStateProvider provider)
+            {
+                _provider = provider;
+            }
+
+            private async void OnAuthStateChanged(Task<AuthenticationState> task)
+            {
+            }
+
+            private async Task LoadUserAsync()
+            {
+                var state = await _provider.GetAuthenticationStateAsync();
+            }
+
+            public void Dispose()
+            {
+                _provider.AuthenticationStateChanged -= OnAuthStateChanged;
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = "BL0012",
+                Message = "'MyComponent' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
+
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 7, 15) }
+            });
+    }
+
+    [Fact]
     public void NoDiagnostic_WhenTypeDoesNotUseAuthenticationStateProvider()
     {
         var test = @"
