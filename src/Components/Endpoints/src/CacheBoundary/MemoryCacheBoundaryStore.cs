@@ -3,21 +3,24 @@
 
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
+internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
 {
     private readonly MemoryCache _cache;
+    private readonly ILogger<MemoryCacheBoundaryStore> _logger;
     private readonly ConcurrentDictionary<string, Task<string>> _pending = new(StringComparer.Ordinal);
 
-    public MemoryCacheBoundaryStore(IOptions<RazorComponentsServiceOptions> options)
+    public MemoryCacheBoundaryStore(IOptions<RazorComponentsServiceOptions> options, ILogger<MemoryCacheBoundaryStore> logger)
     {
         _cache = new MemoryCache(new MemoryCacheOptions
         {
             SizeLimit = options.Value.CacheBoundarySizeLimit,
         });
+        _logger = logger;
     }
 
     public async ValueTask<string> GetOrCreateAsync(
@@ -78,31 +81,41 @@ internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
 
     private void StoreEntry(string key, string json, CacheStoreOptions options)
     {
-        var entryOptions = new MemoryCacheEntryOptions
+        try
         {
-            Size = json.Length * sizeof(char),
-        };
+            var entryOptions = new MemoryCacheEntryOptions
+            {
+                Size = json.Length * sizeof(char),
+            };
 
-        if (options.ExpiresSliding.HasValue)
-        {
-            entryOptions.SlidingExpiration = options.ExpiresSliding.Value;
-        }
+            if (options.ExpiresSliding.HasValue)
+            {
+                entryOptions.SlidingExpiration = options.ExpiresSliding.Value;
+            }
 
-        if (options.ExpiresOn.HasValue)
-        {
-            entryOptions.AbsoluteExpiration = options.ExpiresOn.Value;
-        }
-        else
-        {
-            entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? RazorComponentsServiceOptions.DefaultCacheBoundaryExpiration;
-        }
+            if (options.ExpiresOn.HasValue)
+            {
+                entryOptions.AbsoluteExpiration = options.ExpiresOn.Value;
+            }
+            else
+            {
+                entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? RazorComponentsServiceOptions.DefaultCacheBoundaryExpiration;
+            }
 
-        if (options.Priority.HasValue)
-        {
-            entryOptions.Priority = options.Priority.Value;
-        }
+            if (options.Priority.HasValue)
+            {
+                entryOptions.Priority = options.Priority.Value;
+            }
 
-        _cache.Set(key, json, entryOptions);
+            _cache.Set(key, json, entryOptions);
+        }
+        catch (Exception ex)
+        {
+            // Failing to cache the entry should not fail the request; the value was still
+            // produced successfully, so log and continue without caching.
+            // Identical behaviour to HybridCache
+            Log.StoreEntryFailed(_logger, key, ex);
+        }
     }
 
     public void Clear()
@@ -113,5 +126,11 @@ internal sealed class MemoryCacheBoundaryStore : ICacheBoundaryStore
     public void Dispose()
     {
         _cache.Dispose();
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Warning, "Failed to store CacheBoundary entry for key '{Key}'.", EventName = "StoreEntryFailed")]
+        public static partial void StoreEntryFailed(ILogger logger, string key, Exception exception);
     }
 }
