@@ -142,5 +142,7 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
 
         Assert.Contains("hydration", message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("malformed", message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("invalid markup", message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Ensure valid HTML structure", message, StringComparison.OrdinalIgnoreCase);
     }
 }
