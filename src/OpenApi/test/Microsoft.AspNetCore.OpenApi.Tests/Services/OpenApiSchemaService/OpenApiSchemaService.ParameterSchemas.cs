@@ -776,7 +776,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiParameters_NullableEnumWithGlobalNamingPolicy_NonBodySchemaEnumIncludesNull()
+    public async Task GetOpenApiParameters_NullableEnumWithGlobalNamingPolicy_NonBodySchemaOmitsNullEnumEntry()
     {
         var serviceCollection = new ServiceCollection();
         serviceCollection.ConfigureHttpJsonOptions(options =>
@@ -795,8 +795,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(parameter.Schema.Enum,
                 value => Assert.Equal("HighPriority", value.GetValue<string>()),
                 value => Assert.Equal("MediumPriority", value.GetValue<string>()),
-                value => Assert.Equal("LowPriority", value.GetValue<string>()),
-                value => Assert.Null(value));
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
         });
     }
 
