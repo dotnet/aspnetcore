@@ -148,13 +148,6 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
       waitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.register(fn),
       cancelWaitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.unregister(fn),
     };
-
-    options.circuitHandlers.push({
-      onCircuitClosed: () => {
-        autoPauseManager?.dispose();
-        autoPauseManager = undefined;
-      },
-    });
   }
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');

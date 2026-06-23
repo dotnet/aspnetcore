@@ -59,6 +59,31 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
     }
 
     [Fact]
+    public void AutoPause_StillWorks_AfterAPauseResumeCycle()
+    {
+        // First pause/resume cycle.
+        SetVisibility("hidden");
+        WaitForPausedUI();
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        // The AutoPauseManager must survive the resume so that a subsequent hide pauses again. 
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        SetVisibility("hidden");
+        WaitForPausedUI();
+
+        SetVisibility("visible");
+        WaitForResumedUI();
+
+        // State preserved across both cycles.
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
+    [Fact]
     public void HiddenTab_BecomesVisibleBeforeDelay_DoesNotPause()
     {
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
