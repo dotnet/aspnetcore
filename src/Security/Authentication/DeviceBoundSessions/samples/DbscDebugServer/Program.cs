@@ -59,7 +59,8 @@ public class Startup
             {
                 o.Cookie.Name = DbscNames.SourceCookie;
                 o.LoginPath = "/login";
-                o.ExpireTimeSpan = TimeSpan.FromDays(7);
+                // TEMP (manual sliding test): 20 min lifetime, slides at the 50% mark (~10 min).
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(20);
             })
             // The DBSC handler + refresh/session cookie schemes + policy scheme.
             // The session TTL is read live from the debug state so it can be changed at runtime.
@@ -184,7 +185,16 @@ public class Startup
 
             endpoints.MapGet("/debug/state", async context =>
             {
-                var cookies = DbscDecoder.DecodeRequestCookies(context);
+                var cookies = DbscDecoder.DecodeRequestCookies(context) ?? new List<DebugCookie>();
+
+                // The refresh cookie is path-scoped to /.well-known/dbsc and is never sent to this
+                // endpoint, so surface the latest copy the capture middleware stashed from DBSC traffic.
+                var refresh = _debug.LatestRefreshCookie;
+                if (refresh is not null && !cookies.Exists(c => c.Name == refresh.Name))
+                {
+                    cookies.Add(refresh);
+                }
+
                 await context.Response.WriteAsJsonAsync(new
                 {
                     authenticated = context.User.Identity?.IsAuthenticated == true,

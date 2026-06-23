@@ -139,12 +139,10 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         refreshProperties.Items["DbscAlgorithm"] = jwtResult.Algorithm;
         refreshProperties.IsPersistent = true;
 
-        // Anchor the refresh cookie's lifetime to the original sign-in cookie so the bound session
-        // never outlives the credential it was exchanged for. Copying the source ticket's IssuedUtc/
-        // ExpiresUtc makes the cookie handler honor them (instead of starting a fresh ExpireTimeSpan
-        // window at registration time). Falls back to the handler default if the source has no expiry.
-        refreshProperties.IssuedUtc = properties.IssuedUtc;
-        refreshProperties.ExpiresUtc = properties.ExpiresUtc;
+        // Leave IssuedUtc/ExpiresUtc unset so the refresh cookie scheme starts a fresh ExpireTimeSpan
+        // window at registration (exactly like a normal sign-in) and then slides on each refresh when
+        // the source scheme uses sliding expiration. This mirrors the auth cookie the session replaces,
+        // so enabling DBSC does not regress an active user's session lifetime.
 
         // 1. Stamp the refresh cookie (path-scoped stash with ticket + public key)
         await Context.SignInAsync(Options.RefreshScheme, principal, refreshProperties);

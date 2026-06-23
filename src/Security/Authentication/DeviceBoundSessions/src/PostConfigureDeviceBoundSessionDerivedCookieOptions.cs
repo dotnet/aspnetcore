@@ -33,9 +33,10 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         if (schemes.RefreshSchemes.TryGetValue(name, out var refreshSourceScheme))
         {
             CopyFromSource(refreshSourceScheme, options);
-            // Override: path-scoped to DBSC endpoints, match source lifetime
+            // Override: path-scoped to DBSC endpoints. Lifetime and sliding behavior are inherited
+            // from the source scheme so the refresh cookie ages exactly like the auth cookie it
+            // replaces (renewed on each refresh when the source uses sliding expiration).
             options.Cookie.Path = "/.well-known/dbsc";
-            options.SlidingExpiration = false;
         }
         else if (schemes.SessionSchemes.TryGetValue(name, out var sessionSourceScheme))
         {
@@ -60,6 +61,7 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         target.Cookie.Domain = source.Cookie.Domain;
         target.Cookie.IsEssential = source.Cookie.IsEssential;
         target.ExpireTimeSpan = source.ExpireTimeSpan;
+        target.SlidingExpiration = source.SlidingExpiration;
 
         // Restore the target-specific name and path
         target.Cookie.Name = targetName;

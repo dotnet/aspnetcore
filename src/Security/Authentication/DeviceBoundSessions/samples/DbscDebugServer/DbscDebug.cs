@@ -28,7 +28,11 @@ public static class DbscNames
     public const string RefreshCookie = ".AspNetCore.Application.Dbsc.Refresh";
     public const string SessionCookie = ".AspNetCore.Application.Dbsc.Session";
 
-    public const string ChallengePurpose = "Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.v1";
+    // The challenge protector is domain-separated by flow: registration challenges and refresh
+    // challenges are protected under distinct purposes, so a challenge from one flow can never be
+    // decrypted (or confused) as the other.
+    public const string RegistrationChallengePurpose = "Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.Registration.v1";
+    public const string RefreshChallengePurpose = "Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.Refresh.v1";
 
     public static string? SchemeForCookie(string name) => name switch
     {
@@ -59,6 +63,19 @@ public sealed class DbscDebugState
     {
         get => TimeSpan.FromTicks(Interlocked.Read(ref _ttlTicks));
         set => Interlocked.Exchange(ref _ttlTicks, value.Ticks);
+    }
+
+    private DebugCookie? _latestRefreshCookie;
+
+    /// <summary>
+    /// The most recently observed refresh cookie (decoded). The refresh cookie is path-scoped to
+    /// /.well-known/dbsc, so the dashboard's own /debug/state polls never receive it; the capture
+    /// middleware stashes the latest copy here from the DBSC traffic that does carry it.
+    /// </summary>
+    public DebugCookie? LatestRefreshCookie
+    {
+        get { lock (_lock) { return _latestRefreshCookie; } }
+        set { lock (_lock) { _latestRefreshCookie = value; } }
     }
 
     public DebugExchange Add(DebugExchange exchange)
@@ -363,32 +380,58 @@ public static class DbscDecoder
 
     public static DebugChallenge DecodeChallenge(HttpContext context, string challenge)
     {
+        var dp = context.RequestServices.GetRequiredService<IDataProtectionProvider>();
+
+        byte[] raw;
         try
         {
-            var dp = context.RequestServices.GetRequiredService<IDataProtectionProvider>();
-            var protector = dp.CreateProtector(DbscNames.ChallengePurpose).ToTimeLimitedDataProtector();
-            var bytes = protector.Unprotect(WebEncoders.Base64UrlDecode(challenge));
-
-            var reader = new CborReader(bytes, allowMultipleRootLevelValues: true);
-            var claimUid = reader.ReadTextString();
-            string? sessionId = null;
-            if (reader.PeekState() != CborReaderState.Finished)
-            {
-                sessionId = reader.ReadTextString();
-            }
-
-            return new DebugChallenge
-            {
-                Kind = sessionId is null ? "registration" : "refresh",
-                ClaimUid = claimUid,
-                SessionId = sessionId,
-                Valid = true,
-            };
+            raw = WebEncoders.Base64UrlDecode(challenge);
         }
         catch (Exception ex)
         {
             return new DebugChallenge { Valid = false, Error = DescribeException(ex) };
         }
+
+        // The challenge is protected under one of two domain-separated purposes. Try each: the one
+        // that decrypts both validates the payload and identifies which flow issued it.
+        Exception? firstError = null;
+        foreach (var (kind, purpose) in new[]
+        {
+            ("refresh", DbscNames.RefreshChallengePurpose),
+            ("registration", DbscNames.RegistrationChallengePurpose),
+        })
+        {
+            try
+            {
+                var protector = dp.CreateProtector(purpose).ToTimeLimitedDataProtector();
+                var bytes = protector.Unprotect(raw);
+
+                var reader = new CborReader(bytes, allowMultipleRootLevelValues: true);
+                var claimUid = reader.ReadTextString();
+                string? sessionId = null;
+                if (reader.PeekState() != CborReaderState.Finished)
+                {
+                    sessionId = reader.ReadTextString();
+                }
+
+                return new DebugChallenge
+                {
+                    Kind = kind,
+                    ClaimUid = claimUid,
+                    SessionId = sessionId,
+                    Valid = true,
+                };
+            }
+            catch (Exception ex)
+            {
+                // Keep the first failure: when a challenge is the correct kind but expired, the
+                // matching purpose surfaces an informative "payload expired" message, whereas the
+                // other purpose only reports a generic key mismatch.
+                firstError ??= ex;
+            }
+        }
+
+        return new DebugChallenge { Valid = false, Error = DescribeException(firstError!) };
     }
 
     /// <summary>
@@ -558,6 +601,13 @@ public sealed class DebugCaptureMiddleware
                 var registrationHeader = context.Response.Headers["Secure-Session-Registration"].ToString();
                 var challengeHeader = context.Response.Headers["Secure-Session-Challenge"].ToString();
 
+                var setCookies = DbscDecoder.DecodeSetCookies(context);
+
+                // The refresh cookie is path-scoped to /.well-known/dbsc, so the dashboard's own
+                // /debug/state polls never carry it. Stash the latest decoded copy seen on real DBSC
+                // traffic (a fresh Set-Cookie from registration or a slide wins; a deletion clears it).
+                UpdateRefreshCookieStash(requestCookies, setCookies);
+
                 var exchange = new DebugExchange
                 {
                     Time = start.ToLocalTime().ToString("HH:mm:ss.fff", CultureInfo.InvariantCulture),
@@ -568,7 +618,7 @@ public sealed class DebugCaptureMiddleware
                     Authenticated = context.User.Identity?.IsAuthenticated == true,
                     DurationMs = Math.Round((DateTimeOffset.UtcNow - start).TotalMilliseconds, 2),
                     RequestCookies = requestCookies,
-                    SetCookies = DbscDecoder.DecodeSetCookies(context),
+                    SetCookies = setCookies,
                     Proof = proof,
                     RegistrationHeader = string.IsNullOrEmpty(registrationHeader) ? null : registrationHeader,
                     ChallengeHeader = string.IsNullOrEmpty(challengeHeader) ? null : challengeHeader,
@@ -577,6 +627,35 @@ public sealed class DebugCaptureMiddleware
                 };
 
                 _state.Add(exchange);
+            }
+        }
+    }
+
+    private void UpdateRefreshCookieStash(List<DebugCookie>? requestCookies, List<DebugCookie>? setCookies)
+    {
+        // A fresh Set-Cookie (registration or sliding renewal) reflects the newest expiry; prefer it.
+        if (setCookies is not null)
+        {
+            foreach (var c in setCookies)
+            {
+                if (c.Name == DbscNames.RefreshCookie)
+                {
+                    _state.LatestRefreshCookie = c.Deleted ? null : c;
+                    return;
+                }
+            }
+        }
+
+        // Otherwise fall back to the refresh cookie the browser sent (e.g. the first leg of a refresh).
+        if (requestCookies is not null)
+        {
+            foreach (var c in requestCookies)
+            {
+                if (c.Name == DbscNames.RefreshCookie)
+                {
+                    _state.LatestRefreshCookie = c;
+                    return;
+                }
             }
         }
     }

@@ -86,9 +86,50 @@ public class DeviceBoundSessionCookieProtectionTests
         Assert.False(CanUnprotect(source.TicketDataFormat, protectedByRefresh));
     }
 
+    [Fact]
+    public void PostConfigure_RefreshScheme_InheritsSlidingExpiration_FromSource()
+    {
+        var sut = CreateDerivedPostConfigure(refreshScheme: RefreshScheme, sourceSlidingExpiration: true);
+        var options = new CookieAuthenticationOptions();
+        options.Cookie.Name = ".AspNetCore." + RefreshScheme;
+
+        sut.PostConfigure(RefreshScheme, options);
+
+        // The refresh cookie ages like the auth cookie it replaces: sliding inherited, lifetime copied.
+        Assert.True(options.SlidingExpiration);
+        Assert.Equal(TimeSpan.FromHours(3), options.ExpireTimeSpan);
+    }
+
+    [Fact]
+    public void PostConfigure_RefreshScheme_RespectsDisabledSlidingExpiration_FromSource()
+    {
+        var sut = CreateDerivedPostConfigure(refreshScheme: RefreshScheme, sourceSlidingExpiration: false);
+        var options = new CookieAuthenticationOptions();
+        options.Cookie.Name = ".AspNetCore." + RefreshScheme;
+
+        sut.PostConfigure(RefreshScheme, options);
+
+        // When the source app opts out of sliding, the refresh cookie matches it.
+        Assert.False(options.SlidingExpiration);
+    }
+
+    [Fact]
+    public void PostConfigure_SessionScheme_DisablesSlidingExpiration_EvenWhenSourceSlides()
+    {
+        var sut = CreateDerivedPostConfigure(sessionScheme: SessionScheme, sourceSlidingExpiration: true);
+        var options = new CookieAuthenticationOptions();
+        options.Cookie.Name = ".AspNetCore." + SessionScheme;
+
+        sut.PostConfigure(SessionScheme, options);
+
+        // The short-lived session cookie is deliberately non-sliding regardless of the source.
+        Assert.False(options.SlidingExpiration);
+    }
+
     private static PostConfigureDeviceBoundSessionDerivedCookieOptions CreateDerivedPostConfigure(
         string? refreshScheme = null,
-        string? sessionScheme = null)
+        string? sessionScheme = null,
+        bool sourceSlidingExpiration = true)
     {
         var sourceSchemes = new DeviceBoundSessionSourceSchemes();
         if (refreshScheme is not null)
@@ -106,6 +147,7 @@ public class DeviceBoundSessionCookieProtectionTests
         {
             o.Cookie.HttpOnly = true;
             o.ExpireTimeSpan = TimeSpan.FromHours(3);
+            o.SlidingExpiration = sourceSlidingExpiration;
         });
 
         return new PostConfigureDeviceBoundSessionDerivedCookieOptions(
