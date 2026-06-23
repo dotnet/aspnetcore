@@ -112,6 +112,62 @@ public class WebViewBuildBehaviorTests
         Assert.Equal("_framework/blazor.modules.json", Assert.Single(routes));
     }
 
+    [ConditionalFact]
+    public void Publish_ProjectReferenceToWebViewWithJsModuleRcl_SucceedsWithSingleModulesManifest()
+    {
+        // ProjectReference (P2P) variant of the publish repro. This is the scenario that the in-repo
+        // Photino sample and WebView E2E test exercise: an app references the WebView *source project*
+        // (not the package) and contributes JS library modules via an RCL. Without the workaround in
+        // StaticWebAssets.Groups.targets, publish fails with "Conflicting assets with the same target
+        // path '_framework/blazor.modules.json'" because the SDK doesn't apply
+        // StaticWebAssetFrameworkPattern when computing a referenced project's publish assets.
+        using var build = new ConsumerBuild(_output, isolateNuGetFeeds: false);
+
+        build.CreateProject("rcl", "rcl.csproj", $"""
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <TargetFramework>{StaticWebAssetsTestData.DefaultTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+        build.CreateFile("rcl/wwwroot/rcl.lib.module.js", "export function afterStarted() {}");
+
+        // The app imports the WebView groups targets the same way the in-repo consumers do.
+        build.CreateProject("app", "app.csproj", $"""
+            <Project Sdk="Microsoft.NET.Sdk.Razor">
+              <PropertyGroup>
+                <TargetFramework>{StaticWebAssetsTestData.DefaultTargetFramework}</TargetFramework>
+                <OutputType>Exe</OutputType>
+              </PropertyGroup>
+              <ItemGroup>
+                <ProjectReference Include="{StaticWebAssetsTestData.WebViewProjectPath}" />
+                <ProjectReference Include="..\rcl\rcl.csproj" />
+              </ItemGroup>
+              <Import Project="{StaticWebAssetsTestData.WebViewGroupsTargetsPath}" />
+            </Project>
+            """);
+        build.CreateFile("app/Program.cs", "class Program { static void Main() { } }");
+
+        var result = build.Run("publish -c Release -v:m", "app/app.csproj");
+        if (result.LooksLikeNetworkFailure)
+        {
+            return;
+        }
+
+        Assert.True(result.Succeeded, $"Publish should succeed (no 'Conflicting assets').\n{result.Output}");
+        Assert.DoesNotContain("Conflicting assets with the same target path", result.Output);
+
+        var routes = GetModulesManifestRoutes(build.Root);
+        Assert.Equal("_framework/blazor.modules.json", Assert.Single(routes));
+
+        // The app's generated manifest (with the RCL module) supersedes the WebView fallback.
+        var publishedManifest = FindPublishedFile(build.Root, "blazor.modules.json");
+        Assert.NotNull(publishedManifest);
+        var publishedContent = File.ReadAllText(publishedManifest!);
+        Assert.Contains("_content/rcl/", publishedContent);
+        Assert.Contains(".lib.module.js", publishedContent);
+    }
+
     private static string[] GetModulesManifestRoutes(string root)
     {
         var manifestPath = FindFile(root, "app", "app.staticwebassets.endpoints.json")

@@ -46,6 +46,20 @@ internal static class StaticWebAssetsTestData
     public static string DefaultTargetFramework => GetValue("DefaultNetCoreTargetFramework");
 
     /// <summary>
+    /// Absolute path to the WebView source project, used by the ProjectReference (P2P) publish test
+    /// that reproduces the in-repo "Conflicting assets" publish failure.
+    /// </summary>
+    public static string WebViewProjectPath => Path.Combine(
+        RepoRoot, "src", "Components", "WebView", "WebView", "src", "Microsoft.AspNetCore.Components.WebView.csproj");
+
+    /// <summary>
+    /// Absolute path to the WebView consumer-side groups targets (sets JSModuleManifestRelativePath
+    /// and drops the redundant Project-sourced framework assets at publish for P2P consumers).
+    /// </summary>
+    public static string WebViewGroupsTargetsPath => Path.Combine(
+        RepoRoot, "src", "Components", "WebView", "WebView", "src", "StaticWebAssets.Groups.targets");
+
+    /// <summary>
     /// Path to the locally-built SDK host (.dotnet/dotnet[.exe]) used to run consumer builds.
     /// </summary>
     public static string DotNetHost

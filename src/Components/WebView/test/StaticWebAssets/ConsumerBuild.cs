@@ -25,7 +25,7 @@ internal sealed class ConsumerBuild : IDisposable
     private readonly string _id;
     private bool _preserve;
 
-    public ConsumerBuild(ITestOutputHelper output, [CallerMemberName] string testName = "")
+    public ConsumerBuild(ITestOutputHelper output, bool isolateNuGetFeeds = true, [CallerMemberName] string testName = "")
     {
         _output = output;
         _id = $"{testName}-{Guid.NewGuid():N}";
@@ -36,6 +36,14 @@ internal sealed class ConsumerBuild : IDisposable
         // Isolate the build from the repo and from any other test run.
         File.WriteAllText(Path.Combine(_root, "Directory.Build.props"), "<Project />");
         File.WriteAllText(Path.Combine(_root, "Directory.Build.targets"), "<Project />");
+
+        if (!isolateNuGetFeeds)
+        {
+            // ProjectReference (P2P) mode: the app references the WebView source project, so it needs
+            // no package feed of its own. Inherit the repo's NuGet.config (the working folder lives
+            // under the repo's artifacts) so the referenced project's dependencies resolve.
+            return;
+        }
 
         // Use an isolated global-packages folder so the freshly-built package under test is never
         // served stale from a shared cache, while adding the repo's package cache as a read-only
