@@ -268,6 +268,47 @@ public class EditContextTest
     }
 
     [Fact]
+    public void GetValidationMessages_Works_For_RootModel()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+
+        var field = new FieldIdentifier(model, nameof(TestModel.Name));
+        var store = new ValidationMessageStore(editContext);
+        store.Add(field, "Error");
+
+        var messages = editContext.GetValidationMessages(model);
+
+        Assert.Contains("Error", messages);
+    }
+
+    [Fact]
+    public void IsModified_Works_For_RootModel()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+
+        var field = new FieldIdentifier(model, nameof(TestModel.Name));
+        editContext.NotifyFieldChanged(field);
+
+        Assert.True(editContext.IsModified(model));
+    }
+
+    [Fact]
+    public void MarkAsUnmodified_Works_For_RootModel()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+
+        var field = new FieldIdentifier(model, nameof(TestModel.Name));
+        editContext.NotifyFieldChanged(field);
+
+        editContext.MarkAsUnmodified(model);
+
+        Assert.False(editContext.IsModified(model));
+    }
+
+    [Fact]
     public void CanEnumerateValidationMessagesAcrossAllStoresForAllFields()
     {
         // Arrange
@@ -464,5 +505,10 @@ public class EditContextTest
         {
             return StringComparer.Ordinal.GetHashCode(Property);
         }
+    }
+
+    private class TestModel
+    {
+        public string Name { get; set; }
     }
 }
