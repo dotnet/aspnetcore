@@ -457,10 +457,10 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
         }
 
-        // Apply the framework's implicit post-routing middleware to a pipeline. Used in two places (directly on the
-        // destination pipeline when the framework owns UseRouting(), or inside the deferred block when the app called
-        // UseRouting() explicitly), so the conditions live in one place.
-        var configurePostRouting = (IApplicationBuilder pipeline) =>
+        // Configure the framework's implicit middleware (authentication, authorization, CSRF protection) on a pipeline.
+        // Used in two places (directly on the destination pipeline when the framework owns UseRouting(), or inside the
+        // deferred block when the app called UseRouting() explicitly), so the conditions live in one place.
+        var configureImplicitMiddlewares = (IApplicationBuilder pipeline) =>
         {
             if (addAuthentication)
             {
@@ -487,13 +487,13 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // closure so EndpointRoutingMiddleware can verify it originates from the framework before invoking it.
         if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
         {
-            var postRoutingPipeline = new PostRoutingPipeline(app, configurePostRouting);
+            var postRoutingPipeline = new PostRoutingPipeline(app, configureImplicitMiddlewares);
             _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] =
                 (Func<RequestDelegate, RequestDelegate>)postRoutingPipeline.CreateMiddleware;
         }
         else
         {
-            configurePostRouting(app);
+            configureImplicitMiddlewares(app);
         }
 
         // Wire the source pipeline to run in the destination pipeline
