@@ -5290,11 +5290,13 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     {
         PingTimeout,
         Abort,
+        BackpressureTimeout,
     }
 
     [Theory]
     [InlineData(CloseScenario.PingTimeout)]
     [InlineData(CloseScenario.Abort)]
+    [InlineData(CloseScenario.BackpressureTimeout)]
     public async Task StatefulReconnectWithMessageBufferBackpressureIsCancelable(CloseScenario scenario)
     {
         using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
@@ -5325,28 +5327,33 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
             await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
 
-            switch (scenario)
-            {
-                case CloseScenario.PingTimeout:
-                {
-                    // We go over the 100 ms timeout interval multiple times
-                    for (var i = 0; i < 3; i++)
-                    {
-                        timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
-                        client1.TickHeartbeat();
-                    }
-                    break;
-                }
-                case CloseScenario.Abort:
-                {
-                    client1.Connection.Abort();
-                    break;
-                }
-            }
-
             Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
 
             await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            switch (scenario)
+            {
+                case CloseScenario.PingTimeout:
+                    {
+                        // We go over the 100 ms timeout interval multiple times
+                        for (var i = 0; i < 3; i++)
+                        {
+                            timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
+                            client1.TickHeartbeat();
+                        }
+                        break;
+                    }
+                case CloseScenario.Abort:
+                    {
+                        client1.Connection.Abort();
+                        break;
+                    }
+                case CloseScenario.BackpressureTimeout:
+                    {
+                        timeProvider.Advance(TimeSpan.FromSeconds(5) + TimeSpan.FromMilliseconds(1));
+                        break;
+                    }
+            }
 
             // This one might not be blocked on client1 if the server sends to client2 first during Broadcast
             Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());

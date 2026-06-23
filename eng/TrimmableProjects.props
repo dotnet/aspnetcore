@@ -102,6 +102,7 @@
     <TrimmableProject Include="Microsoft.AspNetCore.Components" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.CustomElements" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.Forms" />
+    <TrimmableProject Include="Microsoft.AspNetCore.Components.Media" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
     <TrimmableProject Include="Microsoft.AspNetCore.Components.QuickGrid" />
     <TrimmableProject Include="Microsoft.Authentication.WebAssembly.Msal" />
@@ -118,6 +119,7 @@
     <TrimmableProject Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <TrimmableProject Include="Microsoft.Extensions.Features" />
     <TrimmableProject Include="Microsoft.AspNetCore.OpenApi" />
+    <TrimmableProject Include="Microsoft.Extensions.Validation.Localization" />
     <TrimmableProject Include="Microsoft.Extensions.Validation" />
   </ItemGroup>
 </Project>

@@ -105,6 +105,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Features" />
+    <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Validation.Localization" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Validation" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.App.Internal.Assets" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.SqlServer" />
@@ -152,8 +153,10 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.Specification.Tests" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.CustomElements" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Media" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Testing" />
     <AspNetCoreShippingAssembly Include="Microsoft.Authentication.WebAssembly.Msal" />
     <AspNetCoreShippingAssembly Include="Microsoft.JSInterop.WebAssembly" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />

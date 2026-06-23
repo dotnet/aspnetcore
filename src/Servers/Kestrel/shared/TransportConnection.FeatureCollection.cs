@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Net;
 using Microsoft.AspNetCore.Connections.Features;
 
 #nullable enable
@@ -37,4 +38,16 @@ internal partial class TransportConnection
     }
 
     void IConnectionLifetimeFeature.Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via IConnectionLifetimeFeature.Abort()."));
+
+    EndPoint? IConnectionEndPointFeature.LocalEndPoint
+    {
+        get => LocalEndPoint;
+        set => LocalEndPoint = value;
+    }
+
+    EndPoint? IConnectionEndPointFeature.RemoteEndPoint
+    {
+        get => RemoteEndPoint;
+        set => RemoteEndPoint = value;
+    }
 }

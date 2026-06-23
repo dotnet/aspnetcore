@@ -80,19 +80,19 @@
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\tsconfig.tsbuildinfo" />
 
     <!-- Components Web.JS outputs -->
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.server.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.server.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.web.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.web.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webassembly.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webassembly.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.server.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.server.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.web.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.web.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.webassembly.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.webassembly.js.map" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webview.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.server.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.server.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.web.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.web.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webassembly.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webassembly.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.server.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.server.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.web.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.web.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.webassembly.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.webassembly.js.map" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webview.js" />
 
     <!-- WebAssembly Authentication outputs -->
@@ -137,10 +137,12 @@
 
   <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
+
     <Exec
       Command="npm ci"
       WorkingDirectory="$(NpmWorkspaceRoot)"
-      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)"
+      />
   </Target>
 
   <Target Name="Build" DependsOnTargets="Restore" Inputs="@(NpmBuildInputFiles)" Outputs="@(NpmBuildOutputFiles)">
@@ -159,12 +161,13 @@
     <Exec
       Command="npm run build"
       WorkingDirectory="$(MSBuildThisFileDirectory).."
+      ConsoleToMsBuild="true"
       />
   </Target>
 
   <Target Name="_Test" BeforeTargets="Test">
     <Message Text="Testing NPM packages..." Importance="high" />
-    <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." />
+    <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." ConsoleToMsBuild="true" />
   </Target>
 
   <Target Name="Pack" DependsOnTargets="Build">

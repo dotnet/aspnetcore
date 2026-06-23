@@ -4,13 +4,12 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
-using System.Net;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -21,6 +20,12 @@ internal sealed class KestrelMetrics
 
     public const string ErrorTypeAttributeName = "error.type";
 
+    // Tag indicating whether a bare LF terminated request was accepted or rejected.
+    public const string BareLineFeedOutcomeAttributeName = "kestrel.bare_line_feed.outcome";
+    public const string BareLineFeedOutcomeAccepted = "accepted";
+    public const string BareLineFeedOutcomeRejected = "rejected";
+
+    public const string Http10 = "1.0";
     public const string Http11 = "1.1";
     public const string Http2 = "2";
     public const string Http3 = "3";
@@ -29,6 +34,7 @@ internal sealed class KestrelMetrics
     private readonly UpDownCounter<long> _activeConnectionsCounter;
     private readonly Histogram<double> _connectionDuration;
     private readonly Counter<long> _rejectedConnectionsCounter;
+    private readonly Counter<long> _bareLineFeedRequestsCounter;
     private readonly UpDownCounter<long> _queuedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedRequestsCounter;
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
@@ -54,6 +60,11 @@ internal sealed class KestrelMetrics
            "kestrel.rejected_connections",
             unit: "{connection}",
             description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
+
+        _bareLineFeedRequestsCounter = _meter.CreateCounter<long>(
+           "kestrel.bare_line_feed_requests",
+            unit: "{request}",
+            description: "Number of HTTP/1.x requests that used a bare LF (instead of CRLF) as a line terminator in the request line, headers, or trailers.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.queued_connections",
@@ -161,6 +172,21 @@ internal sealed class KestrelMetrics
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _rejectedConnectionsCounter.Add(1, tags);
+    }
+
+    public void BareLineFeedRequest(ConnectionMetricsContext metricsContext, bool rejected, string httpVersion)
+    {
+        if (!_bareLineFeedRequestsCounter.Enabled)
+        {
+            return;
+        }
+
+        var tags = new TagList();
+        InitializeConnectionTags(ref tags, metricsContext);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
+        tags.TryAddTag(BareLineFeedOutcomeAttributeName, rejected ? BareLineFeedOutcomeRejected : BareLineFeedOutcomeAccepted);
+        _bareLineFeedRequestsCounter.Add(1, tags);
     }
 
     public void ConnectionQueuedStart(ConnectionMetricsContext metricsContext)
@@ -321,43 +347,7 @@ internal sealed class KestrelMetrics
 
     private static void InitializeConnectionTags(ref TagList tags, in ConnectionMetricsContext metricsContext)
     {
-        var localEndpoint = metricsContext.ConnectionContext.LocalEndPoint;
-        if (localEndpoint is IPEndPoint localIPEndPoint)
-        {
-            tags.Add("server.address", localIPEndPoint.Address.ToString());
-            tags.Add("server.port", localIPEndPoint.Port);
-
-            switch (localIPEndPoint.Address.AddressFamily)
-            {
-                case AddressFamily.InterNetwork:
-                    tags.Add("network.type", "ipv4");
-                    break;
-                case AddressFamily.InterNetworkV6:
-                    tags.Add("network.type", "ipv6");
-                    break;
-            }
-
-            // There isn't an easy way to detect whether QUIC is the underlying transport.
-            // This code assumes that a multiplexed connection is QUIC.
-            // Improve in the future if there are additional multiplexed connection types.
-            var transport = metricsContext.ConnectionContext is not MultiplexedConnectionContext ? "tcp" : "udp";
-            tags.Add("network.transport", transport);
-        }
-        else if (localEndpoint is UnixDomainSocketEndPoint udsEndPoint)
-        {
-            tags.Add("server.address", udsEndPoint.ToString());
-            tags.Add("network.transport", "unix");
-        }
-        else if (localEndpoint is NamedPipeEndPoint namedPipeEndPoint)
-        {
-            tags.Add("server.address", namedPipeEndPoint.ToString());
-            tags.Add("network.transport", "pipe");
-        }
-        else if (localEndpoint != null)
-        {
-            tags.Add("server.address", localEndpoint.ToString());
-            tags.Add("network.transport", localEndpoint.AddressFamily.ToString());
-        }
+        ConnectionEndpointTags.AddConnectionEndpointTags(ref tags, metricsContext.ConnectionContext);
     }
 
     public ConnectionMetricsContext CreateContext(BaseConnectionContext connection)

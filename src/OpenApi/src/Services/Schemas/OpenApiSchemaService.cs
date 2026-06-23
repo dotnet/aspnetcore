@@ -12,8 +12,10 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -57,9 +59,12 @@ internal sealed class OpenApiSchemaService(
         TransformSchemaNode = (context, schema) =>
         {
             var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader and FileContentResult
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
+            // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
             // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader) || type == typeof(Mvc.FileContentResult))
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
+                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
+                || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
             {
                 schema = new JsonObject
                 {
@@ -100,7 +105,8 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
-            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            var underlyingType = Nullable.GetUnderlyingType(context.TypeInfo.Type) ?? context.TypeInfo.Type;
+            if (underlyingType.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
             {
                 schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
             }
@@ -244,7 +250,47 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
+        // For non-body enum parameters, check if a naming policy transforms the enum values.
+        // If so, skip componentization and return an inline schema with the original C# member
+        // names (which Enum.TryParse accepts). The component schema keeps the naming-policy
+        // values for body serialization.
+        var inlineEnumParam = false;
+        if (parameterDescription is { Source: { } source, Type: { } paramType }
+            && IsNonBodyBindingSource(source)
+            && (Nullable.GetUnderlyingType(paramType) ?? paramType) is { IsEnum: true } enumType)
+        {
+            var rawNode = CreateSchema(type);
+            if (rawNode[OpenApiSchemaKeywords.EnumKeyword] is JsonArray rawEnum && rawEnum.Count > 0)
+            {
+                var memberNames = Enum.GetNames(enumType);
+                for (var i = 0; i < memberNames.Length && i < rawEnum.Count; i++)
+                {
+                    if (rawEnum[i]?.GetValue<string>() != memberNames[i])
+                    {
+                        inlineEnumParam = true;
+                        break;
+                    }
+                }
+            }
+        }
+
         var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+
+        if (inlineEnumParam)
+        {
+            // The schema was originally tagged for componentization (x-schema-id was set),
+            // so ApplyDefaultValue stored the default in the x-ref-default metadata annotation
+            // instead of the "default" keyword. Since we're now inlining this schema, promote
+            // the annotation to the schema's Default property.
+            if (schema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out var refDefault) == true
+                && refDefault is JsonNode defaultNode)
+            {
+                schema.Default = defaultNode;
+                schema.Metadata.Remove(OpenApiConstants.RefDefaultAnnotation);
+            }
+
+            return schema;
+        }
 
         // Cache the root schema IDs since we expect to be called
         // on the same type multiple times within an API
@@ -257,6 +303,12 @@ internal sealed class OpenApiSchemaService(
         return ResolveReferenceForSchema(document, schema, baseSchemaId);
     }
 
+    private static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
+        || bindingSource == BindingSource.Query
+        || bindingSource == BindingSource.Path
+        || bindingSource == BindingSource.Form
+        || bindingSource == BindingSource.FormFile;
+
     internal static IOpenApiSchema ResolveReferenceForSchema(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId, string? baseSchemaId = null)
     {
         var schema = UnwrapOpenApiSchema(inputSchema);
@@ -267,6 +319,16 @@ internal sealed class OpenApiSchemaService(
         OpenApiSchemaReference? resultSchemaReference = null;
         if (inputSchema is OpenApiSchema && isComponentizedSchema)
         {
+            // STJ's JsonSchemaExporter omits "type": "object" on object branches of an anyOf
+            // when EVERY branch is an object - factoring the keyword onto the parent instead.
+            //
+            // Since we lift the branch into a top-level #/components/schemas/* entry and replace it with a $ref
+            // we need to ensure the schema has an explicit "type": "object" to avoid losing that information in the translation.
+            if (schema.Type is null && schema.Properties is { Count: > 0 })
+            {
+                schema.Type = JsonSchemaType.Object;
+            }
+
             var targetReferenceId = baseSchemaId is not null
                 ? $"{baseSchemaId}{schemaId}"
                 : schemaId;
@@ -282,9 +344,15 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.AnyOf is { Count: > 0 })
         {
+            // For union types, do not prefix branch components with the union's name.
+            // Union case schemas are structurally identical to the standalone case type
+            // (no `$type` discriminator like polymorphism adds), so they should reuse the
+            // standalone component name (e.g. "Kitten") instead of producing a duplicate
+            // component (e.g. "UnionPetKitten") with the same content.
+            var branchPrefix = schema.IsUnion() ? null : schemaId;
             for (var i = 0; i < schema.AnyOf.Count; i++)
             {
-                schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, schemaId);
+                schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, branchPrefix);
             }
         }
 

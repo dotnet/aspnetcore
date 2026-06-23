@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -4981,34 +4982,43 @@ public class RendererTest
         Assert.True(wasOnSyncContext);
     }
 
-    [Fact]
-    public async Task NoHotReloadListenersAreRegistered_WhenMetadataUpdatesAreNotSupported()
+    [ConditionalFact]
+    [RemoteExecutionSupported]
+    public void NoHotReloadListenersAreRegistered_WhenHotReloadIsDisabled()
     {
-        // Arrange
-        await using var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = false };
-        renderer.HotReloadManager = hotReloadManager;
-        var component = new TestComponent(builder =>
+        var options = new RemoteInvokeOptions();
+        options.RuntimeConfigurationOptions.Add("System.Reflection.Metadata.MetadataUpdater.IsSupported", "false");
+
+        using var remoteHandle = RemoteExecutor.Invoke(static async () =>
         {
-            builder.OpenElement(0, "h2");
-            builder.AddContent(1, "some text");
-            builder.CloseElement();
-        });
+            // Set the switch before any code triggers HotReloadManager type initialization.
+            AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", false);
 
-        // Act
-        var componentId = renderer.AssignRootComponentId(component);
-        component.TriggerRender();
-        Assert.False(hotReloadManager.IsSubscribedTo);
+            await using var renderer = new TestRenderer();
+            var hotReloadManager = new HotReloadManager();
+            renderer.HotReloadManager = hotReloadManager;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "h2");
+                builder.AddContent(1, "some text");
+                builder.CloseElement();
+            });
 
-        await renderer.DisposeAsync();
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            Assert.False(hotReloadManager.IsSubscribedTo);
+
+            await renderer.DisposeAsync();
+        }, options);
     }
 
     [Fact]
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
         // Arrange
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
         var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+        var hotReloadManager = new HotReloadManager();
         renderer.HotReloadManager = hotReloadManager;
         var component = new TestComponent(builder =>
         {
@@ -5031,11 +5041,12 @@ public class RendererTest
     [Fact]
     public async Task HotReload_ReRenderPreservesAsyncLocalValues()
     {
+        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+
         await using var renderer = new TestRenderer();
 
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+        var hotReloadManager = new HotReloadManager();
         renderer.HotReloadManager = hotReloadManager;
-        HotReloadManager.Default.MetadataUpdateSupported = true;
 
         var component = new AsyncLocalCaptureComponent();
 
@@ -5223,7 +5234,7 @@ public class RendererTest
     {
         // C# variance only works with reference types. This test uses interface hierarchy.
         // IComparable<T> is contravariant, so we can demonstrate the concept
-        
+
         // Arrange - Create a fragment that accepts any IComparable
         RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
         {
@@ -5244,7 +5255,7 @@ public class RendererTest
     public void RenderFragmentContravariance_WorksWithObjectToPrimitiveWrapper()
     {
         // For value types, contravariance only works when going through object (boxing)
-        
+
         // Arrange - Create a fragment that accepts object
         RenderFragment<object> baseFragment = (object value) => builder =>
         {
@@ -5265,7 +5276,7 @@ public class RendererTest
     public void RenderFragmentContravariance_WorksWithComparableTypes()
     {
         // Demonstrating contravariance with reference types implementing IComparable
-        
+
         // Arrange - Create a fragment that accepts IComparable
         RenderFragment<IComparable> baseFragment = (IComparable value) => builder =>
         {
@@ -6332,7 +6343,7 @@ public class RendererTest
     private struct TestStructWithInterface : IComparable
     {
         public int Value { get; set; }
-        
+
         public int CompareTo(object obj)
         {
             if (obj is TestStructWithInterface other)
