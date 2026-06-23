@@ -457,10 +457,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
         }
 
-        // Apply the framework's implicit post-routing middleware to a pipeline. Used in two places (directly on the
-        // destination pipeline when the framework owns UseRouting(), or inside the deferred block when the app called
-        // UseRouting() explicitly), so the conditions live in one place.
-        var configurePostRouting = (IApplicationBuilder pipeline) =>
+        var configureImplicitMiddlewares = (IApplicationBuilder pipeline) =>
         {
             if (addAuthentication)
             {
@@ -481,18 +478,15 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // When the app calls UseRouting() explicitly, the framework skips adding its own UseRouting() above, so
         // routing runs later, inside the source pipeline. The implicit authentication/authorization/CSRF middleware
         // must still run AFTER routing so they observe the matched endpoint (e.g. CSRF reads a per-endpoint CORS
-        // policy such as RequireCors("name"), see #67174). Defer them into a block that the app's explicit
-        // UseRouting() runs immediately after matching, mirroring the order used when the framework adds UseRouting()
-        // itself. The block is exposed as a stable, named method (PostRoutingPipeline.CreateMiddleware) rather than a
-        // closure so EndpointRoutingMiddleware can verify it originates from the framework before invoking it.
+        // policy such as RequireCors("name"), see #67174). That's why middlewares are deferred after the routing runs.
         if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
         {
-            var postRoutingPipeline = new PostRoutingPipeline(app, configurePostRouting);
+            var postRoutingPipeline = new PostRoutingPipeline(app, configureImplicitMiddlewares);
             _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] = (Func<RequestDelegate, RequestDelegate>)postRoutingPipeline.CreateMiddleware;
         }
         else
         {
-            configurePostRouting(app);
+            configureImplicitMiddlewares(app);
         }
 
         // Wire the source pipeline to run in the destination pipeline

@@ -53,8 +53,6 @@ internal sealed partial class EndpointRoutingMiddleware
 
         // When the app calls UseRouting() explicitly, the framework defers its implicit post-routing middleware
         // into a block stored on the global route builder's properties.
-        // Compose it into the pipeline immediately after this middleware so those middleware observe the
-        // matched endpoint, matching the behavior of the framework's implicit UseRouting().
         if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
             applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingPipeline, out var value))
         {

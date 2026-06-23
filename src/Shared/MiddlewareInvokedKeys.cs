@@ -8,10 +8,10 @@ internal static class MiddlewareInvokedKeys
     public const string Antiforgery = "__AntiforgeryMiddlewareWithEndpointInvoked";
     public const string CsrfProtection = "__CsrfProtectionMiddlewareWithEndpointInvoked";
 
-    // Key for a Func<RequestDelegate, RequestDelegate> stored in IApplicationBuilder.Properties by WebApplicationBuilder.
-    // It composes the framework's implicit post-routing middleware. When the app calls UseRouting() explicitly,
-    // UseRouting() runs this block immediately after the endpoint is matched so the implicit middleware observe the matched endpoint, 
-    // matching the behavior of the framework's implicit UseRouting(). See #67174.
+    /// <summary>
+    /// Key for a Func&lt;RequestDelegate, RequestDelegate&gt; stored in IApplicationBuilder.Properties by WebApplicationBuilder.
+    /// It composes the framework's implicit post-routing middleware pipeline.
+    /// </summary>
     public const string PostRoutingPipeline = "__PostRoutingPipeline";
 
     public static readonly object Sentinel = new();
