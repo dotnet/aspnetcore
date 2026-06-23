@@ -74,7 +74,7 @@ public class TestingInfrastructureInheritanceTests
 
         // Assert
         var ex = Assert.Throws<InvalidOperationException>(() => factory.Services);
-        Assert.Equal("Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint", ex.Message);
+        Assert.Equal("Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.", ex.Message);
     }
 
     [Fact]
