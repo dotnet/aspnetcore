@@ -23,8 +23,6 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 export function registerAllComponentDescriptors(root: Node) {
   const webAssemblyOptions = discoverWebAssemblyOptions(root);
   if (webAssemblyOptions) { descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions); }
-  const browserConfiguration = discoverBrowserConfiguration(root);
-  if (browserConfiguration?.webAssembly) { descriptorHandler?.setWebAssemblyOptions(browserConfiguration.webAssembly); }
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
 
   for (const descriptor of descriptors) {
@@ -38,6 +36,10 @@ function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | N
   // Strip any WebAssembly metadata comments from the new content before building
   // the logical tree, so they don't end up as orphaned nodes in the logical children array
   discoverWebAssemblyOptions(newContent);
+
+  // Rediscover the browser configuration in the new content, in case WebAssembly hasn't started yet.
+  const browserConfiguration = discoverBrowserConfiguration(newContent);
+  if (browserConfiguration?.webAssembly) { descriptorHandler?.setWebAssemblyOptions(browserConfiguration.webAssembly); }
 
   // Start by recursively identifying component markers in the new content
   // and converting them into logical elements so they correctly participate
