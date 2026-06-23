@@ -223,7 +223,7 @@
     <value>StateHasChanged is unnecessary immediately before the first await and after the final await in component lifecycle methods or event handlers because ComponentBase already schedules renders at those points.</value>
   </data>
   <data name="UnnecessaryStateHasChangedCall_Format" xml:space="preserve">
-    <value>StateHasChanged is unnecessary here and can be removed.</value>
+    <value>StateHasChanged is unnecessary in method '{0}' and can be removed.</value>
   </data>
   <data name="UnnecessaryStateHasChangedCall_Title" xml:space="preserve">
     <value>Unnecessary StateHasChanged call</value>

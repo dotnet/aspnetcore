@@ -161,7 +161,8 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                     {
                         endContext.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.UnnecessaryStateHasChangedCall,
-                            location));
+                            location,
+                            method.Name));
                     }
                 }
             });

@@ -89,14 +89,14 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnInitialized' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 10, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnParametersSet' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 15, 17) }
             });
@@ -154,28 +154,28 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnInitializedAsync' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnInitializedAsync' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnParametersSetAsync' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 30, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnParametersSetAsync' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 40, 17) }
             });
@@ -219,14 +219,14 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnRefreshClicked' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 16, 17) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnRefreshClicked' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 26, 17) }
             });
@@ -253,14 +253,14 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnInitialized' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 8, 56) }
             },
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
-                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Message = "StateHasChanged is unnecessary in method 'OnParametersSet' and can be removed.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 10, 58) }
             });
