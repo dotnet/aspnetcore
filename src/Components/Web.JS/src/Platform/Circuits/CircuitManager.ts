@@ -550,7 +550,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         return;
       }
       untracked = true;
-      this._activeStreamCount--;
+      this._activeStreamCount = Math.max(0, this._activeStreamCount - 1);
       if (this._activeStreamCount === 0) {
         const resolvers = this._streamDrainResolvers.splice(0);
         for (const resolve of resolvers) {
