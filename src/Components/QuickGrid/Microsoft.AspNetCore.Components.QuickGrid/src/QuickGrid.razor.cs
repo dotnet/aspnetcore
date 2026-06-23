@@ -517,6 +517,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // Normalizes all the different ways of configuring a data source so they have common GridItemsProvider-shaped API
     private async ValueTask<GridItemsProviderResult<TGridItem>> ResolveItemsRequestAsync(GridItemsProviderRequest<TGridItem> request)
     {
+        _expandedRowDetails.Clear();
         if (ItemsProvider is not null)
         {
             return await ItemsProvider(request);
@@ -561,9 +562,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             return _ariaBodyRowCount;
         }
 
-        var rowDetailsRowCount = RowDetailsTemplate is null
-            ? _currentNonVirtualizedViewItems.Count(IsRowDetailsExpanded)
-            : 0;
+        var rowDetailsRowCount = RowDetailsTemplate is not null ? _currentNonVirtualizedViewItems.Count(IsRowDetailsExpanded) : 0;
         var rowCount = _currentNonVirtualizedViewItems.Count + rowDetailsRowCount;
 
         if (Pagination is not null)
@@ -577,11 +576,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private bool IsRowDetailsExpanded(TGridItem item)
         => RowDetailsTemplate is not null && _expandedRowDetails.Contains(ItemKey(item));
 
-    private Task ToggleRowDetailsAsync(TGridItem item)
+    private void ToggleRowDetailsAsync(TGridItem item)
     {
         if (RowDetailsTemplate is null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var key = ItemKey(item);
@@ -589,9 +588,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         {
             _expandedRowDetails.Remove(key);
         }
-
-        StateHasChanged();
-        return Task.CompletedTask;
     }
 
     private object GetRowDetailsKey(TGridItem item) => (ItemKey(item), true);
@@ -611,6 +607,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _expandedRowDetails.Clear();
         NavigationManager.LocationChanged -= OnLocationChanged;
         _wasDisposed = true;
         _currentPageItemsChanged.Dispose();

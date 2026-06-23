@@ -15,7 +15,7 @@
                 <tr>
                     @if (RowDetailsTemplate is not null)
                     {
-                        <th class="row-details-toggle-header" aria-label="Row details" scope="col"></th>
+                        <th class="row-details-toggle-header" scope="col"></th>
                     }
                     @_renderColumnHeaders
                 </tr>
@@ -74,15 +74,16 @@
         var combinedClass = OnRowClick.HasDelegate
             ? string.IsNullOrEmpty(rowClass) ? "row-clickable" : $"row-clickable {rowClass}"
             : rowClass;
+        var fullClass = detailsExpanded ? $"row-details-expanded {combinedClass}".Trim() : combinedClass;
         var rowClick = OnRowClick.HasDelegate ? EventCallback.Factory.Create<MouseEventArgs>(this, () => OnRowClick.InvokeAsync(item)) : default;
 
         <tr @key="@(ItemKey(item))"
             aria-rowindex="@rowIndex"
-            class="@($"{combinedClass} {(detailsExpanded ? "row-details-expanded" : null)}")"
+            class="@fullClass"
             @onclick="@rowClick">
             @if (RowDetailsTemplate is not null)
             {
-                <td class="row-details-toggle-cell" @key="@(GetRowDetailsKey(item))">
+                <td class="row-details-toggle-cell">
                     <button class="row-details-toggle-button"
                         type="button"
                         aria-label="@(detailsExpanded ? "Row Collapse" : "Row Expand")"

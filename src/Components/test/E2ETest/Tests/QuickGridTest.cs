@@ -66,11 +66,11 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
             if (firstName == "Julie")
             {
                 isJulieRowFound = true;
-                Assert.Equal("row-clickable highlight ", row.GetDomAttribute("class"));
+                Assert.Equal("row-clickable highlight", row.GetDomAttribute("class"));
             }
             else
             {
-                Assert.Equal("row-clickable ", row.GetDomAttribute("class"));
+                Assert.Equal("row-clickable", row.GetDomAttribute("class"));
             }
         }
 
