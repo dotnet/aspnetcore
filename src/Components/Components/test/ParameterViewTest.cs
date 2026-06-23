@@ -568,6 +568,26 @@ public partial class ParameterViewTest
         Assert.False(hasRemovedDirectParameters);
     }
 
+    [Fact]
+    public void TryGetValue_ThrowsClearErrorMessage_OnInvalidCast()
+    {
+        // Arrange
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "DebounceInterval", 500) // int
+        }, 0);
+
+        // Act
+        var ex = Assert.Throws<InvalidCastException>(() =>
+            parameters.TryGetValue<double>("DebounceInterval", out _));
+
+        // Assert
+        Assert.Equal(
+            "Failed to bind parameter 'DebounceInterval'. Received value of type 'System.Int32' but expected type 'System.Double'.",
+            ex.Message);
+    }
+
     private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
     {
         return parameter =>

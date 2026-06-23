@@ -583,8 +583,29 @@ public class ComponentBaseTest
         Assert.Same(expected, actual);
     }
 
+    [Fact]
+    public void SetParametersAsync_ThrowsClearError_OnInvalidType()
+    {
+        // Arrange
+        var component = new TestComponent();
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            { "Value", 10 } // int instead of double
+        });
+
+        // Act & Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            component.SetParametersAsync(parameters).GetAwaiter().GetResult());
+
+        Assert.Contains("Error setting parameter 'Value'", ex.Message);
+    }
+
     private class TestComponent : ComponentBase
     {
+        [Parameter]
+        public double Value { get; set; }
+
         public bool RunsBaseOnInit { get; set; } = true;
 
         public bool RunsBaseOnInitAsync { get; set; } = true;

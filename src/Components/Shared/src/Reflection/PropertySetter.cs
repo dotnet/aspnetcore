@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Components.Reflection;
 
 internal sealed class PropertySetter
 {
+    private readonly PropertyInfo _propertyInfo;
     private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
         typeof(PropertySetter).GetMethod(nameof(CallPropertySetter), BindingFlags.NonPublic | BindingFlags.Static)!;
 
@@ -20,6 +21,8 @@ internal sealed class PropertySetter
         Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
     public PropertySetter(Type targetType, PropertyInfo property)
     {
+        _propertyInfo = property;
+
         if (property.SetMethod == null)
         {
             throw new InvalidOperationException("Cannot provide a value for property " +
@@ -47,6 +50,8 @@ internal sealed class PropertySetter
     public bool AcceptsDirectParameters { get; init; }
 
     public bool AcceptsCascadingParameters { get; init; }
+
+    public Type PropertyType => _propertyInfo.PropertyType;
 
     public void SetValue(object target, object value) => _setterDelegate(target, value);
 

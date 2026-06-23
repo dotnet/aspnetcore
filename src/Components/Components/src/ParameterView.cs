@@ -69,8 +69,20 @@ public readonly struct ParameterView
         {
             if (string.Equals(entry.Name, parameterName))
             {
-                result = (TValue)entry.Value;
-                return true;
+                try
+                {
+                    result = (TValue)entry.Value;
+                    return true;
+                }
+                catch (Exception)
+                {
+                    var valueType = entry.Value?.GetType();
+                    var targetType = typeof(TValue);
+
+                    throw new InvalidCastException(
+                        $"Failed to bind parameter '{parameterName}'. " +
+                        $"Received value of type '{valueType}' but expected type '{targetType}'.");
+                }
             }
         }
 
