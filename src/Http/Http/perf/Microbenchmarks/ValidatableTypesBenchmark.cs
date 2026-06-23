@@ -15,10 +15,10 @@ namespace Microsoft.AspNetCore.Http.Microbenchmarks;
 
 public class ValidatableTypeInfoBenchmark
 {
-    private IValidatableInfo _simpleTypeInfo = null!;
-    private IValidatableInfo _complexTypeInfo = null!;
-    private IValidatableInfo _hierarchicalTypeInfo = null!;
-    private IValidatableInfo _ivalidatableObjectTypeInfo = null!;
+    private IValidatableTypeInfo _simpleTypeInfo = null!;
+    private IValidatableTypeInfo _complexTypeInfo = null!;
+    private IValidatableTypeInfo _hierarchicalTypeInfo = null!;
+    private IValidatableTypeInfo _ivalidatableObjectTypeInfo = null!;
 
     private ValidateContext _context = null!;
     private SimpleModel _simpleModel = null!;
@@ -261,7 +261,7 @@ public class ValidatableTypeInfoBenchmark
 
     private class MockDisplayNameInfo(string displayName) : DisplayNameInfo
     {
-        public override string GetDisplayName(ValidateContext context, string memberName, Type declaringType)
+        public override string GetDisplayName(ValidateContext context, string memberName, Type type)
             => displayName;
     }
 
@@ -353,20 +353,20 @@ public class ValidatableTypeInfoBenchmark
                 attributes);
         }
 
-        public bool TryGetValidatableTypeInfo(Type type, out IValidatableInfo validatableInfo)
+        public bool TryGetValidatableTypeInfo(Type type, out IValidatableTypeInfo validatableTypeInfo)
         {
             if (_typeInfoCache.TryGetValue(type, out var typeInfo))
             {
-                validatableInfo = typeInfo;
+                validatableTypeInfo = typeInfo;
                 return true;
             }
-            validatableInfo = null;
+            validatableTypeInfo = null;
             return false;
         }
 
-        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, out IValidatableInfo validatableInfo)
+        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, out IValidatableParameterInfo validatableParameterInfo)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
     }
