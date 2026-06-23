@@ -358,9 +358,8 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.Properties is not null)
         {
-            foreach (var key in schema.Properties.Keys.ToList())
+            foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
-                var propertyValue = schema.Properties[key];
                 var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
                 if (propertyValue is OpenApiSchema targetSchema &&
                     targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
