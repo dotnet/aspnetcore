@@ -358,6 +358,8 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.Properties is not null)
         {
+            // Materialize the collection first because IDictionary<TKey, TValue> implementations
+            // (e.g. SortedDictionary) may disallow modifying the collection while enumerating it.
             foreach (var (key, propertyValue) in schema.Properties.ToList())
             {
                 var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
