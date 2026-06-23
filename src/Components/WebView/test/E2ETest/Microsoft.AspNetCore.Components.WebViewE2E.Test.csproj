@@ -13,11 +13,6 @@
     <ProjectReference Include="..\..\Samples\PhotinoPlatform\src\Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
   </ItemGroup>
 
-  <!-- WebView consumer-side build logic: sets JSModuleManifestRelativePath so this app's generated
-       JS module manifest lands at _framework/blazor.modules.json (superseding the package fallback)
-       and works around the SDK ProjectReference publish duplication of WebView framework assets. -->
-  <Import Project="..\..\WebView\src\StaticWebAssets.Groups.targets" />
-
   <ItemGroup>
     <Content Update="wwwroot\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

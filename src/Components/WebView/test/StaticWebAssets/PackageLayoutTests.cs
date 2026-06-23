@@ -23,32 +23,32 @@ public class PackageLayoutTests
     private const string IdentityUIPackageId = "Microsoft.AspNetCore.Identity.UI";
 
     [ConditionalFact]
-    public void WebViewPackage_ShipsFrameworkAssetsUnderFramework()
+    public void WebViewPackage_ShipsStaticWebAssets()
     {
         using var package = PackageArchive.Open(WebViewPackageId);
 
-        Assert.True(package.HasEntry("staticwebassets/_framework/blazor.modules.json"),
-            "blazor.modules.json should ship under staticwebassets/_framework/.");
-        Assert.True(package.HasEntry("staticwebassets/_framework/blazor.webview.js"),
-            "blazor.webview.js should ship under staticwebassets/_framework/.");
+        Assert.True(package.HasEntry("staticwebassets/blazor.modules.json"),
+            "blazor.modules.json should ship under staticwebassets/.");
+        Assert.True(package.HasEntry("staticwebassets/blazor.webview.js"),
+            "blazor.webview.js should ship under staticwebassets/.");
     }
 
     [ConditionalFact]
-    public void WebViewPackage_ModelsBlazorModulesJsonAsFrameworkAsset()
+    public void WebViewPackage_ModelsBlazorModulesJsonAsDeferredGroupedFallback()
     {
         using var package = PackageArchive.Open(WebViewPackageId);
         using var manifest = package.ReadPackageAssetsManifest();
 
-        var modules = GetAsset(manifest, "_framework/blazor.modules.json");
+        var modules = GetAsset(manifest, "blazor.modules.json");
 
-        // The whole point of the fix (#67374): blazor.modules.json must be a Framework asset so it is
-        // materialized into the consuming project, instead of a Package asset that collides with the
-        // app's own generated manifest at build/publish time.
-        Assert.Equal("Framework", modules.GetProperty("SourceType").GetString());
+        // blazor.modules.json is the fallback JS module manifest, shipped as a Package static web
+        // asset in the deferred BlazorWebViewModules group. At build (and, with dotnet/sdk#54941, at
+        // publish) the deferred group is resolved so this fallback is dropped when the app contributes
+        // its own JS modules, and kept otherwise.
+        Assert.Equal("Package", modules.GetProperty("SourceType").GetString());
         Assert.Equal("JSModule", modules.GetProperty("AssetTraitName").GetString());
         Assert.Equal("JSModuleManifest", modules.GetProperty("AssetTraitValue").GetString());
-        // No static web asset groups should be involved anymore.
-        Assert.True(string.IsNullOrEmpty(modules.GetProperty("AssetGroups").GetString()));
+        Assert.Equal("BlazorWebViewModules=fallback", modules.GetProperty("AssetGroups").GetString());
     }
 
     [ConditionalFact]
@@ -57,7 +57,7 @@ public class PackageLayoutTests
         using var package = PackageArchive.Open(WebViewPackageId);
         using var manifest = package.ReadPackageAssetsManifest();
 
-        var js = GetAsset(manifest, "_framework/blazor.webview.js");
+        var js = GetAsset(manifest, "blazor.webview.js");
 
         Assert.Equal("Framework", js.GetProperty("SourceType").GetString());
     }
@@ -92,22 +92,20 @@ public class PackageLayoutTests
     }
 
     [ConditionalFact]
-    public void WebViewPackage_DoesNotUseBlazorWebViewModulesGroupMachinery()
+    public void WebViewPackage_UsesBlazorWebViewModulesDeferredGroup()
     {
         using var package = PackageArchive.Open(WebViewPackageId);
 
-        // Regression guard for #67374: the deferred BlazorWebViewModules group + manifest-promotion
-        // targets are what caused the publish-time crash. They must be gone from every shipped file.
-        foreach (var entryName in package.EntryNames.Where(e =>
-                     e.EndsWith(".targets", StringComparison.OrdinalIgnoreCase) ||
-                     e.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ||
-                     e.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
-        {
-            var content = package.ReadEntry(entryName);
-            Assert.DoesNotContain("BlazorWebViewModules", content);
-            Assert.DoesNotContain("_TagSdkModulesManifestWithGroup", content);
-            Assert.DoesNotContain("_ResolveBlazorWebViewModulesGroup", content);
-        }
+        // The fallback manifest is selected via the deferred BlazorWebViewModules group. The package
+        // ships the resolution machinery in Groups.targets and tags the fallback in the manifest.
+        var groups = package.ReadEntry("build/StaticWebAssets.Groups.targets");
+        Assert.Contains("BlazorWebViewModules", groups);
+        Assert.Contains("Deferred=\"true\"", groups);
+        Assert.Contains("_ResolveBlazorWebViewModulesGroup", groups);
+        Assert.Contains("_TagSdkModulesManifestWithGroup", groups);
+
+        var manifest = package.ReadEntry($"build/{WebViewPackageId}.PackageAssets.json");
+        Assert.Contains("BlazorWebViewModules=fallback", manifest);
     }
 
     [ConditionalFact]
