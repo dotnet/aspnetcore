@@ -177,11 +177,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
-          const untrack = this.trackActiveStream();
+          const untrack = this._options.autoPause.enabled ? this.trackActiveStream() : undefined;
           connection.stream('SendDotNetStreamToJS', streamId).subscribe({
             next: (chunk: Uint8Array) => controller.enqueue(chunk),
-            complete: () => { controller.close(); untrack(); },
-            error: (err) => { controller.error(err); untrack(); },
+            complete: () => { controller.close(); untrack?.(); },
+            error: (err) => { controller.error(err); untrack?.(); },
           });
         },
       });
@@ -214,9 +214,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
-      if (this._options.autoPause.enabled) {
-        this.resetActiveStreams();
-      }
+      this.resetActiveStreams();
 
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
@@ -502,7 +500,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
-    const untrack = this.trackActiveStream();
+    const untrack = this._options.autoPause.enabled ? this.trackActiveStream() : undefined;
     return sendJSDataStream(this._connection!, data, streamId, chunkSize, untrack);
   }
 
@@ -547,9 +545,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private trackActiveStream(): () => void {
-    if (!this._options.autoPause.enabled) {
-      return () => { /* no-op: stream tracking is only needed for auto-pause */ };
-    }
     this._activeStreamCount++;
     let untracked = false;
     return () => {
