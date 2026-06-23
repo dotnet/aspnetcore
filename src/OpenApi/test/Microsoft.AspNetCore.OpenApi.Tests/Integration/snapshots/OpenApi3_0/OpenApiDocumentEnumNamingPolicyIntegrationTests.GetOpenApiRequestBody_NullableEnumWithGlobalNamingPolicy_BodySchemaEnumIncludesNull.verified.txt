@@ -1,0 +1,52 @@
+﻿{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "OpenApiDocumentServiceTests | Test",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/body-enum": {
+      "post": {
+        "tags": [
+          "OpenApiDocumentServiceTests"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/Priority"
+                  }
+                ],
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Priority": {
+        "enum": [
+          "high-priority",
+          "medium-priority",
+          "low-priority",
+          null
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTests"
+    }
+  ]
+}

@@ -367,12 +367,22 @@ internal static class JsonNodeSchemaExtensions
             var enumType = Nullable.GetUnderlyingType(paramType) ?? paramType;
             if (enumType.IsEnum && schema[OpenApiSchemaKeywords.EnumKeyword] is JsonArray)
             {
+                // While SupportsNullableProperty has the same implementation as IsNonBodyBindingSource today,
+                // and so it will always be true here. We keep the check to be future-proof.
+                var shouldAddNull = enumType != paramType && SupportsNullableProperty(source);
+
                 var memberNames = Enum.GetNames(enumType);
                 var enumArray = new JsonArray();
                 foreach (var name in memberNames)
                 {
                     enumArray.Add((JsonNode)name);
                 }
+
+                if (shouldAddNull)
+                {
+                    enumArray.Add(null);
+                }
+
                 schema[OpenApiSchemaKeywords.EnumKeyword] = enumArray;
 
                 // Also fix the default value — it was serialized using the naming policy

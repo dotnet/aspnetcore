@@ -1,0 +1,40 @@
+﻿{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "OpenApiDocumentServiceTests | Test",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/query": {
+      "get": {
+        "tags": [
+          "OpenApiDocumentServiceTests"
+        ],
+        "parameters": [
+          {
+            "name": "priority",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "HighPriority",
+                "MediumPriority",
+                "LowPriority",
+                null
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "OpenApiDocumentServiceTests"
+    }
+  ]
+}
