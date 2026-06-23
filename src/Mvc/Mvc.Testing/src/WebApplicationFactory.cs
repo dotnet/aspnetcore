@@ -374,8 +374,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             return;
         }
 
-        var fromFile = File.Exists("MvcTestingAppManifest.json");
-        var contentRoot = fromFile ? GetContentRootFromFile("MvcTestingAppManifest.json") : GetContentRootFromAssembly();
+        var manifestFiles = Directory.GetFiles(Directory.GetCurrentDirectory(), "MvcTestingAppManifest*.json");
+        var contentRoot = manifestFiles.Length > 0 ? GetContentRootFromFiles(manifestFiles) : GetContentRootFromAssembly();
 
         if (contentRoot != null)
         {
@@ -387,14 +387,37 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
     }
 
-    private static string? GetContentRootFromFile(string file)
+    private static string? GetContentRootFromFiles(string[] files)
     {
-        var data = JsonSerializer.Deserialize(File.ReadAllBytes(file), CustomJsonSerializerContext.Default.IDictionaryStringString)!;
+        IDictionary<string, string> mergedData;
+        if (files.Length == 1)
+        {
+            // Optimization: if we have exactly one manifest file, we can skip the merging logic and directly deserialize it to a dictionary.
+            mergedData = JsonSerializer.Deserialize(File.ReadAllBytes(files[0]), CustomJsonSerializerContext.Default.IDictionaryStringString)!;
+        }
+        else
+        {
+            mergedData = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (var file in files)
+            {
+                var data = JsonSerializer.Deserialize(File.ReadAllBytes(file), CustomJsonSerializerContext.Default.IDictionaryStringString)!;
+                foreach (var kvp in data)
+                {
+                    if (mergedData.TryGetValue(kvp.Key, out var existingValue) && !string.Equals(existingValue, kvp.Value, StringComparison.Ordinal))
+                    {
+                        throw new InvalidOperationException(Resources.FormatMismatchedContentRoot(kvp.Key));
+                    }
+
+                    mergedData[kvp.Key] = kvp.Value;
+                }
+            }
+        }
+
         var key = typeof(TEntryPoint).Assembly.GetName().FullName;
 
         // If the `ContentRoot` is not provided in the app manifest, then return null
         // and fallback to setting the content root relative to the entrypoint's assembly.
-        if (!data.TryGetValue(key, out var contentRoot))
+        if (!mergedData.TryGetValue(key, out var contentRoot))
         {
             return null;
         }
