@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Validates the NuGet package layout and build-time behavior of the ASP.NET Core packages that
+    ship static web assets:
+      * Microsoft.AspNetCore.Components.WebView         (primary subject of issue #67374)
+      * Microsoft.AspNetCore.Components.WebAssembly
+      * Microsoft.AspNetCore.App.Internal.Assets
+      * Microsoft.AspNetCore.Identity.UI
+
+    The package-layout tests crack the built .nupkg files and assert on their shape/contents.
+    The build-behavior tests reference the locally-built WebView package from a generated app/RCL,
+    run dotnet build/publish, and assert the expected static web asset endpoints are produced.
+
+    These tests consume the locally-built .nupkg files and spin up out-of-proc dotnet builds, so
+    they only run on the build machine (not on Helix).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <BuildHelixPayload>false</BuildHelixPayload>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebView" />
+  </ItemGroup>
+
+  <!-- Surface the information the tests need to locate the built packages and the repo SDK. -->
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsShippingPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsShippingPackagesDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ArtifactsNonShippingPackagesDir</_Parameter1>
+      <_Parameter2>$(ArtifactsNonShippingPackagesDir)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>StaticWebAssetsTestPackageVersion</_Parameter1>
+      <_Parameter2>$(PackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>NuGetPackageRoot</_Parameter1>
+      <_Parameter2>$(NuGetPackageRoot)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>
