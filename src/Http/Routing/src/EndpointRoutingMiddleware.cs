@@ -56,10 +56,10 @@ internal sealed partial class EndpointRoutingMiddleware
         // properties. Compose it into the pipeline immediately after this middleware so those middleware observe the
         // matched endpoint, matching the behavior of the framework's implicit UseRouting(). See #67174.
         if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
-            applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingMiddleware, out var value))
+            applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingPipeline, out var value))
         {
             // Consume the block so additional UseRouting() calls don't run it again.
-            applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingMiddleware);
+            applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingPipeline);
 
             // IApplicationBuilder.Properties is publicly writable, so the post-routing block (which runs the
             // framework's auth/authz/CSRF middleware in the matched endpoint's scope) is only honored when it
@@ -68,7 +68,7 @@ internal sealed partial class EndpointRoutingMiddleware
                 !IsFrameworkPostRoutingMiddleware(postRoutingMiddleware))
             {
                 throw new InvalidOperationException(
-                    $"The '{MiddlewareInvokedKeys.PostRoutingMiddleware}' application property is reserved for the framework and cannot be set by application code.");
+                    $"The '{MiddlewareInvokedKeys.PostRoutingPipeline}' application property is reserved for the framework and cannot be set by application code.");
             }
 
             next = postRoutingMiddleware(next);

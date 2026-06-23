@@ -470,18 +470,19 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
-    public async Task PostRoutingMiddleware_ApplicationProvidedDelegate_IsRejected()
+    public async Task PostRoutingPipeline_ApplicationProvidedClosure_IsRejected()
     {
-        // '__PostRoutingMiddleware' is a framework-reserved slot used to run the implicit authentication,
+        // '__PostRoutingPipeline' is a framework-reserved slot used to run the implicit authentication,
         // authorization and CSRF middleware immediately after routing matches. IApplicationBuilder.Properties is
         // publicly writable, so EndpointRoutingMiddleware must reject any delegate that application code places there
-        // instead of executing it in the matched endpoint's scope.
+        // instead of executing it in the matched endpoint's scope. A closure has a compiler-generated method name,
+        // which fails the framework method-name check.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
 
         var tampered = false;
-        app.Properties["__PostRoutingMiddleware"] = (Func<RequestDelegate, RequestDelegate>)(next => context =>
+        app.Properties["__PostRoutingPipeline"] = (Func<RequestDelegate, RequestDelegate>)(next => context =>
         {
             tampered = true;
             return next(context);
@@ -489,8 +490,78 @@ public class CsrfProtectionIntegrationTests
         app.MapGet("/", () => "hello");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
-        Assert.Contains("__PostRoutingMiddleware", exception.Message);
+        Assert.Contains("__PostRoutingPipeline", exception.Message);
         Assert.False(tampered);
+    }
+
+    [Fact]
+    public async Task PostRoutingPipeline_DelegateFromAnotherAssembly_IsRejected()
+    {
+        // Even a delegate whose method is named "CreateMiddleware" (matching the framework holder) is rejected when it
+        // is declared in an assembly other than Microsoft.AspNetCore. This proves the trust check does not rely on the
+        // method name alone and can't be satisfied by application code mimicking the framework's shape.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        var impostor = new ImpostorPostRoutingPipeline();
+        app.Properties["__PostRoutingPipeline"] = (Func<RequestDelegate, RequestDelegate>)impostor.CreateMiddleware;
+        app.MapGet("/", () => "hello");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
+        Assert.Contains("__PostRoutingPipeline", exception.Message);
+        Assert.False(impostor.Invoked);
+    }
+
+    [Fact]
+    public async Task PostRoutingPipeline_NonDelegateValue_IsRejected()
+    {
+        // A non-delegate value in the reserved slot is also rejected rather than silently ignored.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.Properties["__PostRoutingPipeline"] = "not a delegate";
+        app.MapGet("/", () => "hello");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
+        Assert.Contains("__PostRoutingPipeline", exception.Message);
+    }
+
+    [Fact]
+    public async Task PostRoutingPipeline_FrameworkBlock_RunsImplicitMiddlewareAfterRouting()
+    {
+        // The trust check must not reject the framework's own block. With an explicit UseRouting(), the deferred
+        // authentication/authorization/CSRF block is created by the framework and accepted, so a same-origin POST to a
+        // protected endpoint succeeds (CSRF runs after routing and sees the matched endpoint).
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        app.UseRouting();
+        app.MapPost("/protected", EnforceCsrf);
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Origin", "https://localhost");
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+
+        var response = await client.SendAsync(request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    // A type that mimics the framework holder's shape (a public instance method named CreateMiddleware returning a
+    // RequestDelegate) but lives in the test assembly, so the framework trust check must reject it.
+    private sealed class ImpostorPostRoutingPipeline
+    {
+        public bool Invoked { get; private set; }
+
+        public RequestDelegate CreateMiddleware(RequestDelegate next)
+        {
+            Invoked = true;
+            return next;
+        }
     }
 
     // The CSRF middleware does not short-circuit; it records its verdict on IAntiforgeryValidationFeature and lets downstream consumers decide.
