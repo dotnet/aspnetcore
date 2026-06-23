@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    private ConcurrentDictionary<string, IEnumerable<string>>? _validationErrors;
+    private Dictionary<string, IEnumerable<string>>? _validationErrors;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ValidateContext"/>.
@@ -161,17 +161,15 @@ public sealed class ValidateContext
 
     private void AddValidationErrorSuppressEvent(string path, IEnumerable<string> errors)
     {
-        var validationErrors = _validationErrors;
-        if (validationErrors is null)
-        {
-            var newDictionary = new ConcurrentDictionary<string, IEnumerable<string>>();
-            validationErrors = Interlocked.CompareExchange(ref _validationErrors, newDictionary, null) ?? newDictionary;
-        }
+        _validationErrors ??= new Dictionary<string, IEnumerable<string>>();
 
-        var existingErrors = (ConcurrentQueue<string>)validationErrors.GetOrAdd(path, static _ => new ConcurrentQueue<string>());
-        foreach (var error in errors)
+        if (!_validationErrors.TryGetValue(path, out var existingErrors))
         {
-            existingErrors.Enqueue(error);
+            _validationErrors.Add(path, errors.ToList());
+        }
+        else
+        {
+            ((List<string>)existingErrors).AddRange(errors);
         }
     }
 
@@ -267,10 +265,10 @@ public sealed class ValidateContext
         CancellationTokenSource? linkedCts = null;
         try
         {
-            List<Task>? validationResultTasks = null;
-
+            var tracker = TrackAsyncValidations();
             for (var i = 0; i < validationAttributes.Length; i++)
             {
+
                 var attribute = validationAttributes[i];
                 if (attribute is not AsyncValidationAttribute asyncValidationAttribute)
                 {
@@ -278,15 +276,11 @@ public sealed class ValidateContext
                 }
 
                 linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                validationResultTasks ??= new();
-                validationResultTasks.Add(
-                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, reporter, cancellationToken, linkedCts));
+                tracker.Track(
+                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, reporter, tracker.NextContext(), cancellationToken, linkedCts));
             }
 
-            if (validationResultTasks is not null)
-            {
-                await Task.WhenAll(validationResultTasks);
-            }
+            await tracker.CompleteAsync();
         }
         finally
         {
@@ -294,11 +288,12 @@ public sealed class ValidateContext
         }
     }
 
-    private async Task GetValidationResultTaskCoreAsync(
+    private static async Task GetValidationResultTaskCoreAsync(
         AsyncValidationAttribute attribute,
         object? value,
         object? container,
         IValidationErrorReporter reporter,
+        ValidateContext context,
         CancellationToken originalCancellationToken,
         CancellationTokenSource linkedCancellationTokenSource)
     {
@@ -308,10 +303,10 @@ public sealed class ValidateContext
         // 2. cancellation when we want to short-circuit on first error.
         try
         {
-            var result = await attribute.GetValidationResultAsync(value, ValidationContext, linkedCancellationTokenSource.Token);
+            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, linkedCancellationTokenSource.Token);
             if (result is not null && result != ValidationResult.Success)
             {
-                reporter.ReportError(this, container, attribute, result);
+                reporter.ReportError(context, container, attribute, result);
                 linkedCancellationTokenSource.Cancel();
             }
         }
