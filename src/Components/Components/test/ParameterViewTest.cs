@@ -584,8 +584,44 @@ public partial class ParameterViewTest
 
         // Assert
         Assert.Equal(
-            "Failed to bind parameter 'DebounceInterval'. Received value of type 'System.Int32' but expected type 'System.Double'.",
+            "Error setting parameter 'DebounceInterval'. Received value of type 'System.Int32' but expected type 'System.Double'.",
             ex.Message);
+    }
+
+    [Fact]
+    public void TryGetValue_AllowsNullValue_ForNullableOrReferenceType()
+    {
+        // Arrange
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "MyParam", null)
+        }, 0);
+
+        // Act
+        var found = parameters.TryGetValue<string>("MyParam", out var value);
+
+        // Assert
+        Assert.True(found);
+        Assert.Null(value);
+    }
+
+    [Fact]
+    public void TryGetValue_AssignsDefault_ForNullableValueType_WhenNull()
+    {
+        // Arrange
+        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
+        {
+            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+            RenderTreeFrame.Attribute(1, "MyParam", null)
+        }, 0);
+
+        // Act
+        var found = parameters.TryGetValue<int?>("MyParam", out var value);
+
+        // Assert
+        Assert.True(found);
+        Assert.Null(value);
     }
 
     private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
