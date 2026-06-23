@@ -80,6 +80,31 @@ public class TestController : ControllerBase
     public IActionResult GetDuplicateDescription()
         => Ok(new MvcTodo("Title", "Description", true));
 
+    [HttpGet]
+    [Route("/union-pet")]
+    [ProducesResponseType(typeof(UnionPet), StatusCodes.Status200OK)]
+    public IActionResult GetUnionPet()
+        => Ok(new UnionPet(new Kitten("Whiskers", 9)));
+
+    [HttpGet]
+    [Route("/union-value")]
+    [ProducesResponseType(typeof(UnionIntString), StatusCodes.Status200OK)]
+    public IActionResult GetUnionValue()
+        => Ok(new UnionIntString(42));
+
+    [HttpGet]
+    [Route("/union-clinic")]
+    [ProducesResponseType(typeof(Clinic), StatusCodes.Status200OK)]
+    public IActionResult GetUnionClinic()
+        => Ok(new Clinic("123 Vet Ave", new UnionPet(new Puppy("Rex", "Beagle"))));
+
+    [HttpGet]
+    [Route("/union-any-of")]
+    [ProducesResponseType(typeof(UnionPet), StatusCodes.Status200OK, "application/json")]
+    [ProducesResponseType(typeof(Clinic), StatusCodes.Status200OK, "application/json")]
+    public IActionResult GetUnionAnyOf()
+        => Ok(new UnionPet(new Kitten("Mittens", 7)));
+
     public class HttpQuery() : HttpMethodAttribute(["QUERY"]);
 
     public class HttpFoo() : HttpMethodAttribute(["FOO"]);
