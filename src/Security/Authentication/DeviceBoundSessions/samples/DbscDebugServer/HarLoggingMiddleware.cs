@@ -11,7 +11,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 
-namespace DbscSampleV2;
+namespace DbscDebugServer;
 
 /// <summary>
 /// Middleware that captures all HTTP requests/responses and writes them to a HAR file on disk.

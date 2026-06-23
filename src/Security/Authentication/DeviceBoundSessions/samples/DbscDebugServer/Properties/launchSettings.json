@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "DbscSampleV2": {
+    "DbscDebugServer": {
       "commandName": "Project",
       "applicationUrl": "https://localhost:7299"
     }

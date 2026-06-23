@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace DbscSampleV2;
+namespace DbscDebugServer;
 
 /// <summary>The dark-themed single-page debug dashboard served at <c>/</c>.</summary>
 public static class Dashboard

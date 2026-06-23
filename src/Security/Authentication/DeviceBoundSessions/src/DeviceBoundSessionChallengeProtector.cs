@@ -6,17 +6,28 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
 internal sealed class DeviceBoundSessionChallengeProtector
 {
-    private readonly ITimeLimitedDataProtector _protector;
+    private readonly ITimeLimitedDataProtector _registrationProtector;
+    private readonly ITimeLimitedDataProtector _refreshProtector;
+    private readonly ILogger<DeviceBoundSessionChallengeProtector> _logger;
 
-    public DeviceBoundSessionChallengeProtector(IDataProtectionProvider dataProtectionProvider)
+    public DeviceBoundSessionChallengeProtector(IDataProtectionProvider dataProtectionProvider, ILogger<DeviceBoundSessionChallengeProtector> logger)
     {
-        _protector = dataProtectionProvider
-            .CreateProtector("Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.v1")
+        _logger = logger;
+
+        // Registration and refresh challenges use distinct data-protection purposes so a challenge
+        // minted for one flow cannot be decrypted (let alone accepted) by the other. This makes
+        // cross-type challenge confusion cryptographically impossible, independent of payload shape.
+        _registrationProtector = dataProtectionProvider
+            .CreateProtector("Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.Registration.v1")
+            .ToTimeLimitedDataProtector();
+        _refreshProtector = dataProtectionProvider
+            .CreateProtector("Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Challenge.Refresh.v1")
             .ToTimeLimitedDataProtector();
     }
 
@@ -25,7 +36,7 @@ internal sealed class DeviceBoundSessionChallengeProtector
         var claimUid = ComputeClaimUid(principal);
         var writer = new CborWriter(allowMultipleRootLevelValues: true);
         writer.WriteTextString(claimUid);
-        return WebEncoders.Base64UrlEncode(_protector.Protect(writer.Encode(), lifetime));
+        return WebEncoders.Base64UrlEncode(_registrationProtector.Protect(writer.Encode(), lifetime));
     }
 
     public string GenerateRefreshChallenge(ClaimsPrincipal principal, string sessionId, TimeSpan lifetime)
@@ -34,13 +45,15 @@ internal sealed class DeviceBoundSessionChallengeProtector
         var writer = new CborWriter(allowMultipleRootLevelValues: true);
         writer.WriteTextString(claimUid);
         writer.WriteTextString(sessionId);
-        return WebEncoders.Base64UrlEncode(_protector.Protect(writer.Encode(), lifetime));
+        return WebEncoders.Base64UrlEncode(_refreshProtector.Protect(writer.Encode(), lifetime));
     }
 
     public bool TryValidateRegistrationChallenge(string challenge, ClaimsPrincipal principal)
     {
-        if (!TryUnprotect(challenge, out var payload))
+        if (!TryUnprotect(_registrationProtector, challenge, out var payload))
         {
+            // Expired, tampered, or minted for a different flow/version — undecryptable.
+            _logger.RegistrationChallengeUndecryptable();
             return false;
         }
 
@@ -48,18 +61,38 @@ internal sealed class DeviceBoundSessionChallengeProtector
         {
             var reader = new CborReader(payload, allowMultipleRootLevelValues: true);
             var storedClaimUid = reader.ReadTextString();
-            return string.Equals(storedClaimUid, ComputeClaimUid(principal), StringComparison.Ordinal);
+            if (reader.PeekState() != CborReaderState.Finished)
+            {
+                // Extra trailing data — not a registration challenge in the shape this version writes.
+                _logger.RegistrationChallengeMalformed();
+                return false;
+            }
+
+            if (!string.Equals(storedClaimUid, ComputeClaimUid(principal), StringComparison.Ordinal))
+            {
+                // Decrypted but bound to a different principal than the request.
+                _logger.RegistrationChallengePrincipalMismatch();
+                return false;
+            }
+
+            return true;
         }
-        catch (CborContentException)
+        catch (Exception ex) when (ex is CborContentException or InvalidOperationException)
         {
+            // Decrypted (so authentic) but not in the expected registration-challenge shape — e.g. a
+            // challenge minted by a different/older serialization version. Reading the wrong type throws
+            // InvalidOperationException; genuinely-malformed CBOR throws CborContentException.
+            _logger.RegistrationChallengeMalformed();
             return false;
         }
     }
 
     public bool TryValidateRefreshChallenge(string challenge, ClaimsPrincipal principal, string expectedSessionId)
     {
-        if (!TryUnprotect(challenge, out var payload))
+        if (!TryUnprotect(_refreshProtector, challenge, out var payload))
         {
+            // Expired, tampered, or minted for a different flow/version — undecryptable.
+            _logger.RefreshChallengeUndecryptable(expectedSessionId);
             return false;
         }
 
@@ -68,20 +101,46 @@ internal sealed class DeviceBoundSessionChallengeProtector
             var reader = new CborReader(payload, allowMultipleRootLevelValues: true);
             var storedClaimUid = reader.ReadTextString();
             var storedSessionId = reader.ReadTextString();
-            return string.Equals(storedClaimUid, ComputeClaimUid(principal), StringComparison.Ordinal) &&
-                string.Equals(storedSessionId, expectedSessionId, StringComparison.Ordinal);
+            if (reader.PeekState() != CborReaderState.Finished)
+            {
+                // Extra trailing data — not a refresh challenge in the shape this version writes.
+                _logger.RefreshChallengeMalformed(expectedSessionId);
+                return false;
+            }
+
+            if (!string.Equals(storedClaimUid, ComputeClaimUid(principal), StringComparison.Ordinal))
+            {
+                // Decrypted but bound to a different principal than the request.
+                _logger.RefreshChallengePrincipalMismatch(expectedSessionId);
+                return false;
+            }
+
+            if (!string.Equals(storedSessionId, expectedSessionId, StringComparison.Ordinal))
+            {
+                // Decrypted but bound to a different session than the request.
+                _logger.RefreshChallengeSessionMismatch(expectedSessionId);
+                return false;
+            }
+
+            return true;
         }
-        catch (CborContentException)
+        catch (Exception ex) when (ex is CborContentException or InvalidOperationException)
         {
+            // Decrypted (so authentic) but not in the expected refresh-challenge shape — e.g. a challenge
+            // minted by a different/older serialization version, or a registration challenge (one field)
+            // replayed as a refresh proof. Reading the wrong type or past the end throws
+            // InvalidOperationException; genuinely-malformed CBOR (practically unreachable after an
+            // authenticated decrypt) throws CborContentException. Either way the challenge is unusable.
+            _logger.RefreshChallengeMalformed(expectedSessionId);
             return false;
         }
     }
 
-    private bool TryUnprotect(string challenge, out byte[] payload)
+    private static bool TryUnprotect(ITimeLimitedDataProtector protector, string challenge, out byte[] payload)
     {
         try
         {
-            payload = _protector.Unprotect(WebEncoders.Base64UrlDecode(challenge));
+            payload = protector.Unprotect(WebEncoders.Base64UrlDecode(challenge));
             return true;
         }
         catch

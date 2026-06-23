@@ -4,55 +4,80 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 
-internal sealed class PostConfigureDeviceBoundSessionCookieOptions : IPostConfigureOptions<CookieAuthenticationOptions>
+/// <summary>
+/// A <see cref="CookieAuthenticationEvents"/> decorator used when a DBSC source cookie scheme sets
+/// the cookie options' <c>EventsType</c>. It emits the DBSC registration header on
+/// sign-in and forwards every event to the application's configured (DI-resolved) inner events.
+/// </summary>
+internal sealed class DeviceBoundSessionCookieEvents : CookieAuthenticationEvents
 {
-    private readonly IOptions<DeviceBoundSessionSourceSchemes> _sourceSchemes;
+    private readonly string _dbscScheme;
+    private readonly CookieAuthenticationEvents _innerEvents;
+    private readonly Type? _innerEventsType;
 
-    public PostConfigureDeviceBoundSessionCookieOptions(IOptions<DeviceBoundSessionSourceSchemes> sourceSchemes)
+    public DeviceBoundSessionCookieEvents(string dbscScheme, CookieAuthenticationEvents innerEvents, Type? innerEventsType)
     {
-        _sourceSchemes = sourceSchemes;
+        _dbscScheme = dbscScheme;
+        _innerEvents = innerEvents;
+        _innerEventsType = innerEventsType;
     }
 
-    public void PostConfigure(string? name, CookieAuthenticationOptions options)
+    public override async Task ValidatePrincipal(CookieValidatePrincipalContext context)
     {
-        ArgumentNullException.ThrowIfNull(name);
-
-        if (!_sourceSchemes.Value.Schemes.TryGetValue(name, out var dbscScheme))
-        {
-            return;
-        }
-
-        if (options.EventsType is null)
-        {
-            var priorSigningIn = options.Events.OnSigningIn;
-            options.Events.OnSigningIn = async context =>
-            {
-                EmitRegistrationHeader(context, dbscScheme);
-                await priorSigningIn(context);
-            };
-            return;
-        }
-
-        options.Events = new DeviceBoundSessionCookieEvents(dbscScheme, options.Events, options.EventsType);
-        options.EventsType = null;
+        await GetInnerEvents(context.HttpContext).ValidatePrincipal(context);
     }
 
-    internal static void EmitRegistrationHeader(CookieSigningInContext context, string dbscScheme)
+    public override async Task CheckSlidingExpiration(CookieSlidingExpirationContext context)
     {
-        var dbscOptions = context.HttpContext.RequestServices
-            .GetRequiredService<IOptionsMonitor<DeviceBoundSessionOptions>>()
-            .Get(dbscScheme);
-        var challengeProtector = context.HttpContext.RequestServices
-            .GetRequiredService<DeviceBoundSessionChallengeProtector>();
+        await GetInnerEvents(context.HttpContext).CheckSlidingExpiration(context);
+    }
 
-        var principal = context.Principal ?? new System.Security.Claims.ClaimsPrincipal();
-        var challenge = challengeProtector.GenerateRegistrationChallenge(principal, dbscOptions.ChallengeMaxAge);
+    public override async Task SigningIn(CookieSigningInContext context)
+    {
+        DeviceBoundSessionRegistrationHeader.Emit(context.HttpContext, context.Principal, _dbscScheme);
+        await GetInnerEvents(context.HttpContext).SigningIn(context);
+    }
 
-        var headerValue = $"(ES256 RS256);path=\"{dbscOptions.RegistrationPath.Value}\";challenge=\"{challenge}\"";
-        context.Response.Headers.Append("Secure-Session-Registration", headerValue);
+    public override async Task SignedIn(CookieSignedInContext context)
+    {
+        await GetInnerEvents(context.HttpContext).SignedIn(context);
+    }
+
+    public override async Task SigningOut(CookieSigningOutContext context)
+    {
+        await GetInnerEvents(context.HttpContext).SigningOut(context);
+    }
+
+    public override async Task RedirectToLogout(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        await GetInnerEvents(context.HttpContext).RedirectToLogout(context);
+    }
+
+    public override async Task RedirectToLogin(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        await GetInnerEvents(context.HttpContext).RedirectToLogin(context);
+    }
+
+    public override async Task RedirectToReturnUrl(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        await GetInnerEvents(context.HttpContext).RedirectToReturnUrl(context);
+    }
+
+    public override async Task RedirectToAccessDenied(RedirectContext<CookieAuthenticationOptions> context)
+    {
+        await GetInnerEvents(context.HttpContext).RedirectToAccessDenied(context);
+    }
+
+    private CookieAuthenticationEvents GetInnerEvents(HttpContext httpContext)
+    {
+        if (_innerEventsType is null)
+        {
+            return _innerEvents;
+        }
+
+        return (CookieAuthenticationEvents)httpContext.RequestServices.GetRequiredService(_innerEventsType);
     }
 }

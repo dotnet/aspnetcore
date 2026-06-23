@@ -3,9 +3,12 @@ const Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSession
 const Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionDefaults.RefreshPath = "/.well-known/dbsc/refresh" -> string!
 const Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionDefaults.RegistrationPath = "/.well-known/dbsc/registration" -> string!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionDefaults
+Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionHttpContextExtensions
+static Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionHttpContextExtensions.WriteDeviceBoundSessionRegistration(this Microsoft.AspNetCore.Http.HttpContext! context, string! sourceScheme) -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionHandler
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionHandler.DeviceBoundSessionHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider) -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionHandler.HandleRequestAsync() -> System.Threading.Tasks.Task<bool>!
+override Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionHandler.HandleAuthenticateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult!>!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions.AllowedRefreshInitiators.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions.ChallengeMaxAge.get -> System.TimeSpan
@@ -41,7 +44,6 @@ Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Name.g
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Name.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.SessionCredential() -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Type.get -> string!
-Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential.Type.set -> void
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Credentials.get -> System.Collections.Generic.List<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionCredential!>?
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionInstruction.Credentials.set -> void
@@ -69,5 +71,7 @@ Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScopeRule.Session
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScopeRule.Type.get -> string!
 Microsoft.AspNetCore.Authentication.DeviceBoundSessions.SessionScopeRule.Type.set -> void
 Microsoft.Extensions.DependencyInjection.DeviceBoundSessionExtensions
-static Microsoft.Extensions.DependencyInjection.DeviceBoundSessionExtensions.AddDeviceBoundSession(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string! sourceScheme, System.Action<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions!>? configureOptions = null) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
-static Microsoft.Extensions.DependencyInjection.DeviceBoundSessionExtensions.AddDeviceBoundSession(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! sourceScheme, System.Action<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions!>? configureOptions = null) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.DeviceBoundSessionExtensions.AddDeviceBoundSession(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string! sourceScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.DeviceBoundSessionExtensions.AddDeviceBoundSession(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! authenticationScheme, string! sourceScheme, System.Action<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.DeviceBoundSessionExtensions.AddDeviceBoundSession(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! sourceScheme) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!
+static Microsoft.Extensions.DependencyInjection.DeviceBoundSessionExtensions.AddDeviceBoundSession(this Microsoft.AspNetCore.Authentication.AuthenticationBuilder! builder, string! sourceScheme, System.Action<Microsoft.AspNetCore.Authentication.DeviceBoundSessions.DeviceBoundSessionOptions!>! configureOptions) -> Microsoft.AspNetCore.Authentication.AuthenticationBuilder!

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
@@ -9,6 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// Represents the scope of a DBSC session. Corresponds to the "JSON Session Scope Instruction
 /// Format" defined in W3C Device Bound Session Credentials §9.7.
 /// </summary>
+[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class SessionScope
 {
     /// <summary>

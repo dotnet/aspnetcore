@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace DbscSampleV2;
+namespace DbscDebugServer;
 
 /// <summary>Well-known scheme, cookie, and purpose names used by the debug tooling.</summary>
 public static class DbscNames

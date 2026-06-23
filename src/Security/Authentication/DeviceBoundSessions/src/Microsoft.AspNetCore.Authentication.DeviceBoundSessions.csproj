@@ -1,31 +1,31 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ASP.NET Core authentication handler for Device Bound Session Credentials (DBSC).</Description>
+    <Description>ASP.NET Core middleware that enables Device Bound Session Credentials (DBSC) over an inner authentication scheme.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;authentication;security;dbsc</PackageTags>
+    <PackageTags>aspnetcore;authentication;dbsc;security</PackageTags>
     <IsTrimmable>true</IsTrimmable>
-    <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);RS0016;RS0026</NoWarn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
     <Reference Include="System.Formats.Cbor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Authentication.Test" />
+    <InternalsVisibleTo Include="DbscDebugServer" />
   </ItemGroup>
 
 </Project>

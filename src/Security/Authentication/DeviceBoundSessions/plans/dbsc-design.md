@@ -218,8 +218,10 @@ The refresh scheme overrides `Cookie.Path = "/.well-known/dbsc"`. The session sc
 src/Security/Authentication/DeviceBoundSessions/src/
 ├── DeviceBoundSessionChallengeProtector.cs      # Singleton: generates/validates challenges (CBOR + time-limited DP)
 ├── DeviceBoundSessionConfiguration.cs           # JSON response model: session config
-├── DeviceBoundSessionCookieEvents.cs            # IPostConfigureOptions: hooks OnSigningIn to emit registration header
-├── DeviceBoundSessionCookieEventsWrapper.cs     # CookieAuthenticationEvents wrapper for EventsType scenarios
+├── DeviceBoundSessionConstants.cs               # Constants: DBSC header names + supported/advertised algorithms
+├── DeviceBoundSessionCookieEvents.cs            # CookieAuthenticationEvents wrapper for EventsType scenarios
+├── PostConfigureDeviceBoundSessionCookieOptions.cs # IPostConfigureOptions: hooks OnSigningIn to emit registration header
+├── DeviceBoundSessionRegistrationHeader.cs      # Writes the Secure-Session-Registration header on sign-in
 ├── DeviceBoundSessionCredentialConfiguration.cs # JSON response model: credential entry
 ├── DeviceBoundSessionDefaults.cs                # Constants: scheme name, paths
 ├── DeviceBoundSessionExtensions.cs              # AddDeviceBoundSession() extension method

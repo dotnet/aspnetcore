@@ -135,8 +135,6 @@
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Client/HostedInAspNet.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Server/HostedInAspNet.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/StandaloneApp/StandaloneApp.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp.Server/ThreadingApp.Server.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp/ThreadingApp.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Client/Wasm.Prerendered.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Server/Wasm.Prerendered.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/WasmLinkerTest/WasmLinkerTest.csproj" />
@@ -804,6 +802,15 @@
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSample/CookieSample.csproj" />
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSessionSample/CookieSessionSample.csproj" />
   </Folder>
+  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/">
+    <Project Path="src/Security/Authentication/DeviceBoundSessions/src/Microsoft.AspNetCore.Authentication.DeviceBoundSessions.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/samples/">
+    <Project Path="src/Security/Authentication/DeviceBoundSessions/samples/DeviceBoundSessionsSample/DeviceBoundSessionsSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/test/">
+    <Project Path="src/Security/Authentication/DeviceBoundSessions/test/Microsoft.AspNetCore.Authentication.DeviceBoundSessions.Test.csproj" />
+  </Folder>
   <Folder Name="/src/Security/Authentication/Core/">
     <Project Path="src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
   </Folder>
@@ -1187,6 +1194,9 @@
     <Project Path="src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj" />
     <Project Path="src/Tools/Microsoft.dotnet-openapi/test/dotnet-microsoft.openapi.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Tools/NativeAot/">
+    <Project Path="src/Tools/NativeAot/test/Microsoft.AspNetCore.Tools.NativeAot.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Validation/" />
   <Folder Name="/src/Validation/gen/">
     <Project Path="src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
@@ -1197,6 +1207,10 @@
   <Folder Name="/src/Validation/test/">
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/Localization/">
+    <Project Path="src/Validation/Localization/src/Microsoft.Extensions.Validation.Localization.csproj" />
+    <Project Path="src/Validation/Localization/test/Microsoft.Extensions.Validation.Localization.Tests.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />

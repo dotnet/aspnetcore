@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
@@ -13,6 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// <summary>
 /// Extension methods to configure Device Bound Session Credentials authentication.
 /// </summary>
+[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public static class DeviceBoundSessionExtensions
 {
     /// <summary>
@@ -22,15 +24,24 @@ public static class DeviceBoundSessionExtensions
     /// </summary>
     /// <param name="builder">The authentication builder.</param>
     /// <param name="sourceScheme">The existing cookie authentication scheme to protect with DBSC (e.g., "Identity.Application").</param>
-    /// <param name="configureOptions">Optional action to configure DBSC options.</param>
+    /// <returns>The authentication builder for chaining.</returns>
+    public static AuthenticationBuilder AddDeviceBoundSession(
+        this AuthenticationBuilder builder,
+        string sourceScheme)
+        => AddDeviceBoundSessionCore(builder, DeviceBoundSessionDefaults.AuthenticationScheme, sourceScheme, configureOptions: null);
+
+    /// <summary>
+    /// Adds Device Bound Session Credentials (DBSC) authentication that wraps an existing cookie scheme.
+    /// </summary>
+    /// <param name="builder">The authentication builder.</param>
+    /// <param name="sourceScheme">The existing cookie authentication scheme to protect with DBSC (e.g., "Identity.Application").</param>
+    /// <param name="configureOptions">Action to configure DBSC options.</param>
     /// <returns>The authentication builder for chaining.</returns>
     public static AuthenticationBuilder AddDeviceBoundSession(
         this AuthenticationBuilder builder,
         string sourceScheme,
-        Action<DbscOptions>? configureOptions = null)
-    {
-        return AddDeviceBoundSession(builder, DeviceBoundSessionDefaults.AuthenticationScheme, sourceScheme, configureOptions);
-    }
+        Action<DbscOptions> configureOptions)
+        => AddDeviceBoundSessionCore(builder, DeviceBoundSessionDefaults.AuthenticationScheme, sourceScheme, configureOptions);
 
     /// <summary>
     /// Adds Device Bound Session Credentials (DBSC) authentication that wraps an existing cookie scheme.
@@ -38,13 +49,33 @@ public static class DeviceBoundSessionExtensions
     /// <param name="builder">The authentication builder.</param>
     /// <param name="authenticationScheme">The DBSC authentication scheme name.</param>
     /// <param name="sourceScheme">The existing cookie authentication scheme to protect with DBSC.</param>
-    /// <param name="configureOptions">Optional action to configure DBSC options.</param>
+    /// <returns>The authentication builder for chaining.</returns>
+    public static AuthenticationBuilder AddDeviceBoundSession(
+        this AuthenticationBuilder builder,
+        string authenticationScheme,
+        string sourceScheme)
+        => AddDeviceBoundSessionCore(builder, authenticationScheme, sourceScheme, configureOptions: null);
+
+    /// <summary>
+    /// Adds Device Bound Session Credentials (DBSC) authentication that wraps an existing cookie scheme.
+    /// </summary>
+    /// <param name="builder">The authentication builder.</param>
+    /// <param name="authenticationScheme">The DBSC authentication scheme name.</param>
+    /// <param name="sourceScheme">The existing cookie authentication scheme to protect with DBSC.</param>
+    /// <param name="configureOptions">Action to configure DBSC options.</param>
     /// <returns>The authentication builder for chaining.</returns>
     public static AuthenticationBuilder AddDeviceBoundSession(
         this AuthenticationBuilder builder,
         string authenticationScheme,
         string sourceScheme,
-        Action<DbscOptions>? configureOptions = null)
+        Action<DbscOptions> configureOptions)
+        => AddDeviceBoundSessionCore(builder, authenticationScheme, sourceScheme, configureOptions);
+
+    private static AuthenticationBuilder AddDeviceBoundSessionCore(
+        AuthenticationBuilder builder,
+        string authenticationScheme,
+        string sourceScheme,
+        Action<DbscOptions>? configureOptions)
     {
         var refreshScheme = $"{sourceScheme}.Dbsc.Refresh";
         var sessionScheme = $"{sourceScheme}.Dbsc.Session";

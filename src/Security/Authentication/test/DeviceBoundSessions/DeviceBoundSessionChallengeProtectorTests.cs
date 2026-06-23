@@ -4,6 +4,7 @@
 using System;
 using System.Security.Claims;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
@@ -13,7 +14,7 @@ public class DeviceBoundSessionChallengeProtectorTests
     private static readonly TimeSpan s_lifetime = TimeSpan.FromMinutes(5);
 
     private static DeviceBoundSessionChallengeProtector CreateProtector()
-        => new(new EphemeralDataProtectionProvider());
+        => new(new EphemeralDataProtectionProvider(), NullLogger<DeviceBoundSessionChallengeProtector>.Instance);
 
     private static ClaimsPrincipal Principal(params (string Type, string Value)[] claims)
     {
@@ -85,6 +86,53 @@ public class DeviceBoundSessionChallengeProtectorTests
         var challenge = protector.GenerateRefreshChallenge(Principal(("sub", "alice")), "session-1", s_lifetime);
 
         Assert.False(protector.TryValidateRefreshChallenge(challenge, Principal(("sub", "bob")), "session-1"));
+    }
+
+    [Fact]
+    public void RefreshChallenge_Fails_WhenExpired()
+    {
+        var protector = CreateProtector();
+        var principal = Principal(("sub", "alice"));
+        // Negative lifetime → already expired when validated; the data protector can't unprotect it.
+        var challenge = protector.GenerateRefreshChallenge(principal, "session-1", TimeSpan.FromSeconds(-1));
+
+        Assert.False(protector.TryValidateRefreshChallenge(challenge, principal, "session-1"));
+    }
+
+    [Fact]
+    public void RefreshChallenge_Fails_WhenTampered()
+    {
+        var protector = CreateProtector();
+        var principal = Principal(("sub", "alice"));
+        var challenge = protector.GenerateRefreshChallenge(principal, "session-1", s_lifetime);
+        var tampered = challenge[0] == 'A' ? "B" + challenge[1..] : "A" + challenge[1..];
+
+        Assert.False(protector.TryValidateRefreshChallenge(tampered, principal, "session-1"));
+    }
+
+    [Fact]
+    public void RefreshChallenge_Fails_ForRegistrationChallenge()
+    {
+        var protector = CreateProtector();
+        var principal = Principal(("sub", "alice"));
+        // A registration challenge is encrypted under a different data-protection purpose, so the
+        // refresh validator cannot even decrypt it. Cross-type confusion is impossible.
+        var registrationChallenge = protector.GenerateRegistrationChallenge(principal, s_lifetime);
+
+        Assert.False(protector.TryValidateRefreshChallenge(registrationChallenge, principal, "session-1"));
+    }
+
+    [Fact]
+    public void TryValidateRegistrationChallenge_Fails_ForRefreshChallenge()
+    {
+        var protector = CreateProtector();
+        var principal = Principal(("sub", "alice"));
+        // The reverse direction: a refresh challenge is encrypted under the refresh purpose, so
+        // registration validation cannot decrypt it and rejects it (it would otherwise read the
+        // shared claim-uid prefix and silently accept it).
+        var refreshChallenge = protector.GenerateRefreshChallenge(principal, "session-1", s_lifetime);
+
+        Assert.False(protector.TryValidateRegistrationChallenge(refreshChallenge, principal));
     }
 
     [Fact]

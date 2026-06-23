@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -19,13 +20,19 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// Authentication handler that implements the Device Bound Session Credentials (DBSC) protocol.
 /// Handles registration and refresh endpoints, delegating cookie management to separate cookie schemes.
 /// </summary>
+[Experimental("ASP0030", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessionOptions>, IAuthenticationRequestHandler
 {
     private readonly DeviceBoundSessionChallengeProtector _challengeProtector;
+    private readonly DeviceBoundSessionJwtValidator _jwtValidator;
 
     /// <summary>
     /// Initializes a new instance of <see cref="DeviceBoundSessionHandler"/>.
     /// </summary>
+    /// <param name="options">The monitor for <see cref="DeviceBoundSessionOptions"/> instances.</param>
+    /// <param name="logger">The <see cref="ILoggerFactory"/> used to create loggers.</param>
+    /// <param name="encoder">The <see cref="UrlEncoder"/> used to encode URLs.</param>
+    /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/> used to protect and unprotect registration challenges.</param>
     public DeviceBoundSessionHandler(
         IOptionsMonitor<DeviceBoundSessionOptions> options,
         ILoggerFactory logger,
@@ -33,18 +40,24 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         IDataProtectionProvider dataProtectionProvider)
         : base(options, logger, encoder)
     {
-        _challengeProtector = new DeviceBoundSessionChallengeProtector(dataProtectionProvider);
+        _challengeProtector = new DeviceBoundSessionChallengeProtector(dataProtectionProvider, logger.CreateLogger<DeviceBoundSessionChallengeProtector>());
+        _jwtValidator = new DeviceBoundSessionJwtValidator(logger.CreateLogger<DeviceBoundSessionJwtValidator>());
     }
 
     /// <summary>
     /// The handler does not authenticate normal requests — cookie handlers do that.
     /// </summary>
+    /// <returns>A completed task whose result is always <see cref="AuthenticateResult.NoResult"/>.</returns>
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         => Task.FromResult(AuthenticateResult.NoResult());
 
     /// <summary>
     /// Handles DBSC registration and refresh requests if the path matches.
     /// </summary>
+    /// <returns>
+    /// A task whose result is <see langword="true"/> when the request matched a DBSC registration or
+    /// refresh endpoint and was handled (the pipeline should short-circuit); otherwise <see langword="false"/>.
+    /// </returns>
     public async Task<bool> HandleRequestAsync()
     {
         if (HttpMethods.IsPost(Request.Method))
@@ -68,20 +81,20 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
     private async Task HandleRegistrationAsync()
     {
         // Extract the JWT proof from the Secure-Session-Response header
-        var responseHeader = Request.Headers["Secure-Session-Response"].ToString();
-        if (string.IsNullOrEmpty(responseHeader))
+        var proofHeader = Request.Headers[DeviceBoundSessionConstants.Headers.Proof].ToString();
+        if (string.IsNullOrEmpty(proofHeader))
         {
             Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
 
-        responseHeader = responseHeader.Trim('"');
+        proofHeader = proofHeader.Trim('"');
 
         // Validate the JWT and extract the public key (registration: no existing key to check against)
-        var jwtResult = await DeviceBoundSessionJwtValidator.ValidateAsync(responseHeader, publicKeyJwk: null, expectedChallenge: null);
+        var jwtResult = await _jwtValidator.ValidateAsync(proofHeader, publicKeyJwk: null, expectedChallenge: null);
         if (jwtResult is null)
         {
-            Logger.LogWarning("DBSC registration: invalid JWT proof.");
+            // The validator logs the specific reason (malformed / wrong typ / unsupported alg / bad signature).
             Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
@@ -90,7 +103,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         var authResult = await Context.AuthenticateAsync(Options.RegistrationSourceScheme);
         if (!authResult.Succeeded || authResult.Principal is null)
         {
-            Logger.LogWarning("DBSC registration: no valid authentication from source scheme.");
+            Logger.RegistrationNoSourceAuthentication();
             Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;
         }
@@ -98,9 +111,16 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         var principal = authResult.Principal;
         var properties = authResult.Properties ?? new AuthenticationProperties();
 
-        if (jwtResult.Challenge is null || !ValidateRegistrationChallenge(jwtResult.Challenge, principal))
+        if (jwtResult.Challenge is null)
         {
-            Logger.LogWarning("DBSC registration: invalid challenge.");
+            Logger.RegistrationChallengeMissing();
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return;
+        }
+
+        if (!ValidateRegistrationChallenge(jwtResult.Challenge, principal))
+        {
+            // The protector logs the specific reason (undecryptable / malformed / principal-mismatch).
             Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
         }
@@ -119,6 +139,13 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         refreshProperties.Items["DbscAlgorithm"] = jwtResult.Algorithm;
         refreshProperties.IsPersistent = true;
 
+        // Anchor the refresh cookie's lifetime to the original sign-in cookie so the bound session
+        // never outlives the credential it was exchanged for. Copying the source ticket's IssuedUtc/
+        // ExpiresUtc makes the cookie handler honor them (instead of starting a fresh ExpireTimeSpan
+        // window at registration time). Falls back to the handler default if the source has no expiry.
+        refreshProperties.IssuedUtc = properties.IssuedUtc;
+        refreshProperties.ExpiresUtc = properties.ExpiresUtc;
+
         // 1. Stamp the refresh cookie (path-scoped stash with ticket + public key)
         await Context.SignInAsync(Options.RefreshScheme, principal, refreshProperties);
 
@@ -135,11 +162,6 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         await Context.SignOutAsync(Options.RegistrationSourceScheme);
 
         // Build and return session instructions JSON.
-        // NOTE: We intentionally do NOT emit a Secure-Session-Challenge header on this 200 response.
-        // The canonical DBSC test server (drubery/dbsc-test-server) only issues a challenge on a 403
-        // (the "demand proof" path). Pre-seeding a challenge on every success response makes Chrome
-        // proactively refresh to consume it, producing a post-registration refresh storm. The next
-        // refresh will receive its challenge via the 403 + Secure-Session-Challenge handshake instead.
         var instructions = BuildSessionInstruction(sessionId);
 
         Response.StatusCode = StatusCodes.Status200OK;
@@ -151,7 +173,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
     private async Task HandleRefreshAsync()
     {
         // Read session ID from header
-        var sessionIdHeader = Request.Headers["Sec-Secure-Session-Id"].ToString();
+        var sessionIdHeader = Request.Headers[DeviceBoundSessionConstants.Headers.SessionId].ToString();
         if (string.IsNullOrEmpty(sessionIdHeader))
         {
             Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -164,7 +186,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         var authResult = await Context.AuthenticateAsync(Options.RefreshScheme);
         if (!authResult.Succeeded || authResult.Principal is null)
         {
-            Logger.LogWarning("DBSC refresh: no valid refresh cookie for session {SessionId}.", sessionIdHeader);
+            Logger.RefreshNoCookie(sessionIdHeader);
             Response.StatusCode = StatusCodes.Status401Unauthorized;
             return;
         }
@@ -188,37 +210,43 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         }
 
         // Check for the proof JWT
-        var proofHeader = Request.Headers["Secure-Session-Response"].ToString();
+        var proofHeader = Request.Headers[DeviceBoundSessionConstants.Headers.Proof].ToString();
         if (string.IsNullOrEmpty(proofHeader))
         {
             // No proof yet — issue a challenge (first leg of refresh)
             var challenge = GenerateRefreshChallenge(authResult.Principal, sessionIdHeader);
             Response.StatusCode = StatusCodes.Status403Forbidden;
-            Response.Headers["Secure-Session-Challenge"] = $"\"{challenge}\";id=\"{sessionIdHeader}\"";
+            Response.Headers[DeviceBoundSessionConstants.Headers.Challenge] = $"\"{challenge}\";id=\"{sessionIdHeader}\"";
             return;
         }
 
         proofHeader = proofHeader.Trim('"');
 
         // Validate the JWT proof against the public key from the refresh cookie
-        var jwtResult = await DeviceBoundSessionJwtValidator.ValidateAsync(proofHeader, publicKeyJwk, expectedChallenge: null);
+        var jwtResult = await _jwtValidator.ValidateAsync(proofHeader, publicKeyJwk, expectedChallenge: null);
         if (jwtResult is null)
         {
-            Logger.LogWarning("DBSC refresh: invalid JWT signature for session {SessionId}.", sessionIdHeader);
+            // The validator logs the specific reason (malformed / wrong typ / unsupported alg / bad signature).
             Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
         }
 
-        // Validate the challenge (jti) is one we issued and is fresh.
-        if (jwtResult.Challenge is null || !ValidateRefreshChallenge(jwtResult.Challenge, authResult.Principal, sessionIdHeader))
+        // Validate the challenge (jti). The protector logs the specific reason
+        // (undecryptable / malformed / principal- or session-mismatch); a missing jti is invalid.
+        var challengeValid = jwtResult.Challenge is not null
+            && ValidateRefreshChallenge(jwtResult.Challenge, authResult.Principal, sessionIdHeader);
+
+        if (!challengeValid)
         {
-            Logger.LogWarning("DBSC refresh: stale or invalid challenge for session {SessionId}.", sessionIdHeader);
-            // Re-issue a fresh challenge so the client can immediately retry with a valid proof
-            // (the DBSC 403 + Secure-Session-Challenge handshake). Without this the client would
-            // keep retrying the same stale challenge, producing a burst of 403s.
+            // Re-issue a fresh, correctly-bound challenge so the client can immediately
+            // retry (the DBSC 403 + Secure-Session-Challenge handshake).
+            // This is curative, not a futile retry: the signature and refresh cookie already validated and are
+            // unchanged on retry, so the stale/expired/version-skewed challenge was the only failing input and a
+            // fresh nonce fixes it. Persistent client/server faults can't recover but are bounded by the
+            // client's challenge quota, which ends in a clean re-login.
             var retryChallenge = GenerateRefreshChallenge(authResult.Principal, sessionIdHeader);
             Response.StatusCode = StatusCodes.Status403Forbidden;
-            Response.Headers["Secure-Session-Challenge"] = $"\"{retryChallenge}\";id=\"{sessionIdHeader}\"";
+            Response.Headers[DeviceBoundSessionConstants.Headers.Challenge] = $"\"{retryChallenge}\";id=\"{sessionIdHeader}\"";
             return;
         }
 
@@ -278,7 +306,6 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
             {
                 new SessionCredential
                 {
-                    Type = "cookie",
                     Name = sessionCookieName,
                     Attributes = "Secure; HttpOnly; SameSite=Lax; Path=/",
                 }

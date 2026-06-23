@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -10,9 +11,15 @@ namespace Microsoft.AspNetCore.Authentication.DeviceBoundSessions;
 /// <summary>
 /// Validates DBSC proof JWTs (typ: "dbsc+jwt") signed with ES256 or RS256.
 /// </summary>
-internal static class DeviceBoundSessionJwtValidator
+internal sealed class DeviceBoundSessionJwtValidator
 {
     private static readonly JsonWebTokenHandler _tokenHandler = new();
+    private readonly ILogger<DeviceBoundSessionJwtValidator> _logger;
+
+    public DeviceBoundSessionJwtValidator(ILogger<DeviceBoundSessionJwtValidator> logger)
+    {
+        _logger = logger;
+    }
 
     /// <summary>
     /// Validates a DBSC proof JWT and extracts its claims.
@@ -21,7 +28,7 @@ internal static class DeviceBoundSessionJwtValidator
     /// <param name="publicKeyJwk">The JWK JSON of the public key to validate against. If null, extracts from JWT header.</param>
     /// <param name="expectedChallenge">The expected challenge value (jti claim).</param>
     /// <returns>The parsed result, or null if validation fails.</returns>
-    public static async Task<DeviceBoundSessionJwtResult?> ValidateAsync(string jwt, string? publicKeyJwk, string? expectedChallenge)
+    public async Task<DeviceBoundSessionJwtResult?> ValidateAsync(string jwt, string? publicKeyJwk, string? expectedChallenge)
     {
         JsonWebToken token;
         try
@@ -30,17 +37,20 @@ internal static class DeviceBoundSessionJwtValidator
         }
         catch (ArgumentException)
         {
+            _logger.ProofMalformed();
             return null;
         }
 
         if (!token.TryGetHeaderValue<string>("typ", out var tokenType) ||
             !string.Equals(tokenType, "dbsc+jwt", StringComparison.Ordinal))
         {
+            _logger.ProofWrongType();
             return null;
         }
 
         if (!token.TryGetHeaderValue<string>("alg", out var algorithm) || string.IsNullOrEmpty(algorithm))
         {
+            _logger.ProofMissingAlgorithm();
             return null;
         }
 
@@ -49,6 +59,7 @@ internal static class DeviceBoundSessionJwtValidator
         {
             if (!token.TryGetHeaderValue<JsonElement>("jwk", out var jwkElement))
             {
+                _logger.ProofMissingKey();
                 return null;
             }
 
@@ -58,6 +69,7 @@ internal static class DeviceBoundSessionJwtValidator
         var securityKey = CreateSecurityKey(jwkJson, algorithm);
         if (securityKey is null)
         {
+            _logger.ProofUnsupportedKey();
             return null;
         }
 
@@ -72,12 +84,14 @@ internal static class DeviceBoundSessionJwtValidator
 
         if (!validationResult.IsValid)
         {
+            _logger.ProofSignatureInvalid();
             return null;
         }
 
         token.TryGetPayloadValue("jti", out string? challenge);
         if (expectedChallenge is not null && !string.Equals(challenge, expectedChallenge, StringComparison.Ordinal))
         {
+            _logger.ProofChallengeMismatch();
             return null;
         }
 
@@ -106,8 +120,8 @@ internal static class DeviceBoundSessionJwtValidator
 
         return algorithm switch
         {
-            "ES256" when string.Equals(jsonWebKey.Kty, "EC", StringComparison.Ordinal) && string.Equals(jsonWebKey.Crv, "P-256", StringComparison.Ordinal) => jsonWebKey,
-            "RS256" when string.Equals(jsonWebKey.Kty, "RSA", StringComparison.Ordinal) => jsonWebKey,
+            DeviceBoundSessionConstants.Es256 when string.Equals(jsonWebKey.Kty, "EC", StringComparison.Ordinal) && string.Equals(jsonWebKey.Crv, "P-256", StringComparison.Ordinal) => jsonWebKey,
+            DeviceBoundSessionConstants.Rs256 when string.Equals(jsonWebKey.Kty, "RSA", StringComparison.Ordinal) => jsonWebKey,
             _ => null,
         };
     }
