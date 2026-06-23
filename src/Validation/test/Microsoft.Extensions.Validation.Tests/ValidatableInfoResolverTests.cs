@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Validation.Tests;
 
 public class ValidatableInfoResolverTests
 {
-    public delegate void TryGetValidatableTypeInfoCallback(Type type, out IValidatableInfo? validatableInfo);
+    public delegate void TryGetValidatableTypeInfoCallback(Type type, out IValidatableTypeInfo? validatableInfo);
 
     [Fact]
     public void ResolversChain_ProcessesInCorrectOrder()
@@ -31,8 +31,8 @@ public class ValidatableInfoResolverTests
 
         // Setup resolver1 to return false (doesn't handle this type)
         resolver1
-            .Setup(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny))
-            .Callback(new TryGetValidatableTypeInfoCallback((Type t, out IValidatableInfo? info) =>
+            .Setup(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableTypeInfo?>.IsAny))
+            .Callback(new TryGetValidatableTypeInfoCallback((Type t, out IValidatableTypeInfo? info) =>
             {
                 info = null;
             }))
@@ -40,8 +40,8 @@ public class ValidatableInfoResolverTests
 
         // Setup resolver2 to return true and set the mock type info
         resolver2
-            .Setup(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny))
-            .Callback(new TryGetValidatableTypeInfoCallback((Type t, out IValidatableInfo? info) =>
+            .Setup(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableTypeInfo?>.IsAny))
+            .Callback(new TryGetValidatableTypeInfoCallback((Type t, out IValidatableTypeInfo? info) =>
             {
                 info = mockTypeInfo;
             }))
@@ -66,9 +66,9 @@ public class ValidatableInfoResolverTests
         Assert.Equal(typeof(ValidatableType), ((ValidatableTypeInfo)validatableInfo).Type);
 
         // Verify that resolvers were called in the expected order
-        resolver1.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny), Times.Once);
-        resolver2.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny), Times.Once);
-        resolver3.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableInfo?>.IsAny), Times.Never);
+        resolver1.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableTypeInfo?>.IsAny), Times.Once);
+        resolver2.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableTypeInfo?>.IsAny), Times.Once);
+        resolver3.Verify(r => r.TryGetValidatableTypeInfo(typeof(ValidatableType), out It.Ref<IValidatableTypeInfo?>.IsAny), Times.Never);
     }
 
     // Test types
