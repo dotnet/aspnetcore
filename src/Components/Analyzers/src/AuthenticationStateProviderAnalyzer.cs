@@ -93,19 +93,24 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
             return true;
         }
 
-        // Check if any field or property is of type AuthenticationStateProvider
-        foreach (var member in type.GetMembers())
+        // Check if any field or property (including inheritance chain) is of type AuthenticationStateProvider
+        for (var currentType = type; currentType is not null; currentType = currentType.BaseType)
         {
-            if (member is IFieldSymbol field && IsAuthenticationStateProviderType(field.Type, authStateProviderType))
+            foreach (var member in currentType.GetMembers())
             {
-                return true;
-            }
+                if (member is IFieldSymbol field && IsAuthenticationStateProviderType(field.Type, authStateProviderType))
+                {
+                    // Only consider fields that are not private in base types because they cannot be accessed by derived types.
+                    return Equals(currentType, type) || field.DeclaredAccessibility != Accessibility.Private;
+                }
 
-            if (member is IPropertySymbol property && IsAuthenticationStateProviderType(property.Type, authStateProviderType))
-            {
-                return true;
+                if (member is IPropertySymbol property && IsAuthenticationStateProviderType(property.Type, authStateProviderType))
+                {
+                    // Only consider properties that are not private in base types because they cannot be accessed by derived types.
+                    return Equals(currentType, type) || property.DeclaredAccessibility != Accessibility.Private;
+                }
             }
-        }
+        }    
 
         return false;
     }

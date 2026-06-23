@@ -286,4 +286,82 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
 
         VerifyCSharpDiagnostic(test);
     }
+
+    [Fact]
+    public void Diagnostic_WhenDerivedTypeCallsGetAuthenticationStateAsyncOnParentProviderWithoutSubscription()
+    {
+        var test = @"
+    using Microsoft.AspNetCore.Components.Authorization;
+    using System.Threading.Tasks;
+
+    namespace TestApp
+    {
+        class ConsumerComponent
+        {
+            protected AuthenticationStateProvider _provider;
+
+            public ConsumerComponent(AuthenticationStateProvider provider)
+            {
+                _provider = provider;
+            }
+        }
+
+        class Consumer2Component : ConsumerComponent
+        {
+            public Consumer2Component(AuthenticationStateProvider provider) : base(provider) { }
+
+            private async Task LoadUserAsync()
+            {
+                var state = await _provider.GetAuthenticationStateAsync();
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = "BL0012",
+                Message = "'Consumer2Component' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 15) }
+            });
+    }
+
+    [Fact]
+    public void NoDiagnostic_WhenDerivedTypeCallsGetAuthenticationStateAsyncOnParentProviderWithSubscription()
+    {
+        var test = @"
+    using Microsoft.AspNetCore.Components.Authorization;
+    using System.Threading.Tasks;
+
+    namespace TestApp
+    {
+        class ConsumerComponent
+        {
+            protected AuthenticationStateProvider _provider;
+
+            public ConsumerComponent(AuthenticationStateProvider provider)
+            {
+                _provider = provider;
+            }
+        }
+
+        class Consumer2Component : ConsumerComponent
+        {
+            public Consumer2Component(AuthenticationStateProvider provider) : base(provider) { }
+
+            private async Task LoadUserAsync()
+            {
+                var state = await _provider.GetAuthenticationStateAsync();
+                _provider.AuthenticationStateChanged += OnAuthStateChanged;
+            }
+
+            private async void OnAuthStateChanged(Task<AuthenticationState> task)
+            {
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
 }
