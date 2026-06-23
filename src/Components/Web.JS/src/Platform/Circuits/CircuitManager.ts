@@ -151,7 +151,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       if (asyncHandle !== 0 && this._options.autoPause.enabled) {
         this._pendingJsCallTracking.set(asyncHandle, this.trackActiveStream());
       }
-      (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)(asyncHandle, ...rest);
+      (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)
+        .call(this._dispatcher, asyncHandle, ...rest);
     });
     connection.on('JS.EndInvokeDotNet', (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string) => {
       const untrack = this._pendingDotNetCallTracking.get(asyncCallId);
