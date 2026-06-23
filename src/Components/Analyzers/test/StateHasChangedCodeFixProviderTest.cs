@@ -37,6 +37,8 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
 
         public sealed class EventCallbackFactory
         {
+            public EventCallback Create(object receiver, Action callback) => default;
+
             public EventCallback Create(object receiver, Func<Task> callback) => default;
         }
 
@@ -159,6 +161,122 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         class TestComponent : ComponentBase
         {
             
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpFix(oldSource, newSource);
+    }
+
+    [Fact]
+    public void SyncEventHandler_RemovesUnnecessaryStateHasChangedCall()
+    {
+        var oldSource = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            public EventCallback OnRefresh => EventCallbackFactory.Create(this, OnRefreshClicked);
+
+            private void OnRefreshClicked()
+            {
+                StateHasChanged();
+                var value = 1;
+            }
+        }
+    }" + ComponentDeclarations;
+
+        var newSource = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            public EventCallback OnRefresh => EventCallbackFactory.Create(this, OnRefreshClicked);
+
+            private void OnRefreshClicked()
+            {
+                
+                var value = 1;
+            }
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpFix(oldSource, newSource);
+    }
+
+    [Fact]
+    public void ExpressionBodyOnParametersSetMethod_RemovesEntireMethod()
+    {
+        var oldSource = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            protected override void OnParametersSet() => StateHasChanged();
+        }
+    }" + ComponentDeclarations;
+
+        var newSource = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpFix(oldSource, newSource);
+    }
+
+    [Fact]
+    public void EventHandler_WithStateHasChangedBetweenAwaits_RemovesOnlyRedundantCalls()
+    {
+        var oldSource = @"
+    namespace ConsoleApplication1
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            public EventCallback OnRefresh => EventCallbackFactory.Create(this, OnRefreshClicked);
+
+            private async Task OnRefreshClicked()
+            {
+                StateHasChanged();
+                await Task.Delay(1);
+                StateHasChanged();
+                await Task.Delay(1);
+                StateHasChanged();
+            }
+        }
+    }" + ComponentDeclarations;
+
+        var newSource = @"
+    namespace ConsoleApplication1
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            public EventCallback OnRefresh => EventCallbackFactory.Create(this, OnRefreshClicked);
+
+            private async Task OnRefreshClicked()
+            {
+                
+                await Task.Delay(1);
+                StateHasChanged();
+                await Task.Delay(1);
+                
+            }
         }
     }" + ComponentDeclarations;
 
