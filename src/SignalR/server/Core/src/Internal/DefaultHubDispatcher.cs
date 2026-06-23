@@ -226,17 +226,17 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
 
             case CancelInvocationMessage cancelInvocationMessage:
-                // Check if there is an associated active stream and cancel it if it exists.
-                // The cts will be removed when the streaming method completes executing
+                // Check if there is an associated active invocation or stream and cancel it if it exists.
+                // The cts will be removed when the hub method completes executing
                 if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId!, out var cts))
                 {
-                    Log.CancelStream(_logger, cancelInvocationMessage.InvocationId!);
+                    Log.CancelInvocation(_logger, cancelInvocationMessage.InvocationId!);
                     cts.Cancel();
                 }
                 else
                 {
-                    // Stream can be canceled on the server while client is canceling stream.
-                    Log.UnexpectedCancel(_logger);
+                    // Invocation can be canceled on the server while client is canceling invocation.
+                    Log.UnexpectedCancelWithId(_logger, cancelInvocationMessage.InvocationId!);
                 }
                 break;
 
@@ -438,7 +438,8 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                                         HubConnectionContext connection,
                                                         HubCallerContext hubCallerContext,
                                                         HubMethodInvocationMessage hubMethodInvocationMessage,
-                                                        bool isStreamCall)
+                                                        bool isStreamCall,
+                                                        CancellationTokenSource? cts)
                     {
                         var logger = dispatcher._logger;
                         var enableDetailedErrors = dispatcher._enableDetailedErrors;
@@ -453,6 +454,21 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         // Use hubMethodInvocationMessage.Target instead of methodExecutor.MethodInfo.Name
                         // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
                         var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger, connection);
+
+                        // Register the CancellationTokenSource if present so CancelInvocationMessage can cancel it
+                        var ctsRegistered = false;
+                        if (cts != null && !string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
+                        {
+                            if (!connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId!, cts))
+                            {
+                                Log.InvocationIdInUse(logger, hubMethodInvocationMessage.InvocationId);
+                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                    $"Invocation ID '{hubMethodInvocationMessage.InvocationId}' is already in use.");
+                                cts.Dispose();
+                                return;
+                            }
+                            ctsRegistered = true;
+                        }
 
                         object? result;
                         try
@@ -479,6 +495,16 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                                 Activity.Current = previousActivity;
                             }
 
+                            // Remove the CancellationTokenSource from active requests. Only do this if we
+                            // successfully registered it, otherwise we'd evict another invocation's CTS on ID collision.
+                            if (ctsRegistered)
+                            {
+                                connection.ActiveRequestCancellationSources.TryRemove(hubMethodInvocationMessage.InvocationId!, out _);
+                            }
+                            // Always dispose the CTS if one was created (covers SendAsync with a CancellationToken
+                            // synthetic arg, which has no InvocationId and was therefore not added to the dictionary).
+                            cts?.Dispose();
+
                             // Stream response handles cleanup in StreamResultsAsync
                             // And normal invocations handle cleanup below in the finally
                             if (isStreamCall)
@@ -495,7 +521,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         }
                     }
 
-                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall);
+                    invocation = ExecuteInvocation(this, methodExecutor, hub, arguments, scope, hubActivator, connection, hubCallerContext, hubMethodInvocationMessage, isStreamCall, cts);
                 }
 
                 if (isStreamCall || isStreamResponse)
@@ -573,6 +599,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
         var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger, connection);
 
+        var ctsRegistered = false;
         try
         {
             if (!connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts))
@@ -581,6 +608,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 error = $"Invocation ID '{invocationId}' is already in use.";
                 return;
             }
+            ctsRegistered = true;
 
             object? result;
             try
@@ -645,8 +673,13 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
             await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
-            streamCts.Dispose();
-            connection.ActiveRequestCancellationSources.TryRemove(invocationId, out _);
+            // Only remove/dispose the CTS if we successfully registered it, otherwise we'd evict
+            // another invocation's CTS on ID collision.
+            if (ctsRegistered)
+            {
+                connection.ActiveRequestCancellationSources.TryRemove(invocationId, out _);
+                streamCts.Dispose();
+            }
 
             await connection.WriteAsync(CompletionMessage.WithError(invocationId, error));
         }
