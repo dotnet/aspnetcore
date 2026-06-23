@@ -122,7 +122,7 @@ public class SumLimitAttribute : ValidationAttribute
 
                 await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+                Assert.Null(context.ValidationErrors);
             }
 
             async Task InvalidClassAttributeCheck_ProducesError(IValidatableTypeInfo validatableInfo)

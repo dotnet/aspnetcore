@@ -127,7 +127,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
 
                 await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+                Assert.Null(context.ValidationErrors);
             }
 
             async Task InvalidNestedInteger_ProducesError(IValidatableTypeInfo validatableInfo)
@@ -167,7 +167,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
 
                 await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+                Assert.Null(context.ValidationErrors);
             }
 
             async Task InvalidList_ProducesError(IValidatableTypeInfo validatableInfo)
@@ -219,7 +219,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
 
                 await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
 
-                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+                Assert.Null(context.ValidationErrors);
             }
 
             async Task InvalidSubTypeNestedIntegers_ProduceErrors(IValidatableTypeInfo validatableInfo)
@@ -243,13 +243,13 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
                     {
-                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange1", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange2", kvp.Key);
+                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.Single());
                     },
                     kvp =>
                     {
-                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange2", kvp.Key);
-                        Assert.Equal("The field IntegerWithRange2 must be between 10 and 100.", kvp.Value.Single());
+                        Assert.Equal("NonSkippedSubTypeProperty.IntegerWithRange1", kvp.Key);
+                        Assert.Equal("The field IntegerWithRange1 must be between 10 and 100.", kvp.Value.Single());
                     });
             }
 
@@ -268,7 +268,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
 
                 await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+                Assert.Null(context.ValidationErrors);
             }
         });
     }
@@ -369,7 +369,7 @@ public record AlwaysSkippedType
 
                 await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+                Assert.Null(context.ValidationErrors);
             }
 
             async Task InvalidSkippedIntegerWithRangeDoesNotProduceError(IValidatableTypeInfo validatableInfo)
@@ -387,7 +387,7 @@ public record AlwaysSkippedType
 
                 await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
 
-                Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0);
+                Assert.Null(context.ValidationErrors);
             }
         });
     }

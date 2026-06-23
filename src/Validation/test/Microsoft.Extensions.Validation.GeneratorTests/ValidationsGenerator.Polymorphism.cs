@@ -96,6 +96,11 @@ public class DerivedValidatableType : BaseValidatableType
             Assert.Collection(problemDetails.Errors,
                 error =>
                 {
+                    Assert.Equal("Value3", error.Key);
+                    Assert.Equal("The Value3 field is not a valid Base64 encoding.", error.Value.Single());
+                },
+                error =>
+                {
                     Assert.Equal("Value1", error.Key);
                     Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
                 },
@@ -103,11 +108,6 @@ public class DerivedValidatableType : BaseValidatableType
                 {
                     Assert.Equal("Value2", error.Key);
                     Assert.Equal("The Value2 field is not a valid e-mail address.", error.Value.Single());
-                },
-                error =>
-                {
-                    Assert.Equal("Value3", error.Key);
-                    Assert.Equal("The Value3 field is not a valid Base64 encoding.", error.Value.Single());
                 });
         });
 
@@ -172,6 +172,11 @@ public class DerivedValidatableType : BaseValidatableType
 
             var problemDetails = await AssertBadRequest(httpContext);
             Assert.Collection(problemDetails.Errors,
+            error =>
+                {
+                    Assert.Equal("BaseType.Value3", error.Key);
+                    Assert.Equal("The Value3 field is not a valid Base64 encoding.", error.Value.Single());
+                },
                 error =>
                 {
                     Assert.Equal("BaseType.Value1", error.Key);
@@ -179,18 +184,13 @@ public class DerivedValidatableType : BaseValidatableType
                 },
                 error =>
                 {
-                    Assert.Equal("BaseType.Value3", error.Key);
-                    Assert.Equal("The Value3 field is not a valid Base64 encoding.", error.Value.Single());
+                    Assert.Equal("BaseType.Value2", error.Key);
+                    Assert.Equal("The Value2 field is not a valid e-mail address.", error.Value.Single());
                 },
                 error =>
                 {
                     Assert.Equal("BaseValidatableType.Value1", error.Key);
                     Assert.Equal("The field Value 1 must be between 10 and 100.", error.Value.Single());
-                },
-                error =>
-                {
-                    Assert.Equal("BaseType.Value2", error.Key);
-                    Assert.Equal("The Value2 field is not a valid e-mail address.", error.Value.Single());
                 });
         });
     }
