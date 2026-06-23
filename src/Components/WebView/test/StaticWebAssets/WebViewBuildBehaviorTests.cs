@@ -68,9 +68,8 @@ public class WebViewBuildBehaviorTests
         build.CreateFile("app/Program.cs", "class Program { static void Main() { } }");
 
         var result = build.Run("publish -c Release -v:m", "app/app.csproj");
-        // xUnit 2.x has no runtime skip; tolerate transient feed failures, and skip until the
-        // deferred-group publish fix (dotnet/sdk#54941) is in the repo SDK.
-        if (result.LooksLikeNetworkFailure || result.RequiresDeferredPublishSdkFix)
+        // xUnit 2.x has no runtime skip; tolerate transient feed failures only.
+        if (result.LooksLikeNetworkFailure)
         {
             return;
         }
@@ -82,8 +81,8 @@ public class WebViewBuildBehaviorTests
         var routes = GetModulesManifestRoutes(build.Root);
         Assert.Equal("_framework/blazor.modules.json", Assert.Single(routes));
 
-        // The app's generated manifest (with the RCL module) supersedes the package fallback. The
-        // module filename is fingerprinted (e.g. rcl.<hash>.lib.module.js), so match loosely.
+        // The app generated its own manifest (with the RCL module), so the package never
+        // materialized its fallback. The module filename is fingerprinted, so match loosely.
         var publishedManifest = FindPublishedFile(build.Root, "blazor.modules.json");
         Assert.NotNull(publishedManifest);
         var publishedContent = File.ReadAllText(publishedManifest!);
@@ -92,25 +91,31 @@ public class WebViewBuildBehaviorTests
     }
 
     [ConditionalFact]
-    public void Build_AppWithoutJsModules_ServesFallbackModulesManifest()
+    public void PublishAndBuild_AppWithoutJsModules_ServesEmptyFallbackModulesManifest()
     {
         using var build = new ConsumerBuild(_output);
 
         build.CreateProject("app", "app.csproj", AppProject);
         build.CreateFile("app/Program.cs", "class Program { static void Main() { } }");
 
-        var result = build.Run("build -c Debug -v:m", "app/app.csproj");
+        var result = build.Run("publish -c Release -v:m", "app/app.csproj");
         // xUnit 2.x has no runtime skip; tolerate transient inability to reach the NuGet feeds.
         if (result.LooksLikeNetworkFailure)
         {
             return;
         }
 
-        Assert.True(result.Succeeded, $"Build should succeed.\n{result.Output}");
+        Assert.True(result.Succeeded, $"Publish should succeed.\n{result.Output}");
+        Assert.DoesNotContain("Conflicting assets with the same target path", result.Output);
 
-        // With no app-provided JS modules, the materialized package fallback is served.
+        // With no app-provided JS modules, the package materializes its empty ([]) fallback, and it
+        // is the single manifest served on the route.
         var routes = GetModulesManifestRoutes(build.Root);
         Assert.Equal("_framework/blazor.modules.json", Assert.Single(routes));
+
+        var publishedManifest = FindPublishedFile(build.Root, "blazor.modules.json");
+        Assert.NotNull(publishedManifest);
+        Assert.Equal("[]", File.ReadAllText(publishedManifest!).Trim());
     }
 
     [ConditionalFact]
@@ -118,9 +123,10 @@ public class WebViewBuildBehaviorTests
     {
         // ProjectReference (P2P) variant of the publish repro. An app references the WebView *source
         // project* (not the package) and contributes JS library modules via an RCL, importing the
-        // WebView groups targets like the in-repo Photino sample / E2E test. The deferred
-        // BlazorWebViewModules group must be resolved at publish (dotnet/sdk#54941) so the fallback
-        // and the app's generated manifest don't both survive on _framework/blazor.modules.json.
+        // WebView StaticWebAssets.Groups.targets like the in-repo Photino sample / E2E test. Because
+        // the package never materializes its fallback when the app has its own modules, only the
+        // app's generated manifest survives on _framework/blazor.modules.json (no conflict, no SDK fix
+        // required).
         using var build = new ConsumerBuild(_output, isolateNuGetFeeds: false);
 
         build.CreateProject("rcl", "rcl.csproj", $"""
@@ -149,7 +155,7 @@ public class WebViewBuildBehaviorTests
         build.CreateFile("app/Program.cs", "class Program { static void Main() { } }");
 
         var result = build.Run("publish -c Release -v:m", "app/app.csproj");
-        if (result.LooksLikeNetworkFailure || result.RequiresDeferredPublishSdkFix)
+        if (result.LooksLikeNetworkFailure)
         {
             return;
         }
@@ -160,7 +166,7 @@ public class WebViewBuildBehaviorTests
         var routes = GetModulesManifestRoutes(build.Root);
         Assert.Equal("_framework/blazor.modules.json", Assert.Single(routes));
 
-        // The app's generated manifest (with the RCL module) supersedes the WebView fallback.
+        // The app generated its own manifest (with the RCL module); the WebView fallback was not added.
         var publishedManifest = FindPublishedFile(build.Root, "blazor.modules.json");
         Assert.NotNull(publishedManifest);
         var publishedContent = File.ReadAllText(publishedManifest!);
