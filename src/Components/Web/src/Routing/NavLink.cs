@@ -54,6 +54,37 @@ public class NavLink : ComponentBase, IDisposable
     public NavLinkMatch Match { get; set; }
 
     /// <summary>
+    /// Gets or sets a custom callback for determining whether the current URI matches the link.
+    /// When provided, this callback is used in combination with the default matching logic.
+    /// The callback receives the absolute URI of the current location and should return true if the link
+    /// should be highlighted as active, otherwise false.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When <c>ShouldMatch</c> is set, it is evaluated first. If it returns <c>true</c>, the link is 
+    /// highlighted as active. If it returns <c>false</c>, the default matching behavior is used as a 
+    /// fallback. This allows custom logic to take precedence while maintaining backward compatibility.
+    /// </para>
+    /// <para>
+    /// The callback receives the absolute URI of the current location. For example, to match any URI 
+    /// containing a specific segment:
+    /// <code>
+    /// &lt;NavLink href="/admin"
+    ///          ShouldMatch="@(uri =&gt; uri.Contains("admin"))"
+    ///          class="nav-link"&gt;
+    ///    Admin
+    /// &lt;/NavLink&gt;
+    /// </code>
+    /// </para>
+    /// <para>
+    /// If <c>ShouldMatch</c> is <c>null</c>, only the default matching behavior is used based on the
+    /// <see cref="Match"/> parameter.
+    /// </para>
+    /// </remarks>
+    [Parameter]
+    public Func<string, bool>? ShouldMatch { get; set; }
+
+    /// <summary>
     /// Gets or sets whether the href should be resolved relative to the current URI.
     /// When <c>true</c>, relative hrefs (e.g., "sibling") are resolved against the current route's
     /// directory path and rendered as root-relative URLs (e.g., "/folder/sibling").
@@ -90,7 +121,7 @@ public class NavLink : ComponentBase, IDisposable
         }
 
         _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
-        _isActive = ShouldMatch(NavigationManager.Uri);
+        _isActive = EvaluateShouldMatch(NavigationManager.Uri);
 
         _class = (string?)null;
         if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
@@ -117,7 +148,7 @@ public class NavLink : ComponentBase, IDisposable
     {
         // We could just re-render always, but for this component we know the
         // only relevant state change is to the _isActive property.
-        var shouldBeActiveNow = ShouldMatch(args.Location);
+        var shouldBeActiveNow = EvaluateShouldMatch(args.Location);
         if (shouldBeActiveNow != _isActive)
         {
             _isActive = shouldBeActiveNow;
@@ -131,7 +162,27 @@ public class NavLink : ComponentBase, IDisposable
     /// </summary>
     /// <param name="uriAbsolute">The absolute URI of the current location.</param>
     /// <returns>True if the link should be highlighted as active; otherwise, false.</returns>
-    protected virtual bool ShouldMatch(string uriAbsolute)
+    protected virtual bool EvaluateShouldMatch(string uriAbsolute)
+    {
+        // If a custom ShouldMatch callback is provided, use it with fallback to default logic
+        if (ShouldMatch != null)
+        {
+            var result = ShouldMatch.Invoke(uriAbsolute);
+            // If custom logic returns true, use it
+            // If custom logic returns false, fall back to default matching
+            return result || DefaultShouldMatch(uriAbsolute);
+        }
+
+        return DefaultShouldMatch(uriAbsolute);
+    }
+
+    /// <summary>
+    /// Provides the default URL matching logic for the NavLink component.
+    /// This method is called by <see cref="EvaluateShouldMatch"/> when no custom <see cref="ShouldMatch"/> callback is provided.
+    /// </summary>
+    /// <param name="uriAbsolute">The absolute URI of the current location.</param>
+    /// <returns>True if the link should be highlighted as active; otherwise, false.</returns>
+    protected virtual bool DefaultShouldMatch(string uriAbsolute)
     {
         if (_hrefAbsolute == null)
         {

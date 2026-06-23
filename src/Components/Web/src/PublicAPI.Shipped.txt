@@ -626,6 +626,6 @@ virtual Microsoft.AspNetCore.Components.Forms.ValidationSummary.Dispose(bool dis
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.RenderChildComponent(System.IO.TextWriter! output, ref Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame componentFrame) -> void
 virtual Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure.StaticHtmlRenderer.WriteComponentHtml(int componentId, System.IO.TextWriter! output) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.WebRenderer.GetWebRendererId() -> int
-virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool
+virtual Microsoft.AspNetCore.Components.Routing.NavLink.EvaluateShouldMatch(string! uriAbsolute) -> bool
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.AddRootComponent(string! identifier, string! domElementSelector) -> int
 virtual Microsoft.AspNetCore.Components.Web.Infrastructure.JSComponentInterop.RemoveRootComponent(int componentId) -> void

@@ -9,6 +9,9 @@ Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.get -> string?
 Microsoft.AspNetCore.Components.Web.EnvironmentBoundary.Include.set -> void
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch.get -> System.Func<string!, bool>?
+Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch.set -> void
+virtual Microsoft.AspNetCore.Components.Routing.NavLink.DefaultShouldMatch(string! uriAbsolute) -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void
