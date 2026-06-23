@@ -432,33 +432,27 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         }
 
         // Process authentication, authorization and CSRF protection middlewares independently to avoid
-        // registering middlewares for services that do not exist.
+        // registering middlewares for services that do not exist. When the framework owns one of these middleware,
+        // record it (e.g. so a StartupFilter that re-runs ConfigureApplication doesn't auto-inject it again).
         var serviceProviderIsService = _builtApplication.Services.GetService<IServiceProviderIsService>();
 
-        var addAuthentication = serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true
-            && !_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey);
+        bool addAuthentication, addAuthorization, addCsrfProtection;
 
-        var addAuthorization = serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true
-            && !_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey);
-
-        var addCsrfProtection = !WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"])
-            && serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true
-            && !_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey);
-
-        // Record that the framework owns these middleware so they aren't auto-injected again (e.g. when a
-        // StartupFilter re-runs ConfigureApplication). The Use invocations below set the property on the outer
-        // pipeline, but we want to set it on the inner pipeline as well.
-        if (addAuthentication)
+        if (addAuthentication = serviceProviderIsService?.IsService(typeof(IAuthenticationSchemeProvider)) is true
+            && !_builtApplication.Properties.ContainsKey(AuthenticationMiddlewareSetKey))
         {
             _builtApplication.Properties[AuthenticationMiddlewareSetKey] = true;
         }
 
-        if (addAuthorization)
+        if (addAuthorization = serviceProviderIsService?.IsService(typeof(IAuthorizationHandlerProvider)) is true
+            && !_builtApplication.Properties.ContainsKey(AuthorizationMiddlewareSetKey))
         {
             _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
         }
 
-        if (addCsrfProtection)
+        if (addCsrfProtection = !WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"])
+            && serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true
+            && !_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
         {
             _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
         }
