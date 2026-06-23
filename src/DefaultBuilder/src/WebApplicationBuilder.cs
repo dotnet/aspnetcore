@@ -494,8 +494,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         if (_builtApplication.Properties.ContainsKey(EndpointRouteBuilderKey))
         {
             var postRoutingPipeline = new PostRoutingPipeline(app, configurePostRouting);
-            _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] =
-                (Func<RequestDelegate, RequestDelegate>)postRoutingPipeline.CreateMiddleware;
+            _builtApplication.Properties[MiddlewareInvokedKeys.PostRoutingPipeline] = (Func<RequestDelegate, RequestDelegate>)postRoutingPipeline.CreateMiddleware;
         }
         else
         {
@@ -536,9 +535,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     // assembly before invoking it, so application code can't smuggle its own middleware into the post-routing slot.
     // The segment is built lazily (when the pipeline is composed) on a branch off the destination builder so it shares
     // the same services and properties.
-    private sealed class PostRoutingPipeline(
-        IApplicationBuilder app,
-        Action<IApplicationBuilder> configure)
+    private sealed class PostRoutingPipeline(IApplicationBuilder app, Action<IApplicationBuilder> configure)
     {
         private readonly IApplicationBuilder _app = app;
         private readonly Action<IApplicationBuilder> _configure = configure;
