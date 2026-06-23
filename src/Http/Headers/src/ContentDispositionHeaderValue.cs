@@ -267,7 +267,7 @@ public class ContentDispositionHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out ContentDispositionHeaderValue? parsedValue)
     {
         var index = 0;
-        return Parser.TryParseValue(input, ref index, out parsedValue!);
+        return Parser.TryParseValue(input, index, out _, out parsedValue!);
     }
 
     private static int GetDispositionTypeLength(StringSegment input, int startIndex, out ContentDispositionHeaderValue? parsedValue)

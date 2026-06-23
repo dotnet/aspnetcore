@@ -317,7 +317,7 @@ public class ValidatableTypeInfoTests
         await personType.ValidateAsync(person, context, default);
 
         // Assert
-        Assert.Null(context.ValidationErrors); // No validation errors for nullable properties with null values
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0); // No validation errors for nullable properties with null values
     }
 
     [Fact]
@@ -363,7 +363,6 @@ public class ValidatableTypeInfoTests
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationErrors = [],
             ValidationContext = new ValidationContext(rootNode)
         };
 
@@ -437,9 +436,10 @@ public class ValidatableTypeInfoTests
         // Assert
         Assert.NotNull(context.ValidationErrors);
         Assert.Single(context.ValidationErrors.Keys); // Only the "Password" key
-        Assert.Equal(2, context.ValidationErrors["Password"].Length); // But with 2 errors
-        Assert.Contains("Password must be at least 8 characters.", context.ValidationErrors["Password"]);
-        Assert.Contains("Password must contain at least one number and one special character.", context.ValidationErrors["Password"]);
+        var passwordErrors = context.ValidationErrors["Password"].ToArray();
+        Assert.Equal(2, passwordErrors.Length); // But with 2 errors
+        Assert.Contains("Password must be at least 8 characters.", passwordErrors);
+        Assert.Contains("Password must contain at least one number and one special character.", passwordErrors);
     }
 
     [Fact]
@@ -561,14 +561,16 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
             ]);
 
-        context.ValidationErrors = [];
-        context.ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-        {
-            { typeof(MultiMemberErrorObject), multiType }
-        });
-
         var multiErrorInstance = new MultiMemberErrorObject { FirstName = "", LastName = "" };
-        context.ValidationContext = new ValidationContext(multiErrorInstance);
+
+        context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(MultiMemberErrorObject), multiType }
+            }),
+            ValidationContext = new ValidationContext(multiErrorInstance),
+        };
 
         await multiType.ValidateAsync(multiErrorInstance, context, default);
 
@@ -625,8 +627,11 @@ public class ValidatableTypeInfoTests
 
         // Second case:
         testTypeInstance.Value = 5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions,
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 
@@ -637,8 +642,11 @@ public class ValidatableTypeInfoTests
 
         // Third case:
         testTypeInstance.Value = -5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 
@@ -1067,7 +1075,7 @@ public class ValidatableTypeInfoTests
                 _typeInfoMappings = typeInfoMappings;
             }
 
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableInfo)
             {
                 if (_typeInfoMappings.TryGetValue(type, out var info))
                 {
@@ -1078,7 +1086,7 @@ public class ValidatableTypeInfoTests
                 return false;
             }
 
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
             {
                 validatableInfo = null;
                 return false;
