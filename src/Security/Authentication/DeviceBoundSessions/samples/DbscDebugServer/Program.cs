@@ -59,8 +59,7 @@ public class Startup
             {
                 o.Cookie.Name = DbscNames.SourceCookie;
                 o.LoginPath = "/login";
-                // TEMP (manual sliding test): 20 min lifetime, slides at the 50% mark (~10 min).
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+                o.ExpireTimeSpan = TimeSpan.FromDays(7);
             })
             // The DBSC handler + refresh/session cookie schemes + policy scheme.
             // The session TTL is read live from the debug state so it can be changed at runtime.
