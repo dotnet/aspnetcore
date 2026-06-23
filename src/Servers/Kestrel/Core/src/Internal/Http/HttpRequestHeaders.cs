@@ -110,7 +110,7 @@ internal sealed partial class HttpRequestHeaders : HttpHeaders
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     [SkipLocalsInit]
-    private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
+    private unsafe void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
     {
         if (_contentLength.HasValue)
         {

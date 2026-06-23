@@ -66,6 +66,10 @@
   <Folder Name="/src/Components/CustomElements/">
     <Project Path="src/Components/CustomElements/src/Microsoft.AspNetCore.Components.CustomElements.csproj" />
   </Folder>
+  <Folder Name="/src/Components/Media/">
+    <Project Path="src/Components/Media/src/Microsoft.AspNetCore.Components.Media.csproj" />
+    <Project Path="src/Components/Media/test/Microsoft.AspNetCore.Components.Media.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Components/Endpoints/">
     <Project Path="src/Components/Endpoints/src/Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <Project Path="src/Components/Endpoints/test/Microsoft.AspNetCore.Components.Endpoints.Tests.csproj" />
@@ -135,8 +139,6 @@
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Client/HostedInAspNet.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Server/HostedInAspNet.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/StandaloneApp/StandaloneApp.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp.Server/ThreadingApp.Server.csproj" />
-    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp/ThreadingApp.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Client/Wasm.Prerendered.Client.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Server/Wasm.Prerendered.Server.csproj" />
     <Project Path="src/Components/WebAssembly/testassets/WasmLinkerTest/WasmLinkerTest.csproj" />
@@ -761,13 +763,16 @@
   <Folder Name="/src/ObjectPool/">
     <Project Path="src/ObjectPool/src/Microsoft.Extensions.ObjectPool.csproj" />
   </Folder>
-  <Folder Name="/src/OpenApi/" />
+  <Folder Name="/src/OpenApi/">
+    <Project Path="src/OpenApi/src/Microsoft.AspNetCore.OpenApi.csproj" />
+  </Folder>
   <Folder Name="/src/OpenApi/gen/">
     <Project Path="src/OpenApi/gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" />
   </Folder>
   <Folder Name="/src/OpenApi/test/">
     <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Build.Tests/Microsoft.AspNetCore.OpenApi.Build.Tests.csproj" />
     <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests/Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests.csproj" />
+    <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Microsoft.AspNetCore.OpenApi.Tests.csproj" />
   </Folder>
   <Folder Name="/src/ProjectTemplates/">
     <Project Path="src/ProjectTemplates/test/Templates.Blazor.Tests/Templates.Blazor.Tests.csproj" />
@@ -1187,6 +1192,10 @@
     <Project Path="src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj" />
     <Project Path="src/Tools/Microsoft.dotnet-openapi/test/dotnet-microsoft.openapi.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Tools/NativeAot/">
+    <Project Path="src/Tools/NativeAot/aspnetcoretools/aspnetcoretools.csproj" />
+    <Project Path="src/Tools/NativeAot/test/Microsoft.AspNetCore.Tools.NativeAot.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Validation/" />
   <Folder Name="/src/Validation/gen/">
     <Project Path="src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
@@ -1197,6 +1206,10 @@
   <Folder Name="/src/Validation/test/">
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/Localization/">
+    <Project Path="src/Validation/Localization/src/Microsoft.Extensions.Validation.Localization.csproj" />
+    <Project Path="src/Validation/Localization/test/Microsoft.Extensions.Validation.Localization.Tests.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
@@ -1250,8 +1263,6 @@
   <Project Path="src/Mvc/samples/MvcFormSample/MvcFormSample.csproj" />
   <Project Path="src/OpenApi/perf/Microbenchmarks/Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj" />
   <Project Path="src/OpenApi/sample/Sample.csproj" />
-  <Project Path="src/OpenApi/src/Microsoft.AspNetCore.OpenApi.csproj" />
-  <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Microsoft.AspNetCore.OpenApi.Tests.csproj" />
   <Project Path="src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Auth.Tests/Templates.Blazor.WebAssembly.Auth.Tests.csproj" />
   <Project Path="src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Tests/Templates.Blazor.WebAssembly.Tests.csproj" />
   <Project Path="src/ProjectTemplates/test/Templates.Mvc.Tests/Templates.Mvc.Tests.csproj" />
