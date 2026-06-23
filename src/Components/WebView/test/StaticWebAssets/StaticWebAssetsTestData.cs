@@ -53,8 +53,9 @@ internal static class StaticWebAssetsTestData
         RepoRoot, "src", "Components", "WebView", "WebView", "src", "Microsoft.AspNetCore.Components.WebView.csproj");
 
     /// <summary>
-    /// Absolute path to the WebView consumer-side groups targets (sets JSModuleManifestRelativePath
-    /// and drops the redundant Project-sourced framework assets at publish for P2P consumers).
+    /// Absolute path to the WebView consumer-side targets (sets JSModuleManifestRelativePath and
+    /// conditionally materializes the empty blazor.modules.json fallback when the app has no JS
+    /// library modules of its own). Imported by P2P consumers like the in-repo Photino sample.
     /// </summary>
     public static string WebViewGroupsTargetsPath => Path.Combine(
         RepoRoot, "src", "Components", "WebView", "WebView", "src", "StaticWebAssets.Groups.targets");

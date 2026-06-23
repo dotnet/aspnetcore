@@ -27,43 +27,49 @@ public class PackageLayoutTests
     {
         using var package = PackageArchive.Open(WebViewPackageId);
 
-        Assert.True(package.HasEntry("staticwebassets/blazor.modules.json"),
-            "blazor.modules.json should ship under staticwebassets/.");
         Assert.True(package.HasEntry("staticwebassets/blazor.webview.js"),
-            "blazor.webview.js should ship under staticwebassets/.");
+            "blazor.webview.js should ship under staticwebassets/ as a package static web asset.");
+        // The fallback blazor.modules.json ships raw under build/ (NOT as a static web asset), so it
+        // never auto-flows and never collides with the SDK-generated manifest. It is materialized
+        // conditionally by StaticWebAssets.Groups.targets.
+        Assert.True(package.HasEntry("build/blazor.modules.json"),
+            "blazor.modules.json should ship raw under build/.");
+        Assert.False(package.HasEntry("staticwebassets/blazor.modules.json"),
+            "blazor.modules.json should NOT ship under staticwebassets/ (it is not a static web asset).");
     }
 
     [ConditionalFact]
-    public void WebViewPackage_ModelsBlazorModulesJsonAsDeferredGroupedFallback()
+    public void WebViewPackage_ShipsBlazorModulesJsonAsRawEmptyFallback()
     {
         using var package = PackageArchive.Open(WebViewPackageId);
         using var manifest = package.ReadPackageAssetsManifest();
 
-        var modules = GetAsset(manifest, "blazor.modules.json");
+        // blazor.modules.json is NOT a package static web asset: it is not present in the package
+        // assets manifest, so it does not auto-flow to consumers and cannot conflict with the
+        // SDK-generated _framework/blazor.modules.json when the app has its own JS modules.
+        Assert.DoesNotContain(
+            manifest.RootElement.GetProperty("Assets").EnumerateObject(),
+            asset => asset.Name.Replace('\\', '/').EndsWith("blazor.modules.json", StringComparison.OrdinalIgnoreCase));
 
-        // blazor.modules.json is the fallback JS module manifest, shipped as a Package static web
-        // asset in the deferred BlazorWebViewModules group. At build (and, with dotnet/sdk#54941, at
-        // publish) the deferred group is resolved so this fallback is dropped when the app contributes
-        // its own JS modules, and kept otherwise.
-        Assert.Equal("Package", modules.GetProperty("SourceType").GetString());
-        Assert.Equal("JSModule", modules.GetProperty("AssetTraitName").GetString());
-        Assert.Equal("JSModuleManifest", modules.GetProperty("AssetTraitValue").GetString());
-        Assert.Equal("BlazorWebViewModules=fallback", modules.GetProperty("AssetGroups").GetString());
+        // The raw fallback shipped under build/ is the empty module manifest.
+        var fallback = package.ReadEntry("build/blazor.modules.json").Trim();
+        Assert.Equal("[]", fallback);
     }
 
     [ConditionalFact]
-    public void WebViewPackage_ModelsBlazorWebViewJsAsFrameworkAsset()
+    public void WebViewPackage_ModelsBlazorWebViewJsAsPackageAsset()
     {
         using var package = PackageArchive.Open(WebViewPackageId);
         using var manifest = package.ReadPackageAssetsManifest();
 
         var js = GetAsset(manifest, "blazor.webview.js");
 
-        Assert.Equal("Framework", js.GetProperty("SourceType").GetString());
+        Assert.Equal("Package", js.GetProperty("SourceType").GetString());
+        Assert.Equal("_framework", js.GetProperty("BasePath").GetString());
     }
 
     [ConditionalFact]
-    public void WebViewPackage_ServesModulesManifestAtFrameworkRoute()
+    public void WebViewPackage_ServesWebViewJsAtFrameworkRoute()
     {
         using var package = PackageArchive.Open(WebViewPackageId);
         using var manifest = package.ReadPackageAssetsManifest();
@@ -73,8 +79,9 @@ public class PackageLayoutTests
             .Select(e => e.GetProperty("Route").GetString())
             .ToArray();
 
-        Assert.Contains("_framework/blazor.modules.json", routes);
         Assert.Contains("_framework/blazor.webview.js", routes);
+        // The fallback modules manifest is not a package static web asset, so it has no package endpoint.
+        Assert.DoesNotContain("_framework/blazor.modules.json", routes);
     }
 
     [ConditionalFact]
@@ -92,20 +99,26 @@ public class PackageLayoutTests
     }
 
     [ConditionalFact]
-    public void WebViewPackage_UsesBlazorWebViewModulesDeferredGroup()
+    public void WebViewPackage_MaterializesModulesFallbackConditionally()
     {
         using var package = PackageArchive.Open(WebViewPackageId);
 
-        // The fallback manifest is selected via the deferred BlazorWebViewModules group. The package
-        // ships the resolution machinery in Groups.targets and tags the fallback in the manifest.
+        // The fallback manifest is materialized as the consumer's own static web asset only when the
+        // app contributes no JS library modules of its own (decided before the build manifest is
+        // generated, so there is never a conflict). No deferred group / consumer-manifest tagging is
+        // involved.
         var groups = package.ReadEntry("build/StaticWebAssets.Groups.targets");
-        Assert.Contains("BlazorWebViewModules", groups);
-        Assert.Contains("Deferred=\"true\"", groups);
-        Assert.Contains("_ResolveBlazorWebViewModulesGroup", groups);
-        Assert.Contains("_TagSdkModulesManifestWithGroup", groups);
+        Assert.Contains("_AddBlazorWebViewModulesFallback", groups);
+        Assert.Contains("_ExistingBuildJSModules", groups);
+        Assert.Contains("ResolveStaticWebAssetsInputsDependsOn", groups);
+
+        // Lock in the simplification: no asset groups, no tagging/promotion of the SDK manifest.
+        Assert.DoesNotContain("Deferred=\"true\"", groups);
+        Assert.DoesNotContain("_TagSdkModulesManifestWithGroup", groups);
+        Assert.DoesNotContain("StaticWebAssetGroup", groups);
 
         var manifest = package.ReadEntry($"build/{WebViewPackageId}.PackageAssets.json");
-        Assert.Contains("BlazorWebViewModules=fallback", manifest);
+        Assert.DoesNotContain("BlazorWebViewModules", manifest);
     }
 
     [ConditionalFact]
