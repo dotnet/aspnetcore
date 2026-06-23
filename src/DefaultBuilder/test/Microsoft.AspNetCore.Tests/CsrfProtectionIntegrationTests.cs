@@ -472,7 +472,7 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task PostRoutingPipeline_ApplicationProvidedClosure_IsRejected()
     {
-        // '__PostRoutingPipeline' is a framework-reserved slot used to run the implicit authentication,
+        // '__Internal_PostRoutingPipeline' is a framework-reserved slot used to run the implicit authentication,
         // authorization and CSRF middleware immediately after routing matches. IApplicationBuilder.Properties is
         // publicly writable, so EndpointRoutingMiddleware must reject any delegate that application code places there
         // instead of executing it in the matched endpoint's scope. A closure has a compiler-generated method name,
@@ -482,7 +482,7 @@ public class CsrfProtectionIntegrationTests
         using var app = builder.Build();
 
         var tampered = false;
-        app.Properties["__PostRoutingPipeline"] = (Func<RequestDelegate, RequestDelegate>)(next => context =>
+        app.Properties["__Internal_PostRoutingPipeline"] = (Func<RequestDelegate, RequestDelegate>)(next => context =>
         {
             tampered = true;
             return next(context);
@@ -490,7 +490,7 @@ public class CsrfProtectionIntegrationTests
         app.MapGet("/", () => "hello");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
-        Assert.Contains("__PostRoutingPipeline", exception.Message);
+        Assert.Contains("__Internal_PostRoutingPipeline", exception.Message);
         Assert.False(tampered);
     }
 
@@ -505,11 +505,11 @@ public class CsrfProtectionIntegrationTests
         using var app = builder.Build();
 
         var impostor = new ImpostorPostRoutingPipeline();
-        app.Properties["__PostRoutingPipeline"] = (Func<RequestDelegate, RequestDelegate>)impostor.CreateMiddleware;
+        app.Properties["__Internal_PostRoutingPipeline"] = (Func<RequestDelegate, RequestDelegate>)impostor.CreateMiddleware;
         app.MapGet("/", () => "hello");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
-        Assert.Contains("__PostRoutingPipeline", exception.Message);
+        Assert.Contains("__Internal_PostRoutingPipeline", exception.Message);
         Assert.False(impostor.Invoked);
     }
 
@@ -521,11 +521,11 @@ public class CsrfProtectionIntegrationTests
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
 
-        app.Properties["__PostRoutingPipeline"] = "not a delegate";
+        app.Properties["__Internal_PostRoutingPipeline"] = "not a delegate";
         app.MapGet("/", () => "hello");
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
-        Assert.Contains("__PostRoutingPipeline", exception.Message);
+        Assert.Contains("__Internal_PostRoutingPipeline", exception.Message);
     }
 
     [Fact]
