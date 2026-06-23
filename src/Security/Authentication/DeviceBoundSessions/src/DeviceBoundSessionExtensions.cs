@@ -96,11 +96,17 @@ public static class DeviceBoundSessionExtensions
         });
 
         // Add a policy scheme that tries the session cookie first, then falls back to the source scheme
-        var sessionCookieName = $".AspNetCore.{sourceScheme}.Dbsc.Session";
         builder.AddPolicyScheme(policyScheme, policyScheme, o =>
         {
             o.ForwardDefaultSelector = context =>
             {
+                // Resolve the session scheme's configured cookie name at request time so an app that
+                // customizes CookieAuthenticationOptions.Cookie.Name is still matched. Otherwise the
+                // selector would miss the cookie and fall back to a source scheme that DBSC registration
+                // may have deleted, effectively logging the user out.
+                var sessionCookieName = context.RequestServices
+                    .GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>()
+                    .Get(sessionScheme).Cookie.Name ?? $".AspNetCore.{sessionScheme}";
                 if (context.Request.Cookies.ContainsKey(sessionCookieName))
                 {
                     return sessionScheme;

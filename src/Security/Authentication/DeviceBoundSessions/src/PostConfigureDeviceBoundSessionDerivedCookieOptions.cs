@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable ASP0030 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -33,10 +35,11 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
         if (schemes.RefreshSchemes.TryGetValue(name, out var refreshSourceScheme))
         {
             CopyFromSource(refreshSourceScheme, options);
-            // Override: path-scoped to DBSC endpoints. Lifetime and sliding behavior are inherited
-            // from the source scheme so the refresh cookie ages exactly like the auth cookie it
-            // replaces (renewed on each refresh when the source uses sliding expiration).
-            options.Cookie.Path = "/.well-known/dbsc";
+            // Override: scope the refresh cookie to the DBSC endpoints' directory, derived from the
+            // configured RefreshPath so a customized RefreshPath still receives the cookie. Lifetime and
+            // sliding behavior are inherited from the source scheme so the refresh cookie ages exactly
+            // like the auth cookie it replaces (renewed on each refresh when the source uses sliding).
+            options.Cookie.Path = ResolveRefreshCookiePath(refreshSourceScheme);
         }
         else if (schemes.SessionSchemes.TryGetValue(name, out var sessionSourceScheme))
         {
@@ -45,6 +48,28 @@ internal sealed class PostConfigureDeviceBoundSessionDerivedCookieOptions : IPos
             // ExpireTimeSpan is set at sign-in time by the handler via AuthenticationProperties.
             options.SlidingExpiration = false;
         }
+    }
+
+    private string ResolveRefreshCookiePath(string sourceScheme)
+    {
+        const string fallback = "/.well-known/dbsc";
+
+        // Map source cookie scheme -> DBSC handler scheme so we can read its configured RefreshPath.
+        if (!_sourceSchemes.Value.Schemes.TryGetValue(sourceScheme, out var dbscScheme))
+        {
+            return fallback;
+        }
+
+        var refreshPath = _services.GetRequiredService<IOptionsMonitor<DeviceBoundSessionOptions>>()
+            .Get(dbscScheme).RefreshPath.Value;
+        if (string.IsNullOrEmpty(refreshPath))
+        {
+            return fallback;
+        }
+
+        // Scope the cookie to the refresh endpoint's directory so it is sent to that endpoint.
+        var lastSlash = refreshPath.LastIndexOf('/');
+        return lastSlash > 0 ? refreshPath[..lastSlash] : "/";
     }
 
     private void CopyFromSource(string sourceScheme, CookieAuthenticationOptions target)

@@ -25,6 +25,7 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
 {
     private readonly DeviceBoundSessionChallengeProtector _challengeProtector;
     private readonly DeviceBoundSessionJwtValidator _jwtValidator;
+    private readonly IOptionsMonitor<CookieAuthenticationOptions> _cookieOptionsMonitor;
 
     /// <summary>
     /// Initializes a new instance of <see cref="DeviceBoundSessionHandler"/>.
@@ -33,15 +34,18 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
     /// <param name="logger">The <see cref="ILoggerFactory"/> used to create loggers.</param>
     /// <param name="encoder">The <see cref="UrlEncoder"/> used to encode URLs.</param>
     /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/> used to protect and unprotect registration challenges.</param>
+    /// <param name="cookieOptionsMonitor">The monitor for <see cref="CookieAuthenticationOptions"/> used to resolve the session cookie configuration.</param>
     public DeviceBoundSessionHandler(
         IOptionsMonitor<DeviceBoundSessionOptions> options,
         ILoggerFactory logger,
         UrlEncoder encoder,
-        IDataProtectionProvider dataProtectionProvider)
+        IDataProtectionProvider dataProtectionProvider,
+        IOptionsMonitor<CookieAuthenticationOptions> cookieOptionsMonitor)
         : base(options, logger, encoder)
     {
         _challengeProtector = new DeviceBoundSessionChallengeProtector(dataProtectionProvider, logger.CreateLogger<DeviceBoundSessionChallengeProtector>());
         _jwtValidator = new DeviceBoundSessionJwtValidator(logger.CreateLogger<DeviceBoundSessionJwtValidator>());
+        _cookieOptionsMonitor = cookieOptionsMonitor;
     }
 
     /// <summary>
@@ -137,7 +141,9 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
         refreshProperties.Items["DbscPublicKeyJwk"] = jwtResult.PublicKeyJwk;
         refreshProperties.Items["DbscSessionId"] = sessionId;
         refreshProperties.Items["DbscAlgorithm"] = jwtResult.Algorithm;
-        refreshProperties.IsPersistent = true;
+        // Mirror the source sign-in's persistence so enabling DBSC does not change session/persistence
+        // semantics: a session-only sign-in stays session-only, a persistent one stays persistent.
+        refreshProperties.IsPersistent = properties.IsPersistent;
 
         // Leave IssuedUtc/ExpiresUtc unset so the refresh cookie scheme starts a fresh ExpireTimeSpan
         // window at registration (exactly like a normal sign-in) and then slides on each refresh when
@@ -286,9 +292,14 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
             }).ToList();
         }
 
-        // The credential cookie name is based on the session scheme
-        // We need to resolve it from the cookie options for that scheme
-        var sessionCookieName = ResolveSessionCookieName();
+        // The credential cookie name and attributes are derived from the session scheme's cookie
+        // options so the session instruction stays in lock-step with the cookie we actually emit.
+        // A wrong name would silently break DBSC (the browser would bind to a cookie we never set),
+        // so we fail loudly rather than emit a guessed default that can never match.
+        var sessionCookieOptions = ResolveSessionCookieOptions();
+        var sessionCookieName = sessionCookieOptions.Cookie.Name
+            ?? throw new InvalidOperationException(
+                $"The session cookie scheme '{Options.SessionScheme}' has no configured cookie name; cannot build a valid DBSC session instruction.");
 
         return new SessionInstruction
         {
@@ -305,26 +316,69 @@ public class DeviceBoundSessionHandler : AuthenticationHandler<DeviceBoundSessio
                 new SessionCredential
                 {
                     Name = sessionCookieName,
-                    Attributes = "Secure; HttpOnly; SameSite=Lax; Path=/",
+                    Attributes = BuildCredentialAttributes(sessionCookieOptions),
                 }
             },
         };
     }
 
-    private string ResolveSessionCookieName()
+    private CookieAuthenticationOptions ResolveSessionCookieOptions()
     {
-        // Try to get the cookie name from the session scheme's cookie options
-        var cookieOptionsMonitor = Context.RequestServices.GetService(
-            typeof(IOptionsMonitor<CookieAuthenticationOptions>)) as IOptionsMonitor<Cookies.CookieAuthenticationOptions>;
-        if (cookieOptionsMonitor is not null && Options.SessionScheme is not null)
+        if (Options.SessionScheme is null)
         {
-            var cookieOptions = cookieOptionsMonitor.Get(Options.SessionScheme);
-            if (cookieOptions.Cookie.Name is not null)
-            {
-                return cookieOptions.Cookie.Name;
-            }
+            throw new InvalidOperationException(
+                $"{nameof(DeviceBoundSessionOptions.SessionScheme)} must be configured to build a DBSC session instruction.");
         }
-        return ".AspNetCore.Dbsc.Session";
+
+        return _cookieOptionsMonitor.Get(Options.SessionScheme);
+    }
+
+    private string BuildCredentialAttributes(CookieAuthenticationOptions cookieOptions)
+    {
+        // Keep the credential's attributes aligned with the actual session cookie configuration so the
+        // browser interprets the session instruction the same way it treats the cookie we emit.
+        var cookie = cookieOptions.Cookie;
+
+        var secure = cookie.SecurePolicy switch
+        {
+            CookieSecurePolicy.Always => true,
+            CookieSecurePolicy.None => false,
+            // SameAsRequest (the cookie-auth default) follows the request scheme.
+            _ => Request.IsHttps,
+        };
+
+        var attributes = new List<string>();
+        if (secure)
+        {
+            attributes.Add("Secure");
+        }
+        if (cookie.HttpOnly)
+        {
+            attributes.Add("HttpOnly");
+        }
+
+        switch (cookie.SameSite)
+        {
+            case SameSiteMode.None:
+                attributes.Add("SameSite=None");
+                break;
+            case SameSiteMode.Strict:
+                attributes.Add("SameSite=Strict");
+                break;
+            case SameSiteMode.Lax:
+                attributes.Add("SameSite=Lax");
+                break;
+        }
+
+        var path = cookie.Path;
+        attributes.Add($"Path={(string.IsNullOrEmpty(path) ? "/" : path)}");
+
+        if (!string.IsNullOrEmpty(cookie.Domain))
+        {
+            attributes.Add($"Domain={cookie.Domain}");
+        }
+
+        return string.Join("; ", attributes);
     }
 
     private string GenerateRegistrationChallenge(ClaimsPrincipal principal)

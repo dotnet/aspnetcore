@@ -68,7 +68,7 @@ internal sealed class DbscProofKey
         var headerClaims = new Dictionary<string, object> { ["typ"] = "dbsc+jwt" };
         if (includeJwkHeader)
         {
-            headerClaims["jwk"] = System.Text.Json.JsonDocument.Parse(PublicJwkJson).RootElement;
+            headerClaims["jwk"] = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(PublicJwkJson);
         }
 
         var claims = new Dictionary<string, object> { ["jti"] = jti };
@@ -109,7 +109,7 @@ internal sealed class DbscProofKey
         }
         if (jwkJson is not null)
         {
-            header["jwk"] = System.Text.Json.JsonDocument.Parse(jwkJson).RootElement;
+            header["jwk"] = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(jwkJson);
         }
 
         var payload = new Dictionary<string, object> { ["jti"] = jti };
