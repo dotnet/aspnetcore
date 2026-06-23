@@ -12,13 +12,6 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new AuthenticationStateProviderAnalyzer();
 
     private static readonly string TestDeclarations = @"
-    namespace System.Threading.Tasks
-    {
-        public class Task<TResult>
-        {
-            public TResult Result => default;
-        }
-    }
 
     namespace Microsoft.AspNetCore.Components.Authorization
     {
@@ -35,14 +28,6 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
             public abstract System.Threading.Tasks.Task<AuthenticationState> GetAuthenticationStateAsync();
             public event AuthenticationStateChangedHandler AuthenticationStateChanged;
             protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<AuthenticationState> task) { }
-        }
-    }
-
-    namespace System
-    {
-        public interface IDisposable
-        {
-            void Dispose();
         }
     }
 ";
