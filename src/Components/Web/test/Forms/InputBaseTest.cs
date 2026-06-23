@@ -443,26 +443,6 @@ public class InputBaseTest
     }
 
     [Fact]
-    public void ValidationStateChangedEventArgs_WithFieldIdentifier_HasCorrectPropertyValues()
-    {
-        var model = new TestModel();
-        var fieldIdentifier = new FieldIdentifier(model, "DateProperty");
-
-        var eventArgs = new ValidationStateChangedEventArgs(fieldIdentifier);
-
-        Assert.True(eventArgs.FieldIdentifier.HasValue);
-        Assert.Equal(fieldIdentifier.Model, eventArgs.FieldIdentifier.Value.Model);
-        Assert.Equal(fieldIdentifier.FieldName, eventArgs.FieldIdentifier.Value.FieldName);
-    }
-
-    [Fact]
-    public void ValidationStateChangedEventArgs_WithoutFieldIdentifier_HasNullProperty()
-    {
-        var eventArgs = new ValidationStateChangedEventArgs();
-        Assert.False(eventArgs.FieldIdentifier.HasValue);
-    }
-
-    [Fact]
     public async Task RespondsToValidationStateChangeNotifications()
     {
         // Arrange

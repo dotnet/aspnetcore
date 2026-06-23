@@ -198,7 +198,7 @@ public static partial class EditContextDataAnnotationsExtensions
 
             // We have to notify even if there were no messages before and are still no messages now,
             // because the "state" that changed might be the completion of some async validation task
-            _editContext.NotifyValidationStateChanged();
+            _editContext.NotifyValidationStateChanged(fieldIdentifier);
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
@@ -238,7 +238,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 }
             }
 
-            _editContext.NotifyValidationStateChanged();
+            _editContext.NotifyValidationStateChanged(fieldIdentifier);
         }
 
         private void AddMapping(ValidationErrorContext context)
