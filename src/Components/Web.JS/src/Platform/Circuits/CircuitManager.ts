@@ -212,6 +212,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
+      this.resetActiveStreams();
+
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
         // Mark the state as 'paused' since the connection got closed without us starting the pause process.
@@ -578,6 +580,14 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       };
       this._streamDrainResolvers.push(onDrained);
     });
+  }
+
+  private resetActiveStreams(): void {
+    this._activeStreamCount = 0;
+    const resolvers = this._streamDrainResolvers.splice(0);
+    for (const resolve of resolvers) {
+      resolve();
+    }
   }
 
   public isDisposedOrDisposing(): boolean {
