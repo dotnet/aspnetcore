@@ -93,6 +93,22 @@ describe('AutoPauseManager', () => {
     expect(pauseCircuit).toHaveBeenCalledTimes(1);
   });
 
+  test('zero delay pauses immediately on hide', async () => {
+    create(undefined, { enabled: true, hiddenDelayMilliseconds: 0 });
+    setVisibility('hidden');
+    jest.advanceTimersByTime(0);
+    await flushPromises();
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
+  });
+
+  test('negative delay pauses immediately on hide', async () => {
+    create(undefined, { enabled: true, hiddenDelayMilliseconds: -1 });
+    setVisibility('hidden');
+    jest.advanceTimersByTime(0);
+    await flushPromises();
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
+  });
+
   test('awaits onPauseRequested before pausing', async () => {
     const order: string[] = [];
     const onPauseRequested: PauseRequestedCallback = async () => {
