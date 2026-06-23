@@ -6,6 +6,8 @@ import { AutoPauseOptions } from './CircuitStartOptions';
 import { isFocusedElementEdited } from '../../Rendering/DomFocus';
 import { isMediaPlaying, isPictureInPictureActive, queryWebLockHeld } from '../../Rendering/FreezeBlockers';
 
+const becameVisibleReason = Symbol('auto-pause:became-visible');
+
 export class AutoPauseManager {
   private readonly _options: AutoPauseOptions;
 
@@ -93,7 +95,7 @@ export class AutoPauseManager {
       // Becoming visible cancels any pending pause and aborts an in-flight
       // wind-down so the developer can short-circuit a slow callback.
       this.clearHiddenTimer();
-      this._activeAbortController?.abort();
+      this._activeAbortController?.abort(becameVisibleReason);
       this._activeAbortController = undefined;
       if (this._autoPaused) {
         this._autoPaused = false;
@@ -229,7 +231,9 @@ export class AutoPauseManager {
         resolve(didClear);
       };
       const onAbort = () => {
-        this._logger.log(LogLevel.Information, resumeLog);
+        if (controller.signal.reason === becameVisibleReason) {
+          this._logger.log(LogLevel.Information, resumeLog);
+        }
         cleanup(false);
       };
       controller.signal.addEventListener('abort', onAbort);

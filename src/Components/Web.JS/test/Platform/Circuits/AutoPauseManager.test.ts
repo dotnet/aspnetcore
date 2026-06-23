@@ -5,6 +5,7 @@ import { expect, jest, test, describe, beforeEach, afterEach } from '@jest/globa
 import { AutoPauseManager } from '../../../src/Platform/Circuits/AutoPauseManager';
 import { AutoPauseOptions } from '../../../src/Platform/Circuits/CircuitStartOptions';
 import { NullLogger } from '../../../src/Platform/Logging/Loggers';
+import { Logger, LogLevel } from '../../../src/Platform/Logging/Logger';
 
 type PauseRequestedCallback = (signal: AbortSignal) => void | Promise<void>;
 
@@ -301,5 +302,67 @@ describe('AutoPauseManager', () => {
     resolvePause!(true);
     await flushPromises();
     expect(resumeCircuit).toHaveBeenCalledTimes(1);
+  });
+
+  describe('deferred-pause cancellation logging', () => {
+    class CapturingLogger implements Logger {
+      public readonly messages: { level: LogLevel; message: string }[] = [];
+      public log(level: LogLevel, message: string | Error): void {
+        this.messages.push({ level, message: message.toString() });
+      }
+    }
+
+    const resumeMessage = 'Pause resumed: tab became visible before focus cleared.';
+
+    // Focuses an input with unsaved edits so the first deferIfBlocked stage blocks
+    // the pause, leaving an in-flight wind-down whose abort path we can exercise.
+    function focusEditedInput(): HTMLInputElement {
+      const input = document.createElement('input');
+      input.type = 'text';
+      document.body.appendChild(input);
+      input.defaultValue = '';
+      input.value = 'unsaved';
+      input.focus();
+      return input;
+    }
+
+    function createWithLogger(logger: Logger): AutoPauseManager {
+      manager = new AutoPauseManager(defaultOptions, pauseCircuit, resumeCircuit, logger);
+      return manager;
+    }
+
+    test('logs the resume message when the deferred pause is cancelled by the tab becoming visible', async () => {
+      const logger = new CapturingLogger();
+      const input = focusEditedInput();
+      createWithLogger(logger);
+
+      setVisibility('hidden');
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+      expect(pauseCircuit).not.toHaveBeenCalled();
+
+      setVisibility('visible');
+      await flushPromises();
+
+      expect(logger.messages.some(m => m.message === resumeMessage)).toBe(true);
+      input.remove();
+    });
+
+    test('does not log the resume message when the deferred pause is aborted by dispose', async () => {
+      const logger = new CapturingLogger();
+      const input = focusEditedInput();
+      createWithLogger(logger);
+
+      setVisibility('hidden');
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+      expect(pauseCircuit).not.toHaveBeenCalled();
+
+      manager!.dispose();
+      await flushPromises();
+
+      expect(logger.messages.some(m => m.message === resumeMessage)).toBe(false);
+      input.remove();
+    });
   });
 });
