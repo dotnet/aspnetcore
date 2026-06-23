@@ -74,7 +74,7 @@ public readonly struct ParameterView
                     result = (TValue)entry.Value;
                     return true;
                 }
-                catch (InvalidCastException)
+                catch (Exception)
                 {
                     var valueType = entry.Value?.GetType();
                     var targetType = typeof(TValue);
