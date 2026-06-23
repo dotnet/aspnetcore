@@ -29,4 +29,22 @@ public class BrowserConfigurationTest(
         Browser.Equal("test-value-from-server", () => Browser.Exists(By.Id("my-test-var")).Text);
         Browser.Equal("another-test-value", () => Browser.Exists(By.Id("another-test-var")).Text);
     }
+
+    [Fact]
+    public void CanReceiveEnvironmentVariablesFromBrowserConfiguration_AfterEnhancedNavigation()
+    {
+        // Start on a static (SSR) page where WebAssembly is not running
+        Navigate($"{ServerPathBase}/browser-configuration-env-vars-landing");
+        Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
+
+        // Navigate to the WASM page via enhanced navigation (clicking a link)
+        Browser.Click(By.Id("navigate-to-env-vars"));
+
+        // Wait for WebAssembly to be interactive
+        Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+
+        // Verify environment variables are available even though WASM started via enhanced navigation
+        Browser.Equal("test-value-from-server", () => Browser.Exists(By.Id("my-test-var")).Text);
+        Browser.Equal("another-test-value", () => Browser.Exists(By.Id("another-test-var")).Text);
+    }
 }
