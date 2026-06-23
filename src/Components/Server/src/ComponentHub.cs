@@ -84,6 +84,23 @@ internal sealed partial class ComponentHub : Hub
         return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
     }
 
+    public override Task OnAuthenticationRefreshedAsync()
+    {
+        // The authenticated user on the connection has been refreshed (for example via the SignalR
+        // authentication-refresh endpoint). Flow the new principal into the circuit using the same
+        // mechanism used when the circuit is first connected, which notifies the
+        // AuthenticationStateProvider so components observe the updated authentication state.
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        if (circuitHost == null)
+        {
+            // No circuit is associated with this connection yet, so there is nothing to update.
+            return Task.CompletedTask;
+        }
+
+        circuitHost.SetCircuitUser(Context.User);
+        return Task.CompletedTask;
+    }
+
     public async ValueTask<string> StartCircuit(string baseUri, string uri, string serializedComponentRecords, string applicationState)
     {
         var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
