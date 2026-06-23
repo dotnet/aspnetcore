@@ -1,5 +1,5 @@
 ﻿{
-  "openapi": "3.1.2",
+  "openapi": "3.2.0",
   "info": {
     "title": "Sample | localized",
     "description": "This is a localized OpenAPI document for français (France).",
@@ -11,6 +11,82 @@
     }
   ],
   "paths": {
+    "/first-doc/get1": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/first-doc/get2": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/second-doc/get1": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/second-doc/get2": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/forms/form-file": {
       "post": {
         "tags": [
@@ -1503,6 +1579,204 @@
         }
       }
     },
+    "/unions/pet": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnionPet"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/value": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/clinic": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/typed-result": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/any-of": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Clinic"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/any-of-unions": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/UnionIntString"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/multi-content-type": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unions/kitten-standalone": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Kitten"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/getbyidandname/{id}/{name}": {
       "get": {
         "tags": [
@@ -1624,29 +1898,27 @@
       }
     },
     "/query": {
-      "x-oai-additionalOperations": {
-        "QUERY": {
-          "tags": [
-            "Test"
-          ],
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "text/plain": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CurrentWeather"
-                  }
-                },
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CurrentWeather"
-                  }
-                },
-                "text/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/CurrentWeather"
-                  }
+      "query": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
                 }
               }
             }
@@ -1655,7 +1927,7 @@
       }
     },
     "/unsupported": {
-      "x-oai-additionalOperations": {
+      "additionalOperations": {
         "FOO": {
           "tags": [
             "Test"
@@ -1686,13 +1958,39 @@
       }
     },
     "/query-with-body": {
-      "x-oai-additionalOperations": {
-        "QUERY": {
-          "tags": [
-            "Test"
-          ],
-          "requestBody": {
+      "query": {
+        "tags": [
+          "Test"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MvcTodo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
             "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/MvcTodo"
+                }
+              },
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MvcTodo"
@@ -1701,34 +1999,6 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MvcTodo"
-                }
-              },
-              "application/*+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MvcTodo"
-                }
-              }
-            },
-            "required": true
-          },
-          "responses": {
-            "200": {
-              "description": "OK",
-              "content": {
-                "text/plain": {
-                  "schema": {
-                    "$ref": "#/components/schemas/MvcTodo"
-                  }
-                },
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/MvcTodo"
-                  }
-                },
-                "text/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/MvcTodo"
-                  }
                 }
               }
             }
@@ -1798,6 +2068,119 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MvcTodo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-pet": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionPet"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-value": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnionIntString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-clinic": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Clinic"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/union-any-of": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/Clinic"
+                    },
+                    {
+                      "$ref": "#/components/schemas/UnionPet"
+                    }
+                  ]
                 }
               }
             }
@@ -1884,6 +2267,21 @@
         "properties": {
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "Clinic": {
+        "required": [
+          "address",
+          "patient"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/UnionPet"
           }
         }
       },
@@ -2096,7 +2494,6 @@
       "JsonPatchDocument": {
         "type": "array",
         "items": {
-          "type": "object",
           "oneOf": [
             {
               "required": [
@@ -2165,6 +2562,22 @@
               "additionalProperties": false
             }
           ]
+        }
+      },
+      "Kitten": {
+        "required": [
+          "name",
+          "lives"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lives": {
+            "type": "integer",
+            "format": "int32"
+          }
         }
       },
       "LocationContainer": {
@@ -2385,6 +2798,7 @@
         }
       },
       "PersonStudent": {
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2402,6 +2816,7 @@
         "required": [
           "subject"
         ],
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -2497,6 +2912,21 @@
           }
         }
       },
+      "Puppy": {
+        "required": [
+          "name",
+          "breed"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "breed": {
+            "type": "string"
+          }
+        }
+      },
       "RefProfile": {
         "required": [
           "user"
@@ -2552,6 +2982,7 @@
         }
       },
       "ShapeSquare": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2573,6 +3004,7 @@
         }
       },
       "ShapeTriangle": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2798,6 +3230,28 @@
           }
         }
       },
+      "UnionIntString": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      },
+      "UnionPet": {
+        "type": "object",
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Kitten"
+          },
+          {
+            "$ref": "#/components/schemas/Puppy"
+          }
+        ]
+      },
       "WeatherForecastBase": {
         "required": [
           "$type"
@@ -2827,6 +3281,7 @@
         "required": [
           "city"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2843,6 +3298,7 @@
         "required": [
           "news"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -2859,6 +3315,7 @@
         "required": [
           "summary"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [

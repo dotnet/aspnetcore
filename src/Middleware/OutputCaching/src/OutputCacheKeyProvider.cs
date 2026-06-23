@@ -31,7 +31,7 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
     // <VaryByKeyPrefix><delimiter>
     // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH<delimiter>
-    // H<delimiter>HeaderName=HeaderValue<delimiter>
+    // H<delimiter>HeaderName=HeaderValue1<subdelimiter>HeaderValue2<delimiter>
     // Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2<delimiter>
     // R<delimiter>RouteName1=RouteValue1<delimiter>RouteName2=RouteValue2
     // V<delimiter>ValueName1=Value1<delimiter>ValueName2=Value2
@@ -176,6 +176,11 @@ internal sealed class OutputCacheKeyProvider : IOutputCacheKeyProvider
 
                 for (var j = 0; j < headerValuesArray.Length; j++)
                 {
+                    if (j > 0)
+                    {
+                        builder.Append(KeySubDelimiter);
+                    }
+
                     if (ContainsDelimiters(headerValuesArray[j]))
                     {
                         return false;

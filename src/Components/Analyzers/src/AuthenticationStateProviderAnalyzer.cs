@@ -62,7 +62,8 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
                 context.RegisterOperationAction(operationContext =>
                 {
                     var eventAssignment = (IEventAssignmentOperation)operationContext.Operation;
-                    if (eventAssignment.EventReference is IEventReferenceOperation eventRef &&
+                    if (eventAssignment.Adds &&
+                        eventAssignment.EventReference is IEventReferenceOperation eventRef &&
                         IsAuthenticationStateProviderType(eventRef.Instance?.Type, authStateProviderType) &&
                         eventRef.Event.Name == ComponentsApi.AuthenticationStateProvider.AuthenticationStateChanged)
                     {
