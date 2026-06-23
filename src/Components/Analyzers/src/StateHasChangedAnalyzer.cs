@@ -177,7 +177,7 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        if (IsTargetLifecycleMethod(method.OverriddenMethod ?? method))
+        if (method.OverriddenMethod is { } overridden && IsTargetLifecycleMethod(overridden))
         {
             return true;
         }
@@ -197,7 +197,8 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
         return semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol method &&
             method.MethodKind == MethodKind.Ordinary &&
             method.Parameters.Length == 0 &&
-            method.Name == "StateHasChanged";
+            method.Name == "StateHasChanged" &&
+            method.ContainingType.ToDisplayString() == ComponentsApi.ComponentBase.FullTypeName;
     }
 
     private static void AddCallLocation(Dictionary<int, Location> callLocations, InvocationExpressionSyntax stateCall)
