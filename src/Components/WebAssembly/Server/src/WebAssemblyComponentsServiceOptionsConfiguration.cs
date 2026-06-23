@@ -11,9 +11,13 @@ internal sealed class WebAssemblyComponentsServiceOptionsConfiguration(IConfigur
     public void PostConfigure(string? name, WebAssemblyComponentsServiceOptions options)
     {
         var value = configuration["Components:UseCultureFromServer"];
-        if (!string.IsNullOrEmpty(value) && bool.TryParse(value, out var useCultureFromServer))
+        if (string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "1", StringComparison.OrdinalIgnoreCase))
         {
-            options.UseCultureFromServer = useCultureFromServer;
+            options.UseCultureFromServer = true;
+        }
+        if (string.Equals(value, "false", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "0", StringComparison.OrdinalIgnoreCase))
+        {
+            options.UseCultureFromServer = false;
         }
     }
 }
