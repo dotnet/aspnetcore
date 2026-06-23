@@ -67,6 +67,16 @@ public class TestingInfrastructureInheritanceTests
     }
 
     [Fact]
+    public void TestingInfrastructure_GenericHost_WithConfigureHostConfigurationOverride_Should_Throw()
+    {
+        // Act
+        using var factory = new CustomizedFactoryWithConfigureHostApplicationBuilder<GenericHostWebSite.Startup>();
+
+        // Assert
+        Assert.Throws<InvalidOperationException>(() => factory.Services);
+    }
+
+    [Fact]
     public void TestingInfrastructure_GenericHost_HostShouldStopBeforeDispose()
     {
         // Act
@@ -132,7 +142,7 @@ public class TestingInfrastructureInheritanceTests
     public async Task TestingInfrastructure_WebApplicationBuilder_EarlyConfiguration()
     {
         // Arrange
-        using var factory = new CustomizedFactory<SimpleWebSiteWithWebApplicationBuilder.Program>(assertEarlyConfiguration: true);
+        using var factory = new CustomizedFactoryWithConfigureHostApplicationBuilder<SimpleWebSiteWithWebApplicationBuilder.Program>();
         var client = factory.CreateClient();
 
         // Assert
@@ -165,13 +175,27 @@ public class TestingInfrastructureInheritanceTests
         }
     }
 
+    private class CustomizedFactoryWithConfigureHostApplicationBuilder<TEntryPoint> : CustomizedFactory<TEntryPoint> where TEntryPoint : class
+    {
+        protected override void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
+        {
+            hostApplicationBuilder.Configuration.Add(new MyCustomConfigSource());
+            base.ConfigureHostApplicationBuilder(hostApplicationBuilder);
+        }
+
+        protected override IHost CreateHost(IHostBuilder builder)
+        {
+            builder.ConfigureHostConfiguration(configuration =>
+            {
+                configuration.AddInMemoryCollection([new KeyValuePair<string, string>("ASSERT_EARLY_DUMMY_CONFIGURATION_AVAILABLE", "1")]);
+            });
+
+            return base.CreateHost(builder);
+        }
+    }
+
     private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
     {
-        private readonly bool _assertEarlyConfiguration;
-
-        public CustomizedFactory(bool assertEarlyConfiguration = false)
-            => _assertEarlyConfiguration = assertEarlyConfiguration;
-
         public bool GetTestAssembliesCalled { get; private set; }
         public bool CreateWebHostBuilderCalled { get; private set; }
         public bool CreateHostBuilderCalled { get; private set; }
@@ -205,22 +229,7 @@ public class TestingInfrastructureInheritanceTests
         protected override IHost CreateHost(IHostBuilder builder)
         {
             CreateHostCalled = true;
-
-            if (_assertEarlyConfiguration)
-            {
-                builder.ConfigureHostConfiguration(configuration =>
-                {
-                    configuration.AddInMemoryCollection([new KeyValuePair<string, string>("ASSERT_EARLY_DUMMY_CONFIGURATION_AVAILABLE", "1")]);
-                });
-            }
-
             return base.CreateHost(builder);
-        }
-
-        protected override void ConfigureHostApplicationBuilder(IHostApplicationBuilder hostApplicationBuilder)
-        {
-            hostApplicationBuilder.Configuration.Add(new MyCustomConfigSource());
-            base.ConfigureHostApplicationBuilder(hostApplicationBuilder);
         }
 
         protected override IWebHostBuilder CreateWebHostBuilder()
