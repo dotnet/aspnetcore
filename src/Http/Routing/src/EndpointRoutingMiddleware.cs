@@ -7,14 +7,13 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.ShortCircuit;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -24,9 +23,6 @@ internal sealed partial class EndpointRoutingMiddleware
 {
     private const string DiagnosticsEndpointMatchedKey = "Microsoft.AspNetCore.Routing.EndpointMatched";
 
-    private static readonly CsrfValidationException CsrfValidationFailedException
-        = new("Cross-site request forgery validation via Fetch Metadata headers failed");
-
     private readonly MatcherFactory _matcherFactory;
     private readonly ILogger _logger;
     private readonly EndpointDataSource _endpointDataSource;
@@ -34,7 +30,6 @@ internal sealed partial class EndpointRoutingMiddleware
     private readonly RoutingMetrics _metrics;
     private readonly RequestDelegate _next;
     private readonly RouteOptions _routeOptions;
-    private readonly ICsrfProtection? _csrfProtection;
     private Task<Matcher>? _initializationTask;
 
     public EndpointRoutingMiddleware(
@@ -54,25 +49,67 @@ internal sealed partial class EndpointRoutingMiddleware
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
         _metrics = metrics;
         ArgumentNullException.ThrowIfNull(next);
-        _next = next;
         _routeOptions = routeOptions.Value;
 
-        // Default-on cross-origin CSRF protection. When ICsrfProtection is registered (the framework registers it
-        // by default), it is enforced inline right after an endpoint is matched so it always observes the matched
-        // endpoint and can honor a per-endpoint CORS policy (e.g. RequireCors("name")), regardless of whether the app
-        // calls UseRouting() explicitly. The "DisableCsrfProtection" configuration switch opts out. See #67174.
-        var csrfProtection = endpointRouteBuilder.ServiceProvider?.GetService<ICsrfProtection>();
-        if (csrfProtection is not null &&
-            IsTrueOrOne(endpointRouteBuilder.ServiceProvider?.GetService<IConfiguration>()?["DisableCsrfProtection"]))
+        // When the app calls UseRouting() explicitly, the framework defers its implicit post-routing middleware
+        // (authentication, authorization, CSRF protection) into a block stored on the global route builder's
+        // properties. Compose it into the pipeline immediately after this middleware so those middleware observe the
+        // matched endpoint, matching the behavior of the framework's implicit UseRouting(). See #67174.
+        if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
+            applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingMiddleware, out var value))
         {
-            csrfProtection = null;
+            // Consume the block so additional UseRouting() calls don't run it again.
+            applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingMiddleware);
+
+            // IApplicationBuilder.Properties is publicly writable, so the post-routing block (which runs the
+            // framework's auth/authz/CSRF middleware in the matched endpoint's scope) is only honored when it
+            // originates from the framework. Reject anything application code may have placed in this reserved slot.
+            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingMiddleware ||
+                !IsFrameworkPostRoutingMiddleware(postRoutingMiddleware))
+            {
+                throw new InvalidOperationException(
+                    $"The '{MiddlewareInvokedKeys.PostRoutingMiddleware}' application property is reserved for the framework and cannot be set by application code.");
+            }
+
+            next = postRoutingMiddleware(next);
         }
-        _csrfProtection = csrfProtection;
+
+        _next = next;
 
         // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
         // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
         _ = rootCompositeEndpointDataSource;
         _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
+    }
+
+    // The framework stores the post-routing block as a method group over PostRoutingPipeline.CreateMiddleware, a named
+    // method on a private type defined in the WebApplication builder assembly (Microsoft.AspNetCore). Application code
+    // can only produce closures (unstable, compiler-generated method names) or methods on assemblies signed with a
+    // different key, so requiring a fixed method name on an identically strong-named "Microsoft.AspNetCore" assembly
+    // accepts only the framework's own block.
+    private const string PostRoutingMiddlewareMethodName = "CreateMiddleware";
+    private const string PostRoutingMiddlewareAssemblyName = "Microsoft.AspNetCore";
+
+    private static bool IsFrameworkPostRoutingMiddleware(Func<RequestDelegate, RequestDelegate> middleware)
+    {
+        var method = middleware.Method;
+        if (!string.Equals(method.Name, PostRoutingMiddlewareMethodName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var declaringAssembly = method.DeclaringType?.Assembly.GetName();
+        if (declaringAssembly is null ||
+            !string.Equals(declaringAssembly.Name, PostRoutingMiddlewareAssemblyName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        // Both framework assemblies are produced by the same build and share a strong-name key (and an empty token in
+        // unsigned local builds), so an equal public key token proves the block's assembly is first-party.
+        var blockToken = declaringAssembly.GetPublicKeyToken() ?? [];
+        var ownToken = typeof(EndpointRoutingMiddleware).Assembly.GetName().GetPublicKeyToken() ?? [];
+        return blockToken.AsSpan().SequenceEqual(ownToken);
     }
 
     public Task Invoke(HttpContext httpContext)
@@ -161,12 +198,6 @@ internal sealed partial class EndpointRoutingMiddleware
             {
                 return ExecuteShortCircuit(shortCircuitMetadata, endpoint, httpContext);
             }
-
-            // Enforce default-on cross-origin CSRF protection now that the endpoint is matched. See #67174.
-            if (_csrfProtection is not null)
-            {
-                return InvokeCsrfProtectionAndContinue(endpoint, httpContext);
-            }
         }
 
         return _next(httpContext);
@@ -177,55 +208,6 @@ internal sealed partial class EndpointRoutingMiddleware
         {
             // We're just going to send the HttpContext since it has all of the relevant information
             diagnosticListener.Write(DiagnosticsEndpointMatchedKey, httpContext);
-        }
-    }
-
-    private Task InvokeCsrfProtectionAndContinue(Endpoint endpoint, HttpContext httpContext)
-    {
-        // Record that CSRF protection observed this endpoint so EndpointMiddleware's safety check is satisfied.
-        httpContext.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
-
-        // The endpoint opted out of antiforgery (e.g. DisableAntiforgery()).
-        if (endpoint.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
-        {
-            return _next(httpContext);
-        }
-
-        var validateTask = _csrfProtection!.ValidateAsync(httpContext);
-        if (validateTask.IsCompletedSuccessfully)
-        {
-            RecordCsrfVerdict(httpContext, validateTask.Result);
-            return _next(httpContext);
-        }
-
-        return AwaitCsrfValidation(this, httpContext, validateTask);
-
-        static async Task AwaitCsrfValidation(EndpointRoutingMiddleware middleware, HttpContext httpContext, ValueTask<CsrfProtectionResult> validateTask)
-        {
-            middleware.RecordCsrfVerdict(httpContext, await validateTask);
-            await middleware._next(httpContext);
-        }
-    }
-
-    // Matches the framework's "DisableCsrfProtection" switch parsing (accepts "true" or "1", case-insensitive).
-    private static bool IsTrueOrOne(string? value)
-        => string.Equals("true", value, StringComparison.OrdinalIgnoreCase)
-            || string.Equals("1", value, StringComparison.OrdinalIgnoreCase);
-
-    // CSRF protection does not short-circuit; it records its verdict on IAntiforgeryValidationFeature and lets
-    // downstream consumers (UseAntiforgery, minimal-API form binding, MVC, Razor Components) decide. When the app also
-    // calls UseAntiforgery(), the later AntiforgeryMiddleware may overwrite this verdict with token-based validation.
-    private void RecordCsrfVerdict(HttpContext httpContext, CsrfProtectionResult result)
-    {
-        if (!result.IsAllowed)
-        {
-            var request = httpContext.Request;
-            Log.CsrfValidationFailed(_logger, request.Method, request.Path, request.Headers.Origin.ToString());
-            httpContext.Features.Set<IAntiforgeryValidationFeature>(new AntiforgeryValidationFeature(false, CsrfValidationFailedException));
-        }
-        else
-        {
-            httpContext.Features.Set(AntiforgeryValidationFeature.Valid);
         }
     }
 
@@ -451,10 +433,5 @@ internal sealed partial class EndpointRoutingMiddleware
 
         [LoggerMessage(12, LogLevel.Debug, "The maximum request body size has been disabled.", EventName = "MaxRequestBodySizeDisabled")]
         public static partial void MaxRequestBodySizeDisabled(ILogger logger);
-
-        [LoggerMessage(13, LogLevel.Debug,
-            "Cross-origin CSRF protection marked request {Method} {Path} from origin '{Origin}' as invalid.",
-            EventName = "CsrfValidationFailed")]
-        public static partial void CsrfValidationFailed(ILogger logger, string method, PathString path, string origin);
     }
 }

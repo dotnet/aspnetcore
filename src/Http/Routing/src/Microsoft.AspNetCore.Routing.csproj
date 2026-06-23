@@ -36,8 +36,6 @@
     <Compile Include="$(SharedSourceRoot)HttpParseResult.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DebuggerHelpers.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)AntiforgeryValidationFeature.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)CsrfValidationException.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)MiddlewareInvokedKeys.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)HttpExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ContentTypeConstants.cs" LinkBase="Shared" />

@@ -469,6 +469,30 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task PostRoutingMiddleware_ApplicationProvidedDelegate_IsRejected()
+    {
+        // '__PostRoutingMiddleware' is a framework-reserved slot used to run the implicit authentication,
+        // authorization and CSRF middleware immediately after routing matches. IApplicationBuilder.Properties is
+        // publicly writable, so EndpointRoutingMiddleware must reject any delegate that application code places there
+        // instead of executing it in the matched endpoint's scope.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        var tampered = false;
+        app.Properties["__PostRoutingMiddleware"] = (Func<RequestDelegate, RequestDelegate>)(next => context =>
+        {
+            tampered = true;
+            return next(context);
+        });
+        app.MapGet("/", () => "hello");
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => app.StartAsync());
+        Assert.Contains("__PostRoutingMiddleware", exception.Message);
+        Assert.False(tampered);
+    }
+
     // The CSRF middleware does not short-circuit; it records its verdict on IAntiforgeryValidationFeature and lets downstream consumers decide.
     // This endpoint mirrors how a real consumer (the MVC antiforgery filter, minimal-API form binding, Razor Components) reacts to that verdict: reject when IsValid is false.
     private static string EnforceCsrf(HttpContext context)
@@ -530,7 +554,7 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task CsrfProtection_FailedValidation_LogsDebug()
     {
-        var captureProvider = new CaptureLoggerProvider("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", LogLevel.Debug);
+        var captureProvider = new CaptureLoggerProvider("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", LogLevel.Debug);
 
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
@@ -548,7 +572,7 @@ public class CsrfProtectionIntegrationTests
         var response = await client.SendAsync(request);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
 
-        var entry = Assert.Single(captureProvider.Entries, e => e.Message.Contains("marked request"));
+        var entry = Assert.Single(captureProvider.Entries);
         Assert.Equal(LogLevel.Debug, entry.Level);
         Assert.Contains("marked request POST /protected", entry.Message);
         Assert.Contains("https://evil.example.com", entry.Message);
