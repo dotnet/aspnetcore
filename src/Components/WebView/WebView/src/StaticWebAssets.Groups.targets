@@ -12,4 +12,21 @@
     <JSModuleManifestRelativePath Condition="'$(JSModuleManifestRelativePath)' == ''">_framework/blazor.modules.json</JSModuleManifestRelativePath>
     <CompressionEnabled Condition="'$(CompressionEnabled)' == ''">false</CompressionEnabled>
   </PropertyGroup>
+
+  <!-- Workaround for an SDK gap (only relevant to in-repo ProjectReference consumers of the WebView
+       project; a no-op for package consumers). StaticWebAssetFrameworkPattern is applied when
+       computing a referenced project's BUILD static web assets but not its PUBLISH assets, so a
+       project that references the WebView project ends up at publish with both the materialized
+       framework asset (SourceType=Discovered, SourceId=current project) and the original
+       (SourceType=Project, SourceId=Microsoft.AspNetCore.Components.WebView) at the same
+       '_framework/...' target path, failing with "Conflicting assets". The WebView project only ships
+       framework assets (blazor.webview.js and the fallback blazor.modules.json), so dropping the
+       redundant Project-sourced copies is safe; the materialized copies are the ones served. Package
+       consumers receive these assets as SourceType=Package, so nothing is removed for them. -->
+  <Target Name="_RemoveDuplicateWebViewFrameworkPublishAssets" BeforeTargets="GenerateStaticWebAssetsPublishManifest">
+    <ItemGroup>
+      <StaticWebAsset Remove="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.SourceId)' == 'Microsoft.AspNetCore.Components.WebView' and '%(StaticWebAsset.SourceType)' == 'Project'" />
+    </ItemGroup>
+  </Target>
 </Project>

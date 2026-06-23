@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.WebView.StaticWebAssets;
 
@@ -10,15 +12,24 @@ namespace Microsoft.AspNetCore.Components.WebView.StaticWebAssets;
 /// Creates a throwaway solution on disk that references the locally-built WebView package and runs
 /// the repo SDK (.dotnet) to build/publish it. Used to validate that consuming the package produces
 /// the expected static web asset endpoints (issue #67374).
+///
+/// Working folders live under the repo's artifacts/tmp directory (not the system temp folder), and
+/// every build/publish captures a binary log under artifacts/log so failures can be diagnosed from
+/// CI. The working folder is preserved when a build fails and removed on success.
 /// </summary>
 internal sealed class ConsumerBuild : IDisposable
 {
+    private readonly ITestOutputHelper _output;
     private readonly string _root;
     private readonly string _packagesFolder;
+    private readonly string _id;
+    private bool _preserve;
 
-    public ConsumerBuild()
+    public ConsumerBuild(ITestOutputHelper output, [CallerMemberName] string testName = "")
     {
-        _root = Path.Combine(Path.GetTempPath(), "wv-swa-tests", Guid.NewGuid().ToString("N"));
+        _output = output;
+        _id = $"{testName}-{Guid.NewGuid():N}";
+        _root = Path.Combine(StaticWebAssetsTestData.ArtifactsTmpDir, "ComponentsWebViewStaticWebAssetsTests", _id);
         Directory.CreateDirectory(_root);
         _packagesFolder = Path.Combine(_root, ".nuget-packages");
 
@@ -69,16 +80,24 @@ internal sealed class ConsumerBuild : IDisposable
         File.WriteAllText(path, content);
     }
 
-    public ProcessResult Run(string arguments, string projectRelativePath)
+    /// <param name="verb">The dotnet verb plus its options, e.g. "publish -c Release".</param>
+    /// <param name="projectRelativePath">Project to build, relative to the working folder.</param>
+    public ProcessResult Run(string verb, string projectRelativePath)
     {
         // The package version under test is constant (e.g. 11.0.0-dev). Make sure a previously
         // extracted copy in the shared repo cache (used as a fallback folder) can't shadow the
         // freshly built package; restore will then pull it from the local feed.
         EvictFromFallbackCache("Microsoft.AspNetCore.Components.WebView");
 
+        // Capture a binary log under artifacts/log so CI uploads it and failures can be analyzed.
+        var verbName = verb.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "build";
+        var binlogPath = Path.Combine(StaticWebAssetsTestData.ArtifactsLogDir, $"WebViewStaticWebAssets-{_id}-{verbName}.binlog");
+        Directory.CreateDirectory(StaticWebAssetsTestData.ArtifactsLogDir);
+
+        var arguments = $"{verb} \"{Path.Combine(_root, projectRelativePath)}\" -bl:\"{binlogPath}\"";
         var psi = new ProcessStartInfo(StaticWebAssetsTestData.DotNetHost)
         {
-            Arguments = $"{arguments} \"{Path.Combine(_root, projectRelativePath)}\"",
+            Arguments = arguments,
             WorkingDirectory = _root,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -93,6 +112,8 @@ internal sealed class ConsumerBuild : IDisposable
         psi.Environment["DOTNET_NOLOGO"] = "1";
         psi.Environment.Remove("MSBuildSDKsPath");
 
+        _output.WriteLine($"> dotnet {arguments}");
+
         var output = new StringBuilder();
         using var process = new Process { StartInfo = psi };
         process.OutputDataReceived += (_, e) => { if (e.Data is not null) { lock (output) { output.AppendLine(e.Data); } } };
@@ -105,15 +126,32 @@ internal sealed class ConsumerBuild : IDisposable
         if (!process.WaitForExit(milliseconds: 5 * 60 * 1000))
         {
             try { process.Kill(entireProcessTree: true); } catch { }
-            throw new TimeoutException($"'dotnet {arguments}' timed out.\n{output}");
+            _preserve = true;
+            throw new TimeoutException($"'dotnet {verb}' timed out. Binlog: {binlogPath}\n{output}");
         }
 
         process.WaitForExit();
-        return new ProcessResult(process.ExitCode, output.ToString());
+        var result = new ProcessResult(process.ExitCode, output.ToString(), binlogPath);
+
+        _output.WriteLine(result.Output);
+        _output.WriteLine($"Exit code: {result.ExitCode}. Binlog: {binlogPath}");
+        if (!result.Succeeded)
+        {
+            // Leave the working folder in place so the failure can be investigated locally.
+            _preserve = true;
+        }
+
+        return result;
     }
 
     public void Dispose()
     {
+        if (_preserve)
+        {
+            _output.WriteLine($"Build failed; preserving working folder for investigation: {_root}");
+            return;
+        }
+
         try
         {
             Directory.Delete(_root, recursive: true);
@@ -145,7 +183,7 @@ internal sealed class ConsumerBuild : IDisposable
     }
 }
 
-internal sealed record ProcessResult(int ExitCode, string Output)
+internal sealed record ProcessResult(int ExitCode, string Output, string BinlogPath)
 {
     public bool Succeeded => ExitCode == 0;
 
