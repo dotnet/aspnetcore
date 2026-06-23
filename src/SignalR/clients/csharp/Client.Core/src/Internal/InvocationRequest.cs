@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal;
 internal abstract partial class InvocationRequest : IDisposable
 {
     private readonly CancellationTokenRegistration _cancellationTokenRegistration;
+    private CancellationTokenRegistration _cancelInvocationRegistration;
     private int _isActivityStopping;
 
     protected ILogger Logger { get; }
@@ -66,6 +67,11 @@ internal abstract partial class InvocationRequest : IDisposable
 
     protected abstract void Cancel();
 
+    public void AttachCancelInvocationRegistration(CancellationTokenRegistration registration)
+    {
+        _cancelInvocationRegistration = registration;
+    }
+
     public virtual void Dispose()
     {
         Log.InvocationDisposed(Logger, InvocationId);
@@ -74,6 +80,7 @@ internal abstract partial class InvocationRequest : IDisposable
         Cancel();
 
         _cancellationTokenRegistration.Dispose();
+        _cancelInvocationRegistration.Dispose();
     }
 
     private sealed class Streaming : InvocationRequest
