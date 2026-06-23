@@ -584,6 +584,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private resetActiveStreams(): void {
     this._activeStreamCount = 0;
+    this._pendingJsCallTracking.clear();
+    this._pendingDotNetCallTracking.clear();
     const resolvers = this._streamDrainResolvers.splice(0);
     for (const resolve of resolvers) {
       resolve();
