@@ -76,6 +76,6 @@ public class StateHasChangedCodeFixProvider : CodeFixProvider
         }
 
         var newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepExteriorTrivia);
-        return Task.FromResult(document.WithSyntaxRoot(newRoot));
+        return Task.FromResult(newRoot is null ? document : document.WithSyntaxRoot(newRoot));
     }
 }
