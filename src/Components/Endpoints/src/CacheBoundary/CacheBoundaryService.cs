@@ -160,7 +160,6 @@ internal sealed partial class CacheBoundaryService : IDisposable
         catch (Exception ex)
         {
             completion?.TrySetException(ex);
-            throw;
         }
         finally
         {
@@ -314,7 +313,6 @@ internal sealed partial class CacheBoundaryService : IDisposable
             {
                 return null;
             }
-
             return RenderFragmentSerializer.Deserialize(payload.Nodes, _jsonOptions, _parametersTypeCache);
         }
         catch (Exception ex)
