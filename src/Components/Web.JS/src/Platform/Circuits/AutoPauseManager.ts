@@ -174,6 +174,11 @@ export class AutoPauseManager {
       if (paused) {
         this._autoPaused = true;
         this._logger.log(LogLevel.Information, 'Auto-pause: circuit paused after hidden timeout.');
+
+        if (document.visibilityState !== 'hidden') {
+          this._autoPaused = false;
+          this.resumeNow();
+        }
       }
     } catch (error) {
       this._logger.log(LogLevel.Error, `Auto-pause: failed to pause circuit: ${error}`);

@@ -264,4 +264,26 @@ describe('AutoPauseManager', () => {
     resolvePause!(true);
     await flushPromises();
   });
+
+  test('auto-resumes when tab becomes visible during in-flight pauseCircuit (ghost-pause race)', async () => {
+    let resolvePause: ((value: boolean) => void) | undefined;
+    pauseCircuit.mockImplementation(() => new Promise<boolean>(r => { resolvePause = r; }));
+
+    create();
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
+
+    // Tab becomes visible while pauseCircuit is still in-flight.
+    // onVisibilityChanged fires but _autoPaused is false, so it can't resume yet.
+    setVisibility('visible');
+    await flushPromises();
+    expect(resumeCircuit).not.toHaveBeenCalled();
+
+    // pauseCircuit completes — the manager must detect the tab is visible and auto-resume.
+    resolvePause!(true);
+    await flushPromises();
+    expect(resumeCircuit).toHaveBeenCalledTimes(1);
+  });
 });
