@@ -12,7 +12,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task OnPageChanging_InvokedBeforePageChange()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var onPageChangingInvoked = false;
         var pageChangingValue = 0;
@@ -30,18 +29,15 @@ public class PaginatorEventTest
             OnPageChanging = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanging)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(1);
 
-        // Assert
         Assert.True(onPageChangingInvoked);
-        Assert.Equal(2, pageChangingValue); // Page 1 (0-indexed) + 1 = 2
+        Assert.Equal(2, pageChangingValue);
     }
 
     [Fact]
     public async Task OnPageChanged_InvokedAfterPageChange()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var onPageChangedInvoked = false;
         var pageChangedValue = 0;
@@ -59,18 +55,15 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(2);
 
-        // Assert
         Assert.True(onPageChangedInvoked);
-        Assert.Equal(3, pageChangedValue); // Page 2 (0-indexed) + 1 = 3
+        Assert.Equal(3, pageChangedValue);
     }
 
     [Fact]
     public async Task OnPageChanging_CalledBeforeOnPageChanged()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var callOrder = new List<string>();
 
@@ -93,10 +86,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(0);
 
-        // Assert
         Assert.Equal(2, callOrder.Count);
         Assert.Equal("OnPageChanging", callOrder[0]);
         Assert.Equal("OnPageChanged", callOrder[1]);
@@ -105,7 +96,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task Events_ReceiveCorrectPageIndex()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var pageChangingIndex = -1;
         var pageChangedIndex = -1;
@@ -129,10 +119,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act - Navigate to page 3 (index 2)
         await paginator.HandlePageChangeAsync(2);
 
-        // Assert - Both events should receive 3 (1-indexed)
         Assert.Equal(3, pageChangingIndex);
         Assert.Equal(3, pageChangedIndex);
     }
@@ -140,12 +128,10 @@ public class PaginatorEventTest
     [Fact]
     public async Task Events_SyncCallbacks()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var changingCalled = false;
         var changedCalled = false;
 
-        // Create callbacks that don't use async
         void HandlePageChanging(int pageIndex) => changingCalled = true;
         void HandlePageChanged(int pageIndex) => changedCalled = true;
 
@@ -156,10 +142,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.CreateInferred<int>(new object(), (Action<int>)HandlePageChanged, 0)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(1);
 
-        // Assert
         Assert.True(changingCalled);
         Assert.True(changedCalled);
     }
@@ -167,7 +151,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task OnPageChanging_NotInvokedWhenNotSet()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var onPageChangedCalled = false;
 
@@ -181,20 +164,16 @@ public class PaginatorEventTest
         {
             State = paginationState,
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
-            // OnPageChanging is not set
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(0);
 
-        // Assert - Should not throw and OnPageChanged should still be called
         Assert.True(onPageChangedCalled);
     }
 
     [Fact]
     public async Task OnPageChanged_NotInvokedWhenNotSet()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var onPageChangingCalled = false;
 
@@ -208,20 +187,16 @@ public class PaginatorEventTest
         {
             State = paginationState,
             OnPageChanging = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanging)
-            // OnPageChanged is not set
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(0);
 
-        // Assert - Should not throw and OnPageChanging should still be called
         Assert.True(onPageChangingCalled);
     }
 
     [Fact]
     public async Task Events_MultiplePageChanges()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var changingPages = new List<int>();
         var changedPages = new List<int>();
@@ -245,12 +220,10 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act - Multiple page changes
         await paginator.HandlePageChangeAsync(0);
         await paginator.HandlePageChangeAsync(1);
         await paginator.HandlePageChangeAsync(2);
 
-        // Assert
         Assert.Equal(new[] { 1, 2, 3 }, changingPages);
         Assert.Equal(new[] { 1, 2, 3 }, changedPages);
     }
@@ -258,7 +231,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task Events_HandleExceptionsGracefully()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
 
         async Task HandlePageChanging(int pageIndex)
@@ -278,16 +250,12 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act & Assert
-        // Note: The exception will be thrown since we're calling HandlePageChangeAsync directly
-        // In a real Blazor app, the exception would be caught by the framework
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await paginator.HandlePageChangeAsync(0));
     }
 
     [Fact]
     public async Task Events_FirstPageToSecondPage()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var pageChangingIndex = -1;
         var pageChangedIndex = -1;
@@ -311,10 +279,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act - Navigate from page 1 (index 0) to page 2 (index 1)
         await paginator.HandlePageChangeAsync(1);
 
-        // Assert
         Assert.Equal(2, pageChangingIndex);
         Assert.Equal(2, pageChangedIndex);
     }
@@ -322,7 +288,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task Events_LastPageNavigation()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var pageChangingIndex = -1;
         var pageChangedIndex = -1;
@@ -346,10 +311,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act - Navigate to last page (index 9)
         await paginator.HandlePageChangeAsync(9);
 
-        // Assert
         Assert.Equal(10, pageChangingIndex);
         Assert.Equal(10, pageChangedIndex);
     }
@@ -357,7 +320,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task HandlePageChangeAsync_AllowsNavigationToLastPage()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         await paginationState.SetTotalItemCountAsync(50);
         var pageChangedIndex = -1;
@@ -373,10 +335,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(4);
 
-        // Assert
         Assert.Equal(5, pageChangedIndex);
         Assert.Equal(4, paginationState.CurrentPageIndex);
     }
@@ -384,7 +344,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task HandlePageChangeAsync_AllowsZeroPageIndex()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
 
         var pageChangedIndex = -1;
@@ -400,10 +359,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(0);
 
-        // Assert
         Assert.Equal(1, pageChangedIndex);
         Assert.Equal(0, paginationState.CurrentPageIndex);
     }
@@ -411,7 +368,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task HandlePageChangeAsync_AllowsLargePageIndex_WhenLastPageIndexUnknown()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         Assert.Null(paginationState.TotalItemCount);
 
@@ -428,10 +384,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(999);
 
-        // Assert
         Assert.Equal(1000, pageChangedIndex);
         Assert.Equal(999, paginationState.CurrentPageIndex);
     }
@@ -439,7 +393,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task OnPageChanging_Throws_StateIsNotUpdated_AndOnPageChangedNotInvoked()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var initialIndex = paginationState.CurrentPageIndex;
         var changedInvoked = false;
@@ -463,7 +416,6 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await paginator.HandlePageChangeAsync(2));
 
@@ -474,7 +426,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task Events_OnPageChangingObservesPreviousIndex_OnPageChangedObservesNewIndex()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         await paginationState.SetCurrentPageIndexAsync(1);
 
@@ -500,10 +451,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(4);
 
-        // Assert
         Assert.Equal(1, indexObservedDuringChanging);
         Assert.Equal(4, indexObservedDuringChanged);
         Assert.Equal(4, paginationState.CurrentPageIndex);
@@ -512,7 +461,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task Events_DelayedOnPageChanging_StateUpdatedOnlyAfterChangingCompletes()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         var changingTcs = new TaskCompletionSource();
         var changingStarted = new TaskCompletionSource();
@@ -537,7 +485,6 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         var pageChangeTask = paginator.HandlePageChangeAsync(3);
 
         await changingStarted.Task;
@@ -546,7 +493,6 @@ public class PaginatorEventTest
         changingTcs.SetResult();
         await pageChangeTask;
 
-        // Assert
         Assert.Equal(3, paginationState.CurrentPageIndex);
         Assert.Equal(3, pageIndexAtChangedTime);
     }
@@ -579,13 +525,11 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         for (var index = 0; index <= 9; index++)
         {
             await paginator.HandlePageChangeAsync(index);
         }
 
-        // Assert
         Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, changingValues);
         Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, changedValues);
     }
@@ -593,7 +537,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task HandlePageChangeAsync_DoesNotThrow_WhenExceedingLastPageIndex()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
         await paginationState.SetTotalItemCountAsync(50);
 
@@ -619,10 +562,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(5);
 
-        // Assert
         Assert.Equal(6, changingValue);
         Assert.Equal(6, changedValue);
         Assert.Equal(5, paginationState.CurrentPageIndex);
@@ -631,7 +572,6 @@ public class PaginatorEventTest
     [Fact]
     public async Task HandlePageChangeAsync_DoesNotThrow_OnNegativePageIndex()
     {
-        // Arrange
         var paginationState = new PaginationState { ItemsPerPage = 10 };
 
         var changingValue = int.MinValue;
@@ -656,10 +596,8 @@ public class PaginatorEventTest
             OnPageChanged = EventCallback.Factory.Create<int>(new object(), (Func<int, Task>)HandlePageChanged)
         };
 
-        // Act
         await paginator.HandlePageChangeAsync(-1);
 
-        // Assert
         Assert.Equal(0, changingValue);
         Assert.Equal(0, changedValue);
         Assert.Equal(-1, paginationState.CurrentPageIndex);
