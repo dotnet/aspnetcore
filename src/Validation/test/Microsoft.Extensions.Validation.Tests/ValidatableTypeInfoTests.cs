@@ -317,7 +317,7 @@ public class ValidatableTypeInfoTests
         await personType.ValidateAsync(person, context, default);
 
         // Assert
-        Assert.Null(context.ValidationErrors); // No validation errors for nullable properties with null values
+        Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0); // No validation errors for nullable properties with null values
     }
 
     [Fact]
@@ -363,7 +363,6 @@ public class ValidatableTypeInfoTests
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationErrors = [],
             ValidationContext = new ValidationContext(rootNode)
         };
 
@@ -437,9 +436,10 @@ public class ValidatableTypeInfoTests
         // Assert
         Assert.NotNull(context.ValidationErrors);
         Assert.Single(context.ValidationErrors.Keys); // Only the "Password" key
-        Assert.Equal(2, context.ValidationErrors["Password"].Length); // But with 2 errors
-        Assert.Contains("Password must be at least 8 characters.", context.ValidationErrors["Password"]);
-        Assert.Contains("Password must contain at least one number and one special character.", context.ValidationErrors["Password"]);
+        var passwordErrors = context.ValidationErrors["Password"].ToArray();
+        Assert.Equal(2, passwordErrors.Length); // But with 2 errors
+        Assert.Contains("Password must be at least 8 characters.", passwordErrors);
+        Assert.Contains("Password must contain at least one number and one special character.", passwordErrors);
     }
 
     [Fact]
@@ -561,14 +561,16 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
             ]);
 
-        context.ValidationErrors = [];
-        context.ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-        {
-            { typeof(MultiMemberErrorObject), multiType }
-        });
-
         var multiErrorInstance = new MultiMemberErrorObject { FirstName = "", LastName = "" };
-        context.ValidationContext = new ValidationContext(multiErrorInstance);
+
+        context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(MultiMemberErrorObject), multiType }
+            }),
+            ValidationContext = new ValidationContext(multiErrorInstance),
+        };
 
         await multiType.ValidateAsync(multiErrorInstance, context, default);
 
@@ -604,7 +606,7 @@ public class ValidatableTypeInfoTests
                 new CustomValidationAttribute()
             ]);
 
-        // First case: 
+        // First case:
         var testTypeInstance = new PropertyAndTypeLevelErrorObject { Value = 15 };
 
         var context = new ValidateContext
@@ -623,10 +625,13 @@ public class ValidatableTypeInfoTests
         Assert.Equal(string.Empty, interfaceError.Key);
         Assert.Equal("IValidatableObject error", interfaceError.Value.Single());
 
-        // Second case: 
+        // Second case:
         testTypeInstance.Value = 5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions,
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 
@@ -635,10 +640,13 @@ public class ValidatableTypeInfoTests
         Assert.Equal(string.Empty, classAttributeError.Key);
         Assert.Equal("Class attribute error", classAttributeError.Value.Single());
 
-        // Third case: 
+        // Third case:
         testTypeInstance.Value = -5;
-        context.ValidationErrors = [];
-        context.ValidationContext = new ValidationContext(testTypeInstance);
+        context = new ValidateContext()
+        {
+            ValidationContext = new ValidationContext(testTypeInstance),
+            ValidationOptions = context.ValidationOptions
+        };
 
         await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
 
@@ -646,6 +654,181 @@ public class ValidatableTypeInfoTests
         var propertyAttributeError = Assert.Single(context.ValidationErrors);
         Assert.Equal("Value", propertyAttributeError.Key);
         Assert.Equal("Property attribute error", propertyAttributeError.Value.Single());
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ThrowsArgumentNullException_WhenTypeIsNull()
+    {
+        var options = new ValidationOptions();
+
+        Assert.Throws<ArgumentNullException>("type", () => options.TryGetValidatablePropertyInfo(null!, "Name", out _));
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ThrowsArgumentNullException_WhenPropertyNameIsNull()
+    {
+        var options = new ValidationOptions();
+
+        Assert.Throws<ArgumentNullException>("propertyName", () => options.TryGetValidatablePropertyInfo(typeof(Person), null!, out _));
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsFalse_WhenTypeNotRegistered()
+    {
+        var options = new ValidationOptions();
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(Person), "Name", out var propertyInfo));
+        Assert.Null(propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsFalse_WhenPropertyNotFound()
+    {
+        var typeInfo = new TestValidatableTypeInfo(typeof(Person), []);
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(Person), typeInfo },
+        });
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(Person), "NonExistent", out var propertyInfo));
+        Assert.Null(propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsMatchingProperty_WhenPresent()
+    {
+        var nameProperty = CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name", []);
+        var typeInfo = new TestValidatableTypeInfo(typeof(Person), [nameProperty]);
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(Person), typeInfo },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(Person), "Name", out var propertyInfo));
+        Assert.Same(nameProperty, propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsInheritedProperty_FromSuperType()
+    {
+        // BaseEntity declares Id; DerivedEntity declares Name. Looking up Id on the derived type
+        // should resolve through the super-type info via the validation options resolver.
+        var idProperty = CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", []);
+        var baseType = new TestValidatableTypeInfo(typeof(BaseEntity), [idProperty]);
+        var nameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+        var derivedType = new TestValidatableTypeInfo(typeof(DerivedEntity), [nameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(BaseEntity), baseType },
+            { typeof(DerivedEntity), derivedType },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var localProperty));
+        Assert.Same(nameProperty, localProperty);
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var inheritedProperty));
+        Assert.Same(idProperty, inheritedProperty);
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "NonExistent", out var missingProperty));
+        Assert.Null(missingProperty);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_LocalDeclarationShadowsInheritedProperty()
+    {
+        // If both base and derived declare a property with the same name, the derived (local)
+        // declaration is returned, matching how ValidateAsync would visit derived members first.
+        var baseNameProperty = CreatePropertyInfo(typeof(BaseEntity), typeof(string), "Name", "Name", []);
+        var baseType = new TestValidatableTypeInfo(typeof(BaseEntity), [baseNameProperty]);
+        var derivedNameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+        var derivedType = new TestValidatableTypeInfo(typeof(DerivedEntity), [derivedNameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(BaseEntity), baseType },
+            { typeof(DerivedEntity), derivedType },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var propertyInfo));
+        Assert.Same(derivedNameProperty, propertyInfo);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ReturnsFalseForInheritedMember_WhenSuperTypeNotResolvable()
+    {
+        // Only the derived type is registered. Local lookup still works; inherited members
+        // remain unresolved and the method returns false without throwing.
+        var nameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+        var derivedType = new TestValidatableTypeInfo(typeof(DerivedEntity), [nameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(DerivedEntity), derivedType },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var localProperty));
+        Assert.Same(nameProperty, localProperty);
+
+        Assert.False(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var inheritedProperty));
+        Assert.Null(inheritedProperty);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_WalksMultipleInheritanceLevels()
+    {
+        // Three-level chain: BaseEntity (Id) <- IntermediateEntity (CreatedAt) <- DerivedEntity (Name).
+        // A lookup on DerivedEntity must reach members declared at every level of the chain.
+        var idProperty = CreatePropertyInfo(typeof(BaseEntity), typeof(Guid), "Id", "Id", []);
+        var createdAtProperty = CreatePropertyInfo(typeof(IntermediateEntity), typeof(DateTime), "CreatedAt", "CreatedAt", []);
+        var nameProperty = CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", []);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(BaseEntity), new TestValidatableTypeInfo(typeof(BaseEntity), [idProperty]) },
+            { typeof(IntermediateEntity), new TestValidatableTypeInfo(typeof(IntermediateEntity), [createdAtProperty]) },
+            { typeof(DerivedEntity), new TestValidatableTypeInfo(typeof(DerivedEntity), [nameProperty]) },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Name", out var fromDerived));
+        Assert.Same(nameProperty, fromDerived);
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "CreatedAt", out var fromIntermediate));
+        Assert.Same(createdAtProperty, fromIntermediate);
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(DerivedEntity), "Id", out var fromBase));
+        Assert.Same(idProperty, fromBase);
+    }
+
+    [Fact]
+    public void TryGetValidatablePropertyInfo_ResolvesInterfaceDeclaredProperty()
+    {
+        // Property declared on an interface implemented by the target type. ValidatableTypeInfo's
+        // _superTypes list is populated by GetAllImplementedTypes(), which includes interfaces.
+        var auditedProperty = CreatePropertyInfo(typeof(IAuditable), typeof(DateTime), "CreatedAt", "CreatedAt", []);
+        var auditableTypeInfo = new TestValidatableTypeInfo(typeof(IAuditable), [auditedProperty]);
+        var nameProperty = CreatePropertyInfo(typeof(AuditableThing), typeof(string), "Name", "Name", []);
+        var thingTypeInfo = new TestValidatableTypeInfo(typeof(AuditableThing), [nameProperty]);
+
+        var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(IAuditable), auditableTypeInfo },
+            { typeof(AuditableThing), thingTypeInfo },
+        });
+
+        Assert.True(options.TryGetValidatablePropertyInfo(typeof(AuditableThing), "CreatedAt", out var resolved));
+        Assert.Same(auditedProperty, resolved);
+    }
+
+    private interface IAuditable
+    {
+        DateTime CreatedAt { get; }
+    }
+
+    private class AuditableThing : IAuditable
+    {
+        public DateTime CreatedAt { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
@@ -723,9 +906,7 @@ public class ValidatableTypeInfoTests
             name,
             displayName,
             validationAttributes);
-    }
-
-    // Test model classes
+    }    // Test model classes
     private class Person
     {
         public string? Name { get; set; }
@@ -865,7 +1046,7 @@ public class ValidatableTypeInfoTests
             string name,
             string displayName,
             ValidationAttribute[] validationAttributes)
-            : base(containingType, propertyType, name, displayName)
+            : base(containingType, propertyType, name, new TestLiteralDisplayName(displayName))
         {
             _validationAttributes = validationAttributes;
         }
@@ -894,7 +1075,7 @@ public class ValidatableTypeInfoTests
                 _typeInfoMappings = typeInfoMappings;
             }
 
-            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableTypeInfo? validatableInfo)
             {
                 if (_typeInfoMappings.TryGetValue(type, out var info))
                 {
@@ -905,7 +1086,7 @@ public class ValidatableTypeInfoTests
                 return false;
             }
 
-            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
+            public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableParameterInfo? validatableInfo)
             {
                 validatableInfo = null;
                 return false;

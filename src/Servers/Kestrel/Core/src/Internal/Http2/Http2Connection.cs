@@ -49,6 +49,10 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
     private static ReadOnlySpan<byte> ConnectionBytes => "connection"u8;
     private static ReadOnlySpan<byte> TeBytes => "te"u8;
     private static ReadOnlySpan<byte> TrailersBytes => "trailers"u8;
+    private static ReadOnlySpan<byte> TransferEncodingBytes => "transfer-encoding"u8;
+    private static ReadOnlySpan<byte> KeepAliveBytes => "keep-alive"u8;
+    private static ReadOnlySpan<byte> ProxyConnectionBytes => "proxy-connection"u8;
+    private static ReadOnlySpan<byte> UpgradeBytes => "upgrade"u8;
     private static ReadOnlySpan<byte> ConnectBytes => "CONNECT"u8;
     private static ReadOnlySpan<byte> ProtocolBytes => ":protocol"u8;
 
@@ -1843,9 +1847,15 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
         }
     }
 
+    // https://www.rfc-editor.org/rfc/rfc9113#section-8.2.2
     private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        return name.SequenceEqual(ConnectionBytes) || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
+        return name.SequenceEqual(ConnectionBytes)
+            || name.SequenceEqual(TransferEncodingBytes)
+            || name.SequenceEqual(KeepAliveBytes)
+            || name.SequenceEqual(ProxyConnectionBytes)
+            || name.SequenceEqual(UpgradeBytes)
+            || (name.SequenceEqual(TeBytes) && !value.SequenceEqual(TrailersBytes));
     }
 
     private bool TryClose()

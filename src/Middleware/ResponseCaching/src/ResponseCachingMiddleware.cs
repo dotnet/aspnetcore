@@ -203,7 +203,16 @@ public class ResponseCachingMiddleware
 
     internal async Task<bool> TryServeFromCacheAsync(ResponseCachingContext context)
     {
-        context.BaseKey = _keyProvider.CreateBaseKey(context);
+        try
+        {
+            context.BaseKey = _keyProvider.CreateBaseKey(context);
+        }
+        catch (CacheKeyDelimiterException)
+        {
+            _logger.RequestContainsInvalidCacheSymbols();
+            return false;
+        }
+
         var cacheEntry = _cache.Get(context.BaseKey);
 
         if (cacheEntry is CachedVaryByRules cachedVaryByRules)
@@ -211,12 +220,20 @@ public class ResponseCachingMiddleware
             // Request contains vary rules, recompute key(s) and try again
             context.CachedVaryByRules = cachedVaryByRules;
 
-            foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
+            try
             {
-                if (await TryServeCachedResponseAsync(context, _cache.Get(varyKey)))
+                foreach (var varyKey in _keyProvider.CreateLookupVaryByKeys(context))
                 {
-                    return true;
+                    if (await TryServeCachedResponseAsync(context, _cache.Get(varyKey)))
+                    {
+                        return true;
+                    }
                 }
+            }
+            catch (CacheKeyDelimiterException)
+            {
+                _logger.RequestContainsInvalidCacheSymbols();
+                return false;
             }
         }
         else
@@ -263,7 +280,17 @@ public class ResponseCachingMiddleware
             // Generate a base key if none exist
             if (string.IsNullOrEmpty(context.BaseKey))
             {
-                context.BaseKey = _keyProvider.CreateBaseKey(context);
+                try
+                {
+                    context.BaseKey = _keyProvider.CreateBaseKey(context);
+                }
+                catch (CacheKeyDelimiterException)
+                {
+                    _logger.RequestContainsInvalidCacheSymbols();
+                    context.ShouldCacheResponse = false;
+                    context.ResponseCachingStream.DisableBuffering();
+                    return false;
+                }
             }
 
             // Check if any vary rules exist
@@ -290,7 +317,17 @@ public class ResponseCachingMiddleware
                 _logger.VaryByRulesUpdated(normalizedVaryHeaders.ToString(), normalizedVaryQueryKeys.ToString());
                 storeVaryByEntry = true;
 
-                context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
+                try
+                {
+                    context.StorageVaryKey = _keyProvider.CreateStorageVaryByKey(context);
+                }
+                catch (CacheKeyDelimiterException)
+                {
+                    _logger.RequestContainsInvalidCacheSymbols();
+                    context.ShouldCacheResponse = false;
+                    context.ResponseCachingStream.DisableBuffering();
+                    return false;
+                }
             }
 
             // Ensure date header is set

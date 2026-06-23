@@ -63,6 +63,13 @@ internal sealed class NullableConverter<T>(FormDataConverter<T> nonNullableConve
 
     private static bool IsSupportedUnderlyingObjectType(Type type)
     {
-        return type == typeof(DateOnly) || type == typeof(TimeOnly) || type == typeof(DateTimeOffset);
+        return type == typeof(DateOnly) ||
+            type == typeof(TimeOnly) ||
+            type == typeof(DateTimeOffset) ||
+            type == typeof(TimeSpan) ||
+            type == typeof(Guid) ||
+            type == typeof(Int128) ||
+            type == typeof(UInt128) ||
+            type == typeof(Half);
     }
 }
