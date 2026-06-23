@@ -14,8 +14,8 @@
 namespace System.Runtime.CompilerServices
 {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    file sealed class InterceptsLocationAttribute : System.Attribute
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)
         {
@@ -74,58 +74,58 @@ namespace Microsoft.Extensions.Validation.Generated
             validatableTypeInfo = null;
             if (type == typeof(global::ComplexTypeWithParsableProperties))
             {
-                validatableTypeInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::ComplexTypeWithParsableProperties),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.Guid?),
                             name: "GuidWithRegularExpression",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.TimeOnly?),
                             name: "TimeOnlyWithRequiredValue",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(string),
                             name: "Url",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.DateOnly?),
                             name: "DateOnlyWithRange",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.DateTime?),
                             name: "DateTimeWithRange",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(decimal?),
                             name: "DecimalWithRange",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.TimeSpan?),
                             name: "TimeSpanWithHourRange",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(bool),
                             name: "BooleanWithRange",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexTypeWithParsableProperties),
                             propertyType: typeof(global::System.Version),
                             name: "VersionWithRegex",
@@ -157,7 +157,7 @@ namespace Microsoft.Extensions.Validation.Generated
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
             {
-                options.Resolvers.Insert(0, new GeneratedValidatableInfoResolver());
+                options.Resolvers.Insert(0, new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableInfoResolver());
                 if (configureOptions is not null)
                 {
                     configureOptions(options);

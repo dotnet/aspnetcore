@@ -235,7 +235,10 @@ public class KestrelServerOptions
     }
 
     /// <summary>
-    /// Internal AppContext switch to toggle whether a request line can end with LF only instead of CR/LF.
+    /// Internal AppContext switch to toggle whether HTTP/1.x request lines, headers, and trailers can
+    /// end with a bare LF instead of CRLF. Bare LF terminators are accepted by default. Set the AppContext
+    /// switch <c>Microsoft.AspNetCore.Server.Kestrel.DisableHttp1LineFeedTerminators</c> to <c>true</c>
+    /// to reject them and require CRLF as recommended by RFC 9112.
     /// </summary>
     private bool? _disableHttp1LineFeedTerminators;
     internal bool DisableHttp1LineFeedTerminators
