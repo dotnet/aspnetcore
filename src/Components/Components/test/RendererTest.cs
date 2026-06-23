@@ -5077,7 +5077,7 @@ public class RendererTest
     public async Task HotReload_ShouldRenderBypassScopedToFirstRender_TerminatesCyclicRenderLoop()
     {
         // Arrange: two root components where each triggers the other's StateHasChanged inside
-        // BuildRenderTree. ComponentB returns false from ShouldRender() to break the cycle during
+        // BuildRenderTree. Both components return false from ShouldRender() to break the cycle during
         // normal operation, but without the fix the hot-reload ShouldRender-bypass removes that
         // brake for the entire pass, causing an unbounded re-render loop (OOM in production).
 

@@ -51,11 +51,7 @@ public readonly struct RenderHandle
     /// </summary>
     public bool IsRenderingOnMetadataUpdate => HotReloadManager.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
 
-    /// <summary>
-    /// Returns <see langword="true"/> the first time this component requests a render during the current
-    /// metadata-update (hot-reload) pass, and <see langword="false"/> on every subsequent call in the same pass.
-    /// </summary>
-    internal bool IsFirstHotReloadRender() => _renderer?.IsFirstHotReloadRender(_componentId) ?? false;
+    internal bool IsFirstHotReloadRender() => IsRenderingOnMetadataUpdate && _renderer?.IsFirstHotReloadRender(_componentId) == true;
 
     internal bool IsRendererDisposed => _renderer?.Disposed
         ?? throw new InvalidOperationException("No renderer has been initialized.");
