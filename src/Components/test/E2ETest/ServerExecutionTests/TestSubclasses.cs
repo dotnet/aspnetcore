@@ -100,7 +100,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     {
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
@@ -108,13 +107,16 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void CancelsOutdatedRefreshes_Async()
         => base.CancelsOutdatedRefreshes_Async();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66308")]
     public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
         => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
 
     [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
     public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
         => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66970")]
+    public override void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+        => base.AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(variableHeight, useItemsProvider);
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest
