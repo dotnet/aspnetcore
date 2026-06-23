@@ -231,4 +231,38 @@ public class StateHasChangedAnalyzerTest : DiagnosticVerifier
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 26, 17) }
             });
     }
+
+    [Fact]
+    public void ExpressionBodyLifecycleMethod_WithStateHasChanged_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            protected override void OnInitialized() => StateHasChanged();
+
+            protected override void OnParametersSet() => StateHasChanged();
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
+                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 8, 56) }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnnecessaryStateHasChangedCall.Id,
+                Message = "StateHasChanged is unnecessary here and can be removed.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 10, 58) }
+            });
+    }
 }

@@ -137,6 +137,34 @@ public class StateHasChangedCodeFixProviderTest : CodeFixVerifier
         VerifyCSharpFix(oldSource, newSource);
     }
 
+    [Fact]
+    public void ExpressionBodyLifecycleMethod_RemovesEntireMethod()
+    {
+        var oldSource = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            protected override void OnInitialized() => StateHasChanged();
+        }
+    }" + ComponentDeclarations;
+
+        var newSource = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            
+        }
+    }" + ComponentDeclarations;
+
+        VerifyCSharpFix(oldSource, newSource);
+    }
+
     protected override CodeFixProvider GetCSharpCodeFixProvider() => new StateHasChangedCodeFixProvider();
 
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new StateHasChangedAnalyzer();

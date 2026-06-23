@@ -89,6 +89,17 @@ public sealed class StateHasChangedAnalyzer : DiagnosticAnalyzer
                 var body = methodDeclaration.Body;
                 if (body is null)
                 {
+                    // Handle expression-bodied methods like: void OnInitialized() => StateHasChanged();
+                    var expressionBody = methodDeclaration.ExpressionBody;
+                    if (expressionBody is not null &&
+                        expressionBody.Expression is InvocationExpressionSyntax expressionBodyInvocation &&
+                        IsStateHasChangedCall(syntaxContext.SemanticModel, expressionBodyInvocation))
+                    {
+                        var expressionBodyCallLocations = new Dictionary<int, Location>();
+                        AddCallLocation(expressionBodyCallLocations, expressionBodyInvocation);
+                        redundantCallLocationsByMethod.TryAdd(methodSymbol, expressionBodyCallLocations.Values.ToImmutableArray());
+                    }
+
                     return;
                 }
 

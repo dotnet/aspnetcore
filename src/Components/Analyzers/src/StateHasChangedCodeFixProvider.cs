@@ -61,9 +61,19 @@ public class StateHasChangedCodeFixProvider : CodeFixProvider
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var nodeToRemove = invocation.Parent is ExpressionStatementSyntax expressionStatement
-            ? (SyntaxNode)expressionStatement
-            : invocation;
+        SyntaxNode nodeToRemove;
+        if (invocation.Parent is ExpressionStatementSyntax expressionStatement)
+        {
+            nodeToRemove = expressionStatement;
+        }
+        else if (invocation.Parent is ArrowExpressionClauseSyntax { Parent: MethodDeclarationSyntax containingMethod })
+        {
+            nodeToRemove = containingMethod;
+        }
+        else
+        {
+            nodeToRemove = invocation;
+        }
 
         var newRoot = root.RemoveNode(nodeToRemove, SyntaxRemoveOptions.KeepExteriorTrivia);
         return Task.FromResult(document.WithSyntaxRoot(newRoot));
