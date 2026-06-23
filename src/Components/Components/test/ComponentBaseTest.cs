@@ -586,15 +586,12 @@ public class ComponentBaseTest
     [Fact]
     public void SetParametersAsync_ThrowsClearError_OnInvalidType()
     {
-        // Arrange
         var component = new TestComponent();
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
             { "Value", 10 } // int instead of double
         });
-
-        // Act & Assert
         var ex = Assert.Throws<InvalidOperationException>(() =>
             component.SetParametersAsync(parameters).GetAwaiter().GetResult());
 

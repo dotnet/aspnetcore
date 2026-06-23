@@ -571,18 +571,15 @@ public partial class ParameterViewTest
     [Fact]
     public void TryGetValue_ThrowsClearErrorMessage_OnInvalidCast()
     {
-        // Arrange
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
             RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
             RenderTreeFrame.Attribute(1, "DebounceInterval", 500) // int
         }, 0);
 
-        // Act
         var ex = Assert.Throws<InvalidCastException>(() =>
             parameters.TryGetValue<double>("DebounceInterval", out _));
 
-        // Assert
         Assert.Equal(
             "Error setting parameter 'DebounceInterval'. Received value of type 'System.Int32' but expected type 'System.Double'.",
             ex.Message);
@@ -591,17 +588,13 @@ public partial class ParameterViewTest
     [Fact]
     public void TryGetValue_AllowsNullValue_ForNullableOrReferenceType()
     {
-        // Arrange
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
             RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
             RenderTreeFrame.Attribute(1, "MyParam", null)
         }, 0);
 
-        // Act
         var found = parameters.TryGetValue<string>("MyParam", out var value);
-
-        // Assert
         Assert.True(found);
         Assert.Null(value);
     }
@@ -609,17 +602,13 @@ public partial class ParameterViewTest
     [Fact]
     public void TryGetValue_AssignsDefault_ForNullableValueType_WhenNull()
     {
-        // Arrange
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
             RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
             RenderTreeFrame.Attribute(1, "MyParam", null)
         }, 0);
 
-        // Act
         var found = parameters.TryGetValue<int?>("MyParam", out var value);
-
-        // Assert
         Assert.True(found);
         Assert.Null(value);
     }
