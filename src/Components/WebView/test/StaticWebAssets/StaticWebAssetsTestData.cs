@@ -31,6 +31,18 @@ internal static class StaticWebAssetsTestData
     /// </summary>
     public static string NuGetPackageRoot => GetValue("NuGetPackageRoot");
 
+    /// <summary>
+    /// Root directory for throwaway build working folders (under the repo's artifacts/tmp), used
+    /// instead of the system temp folder so test output is colocated with other build artifacts and
+    /// cleaned up by the normal artifacts lifecycle.
+    /// </summary>
+    public static string ArtifactsTmpDir => GetValue("ArtifactsTmpDir");
+
+    /// <summary>
+    /// Directory where build logs (binlogs) are written so CI collects them for diagnosing failures.
+    /// </summary>
+    public static string ArtifactsLogDir => GetValue("ArtifactsLogDir");
+
     public static string DefaultTargetFramework => GetValue("DefaultNetCoreTargetFramework");
 
     /// <summary>

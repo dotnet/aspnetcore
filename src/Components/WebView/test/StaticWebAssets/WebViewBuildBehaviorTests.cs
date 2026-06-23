@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.WebView.StaticWebAssets;
 
@@ -16,6 +17,13 @@ namespace Microsoft.AspNetCore.Components.WebView.StaticWebAssets;
 [RequiresBuiltPackages("Microsoft.AspNetCore.Components.WebView")]
 public class WebViewBuildBehaviorTests
 {
+    private readonly ITestOutputHelper _output;
+
+    public WebViewBuildBehaviorTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
     private static string AppProject => $"""
         <Project Sdk="Microsoft.NET.Sdk.Razor">
           <PropertyGroup>
@@ -32,7 +40,7 @@ public class WebViewBuildBehaviorTests
     [ConditionalFact]
     public void Publish_AppReferencingRclWithJsModules_ProducesSingleModulesManifest()
     {
-        using var build = new ConsumerBuild();
+        using var build = new ConsumerBuild(_output);
 
         // RCL that contributes a JS library module, which makes the SDK generate a blazor.modules.json.
         build.CreateProject("rcl", "rcl.csproj", $"""
@@ -85,7 +93,7 @@ public class WebViewBuildBehaviorTests
     [ConditionalFact]
     public void Build_AppWithoutJsModules_ServesFallbackModulesManifest()
     {
-        using var build = new ConsumerBuild();
+        using var build = new ConsumerBuild(_output);
 
         build.CreateProject("app", "app.csproj", AppProject);
         build.CreateFile("app/Program.cs", "class Program { static void Main() { } }");
