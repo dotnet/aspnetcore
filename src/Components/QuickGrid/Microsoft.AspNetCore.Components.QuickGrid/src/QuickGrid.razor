@@ -7,10 +7,15 @@
     @{ StartCollectingColumns(); }
     @ChildContent
     <Defer>
-        @{ FinishCollectingColumns(); }
+        @{
+            FinishCollectingColumns();
+            var hasColumnFooters = _columns.Any(col => col.FooterTemplate is not null);
+            var hasGridFooter = FooterTemplate is not null;
+            var footerRowCount = (hasColumnFooters ? 1 : 0) + (hasGridFooter ? 1 : 0);
+        }
         <ColumnsCollectedNotifier TGridItem="TGridItem" />
 
-        <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @attributes="AdditionalAttributes" class="@GridClass()">
+        <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1 + footerRowCount)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @attributes="AdditionalAttributes" class="@GridClass()">
             <thead>
                 <tr>
                     @_renderColumnHeaders
@@ -32,18 +37,18 @@
                     @_renderNonVirtualizedRows
                 }
             </tbody>
-            @if (FooterTemplate is not null || _columns.Any(col => col.FooterTemplate is not null))
+            @if (hasColumnFooters || hasGridFooter)
             {
                 <tfoot>
-                    @if (_columns.Any(col => col.FooterTemplate is not null))
+                    @if (hasColumnFooters)
                     {
-                        <tr>
+                        <tr aria-rowindex="@(_ariaBodyRowCount + 2)">
                             @_renderColumnFooters
                         </tr>
                     }
-                    @if (FooterTemplate is not null)
+                    @if (hasGridFooter)
                     {
-                        <tr>
+                        <tr aria-rowindex="@(_ariaBodyRowCount + 2 + (hasColumnFooters ? 1 : 0))">
                             <td colspan="@_columns.Count" class="grid-footer-cell">
                                 @FooterTemplate
                             </td>

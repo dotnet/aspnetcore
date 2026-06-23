@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -21,235 +23,230 @@ public class QuickGridFooterTemplateTest
             .BuildServiceProvider();
     }
 
-    [Fact]
-    public void FooterTemplate_NotSet_DoesNotRenderTfoot()
+    private static TestRenderer RenderGrid(IComponent component, out int componentId)
     {
         var serviceProvider = BuildServiceProvider();
         var renderer = new TestRenderer(serviceProvider);
-
-        var component = new GridWithNoFooter();
-        var componentId = renderer.AssignRootComponentId(component);
+        componentId = renderer.AssignRootComponentId(component);
         renderer.RenderRootComponent(componentId);
+        return renderer;
+    }
 
-        Assert.False(component.RenderedWithFooter);
+    // The grid markup (including the <tfoot>) is emitted into the render tree of the internal
+    // Defer component, so we inspect that component's current frames to assert on real output.
+    private static IEnumerable<RenderTreeFrame> GetGridFrames(TestRenderer renderer)
+    {
+        var deferComponentId = renderer.Batches
+            .SelectMany(batch => batch.GetComponentFrames<Defer>())
+            .Select(frame => frame.ComponentId)
+            .Distinct()
+            .Single();
+        return renderer.GetCurrentRenderTreeFrames(deferComponentId).AsEnumerable();
+    }
+
+    private static bool HasElement(IEnumerable<RenderTreeFrame> frames, string elementName)
+        => frames.Any(frame => frame.FrameType == RenderTreeFrameType.Element && frame.ElementName == elementName);
+
+    private static int CountElements(IEnumerable<RenderTreeFrame> frames, string elementName)
+        => frames.Count(frame => frame.FrameType == RenderTreeFrameType.Element && frame.ElementName == elementName);
+
+    private static bool ContainsContent(IEnumerable<RenderTreeFrame> frames, string text)
+        => frames.Any(frame =>
+            (frame.FrameType == RenderTreeFrameType.Text || frame.FrameType == RenderTreeFrameType.Markup)
+            && frame.TextContent is { } content
+            && content.Contains(text, StringComparison.Ordinal));
+
+    private static bool HasAttributeContaining(IEnumerable<RenderTreeFrame> frames, string attributeName, string value)
+        => frames.Any(frame => frame.FrameType == RenderTreeFrameType.Attribute
+            && frame.AttributeName == attributeName
+            && frame.AttributeValue is string attributeValue
+            && attributeValue.Contains(value, StringComparison.Ordinal));
+
+    private static int CountAttributeContaining(IEnumerable<RenderTreeFrame> frames, string attributeName, string value)
+        => frames.Count(frame => frame.FrameType == RenderTreeFrameType.Attribute
+            && frame.AttributeName == attributeName
+            && frame.AttributeValue is string attributeValue
+            && attributeValue.Contains(value, StringComparison.Ordinal));
+
+    [Fact]
+    public void FooterTemplate_NotSet_DoesNotRenderTfoot()
+    {
+        var renderer = RenderGrid(new GridWithNoFooter(), out _);
+
+        Assert.False(HasElement(GetGridFrames(renderer), "tfoot"));
     }
 
     [Fact]
     public void FooterTemplate_Set_RendersWithFooterContent()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithFooter(), out _);
 
-        var component = new GridWithFooter();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.RenderedWithFooter);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Footer content"));
     }
 
     [Fact]
     public void FooterTemplate_Set_DoesNotAffectColumnCollection()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithFooterAndMultipleColumns(), out _);
 
-        var component = new GridWithFooterAndMultipleColumns();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.RenderedWithFooter);
-        Assert.Equal(2, component.ColumnCount);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Total: 2"));
+        Assert.Equal(2, CountElements(frames, "th"));
     }
 
     [Fact]
     public void FooterTemplate_UpdatedOnRerender_ReflectsNewContent()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
-
         var component = new GridWithDynamicFooter();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
+        var renderer = RenderGrid(component, out var componentId);
 
-        Assert.Equal("Initial footer", component.FooterText);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "Initial footer"));
 
         component.FooterText = "Updated footer";
         renderer.RenderRootComponent(componentId);
 
-        Assert.Equal("Updated footer", component.FooterText);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Updated footer"));
+        Assert.False(ContainsContent(frames, "Initial footer"));
     }
 
     [Fact]
     public void FooterTemplate_SetToNull_RemovesFooter()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
-
         var component = new GridWithToggleableFooter();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
+        var renderer = RenderGrid(component, out var componentId);
 
-        Assert.True(component.ShowFooter);
+        Assert.True(HasElement(GetGridFrames(renderer), "tfoot"));
 
         component.ShowFooter = false;
         renderer.RenderRootComponent(componentId);
 
-        Assert.False(component.ShowFooter);
+        Assert.False(HasElement(GetGridFrames(renderer), "tfoot"));
     }
 
     [Fact]
     public void ColumnFooterTemplate_NotSet_DoesNotRenderColumnFooterRow()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithNoColumnFooters(), out _);
 
-        var component = new GridWithNoColumnFooters();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.False(component.HasColumnFooters);
+        Assert.False(HasElement(GetGridFrames(renderer), "tfoot"));
     }
 
     [Fact]
     public void ColumnFooterTemplate_Set_RendersColumnFooterRow()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithColumnFooters(), out _);
 
-        var component = new GridWithColumnFooters();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.HasColumnFooters);
-        Assert.Equal(2, component.ColumnCount);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Total IDs"));
+        Assert.True(ContainsContent(frames, "Total Names"));
+        Assert.Equal(2, CountElements(frames, "th"));
     }
 
     [Fact]
     public void ColumnFooterTemplate_PartialColumns_RendersFooterRowForAllColumns()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithPartialColumnFooters(), out _);
 
-        var component = new GridWithPartialColumnFooters();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.HasColumnFooters);
-        Assert.Equal(2, component.TotalColumns);
-        Assert.Equal(1, component.ColumnsWithFooter);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Count: 2"));
+        Assert.Equal(2, CountAttributeContaining(frames, "class", "grid-column-footer-cell"));
     }
 
     [Fact]
     public void ColumnFooterTemplate_AndGridFooterTemplate_BothRender()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithBothFooterTypes(), out _);
 
-        var component = new GridWithBothFooterTypes();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.HasGridFooter);
-        Assert.True(component.HasColumnFooters);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Column footer"));
+        Assert.True(ContainsContent(frames, "Grand total: 2"));
     }
 
     [Fact]
     public void FooterTemplate_WithEmptyItems_StillRenders()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithFooterAndEmptyItems(), out _);
 
-        var component = new GridWithFooterAndEmptyItems();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.RenderedWithFooter);
-        Assert.Equal(0, component.ItemCount);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "No items"));
     }
 
     [Fact]
     public void ColumnFooterTemplate_WithEmptyItems_StillRenders()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithColumnFootersAndEmptyItems(), out _);
 
-        var component = new GridWithColumnFootersAndEmptyItems();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.HasColumnFooters);
-        Assert.Equal(0, component.ItemCount);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Total: 0"));
     }
 
     [Fact]
     public void FooterTemplate_WithPagination_Renders()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithFooterAndPagination(), out _);
 
-        var component = new GridWithFooterAndPagination();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.RenderedWithFooter);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Page 1"));
     }
 
     [Fact]
     public void ColumnFooterTemplate_WithSortableColumn_Renders()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithColumnFooterOnSortableColumn(), out _);
 
-        var component = new GridWithColumnFooterOnSortableColumn();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.HasColumnFooters);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "ID total"));
     }
 
     [Fact]
     public void FooterTemplate_WithRowClass_BothApplied()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithFooterAndRowClass(), out _);
 
-        var component = new GridWithFooterAndRowClass();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.RenderedWithFooter);
-        Assert.True(component.RowClassApplied);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Footer with row class"));
+        Assert.True(HasAttributeContaining(frames, "class", "odd"));
+        Assert.True(HasAttributeContaining(frames, "class", "even"));
     }
 
     [Fact]
     public void ColumnFooterTemplate_UpdatedOnRerender_ReflectsNewContent()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
-
         var component = new GridWithDynamicColumnFooter();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
+        var renderer = RenderGrid(component, out var componentId);
 
-        Assert.Equal("Initial column footer", component.ColumnFooterText);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "Initial column footer"));
 
         component.ColumnFooterText = "Updated column footer";
         renderer.RenderRootComponent(componentId);
 
-        Assert.Equal("Updated column footer", component.ColumnFooterText);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Updated column footer"));
+        Assert.False(ContainsContent(frames, "Initial column footer"));
     }
 
     [Fact]
     public void FooterTemplate_WithItemsProvider_Renders()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
+        var renderer = RenderGrid(new GridWithFooterAndItemsProvider(), out _);
 
-        var component = new GridWithFooterAndItemsProvider();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
-
-        Assert.True(component.RenderedWithFooter);
+        var frames = GetGridFrames(renderer);
+        Assert.True(HasElement(frames, "tfoot"));
+        Assert.True(ContainsContent(frames, "Provider footer"));
     }
 
     // To display sort-aware aggregates in a footer (e.g., "first item in current sort order"),
@@ -258,45 +255,43 @@ public class QuickGridFooterTemplateTest
     [Fact]
     public async Task FooterTemplate_WithItemsProvider_ReflectsFirstItemAfterSort()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
-
         var component = new GridWithSortAwareFooterViaProvider();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
+        var renderer = RenderGrid(component, out _);
 
         // Initially unsorted: natural order, first item is ID=1
         Assert.Equal(1, component.CurrentFirstItemId);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "First: 1"));
 
         // Sort by ID descending: highest ID (3) should become first
         await renderer.Dispatcher.InvokeAsync(component.SortByIdDescendingAsync);
         Assert.Equal(3, component.CurrentFirstItemId);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "First: 3"));
 
         // Sort by ID ascending: lowest ID (1) should become first again
         await renderer.Dispatcher.InvokeAsync(component.SortByIdAscendingAsync);
         Assert.Equal(1, component.CurrentFirstItemId);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "First: 1"));
     }
 
     [Fact]
     public async Task ColumnFooterTemplate_WithItemsProvider_ReflectsFirstItemAfterSort()
     {
-        var serviceProvider = BuildServiceProvider();
-        var renderer = new TestRenderer(serviceProvider);
-
         var component = new GridWithSortAwareColumnFooterViaProvider();
-        var componentId = renderer.AssignRootComponentId(component);
-        renderer.RenderRootComponent(componentId);
+        var renderer = RenderGrid(component, out _);
 
         // Initially unsorted: natural order, first item is ID=1
         Assert.Equal(1, component.CurrentFirstItemId);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "First: 1"));
 
         // Sort by ID descending: highest ID (3) should become first
         await renderer.Dispatcher.InvokeAsync(component.SortByIdDescendingAsync);
         Assert.Equal(3, component.CurrentFirstItemId);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "First: 3"));
 
         // Sort by ID ascending: lowest ID (1) should become first again
         await renderer.Dispatcher.InvokeAsync(component.SortByIdAscendingAsync);
         Assert.Equal(1, component.CurrentFirstItemId);
+        Assert.True(ContainsContent(GetGridFrames(renderer), "First: 1"));
     }
 
     // --- Helper components ---
@@ -423,13 +418,9 @@ public class QuickGridFooterTemplateTest
                 b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<TestItem, int>>)(p => p.Id));
                 b.CloseComponent();
             }));
-            if (ShowFooter)
-            {
-                builder.AddAttribute(3, "FooterTemplate", (RenderFragment)(b =>
-                {
-                    b.AddContent(0, "Footer content");
-                }));
-            }
+            builder.AddAttribute(3, "FooterTemplate", ShowFooter
+                ? (RenderFragment)(b => b.AddContent(0, "Footer content"))
+                : null);
             builder.CloseComponent();
         }
     }
@@ -748,10 +739,10 @@ public class QuickGridFooterTemplateTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if (_provider is null) { _provider = ProvideItems; }
+            var provider = _provider ??= ProvideItems;
 
             builder.OpenComponent<QuickGrid<TestItem>>(0);
-            builder.AddAttribute(1, "ItemsProvider", _provider);
+            builder.AddAttribute(1, "ItemsProvider", provider);
             builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
             {
                 b.OpenComponent<PropertyColumn<TestItem, int>>(0);
@@ -798,10 +789,10 @@ public class QuickGridFooterTemplateTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if (_provider is null) { _provider = ProvideItems; }
+            var provider = _provider ??= ProvideItems;
 
             builder.OpenComponent<QuickGrid<TestItem>>(0);
-            builder.AddAttribute(1, "ItemsProvider", _provider);
+            builder.AddAttribute(1, "ItemsProvider", provider);
             builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
             {
                 b.OpenComponent<PropertyColumn<TestItem, int>>(0);

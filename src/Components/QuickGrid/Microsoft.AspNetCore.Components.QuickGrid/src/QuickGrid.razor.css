@@ -121,15 +121,3 @@ html[dir=rtl] .col-justify-end .col-options {
 tr.row-clickable {
     cursor: pointer;
 }
-
-td.col-justify-center.grid-column-footer-cell {
-    text-align: center;
-}
-
-td.col-justify-end.grid-column-footer-cell {
-    text-align: right;
-}
-
-td.col-justify-start.grid-column-footer-cell {
-    text-align: left;
-}
