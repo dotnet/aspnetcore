@@ -352,7 +352,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const pausingPromise = this._pausingState.currentProgress();
 
     try {
-      // defer pause while DotNetStreamReference transmissions are in flight. 
+      // Defer pause while any circuit operation tracked by _activeStreamCount is in flight
       await this.waitForActiveStreamsToDrain();
 
       this._logger.log(LogLevel.Trace, 'Pausing the circuit...');
