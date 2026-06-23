@@ -107,7 +107,7 @@
 
                 @if (ColumnResize && columnIndex < _columns.Count - 1)
                 {
-                    <div class="col-width-draghandle" data-column-index="@columnIndex" aria-hidden="true"></div>
+                    <div class="col-width-draghandle" tabindex="0" data-column-index="@columnIndex"></div>
                 }
             </th>
         }

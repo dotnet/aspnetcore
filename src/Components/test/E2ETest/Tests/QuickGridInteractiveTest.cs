@@ -161,5 +161,6 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         var grid = Browser.FindElement(By.CssSelector("#grid3 > table"));
 
         Browser.Equal(2, () => grid.FindElements(By.CssSelector(".col-width-draghandle")).Count);
+        Assert.Contains("col-resize", grid.GetAttribute("class"));
     }
 }

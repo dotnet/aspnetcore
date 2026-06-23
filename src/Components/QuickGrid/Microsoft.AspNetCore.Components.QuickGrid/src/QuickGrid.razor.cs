@@ -549,6 +549,10 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private string GridClass()
     {
         var gridClass = $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+        if (ColumnResize)
+        {
+            gridClass += " col-resize";
+        }
         return AttributeUtilities.CombineClassNames(AdditionalAttributes, gridClass) ?? string.Empty;
     }
 
