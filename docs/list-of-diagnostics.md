@@ -57,7 +57,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0007`)
+### BL  (`BL0001-BL0012`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
@@ -68,6 +68,11 @@
 |  __`BL0005`__ | Component parameter should not be set outside of its component |
 |  __`BL0006`__ | Do not use RenderTree types |
 |  __`BL0007`__ | Component parameters should be auto properties |
+|  __`BL0008`__ | Property with [SupplyParameterFromForm] should not have initializer |
+|  __`BL0009`__ | Property with [PersistentState] should not have initializer |
+|  __`BL0010`__ | Use InvokeVoidAsync instead of InvokeAsync<object> |
+|  __`BL0011`__ | Virtualize with ItemsProvider requires ItemComparer |
+|  __`BL0012`__ | AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged |
 
 ### Request Delegate Generator  (`RDG001-RDG004`)
 

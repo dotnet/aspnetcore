@@ -111,4 +111,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
+
+    public static readonly DiagnosticDescriptor AuthenticationStateProviderCachedWithoutSubscription = new(
+        "BL0012",
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Title)),
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Description)));
 }
