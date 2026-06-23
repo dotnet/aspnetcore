@@ -50,10 +50,10 @@ function warnIfSpacerElementIsInvalid(spacerBefore: HTMLElement): void {
   const parentTagName = spacerBefore.parentElement?.tagName;
   const spacerTagName = spacerBefore.tagName;
 
-  if ((parentTagName === 'TBODY' || parentTagName === 'TABLE') && spacerTagName !== 'TR') {
-    console.warn('Virtualize is rendering inside <table> or <tbody>. Set SpacerElement="tr" to avoid invalid markup.');
+  if ((parentTagName === 'TBODY' || parentTagName === 'TABLE' || parentTagName === 'THEAD' || parentTagName === 'TFOOT') && spacerTagName !== 'TR') {
+    console.warn(`Virtualize is rendering inside <${parentTagName.toLowerCase()}>. Set SpacerElement="tr" to avoid invalid markup.`);
   } else if ((parentTagName === 'UL' || parentTagName === 'OL') && spacerTagName !== 'LI') {
-    console.warn('Virtualize is rendering inside <ul> or <ol>. Set SpacerElement="li" to avoid invalid markup.');
+    console.warn(`Virtualize is rendering inside <${parentTagName.toLowerCase()}>. Set SpacerElement="li" to avoid invalid markup.`);
   }
 }
 
