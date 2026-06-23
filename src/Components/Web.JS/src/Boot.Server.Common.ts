@@ -129,6 +129,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   const cleanup = () => {
     autoPauseManager?.dispose();
     autoPauseManager = undefined;
+    Blazor.pause = undefined;
     circuit.sendDisconnectBeacon();
   };
 
