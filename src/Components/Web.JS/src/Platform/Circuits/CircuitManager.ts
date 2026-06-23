@@ -87,7 +87,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     if (!this._startPromise) {
-      initEditedTracking();
+      if (this._options.autoPause.enabled) {
+        initEditedTracking();
+      }
       this._startPromise = this.startCore();
     }
 
@@ -146,7 +148,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
     connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
-      if (asyncHandle !== 0) {
+      if (asyncHandle !== 0 && this._options.autoPause.enabled) {
         this._pendingJsCallTracking.set(asyncHandle, this.trackActiveStream());
       }
       (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)(asyncHandle, ...rest);
@@ -212,7 +214,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
-      this.resetActiveStreams();
+      if (this._options.autoPause.enabled) {
+        this.resetActiveStreams();
+      }
 
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
@@ -460,7 +464,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
     this.throwIfDispatchingWhenDisposed();
-    if (callId !== 0) {
+    if (callId !== 0 && this._options.autoPause.enabled) {
       this._pendingDotNetCallTracking.set(callId.toString(), this.trackActiveStream());
     }
     this._connection!.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
@@ -543,6 +547,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private trackActiveStream(): () => void {
+    if (!this._options.autoPause.enabled) {
+      return () => { /* no-op: stream tracking is only needed for auto-pause */ };
+    }
     this._activeStreamCount++;
     let untracked = false;
     return () => {
