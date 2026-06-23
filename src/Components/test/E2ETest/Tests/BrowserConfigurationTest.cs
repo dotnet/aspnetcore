@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -37,11 +38,17 @@ public class BrowserConfigurationTest(
         Navigate($"{ServerPathBase}/browser-configuration-env-vars-landing");
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
 
+        // Capture a stable element to verify enhanced navigation (DOM preservation)
+        var htmlElement = Browser.Exists(By.TagName("html"));
+
         // Navigate to the WASM page via enhanced navigation (clicking a link)
         Browser.Click(By.Id("navigate-to-env-vars"));
 
         // Wait for WebAssembly to be interactive
         Browser.Equal("webassembly", () => Browser.Exists(By.Id("execution-mode")).Text);
+
+        // Verify the navigation was enhanced (same DOM) rather than a full page load
+        Browser.False(() => htmlElement.IsStale());
 
         // Verify environment variables are available even though WASM started via enhanced navigation
         Browser.Equal("test-value-from-server", () => Browser.Exists(By.Id("my-test-var")).Text);
