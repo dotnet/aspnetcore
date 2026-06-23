@@ -1,3 +1,5 @@
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -68,7 +70,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
     }
 
     [Fact]
@@ -84,7 +86,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
     }
 
     [Fact]
@@ -100,7 +102,44 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("Custom Display Name", parameterValidatableInfo.DisplayName);
+        Assert.Equal("Custom Display Name", ResolveDisplayName(parameterValidatableInfo));
+    }
+
+    [Fact]
+    public void TryGetValidatableParameterInfo_WithDisplayAttributeWithResourceType_BypassesLocalizer()
+    {
+        var parameterInfo = typeof(TestController)
+            .GetMethod(nameof(TestController.MethodWithResourceDisplayAttribute))!
+            .GetParameters()[0];
+
+        var result = _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
+        Assert.NotNull(parameterValidatableInfo.DisplayNameInfo);
+        // The localizer must be bypassed for the resource-attribute path: even with a localizer
+        // configured, the strategy returns the resource-resolved name directly.
+        var localizer = new ThrowingValidationLocalizer();
+        Assert.Equal("Resource Display Name", ResolveDisplayName(parameterValidatableInfo, localizer));
+    }
+
+    [Fact]
+    public void TryGetValidatableParameterInfo_WithLiteralDisplayAttribute_ConsultsLocalizerWhenSet()
+    {
+        var parameterInfo = typeof(TestController)
+            .GetMethod(nameof(TestController.MethodWithDisplayAttribute))!
+            .GetParameters()[0];
+
+        _resolver.TryGetValidatableParameterInfo(parameterInfo, out var validatableInfo);
+        var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
+
+        var localizer = new RecordingValidationLocalizer { Translations = { ["Custom Display Name"] = "Localized Custom Display Name" } };
+        Assert.Equal("Localized Custom Display Name", ResolveDisplayName(parameterValidatableInfo, localizer));
+        var record = Assert.Single(localizer.DisplayNameCalls);
+        Assert.Equal("Custom Display Name", record.DisplayName);
+        Assert.Equal("value", record.MemberName);
+        Assert.Null(record.Type);
     }
 
     [Fact]
@@ -116,7 +155,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("value", parameterValidatableInfo.Name);
-        Assert.Equal("value", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
     }
 
     [Fact]
@@ -141,7 +180,39 @@ public class RuntimeValidatableParameterInfoResolverTests
         Assert.NotNull(validatableInfo);
         var parameterValidatableInfo = Assert.IsType<RuntimeValidatableParameterInfoResolver.RuntimeValidatableParameterInfo>(validatableInfo);
         Assert.Equal("testParam", parameterValidatableInfo.Name);
-        Assert.Equal("testParam", parameterValidatableInfo.DisplayName);
+        Assert.Null(parameterValidatableInfo.DisplayNameInfo);
+    }
+
+    private static string? ResolveDisplayName(ValidatableParameterInfo info, IValidationLocalizer? localizer = null)
+        => info.DisplayNameInfo?.GetDisplayName(
+            new ValidateContext
+            {
+                ValidationOptions = new ValidationOptions { Localizer = localizer },
+                ValidationContext = new ValidationContext(new object()),
+            },
+            info.Name,
+            type: null);
+
+    private sealed class RecordingValidationLocalizer : IValidationLocalizer
+    {
+        public Dictionary<string, string> Translations { get; } = new();
+        public List<DisplayNameLocalizationContext> DisplayNameCalls { get; } = new();
+
+        public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
+        {
+            DisplayNameCalls.Add(context);
+            return context.DisplayName is not null && Translations.TryGetValue(context.DisplayName, out var v) ? v : null;
+        }
+
+        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
+    }
+
+    private sealed class ThrowingValidationLocalizer : IValidationLocalizer
+    {
+        public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
+            => throw new InvalidOperationException("ResolveDisplayName must not be called for resource-attribute paths.");
+
+        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
     }
 
     private static ParameterInfo GetParameter(Type parameterType)
@@ -174,7 +245,14 @@ public class RuntimeValidatableParameterInfoResolverTests
 
         public void MethodWithDisplayAttribute([Display(Name = "Custom Display Name")][Required] string value) { }
 
+        public void MethodWithResourceDisplayAttribute([Display(Name = "TestKey", ResourceType = typeof(TestResources))][Required] string value) { }
+
         public void MethodWithNullDisplayName([Display(Name = null)][Required] string value) { }
+    }
+
+    private static class TestResources
+    {
+        public static string TestKey => "Resource Display Name";
     }
 
     private class NullNameParameterInfo : ParameterInfo

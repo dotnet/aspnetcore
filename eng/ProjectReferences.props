@@ -146,6 +146,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.CustomElements" ProjectPath="$(RepoRoot)src\Components\CustomElements\src\Microsoft.AspNetCore.Components.CustomElements.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Endpoints" ProjectPath="$(RepoRoot)src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoints.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src\Components\Media\src\Microsoft.AspNetCore.Components.Media.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\src\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid\src\Microsoft.AspNetCore.Components.QuickGrid.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
@@ -171,6 +172,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.Swagger" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.OpenApi" ProjectPath="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Validation.Localization" ProjectPath="$(RepoRoot)src\Validation\Localization\src\Microsoft.Extensions.Validation.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Validation" ProjectPath="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
   </ItemGroup>
 </Project>

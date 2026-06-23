@@ -1,0 +1,23 @@
+﻿@page "/supply-parameter-from-session/navigation"
+@using Microsoft.AspNetCore.Components.Forms
+@inject NavigationManager NavigationManager
+
+<h3>SupplyParameterFromSessionNavigationComponent</h3>
+
+<p id="text-email">@Email</p>
+
+<form @onsubmit="Redirect" @formname="redirect" method="post">
+    <AntiforgeryToken />
+    <button type="submit" id="redirect">Redirect</button>
+</form>
+
+@code {
+    [SupplyParameterFromSession]
+    public string? Email { get; set; }
+
+
+    void Redirect()
+    {
+        NavigationManager.NavigateTo("/subdir/supply-parameter-from-session");
+    }
+}

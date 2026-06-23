@@ -14,8 +14,8 @@
 namespace System.Runtime.CompilerServices
 {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    file sealed class InterceptsLocationAttribute : System.Attribute
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)
         {
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Validation.Generated
             global::System.Type containingType,
             global::System.Type propertyType,
             string name,
-            string displayName) : base(containingType, propertyType, name, displayName)
+            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(containingType, propertyType, name, displayNameInfo)
         {
             ContainingType = containingType;
             Name = name;
@@ -53,7 +53,8 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members)
+            ValidatablePropertyInfo[] members,
+            global::Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) : base(type, members, displayNameInfo)
         {
             Type = type;
         }
@@ -68,45 +69,49 @@ namespace Microsoft.Extensions.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
-        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableInfo = null;
+            validatableTypeInfo = null;
             if (type == typeof(global::BaseClass))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::BaseClass),
-                    members: []
+                    members: [],
+                    displayNameInfo: null
                 );
                 return true;
             }
             if (type == typeof(global::DerivedClass))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::DerivedClass),
-                    members: []
+                    members: [],
+                    displayNameInfo: null
                 );
                 return true;
             }
             if (type == typeof(global::NestedClass))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::NestedClass),
-                    members: []
+                    members: [],
+                    displayNameInfo: null
                 );
                 return true;
             }
             if (type == typeof(global::ComplexClass))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::ComplexClass),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexClass),
                             propertyType: typeof(global::NestedClass),
                             name: "NestedObject",
-                            displayName: "NestedObject"
+                            displayNameInfo: null
                         ),
-                    ]
+                    ],
+                    displayNameInfo: null
                 );
                 return true;
             }
@@ -115,9 +120,9 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
     }
@@ -131,7 +136,7 @@ namespace Microsoft.Extensions.Validation.Generated
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
             {
-                options.Resolvers.Insert(0, new GeneratedValidatableInfoResolver());
+                options.Resolvers.Insert(0, new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableInfoResolver());
                 if (configureOptions is not null)
                 {
                     configureOptions(options);
@@ -208,6 +213,128 @@ namespace Microsoft.Extensions.Validation.Generated
                         .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(t, inherit: true);
                 return global::System.Linq.Enumerable.ToArray(typeAttributes);
             });
+        }
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed class LiteralDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    {
+        private readonly string _literal;
+
+        public LiteralDisplayName(string literal)
+        {
+            _literal = literal;
+        }
+
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+        {
+            var localizer = context.ValidationOptions.Localizer;
+            if (localizer is null)
+            {
+                return _literal;
+            }
+            return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
+            {
+                Type = type,
+                DisplayName = _literal,
+                MemberName = memberName,
+            }) ?? _literal;
+        }
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed class PropertyResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    {
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+        private readonly global::System.Type _containingType;
+        private readonly string _propertyName;
+
+        public PropertyResourceDisplayName(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName)
+        {
+            _containingType = containingType;
+            _propertyName = propertyName;
+        }
+
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+            => DisplayAttributeCache.GetPropertyDisplayAttribute(_containingType, _propertyName)?.GetName();
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file sealed class TypeResourceDisplayName : global::Microsoft.Extensions.Validation.DisplayNameInfo
+    {
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+        private readonly global::System.Type _type;
+
+        public TypeResourceDisplayName(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+            global::System.Type type)
+        {
+            _type = type;
+        }
+
+        public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
+            => DisplayAttributeCache.GetTypeDisplayAttribute(_type)?.GetName();
+    }
+
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
+    file static class DisplayAttributeCache
+    {
+        private sealed record CacheKey(
+            [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type ContainingType,
+            string PropertyName);
+
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _propertyCache = new();
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.DisplayAttribute?> _typeCache = new();
+
+        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetPropertyDisplayAttribute(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+            global::System.Type containingType,
+            string propertyName)
+        {
+            var key = new CacheKey(containingType, propertyName);
+            return _propertyCache.GetOrAdd(key, static k =>
+            {
+                // Check primary-constructor parameters first to handle record scenarios where
+                // [Display(ResourceType = ..., Name = ...)] is on the parameter rather than the property.
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.Ordinal));
+
+                    if (parameter != null)
+                    {
+                        var paramDisplayAttr = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(parameter);
+                        if (paramDisplayAttr is not null)
+                        {
+                            return paramDisplayAttr;
+                        }
+
+                        break;
+                    }
+                }
+
+                var property = k.ContainingType.GetProperty(k.PropertyName);
+                return property is null
+                    ? null
+                    : global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(property, inherit: true);
+            });
+        }
+
+        public static global::System.ComponentModel.DataAnnotations.DisplayAttribute? GetTypeDisplayAttribute(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+            global::System.Type type)
+        {
+            return _typeCache.GetOrAdd(type, static t =>
+                global::System.Reflection.CustomAttributeExtensions
+                    .GetCustomAttribute<global::System.ComponentModel.DataAnnotations.DisplayAttribute>(t, inherit: true));
         }
     }
 }

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ChunkingCookieManager\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ResultsHelpers\SharedUrlHelper.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>

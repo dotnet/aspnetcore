@@ -1,0 +1,19 @@
+﻿<div id="typed-params-@IdSuffix">
+    <span id="int-value-@IdSuffix">@Count</span>
+    <span id="double-value-@IdSuffix">@Score</span>
+    <span id="bool-value-@IdSuffix">@IsActive</span>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public string IdSuffix { get; set; } = default!;
+
+    [Parameter]
+    public int Count { get; set; }
+
+    [Parameter]
+    public double Score { get; set; }
+
+    [Parameter]
+    public bool IsActive { get; set; }
+}

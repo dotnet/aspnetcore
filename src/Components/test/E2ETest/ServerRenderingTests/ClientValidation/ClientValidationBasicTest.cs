@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests.ClientVa
 // attributes via DataAnnotationsValidator/InputBase lives in a separate PR; these
 // tests exercise the JS library's behaviour against markup that matches what the
 // .NET side will emit once both PRs land.
+[CollectionDefinition(nameof(ClientValidationBasicTest), DisableParallelization = true)]
 public class ClientValidationBasicTest : ClientValidationTestBase
 {
     public ClientValidationBasicTest(

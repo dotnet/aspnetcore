@@ -9,11 +9,14 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -41,9 +44,16 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
             ?.SetValue(null, enableUrlNavigation);
 
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        {
+            services.AddControllers();
+        }
+        services.AddSingleton<IStringLocalizerFactory>(
+            new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
         services.AddValidation();
+        services.AddValidationLocalization();
 
-        services.AddRazorComponents(options =>
+        var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
@@ -52,7 +62,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
-            .AddInteractiveWebAssemblyComponents()
             .AddInteractiveServerComponents(options =>
             {
                 if (Configuration.GetValue<bool>("DisableReconnectionCache"))
@@ -84,6 +93,18 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
+        {
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+        }
+        else
+        {
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(options =>
+            {
+                options.UseCultureFromServer = false;
+            });
+        }
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
@@ -154,7 +175,26 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        {
+            app.UseRequestLocalization(options =>
+            {
+                options.AddSupportedCultures("en-US", "fr-FR", "es-ES");
+                options.AddSupportedUICultures("en-US", "fr-FR", "es-ES");
+                options.RequestCultureProviders.Clear();
+                options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+                options.SetDefaultCulture("en-US");
+            });
+        }
+        else
+        {
+            app.UseRequestLocalization(options =>
+            {
+                options.RequestCultureProviders.Clear();
+                options.SetDefaultCulture("en-US");
+            });
+        }
 
         if (!env.IsDevelopment())
         {
@@ -164,6 +204,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
+
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
+            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
+        });
 
         app.Use((ctx, nxt) =>
         {
@@ -180,6 +227,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     {
         _ = app.UseEndpoints(endpoints =>
         {
+            if (Configuration.GetValue<bool>("EnableCultureTesting"))
+            {
+                endpoints.MapControllers();
+            }
+
             var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
             if (File.Exists(contentRootStaticAssetsPath))
             {
@@ -203,10 +255,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
                 })
                 .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
-                .WithBrowserConfiguration(config =>
+                .WithBrowserOptions(config =>
                 {
                     config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
                     config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
+                        || Configuration.GetValue<bool>("EnableOutOfProcessRenderer"))
+                    {
+                        config.WebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
+                    }
                 });
 
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
