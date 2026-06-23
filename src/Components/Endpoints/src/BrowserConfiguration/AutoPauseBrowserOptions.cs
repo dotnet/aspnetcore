@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Serializable auto-pause options that flow from the server to the browser.
-/// Non-serializable options (<c>onPauseRequested</c>) must use <c>Blazor.start()</c>
+/// Non-serializable options (pause handlers) must use <c>Blazor.pause.waitFor</c>
 /// or JS initializers.
 /// Maps to <c>CircuitStartOptions.autoPause</c>.
 /// </summary>
