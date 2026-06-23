@@ -9,6 +9,12 @@ const contentEditableSnapshots = new WeakMap<Element, string>();
 const trackedDocs = new WeakSet<Document>();
 const trackedIframes = new WeakSet<HTMLIFrameElement>();
 
+function snapshotIfContentEditable(el: HTMLElement | null): void {
+  if (el?.isContentEditable && !contentEditableSnapshots.has(el)) {
+    contentEditableSnapshots.set(el, el.textContent ?? '');
+  }
+}
+
 function trackDocument(doc: Document): void {
   if (trackedDocs.has(doc)) {
     return;
@@ -16,10 +22,7 @@ function trackDocument(doc: Document): void {
   trackedDocs.add(doc);
   doc.addEventListener('focusin', () => {
     trackSameOriginIframes();
-    const el = getDeepActiveElement();
-    if (el?.isContentEditable && !contentEditableSnapshots.has(el)) {
-      contentEditableSnapshots.set(el, el.textContent ?? '');
-    }
+    snapshotIfContentEditable(getDeepActiveElement());
   }, true);
 }
 
@@ -47,6 +50,7 @@ function trackSameOriginIframes(): void {
 export function initEditedTracking(): void {
   trackDocument(document);
   trackSameOriginIframes();
+  snapshotIfContentEditable(getDeepActiveElement());
 }
 
 export function getDeepActiveElement(): HTMLElement | null {
@@ -79,7 +83,12 @@ export function isFocusedElementEdited(): boolean {
     return false;
   }
   if (el.isContentEditable) {
-    return (el.textContent ?? '') !== (contentEditableSnapshots.get(el) ?? '');
+    const snapshot = contentEditableSnapshots.get(el);
+    if (snapshot === undefined) {
+      // e.g., the element became editable while already focused
+      return (el.textContent ?? '') !== '';
+    }
+    return (el.textContent ?? '') !== snapshot;
   }
   if (el instanceof HTMLTextAreaElement) {
     return el.value !== el.defaultValue;
