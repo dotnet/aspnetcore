@@ -358,18 +358,19 @@ internal sealed class OpenApiSchemaService(
 
         if (schema.Properties is not null)
         {
-            foreach (var property in schema.Properties)
+            foreach (var key in schema.Properties.Keys.ToList())
             {
-                var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
-                if (property.Value is OpenApiSchema targetSchema &&
+                var propertyValue = schema.Properties[key];
+                var resolvedProperty = ResolveReferenceForSchema(document, propertyValue, rootSchemaId);
+                if (propertyValue is OpenApiSchema targetSchema &&
                     targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
                     isNullableProperty is true)
                 {
-                    schema.Properties[property.Key] = resolvedProperty.CreateOneOfNullableWrapper();
+                    schema.Properties[key] = resolvedProperty.CreateOneOfNullableWrapper();
                 }
                 else
                 {
-                    schema.Properties[property.Key] = resolvedProperty;
+                    schema.Properties[key] = resolvedProperty;
                 }
             }
         }
