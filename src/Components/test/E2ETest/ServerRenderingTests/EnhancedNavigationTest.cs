@@ -596,11 +596,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText($"LocationChanged/LocationChanging event ({renderMode})")).Click();
         Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith($"/nav/location-changed/{renderMode}", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+        Browser.Contains($"/nav/location-changed/{renderMode}", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
 
         Browser.Exists(By.Id($"update-query-string-{renderMode}")).Click();
 
-        Assert.EndsWith($"/nav/location-changed/{renderMode}?query=1", Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
+        Browser.Contains($"/nav/location-changed/{renderMode}?query=1", () => Browser.Exists(By.Id($"nav-uri-{renderMode}")).Text);
     }
 
     [Theory]
@@ -613,13 +613,13 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
         Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-server")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
 
         Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
 
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-server")).Text);
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-wasm")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm?query=1", () => Browser.Exists(By.Id("nav-uri-server")).Text);
+        Browser.Contains("/nav/location-changed/server-and-wasm?query=1", () => Browser.Exists(By.Id("nav-uri-wasm")).Text);
     }
 
     [Theory]
@@ -914,6 +914,51 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         WaitStreamingRendersFullPage(enableStreaming);
         AssertEnhancedNavigation(useEnhancedNavigation, elementForStalenessCheckOnLandingPage);
         AssertScrollPositionCorrect(useEnhancedNavigation, landingPagePos2);
+    }
+
+    [Fact]
+    public void CanNavigateBetweenPagesWhenLayoutContainsInteractiveComponent()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/64722
+        // When an interactive component (InteractiveAuto) is placed in the layout,
+        // navigating between pages should not cause a JS error from orphaned
+        // metadata comments in the logical children array.
+        Navigate($"{ServerPathBase}/nav/interactive-in-layout");
+
+        var h1Elem = Browser.Exists(By.Id("interactive-layout-home"));
+        Browser.Equal("Hello from interactive layout", () => h1Elem.Text);
+
+        // Use the <html> element for staleness checks. We cannot use elements inside the
+        // InteractiveAuto component (e.g., layout-counter) because the SSR-to-interactive
+        // transition clears and re-renders the component's DOM, making SSR element references
+        // stale regardless of whether enhanced navigation was used.
+        var elementForStalenessCheck = Browser.Exists(By.TagName("html"));
+
+        // Navigate to the other page and verify enhanced navigation was used (DOM preserved)
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Other (interactive layout)")).Click();
+        Browser.Equal("Other page with interactive layout", () => Browser.Exists(By.Id("interactive-layout-other")).Text);
+        Assert.False(elementForStalenessCheck.IsStale(), "Enhanced navigation should have been used for first navigation");
+
+        // Wait for interactivity to be established (InteractiveAuto may start as SSR/Server
+        // and become interactive only after the circuit or WebAssembly runtime has connected).
+        Browser.Equal("True", () => Browser.Exists(By.Id("layout-counter-interactive")).Text);
+
+        // Now that the component is interactive, grab a reference inside it. Enhanced navigation
+        // should preserve interactive component DOM, so this element must survive the next navigation.
+        var layoutCounter = Browser.Exists(By.Id("layout-counter"));
+
+        // Navigate back to home - this is the step that triggered the crash
+        Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Home (interactive layout)")).Click();
+        Browser.Equal("Hello from interactive layout", () => Browser.Exists(By.Id("interactive-layout-home")).Text);
+        Assert.False(elementForStalenessCheck.IsStale(), "Enhanced navigation should have been used for second navigation");
+        Assert.False(layoutCounter.IsStale(), "Interactive component DOM should be preserved during enhanced navigation");
+        Browser.Equal("0", () => Browser.Exists(By.Id("layout-counter-value")).Text);
+        Browser.Exists(By.Id("layout-counter-button")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("layout-counter-value")).Text);
+
+        // Verify no JavaScript errors occurred during enhanced navigation
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.DoesNotContain(logs, log => log.Message.Contains("Error"));
     }
 
     private void AssertScrollPositionCorrect(bool useEnhancedNavigation, long previousScrollPosition)

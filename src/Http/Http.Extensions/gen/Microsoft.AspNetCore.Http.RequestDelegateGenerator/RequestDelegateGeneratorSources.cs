@@ -91,6 +91,28 @@ internal static class RequestDelegateGeneratorSources
                 {
                     logOrThrowExceptionHelper.InvalidJsonRequestBody(parameterTypeName, parameterName, jsonException);
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+                    var problemDetailsService = httpContext.RequestServices.GetService<IProblemDetailsService>();
+                    if (problemDetailsService is not null)
+                    {
+                        IEnumerable<KeyValuePair<string, string[]>> errors =
+                        [
+                            new KeyValuePair<string, string[]>(jsonException.Path ?? string.Empty, [jsonException.Message]),
+                        ];
+
+                        var problemDetailsContext = new ProblemDetailsContext()
+                        {
+                            HttpContext = httpContext,
+                            Exception = jsonException,
+                            ProblemDetails = new HttpValidationProblemDetails(errors)
+                            {
+                                Status = StatusCodes.Status400BadRequest, 
+                            },
+                        };
+
+                        _ = await problemDetailsService.TryWriteAsync(problemDetailsContext);
+                    }
+
                     return (false, default);
                 }
             }

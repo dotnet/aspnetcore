@@ -25,6 +25,11 @@
     "omnisharp.enableEditorConfigSupport": true,
     "omnisharp.enableImportCompletion": true,
   },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/sshd:1": {},
+    "ghcr.io/devcontainers/features/copilot-cli:1": {}
+  },
   // Use 'postCreateCommand' to run commands after the container is created.
   "onCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/container-creation.sh",
   // Add the locally installed dotnet to the path to ensure that it is activated

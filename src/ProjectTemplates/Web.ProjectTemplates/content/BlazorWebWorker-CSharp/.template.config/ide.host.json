@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "order": 650,
+  "icon": "ide/icon.ico"
+}

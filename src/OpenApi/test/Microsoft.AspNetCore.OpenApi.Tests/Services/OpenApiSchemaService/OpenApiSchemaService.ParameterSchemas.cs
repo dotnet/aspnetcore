@@ -732,6 +732,272 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     private Status GetItemStatus([FromQuery] Status status) => status;
 
     [Fact]
+    public async Task GetOpenApiParameters_EnumWithGlobalNamingPolicy_NonBodyUsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map endpoints with enum parameters bound from query, header, and path.
+        builder.MapGet("/api/query", (Priority priority) => { });
+        builder.MapGet("/api/header", ([FromHeader] Priority priority) => { });
+        builder.MapGet("/api/path/{priority}", (Priority priority) => { });
+        builder.MapPut("/api/form", ([FromForm] Priority priority) => { });
+
+        // Assert - non-body enum parameters should use the original C# member names
+        // (PascalCase), NOT the naming-policy-transformed values (kebab-case), because
+        // query/path/header binding uses Enum.TryParse which only accepts the original
+        // member names.
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var queryOperation = document.Paths["/api/query"].Operations[HttpMethod.Get];
+            var headerOperation = document.Paths["/api/header"].Operations[HttpMethod.Get];
+            var pathOperation = document.Paths["/api/path/{priority}"].Operations[HttpMethod.Get];
+            var formOperation = document.Paths["/api/form"].Operations[HttpMethod.Put];
+
+            AssertOriginalEnumMemberNames(Assert.Single(queryOperation.Parameters).Schema);
+            AssertOriginalEnumMemberNames(Assert.Single(headerOperation.Parameters).Schema);
+            AssertOriginalEnumMemberNames(Assert.Single(pathOperation.Parameters).Schema);
+            var formProperty = formOperation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties["priority"];
+            AssertOriginalEnumMemberNames(formProperty);
+        });
+
+        static void AssertOriginalEnumMemberNames(IOpenApiSchema schema)
+        {
+            Assert.Collection(schema.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_EnumWithGlobalNamingPolicy_HandlesQueryAndBodyUsage()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint where the same enum type is used as both a query parameter
+        // and a response body (return value). This tests that schema sharing/componentization
+        // does not cause one context to corrupt the other.
+        builder.MapGet("/api", (Priority priority) => priority);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+
+            // The query parameter schema should use the original C# member names
+            // because query binding uses Enum.TryParse.
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Collection(parameter.Schema.Enum,
+            value => Assert.Equal("HighPriority", value.GetValue<string>()),
+            value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+            value => Assert.Equal("LowPriority", value.GetValue<string>()));
+
+            // The response body schema should use the naming-policy-transformed values
+            // because body serialization honors the JsonStringEnumConverter.
+            var response = Assert.Single(operation.Responses).Value.Content["application/json"].Schema;
+            Assert.Collection(response.Enum,
+            value => Assert.Equal("high-priority", value.GetValue<string>()),
+            value => Assert.Equal("medium-priority", value.GetValue<string>()),
+            value => Assert.Equal("low-priority", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_EnumWithDuplicateValues_NonBodyUsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with an enum that has duplicate underlying values (ValueB=1, ValueC=1).
+        builder.MapGet("/api/dupes", (DuplicateValueEnum val) => val);
+
+        // Assert - the schema should correctly list all member names even when
+        // multiple members share the same underlying value.
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/dupes"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Collection(parameter.Schema.Enum,
+                value => Assert.Equal("ValueA", value.GetValue<string>()),
+                value => Assert.Equal("ValueB", value.GetValue<string>()),
+                value => Assert.Equal("ValueC", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_EnumWithOutOfOrderValues_NonBodyUsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with an enum whose members are declared out of numeric order
+        // (Critical=3, Warning=1, Info=0). Both Enum.GetNames() and the schema generator
+        // sort by underlying value, so the positional comparison should still work.
+        builder.MapGet("/api/order", (OutOfOrderEnum val) => val);
+
+        // Assert - member names sorted by underlying value: Info(0), Warning(1), Critical(3)
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/order"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Collection(parameter.Schema.Enum,
+                value => Assert.Equal("Info", value.GetValue<string>()),
+                value => Assert.Equal("Warning", value.GetValue<string>()),
+                value => Assert.Equal("Critical", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_EnumDefaultWithGlobalNamingPolicy_DefaultUsesOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map endpoints where enum parameters with default values are bound from
+        // query, header, path, and form — plus an endpoint that returns the enum in
+        // the response body.
+        builder.MapGet("/api/query", (Priority priority = Priority.HighPriority) => priority);
+        builder.MapGet("/api/header", ([FromHeader] Priority priority = Priority.MediumPriority) => { });
+        builder.MapGet("/api/path/{priority}", (Priority priority = Priority.LowPriority) => { });
+        builder.MapPut("/api/form", ([FromForm] Priority priority = Priority.HighPriority) => { });
+        builder.MapPost("/api/body", ([FromBody] Priority priority) => priority);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Query parameter default should use the original C# member name,
+            // NOT the naming-policy-transformed value.
+            var queryOp = document.Paths["/api/query"].Operations[HttpMethod.Get];
+            var queryParam = Assert.Single(queryOp.Parameters);
+            Assert.NotNull(queryParam.Schema);
+            Assert.NotNull(queryParam.Schema.Default);
+            Assert.Equal("HighPriority", queryParam.Schema.Default.GetValue<string>());
+            // The response body enum values should use the transformed names.
+            var queryResponse = Assert.Single(queryOp.Responses).Value.Content["application/json"].Schema;
+            Assert.Collection(queryResponse.Enum,
+                value => Assert.Equal("high-priority", value.GetValue<string>()),
+                value => Assert.Equal("medium-priority", value.GetValue<string>()),
+                value => Assert.Equal("low-priority", value.GetValue<string>()));
+
+            // Header parameter default should use the original C# member name.
+            var headerOp = document.Paths["/api/header"].Operations[HttpMethod.Get];
+            var headerParam = Assert.Single(headerOp.Parameters);
+            Assert.NotNull(headerParam.Schema);
+            Assert.NotNull(headerParam.Schema.Default);
+            Assert.Equal("MediumPriority", headerParam.Schema.Default.GetValue<string>());
+
+            // Path parameter default should use the original C# member name.
+            var pathOp = document.Paths["/api/path/{priority}"].Operations[HttpMethod.Get];
+            var pathParam = Assert.Single(pathOp.Parameters);
+            Assert.NotNull(pathParam.Schema);
+            Assert.NotNull(pathParam.Schema.Default);
+            Assert.Equal("LowPriority", pathParam.Schema.Default.GetValue<string>());
+
+            // Form parameter default should use the original C# member name.
+            var formOp = document.Paths["/api/form"].Operations[HttpMethod.Put];
+            var formProperty = formOp.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties["priority"];
+            Assert.NotNull(formProperty);
+            Assert.NotNull(formProperty.Default);
+            Assert.Equal("HighPriority", formProperty.Default.GetValue<string>());
+
+            // Request body enum values should use the naming-policy-transformed values.
+            var bodyOp = document.Paths["/api/body"].Operations[HttpMethod.Post];
+            var bodySchema = bodyOp.RequestBody.Content["application/json"].Schema;
+            Assert.Collection(bodySchema.Enum,
+                value => Assert.Equal("high-priority", value.GetValue<string>()),
+                value => Assert.Equal("medium-priority", value.GetValue<string>()),
+                value => Assert.Equal("low-priority", value.GetValue<string>()));
+
+            // Response body enum values should use the naming-policy-transformed values.
+            var bodyResponse = Assert.Single(bodyOp.Responses).Value.Content["application/json"].Schema;
+            Assert.Collection(bodyResponse.Enum,
+                value => Assert.Equal("high-priority", value.GetValue<string>()),
+                value => Assert.Equal("medium-priority", value.GetValue<string>()),
+                value => Assert.Equal("low-priority", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_MultipleEnumQueryParamsWithDifferentDefaults_DefaultsUseOriginalMemberNames()
+    {
+        // Arrange - configure a global JsonStringEnumConverter with KebabCaseLower naming policy
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.KebabCaseLower));
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act - map an endpoint with three query parameters of the same enum type:
+        // one with no default, and two with different default values.
+        builder.MapGet("/api/multi", (
+            Priority required,
+            Priority first = Priority.HighPriority,
+            Priority second = Priority.LowPriority) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/multi"].Operations[HttpMethod.Get];
+            Assert.Equal(3, operation.Parameters.Count);
+
+            var requiredParam = operation.Parameters[0];
+            Assert.Equal("required", requiredParam.Name);
+            Assert.Null(requiredParam.Schema.Default);
+            // Enum values should still use original member names for query binding.
+            Assert.Collection(requiredParam.Schema.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
+
+            var firstParam = operation.Parameters[1];
+            Assert.Equal("first", firstParam.Name);
+            Assert.NotNull(firstParam.Schema.Default);
+            Assert.Equal("HighPriority", firstParam.Schema.Default.GetValue<string>());
+            Assert.Collection(firstParam.Schema.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
+
+            var secondParam = operation.Parameters[2];
+            Assert.Equal("second", secondParam.Name);
+            Assert.NotNull(secondParam.Schema.Default);
+            Assert.Equal("LowPriority", secondParam.Schema.Default.GetValue<string>());
+            Assert.Collection(secondParam.Schema.Enum,
+                value => Assert.Equal("HighPriority", value.GetValue<string>()),
+                value => Assert.Equal("MediumPriority", value.GetValue<string>()),
+                value => Assert.Equal("LowPriority", value.GetValue<string>()));
+        });
+    }
+
+    [Fact]
     public async Task SupportsMvcActionWithAmbientRouteParameter()
     {
         // Arrange

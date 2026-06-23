@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.OpenApi;
 using Sample.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +19,9 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.NumberHandling = JsonNumberHandling.Strict;
 });
+
+builder.Services.AddOpenApiCore();
+builder.Services.AddSingleton<IAdditionalOpenApiDocumentNameResolver, AdditionalDocumentNamesResolver>();
 
 builder.Services.AddOpenApi("v1", options =>
 {
@@ -35,11 +39,13 @@ builder.Services.AddOpenApi("v2", options =>
         return Task.CompletedTask;
     });
 });
+
 builder.Services.AddOpenApi("controllers");
 builder.Services.AddOpenApi("responses");
 builder.Services.AddOpenApi("forms");
 builder.Services.AddOpenApi("schemas-by-ref");
 builder.Services.AddOpenApi("xml");
+builder.Services.AddOpenApi("unions");
 builder.Services.AddOpenApi("localized", options =>
 {
     options.ShouldInclude = _ => true;
@@ -65,6 +71,12 @@ app.MapV2Endpoints();
 app.MapXmlEndpoints();
 app.MapSchemasEndpoints();
 app.MapResponseEndpoints();
+app.MapUnionsEndpoints();
+
+app.MapGet("/first-doc/get1", () => "Hello, world").WithGroupName("first-doc");
+app.MapGet("/first-doc/get2", () => "Hello, world").WithGroupName("first-doc");
+app.MapGet("/second-doc/get1", () => "Hello, world").WithGroupName("second-doc");
+app.MapGet("/second-doc/get2", () => "Hello, world").WithGroupName("second-doc");
 
 app.MapControllers();
 
@@ -73,3 +85,9 @@ app.Run();
 // Make Program class public to support snapshot testing
 // against sample app using WebApplicationFactory.
 public partial class Program { }
+
+internal sealed class AdditionalDocumentNamesResolver : IAdditionalOpenApiDocumentNameResolver
+{
+    public IEnumerable<string> ResolveDocumentNames()
+        => ["first-doc", "second-doc"];
+}

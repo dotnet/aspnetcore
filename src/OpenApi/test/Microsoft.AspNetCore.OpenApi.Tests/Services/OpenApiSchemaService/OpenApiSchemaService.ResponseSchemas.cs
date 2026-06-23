@@ -7,6 +7,7 @@ using System.Net.Mime;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
@@ -1055,6 +1056,108 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileStreamResultTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/filestreamresult", () => { return new FileStreamResult(new MemoryStream(), MediaTypeNames.Application.Octet); })
+            .Produces<FileStreamResult>(contentType: MediaTypeNames.Application.Octet);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/filestreamresult"].Operations[HttpMethod.Post];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/octet-stream", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.String, schema.Type);
+            Assert.Equal("binary", schema.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileContentHttpResultTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/filecontenthttpresult", () => { return TypedResults.File([], MediaTypeNames.Image.Png); })
+            .Produces<FileContentHttpResult>(contentType: MediaTypeNames.Image.Png);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/filecontenthttpresult"].Operations[HttpMethod.Post];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("image/png", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.String, schema.Type);
+            Assert.Equal("binary", schema.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileStreamHttpResultTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/filestreamhttpresult", () => { return TypedResults.File(new MemoryStream(), MediaTypeNames.Application.Pdf); })
+            .Produces<FileStreamHttpResult>(contentType: MediaTypeNames.Application.Pdf);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/filestreamhttpresult"].Operations[HttpMethod.Post];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/pdf", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.String, schema.Type);
+            Assert.Equal("binary", schema.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_MvcController_SupportsMultipleResponseTypesForSameStatusCode()
+    {
+        var actionDescriptor = CreateActionDescriptor(nameof(MultiProducesController.GetMultiContentType), typeof(MultiProducesController));
+
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/multi"].Operations[HttpMethod.Get];
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+            Assert.True(response.Value.Content.ContainsKey("application/json"));
+            Assert.True(response.Value.Content.ContainsKey("text/plain"));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_MvcController_SupportsAnyOfForSameContentType()
+    {
+        var actionDescriptor = CreateActionDescriptor(nameof(MultiProducesController.GetAnyOf), typeof(MultiProducesController));
+
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/anyOf"].Operations[HttpMethod.Get];
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("application/json", content.Key);
+            Assert.NotNull(content.Value.Schema.AnyOf);
+            Assert.Equal(2, content.Value.Schema.AnyOf.Count);
+        });
+    }
+
     [ApiController]
     [Produces("application/json")]
     public class TestController
@@ -1062,6 +1165,22 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [Route("/")]
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
         internal Todo Get() => new(1, "Write test", false, DateTime.Now);
+    }
+
+    [ApiController]
+    public class MultiProducesController
+    {
+        [HttpGet]
+        [Route("/multi")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK, "application/json")]
+        [ProducesResponseType(typeof(string), StatusCodes.Status200OK, "text/plain")]
+        internal IActionResult GetMultiContentType() => throw new NotImplementedException();
+
+        [HttpGet]
+        [Route("/anyOf")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK, "application/json")]
+        [ProducesResponseType(typeof(Error), StatusCodes.Status200OK, "application/json")]
+        internal IActionResult GetAnyOf() => throw new NotImplementedException();
     }
 
     private class ClassWithObjectProperty

@@ -122,7 +122,6 @@ public class RemoteRendererTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61807")]
     public async Task ProcessBufferedRenderBatches_WritesRenders()
     {
         // Arrange

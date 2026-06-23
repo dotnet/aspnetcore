@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Text;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
@@ -67,6 +68,9 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
 
     // Tracks whether a HTTP/2 preface was detected during the first request.
     private bool _http2PrefaceDetected;
+
+    // Tracks whether a bare LF line terminator was seen for the current request
+    private bool _sawBareLineFeedTerminator;
 
     public Http1Connection(HttpConnectionContext context)
     {
@@ -389,6 +393,28 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         }
     }
 
+    public void OnBareLineFeedTerminator(bool rejected)
+    {
+        // Only record the metric and log once per request even if multiple lines use a bare LF terminator.
+        if (_sawBareLineFeedTerminator)
+        {
+            return;
+        }
+
+        _sawBareLineFeedTerminator = true;
+
+        // Bare LF terminators only exist in HTTP/1.x. The per-request version is not always known yet
+        // (e.g. when the request line itself is rejected), so fall back to the representative HTTP/1.x value.
+        var httpVersion = _httpVersion switch
+        {
+            Http.HttpVersion.Http10 => KestrelMetrics.Http10,
+            _ => KestrelMetrics.Http11,
+        };
+
+        Log.Http1BareLineFeedTerminator(ConnectionId, httpVersion, rejected);
+        ServiceContext.Metrics.BareLineFeedRequest(MetricsContext, rejected, httpVersion);
+    }
+
     public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
     {
         // Null characters are not allowed and should have been checked by HttpParser before calling this method
@@ -667,7 +693,35 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
             }
 
             _absoluteRequestTarget = _parsedAbsoluteRequestTarget = uri;
-            Path = _parsedPath = uri.LocalPath;
+
+            // Use PathDecoder.DecodePath (same as origin-form and HTTP/2/3) instead of
+            // uri.LocalPath, which decodes %2F to '/' breaking path canonicalization.
+            const int MaxPathBufferStackAllocSize = 256;
+
+            var absolutePath = uri.AbsolutePath;
+            byte[]? rentedBuffer = null;
+            Span<byte> pathBuffer = absolutePath.Length <= MaxPathBufferStackAllocSize
+                ? (stackalloc byte[MaxPathBufferStackAllocSize])
+                : (rentedBuffer = ArrayPool<byte>.Shared.Rent(absolutePath.Length));
+            var pathBufferSliced = pathBuffer[..absolutePath.Length];
+
+            try
+            {
+                Encoding.ASCII.GetBytes(absolutePath, pathBufferSliced);
+                Path = _parsedPath = PathDecoder.DecodePath(pathBufferSliced, targetPath.IsEncoded, absolutePath, queryLength: 0);
+            }
+            catch (InvalidOperationException)
+            {
+                ThrowRequestTargetRejected(target);
+            }
+            finally
+            {
+                if (rentedBuffer is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(rentedBuffer);
+                }
+            }
+
             // don't use uri.Query because we need the unescaped version
             previousValue = _parsedQueryString;
             if (disableStringReuse ||
@@ -787,6 +841,7 @@ internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpO
         _requestTargetForm = HttpRequestTarget.Unknown;
         _absoluteRequestTarget = null;
         _remainingRequestHeadersBytesAllowed = (long)ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
+        _sawBareLineFeedTerminator = false;
 
         MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
 

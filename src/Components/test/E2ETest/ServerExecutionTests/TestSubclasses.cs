@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
@@ -42,6 +43,14 @@ public class ServerRoutingTest : RoutingTest
         : base(browserFixture, serverFixture.WithServerExecution(), output)
     {
     }
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
+    public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
+        => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66195")]
+    public override void CanNavigateToQueryStringPageWithNoQuery()
+        => base.CanNavigateToQueryStringPageWithNoQuery();
 }
 
 public class ServerCascadingValueTest : CascadingValueTest
@@ -90,6 +99,24 @@ public class ServerVirtualizationTest : VirtualizationTest
         : base(browserFixture, serverFixture.WithServerExecution(), output)
     {
     }
+
+    public override void CanRenderHtmlTable()
+        => base.CanRenderHtmlTable();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66120")]
+    public override void CancelsOutdatedRefreshes_Async()
+        => base.CancelsOutdatedRefreshes_Async();
+
+    public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
+        => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66119")]
+    public override void NonZeroStartIndex_ScrollToMiddleThenMeasure()
+        => base.NonZeroStartIndex_ScrollToMiddleThenMeasure();
+
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66970")]
+    public override void AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+        => base.AnchorMode_End_AppendAfterLeavingBottom_DoesNotReengage(variableHeight, useItemsProvider);
 }
 
 public class ServerDynamicComponentRenderingTest : DynamicComponentRenderingTest

@@ -970,8 +970,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
-    public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
+    public virtual void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
     {
         SetUrlViaPushState("/");
 
@@ -1156,7 +1155,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/57153")]
+    [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66041")]
     public void NavigationLock_CanBlockExternalNavigation()
     {
         SetUrlViaPushState("/");
@@ -1591,7 +1591,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void CanNavigateToQueryStringPageWithNoQuery()
+    public virtual void CanNavigateToQueryStringPageWithNoQuery()
     {
         SetUrlViaPushState("/");
 
