@@ -10,16 +10,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>annotations</Nullable>
 
-    <!-- Ship framework assets with BasePath '/' and the '_framework/' prefix in the asset's
-         relative path (assets live under wwwroot/_framework/). This matches the convention used by
-         Microsoft.AspNetCore.Components.WebAssembly and ensures the '_framework/' segment survives
-         materialization into the consuming project (whose BasePath is '/'). -->
-    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
-    <!-- SWA Framework Assets: mark all JS files and the fallback blazor.modules.json manifest as
-         Framework type during pack. Modeling blazor.modules.json as a framework asset (instead of a
-         static web asset group + manifest promotion) avoids a publish-time crash in apps that
-         reference an RCL contributing JS modules. See https://github.com/dotnet/aspnetcore/issues/67374. -->
-    <StaticWebAssetFrameworkPattern>**/*.js;**/*.modules.json</StaticWebAssetFrameworkPattern>
+    <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>
+    <!-- SWA Framework Assets: mark all JS files as Framework type during pack -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
   </PropertyGroup>
 
   <ItemGroup>
@@ -64,20 +57,28 @@
     <_BlazorWebViewJSContentRoot Condition="'$(Configuration)' == 'Release'">$(RepoRoot)src\Components\Web.JS\dist\Release</_BlazorWebViewJSContentRoot>
   </PropertyGroup>
 
-  <!-- Include blazor.webview.js as Content under wwwroot/_framework/ so the SWA pipeline discovers
-       it as a framework asset (BasePath '/'). ContentRoot points to the JS dist folder so the
-       runtime middleware can serve files directly. -->
+  <!-- Include blazor.webview.js as Content under wwwroot/ so the SWA pipeline discovers it.
+       ContentRoot points to the JS dist folder so the runtime middleware can serve files directly. -->
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
-    <Content Include="$(_BlazorWebViewJSContentRoot)\blazor.webview.js" Link="wwwroot\_framework\blazor.webview.js" ContentRoot="$(_BlazorWebViewJSContentRoot)\" />
+    <Content Include="$(_BlazorWebViewJSContentRoot)\blazor.webview.js" Link="wwwroot\blazor.webview.js" ContentRoot="$(_BlazorWebViewJSContentRoot)\" />
   </ItemGroup>
 
-  <!-- blazor.modules.json (under wwwroot/_framework/) is a fallback manifest for WebView apps that
-       don't contribute JS library modules. It is modeled as a framework static web asset (matched by
-       StaticWebAssetFrameworkPattern). The JSModule trait lets the SDK treat it as the JS module
-       manifest so the app's own generated manifest, when present, supersedes it. -->
+  <!-- blazor.modules.json is a fallback for WebView apps that don't have JS library modules.
+       It is tagged with the BlazorWebViewModules=fallback group so it can be conditionally
+       included via a deferred group when the consumer has no JS library modules. -->
   <ItemGroup>
-    <Content Update="wwwroot\_framework\blazor.modules.json"
+    <Content Remove="blazor.modules.json" />
+    <Content Include="blazor.modules.json" Link="wwwroot\blazor.modules.json"
       AssetTraitName="JSModule" AssetTraitValue="JSModuleManifest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <StaticWebAssetGroupDefinition Include="BlazorWebView"
+      Value="enabled" SourceId="$(PackageId)" Order="0"
+      IncludePattern="**" ExcludePattern="**/blazor.modules.json" />
+    <StaticWebAssetGroupDefinition Include="BlazorWebViewModules"
+      Value="fallback" SourceId="$(PackageId)" Order="1"
+      IncludePattern="**/blazor.modules.json" />
   </ItemGroup>
 
   <!-- blazor.webview.js should exist after eng/Npm.Workspace.nodeproj builds. Warn if not. -->
