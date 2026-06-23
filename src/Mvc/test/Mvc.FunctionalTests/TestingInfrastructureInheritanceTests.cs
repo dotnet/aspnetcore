@@ -73,7 +73,8 @@ public class TestingInfrastructureInheritanceTests
         using var factory = new CustomizedFactoryWithConfigureHostApplicationBuilder<GenericHostWebSite.Startup>();
 
         // Assert
-        Assert.Throws<InvalidOperationException>(() => factory.Services);
+        var ex = Assert.Throws<InvalidOperationException>(() => factory.Services);
+        Assert.Equal("Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint", ex.Message);
     }
 
     [Fact]
