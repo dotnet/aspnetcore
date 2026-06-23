@@ -26,6 +26,12 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
     {
         Navigate("/subdir/persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms=200");
         Browser.Exists(By.Id("render-mode-interactive"));
+        WaitForBlazorPause();
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            Blazor.pause.waitFor(async (signal) => {
+                window.autoPauseEvents.push({ phase: 'testLog:handlerInvoked', aborted: signal.aborted });
+            });
+        ");
     }
 
     [Fact]
@@ -93,6 +99,12 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
         }
         // Cheap split — each entry is a JSON object. Good enough for assertions.
         return raw.Trim('[', ']').Split("},{").Select(s => s.Trim('{', '}')).ToList();
+    }
+
+    private void WaitForBlazorPause()
+    {
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return !!(window.Blazor && Blazor.pause)"));
     }
 
     private void WaitForPausedUI()

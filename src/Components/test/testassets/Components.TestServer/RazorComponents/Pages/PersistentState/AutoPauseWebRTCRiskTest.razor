@@ -39,9 +39,9 @@
         window.__rtcPc1 = pc1;
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            Blazor.pause.waitFor(function () {
+            window.__mitigationHandler = function () {
                 window.__savedWebRTCState = window.__rtcPc1.connectionState;
-            });
+            };
         }
     }
 </script>

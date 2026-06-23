@@ -25,10 +25,10 @@
         window.__captureReady = stream.active;
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            Blazor.pause.waitFor(function () {
+            window.__mitigationHandler = function () {
                 var s = window.__activeStream;
                 window.__savedMediaState = s.active + ',' + s.getTracks().length + ',' + s.getTracks()[0].readyState;
-            });
+            };
         }
     }
 </script>

@@ -25,7 +25,7 @@
         });
 
         if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
-            Blazor.pause.waitFor(function () {
+            window.__mitigationHandler = function () {
                 return new Promise(function (resolve) {
                     window.addEventListener('message', function handler(e) {
                         if (e.data && e.data.type === 'stateResponse') {
@@ -36,7 +36,7 @@
                     });
                     document.getElementById('cross-iframe').contentWindow.postMessage({ type: 'getState' }, '*');
                 });
-            });
+            };
         }
     }
 </script>

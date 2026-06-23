@@ -879,6 +879,13 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             Browser.Exists(By.Id("render-mode-interactive"));
         }
 
+        if (useMitigation)
+        {
+            WaitForBlazorPause();
+            ((IJavaScriptExecutor)Browser).ExecuteScript(
+                "Blazor.pause.waitFor(window.__mitigationHandler)");
+        }
+
         if (setupScript != null)
         {
             ((IJavaScriptExecutor)Browser).ExecuteScript(setupScript);
@@ -1098,6 +1105,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         Navigate($"/subdir/persistent-state/server-pause?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
         Browser.Exists(By.Id("render-mode-interactive"));
+        WaitForBlazorPause();
     }
 
     private void InstallHangingAbortHook()
@@ -1202,6 +1210,12 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     private static readonly TimeSpan LogWaitTimeout = TimeSpan.FromSeconds(10);
+
+    private void WaitForBlazorPause()
+    {
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return !!(window.Blazor && Blazor.pause)"));
+    }
 
     private void ClearBlazorLogs()
     {

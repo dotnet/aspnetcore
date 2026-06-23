@@ -57,8 +57,12 @@ export class AutoPauseManager {
   }
 
   public async invokeHandlers(signal?: AbortSignal): Promise<void> {
+    if (this._pauseInFlight && !signal) {
+      return;
+    }
     if (this._pauseHandlers.size > 0) {
       if (!signal) {
+        this._activeAbortController?.abort('superseded by new pause request');
         const controller = new AbortController();
         this._activeAbortController = controller;
         signal = controller.signal;

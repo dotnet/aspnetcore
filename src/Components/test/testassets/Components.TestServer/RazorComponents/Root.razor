@@ -64,12 +64,6 @@
                     },
                 },
                 circuit: circuitOptions,
-            }).then(() => {
-                if (params.get('auto-pause') === 'true' && Blazor.pause) {
-                    Blazor.pause.waitFor(async (signal) => {
-                        window.autoPauseEvents.push({ phase: 'testLog:handlerInvoked', aborted: signal.aborted });
-                    });
-                }
             });
         }
 
