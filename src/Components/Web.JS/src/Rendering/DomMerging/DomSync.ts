@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, WebAssemblyServerOptions, canMergeDescriptors, discoverComponents, discoverWebAssemblyOptions, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
+import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, WebAssemblyServerOptions, canMergeDescriptors, discoverBrowserConfiguration, discoverComponents, discoverWebAssemblyOptions, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
@@ -23,6 +23,8 @@ export function attachComponentDescriptorHandler(handler: DescriptorHandler) {
 export function registerAllComponentDescriptors(root: Node) {
   const webAssemblyOptions = discoverWebAssemblyOptions(root);
   if (webAssemblyOptions) { descriptorHandler?.setWebAssemblyOptions(webAssemblyOptions); }
+  const browserConfiguration = discoverBrowserConfiguration(root);
+  if (browserConfiguration?.webAssembly) { descriptorHandler?.setWebAssemblyOptions(browserConfiguration.webAssembly); }
   const descriptors = upgradeComponentCommentsToLogicalRootComments(root);
 
   for (const descriptor of descriptors) {
