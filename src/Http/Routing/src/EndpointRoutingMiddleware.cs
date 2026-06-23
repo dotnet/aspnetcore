@@ -52,23 +52,19 @@ internal sealed partial class EndpointRoutingMiddleware
         _routeOptions = routeOptions.Value;
 
         // When the app calls UseRouting() explicitly, the framework defers its implicit post-routing middleware
-        // (authentication, authorization, CSRF protection) into a block stored on the global route builder's
-        // properties. Compose it into the pipeline immediately after this middleware so those middleware observe the
-        // matched endpoint, matching the behavior of the framework's implicit UseRouting(). See #67174.
+        // into a block stored on the global route builder's properties.
+        // Compose it into the pipeline immediately after this middleware so those middleware observe the
+        // matched endpoint, matching the behavior of the framework's implicit UseRouting().
         if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
             applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingMiddleware, out var value))
         {
             // Consume the block so additional UseRouting() calls don't run it again.
             applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingMiddleware);
 
-            // IApplicationBuilder.Properties is publicly writable, so the post-routing block (which runs the
-            // framework's auth/authz/CSRF middleware in the matched endpoint's scope) is only honored when it
-            // originates from the framework. Reject anything application code may have placed in this reserved slot.
-            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingMiddleware ||
-                !IsFrameworkPostRoutingMiddleware(postRoutingMiddleware))
+            // Reject any custom user-placed code under PostRoutingPipeline
+            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingMiddleware || !IsFrameworkPostRoutingMiddleware(postRoutingMiddleware))
             {
-                throw new InvalidOperationException(
-                    $"The '{MiddlewareInvokedKeys.PostRoutingMiddleware}' application property is reserved for the framework and cannot be set by application code.");
+                throw new InvalidOperationException($"The '{MiddlewareInvokedKeys.PostRoutingMiddleware}' application property is reserved for the framework and cannot be set by application code.");
             }
 
             next = postRoutingMiddleware(next);
@@ -82,11 +78,6 @@ internal sealed partial class EndpointRoutingMiddleware
         _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
     }
 
-    // The framework stores the post-routing block as a method group over PostRoutingPipeline.CreateMiddleware, a named
-    // method on a private type defined in the WebApplication builder assembly (Microsoft.AspNetCore). Application code
-    // can only produce closures (unstable, compiler-generated method names) or methods on assemblies signed with a
-    // different key, so requiring a fixed method name on an identically strong-named "Microsoft.AspNetCore" assembly
-    // accepts only the framework's own block.
     private const string PostRoutingMiddlewareMethodName = "CreateMiddleware";
     private const string PostRoutingMiddlewareAssemblyName = "Microsoft.AspNetCore";
 
@@ -99,8 +90,7 @@ internal sealed partial class EndpointRoutingMiddleware
         }
 
         var declaringAssembly = method.DeclaringType?.Assembly.GetName();
-        if (declaringAssembly is null ||
-            !string.Equals(declaringAssembly.Name, PostRoutingMiddlewareAssemblyName, StringComparison.Ordinal))
+        if (declaringAssembly is null || !string.Equals(declaringAssembly.Name, PostRoutingMiddlewareAssemblyName, StringComparison.Ordinal))
         {
             return false;
         }
