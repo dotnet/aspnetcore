@@ -649,7 +649,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_ReturnsFalse_WhenPropertyNotFound()
+    public void TryFindProperty_ReturnsNull_WhenPropertyNotFound()
     {
         var typeInfo = new TestValidatableTypeInfo(typeof(Person), []);
         var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
@@ -661,7 +661,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_ReturnsMatchingProperty_WhenPresent()
+    public void TryFindProperty_ReturnsMatchingProperty_WhenPresent()
     {
         var nameProperty = CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name", []);
         var typeInfo = new TestValidatableTypeInfo(typeof(Person), [nameProperty]);
@@ -676,7 +676,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_ReturnsInheritedProperty_FromSuperType()
+    public void TryFindProperty_ReturnsInheritedProperty_FromSuperType()
     {
         // BaseEntity declares Id; DerivedEntity declares Name. Looking up Id on the derived type
         // should resolve through the super-type info via the validation options resolver.
@@ -704,7 +704,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_LocalDeclarationShadowsInheritedProperty()
+    public void TryFindProperty_LocalDeclarationShadowsInheritedProperty()
     {
         // If both base and derived declare a property with the same name, the derived (local)
         // declaration is returned, matching how ValidateAsync would visit derived members first.
@@ -725,7 +725,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_ReturnsFalseForInheritedMember_WhenSuperTypeNotResolvable()
+    public void TryFindProperty_ReturnsNullForInheritedMember_WhenSuperTypeNotResolvable()
     {
         // Only the derived type is registered. Local lookup still works; inherited members
         // remain unresolved and the method returns false without throwing.
@@ -746,7 +746,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_WalksMultipleInheritanceLevels()
+    public void TryFindProperty_WalksMultipleInheritanceLevels()
     {
         // Three-level chain: BaseEntity (Id) <- IntermediateEntity (CreatedAt) <- DerivedEntity (Name).
         // A lookup on DerivedEntity must reach members declared at every level of the chain.
@@ -777,7 +777,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryGetValidatablePropertyInfo_ResolvesInterfaceDeclaredProperty()
+    public void TryFindProperty_ResolvesInterfaceDeclaredProperty()
     {
         // Property declared on an interface implemented by the target type. ValidatableTypeInfo's
         // _superTypes list is populated by GetAllImplementedTypes(), which includes interfaces.
