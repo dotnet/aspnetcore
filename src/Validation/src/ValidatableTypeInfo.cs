@@ -16,7 +16,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
 
-    /// <summary>
+    /// <summary>T
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
     /// </summary>
     /// <param name="type">The type being validated.</param>
@@ -78,8 +78,9 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
     /// </remarks>
     /// <param name="propertyName">The CLR name of the property to find.</param>
     /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
-    /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
-    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
+    /// <param name="validatablePropertyInfo">The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
+    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</param>
+    /// <returns>True if the property was found. Otherwise, false.</returns>
     public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
     {
         if (FindLocalMember(propertyName) is { } localMember)
