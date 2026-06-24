@@ -25,7 +25,7 @@ import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel } from './Platform/Logging/Logger';
-import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
+import { resolveOptions, CircuitStartOptions, ReconnectionOptions, AutoPauseOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
@@ -123,8 +123,11 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
 
     // Circuit/Server options
     if (browserConfig.server) {
-      const circuitOpts = options.circuit = options.circuit || {} as any;
-      const reconnOpts = circuitOpts.reconnectionOptions = circuitOpts.reconnectionOptions || {} as any;
+      const circuitOpts: Partial<CircuitStartOptions> = options.circuit ?? {};
+      options.circuit = circuitOpts as CircuitStartOptions;
+
+      const reconnOpts: Partial<ReconnectionOptions> = circuitOpts.reconnectionOptions ?? {};
+      circuitOpts.reconnectionOptions = reconnOpts as ReconnectionOptions;
       if (browserConfig.server.reconnectionMaxRetries !== undefined) {
         reconnOpts.maxRetries = browserConfig.server.reconnectionMaxRetries;
       }
@@ -135,7 +138,8 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
       }
       if (browserConfig.server.autoPause) {
-        const autoPauseOpts = circuitOpts.autoPause = circuitOpts.autoPause || {} as any;
+        const autoPauseOpts: Partial<AutoPauseOptions> = circuitOpts.autoPause ?? {};
+        circuitOpts.autoPause = autoPauseOpts as AutoPauseOptions;
         if (browserConfig.server.autoPause.enabled !== undefined) {
           autoPauseOpts.enabled = browserConfig.server.autoPause.enabled;
         }
