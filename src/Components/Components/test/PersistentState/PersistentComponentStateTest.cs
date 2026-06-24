@@ -188,6 +188,85 @@ public class PersistentComponentStateTest
         Assert.False(applicationState.TryTakeFromJson<byte[]>("MyState", out _));
     }
 
+    // C# union types persist through PersistAsJson / TryTakeFromJson, which use the default
+    // System.Text.Json options (with native union support).
+
+    [Theory]
+    [MemberData(nameof(UnionRoundTripCases))]
+    public void Union_RoundTripsThroughPersistedState(UnionIntString value)
+    {
+        // Arrange
+        var store = new Dictionary<string, byte[]>();
+        var persisting = new PersistentComponentState(store, [], []) { PersistingState = true };
+        persisting.PersistAsJson("MyState", value);
+
+        var restoring = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        restoring.InitializeExistingState(store, RestoreContext.InitialValue);
+
+        // Act
+        Assert.True(restoring.TryTakeFromJson<UnionIntString>("MyState", out var restored));
+
+        // Assert
+        Assert.Equal(value, restored);
+    }
+
+    public static TheoryData<UnionIntString> UnionRoundTripCases() =>
+        new() { new UnionIntString(42), new UnionIntString("hi") };
+
+    [Fact]
+    public void Union_NullableNullCase_RoundTripsThroughPersistedState()
+    {
+        // Arrange
+        var store = new Dictionary<string, byte[]>();
+        var persisting = new PersistentComponentState(store, [], []) { PersistingState = true };
+        persisting.PersistAsJson("MyState", new UnionNullableIntString((int?)null));
+
+        var restoring = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        restoring.InitializeExistingState(store, RestoreContext.InitialValue);
+
+        // Act
+        Assert.True(restoring.TryTakeFromJson<UnionNullableIntString>("MyState", out var restored));
+
+        // Assert
+        Assert.Equal(new UnionNullableIntString((int?)null), restored);
+    }
+
+    [Fact]
+    public void Union_ObjectCaseWithClassifier_RoundTripsThroughPersistedState()
+    {
+        // Arrange
+        var store = new Dictionary<string, byte[]>();
+        var persisting = new PersistentComponentState(store, [], []) { PersistingState = true };
+        persisting.PersistAsJson("MyState", new UnionPetWithClassifier(new Dog("Labrador")));
+
+        var restoring = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        restoring.InitializeExistingState(store, RestoreContext.InitialValue);
+
+        // Act
+        Assert.True(restoring.TryTakeFromJson<UnionPetWithClassifier>("MyState", out var restored));
+
+        // Assert
+        Assert.Equal(new UnionPetWithClassifier(new Dog("Labrador")), restored);
+    }
+
+    [Fact]
+    public void Union_InsideEnvelope_RoundTripsThroughPersistedState()
+    {
+        // Arrange
+        var store = new Dictionary<string, byte[]>();
+        var persisting = new PersistentComponentState(store, [], []) { PersistingState = true };
+        persisting.PersistAsJson("MyState", new UnionEnvelope("abc", new UnionIntString(42)));
+
+        var restoring = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        restoring.InitializeExistingState(store, RestoreContext.InitialValue);
+
+        // Act
+        Assert.True(restoring.TryTakeFromJson<UnionEnvelope>("MyState", out var restored));
+
+        // Assert
+        Assert.Equal(new UnionEnvelope("abc", new UnionIntString(42)), restored);
+    }
+
     [Fact]
     public void RegisterOnRestoring_InvokesCallbackWhenShouldRestoreMatches()
     {
