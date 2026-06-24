@@ -74,10 +74,11 @@ public readonly struct ParameterView
                     result = (TValue)entry.Value;
                     return true;
                 }
-                catch (Exception ex)
+                catch (InvalidCastException)
                 {
                     throw new InvalidCastException(
-                        $"Error setting parameter '{parameterName}'. {ex.Message}");
+                        $"Error setting parameter '{parameterName}'. " +
+                        $"Received '{entry.Value?.GetType()}' but expected '{typeof(TValue)}'.");
                 }
             }
         }
