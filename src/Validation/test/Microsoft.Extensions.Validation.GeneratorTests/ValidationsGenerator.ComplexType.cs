@@ -695,6 +695,52 @@ internal class InternalNestedType
     }
 
     [Fact]
+    public async Task SkipsFileLocalTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/file-local-type", (FileLocalType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+file class FileLocalType
+{
+    [Required]
+    public string RequiredProperty { get; set; } = "";
+}
+""";
+        await Verify(source, out var compilation);
+        // Verify that file-local types are not validated (they can't be referenced from generated code)
+        await VerifyEndpoint(compilation, "/file-local-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """{"RequiredProperty": ""}""";
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            // File-local types should be skipped, so validation should pass (200 OK)
+            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        });
+    }
+
+    [Fact]
     public async Task ValidatesPropertiesWithJsonIgnoreWhenWritingConditions()
     {
         // Arrange

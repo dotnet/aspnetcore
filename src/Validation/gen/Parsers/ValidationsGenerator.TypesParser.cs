@@ -81,6 +81,13 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Skip file-local types, which are only accessible within their declaring file
+        // and cannot be referenced from generated code in a different file
+        if (typeSymbol is INamedTypeSymbol { IsFileLocal: true })
+        {
+            return false;
+        }
+
         visitedTypes.Add(typeSymbol);
 
         var displayAttributeSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute);
