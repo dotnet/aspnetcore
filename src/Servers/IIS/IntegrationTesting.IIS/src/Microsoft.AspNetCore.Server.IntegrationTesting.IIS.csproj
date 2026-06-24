@@ -68,7 +68,6 @@
       SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
-    <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>

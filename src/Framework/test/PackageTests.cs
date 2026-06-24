@@ -33,11 +33,11 @@ public class PackageTests
         _output = output;
         _packageLayoutRoot = SkipOnHelixAttribute.OnHelix() ?
             Path.Combine(
-                Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"),
+                AppContext.BaseDirectory,
                 "Packages.Layout") :
             TestData.GetPackageLayoutRoot();
         var packageRoot = SkipOnHelixAttribute.OnHelix() ?
-            Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") :
+            AppContext.BaseDirectory :
             TestData.GetPackagesFolder();
         var packages = Directory
                         .GetFiles(packageRoot, "*.nupkg", SearchOption.AllDirectories)
