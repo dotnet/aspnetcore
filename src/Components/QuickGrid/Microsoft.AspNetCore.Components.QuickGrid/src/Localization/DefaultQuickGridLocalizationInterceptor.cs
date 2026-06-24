@@ -13,6 +13,12 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
 {
     private readonly ResourceManager _resourceManager;
     private readonly QuickGridLocalizer? _customLocalizer;
+    
+    /// <summary>
+    /// When true, ignore the built-in English resources and prefer custom localizers.
+    /// When false (default), built-in English resources are used when available.
+    /// </summary>
+    public bool IgnoreDefaultEnglish { get; init; }
 
     public DefaultQuickGridLocalizationInterceptor(ResourceManager resourceManager, QuickGridLocalizer? customLocalizer = null)
     {
@@ -22,27 +28,34 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
 
     public override QuickGridLocalizedString Handle(string key, params object?[]? arguments)
     {
+        var args = arguments ?? Array.Empty<object?>();
+
+        var currentLang = CultureInfo.CurrentUICulture.Parent.TwoLetterISOLanguageName;
+
+        if (!IgnoreDefaultEnglish)
+        {
+            if (_customLocalizer is null || currentLang.Equals("en", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return GetFromResourceManager(key, args);
+            }
+        }
+
+        // If a custom localizer exists, try it first for non-English (or when default is ignored).
         if (_customLocalizer is not null)
         {
-            var fromCustom = _customLocalizer[key, arguments ?? Array.Empty<object?>()];
+            var fromCustom = _customLocalizer[key, args];
             if (!fromCustom.ResourceNotFound)
             {
                 return fromCustom;
             }
         }
-        // Handle a small set of built-in French translations for the sample/demo.
-        // This keeps the sample runnable without introducing extra generated resource
-        // designer files for satellite .resx deployments.
-        if (CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("fr", StringComparison.OrdinalIgnoreCase))
-        {
-            if (FrenchTranslations.TryGetValue(key, out var frValue))
-            {
-                var formattedFr = FormatWithCulture(frValue, arguments);
-                return new QuickGridLocalizedString(key, formattedFr, resourceNotFound: false);
-            }
-        }
 
-        // Fallback to ResourceManager for other cultures
+        // Fallback to built-in resources.
+        return GetFromResourceManager(key, args);
+    }
+
+    private QuickGridLocalizedString GetFromResourceManager(string key, object?[] args)
+    {
         var value = _resourceManager.GetString(key, CultureInfo.CurrentUICulture);
         if (value is null)
         {
@@ -52,7 +65,7 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
         string formatted;
         try
         {
-            formatted = (arguments is { Length: > 0 }) ? string.Format(CultureInfo.CurrentCulture, value, arguments) : value;
+            formatted = (args.Length > 0) ? string.Format(CultureInfo.CurrentCulture, value, args) : value;
         }
         catch
         {
@@ -61,26 +74,4 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
 
         return new QuickGridLocalizedString(key, formatted, resourceNotFound: false);
     }
-
-    private static string FormatWithCulture(string value, object?[]? args)
-    {
-        try
-        {
-            return (args is { Length: > 0 }) ? string.Format(CultureInfo.CurrentCulture, value, args) : value;
-        }
-        catch
-        {
-            return value;
-        }
-    }
-
-    private static readonly Dictionary<string, string> FrenchTranslations = new()
-    {
-        ["QuickGridPaginatorPageSummary"] = "Page {0} sur {1}",
-        ["QuickGridPaginatorFirstPage"] = "Aller à la première page",
-        ["QuickGridPaginatorPreviousPage"] = "Aller à la page précédente",
-        ["QuickGridPaginatorNextPage"] = "Aller à la page suivante",
-        ["QuickGridPaginatorLastPage"] = "Aller à la dernière page",
-        ["QuickGridPaginatorTotalItems"] = "{0} éléments",
-    };
 }
