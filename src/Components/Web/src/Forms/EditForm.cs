@@ -16,6 +16,7 @@ public class EditForm : ComponentBase
 
     private EditContext? _editContext;
     private bool _hasSetEditContextExplicitly;
+    private bool _isSubmitting;
 
     /// <summary>
     /// Constructs an instance of <see cref="EditForm"/>.
@@ -190,16 +191,30 @@ public class EditForm : ComponentBase
     }
 
     /// <summary>
-    /// Submits the form asynchronously by invoking the internal submit handler.
-    /// This method acts as a public wrapper around <see cref="HandleSubmitAsync"/>
-    /// to allow external callers to trigger the form submission process.
+    /// Triggers form submission programmatically, including validation and invocation of
+    /// <see cref="OnSubmit"/>, <see cref="OnValidSubmit"/>, or <see cref="OnInvalidSubmit"/> as appropriate.
     /// </summary>
-    /// <returns>
-    /// A <see cref="Task"/> that represents the asynchronous operation.
-    /// </returns>
-    public async Task FormSubmitAsync()
+    public async Task SubmitAsync()
     {
-        await HandleSubmitAsync();
+        if (_editContext is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(EditForm)}.{nameof(SubmitAsync)} cannot be called before the component has been initialized. " +
+                $"Ensure the {nameof(EditForm)} has rendered at least once before calling this method.");
+        }
+        if (_isSubmitting)
+        {
+            return;
+        }
+        _isSubmitting = true;
+        try
+        {
+            await HandleSubmitAsync();
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 
     private async Task HandleSubmitAsync()
