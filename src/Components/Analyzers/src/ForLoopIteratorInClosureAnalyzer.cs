@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -18,314 +18,313 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure);
 
-    public override void Initialize(AnalysisContext context)
+    public override void Initialize(AnalysisContext initContext)
     {
-        context.EnableConcurrentExecution();
-        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+        initContext.EnableConcurrentExecution();
+        initContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-        context.RegisterSyntaxNodeAction(context =>
+        initContext.RegisterCompilationStartAction(compilationContext =>
         {
-            ForStatementSyntax forStatement = (ForStatementSyntax)context.Node;
-            if (forStatement.Declaration is null || forStatement.Declaration.Variables.Count == 0)
+            var availableTypes = new Dictionary<string, INamedTypeSymbol?>()
             {
-                // Nothing to analyze if there is no variable declaration in the for loop.
+                { ComponentsApi.BindConverter.MetadataName, compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.BindConverter.FullTypeName) },
+                { ComponentsApi.EventCallbackFactory.MetadataName, compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.EventCallbackFactory.FullTypeName) },
+                { ComponentsApi.RenderTreeBuilder.MetadataName, compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.FullTypeName) },
+            };
+            if (availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName] is null)
+            {
                 return;
             }
 
-            ForBlockState currentContextState = new ();
-            AnalyzeForStatement(ref context, forStatement, ref currentContextState);
-        }, SyntaxKind.ForStatement);
-    }
-
-    private static void AnalyzeForStatement(ref SyntaxNodeAnalysisContext context, ForStatementSyntax forStatement, ref ForBlockState parentForState)
-    {
-        // Get incremented on variables, since we are sure they can be problematic. Each incrementor should have one descendant identifier.
-        IEnumerable<string> incrementorNames = forStatement.Incrementors.SelectMany(i => i.DescendantNodes().OfType<IdentifierNameSyntax>()).Select(v => v.Identifier.Text);
-        IEnumerable<string> potentialNames = forStatement.Declaration.Variables.Select(v => v.Identifier.Text).Where(v => !incrementorNames.Contains(v));
-        ForBlockState currentState = new(incrementorNames, potentialNames, parentForState);
-        AnalyzeBlock(ref context, forStatement.Statement as BlockSyntax, ref currentState);
-    }
-
-    private static void AnalyzeBlock(ref SyntaxNodeAnalysisContext context, BlockSyntax blockStatement, ref ForBlockState forState)
-    {
-        if (blockStatement is null)
-        {
-            return;
-        }
-
-        for (var i = 0; i < blockStatement.Statements.Count; i++)
-        {
-            var statement = blockStatement.Statements[i];
-            if (statement is ForStatementSyntax)
+            compilationContext.RegisterOperationBlockStartAction(blockContext =>
             {
-                // We have a nested for loop. Handle it separately for additional variables to take into account.
-                AnalyzeForStatement(ref context, statement as ForStatementSyntax, ref forState);
-            }
-            else if (statement.GetType().GetProperty("Statement")?.GetValue(statement) is BlockSyntax childBlockStatement)
-            {
-                // Other types of blocks just need to be analyzed recursively.
-                AnalyzeBlock(ref context, childBlockStatement, ref forState);
-            }
-
-            ExpressionStatementSyntax currentExpStatement = statement as ExpressionStatementSyntax;
-            InvocationExpressionSyntax currentInvocation = currentExpStatement?.Expression as InvocationExpressionSyntax;
-            if (currentInvocation is null || !IsCallingBlazorBuilder(currentInvocation))
-            {
-                AnalyzeExpressionForIncremention(ref context, currentExpStatement, ref forState);
-
-                // Other types of expressions are not related to Razor code generation, so we can skip them.
-                continue;
-            }
-
-            bool insideElement = IsCallingMemberName(currentInvocation, "OpenElement");
-            bool insideComponent = IsCallingMemberName(currentInvocation, "OpenComponent");
-            if (insideElement || insideComponent)
-            {
-                do
+                var analyzerState = new ForLoopAnalyzerState();
+                if (blockContext.OwningSymbol is IMethodSymbol owningMethod
+                    && IsImplementationOfBuildRenderTree(owningMethod))
                 {
-                    if (i + 1 >= blockStatement.Statements.Count)
-                    {
-                        break;
-                    }
+                    // Register variables from the initialization of for loops.
+                    blockContext.RegisterOperationAction(context => AnalyzeForLoopVariables(context, analyzerState), OperationKind.Loop);
 
-                    currentExpStatement = blockStatement.Statements[++i] as ExpressionStatementSyntax;
-                    currentInvocation = currentExpStatement?.Expression as InvocationExpressionSyntax;
-                    if (currentInvocation is null)
-                    {
-                        continue;
-                    }
+                    // Check if non-incremented variables are later incremented/set.
+                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState), OperationKind.Increment);
+                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState), OperationKind.Decrement);
+                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState), OperationKind.SimpleAssignment);
+                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState), OperationKind.CompoundAssignment);
 
-                    if (IsCallingMemberName(currentInvocation, "CloseElement") || IsCallingMemberName(currentInvocation, "CloseComponent"))
+                    // Main analysis for invocations of AddAttribute and AddComponentParameter.
+                    blockContext.RegisterOperationAction(context =>
                     {
-                        insideElement = insideComponent = false;
-                        continue;
-                    }
+                        // It appears that the analysis triggers the actions for operations using DFS.
+                        // The only uncertainty seems to be for actions on the same level, but we don't need to worry about them.(probably due to foreach)
+                        // We care only for the upper levels variables to be registered in time of execution of this callback, so we catch any occurrences.
+                        AnalyzeInvocation(context, availableTypes, analyzerState);
+                    }, OperationKind.Invocation);
+                }
+                else
+                {
+                    return;
+                }
 
-                    if (insideElement)
-                    {
-                        AnalyzeElementExpression(ref context, currentInvocation, ref forState);
-                    }
-                    else if (insideComponent)
-                    {
-                        AnalyzeComponentExpression(ref context, currentInvocation, ref forState);
-                    }
-                } while (insideElement || insideComponent);
-            }
-        }
+                blockContext.RegisterOperationBlockEndAction(endContext =>
+                {
+                    analyzerState.ReportDiagnostics(endContext);
+                });
+            });
+        });
     }
 
-    private static bool IsCallingBlazorBuilder(InvocationExpressionSyntax invocation)
+    private static bool IsImplementationOfBuildRenderTree(IMethodSymbol methodSymbol)
     {
-        return (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
-            && (memberAccess.Expression is IdentifierNameSyntax identifierName)
-            && identifierName.Identifier.Text == "__builder";
-    }
-
-    private static bool IsCallingMemberName(InvocationExpressionSyntax invocation, string checkName)
-    {
-        return ((invocation.Expression is MemberAccessExpressionSyntax memberAccess)
-            && memberAccess.Name.Identifier.Text == checkName);
-    }
-
-    private static bool IsAddingAttributeOfType(InvocationExpressionSyntax invocation, string checkTypeName)
-    {
-        if (!IsCallingMemberName(invocation, "AddAttribute") || invocation.ArgumentList.Arguments.Count < 3)
+        if (methodSymbol.Name != "BuildRenderTree" || !methodSymbol.IsOverride)
         {
             return false;
         }
-
-        ExpressionSyntax attributeValueArgument = invocation.ArgumentList.Arguments[2].Expression;
-        if (attributeValueArgument is CastExpressionSyntax castExpression)
+        var containingType = methodSymbol.ContainingType;
+        while (containingType is not null)
         {
-            return castExpression.Type is QualifiedNameSyntax typeName
-                && typeName.Right.Identifier.Text == checkTypeName;
+            if (containingType.Name == "ComponentBase"
+                && containingType.OriginalDefinition.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase")
+            {
+                return true;
+            }
+            containingType = containingType.BaseType;
         }
-        else if (attributeValueArgument is InvocationExpressionSyntax invocationExpression)
-        {
-            // Get the type from the immediate expression call. The arguments are stored separately, so we avoid unnecessary descending there yet, since we need only the type.
-            var descendantNodes = invocationExpression.Expression.DescendantNodes(node => node is MemberAccessExpressionSyntax
-                && node.GetText().ToString().Contains(checkTypeName));
-            return descendantNodes.OfType<IdentifierNameSyntax>().Any(typeName => typeName.Identifier.Text == checkTypeName);
-        }
-
         return false;
     }
 
-    private static void AnalyzeElementExpression(ref SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocation, ref ForBlockState forState)
+    private static void AnalyzeForLoopVariables(OperationAnalysisContext operationContext, ForLoopAnalyzerState analyzerState)
     {
-        var variableNames = forState.GetAllVariableNames();
-        if (IsAddingAttributeOfType(invocation, "EventCallback"))
+        if (operationContext.Operation is IForLoopOperation forLoopOperation)
         {
-            var valueArgument = invocation.ArgumentList.Arguments[2].Expression;
-            if (valueArgument is InvocationExpressionSyntax && IsCallingMemberName(valueArgument as InvocationExpressionSyntax, "CreateBinder"))
+            // Get all incremented variables.
+            foreach (var bottomOperation in forLoopOperation.AtLoopBottom)
             {
-                // Should have been already reported when calling the "BindConverter.FormatValue" method.
-                return;
+                if (bottomOperation is IExpressionStatementOperation expression)
+                {
+                    if (expression.Operation is IIncrementOrDecrementOperation operation
+                        && operation.Target is ILocalReferenceOperation target)
+                    {
+                        analyzerState.AddIterator(target.Local);
+                    }
+                    else if (expression.Operation is IAssignmentOperation assignment
+                        && assignment.Target is ILocalReferenceOperation assignmentTarget)
+                    {
+                        analyzerState.AddIterator(assignmentTarget.Local);
+                    }
+                }
             }
 
-            var lambdaExpressions = valueArgument.DescendantNodes(node => node is not LambdaExpressionSyntax).OfType<LambdaExpressionSyntax>();
-            foreach (var lambdaExpression in lambdaExpressions)
+            // The rest add as potentials.
+            foreach (var localVar in forLoopOperation.Locals)
             {
-                var usedForVariables = lambdaExpression.Body.DescendantNodes().OfType<IdentifierNameSyntax>()
-                    .Where(id => variableNames.Any(name => name == id.Identifier.Text));
-                ReportUsedVariables(context, usedForVariables, ref forState);
+                analyzerState.AddPotentialIterator(localVar);
             }
-        }
-        else if (IsAddingAttributeOfType(invocation, "BindConverter"))
-        {
-            // Use this method for better location accuracy. The EventCallback generated is only internally visible when using @bind.
-            var usedForVariables = invocation.ArgumentList.Arguments[2].DescendantNodes().OfType<IdentifierNameSyntax>()
-                .Where(id => variableNames.Any(name => name == id.Identifier.Text));
-            ReportUsedVariables(context, usedForVariables, ref forState);
         }
     }
 
-    private static void AnalyzeComponentExpression(ref SyntaxNodeAnalysisContext context, InvocationExpressionSyntax invocation, ref ForBlockState forState)
+    private static void AnalyzeInvocation(OperationAnalysisContext context, Dictionary<string, INamedTypeSymbol?> availableTypes, ForLoopAnalyzerState analyzerState)
     {
-        // Apply the same analysis as for elements, since components also have the same issue with capturing loop variables in attribute closures
-        AnalyzeElementExpression(ref context, invocation, ref forState);
-
-        // Check child content for using loop variables
-        if (IsAddingAttributeOfType(invocation, "RenderFragment")
-            || IsCallingMemberName(invocation, "AddComponentParameter"))
-        {
-            var variableNames = forState.GetAllVariableNames();
-            // Now we can use plain descendant nodes, since we don't really care anymore for the exact structure anymore. Any usage of the loop variable in the content should cause issue.
-            var usedForVariables = invocation.ArgumentList.Arguments[2].Expression.DescendantNodes().OfType<IdentifierNameSyntax>()
-                .Where(id => variableNames.Any(name => name == id.Identifier.Text));
-            ReportUsedVariables(context, usedForVariables, ref forState);
-        }
-    }
-
-    /// <summary>
-    /// Check more simple expressions and assignments that alter loop variable not yet marked as incrementor.
-    /// </summary>
-    private static void AnalyzeExpressionForIncremention(ref SyntaxNodeAnalysisContext context, ExpressionStatementSyntax expression, ref ForBlockState forState)
-    {
-        if (expression == null)
+        if (analyzerState.AllForVariables.Count == 0)
         {
             return;
         }
 
-        string variableName = string.Empty;
-        if (expression.Expression is PostfixUnaryExpressionSyntax postfix
-            && postfix.IsKind(SyntaxKind.PostIncrementExpression))
+        if (context.Operation is IInvocationOperation invocation
+            && invocation.Instance?.Type is not null
+            && SymbolEqualityComparer.Default.Equals(invocation.Instance.Type, availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName])
+            && invocation.Arguments.Length >= 3)
         {
-            variableName = postfix.Operand.ToString();
-        }
-        else if (expression.Expression is PrefixUnaryExpressionSyntax prefix
-            && prefix.IsKind(SyntaxKind.PreIncrementExpression))
-        {
-            variableName = prefix.Operand.ToString();
-        }
-        else if (expression.Expression is AssignmentExpressionSyntax assignment)
-        {
-            variableName = assignment.Left.ToString();
-        }
+            var targetMethod = invocation.TargetMethod;
+            if (targetMethod.Name != "AddAttribute" && targetMethod.Name != "AddComponentParameter")
+            {
+                return;
+            }
 
-        if (!string.IsNullOrEmpty(variableName))
-        {
-            forState.OnPotentialVariableIncremented(ref context, variableName);
+            // Get the operation that when containing variable reference could cause an issue. Usually an anomyous function or @bind
+            IOperation suspectOperation = null;
+            var valueArgument = invocation.Arguments[2].Value;
+            if (valueArgument is IInvocationOperation valueInvocation)
+            {
+                if (SymbolEqualityComparer.Default.Equals(valueInvocation.TargetMethod.ContainingType, availableTypes[ComponentsApi.BindConverter.MetadataName]))
+                {
+                    // Use the 'value' attribute setter when using @bind, for the location to be more accurate when reporting.
+                    suspectOperation = valueInvocation;
+                }
+                else if (SymbolEqualityComparer.Default.Equals(valueInvocation.TargetMethod.ContainingType, availableTypes[ComponentsApi.EventCallbackFactory.MetadataName])
+                    && valueInvocation.TargetMethod.Name != "CreateBinder"
+                    && valueInvocation.Arguments.Length >= 2
+                    && valueInvocation.Arguments[1].Value is IDelegateCreationOperation delegateCreation
+                    && delegateCreation.Target is IAnonymousFunctionOperation)
+                {
+                    // The anonymous function of a basic event callback.
+                    suspectOperation = delegateCreation.Target;
+                }
+            }
+            else if (valueArgument is IDelegateCreationOperation delegateCreation
+                && delegateCreation.Target is IAnonymousFunctionOperation)
+            {
+                suspectOperation = delegateCreation.Target;
+            }
+            else if (valueArgument is IConversionOperation conversionOperation
+                && conversionOperation.Operand.Type is not null
+                && conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal))
+            {
+                // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback. Multiple delegates at once shouldn't be possible.
+                var delegateResult = FindFirstDelegateChild(conversionOperation.Operand);
+                if (delegateResult is not null && delegateResult.Target is IAnonymousFunctionOperation)
+                {
+                    suspectOperation = delegateResult.Target;
+                }
+            }
+
+            if (suspectOperation is not null)
+            {
+                var usedVariables = suspectOperation.Descendants().OfType<ILocalReferenceOperation>();
+                analyzerState.AddRelatedOccurrences(usedVariables);
+            }
         }
     }
 
-    private static void ReportUsedVariables(SyntaxNodeAnalysisContext context, IEnumerable<IdentifierNameSyntax> usedVariables, ref ForBlockState forState)
+    private static void AnalyzeIncrementOrDecrement(OperationAnalysisContext context, ForLoopAnalyzerState analyzerState)
     {
-        foreach (var usedVariable in usedVariables)
+        if (context.Operation is IIncrementOrDecrementOperation incrementOrDecrement
+            && incrementOrDecrement.Target is ILocalReferenceOperation localReference
+            && analyzerState.IsPotentialIterator(localReference.Local))
         {
-            if (forState.IncrementorNames.Any(name => name == usedVariable.Identifier.Text))
-            {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure,
-                    usedVariable.GetLocation(),
-                    usedVariable.Identifier.Text));
-            }
-            else
-            {
-                forState.AddOccurrence(usedVariable);
-            }
+            analyzerState.OnPotentialIteratorChanged(localReference.Local);
+        }
+    }
+
+    private static void AnalyzeAssignment(OperationAnalysisContext context, ForLoopAnalyzerState analyzerState)
+    {
+        if (context.Operation is IAssignmentOperation assignment
+            && assignment.Target is ILocalReferenceOperation localReference
+            && analyzerState.IsPotentialIterator(localReference.Local))
+        {
+            analyzerState.OnPotentialIteratorChanged(localReference.Local);
         }
     }
 
     /// <summary>
-    /// State class to keep track of variables that are being incremented or potentially incremented and their occurrences in the current for loop.
-    /// Each nested for loop has its own state.
+    /// Probe an operation for delegate creation. If found, return the first occurrence. Otherwise search only inside Conversion or Invocation operations.
+    /// Should be more efficient than calling Descendants() and filtering for IDelegateCreationOperation, since we don't need to search inside all operations.
     /// </summary>
-    private sealed class ForBlockState
+    private static IDelegateCreationOperation FindFirstDelegateChild(IOperation currentOperation)
     {
-        // Names of variables that are being incremented on in the current context. Includes parent state variables.
-        public List<string> IncrementorNames { get; set; }
-        // Potential variable names that are not yet being incremented on which would not cause any issues so far. Includes parent state variables.
-        public List<string> PotentialNames { get; set; }
-        // Occurrences of potential variables that could be later on incremented. Not inherited from parent state.
-        public List<IdentifierNameSyntax> PotentialVariableOccurrences { get; set; }
-
-        public ForBlockState? ParentState { get; set; }
-        public ForBlockState()
+        if (currentOperation is IDelegateCreationOperation delegateCreation)
         {
-            IncrementorNames = new List<string>();
-            PotentialNames = new List<string>();
-            PotentialVariableOccurrences = new List<IdentifierNameSyntax>();
+            return delegateCreation;
         }
 
-        public ForBlockState(IEnumerable<string> incrementorNames, IEnumerable<string> potentialNames, ForBlockState parentState)
+        if (currentOperation is IConversionOperation || currentOperation is IInvocationOperation || currentOperation is IArgumentOperation)
         {
-            ParentState = parentState;
-            IncrementorNames = parentState.IncrementorNames.Concat(incrementorNames).ToList();
-            PotentialNames = parentState.PotentialNames.Concat(potentialNames).ToList();
-            PotentialVariableOccurrences = new List<IdentifierNameSyntax>();
-        }
-
-        public bool IsPotentialVariable(string variableName)
-        {
-            return PotentialNames.Any(name => name == variableName);
-        }
-
-        public IEnumerable<string> GetAllVariableNames()
-        {
-            return IncrementorNames.Concat(PotentialNames);
-        }
-
-        /// <summary>
-        /// Add an occurrence of a potential variable. If the variable is later incremented on, call OnPotentialVariableIncremented.
-        /// </summary>
-        public void AddOccurrence(IdentifierNameSyntax identifier)
-        {
-            if (PotentialNames.Any(name => name == identifier.Identifier.Text))
+            foreach (var child in currentOperation.Children)
             {
-                PotentialVariableOccurrences.Add(identifier);
+                var result = FindFirstDelegateChild(child);
+                if (result is not null)
+                {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// State to keep track of variables that are being incremented or potentially incremented and their occurrences in the current for loop.
+    /// </summary>
+    private sealed class ForLoopAnalyzerState
+    {
+        // Variables that are being incremented on in the current context. 
+        public List<ILocalSymbol> Iterators { get; set; }
+        // Potential variable that are not yet being incremented on which would not cause any issues so far.
+        public List<ILocalSymbol> PotentialIterators { get; set; }
+
+        // All variable that are being used in the current context. 
+        public List<ILocalSymbol> AllForVariables { get; set; }
+
+        // Occurrences of potential variables that could be later on incremented. Not inherited from parent state.
+        public List<ILocalReferenceOperation> IteratorOccurrences { get; set; }
+
+        public ForLoopAnalyzerState()
+        {
+            Iterators = new List<ILocalSymbol>();
+            PotentialIterators = new List<ILocalSymbol>();
+            AllForVariables = new List<ILocalSymbol>();
+            IteratorOccurrences = new List<ILocalReferenceOperation>();
+        }
+
+        public bool IsIterator(ILocalSymbol target)
+        {
+            return Iterators.Any(existing => SymbolEqualityComparer.Default.Equals(existing, target));
+        }
+
+        public bool IsPotentialIterator(ILocalSymbol target)
+        {
+            return PotentialIterators.Any(existing => SymbolEqualityComparer.Default.Equals(existing, target));
+        }
+
+        public void AddIterator(ILocalSymbol iterator)
+        {
+            if (iterator is null)
+            {
+                return;
+            }
+
+            if (!IsIterator(iterator))
+            {
+                Iterators.Add(iterator);
+                AllForVariables.Add(iterator);
+            }
+        }
+
+        public void AddPotentialIterator(ILocalSymbol potentialIterator)
+        {
+            if (potentialIterator is null)
+            {
+                return;
+            }
+            if (!IsIterator(potentialIterator) && !IsPotentialIterator(potentialIterator))
+            {
+                PotentialIterators.Add(potentialIterator);
+                AllForVariables.Add(potentialIterator);
             }
         }
 
         /// <summary>
         /// When potential variable is incremented, move it to incremented variables and report diagnostics for all previous occurrences of it in the current context.
-        /// Do this for all parent states as well, since the variable could be used in multiple nested contexts before being incremented.
         /// </summary>
-        public void OnPotentialVariableIncremented(ref SyntaxNodeAnalysisContext context, string variableName)
+        public void OnPotentialIteratorChanged(ILocalSymbol potentialIterator)
         {
-            IncrementorNames.Add(variableName);
-            PotentialNames = PotentialNames.Where(name => name != variableName).ToList();
-            List<IdentifierNameSyntax> unusedOccurrences = new List<IdentifierNameSyntax>();
-            if (PotentialVariableOccurrences.Count > 0)
+            if (potentialIterator is null)
             {
-                foreach (var usedVariable in PotentialVariableOccurrences)
+                return;
+            }
+            Iterators.Add(potentialIterator);
+            PotentialIterators = PotentialIterators.Where(name => !SymbolEqualityComparer.Default.Equals(name, potentialIterator)).ToList();
+        }
+
+        public void AddRelatedOccurrences(IEnumerable<ILocalReferenceOperation> variableReferences)
+        {
+            foreach (var variableReference in variableReferences)
+            {
+                if (AllForVariables.Any(forVariable => SymbolEqualityComparer.Default.Equals(forVariable, variableReference.Local)))
                 {
-                    if (usedVariable.Identifier.Text == variableName)
-                    {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure,
-                            usedVariable.GetLocation(),
-                            usedVariable.Identifier.Text));
-                    }
-                    else
-                    {
-                        unusedOccurrences.Add(usedVariable);
-                    }
+                    IteratorOccurrences.Add(variableReference);
                 }
             }
+        }
 
-            PotentialVariableOccurrences = unusedOccurrences;
-            ParentState?.OnPotentialVariableIncremented(ref context, variableName);
+        public void ReportDiagnostics(OperationBlockAnalysisContext context)
+        {
+            var referencesToReport = IteratorOccurrences.Where(reference => IsIterator(reference.Local));
+            foreach (var reference in referencesToReport)
+            {
+                context.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure,
+                    reference.Syntax.GetLocation(),
+                    reference.Local.Name));
+            }
         }
     }
 }

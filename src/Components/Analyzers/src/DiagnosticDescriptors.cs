@@ -113,7 +113,7 @@ internal static class DiagnosticDescriptors
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
 
     public static readonly DiagnosticDescriptor ForLoopIteratorVariableUsedInClosure = new(
-        "BL0012",
+        "BL0014",
         CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Title)),
         CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Format)),
         Usage,
