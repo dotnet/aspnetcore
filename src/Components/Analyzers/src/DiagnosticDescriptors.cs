@@ -112,8 +112,17 @@ internal static class DiagnosticDescriptors
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
 
-    public static readonly DiagnosticDescriptor AuthenticationStateProviderCachedWithoutSubscription = new(
+    public static readonly DiagnosticDescriptor UnnecessaryStateHasChangedCall = new(
         "BL0012",
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Description)));
+
+    public static readonly DiagnosticDescriptor AuthenticationStateProviderCachedWithoutSubscription = new(
+        "BL0013",
         CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Title)),
         CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Format)),
         Usage,

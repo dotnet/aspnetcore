@@ -242,7 +242,7 @@
         scrollStatus = $"Scrolling to {scrollTargetIndex}...";
         try
         {
-            await virtualizeRef.ScrollToIndexAsync(scrollTargetIndex);
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex);
             scrollStatus = $"Completed: {scrollTargetIndex}";
         }
         catch (Exception ex)
