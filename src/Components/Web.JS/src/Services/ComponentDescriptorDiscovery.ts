@@ -374,8 +374,8 @@ export type WebAssemblyComponentDescriptor = WebAssemblyComponentMarker & Descri
 export type AutoComponentDescriptor = AutoComponentMarker & DescriptorData;
 
 export type WebAssemblyServerOptions = {
-  environmentName: string,
-  environmentVariables: { [i: string]: string; }
+  environmentName?: string,
+  environmentVariables?: { [i: string]: string; }
 };
 
 type DescriptorData = {
