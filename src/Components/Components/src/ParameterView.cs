@@ -67,23 +67,45 @@ public readonly struct ParameterView
     {
         foreach (var entry in this)
         {
-            if (string.Equals(entry.Name, parameterName))
+            if (string.Equals(entry.Name, parameterName, StringComparison.Ordinal))
             {
+                var value = entry.Value;
+
+                // Fast path for exact or assignable types.
+                if (value is TValue typedValue)
+                {
+                    result = typedValue;
+                    return true;
+                }
+
+                // Null handling.
+                if (value is null)
+                {
+                    if (default(TValue) is null)
+                    {
+                        result = default!;
+                        return true;
+                    }
+
+                    result = default!;
+                    return false;
+                }
+
+                // Fallback cast to preserve previous behavior for compatible types.
                 try
                 {
-                    result = (TValue)entry.Value;
+                    result = (TValue)value!;
                     return true;
                 }
                 catch (InvalidCastException)
                 {
-                    throw new InvalidCastException(
-                        $"Error setting parameter '{parameterName}'. " +
-                        $"Received '{entry.Value?.GetType()}' but expected '{typeof(TValue)}'.");
+                    result = default!;
+                    return false;
                 }
             }
         }
 
-        result = default;
+        result = default!;
         return false;
     }
 
