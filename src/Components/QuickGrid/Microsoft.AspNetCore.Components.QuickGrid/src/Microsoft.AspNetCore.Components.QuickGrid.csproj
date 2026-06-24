@@ -28,6 +28,10 @@
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.QuickGrid.Tests" />

@@ -12,10 +12,10 @@ internal sealed class InternalQuickGridLocalizer
         _interceptor = interceptor ?? throw new ArgumentNullException(nameof(interceptor));
     }
 
-    public QuickGridLocalizedString this[string key]
+    public Microsoft.Extensions.Localization.LocalizedString this[string key]
         => _interceptor.Handle(key, Array.Empty<object?>());
 
-    public QuickGridLocalizedString this[string key, params object?[]? arguments]
+    public Microsoft.Extensions.Localization.LocalizedString this[string key, params object?[]? arguments]
         => _interceptor.Handle(key, arguments ?? Array.Empty<object?>());
 
     public string GetString(string key)

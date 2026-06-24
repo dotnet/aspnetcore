@@ -12,5 +12,5 @@ internal abstract class AbstractQuickGridLocalizationInterceptor : IQuickGridLoc
     {
     }
 
-    public abstract QuickGridLocalizedString Handle(string key, params object?[]? arguments);
+    public abstract Microsoft.Extensions.Localization.LocalizedString Handle(string key, params object?[]? arguments);
 }

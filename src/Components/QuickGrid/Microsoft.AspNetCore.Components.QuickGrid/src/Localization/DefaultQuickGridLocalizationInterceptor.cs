@@ -26,7 +26,7 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
         _customLocalizer = customLocalizer;
     }
 
-    public override QuickGridLocalizedString Handle(string key, params object?[]? arguments)
+    public override Microsoft.Extensions.Localization.LocalizedString Handle(string key, params object?[]? arguments)
     {
         var args = arguments ?? Array.Empty<object?>();
 
@@ -46,7 +46,7 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
             var fromCustom = _customLocalizer[key, args];
             if (!fromCustom.ResourceNotFound)
             {
-                return fromCustom;
+                return new Microsoft.Extensions.Localization.LocalizedString(fromCustom.Name, fromCustom.Value, fromCustom.ResourceNotFound);
             }
         }
 
@@ -54,12 +54,12 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
         return GetFromResourceManager(key, args);
     }
 
-    private QuickGridLocalizedString GetFromResourceManager(string key, object?[] args)
+    private Microsoft.Extensions.Localization.LocalizedString GetFromResourceManager(string key, object?[] args)
     {
         var value = _resourceManager.GetString(key, CultureInfo.CurrentUICulture);
         if (value is null)
         {
-            return new QuickGridLocalizedString(key, key, resourceNotFound: true);
+            return new Microsoft.Extensions.Localization.LocalizedString(key, key, resourceNotFound: true);
         }
 
         string formatted;
@@ -71,7 +71,6 @@ internal sealed class DefaultQuickGridLocalizationInterceptor : AbstractQuickGri
         {
             formatted = value;
         }
-
-        return new QuickGridLocalizedString(key, formatted, resourceNotFound: false);
+        return new Microsoft.Extensions.Localization.LocalizedString(key, formatted, resourceNotFound: false);
     }
 }
