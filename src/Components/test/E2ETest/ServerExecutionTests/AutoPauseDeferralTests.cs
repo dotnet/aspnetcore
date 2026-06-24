@@ -457,6 +457,18 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
+    public void Media_AudibleVideoPlayingInsideShadowRoot_DefersAutoPause()
+    {
+        Navigate($"/subdir/persistent-state/auto-pause-shadow-media?auto-pause=true&auto-pause-delay-ms={PauseDelayMs}");
+        Browser.Exists(By.Id("render-mode-interactive"));
+        Browser.Exists(By.Id("start-video")).Click();
+        // The video lives in a shadow root, so query playback through the page's helper.
+        Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
+            "return window.autoPauseShadowMedia && window.autoPauseShadowMedia.isPlaying();"));
+        RunMediaDeferralTest(expectDeferral: true);
+    }
+
+    [Fact]
     public void Media_NothingPlaying_PausesNormally()
     {
         NavigateToMediaPage();
