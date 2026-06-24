@@ -143,6 +143,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
       () => Blazor.pauseCircuit!(),
       () => Blazor.resumeCircuit!(),
       logger,
+      (signal) => circuit.waitForActiveStreamsToDrain(signal),
     );
 
     Blazor.pause = {

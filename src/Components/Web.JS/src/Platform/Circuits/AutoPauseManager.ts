@@ -17,6 +17,8 @@ export class AutoPauseManager {
 
   private readonly _resumeCircuit: () => Promise<boolean>;
 
+  private readonly _waitForActiveStreamsToDrain?: (signal: AbortSignal) => Promise<void>;
+
   private readonly _logger: Logger;
 
   private readonly _visibilityListener: () => void;
@@ -36,11 +38,13 @@ export class AutoPauseManager {
     pauseCircuit: () => Promise<boolean>,
     resumeCircuit: () => Promise<boolean>,
     logger: Logger,
+    waitForActiveStreamsToDrain?: (signal: AbortSignal) => Promise<void>,
   ) {
     this._options = options;
     this._pauseCircuit = pauseCircuit;
     this._resumeCircuit = resumeCircuit;
     this._logger = logger;
+    this._waitForActiveStreamsToDrain = waitForActiveStreamsToDrain;
 
     this._visibilityListener = () => this.onVisibilityChanged();
     document.addEventListener('visibilitychange', this._visibilityListener);
@@ -170,6 +174,15 @@ export class AutoPauseManager {
       if (controller.signal.aborted || document.visibilityState !== 'hidden' || this._disposed) {
         this._logger.log(LogLevel.Trace, 'Auto-pause: aborted before pausing (tab became visible).');
         return;
+      }
+
+      if (this._waitForActiveStreamsToDrain) {
+        await this._waitForActiveStreamsToDrain(controller.signal);
+
+        if (controller.signal.aborted || document.visibilityState !== 'hidden' || this._disposed) {
+          this._logger.log(LogLevel.Trace, 'Auto-pause: aborted before pausing (tab became visible during drain).');
+          return;
+        }
       }
 
       const paused = await this._pauseCircuit();

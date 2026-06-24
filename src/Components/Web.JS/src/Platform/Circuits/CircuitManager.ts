@@ -353,9 +353,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     const pausingPromise = this._pausingState.currentProgress();
 
     try {
-      // Defer pause while any circuit operation tracked by _activeStreamCount is in flight
-      await this.waitForActiveStreamsToDrain();
-
       this._logger.log(LogLevel.Trace, 'Pausing the circuit...');
 
       // Notify the reconnection handler that we are pausing the circuit.
@@ -563,8 +560,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     };
   }
 
-  private async waitForActiveStreamsToDrain(): Promise<void> {
-    if (this._activeStreamCount === 0) {
+  // Used by the auto-pause flow to defer a pending pause until in-flight circuit operations
+  // (tracked only while auto-pause is enabled) complete. The wait honors `signal` so a
+  // visibility change can cancel it instead of pausing and then immediately auto-resuming.
+  public async waitForActiveStreamsToDrain(signal?: AbortSignal): Promise<void> {
+    if (this._activeStreamCount === 0 || signal?.aborted) {
       return;
     }
 
@@ -572,16 +572,26 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     const startedAt = Date.now();
     await new Promise<void>(resolve => {
-      const onDrained = () => {
+      const cleanup = () => {
         const idx = this._streamDrainResolvers.indexOf(onDrained);
         if (idx >= 0) {
           this._streamDrainResolvers.splice(idx, 1);
         }
+        signal?.removeEventListener('abort', onAbort);
+      };
+      const onDrained = () => {
+        cleanup();
         const elapsedMs = Date.now() - startedAt;
         this._logger.log(LogLevel.Information, `Pause resumed: all circuit operations completed after ${elapsedMs}ms.`);
         resolve();
       };
+      const onAbort = () => {
+        cleanup();
+        this._logger.log(LogLevel.Trace, 'Pause drain wait cancelled before streams completed.');
+        resolve();
+      };
       this._streamDrainResolvers.push(onDrained);
+      signal?.addEventListener('abort', onAbort, { once: true });
     });
   }
 

@@ -304,6 +304,66 @@ describe('AutoPauseManager', () => {
     expect(resumeCircuit).toHaveBeenCalledTimes(1);
   });
 
+  describe('active-stream drain cancellation', () => {
+    function createWithDrain(drain: (signal: AbortSignal) => Promise<void>): AutoPauseManager {
+      manager = new AutoPauseManager(defaultOptions, pauseCircuit, resumeCircuit, NullLogger.instance, drain);
+      return manager;
+    }
+
+    test('pauses after active streams drain when the tab stays hidden', async () => {
+      let drainStarted = false;
+      let resolveDrain: (() => void) | undefined;
+      const drain = (signal: AbortSignal) => {
+        drainStarted = true;
+        return new Promise<void>(resolve => {
+          resolveDrain = resolve;
+          signal.addEventListener('abort', () => resolve(), { once: true });
+        });
+      };
+
+      createWithDrain(drain);
+      setVisibility('hidden');
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+
+      // Drain is in progress; the pause must wait for it.
+      expect(drainStarted).toBe(true);
+      expect(pauseCircuit).not.toHaveBeenCalled();
+
+      // Streams drain while the tab is still hidden -> the pause proceeds.
+      resolveDrain!();
+      await flushPromises();
+      expect(pauseCircuit).toHaveBeenCalledTimes(1);
+    });
+
+    test('abandons the pause when the tab becomes visible while waiting for streams to drain', async () => {
+      let drainStarted = false;
+      const drain = (signal: AbortSignal) => {
+        drainStarted = true;
+        // Mimic the real drain: resolves when aborted (e.g. the tab becomes visible).
+        return new Promise<void>(resolve => {
+          signal.addEventListener('abort', () => resolve(), { once: true });
+        });
+      };
+
+      createWithDrain(drain);
+      setVisibility('hidden');
+      jest.advanceTimersByTime(1000);
+      await flushPromises();
+
+      expect(drainStarted).toBe(true);
+      expect(pauseCircuit).not.toHaveBeenCalled();
+
+      // Tab becomes visible mid-drain -> abort fires, drain resolves, but the pause is abandoned.
+      setVisibility('visible');
+      await flushPromises();
+
+      expect(pauseCircuit).not.toHaveBeenCalled();
+      // Nothing was paused, so there is nothing to resume either (no modal flicker / churn).
+      expect(resumeCircuit).not.toHaveBeenCalled();
+    });
+  });
+
   describe('deferred-pause cancellation logging', () => {
     class CapturingLogger implements Logger {
       public readonly messages: { level: LogLevel; message: string }[] = [];
