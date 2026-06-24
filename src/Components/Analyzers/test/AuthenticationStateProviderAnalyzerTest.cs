@@ -120,7 +120,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = "BL0012",
+                Id = "BL0013",
                 Message = "'MyComponent' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 7, 15) }
@@ -170,7 +170,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = "BL0012",
+                Id = "BL0013",
                 Message = "'MyCustomProvider' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
 
                 Severity = DiagnosticSeverity.Warning,
@@ -178,7 +178,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
             },
             new DiagnosticResult
             {
-                Id = "BL0012",
+                Id = "BL0013",
                 Message = "'ConsumerComponent' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 22, 15) }
@@ -222,7 +222,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = "BL0012",
+                Id = "BL0013",
                 Message = "'MyComponent' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
 
                 Severity = DiagnosticSeverity.Warning,
@@ -320,7 +320,7 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = "BL0012",
+                Id = "BL0013",
                 Message = "'Consumer2Component' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 15) }
