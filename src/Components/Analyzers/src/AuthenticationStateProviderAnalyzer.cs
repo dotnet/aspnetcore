@@ -100,12 +100,23 @@ public sealed class AuthenticationStateProviderAnalyzer : DiagnosticAnalyzer
             {
                 if (member is IPropertySymbol property && IsAuthenticationStateProviderType(property.Type, authStateProviderType))
                 {
+                    // The property could be private, but there can be another non-private property further down
+                    // the inheritance chain that exposes the same type, so don't back out of the loop.
+                    if (!SymbolEqualityComparer.Default.Equals(currentType, type) && property.DeclaredAccessibility == Accessibility.Private)
+                    {
+                        continue;
+                    }
                     // Only consider properties that are not private in base types because they cannot be accessed by derived types.
                     return SymbolEqualityComparer.Default.Equals(currentType, type) || property.DeclaredAccessibility != Accessibility.Private;
                 }
 
                 if (member is IFieldSymbol field && IsAuthenticationStateProviderType(field.Type, authStateProviderType))
                 {
+                    // The field could be backed by a property and even if the field is private, the property may not, so don't back out of the loop.
+                    if (!SymbolEqualityComparer.Default.Equals(currentType, type) && field.DeclaredAccessibility == Accessibility.Private)
+                    {
+                        continue;
+                    }
                     // Only consider fields that are not private in base types because they cannot be accessed by derived types.
                     return SymbolEqualityComparer.Default.Equals(currentType, type) || field.DeclaredAccessibility != Accessibility.Private;
                 }
