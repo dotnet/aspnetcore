@@ -1269,9 +1269,12 @@ public class KestrelConfigurationLoaderTests
             dirLink.Delete();
             dirLink = Directory.CreateSymbolicLink(Path.Combine(tempDir, "link"), "./new");
 
-            // This can fail in local runs where the timeout is 5 seconds and polling period is 4 seconds - just re-run
+            // The default 5s DEBUG timeout is too short for symlink changes (4s pooling); use longer timeout in DEBUG.
+#if DEBUG
+            await fileTcs.Task.DefaultTimeout(TimeSpan.FromSeconds(15));
+#else
             await fileTcs.Task.DefaultTimeout();
-
+#endif
             Assert.Equal(1, endpointConfigurationCallCount);
 
             configLoader.Reload();
