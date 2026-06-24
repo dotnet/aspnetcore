@@ -809,6 +809,7 @@ public class ComponentBaseTest
     {
         [Parameter] public bool FaultedTaskOnInitializedAsync { get; set; } = false;
         [Parameter] public bool FaultedTaskOnParametersSetAsync { get; set; } = false;
+        [Parameter] public bool ThrowDuringRender { get; set; } = false;
 
         public int StateHasChangedCalled { get; set; } = 0;
 
@@ -820,7 +821,10 @@ public class ComponentBaseTest
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            throw new InvalidOperationException("Error in BuildRenderTree");
+            if (ThrowDuringRender)
+            {
+                throw new InvalidOperationException("Error in BuildRenderTree");
+            }
         }
 
         protected override Task OnInitializedAsync()
