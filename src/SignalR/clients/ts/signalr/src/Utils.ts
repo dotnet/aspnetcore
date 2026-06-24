@@ -236,8 +236,7 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     return userAgent;
 }
 
-// eslint-disable-next-line spaced-comment
-/*#__PURE__*/ function getOsName(): string {
+function getOsName(): string {
     if (Platform.isNode) {
         switch (process.platform) {
             case "win32":
@@ -254,8 +253,7 @@ export function constructUserAgent(version: string, os: string, runtime: string,
     }
 }
 
-// eslint-disable-next-line spaced-comment
-/*#__PURE__*/ function getRuntimeVersion(): string | undefined {
+function getRuntimeVersion(): string | undefined {
     if (Platform.isNode) {
         return process.versions.node;
     }

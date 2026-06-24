@@ -36,6 +36,11 @@ internal sealed partial class KestrelTrace : ILogger
         }
     }
 
+    public void Http1BareLineFeedTerminator(string connectionId, string httpVersion, bool rejected)
+    {
+        BadRequestsLog.Http1BareLineFeedTerminator(_badRequestsLogger, connectionId, httpVersion, rejected);
+    }
+
     private static partial class BadRequestsLog
     {
         [LoggerMessage(17, LogLevel.Debug, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""", EventName = "ConnectionBadRequest")]
@@ -52,6 +57,9 @@ internal sealed partial class KestrelTrace : ILogger
 
         [LoggerMessage(54, LogLevel.Debug, @"Connection id ""{ConnectionId}"": Invalid content received on connection. Possible incorrect HTTP version detected. Expected {ExpectedHttpVersion} but received {DetectedHttpVersion}.", EventName = "PossibleInvalidHttpVersionDetected", SkipEnabledCheck = true)]
         public static partial void PossibleInvalidHttpVersionDetected(ILogger logger, string connectionId, string expectedHttpVersion, string detectedHttpVersion);
+
+        [LoggerMessage(68, LogLevel.Debug, @"Connection id ""{ConnectionId}"": HTTP/{HttpVersion} request used a bare LF line terminator instead of CRLF. Rejected: {Rejected}.", EventName = "Http1BareLineFeedTerminator")]
+        public static partial void Http1BareLineFeedTerminator(ILogger logger, string connectionId, string httpVersion, bool rejected);
 
         // IDs prior to 64 are reserved for back compat (the various KestrelTrace loggers used to share a single sequence)
     }

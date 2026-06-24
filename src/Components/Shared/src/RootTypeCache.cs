@@ -19,7 +19,7 @@ internal sealed class RootTypeCache : IDisposable
 
     public RootTypeCache()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }
@@ -29,7 +29,7 @@ internal sealed class RootTypeCache : IDisposable
 
     public void Dispose()
     {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
+        if (HotReloadManager.IsSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearCache;
         }

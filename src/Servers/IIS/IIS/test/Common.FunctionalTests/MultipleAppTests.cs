@@ -69,7 +69,6 @@ public class MultipleAppTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65477")]
     public async Task RestartAppShouldNotAffectOtherApps()
     {
         const int numApps = 10;

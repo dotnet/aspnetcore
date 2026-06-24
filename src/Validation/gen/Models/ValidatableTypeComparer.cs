@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -20,11 +20,10 @@ internal sealed class ValidatableTypeComparer : IEqualityComparer<ValidatableTyp
         {
             return false;
         }
-        return SymbolEqualityComparer.Default.Equals(x.Type, y.Type);
+
+        return x.TypeFQN.Equals(y.TypeFQN, StringComparison.Ordinal);
     }
 
     public int GetHashCode(ValidatableType? obj)
-    {
-        return SymbolEqualityComparer.Default.GetHashCode(obj?.Type);
-    }
+        => obj?.TypeFQN is null ? 0 : StringComparer.Ordinal.GetHashCode(obj.TypeFQN);
 }

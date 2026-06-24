@@ -4376,22 +4376,35 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     }
 
     [Fact]
-    public async Task InvokeHubMethodCannotAcceptCancellationTokenAsArgument()
+    public async Task InvokeHubMethodCanAcceptCancellationTokenAsArgument()
     {
         using (StartVerifiableLog())
         {
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                builder.AddSingleton(tcsService);
+            }, LoggerFactory);
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
 
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
 
-                var invocationId = await client.SendInvocationAsync(nameof(MethodHub.InvalidArgument)).DefaultTimeout();
+                var invocationId = await client.SendInvocationAsync(nameof(LongRunningHub.CancelableInvocation)).DefaultTimeout();
+                // Wait for the hub method to start
+                await tcsService.StartedMethod.Task.DefaultTimeout();
 
-                var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().DefaultTimeout());
+                // Cancel the invocation which should trigger the CancellationToken in the hub method
+                await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).DefaultTimeout();
 
-                Assert.Equal("Failed to invoke 'InvalidArgument' due to an error on the server.", completion.Error);
+                var result = await client.ReadAsync().DefaultTimeout();
+
+                var completion = Assert.IsType<CompletionMessage>(result);
+                Assert.Null(completion.Error);
+
+                // CancellationToken passed to hub method will allow EndMethod to be triggered if it is canceled.
+                await tcsService.EndMethod.Task.DefaultTimeout();
 
                 client.Dispose();
 
@@ -5290,11 +5303,13 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
     {
         PingTimeout,
         Abort,
+        BackpressureTimeout,
     }
 
     [Theory]
     [InlineData(CloseScenario.PingTimeout)]
     [InlineData(CloseScenario.Abort)]
+    [InlineData(CloseScenario.BackpressureTimeout)]
     public async Task StatefulReconnectWithMessageBufferBackpressureIsCancelable(CloseScenario scenario)
     {
         using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
@@ -5325,28 +5340,33 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
 
             await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
 
-            switch (scenario)
-            {
-                case CloseScenario.PingTimeout:
-                {
-                    // We go over the 100 ms timeout interval multiple times
-                    for (var i = 0; i < 3; i++)
-                    {
-                        timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
-                        client1.TickHeartbeat();
-                    }
-                    break;
-                }
-                case CloseScenario.Abort:
-                {
-                    client1.Connection.Abort();
-                    break;
-                }
-            }
-
             Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
 
             await client2.SendHubMessageAsync(new InvocationMessage(nameof(MethodHub.BroadcastMethod), [new string('a', 100)]));
+
+            switch (scenario)
+            {
+                case CloseScenario.PingTimeout:
+                    {
+                        // We go over the 100 ms timeout interval multiple times
+                        for (var i = 0; i < 3; i++)
+                        {
+                            timeProvider.Advance(timeout + TimeSpan.FromMilliseconds(1));
+                            client1.TickHeartbeat();
+                        }
+                        break;
+                    }
+                case CloseScenario.Abort:
+                    {
+                        client1.Connection.Abort();
+                        break;
+                    }
+                case CloseScenario.BackpressureTimeout:
+                    {
+                        timeProvider.Advance(TimeSpan.FromSeconds(5) + TimeSpan.FromMilliseconds(1));
+                        break;
+                    }
+            }
 
             // This one might not be blocked on client1 if the server sends to client2 first during Broadcast
             Assert.IsType<InvocationMessage>(await client2.ReadAsync().DefaultTimeout());
