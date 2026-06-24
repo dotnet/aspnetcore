@@ -219,6 +219,27 @@
   <data name="VirtualizeItemsProviderRequiresItemComparer_Title" xml:space="preserve">
     <value>Virtualize with ItemsProvider requires ItemComparer</value>
   </data>
+  <data name="UnnecessaryStateHasChangedCall_Description" xml:space="preserve">
+    <value>StateHasChanged is unnecessary in synchronous component lifecycle methods or event handlers. In async lifecycle methods or event handlers, it is unnecessary before the first await and after the final await because ComponentBase already schedules renders at those points.</value>
+  </data>
+  <data name="UnnecessaryStateHasChangedCall_Format" xml:space="preserve">
+    <value>StateHasChanged is unnecessary in method '{0}' and can be removed.</value>
+  </data>
+  <data name="UnnecessaryStateHasChangedCall_Title" xml:space="preserve">
+    <value>Unnecessary StateHasChanged call</value>
+  </data>
+  <data name="UnnecessaryStateHasChangedCall_FixTitle" xml:space="preserve">
+    <value>Remove unnecessary StateHasChanged call.</value>
+  </data>
+  <data name="AuthenticationStateProviderCachedWithoutSubscription_Description" xml:space="preserve">
+    <value>When using AuthenticationStateProvider directly, you must subscribe to the AuthenticationStateChanged event to be notified of authentication state changes. Caching the result of GetAuthenticationStateAsync without subscribing to changes can result in stale authentication data being used. Use CascadingAuthenticationState or AuthorizeView instead, or subscribe to AuthenticationStateChanged and invalidate any cached state.</value>
+  </data>
+  <data name="AuthenticationStateProviderCachedWithoutSubscription_Format" xml:space="preserve">
+    <value>'{0}' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.</value>
+  </data>
+  <data name="AuthenticationStateProviderCachedWithoutSubscription_Title" xml:space="preserve">
+    <value>AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged</value>
+  </data>
   <data name="ForLoopIteratorVariableUsedInClosure_Description" xml:space="preserve">
     <value>Using iterator variable inside a closure or RenderFragment/ChildContent could lead to unexpected runtime behavior. The variable is changed each loop and after the for loop completes, it holds the final iterator value. Since most closures don't execute when defined, they will most likely execute using the final iterator value.</value>
   </data>

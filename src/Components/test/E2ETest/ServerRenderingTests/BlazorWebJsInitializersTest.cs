@@ -28,7 +28,6 @@ public class BlazorWebJsInitializersTest : ServerTestBase<BasicTestAppServerSite
     }
 
     [Theory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66307")]
     [MemberData(nameof(InitializerTestData))]
     public void InitializersRunsModernCallbacksByDefaultWhenPresent(bool streaming, bool webassembly, bool server, string[] expectedInvokedCallbacks)
     {

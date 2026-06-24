@@ -72,6 +72,12 @@ public class ServerStartup
                     resourceRequestLog.AddRequest(context.Request);
                 }
 
+                // Opt-in strict style-src CSP for tests asserting CSP compliance.
+                if (context.Request.Query.ContainsKey("strict-style-csp"))
+                {
+                    context.Response.Headers["Content-Security-Policy"] = "style-src 'self'";
+                }
+
                 return next(context);
             });
 

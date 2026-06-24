@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <OutputType>Library</OutputType>
+    <PackageId>aspnetcoretools</PackageId>
+    <PackAsTool>true</PackAsTool>
+    <IsShippingPackage>false</IsShippingPackage>
+    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+    <PublishAot Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</PublishAot>
+    <NativeLib>Shared</NativeLib>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(PublishAot)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true' and '$(RuntimeIdentifier)' == '' and '$(TargetRuntimeIdentifier)' != ''">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(PublishAot)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true' and '$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+    <NoWarn>$(NoWarn);CS2008</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishAot)' == 'true'">
+    <_PublishWasInvokedDirectly Condition="'$(_IsPublishing)' == 'true'">true</_PublishWasInvokedDirectly>
+    <_IsPublishing>true</_IsPublishing>
+  </PropertyGroup>
+
+  <Import Project="..\AspNetCoreTools.NativeAot.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\dotnet-dev-certs\src\dotnet-dev-certs.csproj" IncludeInAggregateExecutable="true" />
+    <ProjectReference Include="..\..\dotnet-user-jwts\src\dotnet-user-jwts.csproj" IncludeInAggregateExecutable="true" />
+    <ProjectReference Include="..\..\dotnet-user-secrets\src\dotnet-user-secrets.csproj" IncludeInAggregateExecutable="true" />
+  </ItemGroup>
+
+  <Target Name="PublishAspNetCoreToolsOnBuild"
+          AfterTargets="Build"
+          DependsOnTargets="$(_CorePublishTargets)"
+          Condition="'$(PublishAot)' == 'true' and '$(_PublishWasInvokedDirectly)' != 'true'">
+    <!-- The NativeAOT tests consume this project's publish output. Publish as part of build so the tests can reference the product output instead of running a second publish. -->
+  </Target>
+
+  <Target Name="RemoveAspNetCoreToolsPackMetadataFiles" AfterTargets="PackTool">
+    <ItemGroup>
+      <TfmSpecificPackageFile Remove="@(TfmSpecificPackageFile)"
+                              Condition="'%(TfmSpecificPackageFile.FileName)%(TfmSpecificPackageFile.Extension)' == 'DotnetToolSettings.xml'" />
+      <TfmSpecificPackageFile Remove="@(TfmSpecificPackageFile)"
+                              Condition="'%(TfmSpecificPackageFile.Extension)' == '.json' and $([System.String]::Copy('%(TfmSpecificPackageFile.FileName)').EndsWith('.runtimeconfig'))" />
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -14,8 +14,8 @@
 namespace System.Runtime.CompilerServices
 {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    file sealed class InterceptsLocationAttribute : System.Attribute
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)
         {
@@ -69,15 +69,15 @@ namespace Microsoft.Extensions.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file class GeneratedValidatableInfoResolver : global::Microsoft.Extensions.Validation.IValidatableInfoResolver
     {
-        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
-            validatableInfo = null;
+            validatableTypeInfo = null;
             if (type == typeof(global::DerivedType))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::DerivedType),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::DerivedType),
                             propertyType: typeof(string),
                             name: "Value3",
@@ -90,16 +90,16 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             if (type == typeof(global::BaseType))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::BaseType),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::BaseType),
                             propertyType: typeof(int),
                             name: "Value1",
-                            displayNameInfo: new LiteralDisplayName("Value 1")
+                            displayNameInfo: new global::Microsoft.Extensions.Validation.Generated.LiteralDisplayName("Value 1")
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::BaseType),
                             propertyType: typeof(string),
                             name: "Value2",
@@ -112,10 +112,10 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             if (type == typeof(global::DerivedValidatableType))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::DerivedValidatableType),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::DerivedValidatableType),
                             propertyType: typeof(string),
                             name: "Value3",
@@ -128,7 +128,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             if (type == typeof(global::BaseValidatableType))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::BaseValidatableType),
                     members: [],
                     displayNameInfo: null
@@ -137,16 +137,16 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             if (type == typeof(global::ContainerType))
             {
-                validatableInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::ContainerType),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ContainerType),
                             propertyType: typeof(global::BaseType),
                             name: "BaseType",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ContainerType),
                             propertyType: typeof(global::BaseValidatableType),
                             name: "BaseValidatableType",
@@ -162,9 +162,9 @@ namespace Microsoft.Extensions.Validation.Generated
         }
 
         // No-ops, rely on runtime code for ParameterInfo-based resolution
-        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
+        public bool TryGetValidatableParameterInfo(global::System.Reflection.ParameterInfo parameterInfo, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
     }
@@ -178,7 +178,7 @@ namespace Microsoft.Extensions.Validation.Generated
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
             {
-                options.Resolvers.Insert(0, new GeneratedValidatableInfoResolver());
+                options.Resolvers.Insert(0, new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableInfoResolver());
                 if (configureOptions is not null)
                 {
                     configureOptions(options);

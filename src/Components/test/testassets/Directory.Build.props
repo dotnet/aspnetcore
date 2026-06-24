@@ -2,7 +2,8 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
+    <!-- TypeScript here is built via npm/rollup; block the MSBuild TypeScript toolchain. -->
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <PropertyGroup>
