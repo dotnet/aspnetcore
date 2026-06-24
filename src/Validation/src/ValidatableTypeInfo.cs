@@ -80,19 +80,20 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
     /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
     /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
     /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
-    public IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions)
+    public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
     {
         if (FindLocalMember(propertyName) is { } localMember)
         {
-            return localMember;
+            validatablePropertyInfo = localMember;
+            return true;
         }
 
         foreach (var @interface in _implementedInterfaces)
         {
             if (validationOptions.TryGetValidatableTypeInfo(@interface, out var interfaceTypeInfo) &&
-                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions) is { } interfaceProperty)
+                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo))
             {
-                return interfaceProperty;
+                return true;
             }
         }
 
@@ -101,13 +102,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
         {
             if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
             {
-                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions);
+                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo);
             }
 
             baseType = baseType.BaseType;
         }
 
-        return null;
+        validatablePropertyInfo = null;
+        return false;
     }
 
     private ValidatablePropertyInfo? FindLocalMember(string memberName)

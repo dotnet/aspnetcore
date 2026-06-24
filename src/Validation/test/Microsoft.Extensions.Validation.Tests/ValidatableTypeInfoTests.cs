@@ -649,7 +649,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryFindProperty_ReturnsNull_WhenPropertyNotFound()
+    public void TryFindProperty_ReturnsFalse_WhenPropertyNotFound()
     {
         var typeInfo = new TestValidatableTypeInfo(typeof(Person), []);
         var options = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
@@ -657,7 +657,8 @@ public class ValidatableTypeInfoTests
             { typeof(Person), typeInfo },
         });
 
-        Assert.Null(typeInfo.TryFindProperty("NonExistent", options));
+        Assert.False(typeInfo.TryFindProperty("NonExistent", options, out var validatablePropertyInfo));
+        Assert.Null(validatablePropertyInfo);
     }
 
     [Fact]
@@ -670,7 +671,7 @@ public class ValidatableTypeInfoTests
             { typeof(Person), typeInfo },
         });
 
-        var retrievedNameProperty = typeInfo.TryFindProperty("Name", options);
+        Assert.True(typeInfo.TryFindProperty("Name", options, out var retrievedNameProperty));
         Assert.NotNull(retrievedNameProperty);
         Assert.Same(nameProperty, retrievedNameProperty);
     }
@@ -691,15 +692,15 @@ public class ValidatableTypeInfoTests
             { typeof(DerivedEntity), derivedType },
         });
 
-        var localProperty = derivedType.TryFindProperty("Name", options);
+        Assert.True(derivedType.TryFindProperty("Name", options, out var localProperty));
         Assert.NotNull(localProperty);
         Assert.Same(nameProperty, localProperty);
 
-        var inheritedProperty = derivedType.TryFindProperty("Id", options);
+        Assert.True(derivedType.TryFindProperty("Id", options, out var inheritedProperty));
         Assert.NotNull(inheritedProperty);
         Assert.Same(idProperty, inheritedProperty);
 
-        var missingProperty = derivedType.TryFindProperty("NonExistent", options);
+        Assert.False(derivedType.TryFindProperty("NonExistent", options, out var missingProperty));
         Assert.Null(missingProperty);
     }
 
@@ -719,7 +720,7 @@ public class ValidatableTypeInfoTests
             { typeof(DerivedEntity), derivedType },
         });
 
-        var propertyInfo = derivedType.TryFindProperty("Name", options);
+        Assert.True(derivedType.TryFindProperty("Name", options, out var propertyInfo));
         Assert.NotNull(propertyInfo);
         Assert.Same(derivedNameProperty, propertyInfo);
     }
@@ -737,11 +738,11 @@ public class ValidatableTypeInfoTests
             { typeof(DerivedEntity), derivedType },
         });
 
-        var localProperty = derivedType.TryFindProperty("Name", options);
+        Assert.True(derivedType.TryFindProperty("Name", options, out var localProperty));
         Assert.NotNull(localProperty);
         Assert.Same(nameProperty, localProperty);
 
-        var inheritedProperty = derivedType.TryFindProperty("Id", options);
+        Assert.False(derivedType.TryFindProperty("Id", options, out var inheritedProperty));
         Assert.Null(inheritedProperty);
     }
 
@@ -763,15 +764,15 @@ public class ValidatableTypeInfoTests
 
         Assert.True(options.TryGetValidatableTypeInfo(typeof(DerivedEntity), out var derivedEntityInfo));
 
-        var fromDerived = derivedEntityInfo.TryFindProperty("Name", options);
+        Assert.True(derivedEntityInfo.TryFindProperty("Name", options, out var fromDerived));
         Assert.NotNull(fromDerived);
         Assert.Same(nameProperty, fromDerived);
 
-        var fromIntermediate = derivedEntityInfo.TryFindProperty("CreatedAt", options);
+        Assert.True(derivedEntityInfo.TryFindProperty("CreatedAt", options, out var fromIntermediate));
         Assert.NotNull(fromIntermediate);
         Assert.Same(createdAtProperty, fromIntermediate);
 
-        var fromBase = derivedEntityInfo.TryFindProperty("Id", options);
+        Assert.True(derivedEntityInfo.TryFindProperty("Id", options, out var fromBase));
         Assert.NotNull(fromBase);
         Assert.Same(idProperty, fromBase);
     }
@@ -792,7 +793,7 @@ public class ValidatableTypeInfoTests
             { typeof(AuditableThing), thingTypeInfo },
         });
 
-        var resolved = thingTypeInfo.TryFindProperty("CreatedAt", options);
+        Assert.True(thingTypeInfo.TryFindProperty("CreatedAt", options, out var resolved));
         Assert.NotNull(resolved);
         Assert.Same(auditedProperty, resolved);
     }
