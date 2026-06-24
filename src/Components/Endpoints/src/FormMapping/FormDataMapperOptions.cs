@@ -67,12 +67,17 @@ internal sealed class FormDataMapperOptions
             }
         }
 
-        throw new InvalidOperationException(
-            $"Multiple public constructors were found for type '{type.Name}'. " +
-            "The framework cannot determine which constructor to use. " +
-            "Ensure that the type has either a single public constructor, a parameterless constructor, " +
-            "or make additional constructors non-public."
-        );
+        var constructors = type.GetConstructors();
+        if (constructors.Length > 1)
+        {
+            throw new InvalidOperationException(
+                $"Multiple public constructors were found for type '{type.FullName}'. " +
+                "The framework cannot determine which constructor to use. " +
+                "Ensure that the type has either a single public constructor, a parameterless constructor, " +
+                "or make additional constructors non-public.");
+        }
+
+        throw new InvalidOperationException($"No converter registered for type '{type.FullName}'.");
     }
 
     [RequiresDynamicCode(FormMappingHelpers.RequiresDynamicCodeMessage)]

@@ -134,9 +134,17 @@ internal partial class FormDataMetadataFactory(List<IFormDataConverterFactory> f
                 }
                 else if (constructors.Length > 1)
                 {
-                    // We can't select the constructor when there are multiple of them.
-                    Log.MultiplePublicConstructorsFound(_logger, type);
-                    return null;
+                    var parameterless = constructors.FirstOrDefault(c => c.GetParameters().Length == 0);
+                    if (parameterless != null)
+                    {
+                        result.Constructor = parameterless;
+                    }
+                    else
+                    {
+                        // We can't select the constructor when there are multiple of them.
+                        Log.MultiplePublicConstructorsFound(_logger, type);
+                        return null;
+                    }
                 }
                 else if (!type.IsValueType)
                 {

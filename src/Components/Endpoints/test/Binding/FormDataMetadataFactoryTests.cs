@@ -532,7 +532,7 @@ public class FormDataMetadataFactoryTests
     }
 
     [Fact]
-    public void CreateMetadata_ReturnsNull_ForTypesWithMultiplePublicConstructors()
+    public void CreateMetadata_ForTypesWithMultiplePublicConstructors()
     {
         // Arrange
         var (factory, options, logs) = ResolveFactory();
@@ -540,7 +540,7 @@ public class FormDataMetadataFactoryTests
         var metadata = factory.GetOrCreateMetadataFor(typeof(TypeWithMultipleConstructors), options);
 
         // Assert
-        Assert.Null(metadata);
+        Assert.NotNull(metadata);
     }
 
     [Fact]

@@ -8,21 +8,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints.Tests.FormMapping;
 public class MultipleConstructorsTests
 {
     [Fact]
+
     public void ResolveConverter_WithParameterlessConstructor_ReturnsConverter()
     {
         var options = new FormDataMapperOptions();
 
-        try
-        {
-            var converter = options.ResolveConverter<TypeWithParameterlessConstructor>();
-            Assert.NotNull(converter);
-        }
-        catch (InvalidOperationException ex)
-        {
-            // If the resolver throws, ensure the exception is the informative one about multiple constructors
-            Assert.Contains("Multiple public constructors were found for type", ex.Message);
-            Assert.Contains("parameterless constructor", ex.Message, StringComparison.OrdinalIgnoreCase);
-        }
+        var converter = options.ResolveConverter<TypeWithParameterlessConstructor>();
+
+        Assert.NotNull(converter);
     }
 
     [Fact]
