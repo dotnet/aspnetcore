@@ -1118,7 +1118,7 @@ public partial class HttpConnectionDispatcherTests
     }
 
     [Fact]
-    public async Task LongPollingRefreshedPrincipalIgnoredWhenAuthenticationRefreshDisabled()
+    public async Task LongPollingChangedUserRejectedWhenAuthenticationRefreshDisabled()
     {
         using (StartVerifiableLog())
         {
@@ -1144,18 +1144,20 @@ public partial class HttpConnectionDispatcherTests
             var context1 = BuildAuthPollContext(connection, sp, userA, DateTimeOffset.UtcNow.AddMinutes(5));
             await dispatcher.ExecuteAsync(context1, options, app).DefaultTimeout();
             Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
+            Assert.Same(userA, connection.User);
 
-            // A changed principal on a poll with authentication-refresh disabled keeps the legacy raw-swap behavior:
-            // the callback never runs but connection.User still tracks the latest poll principal.
+            // With authentication-refresh disabled the connection-hardening reject applies: a poll whose
+            // NameIdentifier differs from the connection's user is rejected (403). The callback never runs,
+            // the original user is preserved, and the connection is left intact for a later poll.
             var userB = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "userB") }, "Test"));
             var context2 = BuildAuthPollContext(connection, sp, userB, DateTimeOffset.UtcNow.AddMinutes(30));
-            var pollTask = dispatcher.ExecuteAsync(context2, options, app);
-            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Unblock")).AsTask().DefaultTimeout();
-            await pollTask.DefaultTimeout();
+            await dispatcher.ExecuteAsync(context2, options, app).DefaultTimeout();
 
-            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+            Assert.Equal(StatusCodes.Status403Forbidden, context2.Response.StatusCode);
             Assert.Equal(0, refreshCount);
-            Assert.Same(userB, connection.User);
+            Assert.Same(userA, connection.User);
+            Assert.Null(connection.DisposeAndRemoveTask);
+            Assert.NotEqual(HttpConnectionStatus.Disposed, connection.Status);
         }
     }
 
