@@ -514,9 +514,8 @@ public partial class ParameterViewTest
 
         // Assert
         Assert.Equal(
-            $"Error setting parameter '{nameof(HasInstanceProperties.IntProp)}' on component '{typeof(HasInstanceProperties).FullName}'. " +
-            $"Received value of type 'System.String' but expected type 'System.Int32'. " +
-            $"This may have been caused by an attribute splat (@attributes) with an invalid type.",
+            $"Unable to set property '{nameof(HasInstanceProperties.IntProp)}' on object of " +
+            $"type '{typeof(HasInstanceProperties).FullName}'. The error was: {ex.InnerException.Message}",
             ex.Message);
     }
 
@@ -536,9 +535,8 @@ public partial class ParameterViewTest
 
         // Assert
         Assert.Equal(
-            $"Error setting parameter '{nameof(HasPropertyWhoseSetterThrows.StringProp)}' on component '{typeof(HasPropertyWhoseSetterThrows).FullName}'. " +
-            $"Received value of type 'System.String' but expected type 'System.String'. " +
-            $"This may have been caused by an attribute splat (@attributes) with an invalid type.",
+            $"Unable to set property '{nameof(HasPropertyWhoseSetterThrows.StringProp)}' on object of " +
+            $"type '{typeof(HasPropertyWhoseSetterThrows).FullName}'. The error was: {ex.InnerException.Message}",
             ex.Message);
     }
 

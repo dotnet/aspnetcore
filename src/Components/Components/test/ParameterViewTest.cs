@@ -569,7 +569,7 @@ public partial class ParameterViewTest
     }
 
     [Fact]
-    public void TryGetValue_ThrowsClearErrorMessage_OnInvalidCast()
+    public void TryGetValue_ThrowsInvalidCastException_WithParameterContext()
     {
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
         {
@@ -581,7 +581,7 @@ public partial class ParameterViewTest
             parameters.TryGetValue<double>("DebounceInterval", out _));
 
         Assert.Equal(
-            "Error setting parameter 'DebounceInterval'. Received value of type 'System.Int32' but expected type 'System.Double'.",
+            "Error setting parameter 'DebounceInterval'. Unable to cast object of type 'System.Int32' to type 'System.Double'.",
             ex.Message);
     }
 

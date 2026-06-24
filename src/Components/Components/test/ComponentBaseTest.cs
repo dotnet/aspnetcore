@@ -595,7 +595,7 @@ public class ComponentBaseTest
         var ex = Assert.Throws<InvalidOperationException>(() =>
             component.SetParametersAsync(parameters).GetAwaiter().GetResult());
 
-        Assert.Contains("Error setting parameter 'Value'", ex.Message);
+        Assert.Contains("Unable to set property 'Value'", ex.Message);
     }
 
     private class TestComponent : ComponentBase

@@ -175,16 +175,11 @@ internal static class ComponentProperties
             {
                 writer.SetValue(target, value);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                var targetType = target.GetType();
-                var propertyType = writer.PropertyType;
-                var valueType = value?.GetType();
-
                 throw new InvalidOperationException(
-                    $"Error setting parameter '{parameterName}' on component '{targetType.FullName}'. " +
-                    $"Received value of type '{valueType}' but expected type '{propertyType}'. " +
-                    $"This may have been caused by an attribute splat (@attributes) with an invalid type.");
+                    $"Unable to set property '{parameterName}' on object of " +
+                    $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
             }
         }
     }
