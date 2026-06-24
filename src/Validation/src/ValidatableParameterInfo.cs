@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.Validation;
 /// Contains validation information for a parameter.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-public abstract class ValidatableParameterInfo : IValidatableInfo
+public abstract class ValidatableParameterInfo : IValidatableParameterInfo
 {
     private RequiredAttribute? _requiredAttribute;
 
@@ -20,7 +20,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </summary>
     /// <param name="parameterType">The <see cref="Type"/> associated with the parameter.</param>
     /// <param name="name">The parameter name.</param>
-    /// <param name="displayNameInfo">An optional <see cref="DisplayNameInfo"/> that resolves the
+    /// <param name="displayNameInfo">An optional strategy that resolves the
     /// display name for the parameter at validation time. When <see langword="null"/>, the
     /// validation pipeline uses <paramref name="name"/> as the display name.</param>
     protected ValidatableParameterInfo(
@@ -62,13 +62,7 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        // Skip validation if value is null and parameter is optional
-        if (value == null && ParameterType.IsNullable())
-        {
-            return;
-        }
-
-        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, declaringType: null) ?? Name;
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
 
         context.ValidationContext.DisplayName = displayName;
         context.ValidationContext.MemberName = Name;

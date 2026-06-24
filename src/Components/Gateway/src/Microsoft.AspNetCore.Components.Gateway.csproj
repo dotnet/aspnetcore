@@ -32,6 +32,11 @@
     <Reference Include="Yarp.ReverseProxy" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocolVersion)" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHostingVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCoreVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttpVersion)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntimeVersion)" />
   </ItemGroup>
 
   <Target Name="_CreateRuntimeConfig" BeforeTargets="CoreBuild">
