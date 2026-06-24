@@ -76,7 +76,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
+        if (typeSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
         {
             return false;
         }
@@ -189,7 +189,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
-                        // Skip properties that are not accessible from generated code
+                        // We only validate public properties for now.
+                        // We could consider in the future if we want to support internal properties.
                         if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
                         {
                             continue;
@@ -250,7 +251,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            // Skip properties that are not accessible from generated code
+            // We only validate public properties for now.
+            // We could consider in the future if we want to support internal properties.
             if (member.DeclaredAccessibility is not Accessibility.Public)
             {
                 continue;

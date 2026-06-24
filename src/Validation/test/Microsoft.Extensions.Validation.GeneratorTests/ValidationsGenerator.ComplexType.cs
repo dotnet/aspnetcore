@@ -625,6 +625,76 @@ public class AccessibilityTestType
     }
 
     [Fact]
+    public async Task ValidatesInternalTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/internal-type", (InternalValidationType model) => Results.Ok("Passed"!));
+
+app.Run();
+
+internal class InternalValidationType
+{
+    [Required]
+    public string PublicProperty { get; set; } = "";
+
+    public InternalNestedType Nested { get; set; } = new();
+}
+
+internal class InternalNestedType
+{
+    [Required]
+    public string RequiredProperty { get; set; } = "";
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/internal-type", async (endpoint, serviceProvider) =>
+        {
+            var payload = """
+            {
+                "PublicProperty": "",
+                "Nested": {
+                    "RequiredProperty": ""
+                }
+            }
+            """;
+            var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+            await endpoint.RequestDelegate(context);
+
+            var problemDetails = await AssertBadRequest(context);
+            Assert.Collection(problemDetails.Errors.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("Nested.RequiredProperty", kvp.Key);
+                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("PublicProperty", kvp.Key);
+                    Assert.Equal("The PublicProperty field is required.", kvp.Value.Single());
+                });
+        });
+    }
+
+    [Fact]
     public async Task ValidatesPropertiesWithJsonIgnoreWhenWritingConditions()
     {
         // Arrange
