@@ -20,6 +20,12 @@ internal sealed class KestrelMetrics
 
     public const string ErrorTypeAttributeName = "error.type";
 
+    // Tag indicating whether a bare LF terminated request was accepted or rejected.
+    public const string BareLineFeedOutcomeAttributeName = "kestrel.bare_line_feed.outcome";
+    public const string BareLineFeedOutcomeAccepted = "accepted";
+    public const string BareLineFeedOutcomeRejected = "rejected";
+
+    public const string Http10 = "1.0";
     public const string Http11 = "1.1";
     public const string Http2 = "2";
     public const string Http3 = "3";
@@ -28,6 +34,7 @@ internal sealed class KestrelMetrics
     private readonly UpDownCounter<long> _activeConnectionsCounter;
     private readonly Histogram<double> _connectionDuration;
     private readonly Counter<long> _rejectedConnectionsCounter;
+    private readonly Counter<long> _bareLineFeedRequestsCounter;
     private readonly UpDownCounter<long> _queuedConnectionsCounter;
     private readonly UpDownCounter<long> _queuedRequestsCounter;
     private readonly UpDownCounter<long> _currentUpgradedRequestsCounter;
@@ -53,6 +60,11 @@ internal sealed class KestrelMetrics
            "kestrel.rejected_connections",
             unit: "{connection}",
             description: "Number of connections rejected by the server. Connections are rejected when the currently active count exceeds the value configured with MaxConcurrentConnections.");
+
+        _bareLineFeedRequestsCounter = _meter.CreateCounter<long>(
+           "kestrel.bare_line_feed_requests",
+            unit: "{request}",
+            description: "Number of HTTP/1.x requests that used a bare LF (instead of CRLF) as a line terminator in the request line, headers, or trailers.");
 
         _queuedConnectionsCounter = _meter.CreateUpDownCounter<long>(
            "kestrel.queued_connections",
@@ -160,6 +172,21 @@ internal sealed class KestrelMetrics
         var tags = new TagList();
         InitializeConnectionTags(ref tags, metricsContext);
         _rejectedConnectionsCounter.Add(1, tags);
+    }
+
+    public void BareLineFeedRequest(ConnectionMetricsContext metricsContext, bool rejected, string httpVersion)
+    {
+        if (!_bareLineFeedRequestsCounter.Enabled)
+        {
+            return;
+        }
+
+        var tags = new TagList();
+        InitializeConnectionTags(ref tags, metricsContext);
+        tags.Add("network.protocol.name", "http");
+        tags.Add("network.protocol.version", httpVersion);
+        tags.TryAddTag(BareLineFeedOutcomeAttributeName, rejected ? BareLineFeedOutcomeRejected : BareLineFeedOutcomeAccepted);
+        _bareLineFeedRequestsCounter.Add(1, tags);
     }
 
     public void ConnectionQueuedStart(ConnectionMetricsContext metricsContext)

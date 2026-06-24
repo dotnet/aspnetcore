@@ -128,7 +128,7 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         }
         _hasPendingQueuedRender = false;
 
-        if (_hasNeverRendered || ShouldRender() || _renderHandle.IsRenderingOnMetadataUpdate)
+        if (_hasNeverRendered || ShouldRender() || (_renderHandle.IsRenderingOnMetadataUpdate && _renderHandle.IsFirstHotReloadRender()))
         {
             _hasPendingQueuedRender = true;
 
