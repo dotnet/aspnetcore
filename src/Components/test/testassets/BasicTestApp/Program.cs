@@ -24,7 +24,10 @@ public class Program
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-        builder.Services.AddValidation();
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        builder.Services.AddValidation(options =>
+            options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
+#pragma warning restore ASP0029
 
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.RootComponents.Add<Index>("root");
