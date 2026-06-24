@@ -713,6 +713,23 @@ public class EditContextAsyncTest
     });
 
     [Fact]
+    public Task ValidateAsync_SyncHandlerThrows_ReturnsFaultedTaskNotThrownSynchronously() => RunOnDispatcher(async () =>
+    {
+        // A synchronous handler exception is delivered through the returned task (matching the
+        // Task-returning convention), not thrown synchronously from the ValidateAsync call itself.
+        // Reaching the assertions below proves the call did not throw synchronously.
+        var editContext = new EditContext(new TestModel());
+        editContext.OnValidationRequested += (_, _) => throw new DivideByZeroException("sync failure");
+
+        var task = editContext.ValidateAsync();
+
+        Assert.True(task.IsFaulted);
+        Assert.False(editContext.IsValidationPending());
+        var exception = await Assert.ThrowsAsync<DivideByZeroException>(() => task);
+        Assert.Equal("sync failure", exception.Message);
+    });
+
+    [Fact]
     public Task ValidateAsync_SyncHandlerThrowsAfterTaskRegistered_PropagatesAndClearsPending() => RunOnDispatcher(async () =>
     {
         // When a later sync handler throws, the multicast chain aborts. The framework observes the
@@ -790,12 +807,13 @@ public class EditContextAsyncTest
     });
 
     [Fact]
-    public Task ValidateAsync_AlreadyCanceledToken_RunsHandlersThenThrows() => RunOnDispatcher(async () =>
+    public Task ValidateAsync_AlreadyCanceledToken_AllHandlersSynchronous_CompletesWithoutThrowing() => RunOnDispatcher(async () =>
     {
-        // Caller-provided already-cancelled token: ValidateAsync still cancels superseded
-        // per-field tasks and invokes the registered handlers before honoring cancellation
-        // at the post-await ThrowIfCancellationRequested. This matches the typical pattern
-        // where "the cancellation is in progress, not 'we never started'".
+        // Caller-provided already-cancelled token, but every handler completes synchronously, so there
+        // is no awaited async work and the pass does not observe the token: it supersedes pending
+        // per-field tasks, runs the handlers, and returns the validation result without throwing.
+        // Caller cancellation is honored only when there is genuinely asynchronous work to await
+        // (see ValidateAsync_CallerCancelsMidFlight_ThrowsOperationCanceledException).
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
         var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -816,8 +834,9 @@ public class EditContextAsyncTest
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        await Assert.ThrowsAsync<OperationCanceledException>(() => editContext.ValidateAsync(cts.Token));
+        var result = await editContext.ValidateAsync(cts.Token);
 
+        Assert.True(result);
         Assert.Equal(1, syncCount);
         Assert.Equal(1, asyncCount);
         Assert.True(capturedToken.IsCancellationRequested);

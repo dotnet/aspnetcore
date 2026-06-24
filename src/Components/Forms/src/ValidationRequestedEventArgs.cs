@@ -91,6 +91,11 @@ public sealed class ValidationRequestedEventArgs : EventArgs
         (_validationTasks ??= []).Add(task);
     }
 
+    // Per-pass orchestration state used by EditContext.Validate / ValidateAsync.
+    internal bool NotifyPending { get; set; }
+
+    internal bool Result { get; set; }
+
     internal IReadOnlyList<Task> ValidationTasks
         => _validationTasks is { } tasks ? tasks : Array.Empty<Task>();
 }

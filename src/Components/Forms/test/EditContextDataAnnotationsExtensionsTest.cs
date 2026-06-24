@@ -171,8 +171,11 @@ public class EditContextDataAnnotationsExtensionsTest
     }
 
     [Fact]
-    public async Task FormLevelAsyncValidationProducesMessages()
+    public Task FormLevelAsyncValidationProducesMessages() => RunOnDispatcher(async () =>
     {
+        // Runs on the dispatcher to honor Blazor's single-threaded model: the DataAnnotations
+        // integration mutates non-thread-safe state (the ValidationMessageStore and the validation
+        // path to field mapping) from async continuations, so off-dispatcher execution can race.
         // A plain model (no AddValidation) with an async [ValidationAttribute] validates through
         // Validator.TryValidateObjectAsync and surfaces messages via ValidateAsync.
         var model = new AsyncTestModel();
@@ -183,19 +186,23 @@ public class EditContextDataAnnotationsExtensionsTest
 
         Assert.False(isValid);
         Assert.Equal(new[] { "AsyncString:asyncnonempty" }, editContext.GetValidationMessages());
-    }
+    });
 
     [Fact]
-    public void FormLevelAsyncValidationMakesValidateThrow()
+    public Task FormLevelAsyncValidationMakesValidateThrow() => RunOnDispatcher(() =>
     {
-        // Validate() cannot await an async validator, so it throws and directs the caller to ValidateAsync.
+        // Runs on the dispatcher to honor Blazor's single-threaded model (see
+        // FormLevelAsyncValidationProducesMessages). On the dispatcher the registered async validation
+        // task cannot complete while the synchronous Validate() holds the thread, so Validate() observes
+        // it as incomplete and throws deterministically, directing the caller to ValidateAsync.
         var model = new AsyncTestModel();
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
         var ex = Assert.Throws<InvalidOperationException>(() => editContext.Validate());
         Assert.Contains(nameof(EditContext.ValidateAsync), ex.Message);
-    }
+        return Task.CompletedTask;
+    });
 
     [Fact]
     public Task FieldLevelAsyncValidationBecomesPendingThenSettles() => RunOnDispatcher(async () =>
