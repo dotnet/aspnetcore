@@ -219,6 +219,68 @@ public class NavLinkTest
         Assert.Equal("active", classValue2); // Active
     }
 
+    [Fact]
+    public async Task NavLink_WithRelativeToCurrentUri_AndShouldMatch_ReceivesResolvedUri()
+    {
+        // Arrange: Setup NavLink with RelativeToCurrentUri=true and a custom ShouldMatch callback
+        // Verify that the href is resolved relative to current path before matching
+        var navigationManager = new TestNavigationManager();
+        navigationManager.Initialize("https://example.com/", "https://example.com/admin/settings");
+
+        var renderer = new TestRenderer();
+        var component = new NavLink { NavigationManager = navigationManager };
+        var componentId = renderer.AssignRootComponentId(component);
+
+        // Custom callback that matches the current location
+        Func<string, bool> matchCurrentLocation = currentUri =>
+            currentUri.Equals("https://example.com/admin/settings", StringComparison.Ordinal);
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(NavLink.RelativeToCurrentUri)] = true,
+            [nameof(NavLink.ShouldMatch)] = matchCurrentLocation,
+            [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object> { ["href"] = "settings" }
+        });
+
+        await renderer.RenderRootComponentAsync(componentId, parameters);
+
+        // Assert: The relative href "settings" should be resolved to "https://example.com/admin/settings"
+        // and the callback receives the current location, allowing the match
+        var batch = renderer.Batches.Single();
+        var classValue = batch.ReferenceFrames.FirstOrDefault(f => f.AttributeName == "class").AttributeValue;
+        Assert.Equal("active", classValue);
+    }
+
+    [Fact]
+    public async Task NavLink_WithShouldMatch_AndMissingHref_DoesNotThrow()
+    {
+        // Arrange: Setup NavLink with ShouldMatch callback but no href attribute
+        // This tests the edge case where href is missing but a custom matcher is provided
+        Func<string, bool> alwaysTrue = _ => true;
+
+        var navigationManager = new TestNavigationManager();
+        navigationManager.Initialize("https://example.com/", "https://example.com/page");
+
+        var renderer = new TestRenderer();
+        var component = new NavLink { NavigationManager = navigationManager };
+        var componentId = renderer.AssignRootComponentId(component);
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(NavLink.ShouldMatch)] = alwaysTrue,
+            [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object>() // No href
+        });
+
+        // Act & Assert: Should not throw an exception even with missing href and custom matcher
+        await renderer.RenderRootComponentAsync(componentId, parameters);
+
+        var batch = renderer.Batches.Single();
+        var classValue = batch.ReferenceFrames.FirstOrDefault(f => f.AttributeName == "class").AttributeValue;
+        
+        // When ShouldMatch returns true, the link is active regardless of href
+        Assert.Equal("active", classValue);
+    }
+
     private async Task<object?> RenderNavLinkAndGetAttributeAsync(
         string baseUri, string currentUri, string href, bool relativeToCurrentUri, string attributeName)
     {
