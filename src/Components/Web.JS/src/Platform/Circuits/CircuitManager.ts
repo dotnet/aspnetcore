@@ -58,7 +58,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _isFirstRender = true;
 
-  private _activeStreamCount = 0;
+  private _activeStreamTrackers = new Set<object>();
 
   private _streamDrainResolvers: Array<() => void> = [];
 
@@ -543,15 +543,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private trackActiveStream(): () => void {
-    this._activeStreamCount++;
-    let untracked = false;
+    const token = {};
+    this._activeStreamTrackers.add(token);
     return () => {
-      if (untracked) {
-        return;
-      }
-      untracked = true;
-      this._activeStreamCount = Math.max(0, this._activeStreamCount - 1);
-      if (this._activeStreamCount === 0) {
+      // delete() is no-op if this tracker was already untracked
+      if (this._activeStreamTrackers.delete(token) && this._activeStreamTrackers.size === 0) {
         const resolvers = this._streamDrainResolvers.splice(0);
         for (const resolve of resolvers) {
           resolve();
@@ -564,11 +560,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // (tracked only while auto-pause is enabled) complete. The wait honors `signal` so a
   // visibility change can cancel it instead of pausing and then immediately auto-resuming.
   public async waitForActiveStreamsToDrain(signal?: AbortSignal): Promise<void> {
-    if (this._activeStreamCount === 0 || signal?.aborted) {
+    if (this._activeStreamTrackers.size === 0 || signal?.aborted) {
       return;
     }
 
-    this._logger.log(LogLevel.Information, `Pause deferred: waiting for ${this._activeStreamCount} active circuit operation(s) to complete.`);
+    this._logger.log(LogLevel.Information, `Pause deferred: waiting for ${this._activeStreamTrackers.size} active circuit operation(s) to complete.`);
 
     const startedAt = Date.now();
     await new Promise<void>(resolve => {
@@ -596,7 +592,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private resetActiveStreams(): void {
-    this._activeStreamCount = 0;
+    this._activeStreamTrackers.clear();
     this._pendingJsCallTracking.clear();
     this._pendingDotNetCallTracking.clear();
     const resolvers = this._streamDrainResolvers.splice(0);
