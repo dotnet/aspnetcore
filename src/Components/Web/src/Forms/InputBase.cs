@@ -83,10 +83,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
             var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
             if (hasChanged)
             {
-                _parsingFailed = false;
-                _incomingValueBeforeParsing = null;
-
-                _parsingValidationMessages?.Clear();
+                ResetParsingState();
 
                 // If we don't do this, then when the user edits from A to B, we'd:
                 // - Do a render that changes back to A
@@ -244,6 +241,14 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         }
     }
 
+    private void ResetParsingState()
+    {
+        _parsingFailed = false;
+        _incomingValueBeforeParsing = null;
+
+        _parsingValidationMessages?.Clear();
+    }
+
     private string GetFieldName()
         => _formattedValueExpression ??= FieldPrefix?.GetFieldName(ValueExpression!)
             ?? ExpressionFormatter.FormatLambda(ValueExpression!);
@@ -258,21 +263,16 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
         var previousValue = Value;
         parameters.SetParameterProperties(this);
 
-        // If the parent updated the `Value` parameter to a different value, clear any
-        // parsing failure state so the input doesn't continue to display the rejected
-        // incoming string.
+        // Note: We use value equality to detect changes. This works correctly for
+        // primitives, value types, and immutable types. For mutable reference types,
+        // the caller is responsible for ensuring new instances are provided when
+        // the logical value has changed.
         if (_hasInitializedParameters && !EqualityComparer<TValue>.Default.Equals(Value, previousValue))
         {
             if (_parsingFailed)
             {
-                _parsingFailed = false;
-                _incomingValueBeforeParsing = null;
-
-                if (_parsingValidationMessages != null)
-                {
-                    _parsingValidationMessages.Clear();
-                    EditContext?.NotifyValidationStateChanged();
-                }
+                ResetParsingState();
+                EditContext?.NotifyValidationStateChanged();
             }
         }
 
