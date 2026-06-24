@@ -64,34 +64,6 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Gets all types that the specified type implements or inherits from.
-    /// </summary>
-    /// <param name="type">The type to analyze.</param>
-    /// <returns>A collection containing all implemented interfaces and all base types of the given type.</returns>
-    public static List<Type> GetAllImplementedTypes([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] this Type type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-
-        var implementedTypes = new List<Type>();
-
-        // Yield all interfaces directly and indirectly implemented by this type
-        foreach (var interfaceType in type.GetInterfaces())
-        {
-            implementedTypes.Add(interfaceType);
-        }
-
-        // Finally, walk up the inheritance chain
-        var baseType = type.BaseType;
-        while (baseType != null && baseType != typeof(object))
-        {
-            implementedTypes.Add(baseType);
-            baseType = baseType.BaseType;
-        }
-
-        return implementedTypes;
-    }
-
-    /// <summary>
     /// Determines whether the specified type implements the given interface.
     /// </summary>
     /// <param name="type">The type to check.</param>
