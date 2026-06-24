@@ -265,7 +265,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = document.Paths["/api/{id}/{date}"].Operations[HttpMethod.Get];
             Assert.Collection(operation.Parameters, parameter =>
             {
-                Assert.Equal("Id", parameter.Name);
+                Assert.Equal("id", parameter.Name);
                 Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
                 Assert.Equal("uuid", parameter.Schema.Format);
             },
