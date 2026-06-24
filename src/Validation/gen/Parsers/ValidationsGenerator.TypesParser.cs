@@ -75,15 +75,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
-        // Skip types that are not accessible from generated code
-        if (typeSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
+        // Skip file-local types, which are only accessible within their declaring file
+        // and cannot be referenced from generated code in a different file
+        if (typeSymbol is INamedTypeSymbol { IsFileLocal: true })
         {
             return false;
         }
 
-        // Skip file-local types, which are only accessible within their declaring file
-        // and cannot be referenced from generated code in a different file
-        if (typeSymbol is INamedTypeSymbol { IsFileLocal: true })
+        // Skip types that are not accessible from generated code
+        if (typeSymbol.DeclaredAccessibility is not (Accessibility.Public or Accessibility.Internal))
         {
             return false;
         }
