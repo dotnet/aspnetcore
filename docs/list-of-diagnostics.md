@@ -70,7 +70,7 @@
 |  __`BL0007`__ | Component parameters should be auto properties |
 |  __`BL0008`__ | Property with [SupplyParameterFromForm] should not have initializer |
 |  __`BL0009`__ | Property with [PersistentState] should not have initializer |
-|  __`BL0010`__ | Use InvokeVoidAsync instead of InvokeAsync<object> |
+|  __`BL0010`__ | Use InvokeVoidAsync instead of InvokeAsync&lt;object&gt; |
 |  __`BL0011`__ | Virtualize with ItemsProvider requires ItemComparer |
 |  __`BL0012`__ | Unnecessary StateHasChanged call |
 |  __`BL0013`__ | AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged |
