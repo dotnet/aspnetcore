@@ -12,6 +12,10 @@ public class AuthenticationStateProviderAnalyzerTest : DiagnosticVerifier
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer() => new AuthenticationStateProviderAnalyzer();
 
     private static readonly string TestDeclarations = @"
+    namespace System.Security.Claims
+    {
+        public class ClaimsPrincipal { }
+    }
 
     namespace Microsoft.AspNetCore.Components.Authorization
     {
