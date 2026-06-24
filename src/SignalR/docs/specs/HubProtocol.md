@@ -29,7 +29,7 @@ In the SignalR protocol, the following types of messages can be sent:
 | `StreamInvocation`    | Caller         | Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.                  |
 | `StreamItem`          | Callee, Caller | Indicates individual items of streamed response data from a previous `StreamInvocation` message or streamed uploads from an invocation with streamIds.                               |
 | `Completion`          | Callee, Caller | Indicates a previous `Invocation` or `StreamInvocation` has completed or a stream in an `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
-| `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
+| `CancelInvocation`    | Caller         | Sent by the client to cancel an `Invocation` or `StreamInvocation` on the server.                                              |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 | `Ack`                 | Caller, Callee | Sent by either party to acknowledge that messages have been received up to the provided sequence ID.                                                                |
 | `Sequence`            | Caller, Callee | Sent by either party as the first message when a connection reconnects. Specifies what sequence ID they will start sending messages starting at. Duplicate messages are possible to receive and should be ignored.                                                                    |
@@ -102,6 +102,12 @@ The SignalR protocol allows for multiple `StreamItem` messages to be transmitted
 On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `Completion` message.
 
 On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to handle the result. If the Caller expects only a single result, but multiple results are returned, or if the caller expects multiple results but only one result is returned, the Caller's Binder should yield an error. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `Completion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `StreamInvocation` message that started the stream. When the Callee receives a `CancelInvocation` message it will stop sending `StreamItem` messages and will send a `Completion` message. The Caller is free to ignore any `StreamItem` messages as well as the `Completion` message after sending `CancelInvocation`.
+
+## Cancellation
+
+In addition to canceling streaming invocations as described above, the Caller may send a `CancelInvocation` message with the same `Invocation ID` as a previously sent `Invocation` to request that the Callee cancel an in-progress non-streaming invocation. How the Callee handles the cancellation request is implementation-specific (for example, the .NET server surfaces it by canceling a `CancellationToken` argument on the hub method, if one is declared); the Callee is not required to abort the method, but it **MUST** still send a `Completion` message for the invocation. The Caller is free to ignore the `Completion` message after sending `CancelInvocation`.
+
+If the Callee receives a `CancelInvocation` message with an `Invocation ID` that does not match any in-progress invocation or stream, it **SHOULD** ignore the message.
 
 ## Upload streaming
 
