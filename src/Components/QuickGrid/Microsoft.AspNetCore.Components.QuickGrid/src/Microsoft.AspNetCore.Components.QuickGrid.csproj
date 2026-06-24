@@ -28,6 +28,7 @@
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
   </ItemGroup>
 
+
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.QuickGrid.Tests" />
   </ItemGroup>

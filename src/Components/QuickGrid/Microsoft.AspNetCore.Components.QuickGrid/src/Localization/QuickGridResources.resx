@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, ...</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, ...</value>
+  </resheader>
+  <data name="QuickGridPaginatorPageSummary" xml:space="preserve">
+    <value>Page {0} of {1}</value>
+  </data>
+  <data name="QuickGridPaginatorFirstPage" xml:space="preserve">
+    <value>Go to first page</value>
+  </data>
+  <data name="QuickGridPaginatorPreviousPage" xml:space="preserve">
+    <value>Go to previous page</value>
+  </data>
+  <data name="QuickGridPaginatorNextPage" xml:space="preserve">
+    <value>Go to next page</value>
+  </data>
+  <data name="QuickGridPaginatorLastPage" xml:space="preserve">
+    <value>Go to last page</value>
+  </data>
+  <data name="QuickGridPaginatorTotalItems" xml:space="preserve">
+    <value>{0} items</value>
+  </data>
+</root>
