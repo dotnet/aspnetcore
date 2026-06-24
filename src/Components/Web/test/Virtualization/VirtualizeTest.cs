@@ -1230,9 +1230,8 @@ public class VirtualizeTest
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", items as ICollection<int>);
                 builder.AddComponentParameter(3, "InitialIndex", 99999);
-                builder.AddComponentParameter(4, "InitialItemCapacity", 0);
-                builder.AddComponentParameter(5, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
-                builder.AddComponentReferenceCapture(6, c => renderedVirtualize = c as Virtualize<int>);
+                builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
+                builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
             }
         };

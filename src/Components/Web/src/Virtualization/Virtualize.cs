@@ -169,18 +169,13 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public int MaxItemCount { get; set; } = 100;
 
     /// <summary>
-    /// Gets or sets the number of items to render on initial load, before the viewport is measured.
-    ///
-    /// For SSR, this determines the initial HTML output since there's no client measurement.
-    /// The component estimates how many items fit based on <see cref="ItemSize"/> and parent height.
-    ///
-    /// For interactive modes (Blazor Server/WebAssembly), this only applies until the viewport
-    /// is measured. After that, rendering adapts to the actual container dimensions.
-    ///
-    /// Defaults to 20. Increase if you see empty space before scrolling.
+    /// Specifies the number of items to render before the viewport is measured.
+    /// Primarily used in SSR scenarios to determine the initial HTML output.
+    /// Must be a non-negative value and is only supported when using the <see cref="Items"/> property.
+    /// Not applicable for <see cref="ItemsProvider"/>, as triggering data requests during SSR is not valid.
     /// </summary>
     [Parameter]
-    public int InitialItemCapacity { get; set; } = 20;
+    public int InitialItemCapacity { get; set; }
 
     /// <summary>
     /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
