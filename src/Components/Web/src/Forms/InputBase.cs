@@ -300,14 +300,14 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     private void HandleReset(object? sender, EventArgs e)
     {
-        CurrentValueAsString = string.Empty;
+        CurrentValue = default!;
 
         // Clear parsing validation messages
-        _parsingValidationMessages?.Clear();
-
-        // Clear validation + modified state
-        EditContext?.MarkAsUnmodified();
-        EditContext?.NotifyValidationStateChanged();
+        if (_parsingValidationMessages is not null)
+        {
+            _parsingValidationMessages.Clear();
+            EditContext?.NotifyValidationStateChanged();
+        }
     }
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)

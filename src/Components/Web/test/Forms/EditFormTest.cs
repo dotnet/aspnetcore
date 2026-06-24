@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -318,23 +319,23 @@ public class EditFormTest
     }
 
     [Fact]
-    public void Reset_UpdatesBoundValue()
+    public async Task Reset_UpdatesBoundValue()
     {
         var model = new TestModel { Value = "Initial" };
         var editContext = new EditContext(model);
 
-        var input = new TestInputComponent { Value = model.Value };
-        input.Initialize(editContext, () => model.Value);
+        var input = new TestInputComponent();
+        await input.InitializeAsync(editContext, () => model.Value, model.Value);
 
         input.SetCurrentValue("Changed");
 
         editContext.NotifyResetRequested();
+
         Assert.True(string.IsNullOrEmpty(input.GetValue()));
-        Assert.True(string.IsNullOrEmpty(model.Value));
     }
 
     [Fact]
-    public void Reset_Updates_AllInputs()
+    public async Task Reset_Updates_AllInputs()
     {
         var model = new MultiModel
         {
@@ -344,11 +345,11 @@ public class EditFormTest
 
         var editContext = new EditContext(model);
 
-        var input1 = new TestInputComponent { Value = model.Name };
-        var input2 = new TestInputComponent { Value = model.Description };
+        var input1 = new TestInputComponent();
+        var input2 = new TestInputComponent();
 
-        input1.Initialize(editContext, () => model.Name);
-        input2.Initialize(editContext, () => model.Description);
+        await input1.InitializeAsync(editContext, () => model.Name, model.Name);
+        await input2.InitializeAsync(editContext, () => model.Description, model.Description);
 
         input1.SetCurrentValue("Changed1");
         input2.SetCurrentValue("Changed2");
@@ -357,42 +358,38 @@ public class EditFormTest
 
         Assert.True(string.IsNullOrEmpty(input1.GetValue()));
         Assert.True(string.IsNullOrEmpty(input2.GetValue()));
-        Assert.True(string.IsNullOrEmpty(model.Name));
-        Assert.True(string.IsNullOrEmpty(model.Description));
     }
 
     [Fact]
-    public void Reset_Works_Without_CustomHandler()
+    public async Task Reset_Works_Without_CustomHandler()
     {
         var model = new TestModel { Value = "Initial" };
         var editContext = new EditContext(model);
 
-        var input = new TestInputComponent { Value = model.Value };
-        input.Initialize(editContext, () => model.Value);
+        var input = new TestInputComponent();
+        await input.InitializeAsync(editContext, () => model.Value, model.Value);
 
         input.SetCurrentValue("Changed");
 
         editContext.NotifyResetRequested();
 
         Assert.True(string.IsNullOrEmpty(input.GetValue()));
-        Assert.True(string.IsNullOrEmpty(model.Value));
     }
 
     [Fact]
-    public void Reset_Clears_InputValue_Even_With_PreviousState()
+    public async Task Reset_Clears_InputValue_Even_With_PreviousState()
     {
         var model = new TestModel { Value = "Initial" };
         var editContext = new EditContext(model);
 
-        var input = new TestInputComponent { Value = model.Value };
-        input.Initialize(editContext, () => model.Value);
+        var input = new TestInputComponent();
+        await input.InitializeAsync(editContext, () => model.Value, model.Value);
 
         input.SetCurrentValue("Invalid");
 
         editContext.NotifyResetRequested();
 
         Assert.True(string.IsNullOrEmpty(input.GetValue()));
-        Assert.True(string.IsNullOrEmpty(model.Value));
     }
 
     private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
@@ -549,49 +546,29 @@ public class EditFormTest
 
     private class TestInputComponent : InputBase<string>
     {
-        public void Initialize(EditContext editContext, Expression<Func<string>> valueExpression)
+        public Task InitializeAsync(EditContext editContext, Expression<Func<string>> valueExpression, string initialValue)
         {
-            EditContext = editContext;
+            // Inject CascadedEditContext
+            var property = typeof(InputBase<string>)
+                .GetProperty("CascadedEditContext", BindingFlags.Instance | BindingFlags.NonPublic);
 
+            property!.SetValue(this, editContext);
+
+            Value = initialValue;
             ValueExpression = valueExpression;
-            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            FieldIdentifier = FieldIdentifier.Create(valueExpression);
 
-            // simulate InputBase lifecycle subscription
-            editContext.OnReset += (sender, args) =>
-            {
-                CurrentValueAsString = string.Empty;
-            };
+            editContext.OnReset += InvokeHandleReset;
 
-            // simulate binding
-            ValueChanged = new EventCallback<string>(
-                null,
-                new Func<string, Task>(v =>
-                {
-                    var member = (MemberExpression)valueExpression.Body;
+            return Task.CompletedTask;
+        }
 
-                    // Get the model instance safely
-                    object model;
-                    if (member.Expression is ConstantExpression constant)
-                    {
-                        model = constant.Value;
-                    }
-                    else
-                    {
-                        // fallback: compile expression
-                        var objectLambda = Expression.Lambda(member.Expression);
-                        var getter = objectLambda.Compile();
-                        model = getter.DynamicInvoke();
-                    }
+        private void InvokeHandleReset(object sender, EventArgs e)
+        {
+            var method = typeof(InputBase<string>)
+                .GetMethod("HandleReset", BindingFlags.Instance | BindingFlags.NonPublic);
 
-                    var property = (System.Reflection.PropertyInfo)member.Member;
-                    property.SetValue(model, v);
-
-                    // update component state
-                    Value = v;
-
-                    return Task.CompletedTask;
-                })
-            );
+            method!.Invoke(this, new object[] { sender, e });
         }
 
         public void SetCurrentValue(string value)

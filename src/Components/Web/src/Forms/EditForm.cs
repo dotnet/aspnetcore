@@ -179,6 +179,8 @@ public class EditForm : ComponentBase
     private void HandleResetRequested()
     {
         EditContext?.NotifyResetRequested();
+        EditContext?.MarkAsUnmodified();
+        EditContext?.NotifyValidationStateChanged();
     }
 
     private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence)
