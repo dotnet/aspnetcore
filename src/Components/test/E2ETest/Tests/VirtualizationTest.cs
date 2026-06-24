@@ -4195,7 +4195,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_WithProviderDelay_NoPlaceholderAtTarget()
     {
-        // When ScrollToIndexAsync completes, the target row must show content, not placeholder.
+        // When ScrollToItemAsync completes, the target row must show content, not placeholder.
         MountAnchorModeForScrollToItem(delay: true);
         var js = (IJavaScriptExecutor)Browser;
 
@@ -4269,7 +4269,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             if (!last) return false;
             // Scroller must be pinned at max (within 2px) — proves the clamp targeted the end.
             return Math.abs((c.scrollTop + c.clientHeight) - c.scrollHeight) <= 2;
-        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialIndex=100000.");
+        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialItemIndex=100000.");
     }
 
     [Theory]
@@ -4326,7 +4326,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
     {
-        // While the provider is fetching for ScrollToIndexAsync, a real user scroll must win.
+        // While the provider is fetching for ScrollToItemAsync, a real user scroll must win.
         MountAnchorModeForScrollToItem();
         var js = (IJavaScriptExecutor)Browser;
         var container = Browser.Exists(By.Id("scroll-container"));
