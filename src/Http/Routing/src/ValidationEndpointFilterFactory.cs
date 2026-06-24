@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 internal static class ValidationEndpointFilterFactory
 {
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
-    private readonly record struct ValidatableParameterEntry(int Index, IValidatableParameterInfo Parameter, string Name, Type ParameterType);
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableParameterInfo Parameter, string Name);
 
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
@@ -48,8 +48,7 @@ internal static class ValidationEndpointFilterFactory
                 validatableParameters.Add(new ValidatableParameterEntry(
                     i,
                     validatableParameter,
-                    parameters[i].Name!,
-                    parameters[i].ParameterType));
+                    parameters[i].Name!));
             }
         }
 
@@ -123,7 +122,7 @@ internal static class ValidationEndpointFilterFactory
             return await next(context);
         };
     }
-    
+
     [UnconditionalSuppressMessage(
         "Trimming",
         "IL2026",
