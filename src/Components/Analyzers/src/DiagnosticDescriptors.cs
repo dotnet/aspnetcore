@@ -111,4 +111,22 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.VirtualizeItemsProviderRequiresItemComparer_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeWithoutIDisposable = new(
+        "BL0012",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeWithoutIDisposable_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentHasDisposeAsyncWithoutIAsyncDisposable = new(
+        "BL0013",
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description)));
 }
