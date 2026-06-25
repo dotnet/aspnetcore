@@ -1,0 +1,62 @@
+@page "/forms/client-validation/all-validators"
+
+<h2 id="page-title">All built-in validators</h2>
+
+<style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+</style>
+
+<form id="test-form" method="post">
+    <input id="age" name="Age" type="number"
+           data-val="true"
+           data-val-range="Age must be between 1 and 150."
+           data-val-range-min="1"
+           data-val-range-max="150" />
+    <span data-valmsg-for="Age" data-valmsg-replace="true"></span>
+
+    <input id="zipcode" name="ZipCode" type="text"
+           data-val="true"
+           data-val-regex="Invalid zip code."
+           data-val-regex-pattern="\d{5}(-\d{4})?" />
+    <span data-valmsg-for="ZipCode" data-valmsg-replace="true"></span>
+
+    <input id="email" name="Email" type="text"
+           data-val="true"
+           data-val-email="Invalid email address." />
+    <span data-valmsg-for="Email" data-valmsg-replace="true"></span>
+
+    <input id="website" name="Website" type="text"
+           data-val="true"
+           data-val-url="Invalid URL." />
+    <span data-valmsg-for="Website" data-valmsg-replace="true"></span>
+
+    <input id="phone" name="Phone" type="text"
+           data-val="true"
+           data-val-phone="Invalid phone number." />
+    <span data-valmsg-for="Phone" data-valmsg-replace="true"></span>
+
+    <input id="card" name="Card" type="text"
+           data-val="true"
+           data-val-creditcard="Invalid credit card number." />
+    <span data-valmsg-for="Card" data-valmsg-replace="true"></span>
+
+    <input id="password" name="Password" type="password" />
+    <input id="confirm" name="ConfirmPassword" type="password"
+           data-val="true"
+           data-val-equalto="Passwords must match."
+           data-val-equalto-other="*.Password" />
+    <span data-valmsg-for="ConfirmPassword" data-valmsg-replace="true"></span>
+
+    <input id="avatar" name="Avatar" type="text"
+           data-val="true"
+           data-val-fileextensions="Only image files are allowed."
+           data-val-fileextensions-extensions=".png,.jpg,.jpeg,.gif" />
+    <span data-valmsg-for="Avatar" data-valmsg-replace="true"></span>
+
+    <input id="anchor" name="Anchor" type="text"
+           data-val="true"
+           data-val-required="Required." />
+
+    <button type="submit" id="submit">Submit</button>
+</form>

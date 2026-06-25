@@ -258,7 +258,7 @@ public class ForwardedHeadersMiddleware
 
             if (checkProto)
             {
-                if (!string.IsNullOrEmpty(set.Scheme) && set.Scheme.AsSpan().IndexOfAnyExcept(SchemeChars) < 0)
+                if (!string.IsNullOrEmpty(set.Scheme) && !set.Scheme.ContainsAnyExcept(SchemeChars))
                 {
                     applyChanges = true;
                     currentValues.Scheme = set.Scheme;
@@ -475,7 +475,7 @@ public class ForwardedHeadersMiddleware
             return false;
         }
 
-        return hostText.AsSpan(offset + 1).IndexOfAnyExceptInRange('0', '9') < 0;
+        return !hostText.AsSpan(offset + 1).ContainsAnyExceptInRange('0', '9');
     }
 
     private static string[] TruncateConsumedHeaderValues(string[] forwarded, int entriesConsumed)
