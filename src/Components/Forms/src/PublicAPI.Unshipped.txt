@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.EditContext.IsFormValid.get -> bool
 Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs.IsValid.get -> bool
 Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs.ValidationStateChangedEventArgs(bool isValid) -> void
 Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.ValidationRequestedEventArgs(System.Threading.CancellationToken cancellationToken) -> void

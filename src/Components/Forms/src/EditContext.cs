@@ -21,8 +21,17 @@ public sealed class EditContext
     private bool _isFormValidationFaulted;
     private bool _isFormValidationPending;
     private bool _isValid = true;
+    private static readonly ValidationStateChangedEventArgs _validArgs =
+        new ValidationStateChangedEventArgs(true);
+
+    private static readonly ValidationStateChangedEventArgs _invalidArgs =
+        new ValidationStateChangedEventArgs(false);
+
     private bool ComputeIsValid()
     {
+        // Uses lazy enumeration + Any()
+        // → O(1) in invalid case (short-circuits)
+        // → Full traversal only when fully valid
         return !GetValidationMessages().Any();
     }
 
@@ -105,6 +114,11 @@ public sealed class EditContext
     public bool ShouldUseFieldIdentifiers { get; set; } = !OperatingSystem.IsBrowser();
 
     /// <summary>
+    /// Gets a value indicating whether the <see cref="EditContext"/> is currently valid.
+    /// </summary>
+    public bool IsFormValid => _isValid;
+
+    /// <summary>
     /// Signals that the value for the specified field has changed.
     /// </summary>
     /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
@@ -119,12 +133,11 @@ public sealed class EditContext
     /// </summary>
     public void NotifyValidationStateChanged()
     {
-        bool isValid = ComputeIsValid();
-        if (isValid != _isValid)
-        {
-            _isValid = isValid;
-        }
-        OnValidationStateChanged?.Invoke(this, new ValidationStateChangedEventArgs(_isValid));
+        var isValid = ComputeIsValid();
+        // Track current validity so it can be exposed via IsValid.
+        // The event is intentionally raised every time to preserve existing behavior.
+        _isValid = isValid;
+        OnValidationStateChanged?.Invoke(this, isValid ? _validArgs : _invalidArgs);
     }
 
     /// <summary>

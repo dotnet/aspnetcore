@@ -354,6 +354,7 @@ public class EditContextTest
         editContext.NotifyValidationStateChanged();
 
         Assert.False(result);
+        Assert.False(editContext.IsFormValid);
     }
 
     [Fact]
@@ -375,6 +376,7 @@ public class EditContextTest
         editContext.NotifyValidationStateChanged();
 
         Assert.Equal(1, count);
+        Assert.False(editContext.IsFormValid);
     }
 
     [Fact]
@@ -400,6 +402,7 @@ public class EditContextTest
         editContext.NotifyValidationStateChanged();
 
         Assert.True(last);
+        Assert.True(editContext.IsFormValid);
     }
 
     [Fact]
@@ -414,6 +417,7 @@ public class EditContextTest
         editContext.NotifyValidationStateChanged();
         editContext.NotifyValidationStateChanged();
         Assert.Equal(2, count);
+        Assert.True(editContext.IsFormValid);
     }
 
     [Fact]
@@ -430,7 +434,9 @@ public class EditContextTest
 
         store.Add(field, "Error");
         editContext.NotifyValidationStateChanged();
-        Assert.Equal(!editContext.GetValidationMessages().Any(), result);
+        var expected = !editContext.GetValidationMessages().Any();
+        Assert.Equal(expected, result);
+        Assert.Equal(expected, editContext.IsFormValid);
     }
 
     [Fact]
@@ -453,6 +459,28 @@ public class EditContextTest
 
         await editContext.ValidateAsync();
         Assert.False(result);
+        Assert.False(editContext.IsFormValid);
+    }
+
+    [Fact]
+    public void IsFormValid_ReflectsValidationStateTransitions()
+    {
+        var editContext = new EditContext(new object());
+        var store = new ValidationMessageStore(editContext);
+        var field = editContext.Field("field");
+
+        // Initial
+        Assert.True(editContext.IsFormValid);
+
+        // Invalid
+        store.Add(field, "Error");
+        editContext.NotifyValidationStateChanged();
+        Assert.False(editContext.IsFormValid);
+
+        // Back to valid
+        store.Clear();
+        editContext.NotifyValidationStateChanged();
+        Assert.True(editContext.IsFormValid);
     }
 
     class EquatableModel : IEquatable<EquatableModel>
