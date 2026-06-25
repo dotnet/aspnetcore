@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,12 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         builder.Services.TryAddScoped(static sp =>
         {
             var provider = new CultureStateProvider();
-            if (sp.GetRequiredService<IOptions<WebAssemblyComponentsServiceOptions>>().Value.UseCultureFromServer)
+
+            // Honor explicit configuration, fallback to using the presence of IStringLocalizerFactory to determine if we should capture the culture from the server.
+            // We check for IStringLocalizerFactory because it is the only service that is registered via AddLocalization.
+            var useCultureFromServer = sp.GetRequiredService<IOptions<WebAssemblyComponentsServiceOptions>>().Value.UseCultureFromServer ?? sp.GetService<IStringLocalizerFactory>() is not null;
+
+            if (useCultureFromServer)
             {
                 provider.CaptureCurrentCulture();
             }
