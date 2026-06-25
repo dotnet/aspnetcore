@@ -208,6 +208,78 @@ namespace ConsoleApplication1
     }
 
     [Fact]
+    public void MultipleIteratorVariableUsedInLambdaShouldThrowWarnings()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
+        {
+            for (var i = 0, j = 0, step = 0; i < stringArray.Length; i += step, j++)
+            {
+                //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+                __builder.OpenElement(14, ""button"");
+                __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                    () => SelectItem(i)
+
+                ));
+                __builder.AddContent(16, ""Item "");
+                    __builder.AddContent(17, i
+                );
+                __builder.CloseElement();
+
+                //  <button @onclick=""@(() => SelectItem(j))"">Item @j</button>
+                __builder.OpenElement(14, ""button"");
+                __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                    () => SelectItem(j)
+
+                ));
+                __builder.AddContent(16, ""Item "");
+                    __builder.AddContent(17, j
+                );
+                __builder.CloseElement();
+
+                //  <button @onclick=""@(() => SelectItem(step))"">Item @step</button>
+                __builder.OpenElement(14, ""button"");
+                __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                    () => SelectItem(step)
+
+                ));
+                __builder.AddContent(16, ""Item "");
+                    __builder.AddContent(17, step
+                );
+                __builder.CloseElement();
+            }
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 13, 38)
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+                Message = "For loop iterator 'j' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 24, 38)
+                }
+            });
+    }
+
+    [Fact]
     public void IteratorVariableButCachedUsedInLambdaShouldNotThrowWarning()
     {
         var test = @"
@@ -324,7 +396,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void IteratorVariablesNestedIfsInLambdaShouldThrowWarning()
+    public void IteratorVariablesWithNestedIfElseInLambdaShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -339,19 +411,29 @@ namespace ConsoleApplication1
                 SelectItem(i);
 
                 if (i == 1) {
-                    for (var j = 0; j < stringArray.Length; j++)
-                    {
-                        //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
-                        __builder.OpenElement(14, ""button"");
-                        __builder.AddAttribute(15, ""onclick"", global::Microsoft.AspNetCore.Components.EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
-                    () => SelectItem(i)
+                    //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+                    __builder.OpenElement(14, ""button"");
+                    __builder.AddAttribute(15, ""onclick"", global::Microsoft.AspNetCore.Components.EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                () => SelectItem(i)
 
-                        ));
-                        __builder.AddContent(16, ""Item "");
-                            __builder.AddContent(17, i
-                        );
-                        __builder.CloseElement();
-                    }
+                    ));
+                    __builder.AddContent(16, ""Item "");
+                        __builder.AddContent(17, i
+                    );
+                    __builder.CloseElement();
+                }
+                else
+                {
+                    //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+                    __builder.OpenElement(14, ""button"");
+                    __builder.AddAttribute(15, ""onclick"", global::Microsoft.AspNetCore.Components.EventCallback.Factory.Create<global::Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                () => SelectItem(i)
+
+                    ));
+                    __builder.AddContent(16, ""Item "");
+                        __builder.AddContent(17, i
+                    );
+                    __builder.CloseElement();
                 }
             }
         }
@@ -366,7 +448,17 @@ namespace ConsoleApplication1
             Severity = DiagnosticSeverity.Warning,
             Locations = new[]
             {
-                new DiagnosticResultLocation("Test0.cs", 19, 38)
+                new DiagnosticResultLocation("Test0.cs", 17, 34)
+            }
+        },
+        new DiagnosticResult
+        {
+            Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+            Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+            Severity = DiagnosticSeverity.Warning,
+            Locations = new[]
+            {
+                new DiagnosticResultLocation("Test0.cs", 30, 34)
             }
         });
     }
@@ -972,7 +1064,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void MultipleIteratorVariableWithSameNamesUsedInLambdaShouldThrowWarnings()
+    public void MultipleForLoopsInIfElseWithSameIteratorNamesUsedInLambdaShouldThrowWarnings()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -997,19 +1089,21 @@ namespace ConsoleApplication1
                     __builder.CloseElement();
                 }
             }
-
-            for (var i = 0; i < stringArray.Length; i++)
+            else
             {
-                //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
-                __builder.OpenElement(14, ""button"");
-                __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
-                    () => SelectItem(i)
+                for (var i = 0; i < stringArray.Length; i++)
+                {
+                    //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+                    __builder.OpenElement(14, ""button"");
+                    __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                        () => SelectItem(i)
 
-                ));
-                __builder.AddContent(16, ""Item "");
-                    __builder.AddContent(17, i
-                );
-                __builder.CloseElement();
+                    ));
+                    __builder.AddContent(16, ""Item "");
+                        __builder.AddContent(17, i
+                    );
+                    __builder.CloseElement();
+                }
             }
         }
     }
@@ -1033,7 +1127,7 @@ namespace ConsoleApplication1
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
-                    new DiagnosticResultLocation("Test0.cs", 30, 38)
+                    new DiagnosticResultLocation("Test0.cs", 31, 42)
                 }
             });
     }
