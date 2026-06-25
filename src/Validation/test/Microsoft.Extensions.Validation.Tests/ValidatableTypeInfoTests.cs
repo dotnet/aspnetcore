@@ -726,7 +726,7 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void TryFindProperty_ReturnsNullForInheritedMember_WhenSuperTypeNotResolvable()
+    public void TryFindProperty_ReturnsFalseForInheritedMember_WhenSuperTypeNotResolvable()
     {
         // Only the derived type is registered. Local lookup still works; inherited members
         // remain unresolved and the method returns false without throwing.

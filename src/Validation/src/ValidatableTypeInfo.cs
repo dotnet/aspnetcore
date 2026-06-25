@@ -16,7 +16,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo
     private readonly int _membersCount;
     private readonly Type[] _implementedInterfaces;
 
-    /// <summary>T
+    /// <summary>
     /// Creates a new instance of <see cref="ValidatableTypeInfo"/>.
     /// </summary>
     /// <param name="type">The type being validated.</param>
