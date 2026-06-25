@@ -94,6 +94,33 @@ public class CacheBoundaryTextWriterTest
         Assert.True(beforeIndex >= 0 && holeIndex > beforeIndex && afterIndex > holeIndex);
     }
 
+    [Fact]
+    public void ThrowIfNestedInsideCapturingBoundary_CapturingWriter_Throws()
+    {
+        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        writer.StartCapture();
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(writer));
+        Assert.Contains("cannot be nested inside another CacheBoundary", ex.Message);
+    }
+
+    [Fact]
+    public void ThrowIfNestedInsideCapturingBoundary_NonCapturingWriter_DoesNotThrow()
+    {
+        var writer = new CacheBoundaryTextWriter(new StringWriter(), CacheBoundaryVaryBy.None);
+        writer.StartCapture();
+        writer.StopCapture();
+
+        CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(writer);
+    }
+
+    [Fact]
+    public void ThrowIfNestedInsideCapturingBoundary_PlainTextWriter_DoesNotThrow()
+    {
+        CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(new StringWriter());
+    }
+
     private static RenderTreeFrame[] CaptureFramesFor(RenderFragment fragment)
     {
         using var builder = new RenderTreeBuilder();
