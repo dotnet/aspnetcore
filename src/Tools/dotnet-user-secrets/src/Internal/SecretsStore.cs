@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Tools.Internal;
@@ -20,11 +21,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal;
 /// </summary>
 public class SecretsStore
 {
-    internal static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
-    {
-        WriteIndented = true
-    };
-
     private readonly string _secretsFilePath;
     private readonly IDictionary<string, string> _secrets;
 
@@ -75,7 +71,7 @@ public class SecretsStore
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_secretsFilePath));
 
-        var contents = JsonSerializer.Serialize(_secrets, SerializerOptions);
+        var contents = Serialize(_secrets);
 
         // Create a temp file with the correct Unix file mode before moving it to the expected _filePath.
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -96,4 +92,15 @@ public class SecretsStore
             .Where(i => i.Value != null)
             .ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase);
     }
+
+    internal static string Serialize(IDictionary<string, string> secrets)
+    {
+        return JsonSerializer.Serialize(secrets, SecretManagerJsonSerializerContext.Default.IDictionaryStringString);
+    }
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(IDictionary<string, string>))]
+internal sealed partial class SecretManagerJsonSerializerContext : JsonSerializerContext
+{
 }

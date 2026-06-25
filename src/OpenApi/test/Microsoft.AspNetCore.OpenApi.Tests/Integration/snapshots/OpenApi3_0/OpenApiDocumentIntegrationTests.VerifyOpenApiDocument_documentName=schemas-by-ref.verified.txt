@@ -1051,7 +1051,6 @@
       "JsonPatchDocument": {
         "type": "array",
         "items": {
-          "type": "object",
           "oneOf": [
             {
               "required": [
@@ -1303,6 +1302,7 @@
         }
       },
       "PersonStudent": {
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -1320,6 +1320,7 @@
         "required": [
           "subject"
         ],
+        "type": "object",
         "properties": {
           "discriminator": {
             "enum": [
@@ -1436,6 +1437,7 @@
         }
       },
       "ShapeSquare": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -1457,6 +1459,7 @@
         }
       },
       "ShapeTriangle": {
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -1560,6 +1563,7 @@
         "required": [
           "city"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -1576,6 +1580,7 @@
         "required": [
           "news"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
@@ -1592,6 +1597,7 @@
         "required": [
           "summary"
         ],
+        "type": "object",
         "properties": {
           "$type": {
             "enum": [
