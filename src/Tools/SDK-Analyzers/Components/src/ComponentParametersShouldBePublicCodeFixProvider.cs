@@ -71,6 +71,7 @@ public class ComponentParametersShouldBePublicCodeFixProvider : CodeFixProvider
 
         foreach (var modifier in node.Modifiers)
         {
+            // Skip all existing access modifiers, including 'public' just in case the fix is ran on invalid code with multiple access modifiers (e.g. private public)
             if (modifier.IsKind(SyntaxKind.PrivateKeyword) ||
                 modifier.IsKind(SyntaxKind.ProtectedKeyword) ||
                 modifier.IsKind(SyntaxKind.InternalKeyword) ||
