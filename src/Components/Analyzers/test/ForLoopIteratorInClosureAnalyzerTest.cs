@@ -78,19 +78,22 @@ namespace Microsoft.AspNetCore.Components
 
 namespace ConsoleApplication1
 {
+    using System.Linq;
     using Microsoft.AspNetCore.Components.Web;
     using Microsoft.AspNetCore.Components.CompilerServices;
 
     partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         public string[] stringArray = [""test1"", ""test2""];
+
+        public void HandleClick() { }
         public void SelectItem(int index) { }
         public void UpdateHeading(Microsoft.AspNetCore.Components.Web.MouseEventArgs e, int index) { }
     }
 
-    namespacePages
+    namespace Pages
     {
-        class AddressEditor : Microsoft.AspNetCore.Components.IComponent { }
+        class MyComponent : Microsoft.AspNetCore.Components.IComponent { }
     }
 }
 ";
@@ -168,7 +171,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'incremented' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'incremented' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -178,7 +181,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'decremented' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'decremented' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -188,7 +191,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'assigned' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'assigned' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -198,7 +201,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'compoundAssigned' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'compoundAssigned' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -217,7 +220,7 @@ namespace ConsoleApplication1
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            for (var i = 0, j = 0, step = 0; i < stringArray.Length; i += step, j++)
+            for (var i = 0, j = 0, step = 1; i < stringArray.Length; i += step, j++)
             {
                 //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
                 __builder.OpenElement(14, ""button"");
@@ -260,7 +263,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -270,7 +273,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'j' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'j' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -344,7 +347,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -386,7 +389,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -440,27 +443,27 @@ namespace ConsoleApplication1
     }
 }" + BaseComponentDeclarations;
 
-    VerifyCSharpDiagnostic(test,
-        new DiagnosticResult
-        {
-            Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-            Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
-            Severity = DiagnosticSeverity.Warning,
-            Locations = new[]
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
             {
-                new DiagnosticResultLocation("Test0.cs", 17, 34)
-            }
-        },
-        new DiagnosticResult
-        {
-            Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-            Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
-            Severity = DiagnosticSeverity.Warning,
-            Locations = new[]
+                Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 17, 34)
+                }
+            },
+            new DiagnosticResult
             {
-                new DiagnosticResultLocation("Test0.cs", 30, 34)
-            }
-        });
+                Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 30, 34)
+                }
+            });
     }
 
     [Fact]
@@ -480,7 +483,7 @@ namespace ConsoleApplication1
 
                 if (i == 1)
                 {
-                    foreach (var item in items)
+                    foreach (var item in stringArray)
                     {
                         //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
                         __builder.OpenElement(14, ""button"");
@@ -503,11 +506,11 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
-                new DiagnosticResultLocation("Test0.cs", 20, 38)
+                    new DiagnosticResultLocation("Test0.cs", 20, 38)
                 }
             });
     }
@@ -579,11 +582,11 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'j' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'j' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
-                new DiagnosticResultLocation("Test0.cs", 13, 30)
+                    new DiagnosticResultLocation("Test0.cs", 13, 30)
                 }
             });
     }
@@ -624,11 +627,11 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'j' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'j' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
-                new DiagnosticResultLocation("Test0.cs", 13, 30)
+                    new DiagnosticResultLocation("Test0.cs", 13, 30)
                 }
             });
     }
@@ -639,7 +642,7 @@ namespace ConsoleApplication1
         var test = @"
 namespace ConsoleApplication1
 {
-    class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
@@ -658,8 +661,6 @@ namespace ConsoleApplication1
                 __builder.CloseComponent();
             }
         }
-
-        public string[] stringArray = [""test1"", ""test2""];
     }
 }" + BaseComponentDeclarations;
 
@@ -667,7 +668,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -691,7 +692,7 @@ namespace ConsoleApplication1
                 SelectItem(i);
 
                 //  <MyComponent OnClick=""@(() => SelectItem(i))""></MyComponent>
-                __builder.OpenComponent<ConsoleApplication1.Pages.AddressEditor>(14);
+                __builder.OpenComponent<ConsoleApplication1.Pages.MyComponent>(14);
                 __builder.AddComponentParameter(78, ""OnClick"", Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers.TypeCheck<Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs>>(Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
                     () => SelectItem(i)
                 )));
@@ -705,7 +706,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -724,7 +725,7 @@ namespace ConsoleApplication1
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            for (var i = 0; i < items.Length; i++)
+            for (var i = 0; i < stringArray.Length; i++)
             {
                 var index = i;
                 __builder.OpenElement(14, ""button"");
@@ -770,7 +771,7 @@ namespace ConsoleApplication1
         {
             for (var i = 0; i < stringArray.Length; i += 1)
             {
-                foreach (var item in items)
+                foreach (var item in stringArray)
                 {
                     //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
                     __builder.OpenElement(14, ""button"");
@@ -792,7 +793,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -811,7 +812,7 @@ namespace ConsoleApplication1
     {
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            foreach (var item in items)
+            foreach (var item in stringArray)
             {
                 // <button @onclick=""@(() => SelectItem(item))"">@item</button>
 
@@ -824,7 +825,7 @@ namespace ConsoleApplication1
                 __builder.CloseElement();
             }
 
-            foreach (var i in Enumerable.Range(0, items.Length))
+            foreach (var i in Enumerable.Range(0, stringArray.Length))
             {
                 // <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
 
@@ -838,7 +839,7 @@ namespace ConsoleApplication1
                 __builder.CloseElement();
             }
 
-            foreach (var (index, item) in items.Index())
+            foreach (var (index, item) in stringArray.Index())
             {
                 // <button @onclick=""@(() => SelectItem(index))"">@item</button>
 
@@ -851,7 +852,7 @@ namespace ConsoleApplication1
                 __builder.CloseElement();
             }
 
-            foreach (var entry in items.Select((item, index) => (item, index)))
+            foreach (var entry in stringArray.Select((item, index) => (item, index)))
             {
                 // <button @onclick=""@(() => SelectItem(entry.index))"">@entry.item</button>
 
@@ -895,7 +896,7 @@ namespace ConsoleApplication1
                     );
                     __builder.CloseElement();
 
-                } catch (Exception ex) {
+                } catch (System.Exception ex) {
 
                     //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
                     __builder.OpenElement(14, ""button"");
@@ -930,7 +931,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -940,7 +941,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -950,7 +951,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -1007,7 +1008,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -1017,7 +1018,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -1040,7 +1041,7 @@ namespace ConsoleApplication1
             {
                 for (var i = 0; i < stringArray.Length; i++)
                 {
-                    Console.WriteLine(i);
+                    System.Console.WriteLine(i);
                 }
             }
 
@@ -1113,7 +1114,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {
@@ -1123,7 +1124,7 @@ namespace ConsoleApplication1
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
-                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Message = "For loop iterator 'i' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {

@@ -4,11 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+
+#nullable enable
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -32,6 +33,10 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                     compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.BindConverter.FullTypeName)
                 },
                 {
+                    ComponentsApi.ComponentBase.MetadataName,
+                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.FullTypeName)
+                },
+                {
                     ComponentsApi.EventCallbackFactory.MetadataName,
                     compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.EventCallbackFactory.FullTypeName)
                 },
@@ -40,7 +45,8 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                     compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.FullTypeName)
                 },
             };
-            if (availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName] is null)
+            if (availableTypes[ComponentsApi.ComponentBase.MetadataName] is null
+                || availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName] is null)
             {
                 return;
             }
@@ -49,7 +55,7 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
             {
                 var analyzerState = new ForLoopAnalyzerState();
                 if (blockContext.OwningSymbol is IMethodSymbol owningMethod
-                    && IsImplementationOfBuildRenderTree(owningMethod))
+                    && IsImplementationOfBuildRenderTree(owningMethod, availableTypes))
                 {
                     // Register variables from the initialization of for loops.
                     blockContext.RegisterOperationAction(context => AnalyzeForLoopVariables(context, analyzerState),
@@ -87,7 +93,7 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         });
     }
 
-    private static bool IsImplementationOfBuildRenderTree(IMethodSymbol methodSymbol)
+    private static bool IsImplementationOfBuildRenderTree(IMethodSymbol methodSymbol, Dictionary<string, INamedTypeSymbol?> availableTypes)
     {
         if (methodSymbol.Name != "BuildRenderTree" || !methodSymbol.IsOverride)
         {
@@ -96,8 +102,7 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         var containingType = methodSymbol.ContainingType;
         while (containingType is not null)
         {
-            if (containingType.Name == "ComponentBase"
-                && containingType.OriginalDefinition.ToDisplayString() == "Microsoft.AspNetCore.Components.ComponentBase")
+            if (SymbolEqualityComparer.Default.Equals(containingType, availableTypes[ComponentsApi.ComponentBase.MetadataName]))
             {
                 return true;
             }
@@ -154,8 +159,8 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            // Get the operation that when containing variable reference could cause an issue. Usually an anomyous function or @bind
-            IOperation suspectOperation = null;
+            // Get the operation that when containing variable reference could cause an issue. Usually an anonymous function or @bind
+            IOperation? suspectOperation = null;
             var valueArgument = invocation.Arguments[2].Value;
             if (valueArgument is IInvocationOperation valueInvocation)
             {
@@ -224,7 +229,7 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
     /// Probe an operation for delegate creation. If found, return the first occurrence. Otherwise search only inside Conversion or Invocation operations.
     /// Should be more efficient than calling Descendants() and filtering for IDelegateCreationOperation, since we don't need to search inside all operations.
     /// </summary>
-    private static IDelegateCreationOperation FindFirstDelegateChild(IOperation currentOperation)
+    private static IDelegateCreationOperation? FindFirstDelegateChild(IOperation currentOperation)
     {
         if (currentOperation is IDelegateCreationOperation delegateCreation)
         {
@@ -253,41 +258,28 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
     private sealed class ForLoopAnalyzerState
     {
         // Variables that are being incremented on in the current context. 
-        public List<ILocalSymbol> Iterators { get; set; }
+        public List<ILocalSymbol> Iterators { get; } = new();
         // Potential variable that are not yet being incremented on which would not cause any issues so far.
-        public List<ILocalSymbol> PotentialIterators { get; set; }
+        public List<ILocalSymbol> PotentialIterators { get; private set; } = new();
 
         // All variable that are being used in the current context. 
-        public List<ILocalSymbol> AllForVariables { get; set; }
+        public List<ILocalSymbol> AllForVariables { get; } = new();
 
         // Occurrences of potential variables that could be later on incremented. Not inherited from parent state.
-        public List<ILocalReferenceOperation> IteratorOccurrences { get; set; }
-
-        public ForLoopAnalyzerState()
-        {
-            Iterators = new List<ILocalSymbol>();
-            PotentialIterators = new List<ILocalSymbol>();
-            AllForVariables = new List<ILocalSymbol>();
-            IteratorOccurrences = new List<ILocalReferenceOperation>();
-        }
+        public List<ILocalReferenceOperation> IteratorOccurrences { get; } = new();
 
         public bool IsIterator(ILocalSymbol target)
         {
             return Iterators.Any(existing => SymbolEqualityComparer.Default.Equals(existing, target));
         }
 
-        public bool IsPotentialIterator(ILocalSymbol target)
+        public bool IsPotentialIterator(ILocalSymbol? target)
         {
-            return PotentialIterators.Any(existing => SymbolEqualityComparer.Default.Equals(existing, target));
+            return target is not null && PotentialIterators.Any(existing => SymbolEqualityComparer.Default.Equals(existing, target));
         }
 
         public void AddIterator(ILocalSymbol iterator)
         {
-            if (iterator is null)
-            {
-                return;
-            }
-
             if (!IsIterator(iterator))
             {
                 Iterators.Add(iterator);
@@ -297,10 +289,6 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
 
         public void AddPotentialIterator(ILocalSymbol potentialIterator)
         {
-            if (potentialIterator is null)
-            {
-                return;
-            }
             if (!IsIterator(potentialIterator) && !IsPotentialIterator(potentialIterator))
             {
                 PotentialIterators.Add(potentialIterator);
@@ -313,10 +301,6 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         /// </summary>
         public void OnPotentialIteratorChanged(ILocalSymbol potentialIterator)
         {
-            if (potentialIterator is null)
-            {
-                return;
-            }
             Iterators.Add(potentialIterator);
             PotentialIterators = PotentialIterators.Where(name => !SymbolEqualityComparer.Default.Equals(name, potentialIterator)).ToList();
         }
