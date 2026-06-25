@@ -54,11 +54,11 @@ export class AutoPauseManager {
     }
   }
 
-  public register(handler: (signal: AbortSignal) => void | Promise<void>): void {
+  public registerPauseHandler(handler: (signal: AbortSignal) => void | Promise<void>): void {
     this._pauseHandlers.add(handler);
   }
 
-  public unregister(handler: (signal: AbortSignal) => void | Promise<void>): void {
+  public unregisterPauseHandler(handler: (signal: AbortSignal) => void | Promise<void>): void {
     this._pauseHandlers.delete(handler);
   }
 

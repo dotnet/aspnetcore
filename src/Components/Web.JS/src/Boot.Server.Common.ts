@@ -147,8 +147,8 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     );
 
     Blazor.pause = {
-      waitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.register(fn),
-      cancelWaitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.unregister(fn),
+      waitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.registerPauseHandler(fn),
+      cancelWaitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.unregisterPauseHandler(fn),
     };
   }
 
