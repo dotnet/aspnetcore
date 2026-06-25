@@ -4,9 +4,10 @@
 
 <h3>QuickGrid Type Mismatch Test</h3>
 
-<ErrorBoundary>
-    <ChildContent>
-        <div id="grid">
+<div id="grid-with-title">
+    <h4>Grid With Column Title</h4>
+    <ErrorBoundary>
+        <ChildContent>
             @* GridSort<(WeatherForecast, bool)> does not match QuickGrid<WeatherForecast> *@
             <QuickGrid Items="@forecasts">
                 <PropertyColumn Title="Date" Property="f => f.Date" Sortable="true" IsDefaultSortColumn="true" />
@@ -15,15 +16,105 @@
                     <b>@context.Item1.Summary</b>
                 </TemplateColumn>
             </QuickGrid>
-        </div>
     </ChildContent>
     <ErrorContent Context="ex">
-        <div id="type-mismatch-error">
-            <h4>Type Mismatch Error</h4>
-            <p id="error-message">@ex.Message</p>
+        <div id="type-mismatch-error-with-title">
+            <h5>Type Mismatch Error</h5>
+            <p id="error-message-with-title">@ex.Message</p>
         </div>
     </ErrorContent>
 </ErrorBoundary>
+</div>
+
+<div id="grid-without-title">
+    <h4>Grid Without Column Title</h4>
+    <ErrorBoundary>
+        <ChildContent>
+            @* TemplateColumn without Title has type mismatch *@
+            <QuickGrid Items="@forecasts">
+                <PropertyColumn Title="Date" Property="f => f.Date" Sortable="true" IsDefaultSortColumn="true" />
+                <PropertyColumn Title="°C" Property="f => f.TemperatureC" Sortable="true" />
+                <TemplateColumn SortBy="@(GridSort<(WeatherForecast, bool)>.ByAscending(f => f.Item1.Summary))">
+                    <b>@context.Item1.Summary</b>
+                </TemplateColumn>
+            </QuickGrid>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div id="type-mismatch-error-without-title">
+            <h5>Type Mismatch Error</h5>
+            <p id="error-message-without-title">@ex.Message</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+</div>
+
+<div id="grid-nested-generic">
+    <h4>Grid With Nested Generic Type Mismatch</h4>
+    <ErrorBoundary>
+        <ChildContent>
+            @* GridSort<List<WeatherForecast>> does not match QuickGrid<WeatherForecast> *@
+            <QuickGrid Items="@forecasts">
+                <PropertyColumn Title="Date" Property="f => f.Date" Sortable="true" IsDefaultSortColumn="true" />
+                <PropertyColumn Title="°C" Property="f => f.TemperatureC" Sortable="true" />
+                <TemplateColumn Title="Summary" SortBy="@(GridSort<List<WeatherForecast>>.ByAscending(f => f[0].Summary))">
+                    <b>@context[0].Summary</b>
+                </TemplateColumn>
+            </QuickGrid>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div id="type-mismatch-error-nested-generic">
+            <h5>Type Mismatch Error</h5>
+            <p id="error-message-nested-generic">@ex.Message</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+</div>
+
+<div id="grid-employee-mismatch">
+    <h4>Grid With Employee Type Mismatch</h4>
+    <ErrorBoundary>
+        <ChildContent>
+            @* GridSort<Employee> does not match QuickGrid<WeatherForecast> *@
+            <QuickGrid Items="@forecasts">
+                <PropertyColumn Title="Date" Property="f => f.Date" Sortable="true" IsDefaultSortColumn="true" />
+                <PropertyColumn Title="°C" Property="f => f.TemperatureC" Sortable="true" />
+                <TemplateColumn Title="Summary" SortBy="@(GridSort<Employee>.ByAscending(f => f.LastName))">
+                    <b>@context.LastName</b>
+                </TemplateColumn>
+            </QuickGrid>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div id="type-mismatch-error-employee">
+            <h5>Type Mismatch Error</h5>
+            <p id="error-message-employee">@ex.Message</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+</div>
+
+<div id="grid-virtualized">
+    <h4>Virtualized Grid With Type Mismatch</h4>
+    <ErrorBoundary>
+        <ChildContent>
+            @* Virtualized grid with type mismatch - GridSort<Employee> does not match QuickGrid<WeatherForecast> *@
+            <div id="virtualized-grid-container" style="height: 400px; overflow-y: auto; border: 1px solid #ccc;">
+                <QuickGrid Items="@forecasts" Virtualize="true">
+                    <PropertyColumn Title="Date" Property="f => f.Date" Sortable="true" IsDefaultSortColumn="true" />
+                    <PropertyColumn Title="°C" Property="f => f.TemperatureC" Sortable="true" />
+                    <TemplateColumn Title="Summary" SortBy="@(GridSort<Employee>.ByAscending(f => f.LastName))">
+                        <b>@context.LastName</b>
+                    </TemplateColumn>
+                </QuickGrid>
+            </div>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div id="type-mismatch-error-virtualized">
+            <h5>Type Mismatch Error</h5>
+            <p id="error-message-virtualized">@ex.Message</p>
+        </div>
+    </ErrorContent>
+</ErrorBoundary>
+</div>
 
 @code {
     private IQueryable<WeatherForecast>? forecasts;
@@ -32,7 +123,7 @@
     {
         DateOnly startDate = DateOnly.FromDateTime(DateTime.Now);
         var summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
-        forecasts = Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        forecasts = Enumerable.Range(1, 250).Select(index => new WeatherForecast
         {
             Date = startDate.AddDays(index),
             TemperatureC = Random.Shared.Next(-20, 55),
@@ -45,5 +136,12 @@
         public DateOnly Date { get; set; }
         public int TemperatureC { get; set; }
         public string? Summary { get; set; }
+    }
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
     }
 }

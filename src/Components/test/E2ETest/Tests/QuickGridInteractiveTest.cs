@@ -162,10 +162,75 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Navigate($"{ServerPathBase}/quickgrid-typemismatch");
 
         // The error boundary should catch the exception and display the error message
-        Browser.Exists(By.CssSelector("#type-mismatch-error"));
+        Browser.Exists(By.CssSelector("#type-mismatch-error-with-title"));
 
         // Verify the error message contains both types for clear debugging
-        var errorMessage = Browser.FindElement(By.CssSelector("#error-message")).Text;
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-with-title")).Text;
+
         Assert.Equal("The Summary Column type mismatch: Column expects ValueTuple`2 but grid uses WeatherForecast.", errorMessage);
+    }
+
+    [Fact]
+    public void SortByTypeMismatchWithoutTitleShowsGenericError()
+    {
+        // When GridSort<TSortItem> doesn't match QuickGrid<TGridItem> and column has no Title,
+        // the error message should use generic "Column" instead of the title
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        // The error boundary should catch the exception and display the error message
+        Browser.Exists(By.CssSelector("#type-mismatch-error-without-title"));
+
+        // Verify the error message uses generic "Column" when Title is null
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-without-title")).Text;
+
+        Assert.Equal("The Column type mismatch: Column expects ValueTuple`2 but grid uses WeatherForecast.", errorMessage);
+    }
+
+    [Fact]
+    public void SortByTypeMismatchNestedGenericShowsClearError()
+    {
+        // When GridSort<List<WeatherForecast>> doesn't match QuickGrid<WeatherForecast>,
+        // the error message should clearly identify both types
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        // The error boundary should catch the exception and display the error message
+        Browser.Exists(By.CssSelector("#type-mismatch-error-nested-generic"));
+
+        // Verify the error message contains both types for clear debugging
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-nested-generic")).Text;
+
+        Assert.Equal("The Summary Column type mismatch: Column expects List`1 but grid uses WeatherForecast.", errorMessage);
+    }
+
+    [Fact]
+    public void SortByTypeMismatchEmployeeShowsClearError()
+    {
+        // When GridSort<Employee> doesn't match QuickGrid<WeatherForecast>,
+        // the error message should clearly identify both types
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        // The error boundary should catch the exception and display the error message
+        Browser.Exists(By.CssSelector("#type-mismatch-error-employee"));
+
+        // Verify the error message contains both types for clear debugging
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-employee")).Text;
+
+        Assert.Equal("The Summary Column type mismatch: Column expects Employee but grid uses WeatherForecast.", errorMessage);
+    }
+
+    [Fact]
+    public void SortByTypeMismatchVirtualizedShowsClearError()
+    {
+        // When GridSort<Employee> doesn't match QuickGrid<WeatherForecast> in a virtualized grid,
+        // the error message should clearly identify both types
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        // The error boundary should catch the exception and display the error message
+        Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
+
+        // Verify the error message contains both types for clear debugging
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
+
+        Assert.Equal("The Summary Column type mismatch: Column expects Employee but grid uses WeatherForecast.", errorMessage);
     }
 }
