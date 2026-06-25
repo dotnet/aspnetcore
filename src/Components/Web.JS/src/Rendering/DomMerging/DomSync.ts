@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, WebAssemblyServerOptions, canMergeDescriptors, discoverComponents, discoverWebAssemblyOptions, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
+import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor, WebAssemblyComponentDescriptor, WebAssemblyServerOptions, canMergeDescriptors, discoverBrowserConfiguration, discoverComponents, discoverWebAssemblyOptions, mergeDescriptors } from '../../Services/ComponentDescriptorDiscovery';
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
@@ -36,6 +36,10 @@ function preprocessAndSynchronizeDomContent(destination: CommentBoundedRange | N
   // Strip any WebAssembly metadata comments from the new content before building
   // the logical tree, so they don't end up as orphaned nodes in the logical children array
   discoverWebAssemblyOptions(newContent);
+
+  // Rediscover the browser configuration in the new content, in case WebAssembly hasn't started yet.
+  const browserConfiguration = discoverBrowserConfiguration(newContent);
+  if (browserConfiguration?.webAssembly) { descriptorHandler?.setWebAssemblyOptions(browserConfiguration.webAssembly); }
 
   // Start by recursively identifying component markers in the new content
   // and converting them into logical elements so they correctly participate

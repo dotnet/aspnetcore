@@ -46,4 +46,12 @@ internal static class ComponentsApi
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
         public const string MetadataName = FullTypeName;
     }
+
+    public static class AuthenticationStateProvider
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider";
+        public const string MetadataName = FullTypeName;
+        public const string AuthenticationStateChanged = "AuthenticationStateChanged";
+        public const string GetAuthenticationStateAsync = "GetAuthenticationStateAsync";
+    }
 }
