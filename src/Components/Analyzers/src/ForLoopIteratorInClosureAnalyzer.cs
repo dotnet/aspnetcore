@@ -19,12 +19,12 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure);
 
-    public override void Initialize(AnalysisContext initContext)
+    public override void Initialize(AnalysisContext context)
     {
-        initContext.EnableConcurrentExecution();
-        initContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+        context.EnableConcurrentExecution();
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-        initContext.RegisterCompilationStartAction(compilationContext =>
+        context.RegisterCompilationStartAction(compilationContext =>
         {
             var availableTypes = new Dictionary<string, INamedTypeSymbol?>()
             {
@@ -58,26 +58,26 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                     && IsImplementationOfBuildRenderTree(owningMethod, availableTypes))
                 {
                     // Register variables from the initialization of for loops.
-                    blockContext.RegisterOperationAction(context => AnalyzeForLoopVariables(context, analyzerState),
+                    blockContext.RegisterOperationAction(operationContext => AnalyzeForLoopVariables(operationContext, analyzerState),
                         OperationKind.Loop);
 
                     // Check if non-incremented variables are later incremented/set.
-                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState),
+                    blockContext.RegisterOperationAction(operationContext => AnalyzeIncrementOrDecrement(operationContext, analyzerState),
                         OperationKind.Increment);
-                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState),
+                    blockContext.RegisterOperationAction(operationContext => AnalyzeIncrementOrDecrement(operationContext, analyzerState),
                         OperationKind.Decrement);
-                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState),
+                    blockContext.RegisterOperationAction(operationContext => AnalyzeAssignment(operationContext, analyzerState),
                         OperationKind.SimpleAssignment);
-                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState),
+                    blockContext.RegisterOperationAction(operationContext => AnalyzeAssignment(operationContext, analyzerState),
                         OperationKind.CompoundAssignment);
 
                     // Main analysis for invocations of AddAttribute and AddComponentParameter.
-                    blockContext.RegisterOperationAction(context =>
+                    blockContext.RegisterOperationAction(operationContext =>
                     {
                         // It appears that the analysis triggers the actions for operations using DFS.
-                        // The only uncertainty seems to be for actions on the same level, but we don't need to worry about them.(probably due to foreach)
+                        // The only uncertainty seems to be for actions on the same level, but we don't need to worry about them.
                         // We care only for the upper levels variables to be registered in time of execution of this callback, so we catch any occurrences.
-                        AnalyzeInvocation(context, availableTypes, analyzerState);
+                        AnalyzeInvocation(operationContext, availableTypes, analyzerState);
                     }, OperationKind.Invocation);
                 }
                 else

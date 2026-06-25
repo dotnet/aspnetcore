@@ -36,11 +36,16 @@ namespace Microsoft.AspNetCore.Components
     {
     }
 
+    public class ChangeEventArgs : EventArgs
+    {
+        public object Value { get; set; }
+    }
+
     public class EventCallbackFactory
     {
         public EventCallback<T> Create<T>(object receiver, Action callback) => default;
         public EventCallback<T> Create<T>(object receiver, Action<T> callback) => default;
-        public object CreateBinder<T>(object receiver, Action<T> setter, T value) => null;
+        public EventCallback<ChangeEventArgs> CreateBinder<T>(object receiver, Action<T> setter, T value) => default;
     }
 
     public delegate void RenderFragment(Rendering.RenderTreeBuilder builder);

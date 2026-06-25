@@ -57,7 +57,7 @@
 |  __`MVC1005`__ | Cannot use UseMvc with Endpoint Routing |
 |  __`MVC1006`__ | Methods containing TagHelpers must be async and return Task |
 
-### BL  (`BL0001-BL0013`)
+### BL  (`BL0001-BL0014`)
 
 | Diagnostic ID     | Description |
 | :---------------- | :---------- |
