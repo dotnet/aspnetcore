@@ -303,7 +303,7 @@ public static class DotNetDispatcher
     /// This method can throw any exception either from the argument received or as a result
     /// of executing any callback synchronously upon completion.
     /// </exception>
-    public static void EndInvokeJS(JSRuntime jsRuntime, string arguments)
+    public static void EndInvokeJS(JSRuntime jsRuntime, [StringSyntax(StringSyntaxAttribute.Json)] string arguments)
     {
         var utf8JsonBytes = Encoding.UTF8.GetBytes(arguments);
 
