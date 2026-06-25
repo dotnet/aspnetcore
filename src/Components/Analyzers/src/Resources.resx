@@ -231,4 +231,13 @@
   <data name="UnnecessaryStateHasChangedCall_FixTitle" xml:space="preserve">
     <value>Remove unnecessary StateHasChanged call.</value>
   </data>
+  <data name="AuthenticationStateProviderCachedWithoutSubscription_Description" xml:space="preserve">
+    <value>When using AuthenticationStateProvider directly, you must subscribe to the AuthenticationStateChanged event to be notified of authentication state changes. Caching the result of GetAuthenticationStateAsync without subscribing to changes can result in stale authentication data being used. Use CascadingAuthenticationState or AuthorizeView instead, or subscribe to AuthenticationStateChanged and invalidate any cached state.</value>
+  </data>
+  <data name="AuthenticationStateProviderCachedWithoutSubscription_Format" xml:space="preserve">
+    <value>'{0}' calls GetAuthenticationStateAsync on AuthenticationStateProvider without subscribing to the AuthenticationStateChanged event. This may result in using stale authentication state.</value>
+  </data>
+  <data name="AuthenticationStateProviderCachedWithoutSubscription_Title" xml:space="preserve">
+    <value>AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged</value>
+  </data>
 </root>
