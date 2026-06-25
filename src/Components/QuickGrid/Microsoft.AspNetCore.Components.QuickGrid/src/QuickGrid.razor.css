@@ -121,3 +121,20 @@ html[dir=rtl] .col-justify-end .col-options {
 tr.row-clickable {
     cursor: pointer;
 }
+
+th ::deep .col-options-button {
+    position: relative;
+}
+
+th ::deep .col-options-button.col-options-active::after {
+    content: "";
+    position: absolute;
+    top: 0.05rem;
+    right: 0.05rem;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    /* Indicates an active filter state on the column options button.
+   Can be customized by consuming applications. */
+    background-color: var(--quickgrid-column-options-active-color, var(--bs-primary, #0d6efd));
+}

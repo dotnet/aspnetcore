@@ -127,7 +127,7 @@ public class ColumnBaseTest
     }
 
     [Fact]
-    public void ColumnHeaderTemplate_RendersWithCorrectButtonClasses()
+    public void ColumnHeaderTemplate_RendersButtonWithCorrectClasses()
     {
         var column = new TestColumn
         {
@@ -138,10 +138,9 @@ public class ColumnBaseTest
         var builder = new RenderTreeBuilder();
         column.HeaderContent(builder);
 
-        var markup = builder.GetFrames();
-        Assert.DoesNotContain(markup.Array, frame =>
-            frame.FrameType == RenderTree.RenderTreeFrameType.Attribute &&
-            frame.AttributeName == "class" &&
-            frame.AttributeValue?.ToString()?.Contains("my-filter-indicator") == true);
+        var cssClass = column.ColumnOptionsButtonCssClass;
+        Assert.Contains("col-options-button", cssClass);
+        Assert.Contains("my-filter-indicator", cssClass);
+        Assert.Contains("col-options-active", cssClass);
     }
 }

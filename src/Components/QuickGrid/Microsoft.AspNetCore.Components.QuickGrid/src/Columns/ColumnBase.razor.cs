@@ -47,6 +47,18 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
 
     /// <summary>
+    /// Indicates whether the column's filter is currently active, causing a visual indicator to be displayed
+    /// on the column options button.
+    /// </summary>
+    [Parameter] public bool ColumnOptionsActive { get; set; }
+
+    /// <summary>
+    /// An optional CSS class name to apply to the column options button. This allows custom styling of the
+    /// filter indicator.
+    /// </summary>
+    [Parameter] public string? ColumnOptionsButtonClass { get; set; }
+    
+    /// <summary>
     /// Indicates whether the data should be sortable by this column.
     ///
     /// The default value may vary according to the column type (for example, a <see cref="TemplateColumn{TGridItem}" />
@@ -74,18 +86,6 @@ public abstract partial class ColumnBase<TGridItem>
     /// If specified, virtualized grids will use this template to render cells whose data has not yet been loaded.
     /// </summary>
     [Parameter] public RenderFragment<PlaceholderContext>? PlaceholderTemplate { get; set; }
-
-    /// <summary>
-    /// Indicates whether the column's filter is currently active, causing a visual indicator to be displayed
-    /// on the column options button.
-    /// </summary>
-    [Parameter] public bool ColumnOptionsActive { get; set; }
-
-    /// <summary>
-    /// An optional CSS class name to apply to the column options button. This allows custom styling of the
-    /// filter indicator.
-    /// </summary>
-    [Parameter] public string? ColumnOptionsButtonClass { get; set; }
 
     /// <summary>
     /// Gets a reference to the enclosing <see cref="QuickGrid{TGridItem}" />.
@@ -129,16 +129,18 @@ public abstract partial class ColumnBase<TGridItem>
     {
         get
         {
-            var classes = new List<string> { "col-options-button" };
+            var result = "col-options-button";
             if (!string.IsNullOrWhiteSpace(ColumnOptionsButtonClass))
             {
-                classes.Add(ColumnOptionsButtonClass.Trim());
+                result += " " + ColumnOptionsButtonClass.Trim();
             }
+
             if (ColumnOptionsActive)
             {
-                classes.Add("col-options-active");
+                result += " col-options-active";
             }
-            return string.Join(" ", classes);
+
+            return result;
         }
     }
 }
