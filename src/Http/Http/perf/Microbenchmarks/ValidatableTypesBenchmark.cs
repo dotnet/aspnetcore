@@ -3,6 +3,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -15,10 +16,10 @@ namespace Microsoft.AspNetCore.Http.Microbenchmarks;
 
 public class ValidatableTypeInfoBenchmark
 {
-    private IValidatableInfo _simpleTypeInfo = null!;
-    private IValidatableInfo _complexTypeInfo = null!;
-    private IValidatableInfo _hierarchicalTypeInfo = null!;
-    private IValidatableInfo _ivalidatableObjectTypeInfo = null!;
+    private IValidatableTypeInfo _simpleTypeInfo = null!;
+    private IValidatableTypeInfo _complexTypeInfo = null!;
+    private IValidatableTypeInfo _hierarchicalTypeInfo = null!;
+    private IValidatableTypeInfo _ivalidatableObjectTypeInfo = null!;
 
     private ValidateContext _context = null!;
     private SimpleModel _simpleModel = null!;
@@ -45,7 +46,6 @@ public class ValidatableTypeInfoBenchmark
         {
             ValidationOptions = validationOptions,
             ValidationContext = new ValidationContext(new object(), serviceProvider, null),
-            ValidationErrors = new Dictionary<string, string[]>(StringComparer.Ordinal)
         };
 
         // Create the model instances
@@ -111,7 +111,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Simple")]
     public async Task ValidateSimpleModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _simpleTypeInfo.ValidateAsync(_simpleModel, _context, default);
     }
 
@@ -119,7 +119,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Complex")]
     public async Task ValidateComplexModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _complexTypeInfo.ValidateAsync(_complexModel, _context, default);
     }
 
@@ -127,7 +127,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Hierarchical")]
     public async Task ValidateHierarchicalModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _hierarchicalTypeInfo.ValidateAsync(_hierarchicalModel, _context, default);
     }
 
@@ -135,7 +135,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("IValidatableObject")]
     public async Task ValidateIValidatableObjectModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         await _ivalidatableObjectTypeInfo.ValidateAsync(_validatableObjectModel, _context, default);
     }
 
@@ -143,7 +143,7 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Invalid")]
     public async Task ValidateInvalidSimpleModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         _simpleModel.Email = "invalid-email";
         await _simpleTypeInfo.ValidateAsync(_simpleModel, _context, default);
     }
@@ -152,9 +152,17 @@ public class ValidatableTypeInfoBenchmark
     [BenchmarkCategory("Invalid")]
     public async Task ValidateInvalidIValidatableObjectModel()
     {
-        _context.ValidationErrors.Clear();
+        ClearValidationErrors();
         _validatableObjectModel.CustomField = "Invalid";
         await _ivalidatableObjectTypeInfo.ValidateAsync(_validatableObjectModel, _context, default);
+    }
+
+    private void ClearValidationErrors()
+    {
+        // Relies on implementation detail.
+        // We expose IReadOnlyDictionary on the context.
+        // This is fine for the purpose of benchmarking.
+        ((ConcurrentDictionary<string, IEnumerable<string>>)_context.ValidationErrors)?.Clear();
     }
 
     #region Helper methods to create type info instances manually if needed
@@ -261,7 +269,7 @@ public class ValidatableTypeInfoBenchmark
 
     private class MockDisplayNameInfo(string displayName) : DisplayNameInfo
     {
-        public override string GetDisplayName(ValidateContext context, string memberName, Type declaringType)
+        public override string GetDisplayName(ValidateContext context, string memberName, Type type)
             => displayName;
     }
 
@@ -353,20 +361,20 @@ public class ValidatableTypeInfoBenchmark
                 attributes);
         }
 
-        public bool TryGetValidatableTypeInfo(Type type, out IValidatableInfo validatableInfo)
+        public bool TryGetValidatableTypeInfo(Type type, out IValidatableTypeInfo validatableTypeInfo)
         {
             if (_typeInfoCache.TryGetValue(type, out var typeInfo))
             {
-                validatableInfo = typeInfo;
+                validatableTypeInfo = typeInfo;
                 return true;
             }
-            validatableInfo = null;
+            validatableTypeInfo = null;
             return false;
         }
 
-        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, out IValidatableInfo validatableInfo)
+        public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, out IValidatableParameterInfo validatableParameterInfo)
         {
-            validatableInfo = null;
+            validatableParameterInfo = null;
             return false;
         }
     }

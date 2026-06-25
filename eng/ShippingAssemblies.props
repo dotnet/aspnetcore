@@ -153,6 +153,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.Specification.Tests" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.CustomElements" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Media" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.QuickGrid" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Components.Testing" />

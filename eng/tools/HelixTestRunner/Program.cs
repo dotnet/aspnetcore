@@ -13,7 +13,9 @@ class Program
     {
         try
         {
-            var runner = new TestRunner(HelixTestRunnerOptions.Parse(args));
+            var options = HelixTestRunnerOptions.Parse(args);
+            var runner = new TestRunner(options);
+            ProcessUtil.PrintMessage($"Configured {runner.Options.Targets.Length} test assembly(ies).");
 
             var keepGoing = runner.SetupEnvironment();
             if (keepGoing)
@@ -61,7 +63,7 @@ class Program
         }
         catch (Exception e)
         {
-            ProcessUtil.PrintMessage($"HelixTestRunner uncaught exception: {e.ToString()}");
+            ProcessUtil.PrintMessage($"HelixTestRunner uncaught exception: {e}");
             Environment.Exit(1);
         }
     }
