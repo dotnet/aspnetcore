@@ -20,11 +20,11 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
 ";
 
     // -------------------------------------------------------------------------
-    // BL0012 – Dispose() without IDisposable
+    // BL0014 – Dispose() without IDisposable
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void ComponentWithDisposeButWithoutIDisposable_ReportsBL0012()
+    public void ComponentWithDisposeButWithoutIDisposable_ReportsBL0014()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -40,7 +40,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = "BL0012",
+                Id = "BL0014",
                 Message = "Component 'ConsoleApplication1.TestComponent' has a 'Dispose()' method but does not implement 'IDisposable'. The runtime will not call 'Dispose()' automatically.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
@@ -51,7 +51,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void ComponentThatImplementsIDisposableAndHasDispose_NoBL0012()
+    public void ComponentThatImplementsIDisposableAndHasDispose_NoBL0014()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -69,7 +69,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void NonComponentClassWithDisposeButWithoutIDisposable_NoBL0012()
+    public void NonComponentClassWithDisposeButWithoutIDisposable_NoBL0014()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -84,7 +84,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void ComponentWithPrivateDisposeButWithoutIDisposable_NoBL0012()
+    public void ComponentWithPrivateDisposeButWithoutIDisposable_NoBL0014()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -101,11 +101,11 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
     }
 
     // -------------------------------------------------------------------------
-    // BL0013 – DisposeAsync() without IAsyncDisposable
+    // BL0015 – DisposeAsync() without IAsyncDisposable
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void ComponentWithDisposeAsyncButWithoutIAsyncDisposable_ReportsBL0013()
+    public void ComponentWithDisposeAsyncButWithoutIAsyncDisposable_ReportsBL0015()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -122,7 +122,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = "BL0013",
+                Id = "BL0015",
                 Message = "Component 'ConsoleApplication1.TestComponent' has a 'DisposeAsync()' method but does not implement 'IAsyncDisposable'. The runtime will not call 'DisposeAsync()' automatically.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
@@ -133,7 +133,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void ComponentThatImplementsIAsyncDisposableAndHasDisposeAsync_NoBL0013()
+    public void ComponentThatImplementsIAsyncDisposableAndHasDisposeAsync_NoBL0015()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -152,7 +152,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void NonComponentClassWithDisposeAsyncButWithoutIAsyncDisposable_NoBL0013()
+    public void NonComponentClassWithDisposeAsyncButWithoutIAsyncDisposable_NoBL0015()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -174,7 +174,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
     // -------------------------------------------------------------------------
 
     [Fact]
-    public void ComponentMissingBothInterfaces_ReportsBothBL0012AndBL0013()
+    public void ComponentMissingBothInterfaces_ReportsBothBL0014AndBL0015()
     {
         var test = @"
     namespace ConsoleApplication1
@@ -192,7 +192,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
         VerifyCSharpDiagnostic(test,
             new DiagnosticResult
             {
-                Id = "BL0012",
+                Id = "BL0014",
                 Message = "Component 'ConsoleApplication1.TestComponent' has a 'Dispose()' method but does not implement 'IDisposable'. The runtime will not call 'Dispose()' automatically.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
@@ -202,7 +202,7 @@ public class ComponentDisposableSanityAnalyzerTest : DiagnosticVerifier
             },
             new DiagnosticResult
             {
-                Id = "BL0013",
+                Id = "BL0015",
                 Message = "Component 'ConsoleApplication1.TestComponent' has a 'DisposeAsync()' method but does not implement 'IAsyncDisposable'. The runtime will not call 'DisposeAsync()' automatically.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
