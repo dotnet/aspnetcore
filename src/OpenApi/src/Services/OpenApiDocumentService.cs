@@ -163,14 +163,13 @@ internal sealed class OpenApiDocumentService(
     {
         foreach (var pathItem in document.Paths.Values)
         {
-            for (var i = 0; i < OpenApiConstants.HttpMethods.Length; i++)
+            if (pathItem.Operations is null)
             {
-                var httpMethod = OpenApiConstants.HttpMethods[i];
-                if (pathItem.Operations is null || !pathItem.Operations.TryGetValue(httpMethod, out var operation))
-                {
-                    continue;
-                }
+                continue;
+            }
 
+            foreach (var operation in pathItem.Operations.Values)
+            {
                 if (operation.Metadata is { } annotations &&
                     annotations.TryGetValue(OpenApiConstants.DescriptionId, out var descriptionId) &&
                     descriptionId is string descriptionIdString &&
@@ -294,7 +293,7 @@ internal sealed class OpenApiDocumentService(
 
             if (description.GetHttpMethod() is not { } method)
             {
-                // Skip unsupported HTTP methods
+                // Skip descriptions with a missing or invalid HTTP method.
                 continue;
             }
 

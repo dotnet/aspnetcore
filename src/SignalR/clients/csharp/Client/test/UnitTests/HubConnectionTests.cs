@@ -343,6 +343,35 @@ public partial class HubConnectionTests : VerifiableLoggedTest
     }
 
     [Fact]
+    public async Task CanCancelTokenDuringInvoke_SendsCancelInvocation()
+    {
+        using (StartVerifiableLog())
+        {
+            var connection = new TestConnection();
+            var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
+
+            await hubConnection.StartAsync().DefaultTimeout();
+
+            using var cts = new CancellationTokenSource();
+            var invokeTask = hubConnection.InvokeAsync<int>("TestMethod", cts.Token);
+
+            var item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            var invocationId = item["invocationId"];
+
+            // Cancel the invocation
+            cts.Cancel();
+
+            // Should receive CancelInvocationMessage
+            item = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, item["type"]);
+            Assert.Equal(invocationId, item["invocationId"]);
+
+            // Invocation on client-side completes with cancellation
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await invokeTask).DefaultTimeout();
+        }
+    }
+
+    [Fact]
     public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
     {
         bool ExpectedErrors(WriteContext writeContext)
@@ -565,10 +594,14 @@ public partial class HubConnectionTests : VerifiableLoggedTest
                 await channel.Writer.WriteAsync(number);
             }
 
-            // the next sent message should be a completion message
+            // the next sent message should be a stream completion message
             var complete = await connection.ReadSentJsonAsync().DefaultTimeout();
             Assert.Equal(HubProtocolConstants.CompletionMessageType, complete["type"]);
             Assert.EndsWith("canceled by client.", ((string)complete["error"]));
+
+            // after stream completion, a cancel invocation message should be sent
+            var cancel = await connection.ReadSentJsonAsync().DefaultTimeout();
+            Assert.Equal(HubProtocolConstants.CancelInvocationMessageType, cancel["type"]);
         }
     }
 

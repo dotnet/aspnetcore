@@ -29,7 +29,7 @@ internal sealed class DefaultValidationLocalizer : IValidationLocalizer
             return null;
         }
 
-        var localizer = GetStringLocalizer(context.DeclaringType);
+        var localizer = GetStringLocalizer(context.Type);
         var localizedName = localizer[context.DisplayName];
 
         return localizedName.ResourceNotFound ? context.DisplayName : localizedName.Value;
