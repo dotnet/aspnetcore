@@ -17,8 +17,10 @@ namespace Microsoft.Extensions.Validation.Localization.Tests;
 /// </summary>
 public class ValidationLocalizationPipelineTests
 {
-    [Fact]
-    public async Task FullPipeline_ProducesLocalizedErrorMessage()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_ProducesLocalizedErrorMessage(bool useAsync)
     {
         var translations = new Dictionary<string, string>
         {
@@ -34,14 +36,23 @@ public class ValidationLocalizationPipelineTests
                 displayName: "Customer Name")
         ]);
 
-        await customerTypeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await customerTypeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            customerTypeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Le champ Nom du client est obligatoire.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_RangeAttribute_FormatsMinMaxIntoLocalizedTemplate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_RangeAttribute_FormatsMinMaxIntoLocalizedTemplate(bool useAsync)
     {
         var translations = new Dictionary<string, string>
         {
@@ -55,14 +66,23 @@ public class ValidationLocalizationPipelineTests
                 [new RangeAttribute(18, 120) { ErrorMessage = "RangeKey" }])
         ]);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Age: valeur entre 18 et 120 attendue.", context.ValidationErrors["Age"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_ErrorMessageResourceType_BypassesLocalization()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_ErrorMessageResourceType_BypassesLocalization(bool useAsync)
     {
         // Regression: ErrorMessageResourceType-based localization on the attribute itself
         // must NOT be overridden by the validation localizer.
@@ -82,14 +102,23 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal(IntegrationResources.RequiredError, context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_ErrorMessageKeyProvider_LocalizesAttributesWithoutErrorMessage()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_ErrorMessageKeyProvider_LocalizesAttributesWithoutErrorMessage(bool useAsync)
     {
         var translations = new Dictionary<string, string>
         {
@@ -107,14 +136,23 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Field Name is required (convention).", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_TypeLevelAttribute_Localized()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_TypeLevelAttribute_Localized(bool useAsync)
     {
         var translations = new Dictionary<string, string>
         {
@@ -133,15 +171,24 @@ public class ValidationLocalizationPipelineTests
             ]);
         var model = new RangeModel { Start = 10, End = 5 };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         var errors = context.ValidationErrors.Values.SelectMany(v => v).ToList();
         Assert.Contains("Le début doit être inférieur à la fin.", errors);
     }
 
-    [Fact]
-    public async Task FullPipeline_LocalizationLookupMiss_FallsBackToAttributeDefault()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_LocalizationLookupMiss_FallsBackToAttributeDefault(bool useAsync)
     {
         // No translation for the key → localizer returns null → pipeline falls back to
         // the attribute's default ErrorMessage value (the literal "RequiredKey").
@@ -153,14 +200,23 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("RequiredKey", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_DisplayNameLookup_LocalizesIntoDefaultErrorTemplate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_DisplayNameLookup_LocalizesIntoDefaultErrorTemplate(bool useAsync)
     {
         // Localize only the DisplayName; the error template comes from the attribute's default
         // ("The {0} field is required."), so the localized DisplayName ends up substituted in.
@@ -177,14 +233,23 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Nom du client field is required.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_ParameterLevel_SharedResource_Localized()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_ParameterLevel_SharedResource_Localized(bool useAsync)
     {
         // Recommended pattern for Minimal API parameter validation: a shared-resource provider.
         var sharedTranslations = new Dictionary<Type, Dictionary<string, string>>
@@ -202,14 +267,23 @@ public class ValidationLocalizationPipelineTests
         var paramInfo = new TestValidatableParameterInfo(typeof(string), "myParam", "Param Display",
             [new RequiredAttribute { ErrorMessage = "RequiredKey" }]);
 
-        await paramInfo.ValidateAsync(null, context, default);
+        if (useAsync)
+        {
+            await paramInfo.ValidateAsync(null, context, default);
+        }
+        else
+        {
+            paramInfo.Validate(null, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Param Paramètre requis.", context.ValidationErrors["myParam"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_StringLength_MaxOnly_FormatsLengthIntoTemplate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_StringLength_MaxOnly_FormatsLengthIntoTemplate(bool useAsync)
     {
         // StringLengthAttribute with no MinimumLength: BCL default template uses {0} and {1}=Max.
         // The StringLengthAttributeFormatter must pass MaximumLength as {1} for the localized template.
@@ -225,14 +299,23 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = new string('a', 50) };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Name doit avoir au plus 10 caractères.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_StringLength_MinAndMax_FormatsBothIntoTemplate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_StringLength_MinAndMax_FormatsBothIntoTemplate(bool useAsync)
     {
         // StringLengthAttribute with MinimumLength: BCL default template uses {0}, {1}=Max, {2}=Min.
         // The StringLengthAttributeFormatter must preserve that ordering for the localized template.
@@ -248,14 +331,23 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = "ab" };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Name doit avoir entre 3 et 10 caractères.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task FullPipeline_PerInvocationLocalizerOverride_LatestValueWins()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_PerInvocationLocalizerOverride_LatestValueWins(bool useAsync)
     {
         // After AddValidationLocalization configures options.Localizer, the user can replace it
         // by direct assignment. The pipeline must read the latest value at validation time,
@@ -270,16 +362,36 @@ public class ValidationLocalizationPipelineTests
         ]);
 
         context.ValidationOptions.Localizer = override1;
-        await typeInfo.ValidateAsync(new CustomerModel { Name = null }, context, default);
+
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(new CustomerModel { Name = null }, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(new CustomerModel { Name = null }, context);
+        }
+
         Assert.Equal("FROM-OVERRIDE-1", context.ValidationErrors!["Name"].Single());
 
         context.ValidationOptions.Localizer = override2;
-        await typeInfo.ValidateAsync(new CustomerModel { Name = null }, context, default);
+
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(new CustomerModel { Name = null }, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(new CustomerModel { Name = null }, context);
+        }
+
         Assert.Equal("FROM-OVERRIDE-2", context.ValidationErrors!["Name"].Last());
     }
 
-    [Fact]
-    public async Task FullPipeline_InheritedProperty_LocalizerProviderReceivesDeclaringBaseType()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FullPipeline_InheritedProperty_LocalizerProviderReceivesDeclaringBaseType(bool useAsync)
     {
         // ValidatablePropertyInfo carries a fixed DeclaringType (set by the source generator to
         // where the property is declared). When validating a Derived instance through a property
@@ -308,7 +420,14 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new DerivedInheritedModel { Name = null };
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Name is required (from base resource).", context.ValidationErrors["Name"].Single());

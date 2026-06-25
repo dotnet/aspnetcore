@@ -180,6 +180,106 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
     }
 
+    /// <inheritdoc />
+    public virtual void Validate(object containingObject, ValidateContext context)
+    {
+        ArgumentNullException.ThrowIfNull(containingObject);
+
+        var propertyValue = Property.GetValue(containingObject);
+        var validationAttributes = GetValidationAttributes();
+
+        // Calculate and save the current path
+        var originalPrefix = context.CurrentValidationPath;
+
+        if (string.IsNullOrEmpty(originalPrefix))
+        {
+            context.CurrentValidationPath = Name;
+        }
+        else
+        {
+            context.CurrentValidationPath = $"{originalPrefix}.{Name}";
+        }
+
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
+        context.ValidationContext.MemberName = Name;
+
+        // Check required attribute first
+        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        {
+            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
+
+            if (result is not null && result != ValidationResult.Success)
+            {
+                ((IValidationErrorReporter)this).ReportError(context, containingObject, _requiredAttribute, result);
+
+                // Restore the validation path mutated above before returning early so that sibling
+                // members validated with the same (shared) context observe the original prefix.
+                context.CurrentValidationPath = originalPrefix;
+                return;
+            }
+        }
+
+        // Validate any other attributes
+        context.ValidateAllAttributesSynchronously(propertyValue, containingObject, this);
+
+        var validationOptions = context.ValidationOptions;
+
+        // Check if we've reached the maximum depth before validating complex properties
+        if (context.CurrentDepth >= validationOptions.MaxDepth)
+        {
+            throw new InvalidOperationException(
+                $"Maximum validation depth of {validationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
+                "This is likely caused by a circular reference in the object graph. " +
+                "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
+        }
+
+        // Increment depth counter
+        context.CurrentDepth++;
+
+        try
+        {
+            // Handle enumerable values
+            if (PropertyType.IsEnumerable() && propertyValue is System.Collections.IEnumerable enumerable)
+            {
+                var index = 0;
+                var currentPrefix = context.CurrentValidationPath;
+
+                foreach (var item in enumerable)
+                {
+                    if (item != null)
+                    {
+                        var itemType = item.GetType();
+                        if (validationOptions.TryGetValidatableTypeInfo(itemType, out var validatableType))
+                        {
+                            context.CurrentValidationPath = $"{currentPrefix}[{index}]";
+                            validatableType.Validate(item, context);
+                        }
+                    }
+
+                    index++;
+                }
+
+                context.CurrentValidationPath = currentPrefix;
+            }
+            else if (propertyValue != null)
+            {
+                // Validate as a complex object
+                var valueType = propertyValue.GetType();
+                if (validationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+                {
+                    validatableType.Validate(propertyValue, context);
+                }
+            }
+        }
+        finally
+        {
+            context.CurrentDepth--;
+            context.CurrentValidationPath = originalPrefix;
+        }
+    }
+
     ValidationAttribute[] IValidationErrorReporter.GetValidationAttributes()
     {
         return GetValidationAttributes();

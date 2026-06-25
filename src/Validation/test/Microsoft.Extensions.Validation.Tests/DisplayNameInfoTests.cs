@@ -14,8 +14,10 @@ namespace Microsoft.Extensions.Validation.Tests;
 /// </summary>
 public class DisplayNameInfoTests
 {
-    [Fact]
-    public async Task Property_DisplayNameInfo_InvokedWithMemberNameAndDeclaringType()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_DisplayNameInfo_InvokedWithMemberNameAndDeclaringType(bool useAsync)
     {
         var captured = new List<(string MemberName, Type? DeclaringType)>();
         var displayNameInfo = new CapturingDisplayNameInfo(captured, returnValue: "Localized");
@@ -27,15 +29,24 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         var call = Assert.Single(captured);
         Assert.Equal("Name", call.MemberName);
         Assert.Equal(typeof(Person), call.DeclaringType);
     }
 
-    [Fact]
-    public async Task Parameter_DisplayNameInfo_InvokedWithNullDeclaringType()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Parameter_DisplayNameInfo_InvokedWithNullDeclaringType(bool useAsync)
     {
         var captured = new List<(string MemberName, Type? DeclaringType)>();
         var displayNameInfo = new CapturingDisplayNameInfo(captured, returnValue: "Localized");
@@ -43,15 +54,24 @@ public class DisplayNameInfoTests
         var paramInfo = new CapturingParameterInfo(typeof(string), "myParam", displayNameInfo, [new RequiredAttribute()]);
         var context = CreateContext(model: new object());
 
-        await paramInfo.ValidateAsync(null, context, default);
+        if (useAsync)
+        {
+            await paramInfo.ValidateAsync(null, context, default);
+        }
+        else
+        {
+            paramInfo.Validate(null, context);
+        }
 
         var call = Assert.Single(captured);
         Assert.Equal("myParam", call.MemberName);
         Assert.Null(call.DeclaringType);
     }
 
-    [Fact]
-    public async Task TypeLevelAttribute_DisplayNameInfo_InvokedWithTypeNameAndType()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TypeLevelAttribute_DisplayNameInfo_InvokedWithTypeNameAndType(bool useAsync)
     {
         var captured = new List<(string MemberName, Type? DeclaringType)>();
         var displayNameInfo = new CapturingDisplayNameInfo(captured, returnValue: "Localized Range");
@@ -64,15 +84,24 @@ public class DisplayNameInfoTests
             [new StartLessThanEndAttribute { ErrorMessage = "Start must be less than End." }]);
         var context = CreateContext(model);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         var call = Assert.Single(captured);
         Assert.Equal(nameof(RangeModel), call.MemberName);
         Assert.Equal(typeof(RangeModel), call.DeclaringType);
     }
 
-    [Fact]
-    public async Task Property_DisplayNameInfo_ReturnsNull_FallsBackToMemberNameInErrorMessage()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_DisplayNameInfo_ReturnsNull_FallsBackToMemberNameInErrorMessage(bool useAsync)
     {
         var displayNameInfo = new ConstantDisplayNameInfo(null);
         var model = new Person { Name = null };
@@ -82,14 +111,23 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task Property_NoDisplayNameInfo_UsesMemberNameDirectly()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_NoDisplayNameInfo_UsesMemberNameDirectly(bool useAsync)
     {
         var model = new Person { Name = null };
         var typeInfo = new TestValidatableTypeInfo(typeof(Person),
@@ -98,14 +136,23 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task Property_DisplayNameInfo_ReturnsValue_UsedInErrorMessage()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_DisplayNameInfo_ReturnsValue_UsedInErrorMessage(bool useAsync)
     {
         var displayNameInfo = new ConstantDisplayNameInfo("Custom Resolved Name");
         var model = new Person { Name = null };
@@ -115,14 +162,23 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Custom Resolved Name field is required.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task Property_DisplayNameInfo_Throws_PropagatesException()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_DisplayNameInfo_Throws_PropagatesException(bool useAsync)
     {
         var thrown = new InvalidOperationException("Custom strategy failure");
         var displayNameInfo = new ThrowingDisplayNameInfo(thrown);
@@ -133,8 +189,17 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => typeInfo.ValidateAsync(model, context, default));
+        Exception ex;
+        if (useAsync)
+        {
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => typeInfo.ValidateAsync(model, context, default));
+        }
+        else
+        {
+            ex = Assert.Throws<InvalidOperationException>(
+                () => typeInfo.Validate(model, context));
+        }
         Assert.Same(thrown, ex);
     }
 

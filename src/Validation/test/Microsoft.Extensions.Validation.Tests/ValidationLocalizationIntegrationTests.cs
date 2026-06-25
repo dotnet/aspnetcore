@@ -17,8 +17,10 @@ public class ValidationLocalizationIntegrationTests
 {
     // --- No-localizer path ---
 
-    [Fact]
-    public async Task Property_NoLocalizer_UsesAttributeDefaults()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_NoLocalizer_UsesAttributeDefaults(bool useAsync)
     {
         var model = new SimpleModel { Name = null };
         var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel),
@@ -28,14 +30,23 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer: null);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task Property_NoLocalizer_LiteralDisplayNamePassesThrough()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_NoLocalizer_LiteralDisplayNamePassesThrough(bool useAsync)
     {
         var model = new SimpleModel { Name = null };
         var typeInfo = new TestValidatableTypeInfo(typeof(SimpleModel),
@@ -46,7 +57,14 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer: null);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Customer Name field is required.", context.ValidationErrors["Name"].Single());
@@ -54,8 +72,10 @@ public class ValidationLocalizationIntegrationTests
 
     // --- Localizer is invoked ---
 
-    [Fact]
-    public async Task Property_WithLocalizer_BothMethodsCalled()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_WithLocalizer_BothMethodsCalled(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -72,7 +92,14 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         // ResolveDisplayName called with the property's literal display name and declaring type
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
@@ -92,8 +119,10 @@ public class ValidationLocalizationIntegrationTests
         Assert.Equal("Localized error: Localized Display", context.ValidationErrors["Name"].Single());
     }
 
-    [Fact]
-    public async Task Property_LocalizerReturnsNull_FallsBackToLiteral()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_LocalizerReturnsNull_FallsBackToLiteral(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -109,7 +138,14 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         // When the localizer can't translate the literal, the LiteralDisplayName strategy
         // returns the literal as the fallback display name (it acts as both lookup key and
@@ -120,8 +156,10 @@ public class ValidationLocalizationIntegrationTests
 
     // --- ErrorMessageResourceType bypass ---
 
-    [Fact]
-    public async Task Property_ErrorMessageResourceType_BypassesLocalizer()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ErrorMessageResourceType_BypassesLocalizer(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -141,7 +179,14 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         // ResolveDisplayName is still called (the display name itself isn't part of the bypass)
         Assert.Single(localizer.DisplayNameCalls);
@@ -154,8 +199,10 @@ public class ValidationLocalizationIntegrationTests
 
     // --- Resource-attribute strategy bypasses the IStringLocalizer path ---
 
-    [Fact]
-    public async Task Property_ResourceDisplayName_BypassesLocalizer()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ResourceDisplayName_BypassesLocalizer(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -170,7 +217,14 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         // The strategy wins; the localizer's ResolveDisplayName is NOT called.
         Assert.Empty(localizer.DisplayNameCalls);
@@ -179,8 +233,10 @@ public class ValidationLocalizationIntegrationTests
         Assert.Equal("Resource-Resolved Name", errorCall.DisplayName);
     }
 
-    [Fact]
-    public async Task Property_ResourceDisplayName_ReturnsNull_FallsBackToMemberName()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ResourceDisplayName_ReturnsNull_FallsBackToMemberName(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer();
         var model = new SimpleModel { Name = null };
@@ -192,15 +248,24 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.Empty(localizer.DisplayNameCalls);
         var errorCall = Assert.Single(localizer.ErrorMessageCalls);
         Assert.Equal("Name", errorCall.DisplayName);
     }
 
-    [Fact]
-    public async Task Property_ResourceDisplayName_Throws_PropagatesException()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Property_ResourceDisplayName_Throws_PropagatesException(bool useAsync)
     {
         // Pins the failure mode for misconfigured [Display(ResourceType=T, Name=X)] where X is not
         // a public static string property on T. The runtime accessor (DisplayAttribute.GetName)
@@ -217,15 +282,26 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer: null);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => typeInfo.ValidateAsync(model, context, default));
+        InvalidOperationException ex;
+        if (useAsync)
+        {
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => typeInfo.ValidateAsync(model, context, default));
+        }
+        else
+        {
+            ex = Assert.Throws<InvalidOperationException>(
+                () => typeInfo.Validate(model, context));
+        }
         Assert.Same(thrown, ex);
     }
 
     // --- IValidatableObject results are not post-processed ---
 
-    [Fact]
-    public async Task IValidatableObject_ResultsNotProcessedThroughLocalizer()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IValidatableObject_ResultsNotProcessedThroughLocalizer(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -236,7 +312,14 @@ public class ValidationLocalizationIntegrationTests
         var typeInfo = new TestValidatableTypeInfo(typeof(ValidatableObjectModel), []);
         var context = CreateContext(model, localizer);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Custom IValidatableObject error", context.ValidationErrors["Name"].Single());
@@ -244,8 +327,10 @@ public class ValidationLocalizationIntegrationTests
 
     // --- Type-level validation attributes use type display name ---
 
-    [Fact]
-    public async Task TypeLevelAttribute_UsesTypeAsDeclaringType()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TypeLevelAttribute_UsesTypeAsDeclaringType(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -261,7 +346,14 @@ public class ValidationLocalizationIntegrationTests
             attributes: [new StartLessThanEndAttribute { ErrorMessage = "Start must be less than End." }]);
         var context = CreateContext(model, localizer);
 
-        await typeInfo.ValidateAsync(model, context, default);
+        if (useAsync)
+        {
+            await typeInfo.ValidateAsync(model, context, default);
+        }
+        else
+        {
+            typeInfo.Validate(model, context);
+        }
 
         // The error message localization for type-level attrs uses the type as DeclaringType
         var errorCall = Assert.Single(localizer.ErrorMessageCalls);
@@ -273,8 +365,10 @@ public class ValidationLocalizationIntegrationTests
 
     // --- Parameter-level validation passes declaringType: null ---
 
-    [Fact]
-    public async Task Parameter_LocalizerCalledWithNullDeclaringType()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Parameter_LocalizerCalledWithNullDeclaringType(bool useAsync)
     {
         var localizer = new RecordingValidationLocalizer
         {
@@ -286,7 +380,14 @@ public class ValidationLocalizationIntegrationTests
             [new RequiredAttribute()]);
         var context = CreateContext(model: new object(), localizer);
 
-        await paramInfo.ValidateAsync(null, context, default);
+        if (useAsync)
+        {
+            await paramInfo.ValidateAsync(null, context, default);
+        }
+        else
+        {
+            paramInfo.Validate(null, context);
+        }
 
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
         Assert.Null(displayCall.Type);

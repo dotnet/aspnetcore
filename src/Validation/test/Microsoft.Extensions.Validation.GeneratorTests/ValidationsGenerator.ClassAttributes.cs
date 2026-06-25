@@ -12,8 +12,10 @@ namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
-    [Fact]
-    public async Task CanValidateValidationAttributesOnClasses()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanValidateValidationAttributesOnClasses(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -102,7 +104,14 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                if (useAsync)
+                {
+                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                }
+                else
+                {
+                    validatableTypeInfo.Validate(instance, context);
+                }
 
                 Assert.NotNull(context.ValidationErrors);
                 var propertyAttributeError = Assert.Single(context.ValidationErrors);
@@ -120,7 +129,14 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                if (useAsync)
+                {
+                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                }
+                else
+                {
+                    validatableTypeInfo.Validate(instance, context);
+                }
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -137,7 +153,14 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                if (useAsync)
+                {
+                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                }
+                else
+                {
+                    validatableTypeInfo.Validate(instance, context);
+                }
 
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);
@@ -158,7 +181,14 @@ public class SumLimitAttribute : ValidationAttribute
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                if (useAsync)
+                {
+                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                }
+                else
+                {
+                    validatableTypeInfo.Validate(instance, context);
+                }
 
                 Assert.NotNull(context.ValidationErrors);
                 var classAttributeError = Assert.Single(context.ValidationErrors);
