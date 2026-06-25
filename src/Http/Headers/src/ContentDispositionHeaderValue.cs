@@ -31,7 +31,6 @@ public class ContentDispositionHeaderValue
     private const int MaxStackAllocSizeBytes = 256;
     private static readonly char[] QuestionMark = new char[] { '?' };
     private static readonly char[] SingleQuote = new char[] { '\'' };
-    private static readonly char[] EscapeChars = new char[] { '\\', '"' };
     private static ReadOnlySpan<byte> MimePrefix => "\"=?utf-8?B?"u8;
     private static ReadOnlySpan<byte> MimeSuffix => "?=\""u8;
 
@@ -480,14 +479,14 @@ public class ContentDispositionHeaderValue
             needsQuotes = false;
             result = EncodeMimeWithQuotes(result); // "=?utf-8?B?asdfasdfaesdf?="
         }
-        else if (!needsQuotes && HttpRuleParser.GetTokenLength(result, 0) != result.Length)
+        else if (!needsQuotes && !HttpRuleParser.IsToken(result))
         {
             needsQuotes = true;
         }
 
         if (needsQuotes)
         {
-            if (result.IndexOfAny(EscapeChars) != -1)
+            if (result.AsSpan().ContainsAny('\\', '"'))
             {
                 // '\' and '"' must be escaped in a quoted string
                 result = result.ToString().Replace(@"\", @"\\").Replace(@"""", @"\""");
@@ -535,7 +534,7 @@ public class ContentDispositionHeaderValue
     {
         Contract.Assert(input != null);
 
-        return input.AsSpan().IndexOfAnyExceptInRange((char)0x20, (char)0x7e) >= 0;
+        return input.AsSpan().ContainsAnyExceptInRange((char)0x20, (char)0x7e);
     }
 
     // Encode using MIME encoding
