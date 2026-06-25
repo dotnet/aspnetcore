@@ -15,9 +15,5 @@ internal sealed class WebAssemblyComponentsServiceOptionsConfiguration(IConfigur
         {
             options.UseCultureFromServer = true;
         }
-        if (string.Equals(value, "false", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "0", StringComparison.OrdinalIgnoreCase))
-        {
-            options.UseCultureFromServer = false;
-        }
     }
 }
