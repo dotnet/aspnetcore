@@ -27,9 +27,18 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         {
             var availableTypes = new Dictionary<string, INamedTypeSymbol?>()
             {
-                { ComponentsApi.BindConverter.MetadataName, compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.BindConverter.FullTypeName) },
-                { ComponentsApi.EventCallbackFactory.MetadataName, compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.EventCallbackFactory.FullTypeName) },
-                { ComponentsApi.RenderTreeBuilder.MetadataName, compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.FullTypeName) },
+                {
+                    ComponentsApi.BindConverter.MetadataName,
+                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.BindConverter.FullTypeName)
+                },
+                {
+                    ComponentsApi.EventCallbackFactory.MetadataName,
+                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.EventCallbackFactory.FullTypeName)
+                },
+                {
+                    ComponentsApi.RenderTreeBuilder.MetadataName,
+                    compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.RenderTreeBuilder.FullTypeName)
+                },
             };
             if (availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName] is null)
             {
@@ -43,13 +52,18 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                     && IsImplementationOfBuildRenderTree(owningMethod))
                 {
                     // Register variables from the initialization of for loops.
-                    blockContext.RegisterOperationAction(context => AnalyzeForLoopVariables(context, analyzerState), OperationKind.Loop);
+                    blockContext.RegisterOperationAction(context => AnalyzeForLoopVariables(context, analyzerState),
+                        OperationKind.Loop);
 
                     // Check if non-incremented variables are later incremented/set.
-                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState), OperationKind.Increment);
-                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState), OperationKind.Decrement);
-                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState), OperationKind.SimpleAssignment);
-                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState), OperationKind.CompoundAssignment);
+                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState),
+                        OperationKind.Increment);
+                    blockContext.RegisterOperationAction(context => AnalyzeIncrementOrDecrement(context, analyzerState),
+                        OperationKind.Decrement);
+                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState),
+                        OperationKind.SimpleAssignment);
+                    blockContext.RegisterOperationAction(context => AnalyzeAssignment(context, analyzerState),
+                        OperationKind.CompoundAssignment);
 
                     // Main analysis for invocations of AddAttribute and AddComponentParameter.
                     blockContext.RegisterOperationAction(context =>
@@ -169,7 +183,8 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                 && conversionOperation.Operand.Type is not null
                 && conversionOperation.Operand.Type.ContainingNamespace.ToString().StartsWith(ComponentsApi.AssemblyName, StringComparison.Ordinal))
             {
-                // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback. Multiple delegates at once shouldn't be possible.
+                // If the value is a conversion operation, search if a delegate is created like RenderFragment or an EventCallback.
+                // Multiple delegates at once shouldn't be possible.
                 var delegateResult = FindFirstDelegateChild(conversionOperation.Operand);
                 if (delegateResult is not null && delegateResult.Target is IAnonymousFunctionOperation)
                 {
@@ -216,7 +231,9 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
             return delegateCreation;
         }
 
-        if (currentOperation is IConversionOperation || currentOperation is IInvocationOperation || currentOperation is IArgumentOperation)
+        if (currentOperation is IArgumentOperation 
+            || currentOperation is IConversionOperation 
+            || currentOperation is IInvocationOperation)
         {
             foreach (var child in currentOperation.Children)
             {

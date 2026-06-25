@@ -96,7 +96,7 @@ namespace ConsoleApplication1
 ";
 
     [Fact]
-    public void IteratorVariableDifferentIncrementationsUsedInLambdaShouldThrowWarning()
+    public void IteratorVariableDifferentIncrementationsUsedInLambdaShouldThrowWarnings()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -208,7 +208,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void IteratorVariableButCachedUsedInLambdaShouldNotThrowWarnings()
+    public void IteratorVariableButCachedUsedInLambdaShouldNotThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -282,7 +282,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void IteratorVariablesInBindingIndexedVariableShouldThrowWarnings()
+    public void IteratorVariablesInBindingIndexedVariableShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -324,7 +324,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void IteratorVariablesNestedIfsInLambdaShouldThrowWarnings()
+    public void IteratorVariablesNestedIfsInLambdaShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -372,7 +372,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void IteratorVariablesNestedForEachInLambdaShouldThrowWarnings()
+    public void IteratorVariablesNestedForEachInLambdaShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -421,7 +421,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void NonIncrementedVariablesInLambdaShouldNotThrowWarnings()
+    public void NonIncrementedVariablesInLambdaShouldNotThrowWarning()
     {
         // Shouldn't throw because 'j' is a copy of 'i' at the start with value 0 and won't be iterated on.
         var test = @"
@@ -452,7 +452,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void NonIncrementedVariablesButLaterIncrementedShouldThrowWarnings()
+    public void NonIncrementedVariablesButLaterIncrementedShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -497,7 +497,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void NonIncrementedVariablesButLaterAssignedShouldThrowWarnings()
+    public void NonIncrementedVariablesButLaterAssignedShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -542,7 +542,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void IteratorVariablesInComponentChildContentShouldThrowWarnings()
+    public void IteratorVariablesInComponentChildContentShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -585,7 +585,7 @@ namespace ConsoleApplication1
     }
 
     [Fact]
-    public void IteratorVariablesInComponentParameterShouldThrowWarnings()
+    public void IteratorVariablesInComponentParameterShouldThrowWarning()
     {
         var test = @"
 namespace ConsoleApplication1
@@ -930,6 +930,110 @@ namespace ConsoleApplication1
                 Locations = new[]
                 {
                     new DiagnosticResultLocation("Test0.cs", 27, 38)
+                }
+            });
+    }
+
+    [Fact]
+    public void IteratorVariableWithSameAsNonIteratorNameUsedInLambdaShouldNotThrowWarnings()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
+        {
+            if (stringArray.Length > 1)
+            {
+                for (var i = 0; i < stringArray.Length; i++)
+                {
+                    Console.WriteLine(i);
+                }
+            }
+
+
+            var i = 10;
+            //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+            __builder.OpenElement(14, ""button"");
+            __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                () => SelectItem(i)
+
+            ));
+            __builder.AddContent(16, ""Item "");
+                __builder.AddContent(17, i
+            );
+            __builder.CloseElement();
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void MultipleIteratorVariableWithSameNamesUsedInLambdaShouldThrowWarnings()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
+        {
+            if (stringArray.Length > 1)
+            {
+                for (var i = 0; i < stringArray.Length; i++)
+                {
+                    //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+                    __builder.OpenElement(14, ""button"");
+                    __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                        () => SelectItem(i)
+
+                    ));
+                    __builder.AddContent(16, ""Item "");
+                        __builder.AddContent(17, i
+                    );
+                    __builder.CloseElement();
+                }
+            }
+
+            for (var i = 0; i < stringArray.Length; i++)
+            {
+                //  <button @onclick=""@(() => SelectItem(i))"">Item @i</button>
+                __builder.OpenElement(14, ""button"");
+                __builder.AddAttribute(15, ""onclick"", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+                    () => SelectItem(i)
+
+                ));
+                __builder.AddContent(16, ""Item "");
+                    __builder.AddContent(17, i
+                );
+                __builder.CloseElement();
+            }
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 15, 42)
+                }
+            },
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ForLoopIteratorVariableUsedInClosure.Id,
+                Message = "For loop iterator 'i' that is being incremented is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 30, 38)
                 }
             });
     }
