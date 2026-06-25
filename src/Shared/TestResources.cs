@@ -37,6 +37,8 @@ public static class TestResources
 
     public static X509Certificate2 GetTestCertificate(string certName = "testCert.pfx")
     {
+        var certPath = GetCertPath(certName);
+
         // On Windows, applications should not import PFX files in parallel to avoid a known system-level
         // race condition bug in native code which can cause crashes/corruption of the certificate state.
         if (importPfxMutex != null && !importPfxMutex.WaitOne(MutexTimeout))
@@ -46,7 +48,7 @@ public static class TestResources
 
         try
         {
-            return new X509Certificate2(GetCertPath(certName), TestCertificateFactory.TestCertificatePassword);
+            return new X509Certificate2(certPath, TestCertificateFactory.TestCertificatePassword);
         }
         finally
         {
@@ -112,11 +114,11 @@ public static class TestResources
                 throw new InvalidOperationException($"Cannot determine certificate directory for '{path}'.");
             Directory.CreateDirectory(directory);
 
-            using var certificate = CreateGeneratedCertificate(fileName);
+            var certificateBytes = CreateGeneratedCertificate(fileName);
             var tempPath = Path.Combine(directory, Path.GetRandomFileName());
             try
             {
-                File.WriteAllBytes(tempPath, certificate.Export(X509ContentType.Pfx, TestCertificateFactory.TestCertificatePassword));
+                File.WriteAllBytes(tempPath, certificateBytes);
                 File.Move(tempPath, path, overwrite: true);
                 _generatedCertificatePaths.Add(path);
             }
@@ -130,11 +132,11 @@ public static class TestResources
         }
     }
 
-    private static X509Certificate2 CreateGeneratedCertificate(string name)
+    private static byte[] CreateGeneratedCertificate(string name)
     {
         return name.ToLowerInvariant() switch
         {
-            "aspnetdevcert.pfx" => TestCertificateFactory.CreateRsaCertificate(
+            "aspnetdevcert.pfx" => TestCertificateFactory.CreateRsaPfx(
                 "CN=localhost",
                 [TestCertificateFactory.ServerAuthentication],
                 includeSubjectAlternativeName: true,
@@ -144,21 +146,21 @@ public static class TestResources
                 enhancedKeyUsageCritical: true,
                 subjectAlternativeNameCritical: true,
                 configureSubjectAlternativeNames: TestCertificateFactory.ConfigureAspNetHttpsSubjectAlternativeNames),
-            "eku.client.pfx" => TestCertificateFactory.CreateRsaCertificate(
+            "eku.client.pfx" => TestCertificateFactory.CreateRsaPfx(
                 "CN=testcertonly",
                 [TestCertificateFactory.ClientAuthentication],
                 includeSubjectAlternativeName: false,
                 includeAspNetHttpsExtension: false,
                 includeKeyUsage: true,
                 keyUsageCritical: false),
-            "eku.code_signing.pfx" => TestCertificateFactory.CreateRsaCertificate(
+            "eku.code_signing.pfx" => TestCertificateFactory.CreateRsaPfx(
                 "CN=testcertonly",
                 [TestCertificateFactory.CodeSigning],
                 includeSubjectAlternativeName: false,
                 includeAspNetHttpsExtension: false,
                 includeKeyUsage: true,
                 keyUsageCritical: false),
-            "eku.multiple_usages.pfx" => TestCertificateFactory.CreateRsaCertificate(
+            "eku.multiple_usages.pfx" => TestCertificateFactory.CreateRsaPfx(
                 "CN=testcertonly",
                 [
                     TestCertificateFactory.ServerAuthentication,
@@ -168,20 +170,20 @@ public static class TestResources
                 includeAspNetHttpsExtension: false,
                 includeKeyUsage: true,
                 keyUsageCritical: false),
-            "eku.server.pfx" => TestCertificateFactory.CreateRsaCertificate(
+            "eku.server.pfx" => TestCertificateFactory.CreateRsaPfx(
                 "CN=testcertonly",
                 [TestCertificateFactory.ServerAuthentication],
                 includeSubjectAlternativeName: false,
                 includeAspNetHttpsExtension: false,
                 includeKeyUsage: true,
                 keyUsageCritical: false),
-            "no_extensions.pfx" => TestCertificateFactory.CreateRsaCertificate(
+            "no_extensions.pfx" => TestCertificateFactory.CreateRsaPfx(
                 "CN=testcertonly",
                 [],
                 includeSubjectAlternativeName: false,
                 includeAspNetHttpsExtension: false,
                 includeKeyUsage: false),
-            "testcert.pfx" => TestCertificateFactory.CreateRsaCertificate(
+            "testcert.pfx" => TestCertificateFactory.CreateRsaPfx(
                 "CN=localhost",
                 [TestCertificateFactory.ServerAuthentication],
                 includeSubjectAlternativeName: true,

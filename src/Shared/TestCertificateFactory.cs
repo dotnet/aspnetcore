@@ -99,6 +99,63 @@ internal static class TestCertificateFactory
             useEphemeralKeySet: CanUseEphemeralServerCredentials);
     }
 
+    internal static X509Certificate2 CreateRsaStoreCertificate(
+        string subjectName = "CN=localhost",
+        Oid[]? enhancedKeyUsages = null,
+        bool includeSubjectAlternativeName = false,
+        bool includeAspNetHttpsExtension = false,
+        bool includeBasicConstraints = false,
+        bool includeKeyUsage = true,
+        X509KeyUsageFlags keyUsage = X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature,
+        bool keyUsageCritical = true,
+        bool enhancedKeyUsageCritical = false,
+        bool subjectAlternativeNameCritical = false,
+        Action<SubjectAlternativeNameBuilder>? configureSubjectAlternativeNames = null)
+    {
+        return CreateRsaCertificateCore(
+            subjectName,
+            enhancedKeyUsages,
+            includeSubjectAlternativeName,
+            includeAspNetHttpsExtension,
+            includeBasicConstraints,
+            includeKeyUsage,
+            keyUsage,
+            keyUsageCritical,
+            enhancedKeyUsageCritical,
+            subjectAlternativeNameCritical,
+            configureSubjectAlternativeNames,
+            useEphemeralKeySet: false);
+    }
+
+    internal static byte[] CreateRsaPfx(
+        string subjectName = "CN=localhost",
+        Oid[]? enhancedKeyUsages = null,
+        bool includeSubjectAlternativeName = false,
+        bool includeAspNetHttpsExtension = false,
+        bool includeBasicConstraints = false,
+        bool includeKeyUsage = true,
+        X509KeyUsageFlags keyUsage = X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature,
+        bool keyUsageCritical = true,
+        bool enhancedKeyUsageCritical = false,
+        bool subjectAlternativeNameCritical = false,
+        Action<SubjectAlternativeNameBuilder>? configureSubjectAlternativeNames = null,
+        string password = TestCertificatePassword)
+    {
+        return CreateRsaCertificatePfxCore(
+            subjectName,
+            enhancedKeyUsages,
+            includeSubjectAlternativeName,
+            includeAspNetHttpsExtension,
+            includeBasicConstraints,
+            includeKeyUsage,
+            keyUsage,
+            keyUsageCritical,
+            enhancedKeyUsageCritical,
+            subjectAlternativeNameCritical,
+            configureSubjectAlternativeNames,
+            password);
+    }
+
     private static X509Certificate2 CreateRsaCertificateCore(
         string subjectName,
         Oid[]? enhancedKeyUsages,
@@ -113,11 +170,42 @@ internal static class TestCertificateFactory
         Action<SubjectAlternativeNameBuilder>? configureSubjectAlternativeNames,
         bool useEphemeralKeySet)
     {
+        var pfx = CreateRsaCertificatePfxCore(
+            subjectName,
+            enhancedKeyUsages,
+            includeSubjectAlternativeName,
+            includeAspNetHttpsExtension,
+            includeBasicConstraints,
+            includeKeyUsage,
+            keyUsage,
+            keyUsageCritical,
+            enhancedKeyUsageCritical,
+            subjectAlternativeNameCritical,
+            configureSubjectAlternativeNames,
+            password: string.Empty);
+
+        return ImportPfx(pfx, string.Empty, useEphemeralKeySet);
+    }
+
+    private static byte[] CreateRsaCertificatePfxCore(
+        string subjectName,
+        Oid[]? enhancedKeyUsages,
+        bool includeSubjectAlternativeName,
+        bool includeAspNetHttpsExtension,
+        bool includeBasicConstraints,
+        bool includeKeyUsage,
+        X509KeyUsageFlags keyUsage,
+        bool keyUsageCritical,
+        bool enhancedKeyUsageCritical,
+        bool subjectAlternativeNameCritical,
+        Action<SubjectAlternativeNameBuilder>? configureSubjectAlternativeNames,
+        string password)
+    {
         using var key = RSA.Create();
         key.KeySize = 2048;
         var request = new CertificateRequest(new X500DistinguishedName(subjectName), key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
-        return CreateCertificate(
+        return CreateCertificatePfx(
             request,
             enhancedKeyUsages,
             includeSubjectAlternativeName,
@@ -129,7 +217,7 @@ internal static class TestCertificateFactory
             enhancedKeyUsageCritical,
             subjectAlternativeNameCritical,
             configureSubjectAlternativeNames,
-            useEphemeralKeySet);
+            password);
     }
 
     internal static X509Certificate2 CreateEcdsaCertificate(
@@ -255,6 +343,37 @@ internal static class TestCertificateFactory
         Action<SubjectAlternativeNameBuilder>? configureSubjectAlternativeNames,
         bool useEphemeralKeySet)
     {
+        var pfx = CreateCertificatePfx(
+            request,
+            enhancedKeyUsages,
+            includeSubjectAlternativeName,
+            includeAspNetHttpsExtension,
+            includeBasicConstraints,
+            includeKeyUsage,
+            keyUsage,
+            keyUsageCritical,
+            enhancedKeyUsageCritical,
+            subjectAlternativeNameCritical,
+            configureSubjectAlternativeNames,
+            password: string.Empty);
+
+        return ImportPfx(pfx, string.Empty, useEphemeralKeySet);
+    }
+
+    private static byte[] CreateCertificatePfx(
+        CertificateRequest request,
+        Oid[]? enhancedKeyUsages,
+        bool includeSubjectAlternativeName,
+        bool includeAspNetHttpsExtension,
+        bool includeBasicConstraints,
+        bool includeKeyUsage,
+        X509KeyUsageFlags keyUsage,
+        bool keyUsageCritical,
+        bool enhancedKeyUsageCritical,
+        bool subjectAlternativeNameCritical,
+        Action<SubjectAlternativeNameBuilder>? configureSubjectAlternativeNames,
+        string password)
+    {
         if (includeBasicConstraints || includeAspNetHttpsExtension)
         {
             request.CertificateExtensions.Add(new X509BasicConstraintsExtension(
@@ -295,7 +414,7 @@ internal static class TestCertificateFactory
         var notAfter = DateTimeOffset.UtcNow.AddYears(5);
         using var certificate = request.CreateSelfSigned(notBefore, notAfter);
 
-        return ImportPfx(certificate.Export(X509ContentType.Pfx), string.Empty, useEphemeralKeySet);
+        return certificate.Export(X509ContentType.Pfx, password);
     }
 
     private static X509Certificate2 ImportPfx(byte[] pfx, string password, bool useEphemeralKeySet)

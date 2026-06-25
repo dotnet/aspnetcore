@@ -119,7 +119,7 @@ public class DataProtectionProviderTests
     public void System_UsesProvidedDirectoryAndCertificate()
     {
         var subjectName = $"TestCert-{Guid.NewGuid():N}";
-        using (var imported = TestCertificateFactory.CreateRsaCertificate($"CN={subjectName}"))
+        using (var imported = TestCertificateFactory.CreateRsaStoreCertificate($"CN={subjectName}"))
         using (var certWithoutKey = TestCertificateFactory.CreatePublicKeyOnlyCertificate(imported))
         {
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
