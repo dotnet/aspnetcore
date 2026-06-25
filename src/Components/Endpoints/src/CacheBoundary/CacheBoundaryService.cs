@@ -100,7 +100,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
             return state;
         }
 
-        var resolution = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resolution = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
         resolutions[key] = (boundary, resolution.Task);
 
         await ResolveOrBeginCreateAsync(boundary, state, resolution, httpContext.RequestAborted);
@@ -161,7 +161,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
                 return;
             }
             writer.StopCapture();
-            completion?.TrySetResult(writer.GetJson());
+            completion?.TrySetResult(writer.GetUtf8Json());
         }
         catch (Exception ex)
         {
@@ -179,9 +179,11 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    public static void OnBoundaryDisposed(CacheBoundaryRenderState state)
+    public void OnBoundaryDisposed(CacheBoundaryRenderState state)
     {
         var completion = state.CaptureCompletion;
+        var pending = state.PendingStoreTask;
+
         if (completion is not null && !completion.Task.IsCompleted)
         {
             completion.TrySetCanceled();
@@ -190,6 +192,14 @@ internal sealed partial class CacheBoundaryService : IDisposable
         state.ActiveWriter = null;
         state.CaptureCompletion = null;
         state.PendingStoreTask = null;
+
+        // Cancelling CaptureCompletion above faults the creator's store factory. Observe the resulting
+        // task so it does not surface as an unobserved task exception when the boundary is disposed
+        // before EndCapture runs.
+        if (pending is not null)
+        {
+            _ = ObserveCacheStorePersistAsync(state.Key, pending);
+        }
     }
 
     public static CacheBoundaryVaryBy GetVaryBy(CacheBoundary boundary)
@@ -231,20 +241,20 @@ internal sealed partial class CacheBoundaryService : IDisposable
 
     // Reached only when the same CacheBoundary instance re-renders within the request: it reuses the
     // result of its original in-flight resolution rather than creating a second cache entry.
-    private async Task ApplyDuplicateResolutionAsync(CacheBoundaryRenderState state, string key, Task<string?> resolution)
+    private async Task ApplyDuplicateResolutionAsync(CacheBoundaryRenderState state, string key, Task<byte[]?> resolution)
     {
-        string? cachedJson;
+        byte[]? cachedPayload;
         try
         {
-            cachedJson = await resolution;
+            cachedPayload = await resolution;
         }
-        catch
+        catch (Exception ex)
         {
-            Log.BoundaryReRenderingFresh(_logger, key);
+            Log.BoundaryReRenderFromFaultedResolution(_logger, key, ex);
             return;
         }
 
-        if (cachedJson is not null && DeserializeCachedContent(cachedJson) is { } cachedContent)
+        if (cachedPayload is not null && DeserializeCachedContent(cachedPayload) is { } cachedContent)
         {
             state.IsCacheHit = true;
             state.Content = cachedContent;
@@ -255,9 +265,9 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private async Task ResolveOrBeginCreateAsync(CacheBoundary boundary, CacheBoundaryRenderState state, TaskCompletionSource<string?> resolution, CancellationToken cancellationToken)
+    private async Task ResolveOrBeginCreateAsync(CacheBoundary boundary, CacheBoundaryRenderState state, TaskCompletionSource<byte[]?> resolution, CancellationToken cancellationToken)
     {
-        var captureCompletion = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var captureCompletion = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
         var factoryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         state.CaptureCompletion = captureCompletion;
 
@@ -266,7 +276,6 @@ internal sealed partial class CacheBoundaryService : IDisposable
             ExpiresAfter = boundary.ExpiresAfter,
             ExpiresOn = boundary.ExpiresOn,
             ExpiresSliding = boundary.ExpiresSliding,
-            Priority = boundary.Priority,
         };
 
         try
@@ -289,9 +298,9 @@ internal sealed partial class CacheBoundaryService : IDisposable
                 // not capture this boundary's output.
                 state.CaptureCompletion = null;
                 state.IsCacheHit = true;
-                var cachedJson = await inflight;
-                state.Content = DeserializeCachedContent(cachedJson) ?? boundary.ChildContent;
-                resolution.TrySetResult(cachedJson);
+                var cachedPayload = await inflight;
+                state.Content = DeserializeCachedContent(cachedPayload) ?? boundary.ChildContent;
+                resolution.TrySetResult(cachedPayload);
             }
             else
             {
@@ -308,21 +317,21 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private RenderFragment? DeserializeCachedContent(string? json)
+    private RenderFragment? DeserializeCachedContent(byte[]? payload)
     {
-        if (string.IsNullOrEmpty(json))
+        if (payload is null || payload.Length == 0)
         {
             return null;
         }
 
         try
         {
-            var payload = JsonSerializer.Deserialize<SerializedRenderFragment>(json, _jsonOptions);
-            if (payload is null || payload.Nodes.Count == 0)
+            var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(payload, _jsonOptions);
+            if (serialized is null || serialized.Nodes.Count == 0)
             {
                 return null;
             }
-            return RenderFragmentSerializer.Deserialize(payload.Nodes, _jsonOptions, _parametersTypeCache);
+            return RenderFragmentSerializer.Deserialize(serialized.Nodes, _jsonOptions, _parametersTypeCache);
         }
         catch (Exception ex)
         {
@@ -331,7 +340,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private async Task ObserveCacheStorePersistAsync(string key, Task<string> pending)
+    private async Task ObserveCacheStorePersistAsync(string key, Task<byte[]> pending)
     {
         try
         {
@@ -347,11 +356,11 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private static Dictionary<string, (CacheBoundary Owner, Task<string?> Task)> GetInFlightResolutions(HttpContext httpContext)
+    private static Dictionary<string, (CacheBoundary Owner, Task<byte[]?> Task)> GetInFlightResolutions(HttpContext httpContext)
     {
-        if (httpContext.Items[_inFlightResolutionsItemKey] is not Dictionary<string, (CacheBoundary Owner, Task<string?> Task)> resolutions)
+        if (httpContext.Items[_inFlightResolutionsItemKey] is not Dictionary<string, (CacheBoundary Owner, Task<byte[]?> Task)> resolutions)
         {
-            resolutions = new Dictionary<string, (CacheBoundary, Task<string?>)>(StringComparer.Ordinal);
+            resolutions = new Dictionary<string, (CacheBoundary, Task<byte[]?>)>(StringComparer.Ordinal);
             httpContext.Items[_inFlightResolutionsItemKey] = resolutions;
         }
 
@@ -362,6 +371,9 @@ internal sealed partial class CacheBoundaryService : IDisposable
     {
         [LoggerMessage(1, LogLevel.Debug, "CacheBoundary with cache key '{Key}' re-rendered within the same request but no cached content was available; rendering its child content fresh.", EventName = "BoundaryReRenderingFresh")]
         public static partial void BoundaryReRenderingFresh(ILogger logger, string key);
+
+        [LoggerMessage(4, LogLevel.Debug, "CacheBoundary with cache key '{Key}' re-rendered within the same request but its original resolution faulted; rendering its child content fresh.", EventName = "BoundaryReRenderFromFaultedResolution")]
+        public static partial void BoundaryReRenderFromFaultedResolution(ILogger logger, string key, Exception exception);
 
         [LoggerMessage(2, LogLevel.Warning, "Failed to restore CacheBoundary from cached data. Falling back to fresh render.", EventName = "RestoreFromCacheFailed")]
         public static partial void RestoreFromCacheFailed(ILogger logger, Exception exception);

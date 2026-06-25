@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -54,13 +53,6 @@ public sealed class CacheBoundary : IComponent, IDisposable
     /// </summary>
     [Parameter]
     public TimeSpan? ExpiresSliding { get; set; }
-
-    /// <summary>
-    /// Gets or sets the <see cref="CacheItemPriority"/> policy for the cache entry.
-    /// Not supported when the cache boundary store uses <c>HybridCache</c>.
-    /// </summary>
-    [Parameter]
-    public CacheItemPriority? Priority { get; set; }
 
     /// <summary>
     /// Gets or sets a comma-separated list of query string parameter names to vary the cache by.
@@ -145,7 +137,7 @@ public sealed class CacheBoundary : IComponent, IDisposable
     {
         if (RenderState is { } state)
         {
-            CacheBoundaryService.OnBoundaryDisposed(state);
+            CacheService?.OnBoundaryDisposed(state);
         }
     }
 }

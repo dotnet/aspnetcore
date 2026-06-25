@@ -17,37 +17,37 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
         _hybridCache = hybridCache;
     }
 
-    public async ValueTask<string> GetOrCreateAsync(
+    public ValueTask<byte[]> GetOrCreateAsync(
         string key,
-        Func<CancellationToken, ValueTask<string>> factory,
+        Func<CancellationToken, ValueTask<byte[]>> factory,
         CacheStoreOptions options,
         CancellationToken cancellationToken)
     {
         var hybridOptions = BuildHybridOptions(options);
 
-        // Loops only to re-elect a creator when the in-flight creator's render is cancelled (its
-        // request is aborted, cancelling the boundary's captureCompletion) while this caller is still
-        // alive. HybridCache removes the faulted stampede entry, so a retry re-checks the cache and,
-        // if necessary, re-elects a new creator (possibly this caller). A genuine factory exception is
-        // not an OperationCanceledException, so it still propagates.
-        while (true)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
-                return await _hybridCache.GetOrCreateAsync(key, factory, static (state, ct) => state(ct), hybridOptions, _tags, cancellationToken);
-            }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-            {
-                continue;
-            }
-        }
+        // HybridCache provides single-flight stampede protection: concurrent callers for one key coalesce
+        // onto a single factory invocation, and the shared factory is only cancelled when the last enlisted
+        // caller cancels (ref-counted). No re-election is needed here.
+        return _hybridCache.GetOrCreateAsync(key, factory, static (state, ct) => state(ct), hybridOptions, _tags, cancellationToken);
     }
 
     public void Clear()
     {
-        _hybridCache.RemoveByTagAsync(CacheBoundaryTag).AsTask().GetAwaiter().GetResult();
+        // Eviction is used only for hot reload, so it is best-effort; fire-and-forget to avoid blocking
+        // a thread on the async call.
+        _ = ClearCoreAsync();
+    }
+
+    private async Task ClearCoreAsync()
+    {
+        try
+        {
+            await _hybridCache.RemoveByTagAsync(CacheBoundaryTag);
+        }
+        catch
+        {
+            // Best-effort cache eviction; ignore failures.
+        }
     }
 
     private static HybridCacheEntryOptions BuildHybridOptions(CacheStoreOptions options)
@@ -57,13 +57,6 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
             throw new NotSupportedException(
                 $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.ExpiresSliding)} is not supported when the cache boundary store uses HybridCache. " +
                 $"Use {nameof(CacheBoundary.ExpiresAfter)} or {nameof(CacheBoundary.ExpiresOn)} for absolute expiration.");
-        }
-
-        if (options.Priority.HasValue)
-        {
-            throw new NotSupportedException(
-                $"{nameof(CacheBoundary)}.{nameof(CacheBoundary.Priority)} is not supported when the cache boundary store uses HybridCache. " +
-                $"Remove the {nameof(CacheBoundary.Priority)} parameter or switch to the in-memory cache boundary store.");
         }
 
         var absolute = options.ExpiresOn.HasValue

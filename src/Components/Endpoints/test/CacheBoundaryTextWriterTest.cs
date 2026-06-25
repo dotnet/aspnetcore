@@ -5,6 +5,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -63,7 +64,7 @@ public class CacheBoundaryTextWriterTest
         writer.CreateHole(typeof(TestRenderFragmentHole), renderMode: null, capture, NullLogger.Instance);
         writer.StopCapture();
 
-        var json = writer.GetJson();
+        var json = Encoding.UTF8.GetString(writer.GetUtf8Json());
         Assert.Contains(nameof(TestRenderFragmentHole), json);
         Assert.Contains("hello", json);
     }
@@ -87,7 +88,7 @@ public class CacheBoundaryTextWriterTest
         writer.Write("<p>after</p>");
         writer.StopCapture();
 
-        var json = writer.GetJson();
+        var json = Encoding.UTF8.GetString(writer.GetUtf8Json());
         var beforeIndex = json.IndexOf("before", StringComparison.Ordinal);
         var holeIndex = json.IndexOf("hole-value", StringComparison.Ordinal);
         var afterIndex = json.IndexOf("after", StringComparison.Ordinal);

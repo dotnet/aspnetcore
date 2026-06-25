@@ -12,7 +12,7 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
 {
     private readonly MemoryCache _cache;
     private readonly ILogger<MemoryCacheBoundaryStore> _logger;
-    private readonly ConcurrentDictionary<string, Task<string>> _pending = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Task<byte[]>> _pending = new(StringComparer.Ordinal);
 
     public MemoryCacheBoundaryStore(IOptions<RazorComponentsServiceOptions> options, ILogger<MemoryCacheBoundaryStore> logger)
     {
@@ -23,69 +23,51 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
         _logger = logger;
     }
 
-    public async ValueTask<string> GetOrCreateAsync(
+    public async ValueTask<byte[]> GetOrCreateAsync(
         string key,
-        Func<CancellationToken, ValueTask<string>> factory,
+        Func<CancellationToken, ValueTask<byte[]>> factory,
         CacheStoreOptions options,
         CancellationToken cancellationToken)
     {
-        // Loops only to re-elect a creator when an in-flight creator is cancelled (e.g. its request
-        // is aborted) while this caller is still alive. Each iteration either returns a cached value,
-        // observes another caller's result, or becomes the creator itself.
-        while (true)
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (_cache.TryGetValue<byte[]>(key, out var existing) && existing is not null)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            return existing;
+        }
 
-            if (_cache.TryGetValue<string>(key, out var existing) && existing is not null)
-            {
-                return existing;
-            }
+        var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var pending = _pending.GetOrAdd(key, tcs.Task);
+        if (!ReferenceEquals(pending, tcs.Task))
+        {
+            return await pending.WaitAsync(cancellationToken);
+        }
 
-            var tcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var pending = _pending.GetOrAdd(key, tcs.Task);
-            if (!ReferenceEquals(pending, tcs.Task))
-            {
-                // Another caller is already creating this entry; observe their result.
-                try
-                {
-                    return await pending.WaitAsync(cancellationToken);
-                }
-                catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-                {
-                    // The creator was cancelled but this request is still alive. The creator removes
-                    // its pending entry before faulting, so loop back to re-check the cache and, if
-                    // necessary, re-elect a new creator (possibly this caller). A genuine factory
-                    // exception is not an OperationCanceledException, so it still propagates here.
-                    continue;
-                }
-            }
-
-            try
-            {
-                var json = await factory(cancellationToken);
-                StoreEntry(key, json, options);
-                tcs.SetResult(json);
-                return json;
-            }
-            catch (Exception ex)
-            {
-                tcs.SetException(ex);
-                throw;
-            }
-            finally
-            {
-                _pending.TryRemove(new KeyValuePair<string, Task<string>>(key, tcs.Task));
-            }
+        try
+        {
+            var payload = await factory(cancellationToken);
+            StoreEntry(key, payload, options);
+            tcs.SetResult(payload);
+            return payload;
+        }
+        catch (Exception ex)
+        {
+            tcs.SetException(ex);
+            throw;
+        }
+        finally
+        {
+            _pending.TryRemove(new KeyValuePair<string, Task<byte[]>>(key, tcs.Task));
         }
     }
 
-    private void StoreEntry(string key, string json, CacheStoreOptions options)
+    private void StoreEntry(string key, byte[] payload, CacheStoreOptions options)
     {
         try
         {
             var entryOptions = new MemoryCacheEntryOptions
             {
-                Size = json.Length * sizeof(char),
+                Size = payload.Length,
             };
 
             if (options.ExpiresSliding.HasValue)
@@ -102,12 +84,7 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
                 entryOptions.AbsoluteExpirationRelativeToNow = options.ExpiresAfter ?? RazorComponentsServiceOptions.DefaultCacheBoundaryExpiration;
             }
 
-            if (options.Priority.HasValue)
-            {
-                entryOptions.Priority = options.Priority.Value;
-            }
-
-            _cache.Set(key, json, entryOptions);
+            _cache.Set(key, payload, entryOptions);
         }
         catch (Exception ex)
         {

@@ -48,6 +48,24 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         }
     }
 
+    public override void Write(char[] buffer, int index, int count)
+    {
+        _innerWriter.Write(buffer, index, count);
+        if (_capturing && !_validateOnly)
+        {
+            _buffer.Append(buffer, index, count);
+        }
+    }
+
+    public override void Write(ReadOnlySpan<char> buffer)
+    {
+        _innerWriter.Write(buffer);
+        if (_capturing && !_validateOnly)
+        {
+            _buffer.Append(buffer);
+        }
+    }
+
     public void PauseCapture()
     {
         FlushBuffer();
@@ -104,9 +122,10 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         FlushBuffer();
     }
 
-    // Assembles the cache JSON by walking the recorded entries in render order: markup segments become
-    // markup nodes and holes contribute the component node serialized at CreateHole time.
-    public string GetJson()
+    // Assembles the cache payload as UTF-8 JSON by walking the recorded entries in render order: markup
+    // segments become markup nodes and holes contribute the component node serialized at CreateHole time.
+    // Serializing straight to UTF-8 avoids materializing an intermediate UTF-16 string.
+    public byte[] GetUtf8Json()
     {
         var nodes = new List<RenderTreeNode>(_entries.Count);
 
@@ -115,7 +134,7 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
             nodes.Add(entry.HoleNode ?? new RenderTreeNode { Type = "markup", Content = entry.Markup });
         }
 
-        return JsonSerializer.Serialize(
+        return JsonSerializer.SerializeToUtf8Bytes(
             new SerializedRenderFragment { Nodes = nodes },
             ServerComponentSerializationSettings.JsonSerializationOptions);
     }

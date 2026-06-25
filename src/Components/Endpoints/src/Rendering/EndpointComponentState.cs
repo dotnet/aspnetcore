@@ -110,6 +110,8 @@ internal sealed class EndpointComponentState : ComponentState
                 return frame.Sequence;
             }
         }
-        return 0;
+
+        throw new InvalidOperationException(
+            $"Could not locate the CacheBoundary in the render tree of its parent component '{parentState.Component?.GetType().FullName}' while computing its cache key.");
     }
 }
