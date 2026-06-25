@@ -37,14 +37,10 @@ Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionMaxR
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionMaxRetries.set -> void
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.get -> System.TimeSpan?
 Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.ReconnectionRetryInterval.set -> void
-Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.AutoPause.get -> Microsoft.AspNetCore.Components.AutoPauseBrowserOptions!
-Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.AutoPause.set -> void
-Microsoft.AspNetCore.Components.AutoPauseBrowserOptions
-Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.AutoPauseBrowserOptions() -> void
-Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.Enabled.get -> bool?
-Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.Enabled.set -> void
-Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.HiddenDelayMilliseconds.get -> int?
-Microsoft.AspNetCore.Components.AutoPauseBrowserOptions.HiddenDelayMilliseconds.set -> void
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.AutoPauseEnabled.get -> bool?
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.AutoPauseEnabled.set -> void
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.AutoPauseHiddenDelayMilliseconds.get -> int?
+Microsoft.AspNetCore.Components.InteractiveServerBrowserOptions.AutoPauseHiddenDelayMilliseconds.set -> void
 Microsoft.AspNetCore.Components.SsrBrowserOptions
 Microsoft.AspNetCore.Components.SsrBrowserOptions.SsrBrowserOptions() -> void
 Microsoft.AspNetCore.Components.SsrBrowserOptions.CircuitInactivityTimeout.get -> System.TimeSpan?

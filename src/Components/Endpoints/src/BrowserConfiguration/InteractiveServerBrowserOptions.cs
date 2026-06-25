@@ -34,8 +34,19 @@ public sealed class InteractiveServerBrowserOptions
     public string? ReconnectionDialogId { get; set; }
 
     /// <summary>
-    /// Auto-pause options for server circuits.
-    /// Maps to <c>CircuitStartOptions.autoPause</c>.
+    /// Gets or sets whether auto-pause is enabled.
+    /// When <c>true</c>, the circuit will automatically pause after the tab is hidden
+    /// for <see cref="AutoPauseHiddenDelayMilliseconds"/>.
+    /// Maps to <c>CircuitStartOptions.autoPause.enabled</c>.
     /// </summary>
-    public AutoPauseBrowserOptions AutoPause { get; set; } = new();
+    /// <value>Defaults to <c>false</c>.</value>
+    public bool? AutoPauseEnabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the delay in milliseconds after the tab becomes hidden before
+    /// the circuit is automatically paused.
+    /// Maps to <c>CircuitStartOptions.autoPause.hiddenDelayMilliseconds</c>.
+    /// </summary>
+    /// <value>Defaults to <c>120000</c> (2 minutes) on the client when not set.</value>
+    public int? AutoPauseHiddenDelayMilliseconds { get; set; }
 }

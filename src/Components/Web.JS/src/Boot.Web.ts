@@ -137,14 +137,14 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
       if (browserConfig.server.reconnectionDialogId !== undefined) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
       }
-      if (browserConfig.server.autoPause) {
+      if (browserConfig.server.autoPauseEnabled !== undefined || browserConfig.server.autoPauseHiddenDelayMilliseconds !== undefined) {
         const autoPauseOpts: Partial<AutoPauseOptions> = circuitOpts.autoPause ?? {};
         circuitOpts.autoPause = autoPauseOpts as AutoPauseOptions;
-        if (browserConfig.server.autoPause.enabled !== undefined) {
-          autoPauseOpts.enabled = browserConfig.server.autoPause.enabled;
+        if (browserConfig.server.autoPauseEnabled !== undefined) {
+          autoPauseOpts.enabled = browserConfig.server.autoPauseEnabled;
         }
-        if (browserConfig.server.autoPause.hiddenDelayMilliseconds !== undefined) {
-          autoPauseOpts.hiddenDelayMilliseconds = browserConfig.server.autoPause.hiddenDelayMilliseconds;
+        if (browserConfig.server.autoPauseHiddenDelayMilliseconds !== undefined) {
+          autoPauseOpts.hiddenDelayMilliseconds = browserConfig.server.autoPauseHiddenDelayMilliseconds;
         }
       }
     }

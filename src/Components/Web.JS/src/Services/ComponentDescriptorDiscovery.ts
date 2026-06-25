@@ -434,10 +434,8 @@ export type BrowserConfigurationOptions = {
     reconnectionMaxRetries?: number;
     reconnectionRetryIntervalMilliseconds?: number;
     reconnectionDialogId?: string;
-    autoPause?: {
-      enabled?: boolean;
-      hiddenDelayMilliseconds?: number;
-    };
+    autoPauseEnabled?: boolean;
+    autoPauseHiddenDelayMilliseconds?: number;
   };
   ssr?: {
     disableDomPreservation?: boolean;
