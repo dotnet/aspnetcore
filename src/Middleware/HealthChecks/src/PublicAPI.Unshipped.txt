@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.Extensions.DependencyInjection.HealthChecksBuilderConfigureOptionsExtensions.ConfigureHealthCheckOptions(this Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder! builder, System.Action<Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions!>! configureOptions) -> Microsoft.Extensions.DependencyInjection.IHealthChecksBuilder!
