@@ -126,6 +126,21 @@ export class AutoPauseManager {
     }
   }
 
+  private shouldAbortBeforePausing(controller: AbortController, phase = ''): boolean {
+    let reason: string;
+    if (controller.signal.aborted) {
+      reason = String(controller.signal.reason);
+    } else if (document.visibilityState !== 'hidden') {
+      reason = 'tab became visible';
+    } else if (this._disposed) {
+      reason = 'circuit disposed';
+    } else {
+      return false;
+    }
+    this._logger.log(LogLevel.Trace, `Auto-pause: aborted before pausing${phase} (${reason}).`);
+    return true;
+  }
+
   private async pauseNow(): Promise<void> {
     if (this._disposed || document.visibilityState !== 'hidden' || this._autoPaused || this._pauseInFlight) {
       return;
@@ -175,16 +190,14 @@ export class AutoPauseManager {
 
       await this.invokeHandlers(controller.signal);
 
-      if (controller.signal.aborted || document.visibilityState !== 'hidden' || this._disposed) {
-        this._logger.log(LogLevel.Trace, 'Auto-pause: aborted before pausing (tab became visible).');
+      if (this.shouldAbortBeforePausing(controller)) {
         return;
       }
 
       if (this._waitForActiveStreamsToDrain) {
         await this._waitForActiveStreamsToDrain(controller.signal);
 
-        if (controller.signal.aborted || document.visibilityState !== 'hidden' || this._disposed) {
-          this._logger.log(LogLevel.Trace, 'Auto-pause: aborted before pausing (tab became visible during drain).');
+        if (this.shouldAbortBeforePausing(controller, ' during drain')) {
           return;
         }
       }
