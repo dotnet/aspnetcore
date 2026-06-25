@@ -156,27 +156,6 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
     }
 
     [Fact]
-    public void ReusableComponentWithCacheBoundary_UsedTwice_SharesOneCacheEntry()
-    {
-        Navigate(TestUrl("cache-component"));
-        Browser.Exists(By.Id("test-6"));
-        Browser.Equal(2, () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".panel-content")).Count);
-
-        // Cold render: each instance rendered its own content.
-        Assert.Equal(new[] { "alpha", "beta" }, GetPanelTexts(".panel-content"));
-        var creatorGuid = GetPanelTexts(".panel-guid")[0];
-
-        // Warm reload: both boundaries share the one cached entry, so both show the creator's cached
-        // content and the identical cached guid.
-        Navigate(TestUrl("cache-component"));
-        Browser.Exists(By.Id("test-6"));
-        Browser.Equal(2, () => Browser.FindElement(By.Id("test-6")).FindElements(By.CssSelector(".panel-content")).Count);
-
-        Browser.Equal(new[] { "alpha", "alpha" }, () => GetPanelTexts(".panel-content").ToArray());
-        Assert.Equal(new[] { creatorGuid, creatorGuid }, GetPanelTexts(".panel-guid"));
-    }
-
-    [Fact]
     public void CacheBoundaryCachesHardcodedHole()
     {
         Navigate(TestUrl("cache-component"));
@@ -207,10 +186,4 @@ public abstract class CacheBoundaryTestBase : ServerTestBase<BasicTestAppServerS
         Browser.Equal(staticGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".cached-static")).Text);
         Browser.NotEqual(streamingGuid, () => Browser.FindElement(By.Id("test-8")).FindElement(By.CssSelector(".streaming-hole")).Text);
     }
-
-    private List<string> GetPanelTexts(string selector)
-        => Browser.FindElement(By.Id("test-6"))
-            .FindElements(By.CssSelector(selector))
-            .Select(panel => panel.Text)
-            .ToList();
 }

@@ -85,17 +85,23 @@ internal sealed partial class CacheBoundaryService : IDisposable
             Content = boundary.ChildContent,
         };
 
-        // Handles multiple CacheBoundary instances in the same request resolving to the same key (e.g. a
-        // component rendered twice, or a loop).
         var resolutions = GetInFlightResolutions(httpContext);
-        if (resolutions.TryGetValue(key, out var existingResolution))
+        if (resolutions.TryGetValue(key, out var existing))
         {
-            await ApplyDuplicateResolutionAsync(state, key, existingResolution);
+            if (!ReferenceEquals(existing.Owner, boundary))
+            {
+                throw new InvalidOperationException(
+                    "Multiple CacheBoundary components resolved to the same cache key. " +
+                    "A CacheBoundary was rendered more than once at the same position in the component tree (for example, a reusable component used multiple times, or a CacheBoundary in a loop), so its output cannot be cached unambiguously. " +
+                    $"Set a unique {nameof(CacheBoundary.CacheKey)} on each CacheBoundary so every boundary on the page has a distinct cache key.");
+            }
+
+            await ApplyDuplicateResolutionAsync(state, key, existing.Task);
             return state;
         }
 
         var resolution = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
-        resolutions[key] = resolution.Task;
+        resolutions[key] = (boundary, resolution.Task);
 
         await ResolveOrBeginCreateAsync(boundary, state, resolution, httpContext.RequestAborted);
         return state;
@@ -223,6 +229,8 @@ internal sealed partial class CacheBoundaryService : IDisposable
         return result;
     }
 
+    // Reached only when the same CacheBoundary instance re-renders within the request: it reuses the
+    // result of its original in-flight resolution rather than creating a second cache entry.
     private async Task ApplyDuplicateResolutionAsync(CacheBoundaryRenderState state, string key, Task<string?> resolution)
     {
         string? cachedJson;
@@ -232,7 +240,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
         catch
         {
-            Log.DuplicateBoundaryRenderingFresh(_logger, key);
+            Log.BoundaryReRenderingFresh(_logger, key);
             return;
         }
 
@@ -243,7 +251,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
         else
         {
-            Log.DuplicateBoundaryRenderingFresh(_logger, key);
+            Log.BoundaryReRenderingFresh(_logger, key);
         }
     }
 
@@ -278,7 +286,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
             if (firstFinished == inflight)
             {
                 // Cache hit: we are not the creator, so clear the capture reservation so TryBeginWrite does
-                // not capture this boundary's output. Duplicates reuse this same cached content.
+                // not capture this boundary's output.
                 state.CaptureCompletion = null;
                 state.IsCacheHit = true;
                 var cachedJson = await inflight;
@@ -287,7 +295,8 @@ internal sealed partial class CacheBoundaryService : IDisposable
             }
             else
             {
-                // We are the creator: signal any same-key duplicates in this request to render fresh.
+                // We are the creator: record the in-flight store task so a re-render of this same boundary
+                // reuses the result instead of creating a second entry.
                 state.PendingStoreTask = inflight;
                 resolution.TrySetResult(null);
             }
@@ -338,11 +347,11 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private static Dictionary<string, Task<string?>> GetInFlightResolutions(HttpContext httpContext)
+    private static Dictionary<string, (CacheBoundary Owner, Task<string?> Task)> GetInFlightResolutions(HttpContext httpContext)
     {
-        if (httpContext.Items[_inFlightResolutionsItemKey] is not Dictionary<string, Task<string?>> resolutions)
+        if (httpContext.Items[_inFlightResolutionsItemKey] is not Dictionary<string, (CacheBoundary Owner, Task<string?> Task)> resolutions)
         {
-            resolutions = new Dictionary<string, Task<string?>>(StringComparer.Ordinal);
+            resolutions = new Dictionary<string, (CacheBoundary, Task<string?>)>(StringComparer.Ordinal);
             httpContext.Items[_inFlightResolutionsItemKey] = resolutions;
         }
 
@@ -351,8 +360,8 @@ internal sealed partial class CacheBoundaryService : IDisposable
 
     private static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Debug, "Another CacheBoundary in the same request is already creating cache key '{Key}'. Rendering this instance fresh to avoid deadlocking on the in-flight creator; it will share the cached entry on subsequent requests.", EventName = "DuplicateBoundaryRenderingFresh")]
-        public static partial void DuplicateBoundaryRenderingFresh(ILogger logger, string key);
+        [LoggerMessage(1, LogLevel.Debug, "CacheBoundary with cache key '{Key}' re-rendered within the same request but no cached content was available; rendering its child content fresh.", EventName = "BoundaryReRenderingFresh")]
+        public static partial void BoundaryReRenderingFresh(ILogger logger, string key);
 
         [LoggerMessage(2, LogLevel.Warning, "Failed to restore CacheBoundary from cached data. Falling back to fresh render.", EventName = "RestoreFromCacheFailed")]
         public static partial void RestoreFromCacheFailed(ILogger logger, Exception exception);

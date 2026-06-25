@@ -36,6 +36,59 @@ public class CacheBoundaryRenderTest
         Assert.NotNull(entry.Exception);
     }
 
+    [Fact]
+    public async Task TwoDistinctBoundaries_ResolvingToSameKey_ThrowsActionableError()
+    {
+        var httpContext = CreateHttpContext();
+        var store = new TestCacheStore();
+        var service = new CacheBoundaryService(store, new TestLoggerFactory(new TestLogger()));
+
+        var first = new CacheBoundary
+        {
+            ChildContent = builder => builder.AddContent(0, "first"),
+            CacheService = service,
+            HttpContext = httpContext,
+        };
+        var second = new CacheBoundary
+        {
+            ChildContent = builder => builder.AddContent(0, "second"),
+            CacheService = service,
+            HttpContext = httpContext,
+        };
+
+        // The first boundary reserves the cache key for the request.
+        await service.PrepareAsync(first, httpContext);
+
+        // A second, distinct boundary resolving to the same key is a configuration error.
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.PrepareAsync(second, httpContext));
+
+        Assert.Contains(nameof(CacheBoundary.CacheKey), exception.Message);
+        Assert.Contains("distinct cache key", exception.Message);
+    }
+
+    [Fact]
+    public async Task SameBoundaryInstance_PreparedTwice_DoesNotThrow()
+    {
+        var httpContext = CreateHttpContext();
+        var store = new TestCacheStore();
+        var service = new CacheBoundaryService(store, new TestLoggerFactory(new TestLogger()));
+
+        var boundary = new CacheBoundary
+        {
+            ChildContent = builder => builder.AddContent(0, "content"),
+            CacheService = service,
+            HttpContext = httpContext,
+        };
+
+        await service.PrepareAsync(boundary, httpContext);
+
+        // Re-rendering the same instance within the request reuses its in-flight resolution.
+        var state = await service.PrepareAsync(boundary, httpContext);
+
+        Assert.NotNull(state);
+    }
+
     private static void AssertContainsText(ArrayRange<RenderTreeFrame> frames, string expectedText)
     {
         for (var i = 0; i < frames.Count; i++)
