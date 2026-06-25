@@ -139,14 +139,16 @@ export class AutoPauseManager {
       if (!(await this.deferIfBlocked(
         controller, isFocusedElementEdited,
         'Pause deferred: waiting for edited element to lose focus.',
-        'Pause resumed: tab became visible before focus cleared.'))) {
+        'Pause resumed: tab became visible before focus cleared.'
+      ))) {
         return;
       }
 
       if (!(await this.deferIfBlocked(
         controller, isMediaPlaying,
         'Pause deferred: media playing.',
-        'Pause resumed: tab became visible before media stopped.'))) {
+        'Pause resumed: tab became visible before media stopped.'
+      ))) {
         return;
       }
 
@@ -158,14 +160,16 @@ export class AutoPauseManager {
           const handler = () => notify();
           document.addEventListener('leavepictureinpicture', handler, true);
           return () => document.removeEventListener('leavepictureinpicture', handler, true);
-        }))) {
+        }
+      ))) {
         return;
       }
 
       if (!(await this.deferIfBlocked(
         controller, queryWebLockHeld,
         'Pause deferred: web lock held.',
-        'Pause resumed: tab became visible before web lock released.'))) {
+        'Pause resumed: tab became visible before web lock released.'
+      ))) {
         return;
       }
 
@@ -258,9 +262,13 @@ export class AutoPauseManager {
       };
 
       if (subscribeClearEvent) {
-        unsubscribe = subscribeClearEvent(() => { checkAndResolve(); });
+        unsubscribe = subscribeClearEvent(() => {
+          checkAndResolve();
+        });
       } else {
-        pollId = setInterval(() => { checkAndResolve(); }, pollIntervalMs);
+        pollId = setInterval(() => {
+          checkAndResolve();
+        }, pollIntervalMs);
       }
     });
 
