@@ -305,7 +305,7 @@ internal partial class EndpointHtmlRenderer
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
         var captureWriter = output as CacheBoundaryTextWriter;
         var pausedCapture = false;
-        if (captureWriter is not null && captureWriter.IsCapturing && (CacheBoundaryService.IsHoleComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
+        if (captureWriter is not null && captureWriter.IsCapturing && (!CacheBoundaryService.IsCacheableComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
         {
             pausedCapture = true;
             captureWriter.PauseCapture();

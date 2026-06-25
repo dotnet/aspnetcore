@@ -47,13 +47,13 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    public static bool IsHoleComponent(Type componentType, CacheBoundaryVaryBy varyBy)
+    public static bool IsCacheableComponent(Type componentType, CacheBoundaryVaryBy varyBy)
     {
         var attr = _policyByComponentType.GetOrAdd(componentType, static type => type.GetCustomAttribute<CacheBoundaryPolicyAttribute>(inherit: true));
 
         if (attr is null)
         {
-            return false;
+            return true;
         }
 
         var varyByMatches = attr.VaryBy != CacheBoundaryVaryBy.None && (attr.VaryBy & varyBy) == attr.VaryBy;
@@ -67,7 +67,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
                     : "To fix this, move the component outside the CacheBoundary."));
         }
 
-        return !varyByMatches;
+        return varyByMatches;
     }
 
     public async Task<CacheBoundaryRenderState?> PrepareAsync(CacheBoundary boundary, HttpContext httpContext)

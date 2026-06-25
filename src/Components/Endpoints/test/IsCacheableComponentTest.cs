@@ -5,33 +5,33 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class IsHoleComponentTest
+public class IsCacheableComponentTest
 {
     [Fact]
-    public void NoAttribute_IsNotHole()
+    public void NoAttribute_IsCacheable()
     {
-        Assert.False(CacheBoundaryService.IsHoleComponent(typeof(ComponentBase), CacheBoundaryVaryBy.None));
+        Assert.True(CacheBoundaryService.IsCacheableComponent(typeof(ComponentBase), CacheBoundaryVaryBy.None));
     }
 
     [Fact]
-    public void Attribute_NoVaryBy_IsUnconditionalHole()
+    public void Attribute_NoVaryBy_IsNotCacheable()
     {
-        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.None));
-        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.User));
+        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.None));
+        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(UnconditionalHole), CacheBoundaryVaryBy.User));
     }
 
     [Fact]
     public void Attribute_Throw_ThrowsWhenNotCovered()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            CacheBoundaryService.IsHoleComponent(typeof(ThrowingComponent), CacheBoundaryVaryBy.None));
+            CacheBoundaryService.IsCacheableComponent(typeof(ThrowingComponent), CacheBoundaryVaryBy.None));
     }
 
     [Fact]
-    public void Attribute_VaryBy_IsHoleWhenNotCovered_SafeWhenCovered()
+    public void Attribute_VaryBy_NotCacheableWhenNotCovered_CacheableWhenCovered()
     {
-        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.None));
-        Assert.False(CacheBoundaryService.IsHoleComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.User));
+        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.None));
+        Assert.True(CacheBoundaryService.IsCacheableComponent(typeof(ConditionalHole), CacheBoundaryVaryBy.User));
     }
 
     [Fact]
@@ -40,15 +40,15 @@ public class IsHoleComponentTest
         var partial = CacheBoundaryVaryBy.User;
         var full = CacheBoundaryVaryBy.User | CacheBoundaryVaryBy.Query;
 
-        Assert.True(CacheBoundaryService.IsHoleComponent(typeof(MultiDimensionHole), partial));
-        Assert.False(CacheBoundaryService.IsHoleComponent(typeof(MultiDimensionHole), full));
+        Assert.False(CacheBoundaryService.IsCacheableComponent(typeof(MultiDimensionHole), partial));
+        Assert.True(CacheBoundaryService.IsCacheableComponent(typeof(MultiDimensionHole), full));
     }
 
     [Fact]
     public void Attribute_Inherited_AppliesToSubclass()
     {
         Assert.Throws<InvalidOperationException>(() =>
-            CacheBoundaryService.IsHoleComponent(typeof(DerivedThrowingComponent), CacheBoundaryVaryBy.None));
+            CacheBoundaryService.IsCacheableComponent(typeof(DerivedThrowingComponent), CacheBoundaryVaryBy.None));
     }
 
     [CacheBoundaryPolicy]
