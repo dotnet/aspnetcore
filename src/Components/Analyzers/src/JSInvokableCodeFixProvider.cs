@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using System.Composition;
 using System.Globalization;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -29,40 +28,35 @@ public class JSInvokableCodeFixProvider : CodeFixProvider
         return WellKnownFixAllProviders.BatchFixer;
     }
 
-    public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-        {
-            return;
-        }
-        var diagnostic = context.Diagnostics.First();
-        var diagnosticSpan = diagnostic.Location.SourceSpan;
-
-        // Find the method declaration identified by the diagnostic.
-        var declaration = root.FindToken(diagnosticSpan.Start).Parent.AncestorsAndSelf().OfType<MethodDeclarationSyntax>().FirstOrDefault();
-        if (declaration == null)
-        {
-            return;
-        }
-
-        // Register a code action that will invoke the fix.
         var title = _title.ToString(CultureInfo.InvariantCulture);
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                title: title,
-                createChangedDocument: c => GetTransformedDocumentAsync(declaration, context.Document, c),
-                equivalenceKey: title),
-            diagnostic);
+        foreach (var diagnostic in context.Diagnostics)
+        {
+            context.RegisterCodeFix(
+                CodeAction.Create(
+                    title: title,
+                    createChangedDocument: ct => GetTransformedDocumentAsync(diagnostic, context.Document, ct),
+                    equivalenceKey: title),
+                diagnostic);
+        }
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> GetTransformedDocumentAsync(
-        MethodDeclarationSyntax declarationNode,
+        Diagnostic diagnostic,
         Document document,
         CancellationToken cancellationToken)
     {
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if (root is null)
+        {
+            return document;
+        }
+
+        var declarationNode = root.FindNode(diagnostic.Location.SourceSpan).FirstAncestorOrSelf<MethodDeclarationSyntax>();
+        if (declarationNode is null)
         {
             return document;
         }
@@ -80,6 +74,7 @@ public class JSInvokableCodeFixProvider : CodeFixProvider
 
         foreach (var modifier in node.Modifiers)
         {
+            // Skip all existing access modifiers, including 'public' just in case the fix is ran on invalid code with multiple access modifiers (e.g. private public)
             if (modifier.IsKind(SyntaxKind.PrivateKeyword)
                 || modifier.IsKind(SyntaxKind.ProtectedKeyword)
                 || modifier.IsKind(SyntaxKind.InternalKeyword)
