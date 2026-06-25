@@ -439,7 +439,7 @@ public class DefaultClientValidationServiceTest
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
         Assert.Equal("Email Address", displayCall.DisplayName);
         Assert.Equal("Email", displayCall.MemberName);
-        Assert.Equal(typeof(DisplayNameModel), displayCall.DeclaringType);
+        Assert.Equal(typeof(DisplayNameModel), displayCall.Type);
     }
 
     [Fact]
@@ -455,7 +455,7 @@ public class DefaultClientValidationServiceTest
         service.GetClientValidationAttributes(fieldId);
 
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
-        Assert.Equal(typeof(InheritedDisplayBaseModel), displayCall.DeclaringType);
+        Assert.Equal(typeof(InheritedDisplayBaseModel), displayCall.Type);
     }
 
     [Fact]
