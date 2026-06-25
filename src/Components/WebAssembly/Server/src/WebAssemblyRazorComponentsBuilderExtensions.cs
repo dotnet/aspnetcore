@@ -37,9 +37,10 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         {
             var provider = new CultureStateProvider();
 
-            // Honor explicit configuration, fallback to using the presence of IStringLocalizerFactory to determine if we should capture the culture from the server.
-            // We check for IStringLocalizerFactory because it is the only service that is registered via AddLocalization.
-            var useCultureFromServer = sp.GetService<IStringLocalizerFactory>() is not null ?? sp.GetRequiredService<IOptions<WebAssemblyComponentsServiceOptions>>().Value.UseCultureFromServer;
+            // Honor explicit configuration, falling back to the presence of IStringLocalizerFactory to determine whether to capture the culture from the server.
+            // We check for IStringLocalizerFactory because it is registered via AddLocalization.
+            var useCultureFromServer = sp.GetRequiredService<IOptions<WebAssemblyComponentsServiceOptions>>().Value.UseCultureFromServer
+                ?? sp.GetService<IStringLocalizerFactory>() is not null;
 
             if (useCultureFromServer)
             {
