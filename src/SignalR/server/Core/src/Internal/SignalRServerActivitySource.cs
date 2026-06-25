@@ -14,6 +14,7 @@ internal sealed class SignalRServerActivitySource
     internal const string InvocationIn = $"{Name}.InvocationIn";
     internal const string OnConnected = $"{Name}.OnConnected";
     internal const string OnDisconnected = $"{Name}.OnDisconnected";
+    internal const string OnAuthenticationRefreshed = $"{Name}.OnAuthenticationRefreshed";
 
     public ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 }

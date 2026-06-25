@@ -28,6 +28,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
     private const string CsrfProtectionMiddlewareSetKey = "__CsrfProtectionMiddlewareSet";
     private const string UseRoutingKey = "__UseRouting";
 
+    // Note: Mvc.Testing listens for this event. This private const is a cross-assembly contract.
+    private const string HostApplicationBuilderConstructedEventName = "HostApplicationBuilderConstructed";
+
     private readonly HostApplicationBuilder _hostApplicationBuilder;
     private readonly ServiceDescriptor _genericWebHostServiceDescriptor;
 
@@ -77,6 +80,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+
+        OnHostApplicationBuilderConstructed();
     }
 
     internal WebApplicationBuilder(WebApplicationOptions options, bool slim, Action<IHostBuilder>? configureDefaults = null)
@@ -145,6 +150,8 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+
+        OnHostApplicationBuilderConstructed();
     }
 
     internal WebApplicationBuilder(WebApplicationOptions options, bool slim, bool empty, Action<IHostBuilder>? configureDefaults = null)
@@ -200,6 +207,20 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             });
 
         _genericWebHostServiceDescriptor = InitializeHosting(bootstrapHostBuilder);
+
+        OnHostApplicationBuilderConstructed();
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:UnrecognizedReflectionPattern",
+        Justification = "The values being passed into Write are being consumed by the application already.")]
+    private void OnHostApplicationBuilderConstructed()
+    {
+        using var diagnosticListener = new DiagnosticListener("Microsoft.Extensions.Hosting");
+
+        if (diagnosticListener.IsEnabled() && diagnosticListener.IsEnabled(HostApplicationBuilderConstructedEventName))
+        {
+            diagnosticListener.Write(HostApplicationBuilderConstructedEventName, this);
+        }
     }
 
     [MemberNotNull(nameof(Environment), nameof(Host), nameof(WebHost))]
