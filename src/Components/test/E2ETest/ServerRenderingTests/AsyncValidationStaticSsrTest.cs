@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 // so async DataAnnotations validation runs as part of request handling and its messages render in the response.
 // This covers form-level async validation through both the static Validator and the Microsoft.Extensions.Validation path.
 // Per-field on-edit validation and the pending async UX are not applicable without interactivity.
-public class AsyncValidationStaticSsrTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>>>
+public class AsyncValidationStaticSsrTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
 {
     public AsyncValidationStaticSsrTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -29,7 +29,7 @@ public class AsyncValidationStaticSsrTest : ServerTestBase<BasicTestAppServerSit
     {
         Navigate("subdir/forms/async-validation-static-ssr");
         Browser.Exists(By.Id("validator-form"));
-        // The page is statically rendered: it must not become interactive.
+        // The App root renders pages statically (no @rendermode), so the page must not become interactive.
         Assert.Empty(Browser.FindElements(By.Id("is-interactive")));
     }
 
