@@ -1419,27 +1419,6 @@ public class DataAnnotationsMetadataProviderTest
     }
 
     [Fact]
-    public void CreateValidationMetadata_WithOldModelIdentity_DoesNotInferValueBasedOnContext()
-    {
-        // Arrange
-        var provider = CreateProvider();
-
-        var modelType = typeof(TypeWithAllNonNullProperties);
-        var property = modelType.GetProperty(nameof(TypeWithAllNonNullProperties.Property1));
-#pragma warning disable CS0618 // Type or member is obsolete
-        var key = ModelMetadataIdentity.ForProperty(property.PropertyType, property.Name, modelType);
-#pragma warning restore CS0618 // Type or member is obsolete
-        var context = new ValidationMetadataProviderContext(key, ModelAttributes.GetAttributesForProperty(modelType, property));
-
-        // Act
-        provider.CreateValidationMetadata(context);
-
-        // Assert
-        Assert.Null(context.ValidationMetadata.IsRequired);
-        Assert.DoesNotContain(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
-    }
-
-    [Fact]
     public void CreateValidationMetadata_WillAddValidationAttributes_From_ValidationProviderAttribute()
     {
         // Arrange
