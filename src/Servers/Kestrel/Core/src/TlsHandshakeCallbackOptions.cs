@@ -24,6 +24,14 @@ public class TlsHandshakeCallbackOptions
     public object? OnConnectionState { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether <see cref="Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature"/>
+    /// is exposed on connections. Defaults to <see langword="false"/>. Enable for scenarios such as SPNEGO/NTLM
+    /// Extended Protection for Authentication or SCRAM-*-PLUS where the application needs to retrieve TLS
+    /// channel-binding tokens (<c>tls-server-end-point</c> / <c>tls-unique</c>).
+    /// </summary>
+    public bool EnableChannelBinding { get; set; }
+
+    /// <summary>
     /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive
     /// or <see cref="Timeout.InfiniteTimeSpan"/>. Defaults to 10 seconds.
     /// </summary>
