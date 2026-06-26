@@ -26,21 +26,21 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-        context.RegisterCompilationStartAction(compilationContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            var iComponentType = compilationContext.Compilation.GetTypeByMetadataName(ComponentsApi.IComponent.MetadataName);
+            var iComponentType = context.Compilation.GetTypeByMetadataName(ComponentsApi.IComponent.MetadataName);
             if (iComponentType is null)
             {
                 return;
             }
 
-            var iDisposableType = compilationContext.Compilation.GetSpecialType(SpecialType.System_IDisposable);
-            var iAsyncDisposableType = compilationContext.Compilation.GetTypeByMetadataName(IAsyncDisposableTypeName);
-            var valueTaskType = compilationContext.Compilation.GetTypeByMetadataName(ValueTaskTypeName);
+            var iDisposableType = context.Compilation.GetSpecialType(SpecialType.System_IDisposable);
+            var iAsyncDisposableType = context.Compilation.GetTypeByMetadataName(IAsyncDisposableTypeName);
+            var valueTaskType = context.Compilation.GetTypeByMetadataName(ValueTaskTypeName);
 
-            compilationContext.RegisterSymbolAction(symbolContext =>
+            context.RegisterSymbolAction(context =>
             {
-                var type = (INamedTypeSymbol)symbolContext.Symbol;
+                var type = (INamedTypeSymbol)context.Symbol;
 
                 if (type.TypeKind != TypeKind.Class || !type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iComponentType)))
                 {
@@ -63,7 +63,7 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
                         && method.Name == "Dispose"
                         && method.ReturnType.SpecialType == SpecialType.System_Void)
                     {
-                        symbolContext.ReportDiagnostic(Diagnostic.Create(
+                        context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.ComponentHasDisposeWithoutIDisposable,
                             method.Locations[0],
                             type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
@@ -73,7 +73,7 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
                         && valueTaskType is not null
                         && SymbolEqualityComparer.Default.Equals(method.ReturnType, valueTaskType))
                     {
-                        symbolContext.ReportDiagnostic(Diagnostic.Create(
+                        context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.ComponentHasDisposeAsyncWithoutIAsyncDisposable,
                             method.Locations[0],
                             type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
