@@ -43,29 +43,6 @@ internal static class TypeExtensions
     }
 
     /// <summary>
-    /// Determines whether the specified type is a nullable type.
-    /// </summary>
-    /// <param name="type">The type to check.</param>
-    /// <returns><see langword="true"/> if the type is nullable; otherwise, <see langword="false"/>.</returns>
-    public static bool IsNullable(this Type type)
-    {
-        // Check for Nullable<T> first — works for both value and reference types
-        if (type.IsGenericType &&
-            type.GetGenericTypeDefinition() == typeof(Nullable<>))
-        {
-            return true;
-        }
-
-        // Non-value types (classes, interfaces) are inherently nullable
-        if (!type.IsValueType)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
     /// Tries to get the <see cref="RequiredAttribute"/> from the specified array of validation attributes.
     /// </summary>
     /// <param name="attributes">The array of <see cref="ValidationAttribute"/> to search.</param>
