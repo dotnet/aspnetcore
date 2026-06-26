@@ -51,44 +51,19 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            compilationContext.RegisterOperationBlockStartAction(blockContext =>
+            compilationContext.RegisterOperationBlockAction(blockContext =>
             {
                 var analyzerState = new ForLoopAnalyzerState();
                 if (blockContext.OwningSymbol is IMethodSymbol owningMethod
                     && IsImplementationOfBuildRenderTree(owningMethod, availableTypes))
                 {
-                    // Register variables from the initialization of for loops.
-                    blockContext.RegisterOperationAction(operationContext => AnalyzeForLoopVariables(operationContext, analyzerState),
-                        OperationKind.Loop);
-
-                    // Check if non-incremented variables are later incremented/set.
-                    blockContext.RegisterOperationAction(operationContext => AnalyzeIncrementOrDecrement(operationContext, analyzerState),
-                        OperationKind.Increment);
-                    blockContext.RegisterOperationAction(operationContext => AnalyzeIncrementOrDecrement(operationContext, analyzerState),
-                        OperationKind.Decrement);
-                    blockContext.RegisterOperationAction(operationContext => AnalyzeAssignment(operationContext, analyzerState),
-                        OperationKind.SimpleAssignment);
-                    blockContext.RegisterOperationAction(operationContext => AnalyzeAssignment(operationContext, analyzerState),
-                        OperationKind.CompoundAssignment);
-
-                    // Main analysis for invocations of AddAttribute and AddComponentParameter.
-                    blockContext.RegisterOperationAction(operationContext =>
+                    foreach (var childBlock in blockContext.OperationBlocks)
                     {
-                        // It appears that the analysis triggers the actions for operations using DFS.
-                        // The only uncertainty seems to be for actions on the same level, but we don't need to worry about them.
-                        // We care only for the upper levels variables to be registered in time of execution of this callback, so we catch any occurrences.
-                        AnalyzeInvocation(operationContext, availableTypes, analyzerState);
-                    }, OperationKind.Invocation);
+                        // Should be one but could be more than one if there are multiple partial class definitions.
+                        AnalyzeOperationsTree(childBlock, availableTypes, analyzerState);
+                    }
+                    analyzerState.ReportDiagnostics(blockContext);
                 }
-                else
-                {
-                    return;
-                }
-
-                blockContext.RegisterOperationBlockEndAction(endContext =>
-                {
-                    analyzerState.ReportDiagnostics(endContext);
-                });
             });
         });
     }
@@ -111,9 +86,38 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static void AnalyzeForLoopVariables(OperationAnalysisContext operationContext, ForLoopAnalyzerState analyzerState)
+    private static void AnalyzeOperationsTree(IOperation operation, Dictionary<string, INamedTypeSymbol?> availableTypes, ForLoopAnalyzerState analyzerState)
     {
-        if (operationContext.Operation is IForLoopOperation forLoopOperation)
+        if (operation is IForLoopOperation forLoopOperation)
+        {
+            AnalyzeForLoopVariables(forLoopOperation, analyzerState);
+            AnalyzeOperationsTree(forLoopOperation.Body, availableTypes, analyzerState);
+        }
+        else if (operation is IIncrementOrDecrementOperation incrementOrDecrement)
+        {
+            AnalyzeIncrementOrDecrement(incrementOrDecrement, analyzerState);
+        }
+        else if (operation is IAssignmentOperation assignment)
+        {
+            AnalyzeAssignment(assignment, analyzerState);
+        }
+        else if (operation is IInvocationOperation invocation)
+        {
+            AnalyzeInvocation(invocation, availableTypes, analyzerState);
+        }
+        else if (operation.Children.Any())
+        {
+            // Expression statements, blocks, switch, cases etc. that have children.
+            foreach (var childOperation in operation.Children)
+            {
+                AnalyzeOperationsTree(childOperation, availableTypes, analyzerState);
+            }
+        }
+    }
+
+    private static void AnalyzeForLoopVariables(IForLoopOperation forLoopOperation, ForLoopAnalyzerState analyzerState)
+    {
+        if (forLoopOperation is not null)
         {
             // Get all incremented variables.
             foreach (var bottomOperation in forLoopOperation.AtLoopBottom)
@@ -141,15 +145,14 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static void AnalyzeInvocation(OperationAnalysisContext context, Dictionary<string, INamedTypeSymbol?> availableTypes, ForLoopAnalyzerState analyzerState)
+    private static void AnalyzeInvocation(IInvocationOperation invocation, Dictionary<string, INamedTypeSymbol?> availableTypes, ForLoopAnalyzerState analyzerState)
     {
         if (analyzerState.AllForVariables.Count == 0)
         {
             return;
         }
 
-        if (context.Operation is IInvocationOperation invocation
-            && invocation.Instance?.Type is not null
+        if (invocation.Instance?.Type is not null
             && SymbolEqualityComparer.Default.Equals(invocation.Instance.Type, availableTypes[ComponentsApi.RenderTreeBuilder.MetadataName])
             && invocation.Arguments.Length >= 3)
         {
@@ -205,20 +208,18 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    private static void AnalyzeIncrementOrDecrement(OperationAnalysisContext context, ForLoopAnalyzerState analyzerState)
+    private static void AnalyzeIncrementOrDecrement(IIncrementOrDecrementOperation incrementOrDecrement, ForLoopAnalyzerState analyzerState)
     {
-        if (context.Operation is IIncrementOrDecrementOperation incrementOrDecrement
-            && incrementOrDecrement.Target is ILocalReferenceOperation localReference
+        if (incrementOrDecrement.Target is ILocalReferenceOperation localReference
             && analyzerState.IsPotentialIterator(localReference.Local))
         {
             analyzerState.OnPotentialIteratorChanged(localReference.Local);
         }
     }
 
-    private static void AnalyzeAssignment(OperationAnalysisContext context, ForLoopAnalyzerState analyzerState)
+    private static void AnalyzeAssignment(IAssignmentOperation assignment, ForLoopAnalyzerState analyzerState)
     {
-        if (context.Operation is IAssignmentOperation assignment
-            && assignment.Target is ILocalReferenceOperation localReference
+        if (assignment.Target is ILocalReferenceOperation localReference
             && analyzerState.IsPotentialIterator(localReference.Local))
         {
             analyzerState.OnPotentialIteratorChanged(localReference.Local);
