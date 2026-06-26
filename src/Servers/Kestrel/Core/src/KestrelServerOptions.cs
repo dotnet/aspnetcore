@@ -217,7 +217,7 @@ public class KestrelServerOptions
     internal bool IsDevelopmentCertificateLoaded { get; set; }
 
     /// <summary>
-    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experiemental features.
+    /// Internal AppContext switch to toggle the WebTransport and HTTP/3 datagrams experimental features.
     /// </summary>
     private bool? _enableWebTransportAndH3Datagrams;
     internal bool EnableWebTransportAndH3Datagrams

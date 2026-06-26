@@ -94,7 +94,7 @@ internal static class BindMethodFinder
         // We need to access the static BindService method on Foo which implicitly derives from Object.
         var baseType = serviceImplementation.BaseType;
 
-        // Handle services that have multiple levels of inheritence
+        // Handle services that have multiple levels of inheritance
         while (baseType?.BaseType?.BaseType != null)
         {
             baseType = baseType.BaseType;

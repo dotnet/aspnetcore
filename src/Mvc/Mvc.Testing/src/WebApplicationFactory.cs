@@ -262,7 +262,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     }
 
     /// <summary>
-    /// Initializes the instance by configurating the host builder.
+    /// Initializes the instance by configuring the host builder.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if the provided <typeparamref name="TEntryPoint"/> type has no factory method.</exception>
     public void StartServer()
