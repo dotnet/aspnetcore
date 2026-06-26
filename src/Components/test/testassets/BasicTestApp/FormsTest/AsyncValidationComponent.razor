@@ -22,7 +22,7 @@
         }
         else if (_editContext.IsValidationFaulted(() => _model.Username))
         {
-            <span id="username-faulted">@_editContext.GetValidationException(() => _model.Username)?.Message</span>
+            <span id="username-faulted">faulted</span>
         }
         else
         {
@@ -43,7 +43,7 @@
     }
     else if (_editContext.IsValidationFaulted())
     {
-        <span id="form-faulted">@_editContext.GetValidationException()?.Message</span>
+        <span id="form-faulted">faulted</span>
     }
 </div>
 
@@ -92,7 +92,7 @@
 
         if (string.Equals(_model.Username, "error", StringComparison.Ordinal))
         {
-            // Surfaced as a faulted field via IsValidationFaulted / GetValidationException, not a message.
+            // Surfaced as a faulted field via IsValidationFaulted, not a message.
             throw new InvalidOperationException("Username service unavailable");
         }
 
@@ -105,7 +105,7 @@
     }
 
     private void OnValidationRequested(object sender, ValidationRequestedEventArgs e)
-        => e.AddValidationTask(ValidateFormAsync(e.CancellationToken));
+        => e.AddValidationTask(ValidateFormAsync);
 
     private async Task ValidateFormAsync(CancellationToken token)
     {

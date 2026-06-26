@@ -50,8 +50,8 @@ public abstract class AsyncFormValidationTestBase : ServerTestBase<ToggleExecuti
     [Fact]
     public void AsyncFieldValidation_ThrowingValidator_ShowsPendingThenFaulted()
     {
-        // A per-field validator that throws is contained as a faulted field, surfaced via
-        // GetValidationException rather than as a validation message.
+        // A per-field validator that throws is contained as a faulted field, observable via
+        // IsValidationFaulted rather than as a validation message.
         var appElement = Browser.MountTestComponent<AsyncValidationComponent>();
         var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
 
@@ -61,7 +61,7 @@ public abstract class AsyncFormValidationTestBase : ServerTestBase<ToggleExecuti
 
         appElement.FindElement(By.Id("release-field")).Click();
 
-        Browser.Equal("Username service unavailable", () => appElement.FindElement(By.Id("username-faulted")).Text);
+        Browser.Exists(By.Id("username-faulted"));
         Browser.DoesNotExist(By.Id("username-pending"));
         Browser.Empty(() => appElement.FindElements(By.ClassName("username-message")));
     }

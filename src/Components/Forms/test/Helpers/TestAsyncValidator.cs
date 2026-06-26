@@ -124,9 +124,9 @@ internal sealed class TestAsyncValidator : IDisposable
 
         foreach (var field in _configs.Keys)
         {
-            // Start each field's validation and hand the task to the framework. RunValidationAsync
-            // is an async method, so a synchronous throw is captured into the returned task.
-            args.AddValidationTask(RunValidationAsync(field, GetConfig(field), args.CancellationToken));
+            // Register each field's validation as a factory. RunValidationAsync is an async method, so a
+            // synchronous throw is captured into the returned task. The framework invokes the factory.
+            args.AddValidationTask(token => RunValidationAsync(field, GetConfig(field), token));
         }
     }
 

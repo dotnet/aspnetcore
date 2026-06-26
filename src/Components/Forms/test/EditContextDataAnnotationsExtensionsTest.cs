@@ -189,20 +189,18 @@ public class EditContextDataAnnotationsExtensionsTest
     });
 
     [Fact]
-    public Task FormLevelAsyncValidationMakesValidateThrow() => RunOnDispatcher(() =>
+    public void FormLevelAsyncOnlyValidation_ValidateInvokesSyncFallbackAndThrows()
     {
-        // Runs on the dispatcher to honor Blazor's single-threaded model (see
-        // FormLevelAsyncValidationProducesMessages). On the dispatcher the registered async validation
-        // task cannot complete while the synchronous Validate() holds the thread, so Validate() observes
-        // it as incomplete and throws deterministically, directing the caller to ValidateAsync.
+        // Synchronous Validate() runs DataAnnotations through the synchronous Validator.TryValidateObject,
+        // which invokes the synchronous IsValid fallback of an async-only attribute. AsyncNonEmptyAttribute's
+        // fallback is not supported, so the exception it throws propagates out of Validate().
         var model = new AsyncTestModel();
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => editContext.Validate());
-        Assert.Contains(nameof(EditContext.ValidateAsync), ex.Message);
-        return Task.CompletedTask;
-    });
+        var ex = Assert.Throws<NotSupportedException>(() => editContext.Validate());
+        Assert.Contains("only supports asynchronous validation", ex.Message);
+    }
 
     [Fact]
     public Task FieldLevelAsyncValidationBecomesPendingThenSettles() => RunOnDispatcher(async () =>
@@ -233,7 +231,6 @@ public class EditContextDataAnnotationsExtensionsTest
         await WaitUntilAsync(() => !editContext.IsValidationPending(field));
 
         Assert.True(editContext.IsValidationFaulted(field));
-        Assert.NotNull(editContext.GetValidationException(field));
     });
 
     private static Task RunOnDispatcher(Func<Task> body)

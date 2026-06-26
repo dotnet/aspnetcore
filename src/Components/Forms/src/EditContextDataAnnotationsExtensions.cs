@@ -101,10 +101,16 @@ public static partial class EditContextDataAnnotationsExtensions
 
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
-            // Always register the form validation as a task.
-            // ValidateAsync awaits it, Validate drains it when it completed synchronously
-            // or throws when it did not.
-            e.AddValidationTask(ValidateFormAndNotifyAsync(e.CancellationToken));
+            if (e.IsAsync)
+            {
+                // ValidateAsync invokes the registered factory and awaits the resulting task.
+                e.AddValidationTask(ValidateFormAndNotifyAsync);
+            }
+            else
+            {
+                // Validate runs the form validation fully synchronously.
+                ValidateFormAndNotify();
+            }
         }
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -117,6 +123,20 @@ public static partial class EditContextDataAnnotationsExtensions
             else
             {
                 await ValidateFormWithValidatorAsync(cancellationToken);
+            }
+
+            _editContext.NotifyValidationStateChanged();
+        }
+
+        private void ValidateFormAndNotify()
+        {
+            if (_validatorTypeInfo is not null)
+            {
+                ValidateFormWithValidatableInfo(_validatorTypeInfo);
+            }
+            else
+            {
+                ValidateFormWithValidator();
             }
 
             _editContext.NotifyValidationStateChanged();
@@ -135,7 +155,29 @@ public static partial class EditContextDataAnnotationsExtensions
 
             await Validator.TryValidateObjectAsync(_editContext.Model, validationContext, validationResults, validateAllProperties: true, cancellationToken);
 
-            // Transfer results to the ValidationMessageStore
+            AddValidatorResults(validationResults);
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private void ValidateFormWithValidator()
+        {
+            var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
+            var validationResults = new List<ValidationResult>();
+
+            // Clear stale messages up-front so the form shows neutral state. Any faulted state is
+            // signalled separately via EditContext.IsValidationFaulted.
+            _messages.Clear();
+
+            Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, validateAllProperties: true);
+
+            AddValidatorResults(validationResults);
+        }
+
+        // Transfers Validator results to the ValidationMessageStore, keyed by member name (or the
+        // model-level field when a result carries no member names). Shared by the synchronous and
+        // asynchronous form validation paths.
+        private void AddValidatorResults(List<ValidationResult> validationResults)
+        {
             foreach (var validationResult in validationResults)
             {
                 if (validationResult == null)
@@ -161,12 +203,7 @@ public static partial class EditContextDataAnnotationsExtensions
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private async Task ValidateFormWithValidatableInfoAsync(IValidatableTypeInfo validatableInfo, CancellationToken cancellationToken)
         {
-            var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
-            var validateContext = new ValidateContext
-            {
-                ValidationOptions = _validationOptions!,
-                ValidationContext = validationContext,
-            };
+            var validateContext = CreateFormValidateContext();
 
             // Clear stale messages up-front. If the validator throws partway through, the form
             // shows no per-field messages (form-level fault state is signaled separately via
@@ -179,19 +216,62 @@ public static partial class EditContextDataAnnotationsExtensions
 
                 await validatableInfo.ValidateAsync(_editContext.Model, validateContext, cancellationToken);
 
-                if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
-                {
-                    foreach (var (fieldKey, messages) in validationErrors)
-                    {
-                        var fieldIdentifier = _validationPathToFieldIdentifierMapping[fieldKey];
-                        _messages.Add(fieldIdentifier, messages);
-                    }
-                }
+                AddValidateContextErrors(validateContext);
             }
             finally
             {
                 validateContext.OnValidationError -= AddMapping;
                 _validationPathToFieldIdentifierMapping.Clear();
+            }
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private void ValidateFormWithValidatableInfo(IValidatableTypeInfo validatableInfo)
+        {
+            var validateContext = CreateFormValidateContext();
+
+            // Clear stale messages up-front. If the validator throws partway through, the form
+            // shows no per-field messages (form-level fault state is signaled separately via
+            // EditContext.IsValidationFaulted).
+            _messages.Clear();
+
+            try
+            {
+                validateContext.OnValidationError += AddMapping;
+
+                validatableInfo.Validate(_editContext.Model, validateContext);
+
+                AddValidateContextErrors(validateContext);
+            }
+            finally
+            {
+                validateContext.OnValidationError -= AddMapping;
+                _validationPathToFieldIdentifierMapping.Clear();
+            }
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private ValidateContext CreateFormValidateContext()
+        {
+            var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
+            return new ValidateContext
+            {
+                ValidationOptions = _validationOptions!,
+                ValidationContext = validationContext,
+            };
+        }
+
+        // Transfers ValidateContext errors to the ValidationMessageStore using the path-to-field mapping
+        // populated by AddMapping. Shared by the synchronous and asynchronous form validation paths.
+        private void AddValidateContextErrors(ValidateContext validateContext)
+        {
+            if (validateContext.ValidationErrors is { Count: > 0 } validationErrors)
+            {
+                foreach (var (fieldKey, messages) in validationErrors)
+                {
+                    var fieldIdentifier = _validationPathToFieldIdentifierMapping[fieldKey];
+                    _messages.Add(fieldIdentifier, messages);
+                }
             }
         }
 

@@ -15,7 +15,7 @@
 
     @if (_editContext.IsValidationFaulted(() => Model.Username))
     {
-        <span id="username-faulted">@_editContext.GetValidationException(() => Model.Username)?.Message</span>
+        <span id="username-faulted">faulted</span>
     }
 
     <button type="submit" id="submit">Submit</button>

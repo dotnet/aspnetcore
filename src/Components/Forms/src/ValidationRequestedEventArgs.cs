@@ -8,13 +8,12 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// </summary>
 public sealed class ValidationRequestedEventArgs : EventArgs
 {
-    private readonly bool _isReadOnly;
-    private List<Task>? _validationTasks;
+    private List<Func<CancellationToken, Task>>? _validationTaskFactories;
 
     /// <summary>
     /// Gets a shared empty instance of <see cref="ValidationRequestedEventArgs"/>.
     /// </summary>
-    public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs(isReadOnly: true);
+    public static new readonly ValidationRequestedEventArgs Empty = new ValidationRequestedEventArgs();
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/>.
@@ -24,78 +23,75 @@ public sealed class ValidationRequestedEventArgs : EventArgs
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="ValidationRequestedEventArgs"/> with the specified
-    /// <see cref="System.Threading.CancellationToken"/>.
+    /// Gets a value indicating whether the current validation pass awaits asynchronous work.
+    /// This is <see langword="true"/> when validation was started by
+    /// <see cref="EditContext.ValidateAsync(CancellationToken)"/> and <see langword="false"/> when it
+    /// was started by the synchronous <see cref="EditContext.Validate"/>. A handler that performs
+    /// asynchronous validation registers its work via <see cref="AddValidationTask(Func{CancellationToken, Task})"/> only when
+    /// this is <see langword="true"/>; calling <see cref="AddValidationTask(Func{CancellationToken, Task})"/> while this is
+    /// <see langword="false"/> throws <see cref="InvalidOperationException"/>.
     /// </summary>
-    /// <param name="cancellationToken">A token that signals when the caller has requested
-    /// cancellation of the in-flight async validation pass.</param>
-    public ValidationRequestedEventArgs(CancellationToken cancellationToken)
-    {
-        CancellationToken = cancellationToken;
-    }
-
-    private ValidationRequestedEventArgs(bool isReadOnly)
-    {
-        _isReadOnly = isReadOnly;
-    }
+    public bool IsAsync { get; internal init; }
 
     /// <summary>
-    /// Gets a token that signals when the caller has requested cancellation of the in-flight
-    /// async validation pass. Synchronous handlers can ignore this; async handlers that perform
-    /// long-running work (database lookups, remote API calls) should pass it to their downstream
-    /// APIs so the work can be aborted promptly.
+    /// Registers an asynchronous validation to be run and awaited as part of the current validation pass.
     /// </summary>
-    public CancellationToken CancellationToken { get; }
-
-    /// <summary>
-    /// Registers an asynchronous validation task to be awaited as part of the current validation pass.
-    /// </summary>
-    /// <param name="task">The asynchronous validation task to track for the current validation pass.</param>
+    /// <param name="validate">A factory that starts the asynchronous validation work and returns the
+    /// resulting <see cref="Task"/>. The factory is invoked by
+    /// <see cref="EditContext.ValidateAsync(CancellationToken)"/> with a cancellation token, and the
+    /// returned task is awaited before the pass completes. The factory must not return a
+    /// <see langword="null"/> task; doing so throws <see cref="ArgumentNullException"/> from
+    /// <see cref="EditContext.ValidateAsync(CancellationToken)"/>.</param>
     /// <remarks>
     /// A validator that needs to perform asynchronous work subscribes to
-    /// <see cref="EditContext.OnValidationRequested"/>, starts that work from its handler, and passes
-    /// the resulting <see cref="Task"/> to this method. <see cref="EditContext.ValidateAsync(CancellationToken)"/>
-    /// awaits every registered task before completing, while <see cref="EditContext.Validate"/> throws
-    /// <see cref="InvalidOperationException"/> if a registered task has not already completed.
+    /// <see cref="EditContext.OnValidationRequested"/>, checks that <see cref="IsAsync"/> is
+    /// <see langword="true"/>, and registers a factory with this method.
+    /// <see cref="EditContext.ValidateAsync(CancellationToken)"/> invokes every registered factory and
+    /// awaits the resulting tasks before completing. Factories are invoked together so the validators
+    /// run concurrently; the token passed to the factory is the one supplied to
+    /// <see cref="EditContext.ValidateAsync(CancellationToken)"/>. An exception thrown synchronously by the factory (or a task that
+    /// faults) is contained as a validation fault rather than propagating out of <see cref="EditContext.ValidateAsync(CancellationToken)"/>.
     /// <para>
-    /// Start the asynchronous work with an <c>async</c> method so that any exception thrown before its
-    /// first <c>await</c> is captured into the returned task rather than thrown from the handler. Do not
-    /// subscribe an <c>async void</c> handler instead of calling this method: such a handler is not
-    /// awaited by <see cref="EditContext.ValidateAsync(CancellationToken)"/> and its validation is
-    /// silently skipped.
+    /// Asynchronous validation is not supported by the synchronous <see cref="EditContext.Validate"/>.
+    /// Calling this method during a <see cref="EditContext.Validate"/> pass (when <see cref="IsAsync"/>
+    /// is <see langword="false"/>) throws <see cref="InvalidOperationException"/> without invoking the
+    /// factory, so an asynchronous validator can never be silently skipped and its work never starts.
+    /// Branch on <see cref="IsAsync"/> to run synchronous validation in that case.
     /// </para>
     /// <example>
     /// <code>
     /// editContext.OnValidationRequested += (sender, args) =&gt;
     /// {
-    ///     args.AddValidationTask(ValidateModelAsync(editContext.Model, args.CancellationToken));
+    ///     if (args.IsAsync)
+    ///     {
+    ///         args.AddValidationTask(token =&gt; ValidateModelAsync(editContext.Model, token));
+    ///     }
     /// };
     /// </code>
     /// </example>
     /// </remarks>
-    /// <exception cref="ArgumentNullException"><paramref name="task"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="validate"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidOperationException">
-    /// This instance is the shared read only <see cref="Empty"/> instance, which does not collect tasks.
+    /// <see cref="IsAsync"/> is <see langword="false"/>: validation was started by the synchronous
+    /// <see cref="EditContext.Validate"/>, or this is the shared non-async <see cref="Empty"/> instance.
     /// </exception>
-    public void AddValidationTask(Task task)
+    public void AddValidationTask(Func<CancellationToken, Task> validate)
     {
-        ArgumentNullException.ThrowIfNull(task);
+        ArgumentNullException.ThrowIfNull(validate);
 
-        if (_isReadOnly)
+        if (!IsAsync)
         {
+            // The factory is not invoked, so no asynchronous work starts. Asynchronous validation is
+            // not permitted during a synchronous Validate() pass, and the shared non-async Empty
+            // instance must not be mutated.
             throw new InvalidOperationException(
-                $"Cannot register a validation task on the shared {nameof(ValidationRequestedEventArgs)}.{nameof(Empty)} instance. " +
-                $"Register tasks on the instance supplied to your {nameof(EditContext.OnValidationRequested)} handler instead.");
+                $"Asynchronous validation is not supported during a synchronous {nameof(EditContext)}.{nameof(EditContext.Validate)} call. " +
+                $"Call {nameof(EditContext.ValidateAsync)} instead, or guard the handler with {nameof(ValidationRequestedEventArgs)}.{nameof(IsAsync)}.");
         }
 
-        (_validationTasks ??= []).Add(task);
+        (_validationTaskFactories ??= []).Add(validate);
     }
 
-    // Per-pass orchestration state used by EditContext.Validate / ValidateAsync.
-    internal bool NotifyPending { get; set; }
-
-    internal bool Result { get; set; }
-
-    internal IReadOnlyList<Task> ValidationTasks
-        => _validationTasks is { } tasks ? tasks : Array.Empty<Task>();
+    internal IReadOnlyList<Func<CancellationToken, Task>> ValidationTaskFactories
+        => _validationTaskFactories ?? (IReadOnlyList<Func<CancellationToken, Task>>)[];
 }
