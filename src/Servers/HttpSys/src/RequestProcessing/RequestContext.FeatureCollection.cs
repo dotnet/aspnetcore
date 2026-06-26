@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections.Features;
@@ -26,6 +27,7 @@ internal partial class RequestContext :
     IHttpResponseBodyFeature,
     ITlsConnectionFeature,
     ITlsHandshakeFeature,
+    ITlsChannelBindingFeature,
     // ITlsTokenBindingFeature, TODO: https://github.com/aspnet/HttpSysServer/issues/231
     IHttpRequestLifetimeFeature,
     IHttpAuthenticationFeature,
@@ -385,6 +387,42 @@ internal partial class RequestContext :
     {
         return Request.IsHttps ? this : null;
     }
+
+    private ReadOnlyMemory<byte>? _channelBindingBytes;
+    private bool _channelBindingFetched;
+
+    ReadOnlyMemory<byte>? ITlsChannelBindingFeature.GetChannelBindingBytes(ChannelBindingKind kind)
+    {
+        // http.sys's HTTP_REQUEST_CHANNEL_BIND_STATUS only reports the endpoint binding
+        // (tls-server-end-point per RFC 5929). Other kinds are unsupported.
+        if (kind != ChannelBindingKind.Endpoint)
+        {
+            return null;
+        }
+
+        if (!Request.IsHttps)
+        {
+            return null;
+        }
+
+        if (_channelBindingFetched)
+        {
+            return _channelBindingBytes;
+        }
+
+        _channelBindingFetched = true;
+        var tokenBytes = GetChannelBindingToken();
+        if (tokenBytes is null)
+        {
+            return null;
+        }
+
+        _channelBindingBytes = tokenBytes;
+        return _channelBindingBytes;
+    }
+
+    internal ITlsChannelBindingFeature? GetTlsChannelBindingFeature()
+        => Request.IsHttps && Server.Options.EnableTlsChannelBinding ? this : null;
 
     internal IHttpResponseTrailersFeature? GetResponseTrailersFeature()
     {
