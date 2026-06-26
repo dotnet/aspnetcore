@@ -78,21 +78,23 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
     /// </remarks>
     /// <param name="propertyName">The CLR name of the property to find.</param>
     /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
-    /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
-    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
-    public IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions)
+    /// <param name="validatablePropertyInfo">The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
+    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</param>
+    /// <returns>True if the property was found. Otherwise, false.</returns>
+    public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
     {
         if (FindLocalMember(propertyName) is { } localMember)
         {
-            return localMember;
+            validatablePropertyInfo = localMember;
+            return true;
         }
 
         foreach (var @interface in _implementedInterfaces)
         {
             if (validationOptions.TryGetValidatableTypeInfo(@interface, out var interfaceTypeInfo) &&
-                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions) is { } interfaceProperty)
+                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo))
             {
-                return interfaceProperty;
+                return true;
             }
         }
 
@@ -101,13 +103,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         {
             if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
             {
-                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions);
+                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo);
             }
 
             baseType = baseType.BaseType;
         }
 
-        return null;
+        validatablePropertyInfo = null;
+        return false;
     }
 
     private ValidatablePropertyInfo? FindLocalMember(string memberName)
