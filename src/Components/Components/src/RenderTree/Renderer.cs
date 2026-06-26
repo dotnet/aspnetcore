@@ -183,14 +183,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="component">The component type</param>
     /// <returns></returns>
     protected internal virtual IComponentRenderMode? GetComponentRenderMode(IComponent component)
-    {
-        if (_componentStateByComponent.TryGetValue(component, out var state))
-        {
-            return state.RenderMode;
-        }
-
-        return null;
-    }
+        => null;
 
     internal IComponentRenderMode? GetComponentRenderMode(int componentId)
         => GetComponentRenderMode(GetRequiredComponentState(componentId).Component);
@@ -640,26 +633,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         var newComponent = _componentFactory.InstantiateComponent(_serviceProvider, frame.ComponentTypeField, callerSpecifiedRenderMode, parentComponentId);
         var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
-
-        // 1. Prefer caller-specified render mode (from @rendermode in Razor)
-        if (callerSpecifiedRenderMode != null)
-        {
-            newComponentState.RenderMode = callerSpecifiedRenderMode;
-        }
-        else
-        {
-            // 2. Fallback to attribute-based render mode
-            var componentType = frame.ComponentTypeField;
-
-            var attr = componentType
-                .GetCustomAttributes(typeof(RenderModeAttribute), inherit: true)
-                .FirstOrDefault() as RenderModeAttribute;
-
-            if (attr != null)
-            {
-                newComponentState.RenderMode = attr.Mode;
-            }
-        }
         frame.ComponentStateField = newComponentState;
         frame.ComponentIdField = newComponentState.ComponentId;
 

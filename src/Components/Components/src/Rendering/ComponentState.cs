@@ -24,8 +24,6 @@ public class ComponentState : IAsyncDisposable
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
     private bool _componentWasDisposed;
     private readonly string? _componentTypeName;
-    internal IComponentRenderMode? RenderMode { get; set; }
-    internal bool DisablePrerender => RenderMode is IPrerenderMode mode && !mode.Prerender;
 
     /// <summary>
     /// Constructs an instance of <see cref="ComponentState"/>.
@@ -104,14 +102,6 @@ public class ComponentState : IAsyncDisposable
 
     internal void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment, out Exception? renderFragmentException)
     {
-        if (DisablePrerender)
-        {
-            _nextRenderTree.Clear();
-            _nextRenderTree.AddMarkupContent(0, "<!--blazor:skip-prerender-->");
-            renderFragmentException = null;
-            return;
-        }
-
         renderFragmentException = null;
 
         // A component might be in the render queue already before getting disposed by an
