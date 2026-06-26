@@ -4,15 +4,7 @@
 @namespace Microsoft.AspNetCore.Components.QuickGrid
 @typeparam TGridItem
 @{
-	// Validate that the column's TGridItem matches the grid's item type
-	if (GridItemType != typeof(TGridItem))
-	{
-        var columnDescription = string.IsNullOrEmpty(Title)
-                ? "Column"
-                : $"{Title} Column";
-		throw new InvalidOperationException($"The {columnDescription} type mismatch: Column expects {typeof(TGridItem).Name} but grid uses {GridItemType.Name}.");
-	}
-	InternalGridContext.Grid.AddColumn(this, InitialSortDirection, IsDefaultSortColumn);
+    InternalGridContext.Grid.AddColumn(this, InitialSortDirection, IsDefaultSortColumn);
 }
 
 @code

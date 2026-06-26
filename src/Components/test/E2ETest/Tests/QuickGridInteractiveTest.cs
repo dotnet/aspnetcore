@@ -167,7 +167,12 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify the error message contains both types for clear debugging
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-with-title")).Text;
 
-        Assert.Equal("The Summary Column type mismatch: Column expects ValueTuple`2 but grid uses WeatherForecast.", errorMessage);
+        Assert.Contains("Column 'Summary'", errorMessage);
+        Assert.Contains("TGridItem=System.ValueTuple`2", errorMessage);
+        Assert.Contains("WeatherForecast", errorMessage);
+        Assert.Contains("System.Boolean", errorMessage);
+        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
+        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
     }
 
     [Fact]
@@ -183,7 +188,12 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify the error message uses generic "Column" when Title is null
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-without-title")).Text;
 
-        Assert.Equal("The Column type mismatch: Column expects ValueTuple`2 but grid uses WeatherForecast.", errorMessage);
+        Assert.Contains("Column '(unnamed)'", errorMessage);
+        Assert.Contains("TGridItem=System.ValueTuple`2", errorMessage);
+        Assert.Contains("WeatherForecast", errorMessage);
+        Assert.Contains("System.Boolean", errorMessage);
+        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
+        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
     }
 
     [Fact]
@@ -199,7 +209,11 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify the error message contains both types for clear debugging
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-nested-generic")).Text;
 
-        Assert.Equal("The Summary Column type mismatch: Column expects List`1 but grid uses WeatherForecast.", errorMessage);
+        Assert.Contains("Column 'Summary'", errorMessage);
+        Assert.Contains("TGridItem=System.Collections.Generic.List`1", errorMessage);
+        Assert.Contains("WeatherForecast", errorMessage);
+        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
+        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
     }
 
     [Fact]
@@ -215,7 +229,11 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify the error message contains both types for clear debugging
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-employee")).Text;
 
-        Assert.Equal("The Summary Column type mismatch: Column expects Employee but grid uses WeatherForecast.", errorMessage);
+        Assert.Contains("Column 'Summary'", errorMessage);
+        Assert.Contains("TGridItem=", errorMessage);
+        Assert.Contains("Employee", errorMessage);
+        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
+        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
     }
 
     [Fact]
@@ -231,6 +249,10 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify the error message contains both types for clear debugging
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
 
-        Assert.Equal("The Summary Column type mismatch: Column expects Employee but grid uses WeatherForecast.", errorMessage);
+        Assert.Contains("Column 'Summary'", errorMessage);
+        Assert.Contains("TGridItem=", errorMessage);
+        Assert.Contains("Employee", errorMessage);
+        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
+        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
     }
 }

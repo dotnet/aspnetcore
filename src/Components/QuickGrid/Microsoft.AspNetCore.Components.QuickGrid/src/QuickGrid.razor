@@ -1,41 +1,39 @@
-﻿@using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure
+﻿﻿@using Microsoft.AspNetCore.Components.QuickGrid.Infrastructure
 @using Microsoft.AspNetCore.Components.Rendering
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @typeparam TGridItem
 <CascadingValue TValue="InternalGridContext<TGridItem>" IsFixed="true" Value="@_internalGridContext">
-    <CascadingValue Name="GridItemType" TValue="Type" IsFixed="true" Value="@typeof(TGridItem)">
-        @{ StartCollectingColumns(); }
-        @ChildContent
-        <Defer>
-            @{ FinishCollectingColumns(); }
-            <ColumnsCollectedNotifier TGridItem="TGridItem" />
+    @{ StartCollectingColumns(); }
+    @ChildContent
+    <Defer>
+        @{ FinishCollectingColumns(); }
+        <ColumnsCollectedNotifier TGridItem="TGridItem" />
 
-            <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @attributes="AdditionalAttributes" class="@GridClass()">
-                <thead>
-                    <tr>
-                        @_renderColumnHeaders
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Virtualize)
-                    {
-                        <Virtualize @ref="@_virtualizeComponent"
-                            TItem="(int RowIndex, TGridItem Data)"
-                            ItemSize="@ItemSize"
-                            OverscanCount="@OverscanCount"
-                            ItemsProvider="@ProvideVirtualizedItems"
-                            ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
-                            Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
-                    }
-                    else
-                    {
-                        @_renderNonVirtualizedRows
-                    }
-                </tbody>
-            </table>
-        </Defer>
-    </CascadingValue>
+        <table theme="@Theme" aria-rowcount="@(_ariaBodyRowCount + 1)" @ref="_tableReference" @onclosecolumnoptions="HideColumnOptionsAsync" @attributes="AdditionalAttributes" class="@GridClass()">
+            <thead>
+                <tr>
+                    @_renderColumnHeaders
+                </tr>
+            </thead>
+            <tbody>
+                @if (Virtualize)
+                {
+                    <Virtualize @ref="@_virtualizeComponent"
+                        TItem="(int RowIndex, TGridItem Data)"
+                        ItemSize="@ItemSize"
+                        OverscanCount="@OverscanCount"
+                        ItemsProvider="@ProvideVirtualizedItems"
+                        ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
+                        Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                }
+                else
+                {
+                    @_renderNonVirtualizedRows
+                }
+            </tbody>
+        </table>
+    </Defer>
 </CascadingValue>
 
 @code {

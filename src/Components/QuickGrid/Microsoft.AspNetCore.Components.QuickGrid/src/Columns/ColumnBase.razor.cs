@@ -15,8 +15,6 @@ public abstract partial class ColumnBase<TGridItem>
 {
     [CascadingParameter] internal InternalGridContext<TGridItem> InternalGridContext { get; set; } = default!;
 
-    [CascadingParameter(Name = "GridItemType")] internal Type GridItemType { get; set; } = default!;
-
     /// <summary>
     /// Title text for the column. This is rendered automatically if <see cref="HeaderTemplate" /> is not used.
     /// </summary>
