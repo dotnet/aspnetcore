@@ -23,7 +23,7 @@ public static class HealthChecksBuilderConfigureOptionsExtensions
     /// <c>builder.Services.Configure&lt;HealthCheckOptions&gt;(configureOptions)</c> that lets the
     /// middleware options be configured in the same expression that registers the
     /// <see cref="HealthCheckService"/> and any individual health checks. Multiple invocations
-    /// are additive via the standard <see cref="Microsoft.Extensions.Options"/> pipeline.
+    /// are additive via the standard <c>Microsoft.Extensions.Options</c> pipeline.
     /// </remarks>
     public static IHealthChecksBuilder ConfigureHealthCheckOptions(
         this IHealthChecksBuilder builder,
