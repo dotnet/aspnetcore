@@ -38,6 +38,16 @@
       SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
+  <!--
+    Most @(RequiresDelayedBuild) projects only build and test on Windows x64 (see the targets below).
+    The SignalR TypeScript functional tests, however, are also meant to run on Linux x64 so the SignalR
+    browser tests get Linux/Chrome coverage. Call them out here and build/test just that project on
+    linux-x64; the other delayed-build projects stay Windows-only.
+  -->
+  <ItemGroup>
+    <CrossPlatformDelayedBuild Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
+  </ItemGroup>
+
   <!-- Cannot build in source-build because that does not create an App.Ref layout. -->
   <!-- Only build on win-x64 -->
   <Target Name="BuildDelayedProjects"
@@ -87,6 +97,27 @@
 
   <Target Name="TestDelayedProjects" BeforeTargets="Test" Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') ">
     <MSBuild Projects="@(RequiresDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Test" />
+  </Target>
+
+  <!-- Build the cross-platform delayed projects (the SignalR TypeScript functional tests) on linux-x64. -->
+  <Target Name="BuildCrossPlatformDelayedProjects"
+      BeforeTargets="Build"
+      Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND '$(TargetOsName)' == 'linux' AND '$(TargetArchitecture)' == 'x64' "
+      Returns="@(TargetPathWithTargetPlatformMoniker)">
+    <MSBuild Projects="@(CrossPlatformDelayedBuild)"
+        BuildInParallel="false"
+        Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());RestoreDisableParallel=true"
+        Targets="Restore" />
+    <MSBuild Projects="@(CrossPlatformDelayedBuild)" BuildInParallel="false" Targets="Build">
+      <Output TaskParameter="TargetOutputs" ItemName="TargetPathWithTargetPlatformMoniker" />
+    </MSBuild>
+  </Target>
+
+  <!-- Test the cross-platform delayed projects (the SignalR TypeScript functional tests) on linux-x64. -->
+  <Target Name="TestCrossPlatformDelayedProjects"
+      BeforeTargets="Test"
+      Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND '$(TargetOsName)' == 'linux' AND '$(TargetArchitecture)' == 'x64' ">
+    <MSBuild Projects="@(CrossPlatformDelayedBuild)" BuildInParallel="$(BuildInParallel)" Targets="Test" />
   </Target>
 
   <Target Name="VSTestDelayedProjects" BeforeTargets="VSTest" Condition=" '$(DotNetBuildSourceOnly)' != 'true' AND ('$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64') ">
