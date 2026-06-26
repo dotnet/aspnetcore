@@ -42,7 +42,7 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
             {
                 var type = (INamedTypeSymbol)symbolContext.Symbol;
 
-                if (!type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iComponentType)))
+                if (type.TypeKind != TypeKind.Class || !type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iComponentType)))
                 {
                     return;
                 }
