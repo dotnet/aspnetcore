@@ -9,11 +9,20 @@ interface BlazorEvent {
   type: keyof BlazorEventMap;
 }
 
+// Raised when the circuit transitions between idle and busy. `busy` is true when
+// the circuit has in-flight work (JS<->.NET interop calls or data streams) and
+// false once all such work has drained. Libraries (e.g. auto-pause) listen for
+// this to know when it is safe to pause without losing in-flight work.
+export interface CircuitActivityChangedEvent extends BlazorEvent {
+  busy: boolean;
+}
+
 // Maps Blazor event names to the argument type passed to registered listeners.
 export interface BlazorEventMap {
   'enhancedload': BlazorEvent,
   'enhancednavigationstart': BlazorEvent,
   'enhancednavigationend': BlazorEvent,
+  'circuitactivitychanged': CircuitActivityChangedEvent,
 }
 
 export class JSEventRegistry {
@@ -24,6 +33,10 @@ export class JSEventRegistry {
     blazor.addEventListener = result.addEventListener.bind(result);
     blazor.removeEventListener = result.removeEventListener.bind(result);
     return result;
+  }
+
+  public hasListeners(type: keyof BlazorEventMap): boolean {
+    return (this._eventListeners.get(type)?.size ?? 0) > 0;
   }
 
   public addEventListener<K extends keyof BlazorEventMap>(type: K, listener: (ev: BlazorEventMap[K]) => void): void {

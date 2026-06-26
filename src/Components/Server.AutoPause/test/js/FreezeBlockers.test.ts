@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { expect, test, describe, beforeEach } from '@jest/globals';
-import { isMediaPlaying } from '../../src/Rendering/FreezeBlockers';
+import { isMediaPlaying } from '../../src/js/FreezeBlockers';
 
 function makePlayingVideo(): HTMLVideoElement {
   const video = document.createElement('video');
@@ -29,9 +29,6 @@ describe('isMediaPlaying', () => {
     const shadow = host.attachShadow({ mode: 'open' });
     shadow.appendChild(makePlayingVideo());
 
-    // The element is genuinely playing audibly; auto-pause must treat this as a veto.
-    // Today isMediaPlaying uses document.querySelectorAll, which does not pierce the
-    // shadow boundary, so the playing media is missed and this assertion fails.
     expect(isMediaPlaying()).toBe(true);
   });
 
@@ -39,15 +36,12 @@ describe('isMediaPlaying', () => {
     const iframe = document.createElement('iframe');
     document.body.appendChild(iframe);
     const innerDoc = iframe.contentDocument!;
-    // Build the video in the iframe's own document so it lives in that document tree.
     const innerVideo = innerDoc.createElement('video');
     Object.defineProperty(innerVideo, 'paused', { value: false, configurable: true });
     Object.defineProperty(innerVideo, 'muted', { value: false, configurable: true });
     Object.defineProperty(innerVideo, 'volume', { value: 1, configurable: true });
     innerDoc.body.appendChild(innerVideo);
 
-    // Media inside a same-origin iframe is reachable (DomFocus descends into it), but
-    // isMediaPlaying only scans the top document, so it misses this and the assertion fails.
     expect(isMediaPlaying()).toBe(true);
   });
 });

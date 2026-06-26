@@ -9,7 +9,7 @@
 //    of interactive components
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { setCircuitOptions } from './Boot.Server.Common';
+import { setCircuitOptions, setCircuitEventRegistry } from './Boot.Server.Common';
 import { setWebAssemblyOptions } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
@@ -25,7 +25,7 @@ import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Web';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel } from './Platform/Logging/Logger';
-import { resolveOptions, CircuitStartOptions, ReconnectionOptions, AutoPauseOptions } from './Platform/Circuits/CircuitStartOptions';
+import { resolveOptions, CircuitStartOptions, ReconnectionOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
 import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
@@ -54,6 +54,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 
   rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
   const jsEventRegistry = JSEventRegistry.create(Blazor);
+  setCircuitEventRegistry(jsEventRegistry);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {
@@ -137,14 +138,17 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
       if (browserConfig.server.reconnectionDialogId !== undefined) {
         reconnOpts.dialogId = browserConfig.server.reconnectionDialogId;
       }
-      if (browserConfig.server.autoPauseEnabled !== undefined || browserConfig.server.autoPauseHiddenDelayMilliseconds !== undefined) {
-        const autoPauseOpts: Partial<AutoPauseOptions> = circuitOpts.autoPause ?? {};
-        circuitOpts.autoPause = autoPauseOpts as AutoPauseOptions;
-        if (browserConfig.server.autoPauseEnabled !== undefined) {
-          autoPauseOpts.enabled = browserConfig.server.autoPauseEnabled;
-        }
-        if (browserConfig.server.autoPauseHiddenDelayMilliseconds !== undefined) {
-          autoPauseOpts.hiddenDelayMilliseconds = browserConfig.server.autoPauseHiddenDelayMilliseconds;
+
+      // Copy any library-provided extension data (server-side [JsonExtensionData],
+      // e.g. `autoPause`) onto the circuit options so JS initializers can read it.
+      const knownServerKeys = new Set<string>([
+        'reconnectionMaxRetries',
+        'reconnectionRetryIntervalMilliseconds',
+        'reconnectionDialogId',
+      ]);
+      for (const [key, value] of Object.entries(browserConfig.server)) {
+        if (!knownServerKeys.has(key) && value !== undefined) {
+          (circuitOpts as Record<string, unknown>)[key] = value;
         }
       }
     }

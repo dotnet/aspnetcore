@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Opt-in automatic pausing of Blazor Server circuits when a browser tab is hidden. Built on the in-box circuit activity primitives.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <IsPackable>true</IsPackable>
+    <!-- JS initializer module: src/js/autopause.lib.module.ts is bundled (rollup) to
+         wwwroot/autopause.lib.module.js and shipped as a static web asset, where Blazor
+         auto-discovers *.lib.module.js from referenced Razor class libraries. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+  </ItemGroup>
+
+</Project>

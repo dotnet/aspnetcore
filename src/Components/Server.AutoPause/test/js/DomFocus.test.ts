@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { expect, test, describe, beforeEach, jest } from '@jest/globals';
-import { initEditedTracking, isFocusedElementEdited } from '../../src/Rendering/DomFocus';
+import { initEditedTracking, isFocusedElementEdited } from '../../src/js/DomFocus';
 
 function makeContentEditable(initial: string): HTMLElement {
   const el = document.createElement('div');
@@ -41,7 +41,7 @@ describe('isFocusedElementEdited - contenteditable', () => {
       // Fresh module so the document isn't already tracked: this reproduces an
       // element focused (autofocus) before the focusin handler is attached.
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const dom = require('../../src/Rendering/DomFocus');
+      const dom = require('../../src/js/DomFocus');
 
       const el = document.createElement('div');
       el.setAttribute('tabindex', '0');

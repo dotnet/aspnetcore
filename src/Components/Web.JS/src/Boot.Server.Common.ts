@@ -7,8 +7,8 @@ import { LogLevel } from './Platform/Logging/Logger';
 import { CircuitManager } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
-import { AutoPauseManager } from './Platform/Circuits/AutoPauseManager';
 import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
@@ -21,7 +21,11 @@ let options: CircuitStartOptions;
 let logger: ConsoleLogger;
 let serverStartPromise: Promise<void>;
 let circuitStarting: Promise<boolean> | undefined;
-let autoPauseManager: AutoPauseManager | undefined;
+let jsEventRegistry: JSEventRegistry;
+
+export function setCircuitEventRegistry(registry: JSEventRegistry) {
+  jsEventRegistry = registry;
+}
 
 export function setCircuitOptions(initializersReady: Promise<Partial<CircuitStartOptions>>) {
   if (options) {
@@ -52,7 +56,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
 
   appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
-  circuit = new CircuitManager(components, appState, options, logger);
+  circuit = new CircuitManager(components, appState, options, logger, jsEventRegistry);
 
   addDispatchEventMiddleware((_browserRendererId, eventHandlerId, continuation) => {
     logger.log(LogLevel.Debug, `Dispatching event with handler id ${eventHandlerId}.`);
@@ -78,10 +82,6 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   Blazor.pauseCircuit = async () => {
     if (circuit.didRenderingFail()) {
       return false;
-    }
-
-    if (autoPauseManager) {
-      await autoPauseManager.invokeHandlers();
     }
 
     if (!(await circuit.pause())) {
@@ -127,30 +127,12 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   }
 
   const cleanup = () => {
-    autoPauseManager?.dispose();
-    autoPauseManager = undefined;
-    Blazor.pause = undefined;
     circuit.sendDisconnectBeacon();
   };
 
   Blazor.disconnect = cleanup;
 
   window.addEventListener('pagehide', cleanup, { capture: false, once: true });
-
-  if (options.autoPause?.enabled) {
-    autoPauseManager = new AutoPauseManager(
-      options.autoPause,
-      () => Blazor.pauseCircuit!(),
-      () => Blazor.resumeCircuit!(),
-      logger,
-      (signal) => circuit.waitForActiveStreamsToDrain(signal),
-    );
-
-    Blazor.pause = {
-      waitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.registerPauseHandler(fn),
-      cancelWaitFor: (fn: (signal: AbortSignal) => void | Promise<void>) => autoPauseManager!.unregisterPauseHandler(fn),
-    };
-  }
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
@@ -184,7 +166,7 @@ export async function startCircuit(): Promise<boolean> {
   if (circuit && circuit.isDisposedOrDisposing()) {
     // If the current circuit is no longer available, create a new one.
     appState = discoverServerPersistedState(document) || '';
-    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger);
+    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger, jsEventRegistry);
   }
 
   // Start the circuit. If the circuit has already started, this will return the existing
