@@ -127,7 +127,14 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
                 index++;
             }
 
-            await tracker.CompleteAsync();
+            try
+            {
+                await tracker.CompleteAsync();
+            }
+            finally
+            {
+                context.CurrentValidationPath = currentPrefix;
+            }
         }
         // If not enumerable, validate the single value
         else if (value != null)
@@ -179,7 +186,14 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
                         context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
                             ? $"{Name}[{index}]"
                             : $"{currentPrefix}.{Name}[{index}]";
-                        validatableType.Validate(item, context);
+                        try
+                        {
+                            validatableType.Validate(item, context);
+                        }
+                        finally
+                        {
+                            context.CurrentValidationPath = currentPrefix;
+                        }
                     }
                 }
                 index++;
