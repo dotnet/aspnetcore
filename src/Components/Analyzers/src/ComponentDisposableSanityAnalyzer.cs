@@ -64,7 +64,8 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
                         continue;
                     }
 
-                    if (!implementsIDisposable
+                    if (iDisposableType is not null
+                        && !implementsIDisposable
                         && method.Name == "Dispose"
                         && method.ReturnType.SpecialType == SpecialType.System_Void)
                     {
@@ -73,7 +74,8 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
                             method.Locations[0],
                             type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                     }
-                    else if (!implementsIAsyncDisposable
+                    else if (iAsyncDisposableType is not null
+                        && !implementsIAsyncDisposable
                         && method.Name == "DisposeAsync"
                         && valueTaskType is not null
                         && SymbolEqualityComparer.Default.Equals(method.ReturnType, valueTaskType))
