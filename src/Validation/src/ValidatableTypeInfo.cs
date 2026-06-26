@@ -323,14 +323,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
                 {
                     await foreach (var validationResult in asyncValidatable.ValidateAsync(context.ValidationContext, cancellationToken))
                     {
-                        HandleValidationResult(validationResult);
+                        HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
                     }
                 }
                 else
                 {
                     foreach (var validationResult in validatable.Validate(context.ValidationContext))
                     {
-                        HandleValidationResult(validationResult);
+                        HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
                     }
                 }
             }
@@ -340,39 +340,39 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
                 context.ValidationContext.DisplayName = originalDisplayName;
                 context.ValidationContext.MemberName = originalMemberName;
             }
+        }
+    }
 
-            void HandleValidationResult(ValidationResult validationResult)
+    private static void HandleValidationResultForValidatableObject(ValidationResult validationResult, string errorPrefix, object? value, ValidateContext context)
+    {
+        if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
+        {
+            // Create a validation error for each member name that is provided
+            // We don't support automatic localization of IValidatableObject messages
+            foreach (var memberName in validationResult.MemberNames)
             {
-                if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
+                var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                var errorContext = new ValidationErrorContext()
                 {
-                    // Create a validation error for each member name that is provided
-                    // We don't support automatic localization of IValidatableObject messages
-                    foreach (var memberName in validationResult.MemberNames)
-                    {
-                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                        var errorContext = new ValidationErrorContext()
-                        {
-                            Name = memberName,
-                            Path = key,
-                            Errors = [validationResult.ErrorMessage],
-                            Container = value,
-                        };
-                        context.AddValidationError(errorContext);
-                    }
+                    Name = memberName,
+                    Path = key,
+                    Errors = [validationResult.ErrorMessage],
+                    Container = value,
+                };
+                context.AddValidationError(errorContext);
+            }
 
-                    if (!validationResult.MemberNames.Any())
-                    {
-                        // If no member names are specified, then treat this as a top-level error
-                        var errorContext = new ValidationErrorContext()
-                        {
-                            Name = string.Empty,
-                            Path = string.Empty,
-                            Errors = [validationResult.ErrorMessage],
-                            Container = value,
-                        };
-                        context.AddValidationError(errorContext);
-                    }
-                }
+            if (!validationResult.MemberNames.Any())
+            {
+                // If no member names are specified, then treat this as a top-level error
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = string.Empty,
+                    Path = string.Empty,
+                    Errors = [validationResult.ErrorMessage],
+                    Container = value,
+                };
+                context.AddValidationError(errorContext);
             }
         }
     }
@@ -394,7 +394,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
 
                 foreach (var validationResult in validatable.Validate(context.ValidationContext))
                 {
-                    HandleValidationResult(validationResult);
+                    HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
                 }
             }
             finally
@@ -402,40 +402,6 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
                 // Restore the original validation context properties
                 context.ValidationContext.DisplayName = originalDisplayName;
                 context.ValidationContext.MemberName = originalMemberName;
-            }
-
-            void HandleValidationResult(ValidationResult validationResult)
-            {
-                if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
-                {
-                    // Create a validation error for each member name that is provided
-                    // We don't support automatic localization of IValidatableObject messages
-                    foreach (var memberName in validationResult.MemberNames)
-                    {
-                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                        var errorContext = new ValidationErrorContext()
-                        {
-                            Name = memberName,
-                            Path = key,
-                            Errors = [validationResult.ErrorMessage],
-                            Container = value,
-                        };
-                        context.AddValidationError(errorContext);
-                    }
-
-                    if (!validationResult.MemberNames.Any())
-                    {
-                        // If no member names are specified, then treat this as a top-level error
-                        var errorContext = new ValidationErrorContext()
-                        {
-                            Name = string.Empty,
-                            Path = string.Empty,
-                            Errors = [validationResult.ErrorMessage],
-                            Container = value,
-                        };
-                        context.AddValidationError(errorContext);
-                    }
-                }
             }
         }
     }
