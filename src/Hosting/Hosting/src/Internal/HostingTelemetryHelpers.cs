@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -52,7 +53,7 @@ internal static class HostingTelemetryHelpers
     private static readonly object Port5001 = 5001;
 
     // Boxed ports the server is bound to, derived from the application's configuration
-    // (e.g. "urls"/"http_ports"/"https_ports"/ASPNETCORE_HTTPS_PORT).
+    // (e.g. "urls"/"http_ports"/"https_ports"/"HTTPS_PORT"/"ANCM_HTTPS_PORT").
     private static readonly ConcurrentDictionary<int, PortRegistration> _configuredPorts = new();
     private static readonly Lock _portsLock = new();
 
@@ -260,11 +261,12 @@ internal static class HostingTelemetryHelpers
     /// </summary>
     public static bool IsErrorStatusCode(int statusCode) => statusCode >= 500 && statusCode <= 599;
 
-    // Cache of activity display names keyed on the (normalized method, route) pair. The route comes
-    // from endpoint metadata and the method is normalized to a small fixed set, so the number of
-    // distinct combinations is bounded by the application's endpoints. This avoids building the
-    // "{method} {route}" string on every request.
-    private static readonly ConcurrentDictionary<(string Method, string Route), string> DisplayNameCache = new();
+    // Cache of activity display names keyed on the route string instance (from endpoint metadata),
+    // then on the normalized method prefix. A ConditionalWeakTable is used so cached entries are
+    // released once the endpoint (and therefore its route string) is no longer referenced. The method
+    // is normalized to a small fixed set, so the number of entries per route is bounded. This avoids
+    // building the "{method} {route}" string on every request.
+    private static readonly ConditionalWeakTable<string, ConcurrentDictionary<string, string>> DisplayNameCache = new();
 
     public static string GetActivityDisplayName(string originalHttpMethod, string? httpRoute = null)
     {
@@ -276,6 +278,7 @@ internal static class HostingTelemetryHelpers
             return namePrefix;
         }
 
-        return DisplayNameCache.GetOrAdd((namePrefix, httpRoute), static key => $"{key.Method} {key.Route}");
+        var namesByMethod = DisplayNameCache.GetOrCreateValue(httpRoute);
+        return namesByMethod.GetOrAdd(namePrefix, static (method, route) => $"{method} {route}", httpRoute);
     }
 }
