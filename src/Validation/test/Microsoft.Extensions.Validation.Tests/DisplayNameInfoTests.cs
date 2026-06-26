@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Validation.Tests;
 /// pipeline. Verifies that custom <see cref="DisplayNameInfo"/> subclasses are invoked with
 /// the right arguments, and that null returns fall back to the CLR member name.
 /// </summary>
-public class DisplayNameInfoTests
+public class DisplayNameInfoTests : ValidationTestBase
 {
     [Theory]
     [InlineData(true)]
@@ -29,14 +29,7 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         var call = Assert.Single(captured);
         Assert.Equal("Name", call.MemberName);
@@ -54,14 +47,7 @@ public class DisplayNameInfoTests
         var paramInfo = new CapturingParameterInfo(typeof(string), "myParam", displayNameInfo, [new RequiredAttribute()]);
         var context = CreateContext(model: new object());
 
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(null, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(null, context);
-        }
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         var call = Assert.Single(captured);
         Assert.Equal("myParam", call.MemberName);
@@ -84,14 +70,7 @@ public class DisplayNameInfoTests
             [new StartLessThanEndAttribute { ErrorMessage = "Start must be less than End." }]);
         var context = CreateContext(model);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         var call = Assert.Single(captured);
         Assert.Equal(nameof(RangeModel), call.MemberName);
@@ -111,14 +90,7 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
@@ -136,14 +108,7 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
@@ -162,14 +127,7 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Custom Resolved Name field is required.", context.ValidationErrors["Name"].Single());
@@ -189,17 +147,8 @@ public class DisplayNameInfoTests
         ]);
         var context = CreateContext(model);
 
-        Exception ex;
-        if (useAsync)
-        {
-            ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => typeInfo.ValidateAsync(model, context, default));
-        }
-        else
-        {
-            ex = Assert.Throws<InvalidOperationException>(
-                () => typeInfo.Validate(model, context));
-        }
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => ValidateAsync(typeInfo, model, context, useAsync, default));
         Assert.Same(thrown, ex);
     }
 

@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation.Tests;
 
 namespace Microsoft.Extensions.Validation.Localization.Tests;
 
@@ -15,7 +16,7 @@ namespace Microsoft.Extensions.Validation.Localization.Tests;
 /// produces a fully functional pipeline: validation runs, picks up the configured
 /// <see cref="IStringLocalizerFactory"/>, and produces localized error messages.
 /// </summary>
-public class ValidationLocalizationPipelineTests
+public class ValidationLocalizationPipelineTests : ValidationTestBase
 {
     [Theory]
     [InlineData(true)]
@@ -36,14 +37,7 @@ public class ValidationLocalizationPipelineTests
                 displayName: "Customer Name")
         ]);
 
-        if (useAsync)
-        {
-            await customerTypeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            customerTypeInfo.Validate(model, context);
-        }
+        await ValidateAsync(customerTypeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Le champ Nom du client est obligatoire.", context.ValidationErrors["Name"].Single());
@@ -66,14 +60,7 @@ public class ValidationLocalizationPipelineTests
                 [new RangeAttribute(18, 120) { ErrorMessage = "RangeKey" }])
         ]);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Age: valeur entre 18 et 120 attendue.", context.ValidationErrors["Age"].Single());
@@ -102,14 +89,7 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal(IntegrationResources.RequiredError, context.ValidationErrors["Name"].Single());
@@ -136,14 +116,7 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Field Name is required (convention).", context.ValidationErrors["Name"].Single());
@@ -171,14 +144,7 @@ public class ValidationLocalizationPipelineTests
             ]);
         var model = new RangeModel { Start = 10, End = 5 };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         var errors = context.ValidationErrors.Values.SelectMany(v => v).ToList();
@@ -200,14 +166,7 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("RequiredKey", context.ValidationErrors["Name"].Single());
@@ -233,14 +192,7 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = null };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Nom du client field is required.", context.ValidationErrors["Name"].Single());
@@ -267,14 +219,7 @@ public class ValidationLocalizationPipelineTests
         var paramInfo = new TestValidatableParameterInfo(typeof(string), "myParam", "Param Display",
             [new RequiredAttribute { ErrorMessage = "RequiredKey" }]);
 
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(null, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(null, context);
-        }
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Param Paramètre requis.", context.ValidationErrors["myParam"].Single());
@@ -299,14 +244,7 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = new string('a', 50) };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Name doit avoir au plus 10 caractères.", context.ValidationErrors["Name"].Single());
@@ -331,14 +269,7 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new CustomerModel { Name = "ab" };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Name doit avoir entre 3 et 10 caractères.", context.ValidationErrors["Name"].Single());
@@ -363,27 +294,13 @@ public class ValidationLocalizationPipelineTests
 
         context.ValidationOptions.Localizer = override1;
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(new CustomerModel { Name = null }, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(new CustomerModel { Name = null }, context);
-        }
+        await ValidateAsync(typeInfo, new CustomerModel { Name = null }, context, useAsync, default);
 
         Assert.Equal("FROM-OVERRIDE-1", context.ValidationErrors!["Name"].Single());
 
         context.ValidationOptions.Localizer = override2;
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(new CustomerModel { Name = null }, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(new CustomerModel { Name = null }, context);
-        }
+        await ValidateAsync(typeInfo, new CustomerModel { Name = null }, context, useAsync, default);
 
         Assert.Equal("FROM-OVERRIDE-2", context.ValidationErrors!["Name"].Last());
     }
@@ -420,14 +337,7 @@ public class ValidationLocalizationPipelineTests
         ]);
         var model = new DerivedInheritedModel { Name = null };
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Name is required (from base resource).", context.ValidationErrors["Name"].Single());

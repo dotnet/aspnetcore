@@ -8,6 +8,8 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Validation;
 
+using static Microsoft.Extensions.Validation.Tests.ValidationTestBase;
+
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
@@ -127,14 +129,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -152,14 +147,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -181,14 +169,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -212,14 +193,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(rootInstance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(rootInstance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -247,14 +221,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(rootInstance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(rootInstance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -274,14 +241,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 // Errors are (currently) reported in the order from derived to base type.
                 Assert.Collection(context.ValidationErrors,
@@ -310,14 +270,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -396,14 +349,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -427,14 +373,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
@@ -452,14 +391,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                if (useAsync)
-                {
-                    await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
-                }
-                else
-                {
-                    validatableTypeInfo.Validate(instance, context);
-                }
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }

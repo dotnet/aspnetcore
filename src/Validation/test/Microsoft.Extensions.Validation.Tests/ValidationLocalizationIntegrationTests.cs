@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Validation.Tests;
 /// <see cref="ValidationOptions.Localizer"/>. Uses a recording localizer test double to verify
 /// the helper invokes the localizer with the right context.
 /// </summary>
-public class ValidationLocalizationIntegrationTests
+public class ValidationLocalizationIntegrationTests : ValidationTestBase
 {
     // --- No-localizer path ---
 
@@ -30,14 +30,7 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer: null);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Name field is required.", context.ValidationErrors["Name"].Single());
@@ -57,14 +50,7 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer: null);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("The Customer Name field is required.", context.ValidationErrors["Name"].Single());
@@ -92,14 +78,7 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         // ResolveDisplayName called with the property's literal display name and declaring type
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
@@ -138,14 +117,7 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         // When the localizer can't translate the literal, the LiteralDisplayName strategy
         // returns the literal as the fallback display name (it acts as both lookup key and
@@ -179,14 +151,7 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         // ResolveDisplayName is still called (the display name itself isn't part of the bypass)
         Assert.Single(localizer.DisplayNameCalls);
@@ -217,14 +182,7 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         // The strategy wins; the localizer's ResolveDisplayName is NOT called.
         Assert.Empty(localizer.DisplayNameCalls);
@@ -248,14 +206,7 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.Empty(localizer.DisplayNameCalls);
         var errorCall = Assert.Single(localizer.ErrorMessageCalls);
@@ -282,17 +233,8 @@ public class ValidationLocalizationIntegrationTests
         ]);
         var context = CreateContext(model, localizer: null);
 
-        InvalidOperationException ex;
-        if (useAsync)
-        {
-            ex = await Assert.ThrowsAsync<InvalidOperationException>(
-                () => typeInfo.ValidateAsync(model, context, default));
-        }
-        else
-        {
-            ex = Assert.Throws<InvalidOperationException>(
-                () => typeInfo.Validate(model, context));
-        }
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => ValidateAsync(typeInfo, model, context, useAsync, default));
         Assert.Same(thrown, ex);
     }
 
@@ -312,14 +254,7 @@ public class ValidationLocalizationIntegrationTests
         var typeInfo = new TestValidatableTypeInfo(typeof(ValidatableObjectModel), []);
         var context = CreateContext(model, localizer);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Equal("Custom IValidatableObject error", context.ValidationErrors["Name"].Single());
@@ -346,14 +281,7 @@ public class ValidationLocalizationIntegrationTests
             attributes: [new StartLessThanEndAttribute { ErrorMessage = "Start must be less than End." }]);
         var context = CreateContext(model, localizer);
 
-        if (useAsync)
-        {
-            await typeInfo.ValidateAsync(model, context, default);
-        }
-        else
-        {
-            typeInfo.Validate(model, context);
-        }
+        await ValidateAsync(typeInfo, model, context, useAsync, default);
 
         // The error message localization for type-level attrs uses the type as DeclaringType
         var errorCall = Assert.Single(localizer.ErrorMessageCalls);
@@ -380,14 +308,7 @@ public class ValidationLocalizationIntegrationTests
             [new RequiredAttribute()]);
         var context = CreateContext(model: new object(), localizer);
 
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(null, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(null, context);
-        }
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         var displayCall = Assert.Single(localizer.DisplayNameCalls);
         Assert.Null(displayCall.Type);

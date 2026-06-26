@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
-public class ValidatableTypeInfoTests
+public class ValidatableTypeInfoTests : ValidationTestBase
 {
     [Theory]
     [InlineData(true)]
@@ -59,14 +59,7 @@ public class ValidatableTypeInfoTests
         context.OnValidationError += validationErrors.Add;
 
         // Act
-        if (useAsync)
-        {
-            await personType.ValidateAsync(personWithMissingRequiredFields, context, default);
-        }
-        else
-        {
-            personType.Validate(personWithMissingRequiredFields, context);
-        }
+        await ValidateAsync(personType, personWithMissingRequiredFields, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -159,14 +152,7 @@ public class ValidatableTypeInfoTests
         context.OnValidationError += validationErrors.Add;
 
         // Act
-        if (useAsync)
-        {
-            await employeeType.ValidateAsync(employee, context, default);
-        }
-        else
-        {
-            employeeType.Validate(employee, context);
-        }
+        await ValidateAsync(employeeType, employee, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -219,14 +205,7 @@ public class ValidatableTypeInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await derivedType.ValidateAsync(car, context, default);
-        }
-        else
-        {
-            derivedType.Validate(car, context);
-        }
+        await ValidateAsync(derivedType, car, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -293,14 +272,7 @@ public class ValidatableTypeInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await orderType.ValidateAsync(order, context, default);
-        }
-        else
-        {
-            orderType.Validate(order, context);
-        }
+        await ValidateAsync(orderType, order, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -352,14 +324,7 @@ public class ValidatableTypeInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await personType.ValidateAsync(person, context, default);
-        }
-        else
-        {
-            personType.Validate(person, context);
-        }
+        await ValidateAsync(personType, person, context, useAsync, default);
 
         // Assert
         Assert.True(context.ValidationErrors is null || context.ValidationErrors.Count == 0); // No validation errors for nullable properties with null values
@@ -414,17 +379,8 @@ public class ValidatableTypeInfoTests
         };
 
         // Act + Assert
-        InvalidOperationException exception;
-        if (useAsync)
-        {
-            exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await nodeType.ValidateAsync(rootNode, context, default));
-        }
-        else
-        {
-            exception = Assert.Throws<InvalidOperationException>(
-                () => nodeType.Validate(rootNode, context));
-        }
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => ValidateAsync(nodeType, rootNode, context, useAsync, default));
 
         Assert.NotNull(exception);
         Assert.Equal("Maximum validation depth of 3 exceeded at 'Children[0].Parent.Children[0]' in 'TreeNode'. This is likely caused by a circular reference in the object graph. Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.", exception.Message);
@@ -454,14 +410,7 @@ public class ValidatableTypeInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await productType.ValidateAsync(product, context, default);
-        }
-        else
-        {
-            productType.Validate(product, context);
-        }
+        await ValidateAsync(productType, product, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -498,14 +447,7 @@ public class ValidatableTypeInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await userType.ValidateAsync(user, context, default);
-        }
-        else
-        {
-            userType.Validate(user, context);
-        }
+        await ValidateAsync(userType, user, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -557,14 +499,7 @@ public class ValidatableTypeInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await derivedType.ValidateAsync(entity, context, default);
-        }
-        else
-        {
-            derivedType.Validate(entity, context);
-        }
+        await ValidateAsync(derivedType, entity, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -605,14 +540,7 @@ public class ValidatableTypeInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await userType.ValidateAsync(user, context, default);
-        }
-        else
-        {
-            userType.Validate(user, context);
-        }
+        await ValidateAsync(userType, user, context, useAsync, default);
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
@@ -641,14 +569,7 @@ public class ValidatableTypeInfoTests
             ValidationContext = new ValidationContext(globalErrorInstance)
         };
 
-        if (useAsync)
-        {
-            await globalType.ValidateAsync(globalErrorInstance, context, default);
-        }
-        else
-        {
-            globalType.Validate(globalErrorInstance, context);
-        }
+        await ValidateAsync(globalType, globalErrorInstance, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         var globalError = Assert.Single(context.ValidationErrors);
@@ -673,14 +594,7 @@ public class ValidatableTypeInfoTests
             ValidationContext = new ValidationContext(multiErrorInstance),
         };
 
-        if (useAsync)
-        {
-            await multiType.ValidateAsync(multiErrorInstance, context, default);
-        }
-        else
-        {
-            multiType.Validate(multiErrorInstance, context);
-        }
+        await ValidateAsync(multiType, multiErrorInstance, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         Assert.Collection(context.ValidationErrors,
@@ -728,14 +642,7 @@ public class ValidatableTypeInfoTests
             ValidationContext = new ValidationContext(testTypeInstance)
         };
 
-        if (useAsync)
-        {
-            await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
-        }
-        else
-        {
-            testTypeInfo.Validate(testTypeInstance, context);
-        }
+        await ValidateAsync(testTypeInfo, testTypeInstance, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         var interfaceError = Assert.Single(context.ValidationErrors);
@@ -750,14 +657,7 @@ public class ValidatableTypeInfoTests
             ValidationOptions = context.ValidationOptions,
         };
 
-        if (useAsync)
-        {
-            await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
-        }
-        else
-        {
-            testTypeInfo.Validate(testTypeInstance, context);
-        }
+        await ValidateAsync(testTypeInfo, testTypeInstance, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         var classAttributeError = Assert.Single(context.ValidationErrors);
@@ -772,14 +672,7 @@ public class ValidatableTypeInfoTests
             ValidationOptions = context.ValidationOptions
         };
 
-        if (useAsync)
-        {
-            await testTypeInfo.ValidateAsync(testTypeInstance, context, default);
-        }
-        else
-        {
-            testTypeInfo.Validate(testTypeInstance, context);
-        }
+        await ValidateAsync(testTypeInfo, testTypeInstance, context, useAsync, default);
 
         Assert.NotNull(context.ValidationErrors);
         var propertyAttributeError = Assert.Single(context.ValidationErrors);

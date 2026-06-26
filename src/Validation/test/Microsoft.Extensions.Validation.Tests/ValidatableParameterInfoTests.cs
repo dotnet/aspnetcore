@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
-public class ValidatableParameterInfoTests
+public class ValidatableParameterInfoTests : ValidationTestBase
 {
     [Theory]
     [InlineData(true)]
@@ -28,14 +28,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(null, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(null, context);
-        }
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -62,14 +55,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(null, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(null, context);
-        }
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -94,14 +80,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(null, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(null, context);
-        }
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -123,14 +102,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(5, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(5, context);
-        }
+        await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -155,14 +127,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(null, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(null, context);
-        }
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -205,14 +170,7 @@ public class ValidatableParameterInfoTests
         var person = new Person(); // Name is null, so should fail validation
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(person, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(person, context);
-        }
+        await ValidateAsync(paramInfo, person, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -259,14 +217,7 @@ public class ValidatableParameterInfoTests
         };
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(people, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(people, context);
-        }
+        await ValidateAsync(paramInfo, people, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -296,14 +247,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(5, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(5, context);
-        }
+        await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -331,14 +275,7 @@ public class ValidatableParameterInfoTests
         context.CurrentValidationPath = "parent";
 
         // Act
-        if (useAsync)
-        {
-            await paramInfo.ValidateAsync(5, context, default);
-        }
-        else
-        {
-            paramInfo.Validate(5, context);
-        }
+        await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -363,15 +300,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        Exception ex;
-        if (useAsync)
-        {
-            ex = await Assert.ThrowsAsync<InvalidOperationException>(() => paramInfo.ValidateAsync("test", context, default));
-        }
-        else
-        {
-            ex = Assert.Throws<InvalidOperationException>(() => paramInfo.Validate("test", context));
-        }
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ValidateAsync(paramInfo, "test", context, useAsync, default));
 
         // Assert
         Assert.Equal("Test exception", ex.Message);
