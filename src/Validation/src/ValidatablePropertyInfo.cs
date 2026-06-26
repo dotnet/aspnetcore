@@ -68,6 +68,18 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     /// <returns>An array of validation attributes to apply to this property.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
+    private void ValidateDepth(ValidateContext context)
+    {
+        // Check if we've reached the maximum depth before validating complex properties
+        if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
+        {
+            throw new InvalidOperationException(
+                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
+                "This is likely caused by a circular reference in the object graph. " +
+                "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
+        }
+    }
+
     private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject)
     {
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
@@ -124,14 +136,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var validationOptions = context.ValidationOptions;
 
-        // Check if we've reached the maximum depth before validating complex properties
-        if (context.CurrentDepth >= validationOptions.MaxDepth)
-        {
-            throw new InvalidOperationException(
-                $"Maximum validation depth of {validationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
-                "This is likely caused by a circular reference in the object graph. " +
-                "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
-        }
+        ValidateDepth(context);
 
         // Increment depth counter
         context.CurrentDepth++;
@@ -229,14 +234,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var validationOptions = context.ValidationOptions;
 
-        // Check if we've reached the maximum depth before validating complex properties
-        if (context.CurrentDepth >= validationOptions.MaxDepth)
-        {
-            throw new InvalidOperationException(
-                $"Maximum validation depth of {validationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{DeclaringType.Name}.{Name}'. " +
-                "This is likely caused by a circular reference in the object graph. " +
-                "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
-        }
+        ValidateDepth(context);
 
         // Increment depth counter
         context.CurrentDepth++;
