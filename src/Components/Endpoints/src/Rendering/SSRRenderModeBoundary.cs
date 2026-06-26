@@ -295,4 +295,30 @@ internal class SSRRenderModeBoundary : IComponent
     {
         return _markerKey ??= GenerateMarkerKey(sequence, componentKey);
     }
+
+    /// <summary>
+    /// Determines whether a child component should be prerendered based on the specified render mode.
+    /// </summary>
+    /// <param name="renderMode">
+    /// The <see cref="IComponentRenderMode"/> associated with the child component.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if prerendering should occur (based on the render mode's <c>Prerender</c> value or default behavior); otherwise, <c>false</c>.
+    /// </returns>
+    internal static bool ShouldPrerenderChild(IComponentRenderMode? renderMode)
+    {
+        if (renderMode is InteractiveServerRenderMode s){
+            return s.Prerender;
+        }
+
+        if (renderMode is InteractiveWebAssemblyRenderMode w){
+            return w.Prerender;
+        }
+
+        if (renderMode is InteractiveAutoRenderMode a){
+            return a.Prerender;
+        }
+        // Default: inherit parent behavior
+        return true;
+    }
 }

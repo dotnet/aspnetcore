@@ -67,6 +67,17 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
         Browser.Equal("loaded child", () => Browser.Exists(By.Id("child")).Text);
     }
 
+    [Fact]
+    public void ChildNotRendered_WhenPrerenderDisabled_AndParentIsPrerendered()
+    {
+        Navigate($"{ServerPathBase}/prerender-true");
+        Browser.Exists(By.Id("parent"));
+
+        Assert.NotNull(Browser.FindElement(By.Id("parent")));
+        Browser.DoesNotExist(By.Id("child"));
+        Assert.Empty(Browser.FindElements(By.Id("child")));
+    }
+
     [Theory]
     [InlineData(false, "ServerPrerendered", true)]
     [InlineData(false, "ServerPrerendered", false)]
