@@ -26,14 +26,15 @@ public static class AutoPauseBrowserOptionsExtensions
         var settings = new AutoPauseBrowserOptions();
         configure?.Invoke(settings);
 
-        if (settings.HiddenDelay <= TimeSpan.Zero || settings.HiddenDelay.TotalMilliseconds > int.MaxValue)
+        var delayMilliseconds = Math.Ceiling(settings.HiddenDelay.TotalMilliseconds);
+        if (settings.HiddenDelay <= TimeSpan.Zero || delayMilliseconds > int.MaxValue)
         {
             throw new ArgumentOutOfRangeException(nameof(configure), settings.HiddenDelay, $"{nameof(AutoPauseBrowserOptions.HiddenDelay)} must be greater than zero and at most {int.MaxValue} milliseconds.");
         }
 
         // Flat keys follow the existing browser-config convention (see InteractiveServerBrowserOptions).
         options.Server.Extensions["autoPauseEnabled"] = JsonSerializer.SerializeToElement(settings.Enabled, AutoPauseJsonContext.Default.Boolean);
-        options.Server.Extensions["autoPauseHiddenDelayMilliseconds"] = JsonSerializer.SerializeToElement((int)settings.HiddenDelay.TotalMilliseconds, AutoPauseJsonContext.Default.Int32);
+        options.Server.Extensions["autoPauseHiddenDelayMilliseconds"] = JsonSerializer.SerializeToElement((int)delayMilliseconds, AutoPauseJsonContext.Default.Int32);
 
         return options;
     }

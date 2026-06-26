@@ -145,8 +145,9 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
         'reconnectionRetryIntervalMilliseconds',
         'reconnectionDialogId',
       ]);
+      const unsafeKeys = new Set<string>(['__proto__', 'constructor', 'prototype']);
       for (const [key, value] of Object.entries(browserConfig.server)) {
-        if (!knownServerKeys.has(key) && value !== undefined) {
+        if (!knownServerKeys.has(key) && !unsafeKeys.has(key) && value !== undefined) {
           (circuitOpts as Record<string, unknown>)[key] = value;
         }
       }
