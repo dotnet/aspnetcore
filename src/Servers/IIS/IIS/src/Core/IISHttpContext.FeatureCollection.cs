@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections.Features;
@@ -33,6 +34,7 @@ internal partial class IISHttpContext : IFeatureCollection,
                                         IServerVariablesFeature,
                                         ITlsConnectionFeature,
                                         ITlsHandshakeFeature,
+                                        ITlsChannelBindingFeature,
                                         IHttpBodyControlFeature,
                                         IHttpMaxRequestBodySizeFeature,
                                         IHttpResponseTrailersFeature,
@@ -472,6 +474,49 @@ internal partial class IISHttpContext : IFeatureCollection,
 
     internal ITlsHandshakeFeature? GetTlsHandshakeFeature()
     {
+        return IsHttps ? this : null;
+    }
+
+    private ReadOnlyMemory<byte>? _channelBindingBytes;
+    private bool _channelBindingFetched;
+
+    ReadOnlyMemory<byte>? ITlsChannelBindingFeature.GetChannelBindingBytes(ChannelBindingKind kind)
+    {
+        // http.sys's HTTP_REQUEST_CHANNEL_BIND_STATUS only reports the endpoint
+        // binding (tls-server-end-point per RFC 5929). Other kinds are unsupported.
+        if (kind != ChannelBindingKind.Endpoint)
+        {
+            return null;
+        }
+
+        if (!IsHttps)
+        {
+            return null;
+        }
+
+        if (_channelBindingFetched)
+        {
+            return _channelBindingBytes;
+        }
+
+        _channelBindingFetched = true;
+        var tokenBytes = GetChannelBindingToken();
+        if (tokenBytes is null)
+        {
+            return null;
+        }
+
+        _channelBindingBytes = tokenBytes;
+        return _channelBindingBytes;
+    }
+
+    internal ITlsChannelBindingFeature? GetTlsChannelBindingFeature()
+    {
+        // Whether http.sys actually populates HTTP_REQUEST_CHANNEL_BIND_STATUS is
+        // governed by IIS configuration (<system.webServer>/<security>/<authentication>
+        // extendedProtection), not by managed code — IIS owns the URL group properties.
+        // Expose the feature whenever the connection is TLS; the call itself returns
+        // null if IIS has not enabled per-request channel binding.
         return IsHttps ? this : null;
     }
 
