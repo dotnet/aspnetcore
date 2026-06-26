@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 internal static class ValidationEndpointFilterFactory
 {
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
-    private readonly record struct ValidatableParameterEntry(int Index, IValidatableParameterInfo Parameter, string Name);
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableParameterInfo Parameter, string Name, ParameterValidationTarget ValidationTarget);
 
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
@@ -46,9 +46,10 @@ internal static class ValidationEndpointFilterFactory
             {
                 validatableParameters ??= [];
                 validatableParameters.Add(new ValidatableParameterEntry(
-                    i,
-                    validatableParameter,
-                    parameters[i].Name!));
+                i,
+                validatableParameter,
+                parameters[i].Name!,
+                new ParameterValidationTarget(parameters[i].Name!, parameters[i].ParameterType)));
             }
         }
 
@@ -69,7 +70,7 @@ internal static class ValidationEndpointFilterFactory
                 }
 
                 var argument = context.Arguments[entry.Index];
-                var validationContext = CreateValidationContext(context.HttpContext, entry.Name);
+                var validationContext = CreateValidationContext(context.HttpContext, entry, argument);
 
                 if (validateContext == null)
                 {
@@ -123,18 +124,17 @@ internal static class ValidationEndpointFilterFactory
         };
     }
 
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026",
-        Justification = "ValidationContext uses reflection internally; safe for parameter validation")]
-    private static ValidationContext CreateValidationContext(HttpContext httpContext, string memberName)
+   private static ValidationContext CreateValidationContext(HttpContext httpContext, ValidatableParameterEntry entry, object? argument)
     {
+        var validationTarget = argument ?? entry.ValidationTarget;
+
         return new ValidationContext(
-            instance: new object(),
+            instance: validationTarget,
+            displayName: entry.Name,
             serviceProvider: httpContext.RequestServices,
             items: null)
         {
-            MemberName = memberName
+            MemberName = entry.Name
         };
     }
 
@@ -144,4 +144,17 @@ internal static class ValidationEndpointFilterFactory
 
     private static bool HasFromServicesAttribute(ParameterInfo parameterInfo)
         => parameterInfo.CustomAttributes.OfType<IFromServiceMetadata>().Any();
+
+    private sealed class ParameterValidationTarget
+    {
+        public ParameterValidationTarget(string name, Type parameterType)
+        {
+            Name = name;
+            ParameterType = parameterType;
+        }
+
+        public string Name { get; }
+
+        public Type ParameterType { get; }
+    }
 }
