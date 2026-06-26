@@ -162,7 +162,7 @@ public class InteropClient : IDisposable
         {
             var pem = File.ReadAllText("Certs/ca.pem");
             var certData = GetBytesFromPem(pem, "CERTIFICATE");
-            var cert = new X509Certificate2(certData!);
+            var cert = X509CertificateLoader.LoadCertificate(certData!);
 
             httpClientHandler.ClientCertificates.Add(cert);
         }
