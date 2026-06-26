@@ -466,7 +466,8 @@ function ExitWithExitCode {
 function StopProcesses {
   echo "Killing running build processes..."
   pkill -9 "dotnet" || true
-  pkill -9 "vbcscompiler" || true
+  pkill -9 -i -x VBCSCompiler || true
+  pkill -9 -i -x MSBuild || true
   return 0
 }
 
