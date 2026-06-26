@@ -32,11 +32,15 @@ export function beforeServerStart(options: WebStartOptionsLike): void {
 // Called by the framework once Blazor has started; activates auto-pause when AddAutoPause
 // enabled it. A second call disposes the previous manager so listeners never accumulate.
 export function afterWebStarted(blazor: BlazorLike): void {
+  // Avoid stale listeners on restart.
+  manager?.dispose();
+  manager = undefined;
+  delete (blazor as Record<string, unknown>).autoPause;
+
   if (!config?.enabled) {
     return;
   }
 
-  manager?.dispose();
   const mgr = new AutoPauseManager(config, blazor);
   manager = mgr;
   mgr.start();

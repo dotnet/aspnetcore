@@ -26,9 +26,9 @@ public static class AutoPauseBrowserOptionsExtensions
         var settings = new AutoPauseBrowserOptions();
         configure?.Invoke(settings);
 
-        if (settings.HiddenDelay <= TimeSpan.Zero)
+        if (settings.HiddenDelay <= TimeSpan.Zero || settings.HiddenDelay.TotalMilliseconds > int.MaxValue)
         {
-            throw new ArgumentOutOfRangeException(nameof(configure), settings.HiddenDelay, $"{nameof(AutoPauseBrowserOptions.HiddenDelay)} must be greater than zero.");
+            throw new ArgumentOutOfRangeException(nameof(configure), settings.HiddenDelay, $"{nameof(AutoPauseBrowserOptions.HiddenDelay)} must be greater than zero and at most {int.MaxValue} milliseconds.");
         }
 
         // Flat keys follow the existing browser-config convention (see InteractiveServerBrowserOptions).

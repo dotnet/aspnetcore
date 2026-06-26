@@ -71,4 +71,18 @@ describe('autopause initializer', () => {
     expect(blazor.removed).toEqual([blazor.added[0]]);
     expect(blazor.added).toHaveLength(2);
   });
+
+  it('a disabled second afterWebStarted disposes the previous manager and clears the handle', () => {
+    const blazor = createBlazor();
+    enable(blazor);
+    expect(blazor.added).toHaveLength(1);
+    expect(blazor.autoPause).toBeDefined();
+
+    // Restart with auto-pause now disabled: the prior manager must still be torn down so
+    // its listeners cannot pause/resume the new circuit unexpectedly.
+    beforeWebStart({ circuit: { autoPauseEnabled: false } });
+    afterWebStarted(blazor);
+    expect(blazor.removed).toEqual([blazor.added[0]]);
+    expect(blazor.autoPause).toBeUndefined();
+  });
 });

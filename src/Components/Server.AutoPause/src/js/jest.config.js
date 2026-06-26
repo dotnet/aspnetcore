@@ -3,7 +3,7 @@
  * https://jestjs.io/docs/configuration
  */
 
-path = require('path');
+const path = require('path');
 
 const ROOT_DIR = path.resolve(__dirname, '..', '..', '..', '..', '..');
 
