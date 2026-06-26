@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Components;
@@ -34,19 +35,11 @@ public sealed class InteractiveServerBrowserOptions
     public string? ReconnectionDialogId { get; set; }
 
     /// <summary>
-    /// Gets or sets whether auto-pause is enabled.
-    /// When <c>true</c>, the circuit will automatically pause after the tab is hidden
-    /// for <see cref="AutoPauseHiddenDelayMilliseconds"/>.
-    /// Maps to <c>CircuitStartOptions.autoPause.enabled</c>.
+    /// Gets additional library-provided configuration that is serialized alongside the
+    /// known options and flows to the client circuit start options. Libraries (for example
+    /// the auto-pause package) populate their own key here so they can read it from a
+    /// JavaScript initializer without the core runtime needing to know about them.
     /// </summary>
-    /// <value>Defaults to <c>false</c>.</value>
-    public bool? AutoPauseEnabled { get; set; }
-
-    /// <summary>
-    /// Gets or sets the delay in milliseconds after the tab becomes hidden before
-    /// the circuit is automatically paused.
-    /// Maps to <c>CircuitStartOptions.autoPause.hiddenDelayMilliseconds</c>.
-    /// </summary>
-    /// <value>Defaults to <c>120000</c> (2 minutes) on the client when not set.</value>
-    public int? AutoPauseHiddenDelayMilliseconds { get; set; }
+    [JsonExtensionData]
+    public IDictionary<string, JsonElement> Extensions { get; } = new Dictionary<string, JsonElement>();
 }

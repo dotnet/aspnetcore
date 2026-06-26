@@ -2,12 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { expect, jest, test, describe, beforeEach, afterEach } from '@jest/globals';
-import { AutoPauseManager } from '../../../src/Platform/Circuits/AutoPauseManager';
-import { AutoPauseOptions } from '../../../src/Platform/Circuits/CircuitStartOptions';
-import { NullLogger } from '../../../src/Platform/Logging/Loggers';
-import { Logger, LogLevel } from '../../../src/Platform/Logging/Logger';
+import { AutoPauseManager, AutoPauseConfig, BlazorActivityHost } from '../AutoPauseManager';
 
-type PauseRequestedCallback = (signal: AbortSignal) => void | Promise<void>;
+type Participant = (signal: AbortSignal) => void | Promise<void>;
 
 function setVisibility(state: 'visible' | 'hidden'): void {
   Object.defineProperty(document, 'visibilityState', {
@@ -26,10 +23,12 @@ async function flushPromises(): Promise<void> {
 }
 
 describe('AutoPauseManager', () => {
-  const defaultOptions: AutoPauseOptions = { enabled: true, hiddenDelayMilliseconds: 1000 };
+  const defaultConfig: AutoPauseConfig = { enabled: true, hiddenDelayMilliseconds: 1000 };
 
   let pauseCircuit: jest.Mock<() => Promise<boolean>>;
   let resumeCircuit: jest.Mock<() => Promise<boolean>>;
+  let activityListener: ((ev: { busy: boolean }) => void) | undefined;
+  let host: BlazorActivityHost;
   let manager: AutoPauseManager | undefined;
 
   beforeEach(() => {
@@ -37,6 +36,13 @@ describe('AutoPauseManager', () => {
     setVisibility('visible');
     pauseCircuit = jest.fn<() => Promise<boolean>>().mockResolvedValue(true);
     resumeCircuit = jest.fn<() => Promise<boolean>>().mockResolvedValue(true);
+    activityListener = undefined;
+    host = {
+      pauseCircuit,
+      resumeCircuit,
+      addEventListener: (_type, handler) => { activityListener = handler; },
+      removeEventListener: (_type, handler) => { if (activityListener === handler) { activityListener = undefined; } },
+    };
     manager = undefined;
   });
 
@@ -46,14 +52,20 @@ describe('AutoPauseManager', () => {
   });
 
   function create(
-    onPauseRequested?: PauseRequestedCallback,
-    options: AutoPauseOptions = defaultOptions,
+    participant?: Participant,
+    config: AutoPauseConfig = defaultConfig,
   ): AutoPauseManager {
-    manager = new AutoPauseManager(options, pauseCircuit, resumeCircuit, NullLogger.instance);
-    if (onPauseRequested) {
-      manager.register(onPauseRequested);
+    manager = new AutoPauseManager(config, host);
+    if (participant) {
+      manager.registerPauseHandler(participant);
     }
+    manager.start();
     return manager;
+  }
+
+  // Simulate the circuit raising 'circuitactivitychanged' through the Blazor host.
+  function setBusy(busy: boolean): void {
+    activityListener?.({ busy });
   }
 
   test('does not pause while page is visible', async () => {
@@ -110,9 +122,9 @@ describe('AutoPauseManager', () => {
     expect(pauseCircuit).toHaveBeenCalledTimes(1);
   });
 
-  test('awaits onPauseRequested before pausing', async () => {
+  test('awaits a registered pause handler before pausing', async () => {
     const order: string[] = [];
-    const onPauseRequested: PauseRequestedCallback = async () => {
+    const participant: Participant = async () => {
       order.push('callback-start');
       await Promise.resolve();
       order.push('callback-end');
@@ -122,7 +134,7 @@ describe('AutoPauseManager', () => {
       return true;
     });
 
-    create(onPauseRequested);
+    create(participant);
     setVisibility('hidden');
     jest.advanceTimersByTime(1000);
     await flushPromises();
@@ -131,22 +143,22 @@ describe('AutoPauseManager', () => {
     expect(order).toEqual(['callback-start', 'callback-end', 'pause']);
   });
 
-  test('passes an AbortSignal to onPauseRequested', async () => {
-    const onPauseRequested = jest.fn<PauseRequestedCallback>(async () => { /* noop */ });
-    create(onPauseRequested);
+  test('passes an AbortSignal to the pause handler', async () => {
+    const participant = jest.fn<Participant>(async () => { /* noop */ });
+    create(participant);
     setVisibility('hidden');
     jest.advanceTimersByTime(1000);
     await flushPromises();
 
-    expect(onPauseRequested).toHaveBeenCalledTimes(1);
-    const [signal] = onPauseRequested.mock.calls[0];
+    expect(participant).toHaveBeenCalledTimes(1);
+    const [signal] = participant.mock.calls[0];
     expect(signal).toBeInstanceOf(AbortSignal);
   });
 
   test('unregister prevents handler from being called on subsequent pause', async () => {
-    const handler = jest.fn<PauseRequestedCallback>(async () => { /* noop */ });
+    const handler = jest.fn<Participant>(async () => { /* noop */ });
     create();
-    manager!.register(handler);
+    manager!.registerPauseHandler(handler);
 
     // First pause: handler is called
     setVisibility('hidden');
@@ -157,7 +169,7 @@ describe('AutoPauseManager', () => {
     // Resume and unregister
     setVisibility('visible');
     await flushPromises();
-    manager!.unregister(handler);
+    manager!.unregisterPauseHandler(handler);
 
     // Second pause: handler is NOT called
     setVisibility('hidden');
@@ -166,16 +178,16 @@ describe('AutoPauseManager', () => {
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
-  test('aborts the signal and skips pausing if page becomes visible during callback', async () => {
+  test('aborts the signal and skips pausing if page becomes visible during handler', async () => {
     let capturedSignal: AbortSignal | undefined;
     let resolveCallback: (() => void) | undefined;
     const callbackPromise = new Promise<void>(r => { resolveCallback = r; });
-    const onPauseRequested: PauseRequestedCallback = (signal) => {
+    const participant: Participant = (signal) => {
       capturedSignal = signal;
       return callbackPromise;
     };
 
-    create(onPauseRequested);
+    create(participant);
     setVisibility('hidden');
     jest.advanceTimersByTime(1000);
     await flushPromises();
@@ -239,16 +251,16 @@ describe('AutoPauseManager', () => {
     expect(pauseCircuit).not.toHaveBeenCalled();
   });
 
-  test('dispose aborts an in-flight onPauseRequested', async () => {
+  test('dispose aborts an in-flight pause handler', async () => {
     let capturedSignal: AbortSignal | undefined;
     let resolveCallback: (() => void) | undefined;
     const callbackPromise = new Promise<void>(r => { resolveCallback = r; });
-    const onPauseRequested: PauseRequestedCallback = (signal) => {
+    const participant: Participant = (signal) => {
       capturedSignal = signal;
       return callbackPromise;
     };
 
-    create(onPauseRequested);
+    create(participant);
     setVisibility('hidden');
     jest.advanceTimersByTime(1000);
     await flushPromises();
@@ -304,125 +316,42 @@ describe('AutoPauseManager', () => {
     expect(resumeCircuit).toHaveBeenCalledTimes(1);
   });
 
-  describe('active-stream drain cancellation', () => {
-    function createWithDrain(drain: (signal: AbortSignal) => Promise<void>): AutoPauseManager {
-      manager = new AutoPauseManager(defaultOptions, pauseCircuit, resumeCircuit, NullLogger.instance, drain);
-      return manager;
-    }
+  describe('circuit-activity drain cancellation', () => {
+    test('pauses after the circuit reports idle when the tab stays hidden', async () => {
+      create();
+      // The circuit is busy with in-flight work when the pause is attempted.
+      setBusy(true);
 
-    test('pauses after active streams drain when the tab stays hidden', async () => {
-      let drainStarted = false;
-      let resolveDrain: (() => void) | undefined;
-      const drain = (signal: AbortSignal) => {
-        drainStarted = true;
-        return new Promise<void>(resolve => {
-          resolveDrain = resolve;
-          signal.addEventListener('abort', () => resolve(), { once: true });
-        });
-      };
-
-      createWithDrain(drain);
       setVisibility('hidden');
       jest.advanceTimersByTime(1000);
       await flushPromises();
 
-      // Drain is in progress; the pause must wait for it.
-      expect(drainStarted).toBe(true);
+      // The pause must wait for the circuit to become idle.
       expect(pauseCircuit).not.toHaveBeenCalled();
 
-      // Streams drain while the tab is still hidden -> the pause proceeds.
-      resolveDrain!();
+      // Work completes while the tab is still hidden -> the pause proceeds.
+      setBusy(false);
       await flushPromises();
       expect(pauseCircuit).toHaveBeenCalledTimes(1);
     });
 
-    test('abandons the pause when the tab becomes visible while waiting for streams to drain', async () => {
-      let drainStarted = false;
-      const drain = (signal: AbortSignal) => {
-        drainStarted = true;
-        // Mimic the real drain: resolves when aborted (e.g. the tab becomes visible).
-        return new Promise<void>(resolve => {
-          signal.addEventListener('abort', () => resolve(), { once: true });
-        });
-      };
+    test('abandons the pause when the tab becomes visible while waiting for the circuit to drain', async () => {
+      create();
+      setBusy(true);
 
-      createWithDrain(drain);
       setVisibility('hidden');
       jest.advanceTimersByTime(1000);
       await flushPromises();
 
-      expect(drainStarted).toBe(true);
       expect(pauseCircuit).not.toHaveBeenCalled();
 
-      // Tab becomes visible mid-drain -> abort fires, drain resolves, but the pause is abandoned.
+      // Tab becomes visible mid-drain -> the wait is aborted and the pause is abandoned.
       setVisibility('visible');
       await flushPromises();
 
       expect(pauseCircuit).not.toHaveBeenCalled();
       // Nothing was paused, so there is nothing to resume either (no modal flicker / churn).
       expect(resumeCircuit).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('deferred-pause cancellation logging', () => {
-    class CapturingLogger implements Logger {
-      public readonly messages: { level: LogLevel; message: string }[] = [];
-      public log(level: LogLevel, message: string | Error): void {
-        this.messages.push({ level, message: message.toString() });
-      }
-    }
-
-    const resumeMessage = 'Pause resumed: tab became visible before focus cleared.';
-
-    // Focuses an input with unsaved edits so the first deferIfBlocked stage blocks
-    // the pause, leaving an in-flight wind-down whose abort path we can exercise.
-    function focusEditedInput(): HTMLInputElement {
-      const input = document.createElement('input');
-      input.type = 'text';
-      document.body.appendChild(input);
-      input.defaultValue = '';
-      input.value = 'unsaved';
-      input.focus();
-      return input;
-    }
-
-    function createWithLogger(logger: Logger): AutoPauseManager {
-      manager = new AutoPauseManager(defaultOptions, pauseCircuit, resumeCircuit, logger);
-      return manager;
-    }
-
-    test('logs the resume message when the deferred pause is cancelled by the tab becoming visible', async () => {
-      const logger = new CapturingLogger();
-      const input = focusEditedInput();
-      createWithLogger(logger);
-
-      setVisibility('hidden');
-      jest.advanceTimersByTime(1000);
-      await flushPromises();
-      expect(pauseCircuit).not.toHaveBeenCalled();
-
-      setVisibility('visible');
-      await flushPromises();
-
-      expect(logger.messages.some(m => m.message === resumeMessage)).toBe(true);
-      input.remove();
-    });
-
-    test('does not log the resume message when the deferred pause is aborted by dispose', async () => {
-      const logger = new CapturingLogger();
-      const input = focusEditedInput();
-      createWithLogger(logger);
-
-      setVisibility('hidden');
-      jest.advanceTimersByTime(1000);
-      await flushPromises();
-      expect(pauseCircuit).not.toHaveBeenCalled();
-
-      manager!.dispose();
-      await flushPromises();
-
-      expect(logger.messages.some(m => m.message === resumeMessage)).toBe(false);
-      input.remove();
     });
   });
 });

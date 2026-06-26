@@ -10,7 +10,7 @@ import { RootComponentManager } from '../../Services/RootComponentManager';
 import { CircuitStartOptions } from './CircuitStartOptions';
 import { attachRootComponentToLogicalElement } from '../../Rendering/Renderer';
 import { WebRendererId } from '../../Rendering/WebRendererId';
-import { initEditedTracking } from '../../Rendering/DomFocus';
+import { JSEventRegistry } from '../../Services/JSEventRegistry';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { ConsoleLogger } from '../Logging/Loggers';
@@ -29,6 +29,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _options: CircuitStartOptions;
 
   private readonly _logger: ConsoleLogger;
+
+  private readonly _eventRegistry: JSEventRegistry;
 
   private _renderQueue: RenderQueue;
 
@@ -58,9 +60,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _isFirstRender = true;
 
-  private _activeStreamTrackers = new Set<object>();
-
-  private _streamDrainResolvers: Array<() => void> = [];
+  private _activeOperations = new Set<object>();
 
   private _pendingJsCallTracking = new Map<number, () => void>();
 
@@ -71,12 +71,14 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     appState: string,
     options: CircuitStartOptions,
     logger: ConsoleLogger,
+    eventRegistry: JSEventRegistry,
   ) {
     this._circuitId = undefined;
     this._applicationState = appState;
     this._componentManager = componentManager;
     this._options = options;
     this._logger = logger;
+    this._eventRegistry = eventRegistry;
     this._renderQueue = new RenderQueue(this._logger);
     this._dispatcher = DotNet.attachDispatcher(this);
   }
@@ -87,9 +89,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     if (!this._startPromise) {
-      if (this._options.autoPause.enabled) {
-        initEditedTracking();
-      }
       this._startPromise = this.startCore();
     }
 
@@ -148,8 +147,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
     connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
-      if (asyncHandle !== 0 && this._options.autoPause.enabled) {
-        this._pendingJsCallTracking.set(asyncHandle, this.trackActiveStream());
+      if (asyncHandle !== 0 && this.activityTrackingEnabled()) {
+        this._pendingJsCallTracking.set(asyncHandle, this.trackActivity());
       }
       (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)
         .call(this._dispatcher, asyncHandle, ...rest);
@@ -178,7 +177,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
-          const untrack = this._options.autoPause.enabled ? this.trackActiveStream() : undefined;
+          const untrack = this.activityTrackingEnabled() ? this.trackActivity() : undefined;
           connection.stream('SendDotNetStreamToJS', streamId).subscribe({
             next: (chunk: Uint8Array) => controller.enqueue(chunk),
             complete: () => { controller.close(); untrack?.(); },
@@ -202,11 +201,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.RequestPause', async () => {
       try {
-        if (Blazor.pauseCircuit) {
-          await Blazor.pauseCircuit();
-        } else {
-          await this.pause(true);
-        }
+        await this.handleServerInitiatedPause();
       } catch (error) {
         this._logger.log(LogLevel.Error, `Failed to handle server-initiated pause: ${error}`);
       }
@@ -215,7 +210,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
-      this.resetActiveStreams();
+      this.resetActivity();
 
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
@@ -320,6 +315,17 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._options.reconnectionHandler!.onConnectionUp();
 
     return true;
+  }
+
+  private async handleServerInitiatedPause(): Promise<void> {
+    if (this._options.onPauseRequested) {
+      await this._options.onPauseRequested();
+    }
+    if (Blazor.pauseCircuit) {
+      await Blazor.pauseCircuit();
+    } else {
+      await this.pause(true);
+    }
   }
 
   public async pause(remote?: boolean): Promise<boolean> {
@@ -460,8 +466,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
     this.throwIfDispatchingWhenDisposed();
-    if (callId !== 0 && this._options.autoPause.enabled) {
-      this._pendingDotNetCallTracking.set(callId.toString(), this.trackActiveStream());
+    if (callId !== 0 && this.activityTrackingEnabled()) {
+      this._pendingDotNetCallTracking.set(callId.toString(), this.trackActivity());
     }
     this._connection!.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
   }
@@ -498,7 +504,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
-    const untrack = this._options.autoPause.enabled ? this.trackActiveStream() : undefined;
+    const untrack = this.activityTrackingEnabled() ? this.trackActivity() : undefined;
     return sendJSDataStream(this._connection!, data, streamId, chunkSize, untrack);
   }
 
@@ -542,63 +548,35 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._renderingFailed;
   }
 
-  private trackActiveStream(): () => void {
+  private activityTrackingEnabled(): boolean {
+    return this._eventRegistry.hasListeners('circuitactivitychanged');
+  }
+
+  private trackActivity(): () => void {
     const token = {};
-    this._activeStreamTrackers.add(token);
+    if (this._activeOperations.size === 0) {
+      this.dispatchActivity(true);
+    }
+    this._activeOperations.add(token);
     return () => {
-      // delete() is no-op if this tracker was already untracked
-      if (this._activeStreamTrackers.delete(token) && this._activeStreamTrackers.size === 0) {
-        const resolvers = this._streamDrainResolvers.splice(0);
-        for (const resolve of resolvers) {
-          resolve();
-        }
+      // delete() is a no-op if this token was already released or cleared by a reset.
+      if (this._activeOperations.delete(token) && this._activeOperations.size === 0) {
+        this.dispatchActivity(false);
       }
     };
   }
 
-  // Used by the auto-pause flow to defer a pending pause until in-flight circuit operations
-  // (tracked only while auto-pause is enabled) complete. The wait honors `signal` so a
-  // visibility change can cancel it instead of pausing and then immediately auto-resuming.
-  public async waitForActiveStreamsToDrain(signal?: AbortSignal): Promise<void> {
-    if (this._activeStreamTrackers.size === 0 || signal?.aborted) {
-      return;
-    }
-
-    this._logger.log(LogLevel.Information, `Pause deferred: waiting for ${this._activeStreamTrackers.size} active circuit operation(s) to complete.`);
-
-    const startedAt = Date.now();
-    await new Promise<void>(resolve => {
-      const cleanup = () => {
-        const idx = this._streamDrainResolvers.indexOf(onDrained);
-        if (idx >= 0) {
-          this._streamDrainResolvers.splice(idx, 1);
-        }
-        signal?.removeEventListener('abort', onAbort);
-      };
-      const onDrained = () => {
-        cleanup();
-        const elapsedMs = Date.now() - startedAt;
-        this._logger.log(LogLevel.Information, `Pause resumed: all circuit operations completed after ${elapsedMs}ms.`);
-        resolve();
-      };
-      const onAbort = () => {
-        cleanup();
-        this._logger.log(LogLevel.Trace, 'Pause drain wait cancelled before streams completed.');
-        resolve();
-      };
-      this._streamDrainResolvers.push(onDrained);
-      signal?.addEventListener('abort', onAbort, { once: true });
-    });
-  }
-
-  private resetActiveStreams(): void {
-    this._activeStreamTrackers.clear();
+  private resetActivity(): void {
     this._pendingJsCallTracking.clear();
     this._pendingDotNetCallTracking.clear();
-    const resolvers = this._streamDrainResolvers.splice(0);
-    for (const resolve of resolvers) {
-      resolve();
+    if (this._activeOperations.size > 0) {
+      this._activeOperations.clear();
+      this.dispatchActivity(false);
     }
+  }
+
+  private dispatchActivity(busy: boolean): void {
+    this._eventRegistry.dispatchEvent('circuitactivitychanged', { busy });
   }
 
   public isDisposedOrDisposing(): boolean {

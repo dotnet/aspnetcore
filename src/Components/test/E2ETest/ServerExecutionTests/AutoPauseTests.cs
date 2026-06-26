@@ -28,7 +28,7 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
         Browser.Exists(By.Id("render-mode-interactive"));
         WaitForBlazorPause();
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
-            Blazor.pause.waitFor(async (signal) => {
+            Blazor.autoPause.waitFor(async (signal) => {
                 window.autoPauseEvents.push({ phase: 'testLog:handlerInvoked', aborted: signal.aborted });
             });
         ");
@@ -129,7 +129,7 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
     private void WaitForBlazorPause()
     {
         Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
-            "return !!(window.Blazor && Blazor.pause)"));
+            "return !!(window.Blazor && Blazor.autoPause)"));
     }
 
     private void WaitForPausedUI()

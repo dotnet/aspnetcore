@@ -148,6 +148,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Media" ProjectPath="$(RepoRoot)src\Components\Media\src\Microsoft.AspNetCore.Components.Media.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter\src\Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.QuickGrid" ProjectPath="$(RepoRoot)src\Components\QuickGrid\Microsoft.AspNetCore.Components.QuickGrid\src\Microsoft.AspNetCore.Components.QuickGrid.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server.AutoPause" ProjectPath="$(RepoRoot)src\Components\Server.AutoPause\src\Microsoft.AspNetCore.Components.Server.AutoPause.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Testing" ProjectPath="$(RepoRoot)src\Components\Testing\src\Microsoft.AspNetCore.Components.Testing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />

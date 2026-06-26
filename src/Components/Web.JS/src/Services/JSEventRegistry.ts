@@ -9,11 +9,17 @@ interface BlazorEvent {
   type: keyof BlazorEventMap;
 }
 
+// Triggered on idle<->busy transitions, e.g. while interop calls or data streams are in flight.
+export interface CircuitActivityChangedEvent extends BlazorEvent {
+  busy: boolean;
+}
+
 // Maps Blazor event names to the argument type passed to registered listeners.
 export interface BlazorEventMap {
   'enhancedload': BlazorEvent,
   'enhancednavigationstart': BlazorEvent,
   'enhancednavigationend': BlazorEvent,
+  'circuitactivitychanged': CircuitActivityChangedEvent,
 }
 
 export class JSEventRegistry {
@@ -24,6 +30,10 @@ export class JSEventRegistry {
     blazor.addEventListener = result.addEventListener.bind(result);
     blazor.removeEventListener = result.removeEventListener.bind(result);
     return result;
+  }
+
+  public hasListeners(type: keyof BlazorEventMap): boolean {
+    return (this._eventListeners.get(type)?.size ?? 0) > 0;
   }
 
   public addEventListener<K extends keyof BlazorEventMap>(type: K, listener: (ev: BlazorEventMap[K]) => void): void {

@@ -1,27 +1,39 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { Logger, LogLevel } from '../Logging/Logger';
-import { AutoPauseOptions } from './CircuitStartOptions';
-import { isFocusedElementEdited } from '../../Rendering/DomFocus';
-import { isMediaPlaying, isPictureInPictureActive, queryWebLockHeld } from '../../Rendering/FreezeBlockers';
+import { isFocusedElementEdited, initEditedTracking } from './DomFocus';
+import { isMediaPlaying, isPictureInPictureActive, queryWebLockHeld } from './FreezeBlockers';
+
+export interface AutoPauseConfig {
+  enabled: boolean;
+  hiddenDelayMilliseconds: number;
+}
+
+// The subset of the Blazor global this manager depends on. The package only relies on
+// the stable in-box primitives: pause/resume and the generic 'circuitactivitychanged' event.
+export interface BlazorActivityHost {
+  pauseCircuit?: () => Promise<boolean>;
+  resumeCircuit?: () => Promise<boolean>;
+  addEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean }) => void) => void;
+  removeEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean }) => void) => void;
+}
 
 const becameVisibleReason = Symbol('auto-pause:became-visible');
 
 export class AutoPauseManager {
-  private readonly _options: AutoPauseOptions;
+  private readonly _config: AutoPauseConfig;
+
+  private readonly _blazor: BlazorActivityHost;
 
   private readonly _pauseHandlers = new Set<(signal: AbortSignal) => void | Promise<void>>();
 
-  private readonly _pauseCircuit: () => Promise<boolean>;
-
-  private readonly _resumeCircuit: () => Promise<boolean>;
-
-  private readonly _waitForActiveStreamsToDrain?: (signal: AbortSignal) => Promise<void>;
-
-  private readonly _logger: Logger;
-
   private readonly _visibilityListener: () => void;
+
+  private readonly _activityListener: (ev: { busy: boolean }) => void;
+
+  private _busy = false;
+
+  private _idleResolvers: Array<() => void> = [];
 
   private _hiddenTimerId: ReturnType<typeof setTimeout> | undefined;
 
@@ -33,20 +45,17 @@ export class AutoPauseManager {
 
   private _disposed = false;
 
-  public constructor(
-    options: AutoPauseOptions,
-    pauseCircuit: () => Promise<boolean>,
-    resumeCircuit: () => Promise<boolean>,
-    logger: Logger,
-    waitForActiveStreamsToDrain?: (signal: AbortSignal) => Promise<void>,
-  ) {
-    this._options = options;
-    this._pauseCircuit = pauseCircuit;
-    this._resumeCircuit = resumeCircuit;
-    this._logger = logger;
-    this._waitForActiveStreamsToDrain = waitForActiveStreamsToDrain;
+  public constructor(config: AutoPauseConfig, blazor: BlazorActivityHost) {
+    this._config = config;
+    this._blazor = blazor;
 
     this._visibilityListener = () => this.onVisibilityChanged();
+    this._activityListener = (ev) => this.onActivityChanged(ev.busy);
+  }
+
+  public start(): void {
+    initEditedTracking();
+    this._blazor.addEventListener?.('circuitactivitychanged', this._activityListener);
     document.addEventListener('visibilitychange', this._visibilityListener);
 
     if (document.visibilityState === 'hidden') {
@@ -83,9 +92,52 @@ export class AutoPauseManager {
     }
     this._disposed = true;
     document.removeEventListener('visibilitychange', this._visibilityListener);
+    this._blazor.removeEventListener?.('circuitactivitychanged', this._activityListener);
     this.clearHiddenTimer();
     this._activeAbortController?.abort();
     this._activeAbortController = undefined;
+    const resolvers = this._idleResolvers.splice(0);
+    for (const resolve of resolvers) {
+      resolve();
+    }
+  }
+
+  private onActivityChanged(busy: boolean): void {
+    this._busy = busy;
+    if (!busy) {
+      const resolvers = this._idleResolvers.splice(0);
+      for (const resolve of resolvers) {
+        resolve();
+      }
+    }
+  }
+
+  // Replaces the circuit's removed waitForActiveStreamsToDrain: resolves when the circuit
+  // reports it is idle (or immediately if it already is), honoring `signal` so a visibility
+  // change can cancel the wait instead of pausing and then immediately auto-resuming.
+  private whenIdle(signal: AbortSignal): Promise<void> {
+    if (!this._busy || signal.aborted) {
+      return Promise.resolve();
+    }
+    return new Promise<void>(resolve => {
+      const cleanup = () => {
+        const idx = this._idleResolvers.indexOf(onIdle);
+        if (idx >= 0) {
+          this._idleResolvers.splice(idx, 1);
+        }
+        signal.removeEventListener('abort', onAbort);
+      };
+      const onIdle = () => {
+        cleanup();
+        resolve();
+      };
+      const onAbort = () => {
+        cleanup();
+        resolve();
+      };
+      this._idleResolvers.push(onIdle);
+      signal.addEventListener('abort', onAbort, { once: true });
+    });
   }
 
   private onVisibilityChanged(): void {
@@ -112,11 +164,10 @@ export class AutoPauseManager {
     if (this._hiddenTimerId !== undefined || this._autoPaused || this._pauseInFlight) {
       return;
     }
-    this._logger.log(LogLevel.Trace, `Auto-pause: hidden timer started (${this._options.hiddenDelayMilliseconds}ms).`);
     this._hiddenTimerId = setTimeout(() => {
       this._hiddenTimerId = undefined;
       this.pauseNow();
-    }, this._options.hiddenDelayMilliseconds);
+    }, this._config.hiddenDelayMilliseconds);
   }
 
   private clearHiddenTimer(): void {
@@ -126,19 +177,10 @@ export class AutoPauseManager {
     }
   }
 
-  private shouldAbortBeforePausing(controller: AbortController, phase = ''): boolean {
-    let reason: string;
-    if (controller.signal.aborted) {
-      reason = String(controller.signal.reason);
-    } else if (document.visibilityState !== 'hidden') {
-      reason = 'tab became visible';
-    } else if (this._disposed) {
-      reason = 'circuit disposed';
-    } else {
-      return false;
-    }
-    this._logger.log(LogLevel.Trace, `Auto-pause: aborted before pausing${phase} (${reason}).`);
-    return true;
+  private shouldAbortBeforePausing(controller: AbortController): boolean {
+    return controller.signal.aborted
+      || document.visibilityState !== 'hidden'
+      || this._disposed;
   }
 
   private async pauseNow(): Promise<void> {
@@ -151,40 +193,23 @@ export class AutoPauseManager {
     this._pauseInFlight = true;
 
     try {
-      if (!(await this.deferIfBlocked(
-        controller, isFocusedElementEdited,
-        'Pause deferred: waiting for edited element to lose focus.',
-        'Pause resumed: tab became visible before focus cleared.'
-      ))) {
+      if (!(await this.deferIfBlocked(controller, isFocusedElementEdited))) {
         return;
       }
 
-      if (!(await this.deferIfBlocked(
-        controller, isMediaPlaying,
-        'Pause deferred: media playing.',
-        'Pause resumed: tab became visible before media stopped.'
-      ))) {
+      if (!(await this.deferIfBlocked(controller, isMediaPlaying))) {
         return;
       }
 
-      if (!(await this.deferIfBlocked(
-        controller, isPictureInPictureActive,
-        'Pause deferred: picture-in-picture active.',
-        'Pause resumed: tab became visible before picture-in-picture closed.',
-        notify => {
-          const handler = () => notify();
-          document.addEventListener('leavepictureinpicture', handler, true);
-          return () => document.removeEventListener('leavepictureinpicture', handler, true);
-        }
-      ))) {
+      if (!(await this.deferIfBlocked(controller, isPictureInPictureActive, notify => {
+        const handler = () => notify();
+        document.addEventListener('leavepictureinpicture', handler, true);
+        return () => document.removeEventListener('leavepictureinpicture', handler, true);
+      }))) {
         return;
       }
 
-      if (!(await this.deferIfBlocked(
-        controller, queryWebLockHeld,
-        'Pause deferred: web lock held.',
-        'Pause resumed: tab became visible before web lock released.'
-      ))) {
+      if (!(await this.deferIfBlocked(controller, queryWebLockHeld))) {
         return;
       }
 
@@ -194,48 +219,52 @@ export class AutoPauseManager {
         return;
       }
 
-      if (this._waitForActiveStreamsToDrain) {
-        await this._waitForActiveStreamsToDrain(controller.signal);
+      await this.whenIdle(controller.signal);
 
-        if (this.shouldAbortBeforePausing(controller, ' during drain')) {
-          return;
-        }
+      if (this.shouldAbortBeforePausing(controller)) {
+        return;
       }
 
-      const paused = await this._pauseCircuit();
+      const paused = await this._blazor.pauseCircuit?.() ?? false;
       if (paused) {
         this._autoPaused = true;
-        this._logger.log(LogLevel.Information, 'Auto-pause: circuit paused after hidden timeout.');
 
         if (document.visibilityState !== 'hidden') {
           this._autoPaused = false;
           this.resumeNow();
         }
       }
-    } catch (error) {
-      this._logger.log(LogLevel.Error, `Auto-pause: failed to pause circuit: ${error}`);
+    } catch {
+      // Pausing is best-effort; failures leave the circuit running.
     } finally {
       this._pauseInFlight = false;
       if (this._activeAbortController === controller) {
         this._activeAbortController = undefined;
+      }
+      // If the tab is still hidden (e.g. it flipped visible then hidden again during an
+      // aborted attempt), reschedule so we don't get stuck unpaused with no timer.
+      if (!this._disposed && !this._autoPaused && document.visibilityState === 'hidden') {
+        this.startHiddenTimer();
       }
     }
   }
 
   private async resumeNow(): Promise<void> {
     try {
-      await this._resumeCircuit();
-      this._logger.log(LogLevel.Information, 'Auto-pause: circuit resumed after tab became visible.');
-    } catch (error) {
-      this._logger.log(LogLevel.Error, `Auto-pause: failed to resume circuit: ${error}`);
+      const resumed = await this._blazor.resumeCircuit?.() ?? false;
+      if (!resumed) {
+        // Resume was rejected; keep treating the circuit as paused so a later visible
+        // transition retries.
+        this._autoPaused = true;
+      }
+    } catch {
+      this._autoPaused = true;
     }
   }
 
   private async deferIfBlocked(
     controller: AbortController,
     isBlocked: () => boolean | Promise<boolean>,
-    deferLog: string,
-    resumeLog: string,
     subscribeClearEvent?: (notify: () => void) => () => void,
   ): Promise<boolean> {
     if (controller.signal.aborted) {
@@ -244,33 +273,32 @@ export class AutoPauseManager {
     if (!(await isBlocked())) {
       return !controller.signal.aborted;
     }
-
-    this._logger.log(LogLevel.Information, deferLog);
+    if (controller.signal.aborted) {
+      return false;
+    }
 
     const cleared = await new Promise<boolean>(resolve => {
       const pollIntervalMs = 500;
       let pollId: ReturnType<typeof setInterval> | undefined;
       let unsubscribe: (() => void) | undefined;
 
-      const cleanup = (didClear: boolean) => {
+      const cleanup = () => {
         controller.signal.removeEventListener('abort', onAbort);
         unsubscribe?.();
         if (pollId !== undefined) {
           clearInterval(pollId);
         }
-        resolve(didClear);
       };
       const onAbort = () => {
-        if (controller.signal.reason === becameVisibleReason) {
-          this._logger.log(LogLevel.Information, resumeLog);
-        }
-        cleanup(false);
+        cleanup();
+        resolve(false);
       };
       controller.signal.addEventListener('abort', onAbort);
 
       const checkAndResolve = async () => {
         if (!(await isBlocked())) {
-          cleanup(true);
+          cleanup();
+          resolve(true);
         }
       };
 

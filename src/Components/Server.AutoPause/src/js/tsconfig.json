@@ -1,0 +1,4 @@
+{
+  "extends": "../../../Shared.JS/tsconfig.json",
+  "exclude": ["test", "dist", "node_modules"]
+}

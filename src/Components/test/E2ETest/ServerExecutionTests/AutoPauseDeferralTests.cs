@@ -895,7 +895,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         {
             WaitForBlazorPause();
             ((IJavaScriptExecutor)Browser).ExecuteScript(
-                "Blazor.pause.waitFor(window.__mitigationHandler)");
+                "Blazor.autoPause.waitFor(window.__mitigationHandler)");
         }
 
         if (setupScript != null)
@@ -1131,7 +1131,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
                     resolve();
                 });
             });
-            Blazor.pause.waitFor(window.__abortHandler);
+            window.__abortUnsub = Blazor.autoPause.waitFor(window.__abortHandler);
         ");
     }
 
@@ -1139,7 +1139,8 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             if (window.__abortHandler) {
-                Blazor.pause.cancelWaitFor(window.__abortHandler);
+                window.__abortUnsub && window.__abortUnsub();
+                window.__abortUnsub = null;
                 window.__abortHandler = null;
             }
         ");
@@ -1176,7 +1177,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
                     resolve();
                 });
             });
-            Blazor.pause.waitFor(window.__serverAbortHandler);
+            window.__serverAbortUnsub = Blazor.autoPause.waitFor(window.__serverAbortHandler);
         ");
     }
 
@@ -1184,7 +1185,8 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             if (window.__serverAbortHandler) {
-                Blazor.pause.cancelWaitFor(window.__serverAbortHandler);
+                window.__serverAbortUnsub && window.__serverAbortUnsub();
+                window.__serverAbortUnsub = null;
                 window.__serverAbortHandler = null;
             }
         ");
@@ -1226,7 +1228,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     private void WaitForBlazorPause()
     {
         Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
-            "return !!(window.Blazor && Blazor.pause)"));
+            "return !!(window.Blazor && Blazor.autoPause)"));
     }
 
     private void ClearBlazorLogs()

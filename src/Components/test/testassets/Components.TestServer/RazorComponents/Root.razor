@@ -89,15 +89,13 @@
     [SupplyParameterFromQuery(Name = "auto-pause")] public bool AutoPause { get; set; }
     [SupplyParameterFromQuery(Name = "auto-pause-delay-ms")] public int AutoPauseDelayMs { get; set; }
 
-    private BrowserOptions AutoPauseConfig => new()
+    private BrowserOptions AutoPauseConfig
     {
-        Server =
+        get
         {
-            AutoPause =
-            {
-                Enabled = true,
-                HiddenDelayMilliseconds = AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200,
-            }
+            var options = new BrowserOptions();
+            options.AddAutoPause(p => p.HiddenDelay = TimeSpan.FromMilliseconds(AutoPauseDelayMs > 0 ? AutoPauseDelayMs : 200));
+            return options;
         }
-    };
+    }
 }

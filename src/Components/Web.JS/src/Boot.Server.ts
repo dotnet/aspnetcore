@@ -4,7 +4,7 @@
 import { Blazor } from './GlobalExports';
 import { shouldAutoStart } from './BootCommon';
 import { CircuitStartOptions, resolveOptions } from './Platform/Circuits/CircuitStartOptions';
-import { setCircuitOptions, startServer } from './Boot.Server.Common';
+import { setCircuitOptions, startServer, setCircuitEventRegistry } from './Boot.Server.Common';
 import { ServerComponentDescriptor, discoverComponents } from './Services/ComponentDescriptorDiscovery';
 import { DotNet } from '@microsoft/dotnet-js-interop';
 import { InitialRootComponentsList } from './Services/InitialRootComponentsList';
@@ -25,7 +25,7 @@ function boot(userOptions?: BlazorServerStartOptions): Promise<void> {
   const configuredOptions = resolveOptions(normalizedOptions);
   setCircuitOptions(Promise.resolve(configuredOptions || {}));
 
-  JSEventRegistry.create(Blazor);
+  setCircuitEventRegistry(JSEventRegistry.create(Blazor));
   const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const components = new InitialRootComponentsList(serverComponents);
   return startServer(components);
