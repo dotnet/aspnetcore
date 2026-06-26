@@ -384,19 +384,15 @@ rm {scriptPath};
 
     // Resolves a bare command (e.g. "pnpm") to the most likely Windows shim
     // (`.cmd` for npm/yarn, `.exe` for tools installed via standalone script
-    // like pnpm). Internal so it can be exercised by tests when a test project
-    // is introduced for SpaProxy.
-    internal static string ResolveWindowsLaunchCommand(string command)
-        => ResolveWindowsLaunchCommand(command, ExistsOnPath);
-
-    internal static string ResolveWindowsLaunchCommand(string command, Func<string, bool> existsOnPath)
+    // like pnpm).
+    private static string ResolveWindowsLaunchCommand(string command)
     {
-        if (existsOnPath($"{command}.cmd"))
+        if (ExistsOnPath($"{command}.cmd"))
         {
             return $"{command}.cmd";
         }
 
-        if (existsOnPath($"{command}.exe"))
+        if (ExistsOnPath($"{command}.exe"))
         {
             return $"{command}.exe";
         }
