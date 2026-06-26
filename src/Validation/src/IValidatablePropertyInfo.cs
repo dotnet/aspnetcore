@@ -11,12 +11,6 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public interface IValidatablePropertyInfo
 {
-    // TODO: Remove when https://github.com/dotnet/aspnetcore/pull/67427 is merged
-    void Validate(object containingObject, ValidateContext context)
-    {
-
-    }
-
     /// <summary>
     /// Validates the property on a given object.
     /// </summary>
