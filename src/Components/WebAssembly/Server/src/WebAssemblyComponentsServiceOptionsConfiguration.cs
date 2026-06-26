@@ -2,20 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
-internal sealed class WebAssemblyComponentsServiceOptionsConfiguration(IConfiguration configuration) : IPostConfigureOptions<WebAssemblyComponentsServiceOptions>
+internal sealed class WebAssemblyComponentsServiceOptionsConfiguration(IConfiguration configuration, IServiceProvider serviceProvider) : IPostConfigureOptions<WebAssemblyComponentsServiceOptions>
 {
     public void PostConfigure(string? name, WebAssemblyComponentsServiceOptions options)
     {
         var value = configuration["Components:UseCultureFromServer"];
+
         options.UseCultureFromServer = value switch
         {
             _ when string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) => true,
             _ when string.Equals(value, "false", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "0", StringComparison.OrdinalIgnoreCase) => false,
-            _ => null,
+            _ => serviceProvider.GetService<IStringLocalizerFactory>() is not null,
         };
     }
 }

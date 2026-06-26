@@ -5,5 +5,5 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
 internal sealed class WebAssemblyComponentsServiceOptions
 {
-    public bool? UseCultureFromServer { get; set; }
+    public bool UseCultureFromServer { get; set; }
 }

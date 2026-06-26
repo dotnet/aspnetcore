@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -37,12 +36,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         {
             var provider = new CultureStateProvider();
 
-            // Honor explicit configuration, falling back to the presence of IStringLocalizerFactory to determine whether to capture the culture from the server.
-            // We check for IStringLocalizerFactory because it is registered via AddLocalization.
-            var useCultureFromServer = sp.GetRequiredService<IOptions<WebAssemblyComponentsServiceOptions>>().Value.UseCultureFromServer
-                ?? sp.GetService<IStringLocalizerFactory>() is not null;
-
-            if (useCultureFromServer)
+            if (sp.GetRequiredService<IOptions<WebAssemblyComponentsServiceOptions>>().Value.UseCultureFromServer)
             {
                 provider.CaptureCurrentCulture();
             }
