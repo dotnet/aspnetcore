@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -58,6 +59,10 @@ internal sealed partial class GenericWebHostService : IHostedService
     public IConfiguration Configuration { get; }
     public IWebHostEnvironment HostingEnvironment { get; }
     public HostingMetrics HostingMetrics { get; }
+
+    // Ports pre-boxed for this host in StartAsync; released in StopAsync so they don't accumulate
+    // across host lifetimes within a process.
+    private List<int>? _boxedServerPorts;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -161,6 +166,7 @@ internal sealed partial class GenericWebHostService : IHostedService
         await Server.StartAsync(httpApplication, cancellationToken);
         HostingEventSource.Log.ServerReady();
 
+        List<int>? boundPorts = null;
         if (addresses != null)
         {
             foreach (var address in addresses)
@@ -174,7 +180,23 @@ internal sealed partial class GenericWebHostService : IHostedService
                         Log.ListeningOnAddress(LifetimeLogger, new UriBuilder(uri) { Host = "localhost" }.ToString().TrimEnd('/'));
                     }
                 }
+
+                if (TryGetBoundPort(address, out var port))
+                {
+                    AddDistinctPort(ref boundPorts, port);
+                }
             }
+        }
+
+        if (TryGetConfiguredHttpsPort(Configuration, out var httpsPort))
+        {
+            AddDistinctPort(ref boundPorts, httpsPort);
+        }
+
+        if (boundPorts is not null)
+        {
+            HostingTelemetryHelpers.AddBoxedServerPorts(boundPorts);
+            _boxedServerPorts = boundPorts;
         }
 
         if (Logger.IsEnabled(LogLevel.Debug))
@@ -192,6 +214,37 @@ internal sealed partial class GenericWebHostService : IHostedService
                 Logger.HostingStartupAssemblyError(exception);
             }
         }
+
+        static bool TryGetBoundPort(string address, out int port)
+        {
+            try
+            {
+                port = BindingAddress.Parse(address).Port;
+                return port > 0;
+            }
+            catch (FormatException)
+            {
+                port = 0;
+                return false;
+            }
+        }
+
+        // Mirror HttpsRedirectionMiddleware.TryGetHttpsPort: HTTPS_PORT takes precedence, then the
+        // ANCM_HTTPS_PORT set by the ASP.NET Core Module when hosted in IIS.
+        static bool TryGetConfiguredHttpsPort(IConfiguration configuration, out int port)
+            => TryParsePort(configuration["HTTPS_PORT"], out port) || TryParsePort(configuration["ANCM_HTTPS_PORT"], out port);
+
+        static bool TryParsePort(string? value, out int port)
+            => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out port) && port > 0;
+
+        static void AddDistinctPort(ref List<int>? ports, int port)
+        {
+            ports ??= [];
+            if (!ports.Contains(port))
+            {
+                ports.Add(port);
+            }
+        }
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
@@ -202,6 +255,14 @@ internal sealed partial class GenericWebHostService : IHostedService
         }
         finally
         {
+            if (_boxedServerPorts is not null)
+            {
+                // Release the ports pre-boxed during startup so they don't accumulate across the
+                // lifetime of the process (e.g. across many hosts in a long-running test run).
+                HostingTelemetryHelpers.RemoveBoxedServerPorts(_boxedServerPorts);
+                _boxedServerPorts = null;
+            }
+
             HostingEventSource.Log.HostStop();
         }
     }
