@@ -14,20 +14,13 @@ public class FieldCssClassProvider
     internal static readonly FieldCssClassProvider Instance = new FieldCssClassProvider();
 
     /// <summary>
-    /// Gets a string that indicates the status of the specified field as a CSS class.
-    /// The result is one of <c>"valid"</c>, <c>"invalid"</c>, <c>"pending"</c>, or <c>"faulted"</c>,
-    /// optionally prefixed with <c>"modified "</c> when
-    /// <see cref="EditContext.IsModified(in FieldIdentifier)"/> is <c>true</c>.
-    /// <list type="bullet">
-    /// <item><c>"pending"</c> is emitted while an async validation registered via
-    /// <see cref="EditContext.TrackFieldValidation"/> is in flight, and supersedes valid/invalid
-    /// since the outcome is not yet known.</item>
-    /// <item><c>"faulted"</c> is emitted when the field's last async validation threw a
-    /// non-cancellation exception, and supersedes valid/invalid since the infrastructure
-    /// failed to determine validity.</item>
-    /// <item><c>"valid"</c> or <c>"invalid"</c> reflects whether any validation messages exist
-    /// for the field once no pending or faulted state applies.</item>
-    /// </list>
+    /// Gets a string that indicates the status of the specified field as a CSS class: one of
+    /// <c>"valid"</c>, <c>"invalid"</c>, <c>"pending"</c>, or <c>"faulted"</c>, optionally prefixed with
+    /// <c>"modified "</c> when <see cref="EditContext.IsModified(in FieldIdentifier)"/> is <c>true</c>.
+    /// <c>"pending"</c> (async validation registered via <see cref="EditContext.TrackFieldValidation"/> in
+    /// flight) and <c>"faulted"</c> (the last async validation threw) both supersede valid/invalid since
+    /// the outcome is not yet known; otherwise <c>"valid"</c>/<c>"invalid"</c> reflects whether the field
+    /// has any validation messages.
     /// </summary>
     /// <param name="editContext">The <see cref="EditContext"/>.</param>
     /// <param name="fieldIdentifier">The <see cref="FieldIdentifier"/>.</param>

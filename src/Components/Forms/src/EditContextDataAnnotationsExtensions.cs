@@ -149,8 +149,7 @@ public static partial class EditContextDataAnnotationsExtensions
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
             var validationResults = new List<ValidationResult>();
 
-            // Clear stale messages up-front so the form shows neutral state while validating and after
-            // a throw or cancellation. Any faulted state is signalled separately via EditContext.IsValidationFaulted.
+            // Clear stale messages so the form shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear();
 
             await Validator.TryValidateObjectAsync(_editContext.Model, validationContext, validationResults, validateAllProperties: true, cancellationToken);
@@ -164,8 +163,7 @@ public static partial class EditContextDataAnnotationsExtensions
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
             var validationResults = new List<ValidationResult>();
 
-            // Clear stale messages up-front so the form shows neutral state. Any faulted state is
-            // signalled separately via EditContext.IsValidationFaulted.
+            // Clear stale messages so the form shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear();
 
             Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, validateAllProperties: true);
@@ -205,9 +203,7 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             var validateContext = CreateFormValidateContext();
 
-            // Clear stale messages up-front. If the validator throws partway through, the form
-            // shows no per-field messages (form-level fault state is signaled separately via
-            // EditContext.IsValidationFaulted).
+            // Clear stale messages so the form shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear();
 
             try
@@ -230,9 +226,7 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             var validateContext = CreateFormValidateContext();
 
-            // Clear stale messages up-front. If the validator throws partway through, the form
-            // shows no per-field messages (form-level fault state is signaled separately via
-            // EditContext.IsValidationFaulted).
+            // Clear stale messages so the form shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear();
 
             try
@@ -285,8 +279,7 @@ public static partial class EditContextDataAnnotationsExtensions
             };
             var results = new List<ValidationResult>();
 
-            // Clear stale messages up-front so the field shows neutral state during validation and
-            // after a throw or cancellation. Any faulted state is signalled separately via EditContext.IsValidationFaulted.
+            // Clear stale messages so the field shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear(fieldIdentifier);
 
             try
@@ -295,9 +288,8 @@ public static partial class EditContextDataAnnotationsExtensions
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // Task was cancelled (user re-edited field or form is submitting). The notification
-                // emitted by the superseding TrackFieldValidation call already reflects the cleared
-                // messages, so no extra notification is needed here.
+                // Cancelled (field re-edited or form submitting); the superseding TrackFieldValidation
+                // call already notified with the cleared messages.
                 return;
             }
 
@@ -306,8 +298,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 _messages.Add(fieldIdentifier, result.ErrorMessage!);
             }
 
-            // We have to notify even if there were no messages before and are still no messages now,
-            // because the "state" that changed might be the completion of some async validation task
+            // Notify even when messages are unchanged: the change may be the completion of async validation.
             _editContext.NotifyValidationStateChanged();
         }
 
@@ -324,8 +315,7 @@ public static partial class EditContextDataAnnotationsExtensions
                 ValidationContext = validationContext,
             };
 
-            // Clear stale messages up-front so the field shows neutral state during validation and
-            // after a throw or cancellation. Any faulted state is signalled separately via EditContext.IsValidationFaulted.
+            // Clear stale messages so the field shows neutral state; faulted state is signalled via EditContext.IsValidationFaulted.
             _messages.Clear(fieldIdentifier);
 
             try
@@ -334,9 +324,8 @@ public static partial class EditContextDataAnnotationsExtensions
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // Task was cancelled (user re-edited field or form is submitting). The notification
-                // emitted by the superseding TrackFieldValidation call already reflects the cleared
-                // messages, so no extra notification is needed here.
+                // Cancelled (field re-edited or form submitting); the superseding TrackFieldValidation
+                // call already notified with the cleared messages.
                 return;
             }
 
