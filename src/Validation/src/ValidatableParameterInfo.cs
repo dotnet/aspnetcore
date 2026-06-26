@@ -55,6 +55,19 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
+    private void ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context)
+    {
+        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        {
+            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
+
+            if (result is not null && result != ValidationResult.Success)
+            {
+                ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
+            }
+        }
+    }
+
     /// <inheritdoc />
     /// <remarks>
     /// If the parameter is a collection, each item in the collection will be validated.
@@ -69,16 +82,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
         var validationAttributes = GetValidationAttributes();
 
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
-        {
-            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
-
-            if (result is not null && result != ValidationResult.Success)
-            {
-                ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
-                return;
-            }
-        }
+        ValidateRequiredAttribute(validationAttributes, value, context);
 
         // Validate against validation attributes
         await context.ValidateAttributesAsync(value, null, this, cancellationToken);
@@ -144,16 +148,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
         var validationAttributes = GetValidationAttributes();
 
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
-        {
-            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
-
-            if (result is not null && result != ValidationResult.Success)
-            {
-                ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
-                return;
-            }
-        }
+        ValidateRequiredAttribute(validationAttributes, value, context);
 
         // Validate against validation attributes
         context.ValidateAllAttributesSynchronously(value, null, this);
