@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <summary>
 /// A <see cref="IComponentRenderMode"/> indicating that the component should be rendered interactively on the client using WebAssembly.
 /// </summary>
-public class InteractiveWebAssemblyRenderMode : IComponentRenderMode, IPrerenderMode
+public class InteractiveWebAssemblyRenderMode : IComponentRenderMode
 {
     /// <summary>
     /// Constructs an instance of <see cref="InteractiveWebAssemblyRenderMode"/>.

@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <summary>
 /// A <see cref="IComponentRenderMode"/> indicating that the component should be interactive, with its hosting platform determined automatically based on a policy.
 /// </summary>
-public class InteractiveAutoRenderMode : IComponentRenderMode, IPrerenderMode
+public class InteractiveAutoRenderMode : IComponentRenderMode
 {
     /// <summary>
     /// Constructs an instance of <see cref="InteractiveAutoRenderMode"/>.
