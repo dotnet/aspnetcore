@@ -51,6 +51,11 @@ public sealed class ComponentDisposableSanityAnalyzer : DiagnosticAnalyzer
                 var implementsIAsyncDisposable = iAsyncDisposableType is not null
                     && type.AllInterfaces.Any(i => SymbolEqualityComparer.Default.Equals(i, iAsyncDisposableType));
 
+                if (implementsIDisposable && implementsIAsyncDisposable)
+                {
+                    return;
+                }
+
                 foreach (var member in type.GetMembers())
                 {
                     if (member is not IMethodSymbol { MethodKind: MethodKind.Ordinary, DeclaredAccessibility: Accessibility.Public, IsStatic: false } method
