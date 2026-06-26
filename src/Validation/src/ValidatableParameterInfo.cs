@@ -55,7 +55,7 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
-    private void ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context)
+    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context)
     {
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
@@ -64,8 +64,11 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
             if (result is not null && result != ValidationResult.Success)
             {
                 ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
+                return false;
             }
         }
+
+        return true;
     }
 
     /// <inheritdoc />
@@ -82,7 +85,10 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
         var validationAttributes = GetValidationAttributes();
 
-        ValidateRequiredAttribute(validationAttributes, value, context);
+        if (!ValidateRequiredAttribute(validationAttributes, value, context))
+        {
+            return;
+        }
 
         // Validate against validation attributes
         await context.ValidateAttributesAsync(value, null, this, cancellationToken);
@@ -148,7 +154,10 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
         var validationAttributes = GetValidationAttributes();
 
-        ValidateRequiredAttribute(validationAttributes, value, context);
+        if (!ValidateRequiredAttribute(validationAttributes, value, context))
+        {
+            return;
+        }
 
         // Validate against validation attributes
         context.ValidateAllAttributesSynchronously(value, null, this);

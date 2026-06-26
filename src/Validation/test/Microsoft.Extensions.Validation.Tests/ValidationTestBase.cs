@@ -33,15 +33,15 @@ public abstract class ValidationTestBase
         }
     }
 
-    public static async Task ValidateAsync(IValidatableParameterInfo parameterInfoInfo, object? value, ValidateContext context, bool useAsync, CancellationToken cancellationToken)
+    public static async Task ValidateAsync(IValidatableParameterInfo parameterInfo, object? value, ValidateContext context, bool useAsync, CancellationToken cancellationToken)
     {
         if (useAsync)
         {
-            await parameterInfoInfo.ValidateAsync(value, context, cancellationToken);
+            await parameterInfo.ValidateAsync(value, context, cancellationToken);
         }
         else
         {
-            parameterInfoInfo.Validate(value, context);
+            parameterInfo.Validate(value, context);
         }
     }
 }

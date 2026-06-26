@@ -6,7 +6,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Microsoft.Diagnostics.Runtime.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation.Tests;
