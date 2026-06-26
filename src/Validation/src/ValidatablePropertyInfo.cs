@@ -68,6 +68,23 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     /// <returns>An array of validation attributes to apply to this property.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
+    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject)
+    {
+        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        {
+            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
+
+            if (result is not null && result != ValidationResult.Success)
+            {
+                ((IValidationErrorReporter)this).ReportError(context, containingObject, _requiredAttribute, result);
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object containingObject, ValidateContext context, CancellationToken cancellationToken)
     {
@@ -94,19 +111,12 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
-
-            if (result is not null && result != ValidationResult.Success)
-            {
-                ((IValidationErrorReporter)this).ReportError(context, containingObject, _requiredAttribute, result);
-
-                // Restore the validation path mutated above before returning early so that sibling
-                // members validated with the same (shared) context observe the original prefix.
-                context.CurrentValidationPath = originalPrefix;
-                return;
-            }
+            // Restore the validation path mutated above before returning early so that sibling
+            // members validated with the same (shared) context observe the original prefix.
+            context.CurrentValidationPath = originalPrefix;
+            return;
         }
 
         // Validate any other attributes
@@ -206,19 +216,12 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         context.ValidationContext.MemberName = Name;
 
         // Check required attribute first
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
-
-            if (result is not null && result != ValidationResult.Success)
-            {
-                ((IValidationErrorReporter)this).ReportError(context, containingObject, _requiredAttribute, result);
-
-                // Restore the validation path mutated above before returning early so that sibling
-                // members validated with the same (shared) context observe the original prefix.
-                context.CurrentValidationPath = originalPrefix;
-                return;
-            }
+            // Restore the validation path mutated above before returning early so that sibling
+            // members validated with the same (shared) context observe the original prefix.
+            context.CurrentValidationPath = originalPrefix;
+            return;
         }
 
         // Validate any other attributes
