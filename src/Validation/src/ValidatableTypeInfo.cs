@@ -126,14 +126,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         return null;
     }
 
-    /// <inheritdoc />
-    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private void ValidateDepth(ValidateContext context)
     {
-        if (value == null)
-        {
-            return;
-        }
-
         // Check if we've exceeded the maximum depth
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
@@ -142,6 +136,17 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
+    }
+
+    /// <inheritdoc />
+    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    {
+        if (value == null)
+        {
+            return;
+        }
+
+        ValidateDepth(context);
 
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
@@ -158,7 +163,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         }
 
         var clonedContextsHasErrors = await tracker.CompleteAsync();
-        
+
         var currentCount = context.ValidationErrors?.Count ?? 0;
 
         // If any property-level validation errors were found, return early
@@ -191,14 +196,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
             return;
         }
 
-        // Check if we've exceeded the maximum depth
-        if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
-        {
-            throw new InvalidOperationException(
-                $"Maximum validation depth of {context.ValidationOptions.MaxDepth} exceeded at '{context.CurrentValidationPath}' in '{Type.Name}'. " +
-                "This is likely caused by a circular reference in the object graph. " +
-                "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
-        }
+        ValidateDepth(context);
 
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
