@@ -386,7 +386,7 @@ jobs:
 
       - name: Save activity report logs cache
         if: ${{ always() }}
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/save@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
         with:
           path: ./.cache/gh-aw/activity-report-logs
           key: ${{ steps.activity_report_logs_cache.outputs.cache-primary-key }}
@@ -513,7 +513,7 @@ jobs:
 
       - name: Save forecast report logs cache
         if: ${{ always() }}
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/save@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
         with:
           path: ./.github/aw/logs
           key: ${{ runner.os }}-forecast-report-logs-${{ github.repository }}-${{ github.ref_name }}-${{ github.run_id }}
