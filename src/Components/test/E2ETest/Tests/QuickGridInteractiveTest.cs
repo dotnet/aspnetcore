@@ -157,29 +157,27 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     [Fact]
     public void SortByTypeMismatchShowsClearError()
     {
-        // When GridSort<TSortItem> doesn't match QuickGrid<TGridItem>,
-        // the error message should clearly identify both types
+        // When GridSort<(WeatherForecast, bool)> is used with QuickGrid<WeatherForecast>,
+        // the error message should show the type mismatch
         Navigate($"{ServerPathBase}/quickgrid-typemismatch");
 
         // The error boundary should catch the exception and display the error message
         Browser.Exists(By.CssSelector("#type-mismatch-error-with-title"));
 
-        // Verify the error message contains both types for clear debugging
+        // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-with-title")).Text;
 
-        Assert.Contains("Column 'Summary'", errorMessage);
-        Assert.Contains("TGridItem=System.ValueTuple`2", errorMessage);
+        Assert.Contains("The 'Summary' Column type mismatch: Column expects 'System.ValueTuple`2", errorMessage);
         Assert.Contains("WeatherForecast", errorMessage);
         Assert.Contains("System.Boolean", errorMessage);
-        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
-        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
+        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
     public void SortByTypeMismatchWithoutTitleShowsGenericError()
     {
-        // When GridSort<TSortItem> doesn't match QuickGrid<TGridItem> and column has no Title,
-        // the error message should use generic "Column" instead of the title
+        // When a column without a Title has a type mismatch,
+        // the error message should use "(unnamed)" instead of the title
         Navigate($"{ServerPathBase}/quickgrid-typemismatch");
 
         // The error boundary should catch the exception and display the error message
@@ -188,71 +186,81 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify the error message uses generic "Column" when Title is null
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-without-title")).Text;
 
-        Assert.Contains("Column '(unnamed)'", errorMessage);
-        Assert.Contains("TGridItem=System.ValueTuple`2", errorMessage);
+        Assert.Contains("The '(unnamed)' Column type mismatch: Column expects 'System.ValueTuple`2", errorMessage);
         Assert.Contains("WeatherForecast", errorMessage);
         Assert.Contains("System.Boolean", errorMessage);
-        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
-        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
+        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
     public void SortByTypeMismatchNestedGenericShowsClearError()
     {
-        // When GridSort<List<WeatherForecast>> doesn't match QuickGrid<WeatherForecast>,
-        // the error message should clearly identify both types
+        // When GridSort<List<WeatherForecast>> is used with QuickGrid<WeatherForecast>,
+        // the error message should show the type mismatch
         Navigate($"{ServerPathBase}/quickgrid-typemismatch");
 
         // The error boundary should catch the exception and display the error message
         Browser.Exists(By.CssSelector("#type-mismatch-error-nested-generic"));
 
-        // Verify the error message contains both types for clear debugging
+        // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-nested-generic")).Text;
 
-        Assert.Contains("Column 'Summary'", errorMessage);
-        Assert.Contains("TGridItem=System.Collections.Generic.List`1", errorMessage);
+        Assert.Contains("The 'Summary' Column type mismatch: Column expects 'System.Collections.Generic.List`1", errorMessage);
         Assert.Contains("WeatherForecast", errorMessage);
-        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
-        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
+        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
     public void SortByTypeMismatchEmployeeShowsClearError()
     {
-        // When GridSort<Employee> doesn't match QuickGrid<WeatherForecast>,
-        // the error message should clearly identify both types
+        // When GridSort<Employee> is used with QuickGrid<WeatherForecast>,
+        // the error message should show the type mismatch
         Navigate($"{ServerPathBase}/quickgrid-typemismatch");
 
         // The error boundary should catch the exception and display the error message
         Browser.Exists(By.CssSelector("#type-mismatch-error-employee"));
 
-        // Verify the error message contains both types for clear debugging
+        // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-employee")).Text;
 
-        Assert.Contains("Column 'Summary'", errorMessage);
-        Assert.Contains("TGridItem=", errorMessage);
+        Assert.Contains("The 'Summary' Column type mismatch: Column expects", errorMessage);
         Assert.Contains("Employee", errorMessage);
-        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
-        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
+        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
     public void SortByTypeMismatchVirtualizedShowsClearError()
     {
-        // When GridSort<Employee> doesn't match QuickGrid<WeatherForecast> in a virtualized grid,
-        // the error message should clearly identify both types
+        // When GridSort<Employee> is used in a virtualized QuickGrid<WeatherForecast>,
+        // the error message should show the type mismatch even in virtualized grids
         Navigate($"{ServerPathBase}/quickgrid-typemismatch");
 
         // The error boundary should catch the exception and display the error message
         Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
 
-        // Verify the error message contains both types for clear debugging
+        // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
 
-        Assert.Contains("Column 'Summary'", errorMessage);
-        Assert.Contains("TGridItem=", errorMessage);
+        Assert.Contains("The 'Summary' Column type mismatch: Column expects", errorMessage);
         Assert.Contains("Employee", errorMessage);
-        Assert.Contains("does not match the parent QuickGrid's item type", errorMessage);
-        Assert.Contains("Ensure the GridSort type parameter matches the grid's item type", errorMessage);
+        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
+    }
+
+    [Fact]
+    public void PropertyColumnTypeMismatchShowsClearError()
+    {
+        // When PropertyColumn TGridItem="@Employee" doesn't match QuickGrid<WeatherForecast>,
+        // the error message should clearly identify the PropertyColumn-specific type mismatch
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        // The error boundary should catch the exception and display the error message
+        Browser.Exists(By.CssSelector("#type-mismatch-error-propertycolumn"));
+
+        // Verify that the error message indicates a mismatched column data type
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-propertycolumn")).Text;
+
+        Assert.Contains("The 'First Name' Column type mismatch: Column expects", errorMessage);
+        Assert.Contains("Employee", errorMessage);
+        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
     }
 }

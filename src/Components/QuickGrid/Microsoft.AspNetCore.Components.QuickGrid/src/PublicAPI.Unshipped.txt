@@ -7,4 +7,3 @@ override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> 
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void
 *REMOVED*override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void
-override Microsoft.AspNetCore.Components.QuickGrid.TemplateColumn<TGridItem>.OnInitialized() -> void

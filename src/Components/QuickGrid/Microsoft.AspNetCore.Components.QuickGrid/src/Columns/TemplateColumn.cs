@@ -28,14 +28,4 @@ public class TemplateColumn<TGridItem> : ColumnBase<TGridItem>
     /// <inheritdoc />
     protected override bool IsSortableByDefault()
         => SortBy is not null;
-
-    /// <inheritdoc />
-    protected override void OnInitialized()
-    {
-        if (InternalGridContext is null)
-        {
-            string displayName = string.IsNullOrWhiteSpace(Title) ? "(unnamed)" : Title;
-            throw new InvalidOperationException($"Column '{displayName}' has TGridItem={typeof(TGridItem).FullName} which does not match the parent QuickGrid's item type. Ensure the GridSort type parameter matches the grid's item type.");
-        }
-    }
 }

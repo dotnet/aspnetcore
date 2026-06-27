@@ -118,6 +118,25 @@
     </ErrorBoundary>
 </div>
 
+<div id="grid-propertycolumn-mismatch">
+    <h4>Grid With PropertyColumn Type Mismatch</h4>
+    <ErrorBoundary>
+        <ChildContent>
+            @* PropertyColumn TGridItem="@Employee" does not match QuickGrid<WeatherForecast> *@
+            <QuickGrid Items="@forecasts">
+                <PropertyColumn TGridItem="@Employee" TProp="string" Title="First Name" Property="f => f.FirstName" Sortable="true" IsDefaultSortColumn="true" />
+                <PropertyColumn Title="°C" Property="f => f.TemperatureC" Sortable="true" />
+            </QuickGrid>
+        </ChildContent>
+        <ErrorContent Context="ex">
+            <div id="type-mismatch-error-propertycolumn">
+                <h5>Type Mismatch Error</h5>
+                <p id="error-message-propertycolumn">@ex.Message</p>
+            </div>
+        </ErrorContent>
+    </ErrorBoundary>
+</div>
+
 @code {
     private IQueryable<WeatherForecast>? forecasts;
 
