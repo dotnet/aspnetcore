@@ -64,7 +64,11 @@ public class TagHelperExecutionContext
         _allAttributes = new TagHelperAttributeList();
 
         Context = new TagHelperContext(tagName, _allAttributes, items, uniqueId);
-        Output = new TagHelperOutput(tagName, new TagHelperAttributeList(), GetChildContentAsync)
+        Output = new TagHelperOutput(
+            tagName,
+            new TagHelperAttributeList(),
+            GetChildContentAsync,
+            initializeContentFromChildContent: true)
         {
             TagMode = tagMode
         };

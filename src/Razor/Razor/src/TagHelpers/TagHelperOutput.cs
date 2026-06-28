@@ -17,6 +17,7 @@ public class TagHelperOutput : IHtmlContentContainer
     private TagHelperContent _content;
     private TagHelperContent _postContent;
     private TagHelperContent _postElement;
+    private readonly bool _initializeContentFromChildContent;
     private bool _wasSuppressOutputCalled;
 
     // Internal for testing
@@ -48,6 +49,16 @@ public class TagHelperOutput : IHtmlContentContainer
         TagName = tagName;
         _getChildContentAsync = getChildContentAsync;
         Attributes = attributes;
+    }
+
+    internal TagHelperOutput(
+        string tagName,
+        TagHelperAttributeList attributes,
+        Func<bool, HtmlEncoder, Task<TagHelperContent>> getChildContentAsync,
+        bool initializeContentFromChildContent)
+        : this(tagName, attributes, getChildContentAsync)
+    {
+        _initializeContentFromChildContent = initializeContentFromChildContent;
     }
 
     /// <summary>
@@ -103,7 +114,9 @@ public class TagHelperOutput : IHtmlContentContainer
         {
             if (_content == null)
             {
-                _content = new DefaultTagHelperContent();
+                _content = _initializeContentFromChildContent ?
+                    new TagHelperOutputContent(GetChildContentAsync) :
+                    new DefaultTagHelperContent();
             }
 
             return _content;
@@ -189,7 +202,14 @@ public class TagHelperOutput : IHtmlContentContainer
 
         _preElement?.Reinitialize();
         _preContent?.Reinitialize();
-        _content?.Reinitialize();
+        if (_initializeContentFromChildContent)
+        {
+            _content = null;
+        }
+        else
+        {
+            _content?.Reinitialize();
+        }
         _postContent?.Reinitialize();
         _postElement?.Reinitialize();
 
@@ -209,7 +229,8 @@ public class TagHelperOutput : IHtmlContentContainer
         _wasSuppressOutputCalled = true;
         _preElement?.Clear();
         _preContent?.Clear();
-        _content?.Clear();
+        _content ??= new DefaultTagHelperContent();
+        _content.Clear();
         _postContent?.Clear();
         _postElement?.Clear();
     }
@@ -427,5 +448,201 @@ public class TagHelperOutput : IHtmlContentContainer
         }
 
         _postElement?.WriteTo(writer, encoder);
+    }
+
+    private sealed class TagHelperOutputContent : TagHelperContent
+    {
+        private readonly DefaultTagHelperContent _content = new DefaultTagHelperContent();
+        private readonly Func<Task<TagHelperContent>> _getInitialContentAsync;
+        private IHtmlContent _initialContent;
+        private bool _initialContentLoaded;
+        private bool? _initialContentIsEmptyOrWhiteSpace;
+        private bool _isModified;
+
+        public TagHelperOutputContent(Func<Task<TagHelperContent>> getInitialContentAsync)
+        {
+            _getInitialContentAsync = getInitialContentAsync;
+        }
+
+        public override bool IsModified => _isModified;
+
+        public override bool IsEmptyOrWhiteSpace
+        {
+            get
+            {
+                EnsureInitialContentLoaded();
+
+                if (_isModified || _initialContent == null)
+                {
+                    return _content.IsEmptyOrWhiteSpace;
+                }
+
+                if (_initialContent is TagHelperContent tagHelperContent)
+                {
+                    return tagHelperContent.IsEmptyOrWhiteSpace;
+                }
+
+                _initialContentIsEmptyOrWhiteSpace ??= GetIsEmptyOrWhiteSpace(_initialContent);
+                return _initialContentIsEmptyOrWhiteSpace.Value;
+            }
+        }
+
+        public override TagHelperContent Append(string unencoded)
+        {
+            EnsureInitialContent();
+            _content.Append(unencoded);
+            _isModified = true;
+
+            return this;
+        }
+
+        public override TagHelperContent AppendHtml(IHtmlContent htmlContent)
+        {
+            EnsureInitialContent();
+            _content.AppendHtml(htmlContent);
+            _isModified = true;
+
+            return this;
+        }
+
+        public override TagHelperContent AppendHtml(string encoded)
+        {
+            EnsureInitialContent();
+            _content.AppendHtml(encoded);
+            _isModified = true;
+
+            return this;
+        }
+
+        public override TagHelperContent Clear()
+        {
+            _initialContent = null;
+            _initialContentLoaded = true;
+            _initialContentIsEmptyOrWhiteSpace = null;
+            _content.Clear();
+            _isModified = true;
+
+            return this;
+        }
+
+        public override void Reinitialize()
+        {
+            _initialContent = null;
+            _initialContentLoaded = false;
+            _initialContentIsEmptyOrWhiteSpace = null;
+            _content.Reinitialize();
+            _isModified = false;
+        }
+
+        public override void CopyTo(IHtmlContentBuilder destination)
+        {
+            ArgumentNullException.ThrowIfNull(destination);
+
+            EnsureInitialContentLoaded();
+
+            if (_isModified || _initialContent == null)
+            {
+                _content.CopyTo(destination);
+            }
+            else if (_initialContent is IHtmlContentContainer container)
+            {
+                container.CopyTo(destination);
+            }
+            else
+            {
+                destination.AppendHtml(_initialContent);
+            }
+        }
+
+        public override void MoveTo(IHtmlContentBuilder destination)
+        {
+            ArgumentNullException.ThrowIfNull(destination);
+
+            EnsureInitialContentLoaded();
+
+            if (_isModified || _initialContent == null)
+            {
+                _content.MoveTo(destination);
+            }
+            else if (_initialContent is IHtmlContentContainer container)
+            {
+                container.MoveTo(destination);
+            }
+            else
+            {
+                destination.AppendHtml(_initialContent);
+            }
+
+            Clear();
+        }
+
+        public override string GetContent() => GetContent(HtmlEncoder.Default);
+
+        public override string GetContent(HtmlEncoder encoder)
+        {
+            ArgumentNullException.ThrowIfNull(encoder);
+
+            using (var writer = new StringWriter())
+            {
+                WriteTo(writer, encoder);
+                return writer.ToString();
+            }
+        }
+
+        public override void WriteTo(TextWriter writer, HtmlEncoder encoder)
+        {
+            ArgumentNullException.ThrowIfNull(writer);
+            ArgumentNullException.ThrowIfNull(encoder);
+
+            EnsureInitialContentLoaded();
+
+            if (_isModified || _initialContent == null)
+            {
+                _content.WriteTo(writer, encoder);
+            }
+            else
+            {
+                _initialContent.WriteTo(writer, encoder);
+            }
+        }
+
+        private void EnsureInitialContent()
+        {
+            EnsureInitialContentLoaded();
+
+            if (!_isModified && _initialContent != null)
+            {
+                CopyInitialContentTo(_content);
+                _initialContent = null;
+                _initialContentLoaded = false;
+                _initialContentIsEmptyOrWhiteSpace = null;
+            }
+        }
+
+        private void EnsureInitialContentLoaded()
+        {
+            if (!_isModified && !_initialContentLoaded)
+            {
+                _initialContent = _getInitialContentAsync().GetAwaiter().GetResult();
+                _initialContentLoaded = true;
+            }
+        }
+
+        private void CopyInitialContentTo(IHtmlContentBuilder destination)
+        {
+            if (_initialContent is IHtmlContentContainer container)
+            {
+                container.CopyTo(destination);
+            }
+            else
+            {
+                destination.AppendHtml(_initialContent);
+            }
+        }
+
+        private static bool GetIsEmptyOrWhiteSpace(IHtmlContent content)
+        {
+            return new DefaultTagHelperContent().SetHtmlContent(content).IsEmptyOrWhiteSpace;
+        }
     }
 }

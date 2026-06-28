@@ -24,6 +24,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Razor.Test" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Razor.Runtime" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Razor.Runtime.Test" />
   </ItemGroup>
 </Project>
