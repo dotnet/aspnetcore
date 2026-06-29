@@ -1349,7 +1349,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         // Act
         await endpoint.RequestDelegate!(httpContext);
 
-        //  Assert
+        // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         Assert.False(handlerExecuted, "Handler should not have been executed when parameter binding fails");
     }
