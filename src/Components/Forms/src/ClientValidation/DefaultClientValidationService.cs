@@ -11,6 +11,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.AspNetCore.Components.Forms.ClientValidation;
 

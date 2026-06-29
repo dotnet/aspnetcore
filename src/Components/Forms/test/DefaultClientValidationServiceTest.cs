@@ -8,6 +8,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms.ClientValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 

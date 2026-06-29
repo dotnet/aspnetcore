@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation.Tests;
 

@@ -3,7 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 
-namespace Microsoft.Extensions.Validation;
+namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
 /// Provides context to the <see cref="IValidationLocalizer.ResolveDisplayName"/> method

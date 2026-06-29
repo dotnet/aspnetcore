@@ -7,21 +7,27 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Validation.Localization;
 
-internal sealed class DefaultValidationLocalizer : IValidationLocalizer
+public sealed class ValidationLocalizer
 {
     private readonly IStringLocalizerFactory _localizerFactory;
     private readonly ValidationLocalizationOptions _options;
 
-    public DefaultValidationLocalizer(IStringLocalizerFactory factory, IOptions<ValidationLocalizationOptions> options)
+    public ValidationLocalizer(
+        IStringLocalizerFactory factory,
+        IOptions<ValidationOptions> options)
     {
         ArgumentNullException.ThrowIfNull(factory);
         ArgumentNullException.ThrowIfNull(options);
 
         _localizerFactory = factory;
-        _options = options.Value;
+        _options = options.Value.Localization;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Resolves a localized display name for the member described by <paramref name="context"/>.
+    /// </summary>
+    /// <param name="context">Information about the member to resolve a display name for.</param>
+    /// <returns>The localized display name, or <see langword="null"/> if not available.</returns>
     public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
     {
         if (context.DisplayName is null)
@@ -35,7 +41,19 @@ internal sealed class DefaultValidationLocalizer : IValidationLocalizer
         return localizedName.ResourceNotFound ? context.DisplayName : localizedName.Value;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Resolves a fully-formatted localized error message for the validation attribute described
+    /// by <paramref name="context"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Implementations should return <see langword="null"/> when no localized message is available;
+    /// the validation pipeline falls back to the attribute's default error message.
+    /// </para>
+    /// </remarks>
+    /// <param name="context">Information about the validation attribute and the member it applied to.</param>
+    /// <returns>The fully-formatted localized error message, or <see langword="null"/> to use the
+    /// attribute's default message.</returns>
     public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
     {
         // ErrorMessageKeyProvider, when configured, has precedence over Attribute.ErrorMessage.

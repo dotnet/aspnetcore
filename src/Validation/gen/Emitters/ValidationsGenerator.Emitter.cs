@@ -214,7 +214,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
         public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
         {
-            var localizer = context.ValidationOptions.Localizer;
+            var localizer = context.GetLocalizer();
             if (localizer is null)
             {
                 return _literal;

@@ -47,13 +47,47 @@ Microsoft.Extensions.Validation.IValidatableTypeInfo.ValidateAsync(object? value
 Microsoft.Extensions.Validation.IValidationLocalizer
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveDisplayName(in Microsoft.Extensions.Validation.DisplayNameLocalizationContext context) -> string?
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveErrorMessage(in Microsoft.Extensions.Validation.ErrorMessageLocalizationContext context) -> string?
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.DisplayName.get -> string?
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.DisplayName.init -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.DisplayNameLocalizationContext() -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.MemberName.get -> string!
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.MemberName.init -> void
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.Type.get -> System.Type?
+Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext.Type.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Attribute.get -> System.ComponentModel.DataAnnotations.ValidationAttribute!
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.Attribute.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DeclaringType.get -> System.Type?
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DeclaringType.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DisplayName.get -> string!
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.DisplayName.init -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.ErrorMessageLocalizationContext() -> void
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.MemberName.get -> string!
+Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext.MemberName.init -> void
+Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter
+Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter.FormatErrorMessage(System.Globalization.CultureInfo! culture, string! messageTemplate, string! displayName) -> string!
+Microsoft.Extensions.Validation.Localization.IValidationLocalizer
+Microsoft.Extensions.Validation.Localization.IValidationLocalizer.ResolveDisplayName(in Microsoft.Extensions.Validation.Localization.DisplayNameLocalizationContext context) -> string?
+Microsoft.Extensions.Validation.Localization.IValidationLocalizer.ResolveErrorMessage(in Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext context) -> string?
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.AddFormatter<TAttribute>(System.Func<TAttribute!, Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter!>! factory) -> void
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.GetFormatter(System.ComponentModel.DataAnnotations.ValidationAttribute! attribute) -> Microsoft.Extensions.Validation.Localization.IValidationAttributeFormatter?
+Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry.ValidationAttributeFormatterRegistry() -> void
+Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions
+Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.AttributeFormatters.get -> Microsoft.Extensions.Validation.Localization.ValidationAttributeFormatterRegistry!
+Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.ErrorMessageKeyProvider.get -> System.Func<Microsoft.Extensions.Validation.Localization.ErrorMessageLocalizationContext, string?>?
+Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.ErrorMessageKeyProvider.set -> void
+Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.LocalizerProvider.get -> System.Func<System.Type?, Microsoft.Extensions.Localization.IStringLocalizerFactory!, Microsoft.Extensions.Localization.IStringLocalizer!>?
+Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.LocalizerProvider.set -> void
+Microsoft.Extensions.Validation.Localization.ValidationLocalizationOptions.ValidationLocalizationOptions() -> void
 Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidatableTypeInfo.TryFindProperty(string! propertyName, Microsoft.Extensions.Validation.ValidationOptions! validationOptions, out Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo) -> bool
 Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidateContext.AddValidationError(Microsoft.Extensions.Validation.ValidationErrorContext validationErrorContext) -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IEnumerable<string!>!>?
-Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
+Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.Localization.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableInfo) -> bool
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo) -> bool
