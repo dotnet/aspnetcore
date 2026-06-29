@@ -105,7 +105,7 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
         {
             AnalyzeInvocation(invocation, availableTypes, analyzerState);
         }
-        else if (operation.Children.Any())
+        else
         {
             // Expression statements, blocks, switch, cases etc. that have children.
             foreach (var childOperation in operation.Children)
@@ -117,31 +117,33 @@ public sealed class ForLoopIteratorInClosureAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeForLoopVariables(IForLoopOperation forLoopOperation, ForLoopAnalyzerState analyzerState)
     {
-        if (forLoopOperation is not null)
+        if (forLoopOperation is null)
         {
-            // Get all incremented variables.
-            foreach (var bottomOperation in forLoopOperation.AtLoopBottom)
+            return;
+        }
+
+        // Get all incremented variables.
+        foreach (var bottomOperation in forLoopOperation.AtLoopBottom)
+        {
+            if (bottomOperation is IExpressionStatementOperation expression)
             {
-                if (bottomOperation is IExpressionStatementOperation expression)
+                if (expression.Operation is IIncrementOrDecrementOperation operation
+                    && operation.Target is ILocalReferenceOperation target)
                 {
-                    if (expression.Operation is IIncrementOrDecrementOperation operation
-                        && operation.Target is ILocalReferenceOperation target)
-                    {
-                        analyzerState.AddIterator(target.Local);
-                    }
-                    else if (expression.Operation is IAssignmentOperation assignment
-                        && assignment.Target is ILocalReferenceOperation assignmentTarget)
-                    {
-                        analyzerState.AddIterator(assignmentTarget.Local);
-                    }
+                    analyzerState.AddIterator(target.Local);
+                }
+                else if (expression.Operation is IAssignmentOperation assignment
+                    && assignment.Target is ILocalReferenceOperation assignmentTarget)
+                {
+                    analyzerState.AddIterator(assignmentTarget.Local);
                 }
             }
+        }
 
-            // The rest add as potentials.
-            foreach (var localVar in forLoopOperation.Locals)
-            {
-                analyzerState.AddPotentialIterator(localVar);
-            }
+        // The rest add as potentials.
+        foreach (var localVar in forLoopOperation.Locals)
+        {
+            analyzerState.AddPotentialIterator(localVar);
         }
     }
 

@@ -1138,4 +1138,23 @@ namespace ConsoleApplication1
             });
     }
 
+    [Fact]
+    public void ForLoopsWithSingleLineBodyShouldNotThrowWarnings()
+    {
+        var test = @"
+namespace ConsoleApplication1
+{
+    partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
+        {
+            for (var i = 0; i < stringArray.Length; i++)
+                System.Console.WriteLine(i);
+        }
+    }
+}" + BaseComponentDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
 }
