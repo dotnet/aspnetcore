@@ -5831,7 +5831,6 @@ public class Http2ConnectionTests : Http2TestBase
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     [InlineData((int)(Http2FrameType.CONTINUATION))]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66037")]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(int intFinalFrameType)
     {
         var finalFrameType = (Http2FrameType)intFinalFrameType;
@@ -5907,7 +5906,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Theory]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66309")]
     [InlineData((int)(Http2FrameType.DATA))]
     [InlineData((int)(Http2FrameType.HEADERS))]
     public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(int intFinalFrameType)

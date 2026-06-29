@@ -50,7 +50,7 @@ public static partial class EditContextDataAnnotationsExtensions
         private readonly ValidationMessageStore _messages;
         private readonly ValidationOptions? _validationOptions;
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-        private readonly IValidatableInfo? _validatorTypeInfo;
+        private readonly IValidatableTypeInfo? _validatorTypeInfo;
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private readonly Dictionary<string, FieldIdentifier> _validationPathToFieldIdentifierMapping = new();
 
@@ -83,7 +83,8 @@ public static partial class EditContextDataAnnotationsExtensions
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             if (_validationOptions is not null &&
-                _validationOptions.TryGetValidatablePropertyInfo(modelType, fieldIdentifier.FieldName, out var validatablePropertyInfo))
+                _validationOptions.TryGetValidatableTypeInfo(modelType, out var typeInfo) &&
+                typeInfo.TryFindProperty(fieldIdentifier.FieldName, _validationOptions, out var validatablePropertyInfo))
             {
                 var cts = new CancellationTokenSource();
                 var task = ValidateFieldAsync(fieldIdentifier, validatablePropertyInfo, cts.Token);
@@ -143,7 +144,7 @@ public static partial class EditContextDataAnnotationsExtensions
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
-        private async Task ValidateFormAsync(IValidatableInfo validatableInfo, CancellationToken cancellationToken)
+        private async Task ValidateFormAsync(IValidatableTypeInfo validatableInfo, CancellationToken cancellationToken)
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
             var validateContext = new ValidateContext
@@ -204,7 +205,7 @@ public static partial class EditContextDataAnnotationsExtensions
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private async Task ValidateFieldAsync(
             FieldIdentifier fieldIdentifier,
-            IValidatableInfo validatableInfo,
+            IValidatablePropertyInfo validatableInfo,
             CancellationToken cancellationToken)
         {
             var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null);

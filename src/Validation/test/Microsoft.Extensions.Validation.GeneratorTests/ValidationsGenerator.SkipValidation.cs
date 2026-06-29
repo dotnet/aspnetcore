@@ -8,12 +8,16 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Validation;
 
+using static Microsoft.Extensions.Validation.Tests.ValidationTestBase;
+
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
-    [Fact]
-    public async Task DoesNotEmit_ForSkipValidationAttribute_OnClassProperties()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DoesNotEmit_ForSkipValidationAttribute_OnClassProperties(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -113,7 +117,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
             await InvalidSubTypeNestedIntegers_ProduceErrors(validatableTypeInfo);
             await InvalidAlwaysSkippedType_DoesNotProduceError(validatableTypeInfo);
 
-            async Task InvalidSkippedInteger_DoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidSkippedInteger_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var intProperty = type.GetProperty("IntegerWithRange");
@@ -125,12 +129,12 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidNestedInteger_ProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidNestedInteger_ProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("ObjectProperty").GetValue(instance);
@@ -143,7 +147,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -152,7 +156,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 });
             }
 
-            async Task InvalidSkippedNestedInteger_DoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidSkippedNestedInteger_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("SkippedObjectProperty").GetValue(instance);
@@ -165,12 +169,12 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidList_ProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidList_ProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var rootInstance = Activator.CreateInstance(type);
                 var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(type.Assembly.GetType("NestedType")!));
@@ -189,7 +193,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(rootInstance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -198,7 +202,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 });
             }
 
-            async Task InvalidSkippedList_DoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidSkippedList_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var rootInstance = Activator.CreateInstance(type);
                 var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(type.Assembly.GetType("NestedType")!));
@@ -217,12 +221,12 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(rootInstance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, rootInstance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidSubTypeNestedIntegers_ProduceErrors(IValidatableInfo validatableInfo)
+            async Task InvalidSubTypeNestedIntegers_ProduceErrors(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("NonSkippedSubTypeProperty").GetValue(instance);
@@ -237,7 +241,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 // Errors are (currently) reported in the order from derived to base type.
                 Assert.Collection(context.ValidationErrors,
@@ -253,7 +257,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     });
             }
 
-            async Task InvalidAlwaysSkippedType_DoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidAlwaysSkippedType_DoesNotProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("AlwaysSkippedProperty").GetValue(instance);
@@ -266,15 +270,17 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
         });
     }
 
-    [Fact]
-    public async Task DoesNotEmit_ForSkipValidationAttribute_OnRecordProperties()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DoesNotEmit_ForSkipValidationAttribute_OnRecordProperties(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -328,7 +334,7 @@ public record AlwaysSkippedType
             await InvalidSkippedNestedIntegerWithRangeDoesNotProduceProduceError(validatableTypeInfo);
             await InvalidSkippedIntegerWithRangeDoesNotProduceError(validatableTypeInfo);
 
-            async Task InvalidNestedIntegerWithRangeProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidNestedIntegerWithRangeProducesError(IValidatableTypeInfo validatableInfo)
             {
                 var objectProperty = type.GetProperty("ObjectProperty");
                 var nestedType = objectProperty.PropertyType;
@@ -343,7 +349,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -352,7 +358,7 @@ public record AlwaysSkippedType
                 });
             }
 
-            async Task InvalidSkippedNestedIntegerWithRangeDoesNotProduceProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidSkippedNestedIntegerWithRangeDoesNotProduceProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var objectProperty = type.GetProperty("ObjectProperty");
                 var nestedType = objectProperty.PropertyType;
@@ -367,12 +373,12 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidSkippedIntegerWithRangeDoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidSkippedIntegerWithRangeDoesNotProduceError(IValidatableTypeInfo validatableInfo)
             {
                 var objectProperty = type.GetProperty("ObjectProperty");
                 var nestedType = objectProperty.PropertyType;
@@ -385,7 +391,7 @@ public record AlwaysSkippedType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
