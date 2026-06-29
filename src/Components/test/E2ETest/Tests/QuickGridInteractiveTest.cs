@@ -167,10 +167,10 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-with-title")).Text;
 
-        Assert.Contains("The 'Summary' Column type mismatch: Column expects 'System.ValueTuple`2", errorMessage);
+        Assert.Contains("Column 'Summary' expects item type 'System.ValueTuple`2", errorMessage);
         Assert.Contains("WeatherForecast", errorMessage);
         Assert.Contains("System.Boolean", errorMessage);
-        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
@@ -186,10 +186,10 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify the error message uses generic "Column" when Title is null
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-without-title")).Text;
 
-        Assert.Contains("The '(unnamed)' Column type mismatch: Column expects 'System.ValueTuple`2", errorMessage);
+        Assert.Contains("Column '(unnamed)' expects item type 'System.ValueTuple`2", errorMessage);
         Assert.Contains("WeatherForecast", errorMessage);
         Assert.Contains("System.Boolean", errorMessage);
-        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
@@ -205,9 +205,9 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-nested-generic")).Text;
 
-        Assert.Contains("The 'Summary' Column type mismatch: Column expects 'System.Collections.Generic.List`1", errorMessage);
+        Assert.Contains("Column 'Summary' expects item type 'System.Collections.Generic.List`1", errorMessage);
         Assert.Contains("WeatherForecast", errorMessage);
-        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
@@ -223,9 +223,9 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-employee")).Text;
 
-        Assert.Contains("The 'Summary' Column type mismatch: Column expects", errorMessage);
+        Assert.Contains("Column 'Summary' expects item type", errorMessage);
         Assert.Contains("Employee", errorMessage);
-        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
@@ -241,9 +241,9 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
 
-        Assert.Contains("The 'Summary' Column type mismatch: Column expects", errorMessage);
+        Assert.Contains("Column 'Summary' expects item type", errorMessage);
         Assert.Contains("Employee", errorMessage);
-        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
     }
 
     [Fact]
@@ -259,8 +259,8 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         // Verify that the error message indicates a mismatched column data type
         var errorMessage = Browser.FindElement(By.CssSelector("#error-message-propertycolumn")).Text;
 
-        Assert.Contains("The 'First Name' Column type mismatch: Column expects", errorMessage);
+        Assert.Contains("Column 'First Name' expects item type", errorMessage);
         Assert.Contains("Employee", errorMessage);
-        Assert.Contains("but does not match the parent QuickGrid's item type.", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
     }
 }

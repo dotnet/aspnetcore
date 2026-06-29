@@ -118,7 +118,7 @@ public abstract partial class ColumnBase<TGridItem>
         if (InternalGridContext is null)
         {
             string displayName = string.IsNullOrWhiteSpace(Title) ? "(unnamed)" : Title;
-            throw new InvalidOperationException($"The '{displayName}' Column type mismatch: Column expects '{typeof(TGridItem).FullName}' but does not match the parent QuickGrid's item type.");
+            throw new InvalidOperationException($"Column '{displayName}' expects item type '{typeof(TGridItem).FullName}', which does not match the parent QuickGrid's item type.");
         }
     }
 }
