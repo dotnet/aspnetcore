@@ -99,6 +99,11 @@ internal sealed class OpenApiDocumentService(
 
     private async Task ApplyTransformersAsync(OpenApiDocument document, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
     {
+        if (_options.DocumentTransformers.Count == 0)
+        {
+            return;
+        }
+
         var documentTransformerContext = CreateDocumentTransformerContext(document, scopedServiceProvider, schemaTransformers);
         // Use index-based for loop to avoid allocating an enumerator with a foreach.
         for (var i = 0; i < _options.DocumentTransformers.Count; i++)
