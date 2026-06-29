@@ -590,7 +590,7 @@ public class ComponentBaseTest
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { "Value", 10 } // int instead of double
+            { "Value", 10 }
         });
         var ex = Assert.Throws<InvalidOperationException>(() =>
             component.SetParametersAsync(parameters).GetAwaiter().GetResult());
