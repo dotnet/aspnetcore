@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
@@ -24,26 +23,23 @@ internal sealed unsafe class KeyRingBasedDataProtectionProvider : IDataProtectio
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
-        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
-        var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-
 #if NET
-        if (encryptor is ISpanAuthenticatedEncryptor)
-        {
-            // allows caller to check if dataProtector supports Span APIs
-            // and use more performant APIs
-            return new KeyRingBasedSpanDataProtector(
-                logger: _logger,
-                keyRingProvider: _keyRingProvider,
-                originalPurposes: null,
-                newPurpose: purpose);
-        }
-#endif
-
+        // Always return the span-capable protector on .NET. It inspects the resolved encryptor at each Protect/Unprotect call
+        // and falls back to the byte[] path when the encryptor does not implement ISpanAuthenticatedEncryptor.
+        //
+        // We could deteremine whether the encryptor implements ISpanAuthenticatedEncryptor here and return the appropriate protector type,
+        // but that will force infra lookup (like db / storage) during startup, which is not expected. See dotnet/aspnetcore#67447.
+        return new KeyRingBasedSpanDataProtector(
+            logger: _logger,
+            keyRingProvider: _keyRingProvider,
+            originalPurposes: null,
+            newPurpose: purpose);
+#else
         return new KeyRingBasedDataProtector(
             logger: _logger,
             keyRingProvider: _keyRingProvider,
             originalPurposes: null,
             newPurpose: purpose);
+#endif
     }
 }

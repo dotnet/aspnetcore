@@ -892,6 +892,25 @@ public class KeyRingBasedDataProtectorTests
     }
 #endif
 
+    [Fact]
+    public void CreateProtector_DoesNotResolveKeyRing()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/67447
+        // CreateProtector must NOT call IKeyRingProvider.GetCurrentKeyRing(). That would force
+        // a key-store round-trip during protector creation (e.g. during app startup), causing
+        // apps that persist keys to an unreachable external store to fail at boot instead of on first Protect/Unprotect. 
+
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>(MockBehavior.Strict);
+        // No setup for GetCurrentKeyRing - any call will throw.
+
+        var provider = new KeyRingBasedDataProtectionProvider(mockKeyRingProvider.Object, NullLoggerFactory.Instance);
+
+        var protector = provider.CreateProtector("purpose");
+
+        Assert.NotNull(protector);
+        mockKeyRingProvider.Verify(o => o.GetCurrentKeyRing(), Times.Never);
+    }
+
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)
     {
         var expectedAad = new byte[] { 0x09, 0xF0, 0xC9, 0xF0 } // magic header
