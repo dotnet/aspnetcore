@@ -63,7 +63,7 @@ internal sealed partial class HttpConnectionDispatcher
         [LoggerMessage(19, LogLevel.Debug, "Authentication refresh for connection '{ConnectionId}' was rejected by OnAuthenticationRefresh callback.", EventName = "AuthenticationRefreshRejectedByCallback")]
         public static partial void AuthenticationRefreshRejectedByCallback(ILogger logger, string connectionId);
 
-        [LoggerMessage(20, LogLevel.Warning, "Rejecting the request because the name of the user changed from '{PreviousUserName}' to '{CurrentUserName}' on a connection that expects the client to reconnect.", EventName = "UserNameChangedRejected")]
+        [LoggerMessage(20, LogLevel.Warning, "Rejecting the request because the name of the user changed from '{PreviousUserName}' to '{CurrentUserName}' for an existing connection.", EventName = "UserNameChangedRejected")]
         private static partial void UserNameChangedRejectedInternal(ILogger logger, string previousUserName, string currentUserName);
 
         public static void UserNameChangedRejected(ILogger logger, string? previousUserName, string? currentUserName)
