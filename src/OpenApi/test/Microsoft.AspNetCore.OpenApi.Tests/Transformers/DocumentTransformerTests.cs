@@ -2,12 +2,50 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 
 public class DocumentTransformerTests : OpenApiDocumentServiceTestBase
 {
+    [Fact]
+    public async Task DocumentInitializer_RunsBeforeOperationsAreGenerated()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/users", () => { }).WithTags("users");
+
+        var options = new OpenApiOptions();
+        options.AddDocumentInitializer((document, context, cancellationToken) =>
+        {
+            Assert.Empty(document.Paths);
+
+            document.Tags ??= new HashSet<OpenApiTag>();
+            document.Tags.Add(new OpenApiTag
+            {
+                Name = "users",
+                Summary = "User operations",
+                Description = "Endpoints for user lifecycle."
+            });
+
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Contains("/users", document.Paths);
+            var tag = Assert.Single(document.Tags);
+            Assert.Equal("users", tag.Name);
+            Assert.Equal("User operations", tag.Summary);
+            Assert.Equal("Endpoints for user lifecycle.", tag.Description);
+
+            var operationTag = Assert.Single(document.Paths["/users"].Operations[HttpMethod.Get].Tags);
+            Assert.Equal("users", operationTag.Name);
+        });
+    }
+
     [Fact]
     public async Task DocumentTransformer_RunsInRegisteredOrder()
     {
