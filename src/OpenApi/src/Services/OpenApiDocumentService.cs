@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.ServerSentEvents;
 using System.Reflection;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
@@ -448,7 +449,7 @@ internal sealed class OpenApiDocumentService(
                     if (IsServerSentEventsResponse(contentType, responseType, out var eventDataType))
                     {
                         var dataSchema = await _componentService.GetOrCreateSchemaAsync(document, eventDataType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
-                        schema = CreateServerSentEventsItemSchema(dataSchema);
+                        schema = CreateServerSentEventsItemSchema(document, dataSchema);
                     }
                     else
                     {
@@ -513,7 +514,7 @@ internal sealed class OpenApiDocumentService(
         return false;
     }
 
-    private static OpenApiSchema CreateServerSentEventsItemSchema(IOpenApiSchema dataSchema)
+    private static OpenApiSchema CreateServerSentEventsItemSchema(OpenApiDocument document, IOpenApiSchema dataSchema)
         => new()
         {
             Type = JsonSchemaType.Object,
@@ -521,10 +522,38 @@ internal sealed class OpenApiDocumentService(
             Properties = new Dictionary<string, IOpenApiSchema>
             {
                 ["data"] = dataSchema,
-                ["event"] = new OpenApiSchema { Type = JsonSchemaType.String },
+                ["event"] = CreateServerSentEventsEventSchema(document, dataSchema),
                 ["id"] = new OpenApiSchema { Type = JsonSchemaType.String }
             }
         };
+
+    private static OpenApiSchema CreateServerSentEventsEventSchema(OpenApiDocument document, IOpenApiSchema dataSchema)
+    {
+        var eventSchema = new OpenApiSchema { Type = JsonSchemaType.String };
+        var eventDataSchema = ResolveSchemaReference(document, dataSchema);
+        if (eventDataSchema.Discriminator?.Mapping is { Count: > 0 } mapping)
+        {
+            eventSchema.Enum = [.. mapping.Keys.Select(static eventName => JsonValue.Create(eventName)!)];
+        }
+        else if (eventDataSchema is OpenApiSchema { AnyOf.Count: > 0 } schema
+            && schema.IsUnion())
+        {
+            eventSchema.Enum =
+            [
+                .. schema.AnyOf
+                    .OfType<OpenApiSchemaReference>()
+                    .Select(static schemaReference => JsonValue.Create(schemaReference.Reference.Id)!)
+            ];
+        }
+
+        return eventSchema;
+    }
+
+    private static IOpenApiSchema ResolveSchemaReference(OpenApiDocument document, IOpenApiSchema schema)
+        => schema is OpenApiSchemaReference { Reference.Id: { } schemaId }
+            && document.Components?.Schemas?.TryGetValue(schemaId, out var targetSchema) is true
+            ? targetSchema
+            : schema;
 
     private static bool IsServerSentEventsContentType(string contentType)
     {
