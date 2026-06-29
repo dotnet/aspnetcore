@@ -10,7 +10,7 @@ import { registerPauseDeferral } from '../../../src/Platform/Circuits/PauseDefer
 
 interface InternalServerPause {
   handleServerInitiatedPause(): Promise<void>;
-  invokePauseDeferrals(externalSignal?: AbortSignal): Promise<void>;
+  pauseCircuit(externalSignal?: AbortSignal): Promise<boolean>;
   pause(remote?: boolean): Promise<boolean>;
 }
 
@@ -77,7 +77,7 @@ describe('CircuitManager server-initiated pause deferral', () => {
     expect(order).toEqual(['pause']);
   });
 
-  test('server-initiated pause fires only the server-scoped deferrals', async () => {
+  test('server-initiated pause fires the server-scoped and untagged deferrals', async () => {
     Blazor.pause!.waitFor(() => { order.push('no-source'); }, undefined);
     Blazor.pause!.waitFor(() => { order.push('server'); }, { source: 'server' });
     Blazor.pause!.waitFor(() => { order.push('auto'); }, { source: 'auto' });
@@ -85,21 +85,21 @@ describe('CircuitManager server-initiated pause deferral', () => {
     await internal.handleServerInitiatedPause();
 
     expect(order).toContain('server');
-    expect(order).not.toContain('no-source');
+    expect(order).toContain('no-source');
     expect(order).not.toContain('auto');
     expect(order[order.length - 1]).toBe('pause');
   });
 
-  test('client pause (invokePauseDeferrals) fires every non-server deferral', async () => {
-    Blazor.pause!.waitFor((_signal, source) => { order.push(`no-source:${source}`); }, undefined);
+  test('client/auto pause fires the untagged and non-server deferrals', async () => {
+    Blazor.pause!.waitFor(() => { order.push('no-source'); }, undefined);
     Blazor.pause!.waitFor(() => { order.push('server'); }, { source: 'server' });
     Blazor.pause!.waitFor(() => { order.push('auto'); }, { source: 'auto' });
 
-    await internal.invokePauseDeferrals();
+    await internal.pauseCircuit();
 
-    expect(order).toContain('no-source:undefined');
+    expect(order).toContain('no-source');
     expect(order).toContain('auto');
     expect(order).not.toContain('server');
-    expect(order).not.toContain('pause');
+    expect(order[order.length - 1]).toBe('pause');
   });
 });

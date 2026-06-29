@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// What a deferral participant is scoped to. The framework only names 'server' (server-initiated
-// pause); anything else runs on client pauses. `(string & {})` keeps 'server' autocompletion while
-// allowing arbitrary package-defined labels.
+// What a deferral participant is scoped to. Untagged (no source) runs on every pause. 'server' runs
+// only on server-initiated pauses; any other label runs only on client/auto pauses. `(string & {})`
+// keeps 'server' autocompletion while allowing arbitrary package-defined labels.
 export type PauseSource = 'server' | (string & {});
 export type PauseDeferralHandler = (signal: AbortSignal, source?: PauseSource) => void | Promise<void>;
 

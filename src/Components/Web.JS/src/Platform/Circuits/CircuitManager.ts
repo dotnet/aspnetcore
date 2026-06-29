@@ -371,8 +371,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async handleServerInitiatedPause(): Promise<void> {
-    // Runs only the 'server'-scoped deferrals, then pauses.
-    await this.runPauseDeferrals(e => e.source === 'server');
+    // Runs the 'server'-scoped and untagged ("run always") deferrals, then pauses.
+    await this.runPauseDeferrals(e => e.source == null || e.source === 'server');
     await this.pause(true);
   }
 
