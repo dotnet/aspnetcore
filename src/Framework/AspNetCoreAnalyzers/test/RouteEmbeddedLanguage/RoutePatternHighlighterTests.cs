@@ -450,19 +450,6 @@ class Program
 ");
     }
 
-    // https://github.com/dotnet/aspnetcore/issues/64398
-    //
-    // When the route mapping and the handler method are in different files
-    // (e.g. two parts of the same partial class), RoutePatternHighlighter
-    // used to throw `ArgumentException: Syntax node is not within syntax tree`
-    // because it called GetSymbolInfo with the route file's SemanticModel on
-    // identifier nodes that live in the handler file's tree.
-    //
-    // AspNetCoreDocumentHighlights cannot carry a Document reference, so any
-    // highlight spans must belong to the active document. The expected
-    // behavior in the cross-file case is: highlight only the route literal
-    // span; do not emit any spans pointing into the handler file (those would
-    // be mis-mapped into the active document).
     [Fact]
     public async Task InParameterName_MatchingMethodInPartialClassAcrossFiles_HighlightsOnlyRouteLiteral()
     {
