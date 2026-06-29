@@ -11,6 +11,7 @@ using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
+using System.Net.ServerSentEvents;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -429,6 +430,7 @@ internal sealed class OpenApiDocumentService(
         // When multiple entries contribute different schemas for the same content-type, they
         // will be merged into an anyOf composite schema.
         var schemasByContentType = new Dictionary<string, List<IOpenApiSchema>>();
+        var contentTypesUsingItemSchema = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var apiResponseType in apiResponseTypes)
         {
@@ -443,10 +445,18 @@ internal sealed class OpenApiDocumentService(
                 IOpenApiSchema? schema = null;
                 if (apiResponseType.Type is { } responseType)
                 {
-                    schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
-                    schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
-                        ? schema.CreateOneOfNullableWrapper()
-                        : schema;
+                    if (IsServerSentEventsResponse(contentType, responseType, out var eventDataType))
+                    {
+                        var dataSchema = await _componentService.GetOrCreateSchemaAsync(document, eventDataType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                        schema = CreateServerSentEventsItemSchema(dataSchema);
+                    }
+                    else
+                    {
+                        schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                        schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
+                            ? schema.CreateOneOfNullableWrapper()
+                            : schema;
+                    }
                 }
 
                 schema ??= new OpenApiSchema();
@@ -458,6 +468,10 @@ internal sealed class OpenApiDocumentService(
                 }
 
                 schemas.Add(schema);
+                if (IsServerSentEventsResponse(contentType, apiResponseType.Type, out _))
+                {
+                    contentTypesUsingItemSchema.Add(contentType);
+                }
             }
         }
 
@@ -466,7 +480,9 @@ internal sealed class OpenApiDocumentService(
             IOpenApiSchema finalSchema = schemas.Count == 1
                 ? schemas[0]
                 : new OpenApiSchema { AnyOf = [.. schemas] };
-            response.Content[contentType] = new OpenApiMediaType { Schema = finalSchema };
+            response.Content[contentType] = contentTypesUsingItemSchema.Contains(contentType)
+                ? new OpenApiMediaType { ItemSchema = finalSchema }
+                : new OpenApiMediaType { Schema = finalSchema };
         }
 
         // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
@@ -481,6 +497,43 @@ internal sealed class OpenApiDocumentService(
         }
 
         return response;
+    }
+
+    private static bool IsServerSentEventsResponse(string contentType, Type? responseType, [NotNullWhen(true)] out Type? eventDataType)
+    {
+        if (IsServerSentEventsContentType(contentType)
+            && responseType is { IsConstructedGenericType: true }
+            && responseType.GetGenericTypeDefinition() == typeof(SseItem<>))
+        {
+            eventDataType = responseType.GetGenericArguments()[0];
+            return true;
+        }
+
+        eventDataType = null;
+        return false;
+    }
+
+    private static OpenApiSchema CreateServerSentEventsItemSchema(IOpenApiSchema dataSchema)
+        => new()
+        {
+            Type = JsonSchemaType.Object,
+            Required = new HashSet<string> { "data" },
+            Properties = new Dictionary<string, IOpenApiSchema>
+            {
+                ["data"] = dataSchema,
+                ["event"] = new OpenApiSchema { Type = JsonSchemaType.String },
+                ["id"] = new OpenApiSchema { Type = JsonSchemaType.String }
+            }
+        };
+
+    private static bool IsServerSentEventsContentType(string contentType)
+    {
+        var mediaTypeEnd = contentType.IndexOf(';');
+        var mediaType = mediaTypeEnd >= 0
+            ? contentType[..mediaTypeEnd]
+            : contentType;
+
+        return mediaType.Trim().Equals("text/event-stream", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<List<IOpenApiParameter>?> GetParametersAsync(
