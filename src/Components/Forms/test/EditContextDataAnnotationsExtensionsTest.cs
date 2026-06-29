@@ -213,11 +213,8 @@ public class EditContextDataAnnotationsExtensionsTest
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
-        var field = new FieldIdentifier(model, "orderid"); // incorrect case
-
+        var field = new FieldIdentifier(model, "orderid");
         editContext.NotifyFieldChanged(field);
-
-        // Should not resolve property → no validation
         Assert.Empty(editContext.GetValidationMessages());
     }
 
@@ -228,10 +225,8 @@ public class EditContextDataAnnotationsExtensionsTest
         var editContext = new EditContext(model);
         editContext.EnableDataAnnotationsValidation(_serviceProvider);
 
-        var field = new FieldIdentifier(model, "OrderID"); // correct case
-
+        var field = new FieldIdentifier(model, "OrderID");
         editContext.NotifyFieldChanged(field);
-
         Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
     }
 
