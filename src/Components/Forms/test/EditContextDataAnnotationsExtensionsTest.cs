@@ -243,12 +243,6 @@ public class EditContextDataAnnotationsExtensionsTest
 #pragma warning restore 649
     }
 
-    /// <summary>
-    /// Test model that reproduces the AmbiguousMatchException issue.
-    /// The derived class hides the OrderID property from the base class using the 'new' keyword,
-    /// which causes reflection to find both the base and derived properties when using GetProperty
-    /// without specific BindingFlags.
-    /// </summary>
     class DerivedModelWithHiddenProperty : ModelWithHiddenBaseProperty
     {
         [Range(1, 100, ErrorMessage = "OrderID:range")]
