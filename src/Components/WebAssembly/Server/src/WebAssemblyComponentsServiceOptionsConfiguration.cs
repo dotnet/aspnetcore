@@ -8,17 +8,16 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
-internal sealed class WebAssemblyComponentsServiceOptionsConfiguration(IConfiguration configuration, IServiceProvider serviceProvider) : IPostConfigureOptions<WebAssemblyComponentsServiceOptions>
+internal sealed class WebAssemblyComponentsServiceOptionsConfiguration(IConfiguration configuration, IServiceProviderIsService serviceProviderIsService) : IPostConfigureOptions<WebAssemblyComponentsServiceOptions>
 {
     public void PostConfigure(string? name, WebAssemblyComponentsServiceOptions options)
     {
         var value = configuration["Components:UseCultureFromServer"];
-
-        options.UseCultureFromServer = value switch
+        options.UseCultureFromServer = value?.ToLowerInvariant() switch
         {
-            _ when string.Equals(value, "true", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "1", StringComparison.OrdinalIgnoreCase) => true,
-            _ when string.Equals(value, "false", StringComparison.OrdinalIgnoreCase) || string.Equals(value, "0", StringComparison.OrdinalIgnoreCase) => false,
-            _ => serviceProvider.GetService<IStringLocalizerFactory>() is not null,
+            "true" or "1" => true,
+            "false" or "0" => false,
+            _ => serviceProviderIsService.IsService(typeof(IStringLocalizerFactory)),
         };
     }
 }
