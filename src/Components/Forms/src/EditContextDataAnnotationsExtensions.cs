@@ -275,10 +275,6 @@ public static partial class EditContextDataAnnotationsExtensions
                 }
                 catch (AmbiguousMatchException)
                 {
-                    // When a derived type hides a base type property (using 'new' keyword),
-                    // GetProperty can throw AmbiguousMatchException. In this case, get the property
-                    // declared on the derived type specifically. This is the correct property to use
-                    // for validation since it's the one the user is interacting with in the model.
                     propertyInfo = cacheKey.ModelType.GetProperty(cacheKey.FieldName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
                 }
 
