@@ -240,4 +240,22 @@
   <data name="AuthenticationStateProviderCachedWithoutSubscription_Title" xml:space="preserve">
     <value>AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged</value>
   </data>
+  <data name="ComponentHasDisposeWithoutIDisposable_Description" xml:space="preserve">
+    <value>A Blazor component declares a 'Dispose()' method but does not implement 'IDisposable'. The runtime will not call 'Dispose()' unless the component implements 'IDisposable'. Add '@implements IDisposable' (in .razor files) or 'IDisposable' to the class declaration.</value>
+  </data>
+  <data name="ComponentHasDisposeWithoutIDisposable_Format" xml:space="preserve">
+    <value>Component '{0}' has a 'Dispose()' method but does not implement 'IDisposable'. The runtime will not call 'Dispose()' automatically.</value>
+  </data>
+  <data name="ComponentHasDisposeWithoutIDisposable_Title" xml:space="preserve">
+    <value>Component has 'Dispose()' but does not implement 'IDisposable'</value>
+  </data>
+  <data name="ComponentHasDisposeAsyncWithoutIAsyncDisposable_Description" xml:space="preserve">
+    <value>A Blazor component declares a 'DisposeAsync()' method but does not implement 'IAsyncDisposable'. The runtime will not call 'DisposeAsync()' unless the component implements 'IAsyncDisposable'. Add '@implements IAsyncDisposable' (in .razor files) or 'IAsyncDisposable' to the class declaration.</value>
+  </data>
+  <data name="ComponentHasDisposeAsyncWithoutIAsyncDisposable_Format" xml:space="preserve">
+    <value>Component '{0}' has a 'DisposeAsync()' method but does not implement 'IAsyncDisposable'. The runtime will not call 'DisposeAsync()' automatically.</value>
+  </data>
+  <data name="ComponentHasDisposeAsyncWithoutIAsyncDisposable_Title" xml:space="preserve">
+    <value>Component has 'DisposeAsync()' but does not implement 'IAsyncDisposable'</value>
+  </data>
 </root>
