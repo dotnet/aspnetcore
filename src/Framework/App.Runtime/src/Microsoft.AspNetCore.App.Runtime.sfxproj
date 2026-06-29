@@ -135,11 +135,31 @@
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>
 
-  <Target Name="PublishToSharedLayoutRoot" BeforeTargets="Build">
-    <!-- Set _PublishingToLayout=true to differentiate global properties for this nested MSBuild call and avoid an intermittent circular dependency involving GetFilesToPublish. -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="PublishToDisk"
-             Properties="OutputPath=$(SharedFrameworkLayoutRoot);_PublishingToLayout=true" />
+  <!--
+    Publish the shared framework to the layout root by copying the already-built files, rather than
+    invoking PublishToDisk through a nested <MSBuild> call that overrides OutputPath. Overriding
+    OutputPath (a well-known global property) forks a new project configuration, and resolving the file
+    list under that forked configuration rebuilds the framework's assemblies a second time -- the
+    intermittent MSB3030 PDB copy race described in https://github.com/dotnet/msbuild/issues/12927.
+
+    Instead we run AfterTargets="Build" (so the framework's files are already built) and reuse the file
+    list produced by GetFilesToPublish in this same configuration, then copy it to the layout root. This
+    mirrors the Copy that arcade's PublishToDisk target performs, without the OutputPath fork. Because we
+    no longer reuse the OutputPath-differentiated configuration, _PublishingToLayout is also no longer
+    needed to avoid the circular dependency that overriding OutputPath previously introduced.
+  -->
+  <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build" DependsOnTargets="GetFilesToPublish">
+    <Copy SourceFiles="@(FilesToPublish)"
+          DestinationFolder="$(SharedFrameworkLayoutRoot)%(FilesToPublish.TargetPath)%(FilesToPublish.Culture)"
+          Condition="'%(FilesToPublish.IsSymbolFile)' != 'true' or '%(FilesToPublish.IncludeAlways)' == 'true'"
+          OverwriteReadOnlyFiles="true"
+          SkipUnchangedFiles="true" />
+
+    <!-- Fix file permissions in the layout dir, matching arcade's PublishToDisk target. -->
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f -name "*" -exec chmod 644 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f -name "*.dylib" -exec chmod 755 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f -name "*.so" -exec chmod 755 {} \;' />
+    <Exec Condition="!$([MSBuild]::IsOsPlatform(Windows))" Command='find "$(SharedFrameworkLayoutRoot)" -type f ! -name "*.*" -exec chmod 755 {} \;' />
   </Target>
 
   <Target Name="ReturnProductVersion" Returns="$(Version)" />
