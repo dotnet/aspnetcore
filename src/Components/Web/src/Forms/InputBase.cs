@@ -42,6 +42,9 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <example>
     /// @bind-Value="model.PropertyName"
     /// </example>
+    /// <remarks>
+    /// Assign a new instance when changing a mutable reference type so the change is detected.
+    /// </remarks>
     [Parameter]
     public TValue? Value { get; set; }
 
@@ -245,7 +248,6 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
         _parsingFailed = false;
         _incomingValueBeforeParsing = null;
-
         _parsingValidationMessages?.Clear();
     }
 
@@ -256,24 +258,13 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
     /// <inheritdoc />
     public override Task SetParametersAsync(ParameterView parameters)
     {
-        // Capture the previous value so we can detect when the parent updates the `Value`
-        // parameter directly. If the parent sets a new `Value` while the input is in a
-        // parsing-failed state, we should reset that state so the new valid value is
-        // rendered and any parsing-related validation messages are cleared.
         var previousValue = Value;
         parameters.SetParameterProperties(this);
 
-        // Note: We use value equality to detect changes. This works correctly for
-        // primitives, value types, and immutable types. For mutable reference types,
-        // the caller is responsible for ensuring new instances are provided when
-        // the logical value has changed.
-        if (_hasInitializedParameters && !EqualityComparer<TValue>.Default.Equals(Value, previousValue))
+        if (_hasInitializedParameters && !EqualityComparer<TValue>.Default.Equals(Value, previousValue) && _parsingFailed)
         {
-            if (_parsingFailed)
-            {
-                ResetParsingState();
-                EditContext?.NotifyValidationStateChanged();
-            }
+            ResetParsingState();
+            EditContext?.NotifyValidationStateChanged();
         }
 
         if (!_hasInitializedParameters)
@@ -324,12 +315,9 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
 
     private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
     {
-        _ = InvokeAsync(() =>
-        {
+
             UpdateAdditionalValidationAttributes();
             StateHasChanged();
-            return Task.CompletedTask;
-        });
     }
 
     private void UpdateAdditionalValidationAttributes()

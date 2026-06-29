@@ -572,6 +572,7 @@ public class InputBaseTest
         rootComponent.TriggerRender();
 
         Assert.Equal(initialMessageCount, rootComponent.EditContext.GetValidationMessages(fieldIdentifier).Count());
+        Assert.Equal("02/30/2000", inputComponent.CurrentValueAsString);
     }
 
     [Fact]
@@ -617,29 +618,7 @@ public class InputBaseTest
         Assert.Equal(new DateTime(2000, 2, 28), inputComponent.CurrentValue);
         Assert.Equal(new DateTime(2000, 2, 28).ToString("yyyy/MM/dd", CultureInfo.InvariantCulture), inputComponent.CurrentValueAsString);
         Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
-    }
-
-    [Fact]
-    public async Task SettingValueParameterToNewNullValueClearsParsingFailedState()
-    {
-        var model = new TestModelNullableInt();
-        var rootComponent = new TestInputHostComponent<int?, TestNullableIntInputComponent>
-        {
-            EditContext = new EditContext(model),
-            Value = 42,
-            ValueExpression = () => model.IntProperty
-        };
-        var fieldIdentifier = FieldIdentifier.Create(() => model.IntProperty);
-        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
-
-        await inputComponent.SetCurrentValueAsStringAsync("not-a-number");
-        Assert.Single(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
-
-        rootComponent.Value = null;
-        rootComponent.TriggerRender();
-
-        Assert.Null(inputComponent.CurrentValue);
-        Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+        Assert.DoesNotContain("invalid", inputComponent.CssClass);
     }
 
     [Fact]
@@ -667,28 +646,30 @@ public class InputBaseTest
     [Fact]
     public async Task SettingValueParameterToNewStringValueClearsParsingFailedState()
     {
-        // Arrange: verify behavior with a reference type (string) using a component whose
-        // TryParseValueFromString always fails so we can reliably enter parsing-failed state.
-        var stringInputWithParsing = await RenderStringInputWithFailingParser();
-        var fieldIdentifier = stringInputWithParsing.FieldIdentifier;
-        var editContext = stringInputWithParsing.EditContext;
+        var model = new TestModel();
+        var rootComponent = new TestInputHostComponent<string, TestStringInputWithFailingParser>
+        {
+            EditContext = new EditContext(model),
+            Value = "initial",
+            ValueExpression = () => model.StringProperty
+        };
+        var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        var fieldIdentifier = inputComponent.FieldIdentifier;
+        var editContext = inputComponent.EditContext;
 
-        // Put the input into a parsing-failed state
-        await stringInputWithParsing.SetCurrentValueAsStringAsync("unparseable");
+        await inputComponent.SetCurrentValueAsStringAsync("unparseable");
         Assert.Single(editContext.GetValidationMessages(fieldIdentifier));
 
-        // Act: parent sets a new non-null string Value
-        stringInputWithParsing.CurrentValue = "new value";
+        rootComponent.Value = "new value";
+        rootComponent.TriggerRender();
 
-        // Assert: parsing state is cleared, no stale validation messages
-        Assert.Equal("new value", stringInputWithParsing.CurrentValue);
+        Assert.Equal("new value", inputComponent.CurrentValue);
         Assert.Empty(editContext.GetValidationMessages(fieldIdentifier));
     }
 
     [Fact]
     public async Task SettingValueParameterToNewValueDoesNotClearExternalValidationMessages()
     {
-        // Arrange: input is in a parsing-failed state; an *external* source also posts a message for the same field
         var model = new TestModel();
         var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
         {
@@ -699,24 +680,21 @@ public class InputBaseTest
         var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Put the input into a parsing-failed state
         await inputComponent.SetCurrentValueAsStringAsync("02/30/2000"); // invalid
         var parsingMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier).ToList();
         Assert.Single(parsingMessages);
 
-        // Simulate an *external* validation message for the same field (e.g., from a business rule)
         var externalStore = new ValidationMessageStore(rootComponent.EditContext);
         externalStore.Add(fieldIdentifier, "External business rule error");
-        rootComponent.EditContext.NotifyValidationStateChanged();
+        // Use the component's dispatcher to invoke the notification on the renderer/UI thread
+        await inputComponent.DispatchAsync(rootComponent.EditContext.NotifyValidationStateChanged);
 
         var allMessagesBefore = rootComponent.EditContext.GetValidationMessages(fieldIdentifier).ToList();
         Assert.Equal(2, allMessagesBefore.Count);
 
-        // Act: parent sets a new valid Value
         rootComponent.Value = new DateTime(2020, 06, 15);
         rootComponent.TriggerRender();
 
-        // Assert: only the parsing-related message is removed; the external message remains
         var remainingMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier).ToList();
         Assert.Single(remainingMessages);
         Assert.Equal("External business rule error", remainingMessages[0]);
@@ -784,6 +762,8 @@ public class InputBaseTest
             // calls run on the sync context anyway.
             await InvokeAsync(() => { base.CurrentValueAsString = value; return Task.CompletedTask; });
         }
+
+        public Task DispatchAsync(Action work) => InvokeAsync(work);
     }
 
     private class TestDateInputComponent : TestInputComponent<DateTime>

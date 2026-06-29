@@ -1,0 +1,41 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm EditContext="@editContext">
+    <DataAnnotationsValidator />
+    <div class="parsing-reset-test">
+        <h3>Date Input</h3>
+        <InputDate id="test-date-input" @bind-Value="dateValue" />
+        <span id="current-date-value">@dateValue?.ToString("yyyy-MM-dd")</span>
+        <button type="button" id="set-new-date-btn" @onclick="SetNewDate">Set New Date</button>
+        <ValidationMessage For="@(() => dateValue)" />
+    </div>
+
+    <div class="parsing-reset-number-test">
+        <h3>Number Input</h3>
+        <InputNumber id="test-number-input" @bind-Value="numberValue" />
+        <span id="current-number-value">@numberValue</span>
+        <button type="button" id="set-new-number-btn" @onclick="SetNewNumber">Set New Number</button>
+        <ValidationMessage For="@(() => numberValue)" />
+    </div>
+</EditForm>
+
+@code {
+    private DateTime? dateValue;
+    private int numberValue;
+    private EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(this);
+    }
+
+    private void SetNewDate()
+    {
+        dateValue = new DateTime(2020, 1, 1);
+    }
+
+    private void SetNewNumber()
+    {
+        numberValue = 42;
+    }
+}

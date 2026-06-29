@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
 
+using ParsingResetComponent = BasicTestApp.FormsTest.ParsingResetComponent;
+
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
 // These tests only run on WebAssembly, not Server. They are flaky on Server (see #35018, #34884) and our numerous
@@ -232,6 +234,119 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputDate_ResetParsingStateWhenValueSetByParent()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        Browser.Equal("valid", () => dateInput.GetDomAttribute("class"));
+
+        dateInput.SendKeys("invalid-date\t");
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The DateValue field must be a date." }, messagesAccessor);
+
+        Browser.Equal("invalid-date", () => dateInput.GetDomProperty("value"));
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("2020-01-01", () => dateInput.GetDomProperty("value"));
+
+        Browser.Empty(messagesAccessor);
+
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputNumber_ResetParsingStateWhenValueSetByParent()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var numberInput = appElement.FindElement(By.ClassName("parsing-reset-number-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        Browser.Equal("valid", () => numberInput.GetDomAttribute("class"));
+
+        numberInput.SendKeys("abc\t");
+        Browser.Equal("modified invalid", () => numberInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The NumberValue field must be a number." }, messagesAccessor);
+
+        Browser.Equal("abc", () => numberInput.GetDomProperty("value"));
+
+        appElement.FindElement(By.Id("set-new-number-btn")).Click();
+
+        Browser.Equal("42", () => numberInput.GetDomProperty("value"));
+
+        Browser.Empty(messagesAccessor);
+
+        Browser.Equal("modified valid", () => numberInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputDate_ClearsValidationMessagesWhenValueSetByParent_AfterMultipleParsingFailures()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        Browser.Equal("valid", () => dateInput.GetDomAttribute("class"));
+
+        dateInput.SendKeys("invalid1\t");
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The DateValue field must be a date." }, messagesAccessor);
+
+        dateInput.SendKeys("\t");
+        dateInput.SendKeys("invalid2\t");
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The DateValue field must be a date." }, messagesAccessor);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("2020-01-01", () => dateInput.GetDomProperty("value"));
+        Browser.Empty(messagesAccessor);
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputDate_ParsingFailedStateClearedOnEditAfterParentSetsValue()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+
+        dateInput.SendKeys("invalid\t");
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+        Browser.Equal("2020-01-01", () => dateInput.GetDomProperty("value"));
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
+
+        dateInput.SendKeys("\t");
+        dateInput.SendKeys("another-invalid\t");
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputDate_ParentSettingSameValue_DoesNotClearParsingState()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+        Browser.Equal("2020-01-01", () => dateInput.GetDomProperty("value"));
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
+
+        dateInput.SendKeys("\t");
+        dateInput.SendKeys("not-a-date\t");
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The DateValue field must be a date." }, messagesAccessor);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("not-a-date", () => dateInput.GetDomProperty("value"));
+        Browser.Equal(new[] { "The DateValue field must be a date." }, messagesAccessor);
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
