@@ -86,7 +86,10 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(AppContext.BaseDirectory, "snapshots")
-                : "snapshots");
+                : "snapshots")
+            // Tests are parameterized on useAsync which is not relevant for the snapshot.
+            // We produce a single snapshot for both cases, so we need to disable the unique prefix requirement.
+            .DisableRequireUniquePrefix();
     }
 
     internal static async Task VerifyValidatableType(Compilation compilation, string typeName, Func<ValidationOptions, Type, Task> verifyFunc)
