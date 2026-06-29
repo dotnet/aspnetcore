@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-internal readonly struct Http1ParsingHandler : IHttpRequestLineHandler, IHttpHeadersHandler
+internal readonly struct Http1ParsingHandler : IHttpRequestLineHandler, IHttpHeadersHandler, IBareLineFeedTracker
 {
     public readonly Http1Connection Connection;
     public readonly bool Trailers;
@@ -56,4 +56,7 @@ internal readonly struct Http1ParsingHandler : IHttpRequestLineHandler, IHttpHea
     {
         throw new NotImplementedException();
     }
+
+    public void OnBareLineFeedTerminator(bool rejected)
+        => Connection.OnBareLineFeedTerminator(rejected);
 }
