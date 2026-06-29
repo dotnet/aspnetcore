@@ -825,7 +825,7 @@ public class VirtualizeTest
         ICollection<int> items,
         Action<Virtualize<int>> captureRenderedVirtualize = null,
         string spacerElement = "div",
-        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning,
+        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start,
         int initialItemCapacity = 20)
         => builder =>
     {
@@ -1012,9 +1012,9 @@ public class VirtualizeTest
         var virtualize = new Virtualize<int>();
 
         var ex = Assert.Throws<InvalidOperationException>(
-            (Action)(() => { _ = virtualize.ScrollToIndexAsync(0); }));
-        Assert.Contains(nameof(Virtualize<int>.ScrollToIndexAsync), ex.Message);
-        Assert.Contains(nameof(Virtualize<int>.InitialIndex), ex.Message);
+            (Action)(() => { _ = virtualize.ScrollToItemAsync(0); }));
+        Assert.Contains(nameof(Virtualize<int>.ScrollToItemAsync), ex.Message);
+        Assert.Contains(nameof(Virtualize<int>.InitialItemIndex), ex.Message);
     }
 
     private static readonly RenderFragment<int> SimpleItemTemplate = item => b => b.AddContent(0, item);
@@ -1030,7 +1030,7 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(-5); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(-5); });
         await task;
         Assert.True(task.IsCompletedSuccessfully);
         // Clamp post-condition: negative index lands the window at the start.
@@ -1048,7 +1048,7 @@ public class VirtualizeTest
             callbacks.OnAfterSpacerVisible(0f, 500f, 500f));
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(99_999); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(99_999); });
 
         await task;
         Assert.True(task.IsCompletedSuccessfully);
@@ -1065,7 +1065,7 @@ public class VirtualizeTest
         var (virtualize, renderer) = await CreateRenderedVirtualize(itemSize: 50f, totalItems: 0);
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(0); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(0); });
 
         await task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.True(task.IsCompletedSuccessfully);
@@ -1080,7 +1080,7 @@ public class VirtualizeTest
         cts.Cancel();
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(10, cts.Token); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(10, cts.Token); });
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => task);
     }
@@ -1096,8 +1096,8 @@ public class VirtualizeTest
 
         var (firstTask, secondTask) = await renderer.Dispatcher.InvokeAsync(() =>
         {
-            var first = virtualize.ScrollToIndexAsync(500);
-            var second = virtualize.ScrollToIndexAsync(750);
+            var first = virtualize.ScrollToItemAsync(500);
+            var second = virtualize.ScrollToItemAsync(750);
             return (first, second);
         });
 
@@ -1120,7 +1120,7 @@ public class VirtualizeTest
             itemSize: 50f, totalItems: 100, customProvider: throwingProvider);
 
         Task task = null;
-        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToIndexAsync(50); });
+        await renderer.Dispatcher.InvokeAsync(() => { task = virtualize.ScrollToItemAsync(50); });
 
         var ex = await Assert.ThrowsAnyAsync<Exception>(async () => await task.WaitAsync(TimeSpan.FromSeconds(5)));
         Assert.Same(sentinel, ex);
@@ -1137,7 +1137,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", (ICollection<int>)Enumerable.Range(1, 100).ToList());
-                builder.AddComponentParameter(3, "InitialIndex", 42);
+                builder.AddComponentParameter(3, "InitialItemIndex", 42);
                 builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b =>
                 {
                     b.OpenElement(0, "span");
@@ -1158,7 +1158,7 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
 
         Assert.NotNull(renderedVirtualize);
-        Assert.Equal(42, renderedVirtualize.InitialIndex);
+        Assert.Equal(42, renderedVirtualize.InitialItemIndex);
     }
 
     [Fact]
@@ -1180,7 +1180,7 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
 
         Assert.NotNull(renderedVirtualize);
-        Assert.Equal(0, renderedVirtualize.InitialIndex);
+        Assert.Equal(0, renderedVirtualize.InitialItemIndex);
         // No initial-scroll request was issued; component opens at item 0.
         Assert.Equal(0, renderedVirtualize._itemsBefore);
     }
@@ -1196,7 +1196,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", Enumerable.Range(1, 100).ToList() as ICollection<int>);
-                builder.AddComponentParameter(3, "InitialIndex", -5);
+                builder.AddComponentParameter(3, "InitialItemIndex", -5);
                 builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1212,8 +1212,8 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
 
         Assert.NotNull(renderedVirtualize);
-        Assert.Equal(-5, renderedVirtualize.InitialIndex);
-        // Negative InitialIndex must clamp to 0 (no out-of-range seeding of _itemsBefore).
+        Assert.Equal(-5, renderedVirtualize.InitialItemIndex);
+        // Negative InitialItemIndex must clamp to 0 (no out-of-range seeding of _itemsBefore).
         Assert.Equal(0, renderedVirtualize._itemsBefore);
     }
 
@@ -1229,7 +1229,7 @@ public class VirtualizeTest
                 builder.OpenComponent<Virtualize<int>>(0);
                 builder.AddComponentParameter(1, "ItemSize", 50f);
                 builder.AddComponentParameter(2, "Items", items as ICollection<int>);
-                builder.AddComponentParameter(3, "InitialIndex", 99999);
+                builder.AddComponentParameter(3, "InitialItemIndex", 99999);
                 builder.AddComponentParameter(4, "ChildContent", (RenderFragment<int>)(item => b => b.AddContent(0, item.ToString(System.Globalization.CultureInfo.InvariantCulture))));
                 builder.AddComponentReferenceCapture(5, c => renderedVirtualize = c as Virtualize<int>);
                 builder.CloseComponent();
@@ -1245,7 +1245,7 @@ public class VirtualizeTest
         await testRenderer.RenderRootComponentAsync(componentId);
 
         Assert.NotNull(renderedVirtualize);
-        Assert.Equal(99999, renderedVirtualize.InitialIndex);
+        Assert.Equal(99999, renderedVirtualize.InitialItemIndex);
         // For a fixed Items collection, the seed clamps using the now-known count: max(0, Count - capacity).
         // capacity = OverscanCount*2 + 1 = 31 with default OverscanCount=15, so _itemsBefore = max(0, 100 - 31) = 69.
         Assert.Equal(69, renderedVirtualize._itemsBefore);
