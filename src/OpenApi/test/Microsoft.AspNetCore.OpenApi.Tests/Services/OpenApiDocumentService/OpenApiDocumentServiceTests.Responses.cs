@@ -90,6 +90,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 {
                     Assert.Equal("event", property.Key);
                     Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Null(property.Value.Enum);
                 },
                 property =>
                 {
@@ -99,6 +100,50 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         });
 
         static async IAsyncEnumerable<SseItem<Todo>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesDiscriminatedUnionCasesForServerSentEventsEventSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/pets/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/pets/events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(UnionPet), dataSchema.Reference.Id);
+            AssertEventSchema(itemSchema, [nameof(Kitten), nameof(Puppy)]);
+        });
+
+        static async IAsyncEnumerable<SseItem<UnionPet>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesAbstractBaseDiscriminatorValuesForServerSentEventsEventSchema()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/vehicles/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/vehicles/events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Vehicle), dataSchema.Reference.Id);
+            AssertEventSchema(itemSchema, ["car", "truck", "plane"]);
+        });
+
+        static async IAsyncEnumerable<SseItem<Vehicle>> GetEvents()
         {
             await Task.CompletedTask;
             yield break;
@@ -649,5 +694,47 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("value", property.Key);
             Assert.Equal(100, property.Value.MaxLength);
         });
+    }
+
+    private static OpenApiSchema GetServerSentEventsItemSchema(OpenApiDocument document, string path)
+    {
+        var operation = Assert.Single(document.Paths[path].Operations.Values);
+        var response = Assert.Single(operation.Responses);
+        Assert.Equal("200", response.Key);
+        var content = Assert.Single(response.Value.Content);
+        Assert.Equal("text/event-stream", content.Key);
+        Assert.Null(content.Value.Schema);
+        return Assert.IsType<OpenApiSchema>(content.Value.ItemSchema);
+    }
+
+    private static void AssertEventSchema(OpenApiSchema itemSchema, string[] expectedEvents)
+    {
+        var eventSchema = Assert.IsType<OpenApiSchema>(itemSchema.Properties["event"]);
+        Assert.Equal(JsonSchemaType.String, eventSchema.Type);
+        Assert.NotNull(eventSchema.Enum);
+        Assert.Equal(expectedEvents.OrderBy(value => value), eventSchema.Enum.Select(value => value.GetValue<string>()).OrderBy(value => value));
+    }
+
+    [JsonDerivedType(typeof(Car), typeDiscriminator: "car")]
+    [JsonDerivedType(typeof(Truck), typeDiscriminator: "truck")]
+    [JsonDerivedType(typeof(Plane), typeDiscriminator: "plane")]
+    private abstract class Vehicle
+    {
+        public required string Make { get; set; }
+    }
+
+    private sealed class Car : Vehicle
+    {
+        public int Doors { get; set; }
+    }
+
+    private sealed class Truck : Vehicle
+    {
+        public double PayloadCapacity { get; set; }
+    }
+
+    private sealed class Plane : Vehicle
+    {
+        public double Wingspan { get; set; }
     }
 }
