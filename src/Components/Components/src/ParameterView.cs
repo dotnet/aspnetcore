@@ -70,15 +70,12 @@ public readonly struct ParameterView
             if (string.Equals(entry.Name, parameterName, StringComparison.Ordinal))
             {
                 var value = entry.Value;
-
-                // Fast path for exact or assignable types.
                 if (value is TValue typedValue)
                 {
                     result = typedValue;
                     return true;
                 }
 
-                // Null handling.
                 if (value is null)
                 {
                     if (default(TValue) is null)
@@ -91,7 +88,6 @@ public readonly struct ParameterView
                     return false;
                 }
 
-                // Fallback cast to preserve previous behavior for compatible types.
                 try
                 {
                     result = (TValue)value!;
