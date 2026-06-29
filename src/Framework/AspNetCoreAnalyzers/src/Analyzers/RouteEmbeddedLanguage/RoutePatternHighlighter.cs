@@ -71,23 +71,22 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
 
     private static void HighlightSymbol(SemanticModel semanticModel, IMethodSymbol methodSymbol, IList<AspNetCoreHighlightSpan> highlightSpans, ISymbol matchingParameter, CancellationToken cancellationToken)
     {
-        // AspNetCoreDocumentHighlights cannot carry a Document reference, so
-        // every highlight span we emit must belong to the active document
-        // (the tree that owns `semanticModel`). Spans from other syntax trees
-        // would be mis-mapped into the active document and highlight unrelated
-        // text. Skip cross-file declarations entirely - users will not see the
-        // parameter highlighted in the other file, but they will also not see
-        // bogus highlights or crashes (https://github.com/dotnet/aspnetcore/issues/64398).
+        // The highlighter provides Roslyn a collection of TextSpan.
+        // Those spans don't carry the document or syntax tree they are referring to.
+        // So, they are always assumed to be on the originally given document.
+        // Hence, before providing any highlight spans, we should ensure we are in the
+        // correct syntax tree, or skip the analysis otherwise.
 
         // Highlight parameter in method signature.
         // e.g. "{id}" in route highlights id in "void Foo(string id) {}"
         foreach (var item in matchingParameter.DeclaringSyntaxReferences)
         {
-            var syntaxNode = item.GetSyntax(cancellationToken);
-            if (syntaxNode.SyntaxTree != semanticModel.SyntaxTree)
+            if (item.SyntaxTree != semanticModel.SyntaxTree)
             {
                 continue;
             }
+
+            var syntaxNode = item.GetSyntax(cancellationToken);
 
             if (syntaxNode is ParameterSyntax parameterSyntax)
             {
@@ -99,11 +98,12 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
         // e.g. "{id}" in route highlights id in "_repository.GetBy(id)"
         foreach (var item in methodSymbol.DeclaringSyntaxReferences)
         {
-            var methodSyntax = item.GetSyntax(cancellationToken);
-            if (methodSyntax.SyntaxTree != semanticModel.SyntaxTree)
+            if (item.SyntaxTree != semanticModel.SyntaxTree)
             {
                 continue;
             }
+
+            var methodSyntax = item.GetSyntax(cancellationToken);
 
             // Have to call GetSymbolInfo because it's easy to have identifiers with the same name
             // that reference a different API. For example, a type with the same name as parameter.
