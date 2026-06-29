@@ -240,7 +240,7 @@ public partial class ParameterViewTest
     }
 
     [Fact]
-    public void ThrowsIfTryGetExistingValueWithIncorrectType_FromSplatDictionary()
+    public void FromDictionary_ThrowsIfTryGetValueWithIncorrectType()
     {
         // Arrange
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
