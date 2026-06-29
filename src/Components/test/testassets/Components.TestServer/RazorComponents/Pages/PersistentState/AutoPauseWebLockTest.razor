@@ -14,26 +14,39 @@
 
 <span id="lock-status">idle</span>
 
-<button id="acquire-lock-1s" type="button">Acquire lock (1s)</button>
+<button id="acquire-lock" type="button">Acquire lock</button>
+<button id="release-lock" type="button">Release lock</button>
 
 <script>
     window.autoPauseWebLock = (function () {
-        function acquireFor(durationMs) {
+        var releaseResolve = null;
+
+        function acquire() {
             navigator.locks.request('test-lock', function () {
                 document.getElementById('lock-status').textContent = 'held';
                 return new Promise(function (resolve) {
-                    setTimeout(function () {
+                    releaseResolve = function () {
                         document.getElementById('lock-status').textContent = 'released';
+                        releaseResolve = null;
                         resolve();
-                    }, durationMs);
+                    };
                 });
             });
         }
 
-        return { acquireFor: acquireFor };
+        function release() {
+            if (releaseResolve) {
+                releaseResolve();
+            }
+        }
+
+        return { acquire: acquire, release: release };
     })();
 
-    document.getElementById('acquire-lock-1s').addEventListener('click', function () {
-        window.autoPauseWebLock.acquireFor(1000);
+    document.getElementById('acquire-lock').addEventListener('click', function () {
+        window.autoPauseWebLock.acquire();
+    });
+    document.getElementById('release-lock').addEventListener('click', function () {
+        window.autoPauseWebLock.release();
     });
 </script>

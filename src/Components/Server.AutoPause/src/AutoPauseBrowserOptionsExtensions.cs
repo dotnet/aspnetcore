@@ -27,7 +27,7 @@ public static class AutoPauseBrowserOptionsExtensions
         configure?.Invoke(settings);
 
         var delayMilliseconds = Math.Ceiling(settings.HiddenDelay.TotalMilliseconds);
-        if (settings.HiddenDelay <= TimeSpan.Zero)
+        if (settings.Enabled && settings.HiddenDelay <= TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(configure), settings.HiddenDelay, $"{nameof(AutoPauseBrowserOptions.HiddenDelay)} must be greater than zero.");
         }

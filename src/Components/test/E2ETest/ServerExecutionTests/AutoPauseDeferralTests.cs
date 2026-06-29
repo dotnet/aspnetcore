@@ -377,12 +377,10 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         NavigateToTypingPage();
         FocusAndSetValueWithoutBlur("date", "2024-06-15");
-        ClearBlazorLogs();
         SetVisibility("hidden");
         try
         {
             WaitForPausedUI();
-            AssertNoDeferralLogPresent();
         }
         finally
         {
@@ -506,11 +504,10 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         EnterPictureInPicture();
         Browser.Exists(By.Id("pause-video")).Click();
 
-        ClearBlazorLogs();
         SetVisibility("hidden");
         try
         {
-            WaitForBlazorLog("Pause deferred: picture-in-picture active.");
+            AssertPauseStaysDeferred();
             Browser.Exists(By.Id("pip-exit")).Click();
             WaitForPausedUI();
         }
@@ -537,18 +534,14 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
 
     private void RunPictureInPictureDeferralTest()
     {
-        ClearBlazorLogs();
         SetVisibility("hidden");
         try
         {
-            WaitForBlazorLog("Pause deferred: picture-in-picture active.");
-            Assert.False(IsReconnectModalShown(),
-                "Deferral was logged but the reconnect modal is showing — pause should be held while picture-in-picture is active.");
+            AssertPauseStaysDeferred();
         }
         finally
         {
             SetVisibility("visible");
-            WaitForBlazorLog("Pause resumed: tab became visible before picture-in-picture closed.");
             WaitForResumedUI();
         }
     }
@@ -563,14 +556,15 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     public void WebLock_HeldThenReleased_DefersAndPauses()
     {
         NavigateToWebLockPage();
-        Browser.Exists(By.Id("acquire-lock-1s")).Click();
+        Browser.Exists(By.Id("acquire-lock")).Click();
         Browser.True(() => Browser.FindElement(By.Id("lock-status")).Text == "held");
 
-        ClearBlazorLogs();
         SetVisibility("hidden");
         try
         {
-            WaitForBlazorLog("Pause deferred: web lock held.");
+            AssertPauseStaysDeferred();
+            Browser.Exists(By.Id("release-lock")).Click();
+            Browser.True(() => Browser.FindElement(By.Id("lock-status")).Text == "released");
             WaitForPausedUI();
         }
         finally
@@ -929,15 +923,12 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
 
     private void RunMediaDeferralTest(bool expectDeferral)
     {
-        ClearBlazorLogs();
         SetVisibility("hidden");
         try
         {
             if (expectDeferral)
             {
-                WaitForBlazorLog("Pause deferred: media playing.");
-                Assert.False(IsReconnectModalShown(),
-                    "Deferral was logged but the reconnect modal is showing — pause should be held while media is playing.");
+                AssertPauseStaysDeferred();
             }
             else
             {
@@ -947,10 +938,6 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         finally
         {
             SetVisibility("visible");
-            if (expectDeferral)
-            {
-                WaitForBlazorLog("Pause resumed: tab became visible before media stopped.");
-            }
             WaitForResumedUI();
         }
     }
@@ -964,15 +951,12 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     private void RunTypingDeferralTest(Action setup, bool expectDeferral, Action verifyPreservation = null)
     {
         setup();
-        ClearBlazorLogs();
         SetVisibility("hidden");
         try
         {
             if (expectDeferral)
             {
-                WaitForBlazorLog("Pause deferred:");
-                Assert.False(IsReconnectModalShown(),
-                    "Deferral was logged but the reconnect modal is showing — pause should be held while editable focus is active.");
+                AssertPauseStaysDeferred();
             }
             else
             {
@@ -982,10 +966,6 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         finally
         {
             SetVisibility("visible");
-            if (expectDeferral)
-            {
-                WaitForBlazorLog("Pause resumed: tab became visible before focus cleared.");
-            }
             WaitForResumedUI();
         }
         verifyPreservation?.Invoke();
@@ -1069,9 +1049,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         {
             if (expectDeferral)
             {
-                WaitForBlazorLog("Pause deferred:");
-                Assert.False(IsReconnectModalShown(),
-                    "Deferral was logged but the reconnect modal is showing — pause should be held until streams drain.");
+                AssertPauseStaysDeferred();
             }
             else
             {
@@ -1111,6 +1089,22 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         }
         var display = modals[0].GetCssValue("display");
         return display == "block";
+    }
+
+    // The framework emits no deterministic "pause deferred" signal, so deferral is proven by
+    // observing that the reconnect modal (shown only once the circuit pauses) stays hidden for a
+    // window comfortably longer than the configured pause delay while the blocking condition holds.
+    private static readonly TimeSpan DeferralObservationWindow = TimeSpan.FromMilliseconds(PauseDelayMs * 5);
+
+    private void AssertPauseStaysDeferred()
+    {
+        var deadline = DateTime.UtcNow + DeferralObservationWindow;
+        while (DateTime.UtcNow < deadline)
+        {
+            Assert.False(IsReconnectModalShown(),
+                "The reconnect modal is showing — pause should be held while the deferral condition is active.");
+            Thread.Sleep(50);
+        }
     }
 
     private void NavigateToServerPausePage()
@@ -1228,7 +1222,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     private void WaitForBlazorPause()
     {
         Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
-            "return !!(window.Blazor && Blazor.autoPause)"));
+            "return !!(window.Blazor && Blazor.pause && typeof Blazor.pause.waitFor === 'function')"));
     }
 
     private void ClearBlazorLogs()
@@ -1267,13 +1261,6 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
             var modals = Browser.FindElements(By.Id("components-reconnect-modal"));
             return modals.Count == 0 ? "none" : modals[0].GetCssValue("display");
         });
-    }
-
-    private void AssertNoDeferralLogPresent()
-    {
-        var found = (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
-            "return !!(window.__blazorLogs && window.__blazorLogs.some(function (e) { return e.msg && e.msg.indexOf('Pause deferred:') >= 0; }));");
-        Assert.False(found, "Expected no 'Pause deferred:' log but one was present — the input type should not veto auto-pause.");
     }
 
     private void AssertNoConsoleErrors()

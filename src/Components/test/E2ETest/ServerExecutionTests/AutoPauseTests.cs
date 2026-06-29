@@ -129,7 +129,7 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
     private void WaitForBlazorPause()
     {
         Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
-            "return !!(window.Blazor && Blazor.autoPause)"));
+            "return !!(window.Blazor && Blazor.pause && typeof Blazor.pause.waitFor === 'function')"));
     }
 
     private void WaitForPausedUI()
