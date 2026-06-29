@@ -27,21 +27,21 @@ public static class AutoPauseBrowserOptionsExtensions
         configure?.Invoke(settings);
 
         var delayMilliseconds = Math.Ceiling(settings.HiddenDelay.TotalMilliseconds);
-        if (settings.HiddenDelay <= TimeSpan.Zero || delayMilliseconds > int.MaxValue)
+        if (settings.HiddenDelay <= TimeSpan.Zero)
         {
-            throw new ArgumentOutOfRangeException(nameof(configure), settings.HiddenDelay, $"{nameof(AutoPauseBrowserOptions.HiddenDelay)} must be greater than zero and at most {int.MaxValue} milliseconds.");
+            throw new ArgumentOutOfRangeException(nameof(configure), settings.HiddenDelay, $"{nameof(AutoPauseBrowserOptions.HiddenDelay)} must be greater than zero.");
         }
 
         // Flat keys follow the existing browser-config convention (see InteractiveServerBrowserOptions).
         options.Server.Extensions["autoPauseEnabled"] = JsonSerializer.SerializeToElement(settings.Enabled, AutoPauseJsonContext.Default.Boolean);
-        options.Server.Extensions["autoPauseHiddenDelayMilliseconds"] = JsonSerializer.SerializeToElement((int)delayMilliseconds, AutoPauseJsonContext.Default.Int32);
+        options.Server.Extensions["autoPauseHiddenDelayMilliseconds"] = JsonSerializer.SerializeToElement((long)delayMilliseconds, AutoPauseJsonContext.Default.Int64);
 
         return options;
     }
 }
 
 [JsonSerializable(typeof(bool))]
-[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(long))]
 internal sealed partial class AutoPauseJsonContext : JsonSerializerContext
 {
 }
