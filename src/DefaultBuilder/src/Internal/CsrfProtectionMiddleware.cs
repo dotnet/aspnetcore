@@ -34,10 +34,6 @@ internal sealed partial class CsrfProtectionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // The sentinel is set unconditionally even when validation is skipped: the FormFeature
-        // antiforgery backstop relies on it to detect that some antiforgery-style middleware ran
-        // on this request (see PR #67082). Without it, a re-executed pipeline (e.g. status code
-        // re-execute into an antiforgery-required endpoint) would throw "missing middleware".
         context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
 
         var endpoint = context.GetEndpoint();
