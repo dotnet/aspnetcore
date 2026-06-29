@@ -430,8 +430,7 @@ internal sealed class OpenApiDocumentService(
         // Collect schemas per content-type across all ApiResponseType entries in this group.
         // When multiple entries contribute different schemas for the same content-type, they
         // will be merged into an anyOf composite schema.
-        var schemasByContentType = new Dictionary<string, List<IOpenApiSchema>>();
-        HashSet<string>? contentTypesUsingItemSchema = null;
+        var schemasByContentType = new Dictionary<string, OpenApiResponseContentSchemas>();
 
         foreach (var apiResponseType in apiResponseTypes)
         {
@@ -444,12 +443,14 @@ internal sealed class OpenApiDocumentService(
             foreach (var contentType in apiResponseFormatContentTypes)
             {
                 IOpenApiSchema? schema = null;
+                var useItemSchema = false;
                 if (apiResponseType.Type is { } responseType)
                 {
                     if (IsServerSentEventsResponse(contentType, responseType, out var eventDataType))
                     {
                         var dataSchema = await _componentService.GetOrCreateSchemaAsync(document, eventDataType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
                         schema = CreateServerSentEventsItemSchema(document, dataSchema);
+                        useItemSchema = true;
                     }
                     else
                     {
@@ -462,27 +463,23 @@ internal sealed class OpenApiDocumentService(
 
                 schema ??= new OpenApiSchema();
 
-                if (!schemasByContentType.TryGetValue(contentType, out var schemas))
+                if (!schemasByContentType.TryGetValue(contentType, out var contentTypeSchemas))
                 {
-                    schemas = [];
-                    schemasByContentType[contentType] = schemas;
+                    contentTypeSchemas = new OpenApiResponseContentSchemas();
+                    schemasByContentType[contentType] = contentTypeSchemas;
                 }
 
-                schemas.Add(schema);
-                if (IsServerSentEventsResponse(contentType, apiResponseType.Type, out _))
-                {
-                    contentTypesUsingItemSchema ??= [with(StringComparer.OrdinalIgnoreCase)];
-                    contentTypesUsingItemSchema.Add(contentType);
-                }
+                contentTypeSchemas.AddSchema(schema, useItemSchema);
             }
         }
 
-        foreach (var (contentType, schemas) in schemasByContentType)
+        foreach (var (contentType, contentTypeSchemas) in schemasByContentType)
         {
+            var schemas = contentTypeSchemas.Schemas;
             IOpenApiSchema finalSchema = schemas.Count == 1
                 ? schemas[0]
                 : new OpenApiSchema { AnyOf = [.. schemas] };
-            response.Content[contentType] = contentTypesUsingItemSchema != null && contentTypesUsingItemSchema.Contains(contentType)
+            response.Content[contentType] = contentTypeSchemas.UseItemSchema
                 ? new OpenApiMediaType { ItemSchema = finalSchema }
                 : new OpenApiMediaType { Schema = finalSchema };
         }
@@ -499,6 +496,19 @@ internal sealed class OpenApiDocumentService(
         }
 
         return response;
+    }
+
+    private sealed record OpenApiResponseContentSchemas
+    {
+        public List<IOpenApiSchema> Schemas { get; } = [];
+
+        public bool UseItemSchema { get; private set; }
+
+        public void AddSchema(IOpenApiSchema schema, bool useItemSchema)
+        {
+            Schemas.Add(schema);
+            UseItemSchema |= useItemSchema;
+        }
     }
 
     private static bool IsServerSentEventsResponse(string contentType, Type? responseType, [NotNullWhen(true)] out Type? eventDataType)
