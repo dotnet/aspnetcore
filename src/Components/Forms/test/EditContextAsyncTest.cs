@@ -290,6 +290,21 @@ public class EditContextAsyncTest
     });
 
     [Fact]
+    public async Task ValidateAsync_FactoryThrowsSynchronously_Propagates()
+    {
+        // A factory that throws synchronously (rather than returning a faulted task) is a programming bug
+        // and propagates out of ValidateAsync instead of being contained as a fault.
+        var editContext = new EditContext(new TestModel());
+        editContext.OnValidationRequested += (_, args) => args.AddValidationTask(_ => throw new InvalidOperationException("boom"));
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => editContext.ValidateAsync());
+
+        Assert.Equal("boom", exception.Message);
+        Assert.False(editContext.IsValidationPending());
+        Assert.False(editContext.IsValidationFaulted());
+    }
+
+    [Fact]
     public Task ValidateAsync_MultipleValidators_AwaitsBothAndCombinesMessages() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
@@ -559,7 +574,7 @@ public class EditContextAsyncTest
         });
         Assert.True(editContext.IsValidationPending(field));
 
-        Assert.Throws<ArgumentNullException>(() => editContext.TrackFieldValidation(field, _ => null!));
+        Assert.Throws<InvalidOperationException>(() => editContext.TrackFieldValidation(field, _ => null!));
 
         Assert.True(priorToken.IsCancellationRequested);
         Assert.False(editContext.IsValidationPending(field));
@@ -582,14 +597,14 @@ public class EditContextAsyncTest
     }
 
     [Fact]
-    public async Task ValidateAsync_FactoryReturnsNullTask_ThrowsArgumentNullException()
+    public async Task ValidateAsync_FactoryReturnsNullTask_ThrowsInvalidOperationException()
     {
         // A registered factory must return a non-null task; a null return is a programming error that
-        // throws ArgumentNullException, matching TrackFieldValidation.
+        // throws InvalidOperationException.
         var editContext = new EditContext(new TestModel());
         editContext.OnValidationRequested += (_, args) => args.AddValidationTask(_ => null!);
 
-        await Assert.ThrowsAsync<ArgumentNullException>(() => editContext.ValidateAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => editContext.ValidateAsync());
         Assert.False(editContext.IsValidationPending());
     }
 

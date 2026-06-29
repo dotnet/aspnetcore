@@ -257,7 +257,8 @@ public sealed class EditContext
     /// Pending field-level validations are superseded. While tasks are in flight the parameterless
     /// <see cref="IsValidationPending()"/> is <c>true</c>. A non-cancellation exception on a registered task is
     /// contained (the form is marked faulted via <see cref="IsValidationFaulted()"/> and the method returns
-    /// <c>false</c>) but not surfaced. Do not call validation re-entrantly from a handler.
+    /// <c>false</c>) but not surfaced. A factory that throws synchronously or returns a null task is a
+    /// programming bug and propagates to the caller. Do not call validation re-entrantly from a handler.
     /// </remarks>
     /// <exception cref="OperationCanceledException"><paramref name="cancellationToken"/> was cancelled.</exception>
     public async Task<bool> ValidateAsync(CancellationToken cancellationToken = default)
@@ -313,21 +314,8 @@ public sealed class EditContext
         }
 
         static Task InvokeValidationFactory(Func<CancellationToken, Task> validate, CancellationToken cancellationToken)
-        {
-            Task? task;
-            try
-            {
-                task = validate(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                // A factory that throws synchronously is contained as a faulted task.
-                return Task.FromException(ex);
-            }
-
-            // A factory that returns a null task is an application bug, so we throw to the ValidateAsync caller.
-            return task ?? throw new ArgumentNullException(nameof(validate), "The validation factory returned a null task.");
-        }
+            => validate(cancellationToken)
+                ?? throw new InvalidOperationException("The validation task factory returned a null task.");
     }
 
     /// <summary>
@@ -379,7 +367,7 @@ public sealed class EditContext
         {
             cts.Dispose();
             ClearPendingFieldValidation(state);
-            throw new ArgumentNullException(nameof(validate), "The validation factory returned a null task.");
+            throw new InvalidOperationException("The validation task factory returned a null task.");
         }
 
         // Supersession, settle, notification, and CTS disposal all flow through the observer below. For an
