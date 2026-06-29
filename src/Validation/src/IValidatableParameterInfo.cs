@@ -16,6 +16,13 @@ public interface IValidatableParameterInfo
     /// </summary>
     /// <param name="value">The value to validate.</param>
     /// <param name="context">The validation context.</param>
+    void Validate(object? value, ValidateContext context);
+
+    /// <summary>
+    /// Validates the specified <paramref name="value"/>.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="context">The validation context.</param>
     /// <param name="cancellationToken">A cancellation token to support cancellation of the validation.</param>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken);

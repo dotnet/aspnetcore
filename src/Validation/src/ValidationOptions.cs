@@ -100,37 +100,4 @@ public class ValidationOptions
         validatableInfo = null;
         return false;
     }
-
-    /// <summary>
-    /// Attempts to get validation information for a property declared on the specified type or
-    /// any of its super-types.
-    /// </summary>
-    /// <param name="type">The type that declares or inherits the property.</param>
-    /// <param name="propertyName">The CLR property name to look up.</param>
-    /// <param name="validatablePropertyInfo">When this method returns, contains the validation information
-    /// for the property, if a property with the specified name was found; otherwise,
-    /// <see langword="null" />.</param>
-    /// <returns><see langword="true" /> if a validatable property with the specified name was found;
-    /// otherwise, <see langword="false" />.</returns>
-    /// <remarks>
-    /// Members declared directly on <paramref name="type"/> take precedence over members inherited
-    /// from super-types, matching the order in which <see cref="ValidatableTypeInfo.ValidateAsync"/>
-    /// visits members.
-    /// </remarks>
-    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-    public bool TryGetValidatablePropertyInfo(Type type, string propertyName, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-        ArgumentNullException.ThrowIfNull(propertyName);
-
-        if (TryGetValidatableTypeInfo(type, out var typeInfo)
-            && typeInfo.TryFindProperty(propertyName, this) is { } property)
-        {
-            validatablePropertyInfo = property;
-            return true;
-        }
-
-        validatablePropertyInfo = null;
-        return false;
-    }
 }
