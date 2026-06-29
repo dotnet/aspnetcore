@@ -75,6 +75,9 @@ public class TestServerTests : VerifiableLoggedTest
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
             Assert.True(webSocketFactoryCalled);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 
@@ -129,6 +132,9 @@ public class TestServerTests : VerifiableLoggedTest
 
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 }
