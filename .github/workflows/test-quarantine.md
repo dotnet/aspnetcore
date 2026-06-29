@@ -889,6 +889,7 @@ permissions:
   actions: read
 
 safe-outputs:
+  report-failure-as-issue: false
   noop:
     report-as-issue: false
   create-pull-request:
