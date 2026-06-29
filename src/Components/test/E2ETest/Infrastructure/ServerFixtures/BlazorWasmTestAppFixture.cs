@@ -50,7 +50,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             {
                 "--urls", $"http://{host}:0",
                 "--contentroot", ContentRoot,
-                "--pathbase", PathBase,
+                "--Gateway:PathBase", PathBase,
                 "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
                 "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
                 "--ClientApps:app:PathPrefix", "",
@@ -62,7 +62,14 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add(Environment);
         }
 
-        return BlazorGateway.BuildWebHost(args.ToArray());
+        var app = BlazorGateway.BuildWebHost(args.ToArray());
+
+        // BlazorGateway serves individual static assets (e.g. index.html, _framework/*) but does not
+        // register a default-document/SPA fallback. The E2E tests navigate to the app's path base
+        // (e.g. /subdir), so fall back to index.html for requests that don't match a static asset.
+        app.MapFallbackToFile("index.html");
+
+        return app;
     }
 
     private IHost CreateStaticWebHost(string contentRoot)
