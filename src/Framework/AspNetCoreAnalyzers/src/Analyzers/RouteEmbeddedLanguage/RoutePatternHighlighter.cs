@@ -87,7 +87,6 @@ internal class RoutePatternHighlighter : IAspNetCoreEmbeddedLanguageDocumentHigh
             }
 
             var syntaxNode = item.GetSyntax(cancellationToken);
-
             if (syntaxNode is ParameterSyntax parameterSyntax)
             {
                 highlightSpans.Add(new AspNetCoreHighlightSpan(parameterSyntax.Identifier.Span, AspNetCoreHighlightSpanKind.Definition));
