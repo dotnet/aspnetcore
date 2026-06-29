@@ -18,7 +18,7 @@ public sealed class EditContext
     // didn't yet track any state for it, so we behave as if it's in the default state
     // (valid and unmodified).
     private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
-    private bool _lastFormValidationFaulted;
+    private bool _isFormValidationFaulted;
     private bool _isFormValidationPending;
 
     /// <summary>
@@ -240,7 +240,7 @@ public sealed class EditContext
         OnValidationRequested?.Invoke(this, new ValidationRequestedEventArgs());
 
         // A clean sync pass produced no infrastructure fault.
-        _lastFormValidationFaulted = false;
+        _isFormValidationFaulted = false;
 
         return !GetValidationMessages().Any();
     }
@@ -303,7 +303,7 @@ public sealed class EditContext
             // and the previous form-level faulted state is preserved.
             cancellationToken.ThrowIfCancellationRequested();
 
-            _lastFormValidationFaulted = faulted;
+            _isFormValidationFaulted = faulted;
             return !faulted && !GetValidationMessages().Any();
         }
         finally
@@ -393,12 +393,12 @@ public sealed class EditContext
     private void ClearPendingFieldValidation(FieldState state)
     {
         var wasPending = state.PendingValidationTask is not null;
-        var wasFaulted = state.ValidationFaulted;
+        var wasFaulted = state.IsValidationFaulted;
 
         state.PendingValidationCts?.Cancel();
         state.PendingValidationTask = null;
         state.PendingValidationCts = null;
-        state.ValidationFaulted = false;
+        state.IsValidationFaulted = false;
 
         if (wasPending || wasFaulted)
         {
@@ -442,7 +442,7 @@ public sealed class EditContext
     /// <param name="fieldIdentifier">Identifies the field to query.</param>
     /// <returns><c>true</c> if the field's last async validation faulted; otherwise <c>false</c>.</returns>
     public bool IsValidationFaulted(in FieldIdentifier fieldIdentifier)
-        => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.ValidationFaulted;
+        => _fieldStates.TryGetValue(fieldIdentifier, out var state) && state.IsValidationFaulted;
 
     /// <summary>
     /// Returns <c>true</c> if the field identified by the <paramref name="accessor"/> expression's
@@ -461,7 +461,7 @@ public sealed class EditContext
     /// <see cref="IsValidationFaulted(in FieldIdentifier)"/> overload.
     /// </summary>
     /// <returns><c>true</c> if the most recent validation pass faulted; otherwise <c>false</c>.</returns>
-    public bool IsValidationFaulted() => _lastFormValidationFaulted;
+    public bool IsValidationFaulted() => _isFormValidationFaulted;
 
     internal FieldState? GetFieldState(in FieldIdentifier fieldIdentifier)
     {
@@ -491,14 +491,14 @@ public sealed class EditContext
                 cts.Cancel();
                 state.PendingValidationTask = null;
                 state.PendingValidationCts = null;
-                state.ValidationFaulted = false;
+                state.IsValidationFaulted = false;
                 changed = true;
             }
-            else if (state.ValidationFaulted)
+            else if (state.IsValidationFaulted)
             {
                 // A previously-faulted task already settled (CTS already cleared). Clear the lingering
                 // fault so per-field IsValidationFaulted reflects only the current pass.
-                state.ValidationFaulted = false;
+                state.IsValidationFaulted = false;
                 changed = true;
             }
         }
@@ -517,11 +517,11 @@ public sealed class EditContext
 
         var completedSynchronously = task.IsCompleted;
         var hadPriorPendingTask = state.PendingValidationTask is { IsCompleted: false };
-        var priorFaulted = state.ValidationFaulted;
+        var priorFaulted = state.IsValidationFaulted;
 
         state.PendingValidationTask = task;
         state.PendingValidationCts = cts;
-        state.ValidationFaulted = false;
+        state.IsValidationFaulted = false;
 
         // Announce the pending transition only when we will actually suspend; a completed task never
         // observably enters the pending state.
@@ -554,7 +554,7 @@ public sealed class EditContext
             {
                 state.PendingValidationTask = null;
                 state.PendingValidationCts = null;
-                state.ValidationFaulted = faulted;
+                state.IsValidationFaulted = faulted;
 
                 // A suspended task already announced pending, so settling is always a change. A completed
                 // task announced nothing, so notify only if pending-ness or fault changed.

@@ -22,7 +22,7 @@ internal sealed class FieldState
 
     internal Task? PendingValidationTask { get; set; }
     internal CancellationTokenSource? PendingValidationCts { get; set; }
-    internal bool ValidationFaulted { get; set; }
+    internal bool IsValidationFaulted { get; set; }
 
     public IEnumerable<string> GetValidationMessages()
     {
