@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System.Text;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -16,12 +15,12 @@ public class MemoryCacheBoundaryStoreTest
     {
         var store = CreateStore();
         var options = new CacheStoreOptions();
-        var value = Encoding.UTF8.GetBytes("value");
+        var value = new SerializedRenderFragment { Nodes = [new RenderTreeNode { Type = "markup", Content = "value" }] };
 
         var factoryInvocations = 0;
         var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        async ValueTask<byte[]> Factory(CancellationToken cancellationToken)
+        async ValueTask<SerializedRenderFragment> Factory(CancellationToken cancellationToken)
         {
             Interlocked.Increment(ref factoryInvocations);
             await gate.Task;
@@ -29,7 +28,7 @@ public class MemoryCacheBoundaryStoreTest
         }
 
         const int callers = 16;
-        var tasks = new Task<byte[]>[callers];
+        var tasks = new Task<SerializedRenderFragment>[callers];
         for (var i = 0; i < callers; i++)
         {
             tasks[i] = store.GetOrCreateAsync("key", Factory, options, default).AsTask();
@@ -48,10 +47,10 @@ public class MemoryCacheBoundaryStoreTest
     {
         var store = CreateStore();
         var options = new CacheStoreOptions();
-        var value = Encoding.UTF8.GetBytes("value");
+        var value = new SerializedRenderFragment { Nodes = [new RenderTreeNode { Type = "markup", Content = "value" }] };
 
         var factoryInvocations = 0;
-        ValueTask<byte[]> Factory(CancellationToken cancellationToken)
+        ValueTask<SerializedRenderFragment> Factory(CancellationToken cancellationToken)
         {
             Interlocked.Increment(ref factoryInvocations);
             return ValueTask.FromResult(value);

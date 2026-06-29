@@ -413,6 +413,11 @@ internal static partial class RenderFragmentSerializer
 internal sealed class SerializedRenderFragment
 {
     public List<RenderTreeNode> Nodes { get; init; } = [];
+
+    // Total captured markup length, set when the fragment is built so consumers (e.g. the in-memory
+    // cache store) can size the entry without re-serializing. Not part of the wire format.
+    [JsonIgnore]
+    public long ContentSize { get; set; }
 }
 
 internal sealed class RenderTreeNode

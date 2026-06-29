@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging;
 
@@ -10,6 +9,10 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class CacheBoundaryTextWriter : TextWriter
 {
+    // Approximate per-hole footprint used only for cache size accounting; holes are component nodes
+    // rather than strings, so they have no captured length to measure directly.
+    private const int HoleSizeEstimate = 256;
+
     private readonly TextWriter _innerWriter;
     private readonly StringBuilder _buffer = new();
     private readonly List<CacheCaptureEntry> _entries = [];
@@ -122,21 +125,30 @@ internal sealed class CacheBoundaryTextWriter : TextWriter
         FlushBuffer();
     }
 
-    // Assembles the cache payload as UTF-8 JSON by walking the recorded entries in render order: markup
-    // segments become markup nodes and holes contribute the component node serialized at CreateHole time.
-    // Serializing straight to UTF-8 avoids materializing an intermediate UTF-16 string.
-    public byte[] GetUtf8Json()
+    // Assembles the cache payload by walking the recorded entries in render order: markup segments become
+    // markup nodes and holes contribute the component node serialized at CreateHole time.
+    public SerializedRenderFragment GetSerializedRenderFragment()
     {
         var nodes = new List<RenderTreeNode>(_entries.Count);
+        long contentSize = 0;
 
         foreach (var entry in _entries)
         {
-            nodes.Add(entry.HoleNode ?? new RenderTreeNode { Type = "markup", Content = entry.Markup });
+            if (entry.HoleNode is { } holeNode)
+            {
+                // Holes are component nodes, not strings; charge a flat overhead so hole-heavy
+                // boundaries still count toward the cache size limit.
+                contentSize += HoleSizeEstimate;
+                nodes.Add(holeNode);
+            }
+            else
+            {
+                contentSize += entry.Markup?.Length ?? 0;
+                nodes.Add(new RenderTreeNode { Type = "markup", Content = entry.Markup });
+            }
         }
 
-        return JsonSerializer.SerializeToUtf8Bytes(
-            new SerializedRenderFragment { Nodes = nodes },
-            ServerComponentSerializationSettings.JsonSerializationOptions);
+        return new SerializedRenderFragment { Nodes = nodes, ContentSize = contentSize };
     }
 
     // A hole is serialized from its parent's frames, which carry no nested RenderFragment captures, so a

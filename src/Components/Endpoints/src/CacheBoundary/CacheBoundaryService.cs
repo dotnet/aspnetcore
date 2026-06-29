@@ -100,7 +100,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
             return state;
         }
 
-        var resolution = new TaskCompletionSource<byte[]?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resolution = new TaskCompletionSource<SerializedRenderFragment?>(TaskCreationOptions.RunContinuationsAsynchronously);
         resolutions[key] = (boundary, resolution.Task);
 
         await ResolveOrBeginCreateAsync(boundary, state, resolution, httpContext.RequestAborted);
@@ -161,7 +161,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
                 return;
             }
             writer.StopCapture();
-            completion?.TrySetResult(writer.GetUtf8Json());
+            completion?.TrySetResult(writer.GetSerializedRenderFragment());
         }
         catch (Exception ex)
         {
@@ -241,9 +241,9 @@ internal sealed partial class CacheBoundaryService : IDisposable
 
     // Reached only when the same CacheBoundary instance re-renders within the request: it reuses the
     // result of its original in-flight resolution rather than creating a second cache entry.
-    private async Task ApplyDuplicateResolutionAsync(CacheBoundaryRenderState state, string key, Task<byte[]?> resolution)
+    private async Task ApplyDuplicateResolutionAsync(CacheBoundaryRenderState state, string key, Task<SerializedRenderFragment?> resolution)
     {
-        byte[]? cachedPayload;
+        SerializedRenderFragment? cachedPayload;
         try
         {
             cachedPayload = await resolution;
@@ -265,9 +265,9 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private async Task ResolveOrBeginCreateAsync(CacheBoundary boundary, CacheBoundaryRenderState state, TaskCompletionSource<byte[]?> resolution, CancellationToken cancellationToken)
+    private async Task ResolveOrBeginCreateAsync(CacheBoundary boundary, CacheBoundaryRenderState state, TaskCompletionSource<SerializedRenderFragment?> resolution, CancellationToken cancellationToken)
     {
-        var captureCompletion = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var captureCompletion = new TaskCompletionSource<SerializedRenderFragment>(TaskCreationOptions.RunContinuationsAsynchronously);
         var factoryStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         state.CaptureCompletion = captureCompletion;
 
@@ -317,21 +317,16 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private RenderFragment? DeserializeCachedContent(byte[]? payload)
+    private RenderFragment? DeserializeCachedContent(SerializedRenderFragment? payload)
     {
-        if (payload is null || payload.Length == 0)
+        if (payload is null || payload.Nodes.Count == 0)
         {
             return null;
         }
 
         try
         {
-            var serialized = JsonSerializer.Deserialize<SerializedRenderFragment>(payload, _jsonOptions);
-            if (serialized is null || serialized.Nodes.Count == 0)
-            {
-                return null;
-            }
-            return RenderFragmentSerializer.Deserialize(serialized.Nodes, _jsonOptions, _parametersTypeCache);
+            return RenderFragmentSerializer.Deserialize(payload.Nodes, _jsonOptions, _parametersTypeCache);
         }
         catch (Exception ex)
         {
@@ -340,7 +335,7 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private async Task ObserveCacheStorePersistAsync(string key, Task<byte[]> pending)
+    private async Task ObserveCacheStorePersistAsync(string key, Task<SerializedRenderFragment> pending)
     {
         try
         {
@@ -356,11 +351,11 @@ internal sealed partial class CacheBoundaryService : IDisposable
         }
     }
 
-    private static Dictionary<string, (CacheBoundary Owner, Task<byte[]?> Task)> GetInFlightResolutions(HttpContext httpContext)
+    private static Dictionary<string, (CacheBoundary Owner, Task<SerializedRenderFragment?> Task)> GetInFlightResolutions(HttpContext httpContext)
     {
-        if (httpContext.Items[_inFlightResolutionsItemKey] is not Dictionary<string, (CacheBoundary Owner, Task<byte[]?> Task)> resolutions)
+        if (httpContext.Items[_inFlightResolutionsItemKey] is not Dictionary<string, (CacheBoundary Owner, Task<SerializedRenderFragment?> Task)> resolutions)
         {
-            resolutions = new Dictionary<string, (CacheBoundary, Task<byte[]?>)>(StringComparer.Ordinal);
+            resolutions = new Dictionary<string, (CacheBoundary, Task<SerializedRenderFragment?>)>(StringComparer.Ordinal);
             httpContext.Items[_inFlightResolutionsItemKey] = resolutions;
         }
 

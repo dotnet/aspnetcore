@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal interface ICacheBoundaryStore : IDisposable
 {
-    ValueTask<byte[]> GetOrCreateAsync(
+    ValueTask<SerializedRenderFragment> GetOrCreateAsync(
         string key,
-        Func<CancellationToken, ValueTask<byte[]>> factory,
+        Func<CancellationToken, ValueTask<SerializedRenderFragment>> factory,
         CacheStoreOptions options,
         CancellationToken cancellationToken);
 

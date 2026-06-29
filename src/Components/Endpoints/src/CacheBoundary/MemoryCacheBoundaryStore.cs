@@ -12,7 +12,7 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
 {
     private readonly MemoryCache _cache;
     private readonly ILogger<MemoryCacheBoundaryStore> _logger;
-    private readonly ConcurrentDictionary<string, Task<byte[]>> _pending = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Task<SerializedRenderFragment>> _pending = new(StringComparer.Ordinal);
 
     public MemoryCacheBoundaryStore(IOptions<RazorComponentsServiceOptions> options, ILogger<MemoryCacheBoundaryStore> logger)
     {
@@ -23,20 +23,20 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
         _logger = logger;
     }
 
-    public async ValueTask<byte[]> GetOrCreateAsync(
+    public async ValueTask<SerializedRenderFragment> GetOrCreateAsync(
         string key,
-        Func<CancellationToken, ValueTask<byte[]>> factory,
+        Func<CancellationToken, ValueTask<SerializedRenderFragment>> factory,
         CacheStoreOptions options,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (_cache.TryGetValue<byte[]>(key, out var existing) && existing is not null)
+        if (_cache.TryGetValue<SerializedRenderFragment>(key, out var existing) && existing is not null)
         {
             return existing;
         }
 
-        var tcs = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource<SerializedRenderFragment>(TaskCreationOptions.RunContinuationsAsynchronously);
         var pending = _pending.GetOrAdd(key, tcs.Task);
         if (!ReferenceEquals(pending, tcs.Task))
         {
@@ -57,17 +57,17 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
         }
         finally
         {
-            _pending.TryRemove(new KeyValuePair<string, Task<byte[]>>(key, tcs.Task));
+            _pending.TryRemove(new KeyValuePair<string, Task<SerializedRenderFragment>>(key, tcs.Task));
         }
     }
 
-    private void StoreEntry(string key, byte[] payload, CacheStoreOptions options)
+    private void StoreEntry(string key, SerializedRenderFragment payload, CacheStoreOptions options)
     {
         try
         {
             var entryOptions = new MemoryCacheEntryOptions
             {
-                Size = payload.Length,
+                Size = EstimateSize(payload),
             };
 
             if (options.ExpiresSliding.HasValue)
@@ -99,6 +99,11 @@ internal sealed partial class MemoryCacheBoundaryStore : ICacheBoundaryStore
     {
         _cache.Clear();
     }
+
+    // The store keeps the fragment as an object instead of a serialized byte[]; the captured markup
+    // length was recorded when the fragment was built, so reuse it directly for the cache limit.
+    private static long EstimateSize(SerializedRenderFragment payload)
+        => Math.Max(payload.ContentSize, 1);
 
     public void Dispose()
     {

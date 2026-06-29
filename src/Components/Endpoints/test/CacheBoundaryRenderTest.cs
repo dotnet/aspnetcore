@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Http;
@@ -13,12 +11,12 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 public class CacheBoundaryRenderTest
 {
     [Fact]
-    public async Task DeserializationFailure_FallsBackToChildContent_AndLogsWarning()
+    public async Task EmptyCachedFragment_FallsBackToChildContent()
     {
         var testLogger = new TestLogger();
         var httpContext = CreateHttpContext();
 
-        var store = new TestCacheStore { ReturnForAnyKey = Encoding.UTF8.GetBytes("NOT VALID JSON {{{") };
+        var store = new TestCacheStore { ReturnForAnyKey = new SerializedRenderFragment() };
         var service = new CacheBoundaryService(store, new TestLoggerFactory(testLogger));
 
         var component = new CacheBoundary
@@ -31,10 +29,6 @@ public class CacheBoundaryRenderTest
         var frames = await RenderComponent(component);
 
         AssertContainsText(frames, "fallback");
-        var entry = Assert.Single(testLogger.Entries);
-        Assert.Equal(LogLevel.Warning, entry.Level);
-        Assert.Contains("Failed to restore CacheBoundary", entry.Message);
-        Assert.NotNull(entry.Exception);
     }
 
     [Fact]
@@ -113,7 +107,7 @@ public class CacheBoundaryRenderTest
         {
             Nodes = [new RenderTreeNode { Type = "markup", Content = "<p>from-cache</p>" }],
         };
-        var store = new TestCacheStore { ReturnForAnyKey = JsonSerializer.SerializeToUtf8Bytes(precomputed, ServerComponentSerializationSettings.JsonSerializationOptions) };
+        var store = new TestCacheStore { ReturnForAnyKey = precomputed };
         var service = new CacheBoundaryService(store, new TestLoggerFactory(new TestLogger()));
 
         var childContentInvocations = 0;
@@ -150,12 +144,12 @@ public class CacheBoundaryRenderTest
 
     private sealed class TestCacheStore : ICacheBoundaryStore
     {
-        public Dictionary<string, byte[]> Data { get; } = new();
-        public byte[] ReturnForAnyKey { get; set; }
+        public Dictionary<string, SerializedRenderFragment> Data { get; } = new();
+        public SerializedRenderFragment ReturnForAnyKey { get; set; }
 
-        public async ValueTask<byte[]> GetOrCreateAsync(
+        public async ValueTask<SerializedRenderFragment> GetOrCreateAsync(
             string key,
-            Func<CancellationToken, ValueTask<byte[]>> factory,
+            Func<CancellationToken, ValueTask<SerializedRenderFragment>> factory,
             CacheStoreOptions options,
             CancellationToken cancellationToken)
         {

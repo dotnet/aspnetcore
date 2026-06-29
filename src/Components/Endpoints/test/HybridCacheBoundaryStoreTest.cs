@@ -22,8 +22,8 @@ public class HybridCacheBoundaryStoreTest
         Assert.Contains(nameof(CacheBoundary.ExpiresSliding), ex.Message);
     }
 
-    private static ValueTask<byte[]> Factory(CancellationToken cancellationToken)
-        => ValueTask.FromResult(Array.Empty<byte>());
+    private static ValueTask<SerializedRenderFragment> Factory(CancellationToken cancellationToken)
+        => ValueTask.FromResult(new SerializedRenderFragment());
 
     private sealed class StubHybridCache : HybridCache
     {

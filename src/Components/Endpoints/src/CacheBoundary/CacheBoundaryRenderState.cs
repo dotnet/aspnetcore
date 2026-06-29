@@ -19,9 +19,9 @@ internal sealed class CacheBoundaryRenderState
 
     public bool IsCacheHit { get; set; }
 
-    public TaskCompletionSource<byte[]>? CaptureCompletion { get; set; }
+    public TaskCompletionSource<SerializedRenderFragment>? CaptureCompletion { get; set; }
 
-    public Task<byte[]>? PendingStoreTask { get; set; }
+    public Task<SerializedRenderFragment>? PendingStoreTask { get; set; }
 
     public CacheBoundaryTextWriter? ActiveWriter { get; set; }
 }

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -79,6 +80,8 @@ public static class RazorComponentsServiceCollectionExtensions
                 ? ActivatorUtilities.CreateInstance<HybridCacheBoundaryStore>(sp)
                 : ActivatorUtilities.CreateInstance<MemoryCacheBoundaryStore>(sp));
         services.TryAddSingleton<CacheBoundaryService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHybridCacheSerializer<SerializedRenderFragment>>(
+            SerializedRenderFragmentHybridCacheSerializer.Instance));
         services.TryAddScoped<TempDataCascadingValueSupplier>();
         services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
             sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);

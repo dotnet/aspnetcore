@@ -17,9 +17,9 @@ internal sealed class HybridCacheBoundaryStore : ICacheBoundaryStore
         _hybridCache = hybridCache;
     }
 
-    public ValueTask<byte[]> GetOrCreateAsync(
+    public ValueTask<SerializedRenderFragment> GetOrCreateAsync(
         string key,
-        Func<CancellationToken, ValueTask<byte[]>> factory,
+        Func<CancellationToken, ValueTask<SerializedRenderFragment>> factory,
         CacheStoreOptions options,
         CancellationToken cancellationToken)
     {

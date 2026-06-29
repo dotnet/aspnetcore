@@ -5,7 +5,7 @@
 
 using System;
 using System.IO;
-using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -64,13 +64,14 @@ public class CacheBoundaryTextWriterTest
         writer.CreateHole(typeof(TestRenderFragmentHole), renderMode: null, capture, NullLogger.Instance);
         writer.StopCapture();
 
-        var json = Encoding.UTF8.GetString(writer.GetUtf8Json());
+        var fragment = writer.GetSerializedRenderFragment();
+        var json = JsonSerializer.Serialize(fragment, ServerComponentSerializationSettings.JsonSerializationOptions);
         Assert.Contains(nameof(TestRenderFragmentHole), json);
         Assert.Contains("hello", json);
     }
 
     [Fact]
-    public void GetJson_InterleavesMarkupAndHolesInRenderOrder()
+    public void GetSerializedRenderFragment_InterleavesMarkupAndHolesInRenderOrder()
     {
         var capture = new RenderFragmentCapture(CaptureFramesFor(builder =>
         {
@@ -88,7 +89,8 @@ public class CacheBoundaryTextWriterTest
         writer.Write("<p>after</p>");
         writer.StopCapture();
 
-        var json = Encoding.UTF8.GetString(writer.GetUtf8Json());
+        var fragment = writer.GetSerializedRenderFragment();
+        var json = JsonSerializer.Serialize(fragment, ServerComponentSerializationSettings.JsonSerializationOptions);
         var beforeIndex = json.IndexOf("before", StringComparison.Ordinal);
         var holeIndex = json.IndexOf("hole-value", StringComparison.Ordinal);
         var afterIndex = json.IndexOf("after", StringComparison.Ordinal);
