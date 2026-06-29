@@ -181,13 +181,32 @@
     Publish the targeting pack to the layout root by copying the already-built files instead of invoking
     PublishToDisk through a nested <MSBuild> call that overrides OutputPath. Overriding OutputPath forks a
     new project configuration that rebuilds the pack's assemblies a second time. See
-    https://github.com/dotnet/msbuild/issues/12927. Running AfterTargets="Build" and reusing the
-    GetFilesToPublish list in this same configuration avoids the fork and the rebuild.
+    https://github.com/dotnet/msbuild/issues/12927.
+
+    We run AfterTargets="Build" and ask the project for its already-resolved file list via a nested
+    <MSBuild> call to _GetAllSharedFrameworkFiles. We do NOT depend on GetFilesToPublish directly, because
+    GetFilesToPublish populates the project-global FilesToPackage/_FilesToPackage items that arcade's Pack
+    path (_AddFilesToNuGetPackage) also consumes; resolving them in this configuration adds every assembly
+    to the package twice and trips NU5118. Capturing the file list through TargetOutputs into a private
+    item avoids mutating the packaging items, and passing no global property overrides reuses the file list
+    already computed for packaging (no extra compile). The layout TargetPath transform below mirrors
+    arcade's GetFilesToPublish for a TargetingPack.
   -->
-  <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build" DependsOnTargets="GetFilesToPublish">
-    <Copy SourceFiles="@(FilesToPublish)"
-          DestinationFolder="$(TargetingPackLayoutRoot)%(FilesToPublish.TargetPath)%(FilesToPublish.Culture)"
-          Condition="'%(FilesToPublish.IsSymbolFile)' != 'true' or '%(FilesToPublish.IncludeAlways)' == 'true'"
+  <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GetAllSharedFrameworkFiles">
+      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackLayoutPackagedFile" />
+    </MSBuild>
+
+    <ItemGroup>
+      <_TargetingPackLayoutFileToPublish Include="@(_TargetingPackLayoutPackagedFile)"
+          Condition="'%(_TargetingPackLayoutPackagedFile.PackOnly)' != 'true' and '%(_TargetingPackLayoutPackagedFile.TargetPath)' != ''">
+        <LayoutTargetPath>packs/$(PackageId)/$(Version)/%(_TargetingPackLayoutPackagedFile.TargetPath)/</LayoutTargetPath>
+      </_TargetingPackLayoutFileToPublish>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_TargetingPackLayoutFileToPublish)"
+          DestinationFolder="$(TargetingPackLayoutRoot)%(_TargetingPackLayoutFileToPublish.LayoutTargetPath)%(_TargetingPackLayoutFileToPublish.Culture)"
+          Condition="'%(_TargetingPackLayoutFileToPublish.IsSymbolFile)' != 'true' or '%(_TargetingPackLayoutFileToPublish.IncludeAlways)' == 'true'"
           OverwriteReadOnlyFiles="true"
           SkipUnchangedFiles="true" />
 

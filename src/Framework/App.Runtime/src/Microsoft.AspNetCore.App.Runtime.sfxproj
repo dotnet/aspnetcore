@@ -139,19 +139,34 @@
     Publish the shared framework to the layout root by copying the already-built files, rather than
     invoking PublishToDisk through a nested <MSBuild> call that overrides OutputPath. Overriding
     OutputPath (a well-known global property) forks a new project configuration, and resolving the file
-    list under that forked configuration rebuilds the framework's assemblies a second time - the
+    list under that forked configuration rebuilds the framework's assemblies a second time, causing the
     intermittent MSB3030 PDB copy race described in https://github.com/dotnet/msbuild/issues/12927.
 
-    Instead we run AfterTargets="Build" (so the framework's files are already built) and reuse the file
-    list produced by GetFilesToPublish in this same configuration, then copy it to the layout root. This
-    mirrors the Copy that arcade's PublishToDisk target performs, without the OutputPath fork. Because we
-    no longer reuse the OutputPath-differentiated configuration, _PublishingToLayout is also no longer
-    needed to avoid the circular dependency that overriding OutputPath previously introduced.
+    Instead we run AfterTargets="Build" (so the framework's files are already built) and ask the project
+    for its already-resolved file list via a nested <MSBuild> call to _GetAllSharedFrameworkFiles. We do
+    NOT depend on GetFilesToPublish directly, because GetFilesToPublish populates the project-global
+    FilesToPackage/_FilesToPackage items that arcade's Pack path (_AddFilesToNuGetPackage) also consumes;
+    resolving them in this configuration adds every assembly to the package twice (the plain and the R2R
+    copy) and trips NU5118. By capturing the file list through TargetOutputs into a private item we avoid
+    mutating the packaging items, and because we pass no global property overrides the nested call reuses
+    the file list already computed for packaging (no extra compile). The layout TargetPath transform below
+    mirrors arcade's GetFilesToPublish for a RuntimePack.
   -->
-  <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build" DependsOnTargets="GetFilesToPublish">
-    <Copy SourceFiles="@(FilesToPublish)"
-          DestinationFolder="$(SharedFrameworkLayoutRoot)%(FilesToPublish.TargetPath)%(FilesToPublish.Culture)"
-          Condition="'%(FilesToPublish.IsSymbolFile)' != 'true' or '%(FilesToPublish.IncludeAlways)' == 'true'"
+  <Target Name="PublishToSharedLayoutRoot" AfterTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GetAllSharedFrameworkFiles">
+      <Output TaskParameter="TargetOutputs" ItemName="_SharedLayoutPackagedFile" />
+    </MSBuild>
+
+    <ItemGroup>
+      <_SharedLayoutFileToPublish Include="@(_SharedLayoutPackagedFile)"
+          Condition="'%(_SharedLayoutPackagedFile.PackOnly)' != 'true' and ($([System.String]::new('%(_SharedLayoutPackagedFile.TargetPath)').StartsWith('runtimes/')) or '%(_SharedLayoutPackagedFile.PublishOnly)' == 'true')">
+        <LayoutTargetPath>shared/$(SharedFrameworkName)/$(Version)/</LayoutTargetPath>
+      </_SharedLayoutFileToPublish>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_SharedLayoutFileToPublish)"
+          DestinationFolder="$(SharedFrameworkLayoutRoot)%(_SharedLayoutFileToPublish.LayoutTargetPath)%(_SharedLayoutFileToPublish.Culture)"
+          Condition="'%(_SharedLayoutFileToPublish.IsSymbolFile)' != 'true' or '%(_SharedLayoutFileToPublish.IncludeAlways)' == 'true'"
           OverwriteReadOnlyFiles="true"
           SkipUnchangedFiles="true" />
 
