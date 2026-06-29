@@ -362,7 +362,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       signal = controller.signal;
     }
     try {
-      await Promise.all(matching.map(e => Promise.resolve(e.handler(signal, e.source))));
+      await Promise.all(matching.map(async e => e.handler(signal, e.source)));
     } finally {
       if (!externalSignal && this._activePauseDeferral?.signal === signal) {
         this._activePauseDeferral = undefined;

@@ -739,7 +739,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
-    public void AbortSignal_IsAborted_WhenConnectionClosedDuringServerPause()
+    public void AbortSignal_IsAborted_WhenSupersededByNewServerPause()
     {
         NavigateToServerPausePage();
         InstallHangingAbortHookForServerPause();
