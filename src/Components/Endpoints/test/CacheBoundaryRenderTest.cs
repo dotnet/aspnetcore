@@ -84,20 +84,6 @@ public class CacheBoundaryRenderTest
         Assert.NotNull(state);
     }
 
-    private static void AssertContainsText(ArrayRange<RenderTreeFrame> frames, string expectedText)
-    {
-        for (var i = 0; i < frames.Count; i++)
-        {
-            ref var frame = ref frames.Array[i];
-            if (frame.FrameType == RenderTreeFrameType.Text && frame.TextContent == expectedText)
-            {
-                return;
-            }
-        }
-
-        Assert.Fail($"Expected to find text frame '{expectedText}' but it was not present.");
-    }
-
     [Fact]
     public async Task CacheHit_DoesNotInvokeChildContent()
     {
@@ -140,6 +126,20 @@ public class CacheBoundaryRenderTest
         }
 
         Assert.Fail($"Expected to find markup frame '{expectedMarkup}' but it was not present.");
+    }
+
+    private static void AssertContainsText(ArrayRange<RenderTreeFrame> frames, string expectedText)
+    {
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var frame = ref frames.Array[i];
+            if (frame.FrameType == RenderTreeFrameType.Text && frame.TextContent == expectedText)
+            {
+                return;
+            }
+        }
+
+        Assert.Fail($"Expected to find text frame '{expectedText}' but it was not present.");
     }
 
     private sealed class TestCacheStore : ICacheBoundaryStore
