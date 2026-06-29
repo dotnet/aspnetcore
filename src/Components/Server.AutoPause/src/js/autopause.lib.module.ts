@@ -35,7 +35,6 @@ export function afterWebStarted(blazor: BlazorLike): void {
   // Avoid stale listeners on restart.
   manager?.dispose();
   manager = undefined;
-  delete (blazor as Record<string, unknown>).autoPause;
 
   if (!config?.enabled) {
     return;
@@ -44,22 +43,8 @@ export function afterWebStarted(blazor: BlazorLike): void {
   const mgr = new AutoPauseManager(config, blazor);
   manager = mgr;
   mgr.start();
-
-  const handle: AutoPauseHandle = {
-    waitFor: (participant) => {
-      mgr.registerPauseHandler(participant);
-      return () => mgr.unregisterPauseHandler(participant);
-    },
-  };
-  (blazor as Record<string, unknown>).autoPause = handle;
 }
 
 export function afterServerStarted(blazor: BlazorLike): void {
   afterWebStarted(blazor);
-}
-
-export interface AutoPauseHandle {
-  // Defer or veto an automatic pause; the callback receives an AbortSignal that aborts
-  // when the tab becomes visible again. Returns a function that unregisters the participant.
-  waitFor(participant: (signal: AbortSignal) => void | Promise<void>): () => void;
 }

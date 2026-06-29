@@ -9,10 +9,10 @@ export interface AutoPauseConfig {
   hiddenDelayMilliseconds: number;
 }
 
-// The subset of the Blazor global this manager depends on. The package only relies on
-// the stable in-box primitives: pause/resume and the generic 'circuitactivitychanged' event.
+// The subset of the Blazor global this manager depends on: the stable public pause/resume
+// primitives and the 'circuitactivitychanged' event.
 export interface BlazorActivityHost {
-  pauseCircuit?: () => Promise<boolean>;
+  pauseCircuit?: (signal?: AbortSignal) => Promise<boolean>;
   resumeCircuit?: () => Promise<boolean>;
   addEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean }) => void) => void;
   removeEventListener?: (type: 'circuitactivitychanged', handler: (ev: { busy: boolean }) => void) => void;
@@ -24,8 +24,6 @@ export class AutoPauseManager {
   private readonly _config: AutoPauseConfig;
 
   private readonly _blazor: BlazorActivityHost;
-
-  private readonly _pauseHandlers = new Set<(signal: AbortSignal) => void | Promise<void>>();
 
   private readonly _visibilityListener: () => void;
 
@@ -60,29 +58,6 @@ export class AutoPauseManager {
 
     if (document.visibilityState === 'hidden') {
       this.startHiddenTimer();
-    }
-  }
-
-  public registerPauseHandler(handler: (signal: AbortSignal) => void | Promise<void>): void {
-    this._pauseHandlers.add(handler);
-  }
-
-  public unregisterPauseHandler(handler: (signal: AbortSignal) => void | Promise<void>): void {
-    this._pauseHandlers.delete(handler);
-  }
-
-  public async invokeHandlers(signal?: AbortSignal): Promise<void> {
-    if (this._pauseInFlight && !signal) {
-      return;
-    }
-    if (this._pauseHandlers.size > 0) {
-      if (!signal) {
-        this._activeAbortController?.abort('superseded by new pause request');
-        const controller = new AbortController();
-        this._activeAbortController = controller;
-        signal = controller.signal;
-      }
-      await Promise.all([...this._pauseHandlers].map(fn => Promise.resolve(fn(signal!))));
     }
   }
 
@@ -213,19 +188,13 @@ export class AutoPauseManager {
         return;
       }
 
-      await this.invokeHandlers(controller.signal);
-
-      if (this.shouldAbortBeforePausing(controller)) {
-        return;
-      }
-
       await this.whenIdle(controller.signal);
 
       if (this.shouldAbortBeforePausing(controller)) {
         return;
       }
 
-      const paused = await this._blazor.pauseCircuit?.() ?? false;
+      const paused = await this._blazor.pauseCircuit?.(controller.signal) ?? false;
       if (paused) {
         this._autoPaused = true;
 

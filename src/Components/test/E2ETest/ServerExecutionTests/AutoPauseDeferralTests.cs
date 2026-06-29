@@ -895,7 +895,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         {
             WaitForBlazorPause();
             ((IJavaScriptExecutor)Browser).ExecuteScript(
-                "Blazor.autoPause.waitFor(window.__mitigationHandler)");
+                "Blazor.pause.waitFor(window.__mitigationHandler)");
         }
 
         if (setupScript != null)
@@ -1131,7 +1131,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
                     resolve();
                 });
             });
-            window.__abortUnsub = Blazor.autoPause.waitFor(window.__abortHandler);
+            window.__abortUnsub = Blazor.pause.waitFor(window.__abortHandler);
         ");
     }
 
@@ -1177,7 +1177,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
                     resolve();
                 });
             });
-            window.__serverAbortUnsub = Blazor.autoPause.waitFor(window.__serverAbortHandler);
+            window.__serverAbortUnsub = Blazor.pause.waitFor(window.__serverAbortHandler, { source: 'server' });
         ");
     }
 

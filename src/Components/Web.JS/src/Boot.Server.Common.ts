@@ -13,6 +13,7 @@ import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Serv
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
+import { registerPauseDeferral } from './Platform/Circuits/PauseDeferralRegistry';
 
 let initializersPromise: Promise<void> | undefined;
 let appState: string;
@@ -79,17 +80,18 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     return true;
   };
 
-  Blazor.pauseCircuit = async () => {
+  Blazor.pauseCircuit = async (signal?: AbortSignal) => {
     if (circuit.didRenderingFail()) {
       return false;
     }
 
-    if (!(await circuit.pause())) {
-      logger.log(LogLevel.Information, 'Pause attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
-      return false;
-    }
+    return circuit.pauseCircuit(signal);
+  };
 
-    return true;
+  Blazor.pause = {
+    waitFor(handler, options) {
+      return registerPauseDeferral(handler, options?.source);
+    },
   };
 
   Blazor.resumeCircuit = async () => {

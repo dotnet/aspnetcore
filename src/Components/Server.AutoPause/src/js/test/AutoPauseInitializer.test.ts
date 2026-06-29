@@ -30,33 +30,31 @@ function enable(blazor: TrackingBlazor): void {
 }
 
 describe('autopause initializer', () => {
-  it('afterWebStarted exposes the handle as blazor.autoPause when enabled', () => {
+  it('afterWebStarted starts the manager when enabled', () => {
     const blazor = createBlazor();
     enable(blazor);
-    expect(blazor.autoPause).toBeDefined();
+    expect(blazor.added).toHaveLength(1);
   });
 
   it('afterWebStarted does not start when config is disabled', () => {
     const blazor = createBlazor();
     beforeWebStart({ circuit: { autoPauseEnabled: false, autoPauseHiddenDelayMilliseconds: 100 } });
     afterWebStarted(blazor);
-    expect(blazor.autoPause).toBeUndefined();
+    expect(blazor.added).toHaveLength(0);
   });
 
   it('afterWebStarted does not start when config is absent', () => {
     const blazor = createBlazor();
     beforeWebStart({ circuit: {} });
     afterWebStarted(blazor);
-    expect(blazor.autoPause).toBeUndefined();
+    expect(blazor.added).toHaveLength(0);
   });
 
-  it('waitFor returns an unsubscribe function', () => {
+  it('does not expose any package-specific global on blazor', () => {
     const blazor = createBlazor();
     enable(blazor);
-    const unsubscribe = (blazor.autoPause as { waitFor: (p: () => void) => () => void })
-      .waitFor(() => { /* participant */ });
-    expect(typeof unsubscribe).toBe('function');
-    unsubscribe();
+    // The single public API is the framework's Blazor.pause.waitFor; the package adds nothing.
+    expect(blazor.autoPause).toBeUndefined();
   });
 
   it('a second afterWebStarted disposes the previous manager so listeners do not accumulate', () => {
@@ -72,17 +70,15 @@ describe('autopause initializer', () => {
     expect(blazor.added).toHaveLength(2);
   });
 
-  it('a disabled second afterWebStarted disposes the previous manager and clears the handle', () => {
+  it('a disabled second afterWebStarted disposes the previous manager', () => {
     const blazor = createBlazor();
     enable(blazor);
     expect(blazor.added).toHaveLength(1);
-    expect(blazor.autoPause).toBeDefined();
 
     // Restart with auto-pause now disabled: the prior manager must still be torn down so
     // its listeners cannot pause/resume the new circuit unexpectedly.
     beforeWebStart({ circuit: { autoPauseEnabled: false } });
     afterWebStarted(blazor);
     expect(blazor.removed).toEqual([blazor.added[0]]);
-    expect(blazor.autoPause).toBeUndefined();
   });
 });

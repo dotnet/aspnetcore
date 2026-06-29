@@ -28,7 +28,7 @@ public class AutoPauseTests : ServerTestBase<BasicTestAppServerSiteFixture<Razor
         Browser.Exists(By.Id("render-mode-interactive"));
         WaitForBlazorPause();
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
-            Blazor.autoPause.waitFor(async (signal) => {
+            Blazor.pause.waitFor(async (signal) => {
                 window.autoPauseEvents.push({ phase: 'testLog:handlerInvoked', aborted: signal.aborted });
             });
         ");

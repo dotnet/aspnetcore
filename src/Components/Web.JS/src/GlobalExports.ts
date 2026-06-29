@@ -41,8 +41,11 @@ export interface IBlazor {
   removeEventListener?: typeof JSEventRegistry.prototype.removeEventListener;
   disconnect?: () => void;
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
-  pauseCircuit?: () => Promise<boolean>;
+  pauseCircuit?: (signal?: AbortSignal) => Promise<boolean>;
   resumeCircuit?: () => Promise<boolean>;
+  pause?: {
+    waitFor: (handler: (signal: AbortSignal, source?: 'server' | (string & {})) => void | Promise<void>, options?: { source?: 'server' | (string & {}) }) => () => void;
+  };
   defaultReconnectionHandler?: DefaultReconnectionHandler;
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>) | ((options?: Partial<WebStartOptions>) => Promise<void>);
   platform?: Platform;

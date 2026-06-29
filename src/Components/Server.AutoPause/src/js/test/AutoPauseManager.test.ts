@@ -4,8 +4,6 @@
 import { expect, jest, test, describe, beforeEach, afterEach } from '@jest/globals';
 import { AutoPauseManager, AutoPauseConfig, BlazorActivityHost } from '../AutoPauseManager';
 
-type Participant = (signal: AbortSignal) => void | Promise<void>;
-
 function setVisibility(state: 'visible' | 'hidden'): void {
   Object.defineProperty(document, 'visibilityState', {
     configurable: true,
@@ -14,18 +12,17 @@ function setVisibility(state: 'visible' | 'hidden'): void {
   document.dispatchEvent(new Event('visibilitychange'));
 }
 
+const realSetTimeout = setTimeout;
+
 async function flushPromises(): Promise<void> {
-  // Yield several microtask turns so chained `await`s inside the manager resolve
-  // even while fake timers are active.
-  for (let i = 0; i < 10; i++) {
-    await Promise.resolve();
-  }
+  // Drain the entire microtask queue (regardless of chained-await depth)
+  await new Promise<void>(resolve => realSetTimeout(resolve, 0));
 }
 
 describe('AutoPauseManager', () => {
   const defaultConfig: AutoPauseConfig = { enabled: true, hiddenDelayMilliseconds: 1000 };
 
-  let pauseCircuit: jest.Mock<() => Promise<boolean>>;
+  let pauseCircuit: jest.Mock<(signal?: AbortSignal) => Promise<boolean>>;
   let resumeCircuit: jest.Mock<() => Promise<boolean>>;
   let activityListener: ((ev: { busy: boolean }) => void) | undefined;
   let host: BlazorActivityHost;
@@ -34,7 +31,7 @@ describe('AutoPauseManager', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     setVisibility('visible');
-    pauseCircuit = jest.fn<() => Promise<boolean>>().mockResolvedValue(true);
+    pauseCircuit = jest.fn<(signal?: AbortSignal) => Promise<boolean>>().mockResolvedValue(true);
     resumeCircuit = jest.fn<() => Promise<boolean>>().mockResolvedValue(true);
     activityListener = undefined;
     host = {
@@ -51,14 +48,8 @@ describe('AutoPauseManager', () => {
     jest.useRealTimers();
   });
 
-  function create(
-    participant?: Participant,
-    config: AutoPauseConfig = defaultConfig,
-  ): AutoPauseManager {
+  function create(config: AutoPauseConfig = defaultConfig): AutoPauseManager {
     manager = new AutoPauseManager(config, host);
-    if (participant) {
-      manager.registerPauseHandler(participant);
-    }
     manager.start();
     return manager;
   }
@@ -99,7 +90,7 @@ describe('AutoPauseManager', () => {
   });
 
   test('respects a custom hiddenDelayMilliseconds', async () => {
-    create(undefined, { enabled: true, hiddenDelayMilliseconds: 50 });
+    create({ enabled: true, hiddenDelayMilliseconds: 50 });
     setVisibility('hidden');
     jest.advanceTimersByTime(50);
     await flushPromises();
@@ -107,7 +98,7 @@ describe('AutoPauseManager', () => {
   });
 
   test('zero delay pauses immediately on hide', async () => {
-    create(undefined, { enabled: true, hiddenDelayMilliseconds: 0 });
+    create({ enabled: true, hiddenDelayMilliseconds: 0 });
     setVisibility('hidden');
     jest.advanceTimersByTime(0);
     await flushPromises();
@@ -115,90 +106,22 @@ describe('AutoPauseManager', () => {
   });
 
   test('negative delay pauses immediately on hide', async () => {
-    create(undefined, { enabled: true, hiddenDelayMilliseconds: -1 });
+    create({ enabled: true, hiddenDelayMilliseconds: -1 });
     setVisibility('hidden');
     jest.advanceTimersByTime(0);
     await flushPromises();
     expect(pauseCircuit).toHaveBeenCalledTimes(1);
   });
 
-  test('awaits a registered pause handler before pausing', async () => {
-    const order: string[] = [];
-    const participant: Participant = async () => {
-      order.push('callback-start');
-      await Promise.resolve();
-      order.push('callback-end');
-    };
-    pauseCircuit.mockImplementation(async () => {
-      order.push('pause');
-      return true;
-    });
-
-    create(participant);
-    setVisibility('hidden');
-    jest.advanceTimersByTime(1000);
-    await flushPromises();
-    await flushPromises();
-
-    expect(order).toEqual(['callback-start', 'callback-end', 'pause']);
-  });
-
-  test('passes an AbortSignal to the pause handler', async () => {
-    const participant = jest.fn<Participant>(async () => { /* noop */ });
-    create(participant);
-    setVisibility('hidden');
-    jest.advanceTimersByTime(1000);
-    await flushPromises();
-
-    expect(participant).toHaveBeenCalledTimes(1);
-    const [signal] = participant.mock.calls[0];
-    expect(signal).toBeInstanceOf(AbortSignal);
-  });
-
-  test('unregister prevents handler from being called on subsequent pause', async () => {
-    const handler = jest.fn<Participant>(async () => { /* noop */ });
+  test('invokes pauseCircuit with an AbortSignal when the hidden delay elapses', async () => {
     create();
-    manager!.registerPauseHandler(handler);
-
-    // First pause: handler is called
-    setVisibility('hidden');
-    jest.advanceTimersByTime(1000);
-    await flushPromises();
-    expect(handler).toHaveBeenCalledTimes(1);
-
-    // Resume and unregister
-    setVisibility('visible');
-    await flushPromises();
-    manager!.unregisterPauseHandler(handler);
-
-    // Second pause: handler is NOT called
-    setVisibility('hidden');
-    jest.advanceTimersByTime(1000);
-    await flushPromises();
-    expect(handler).toHaveBeenCalledTimes(1);
-  });
-
-  test('aborts the signal and skips pausing if page becomes visible during handler', async () => {
-    let capturedSignal: AbortSignal | undefined;
-    let resolveCallback: (() => void) | undefined;
-    const callbackPromise = new Promise<void>(r => { resolveCallback = r; });
-    const participant: Participant = (signal) => {
-      capturedSignal = signal;
-      return callbackPromise;
-    };
-
-    create(participant);
     setVisibility('hidden');
     jest.advanceTimersByTime(1000);
     await flushPromises();
 
-    setVisibility('visible');
-    expect(capturedSignal?.aborted).toBe(true);
-
-    resolveCallback!();
-    await flushPromises();
-
-    expect(pauseCircuit).not.toHaveBeenCalled();
+    expect(pauseCircuit).toHaveBeenCalledTimes(1);
+    const [signal] = pauseCircuit.mock.calls[0];
+    expect(signal).toBeInstanceOf(AbortSignal);
   });
 
   test('resumes circuit when page becomes visible after auto-pause', async () => {
@@ -251,26 +174,48 @@ describe('AutoPauseManager', () => {
     expect(pauseCircuit).not.toHaveBeenCalled();
   });
 
-  test('dispose aborts an in-flight pause handler', async () => {
+  test('aborts the signal handed to pauseCircuit when the page becomes visible mid-pause', async () => {
     let capturedSignal: AbortSignal | undefined;
-    let resolveCallback: (() => void) | undefined;
-    const callbackPromise = new Promise<void>(r => { resolveCallback = r; });
-    const participant: Participant = (signal) => {
+    let resolvePause: ((value: boolean) => void) | undefined;
+    pauseCircuit.mockImplementation((signal) => {
       capturedSignal = signal;
-      return callbackPromise;
-    };
+      return new Promise<boolean>(r => { resolvePause = r; });
+    });
 
-    create(participant);
+    create();
     setVisibility('hidden');
     jest.advanceTimersByTime(1000);
     await flushPromises();
 
-    manager!.dispose();
-    expect(capturedSignal?.aborted).toBe(true);
+    expect(capturedSignal).toBeInstanceOf(AbortSignal);
+    expect(capturedSignal!.aborted).toBe(false);
 
-    resolveCallback!();
+    setVisibility('visible');
+    expect(capturedSignal!.aborted).toBe(true);
+
+    resolvePause!(false);
     await flushPromises();
-    expect(pauseCircuit).not.toHaveBeenCalled();
+  });
+
+  test('dispose aborts the signal handed to an in-flight pauseCircuit', async () => {
+    let capturedSignal: AbortSignal | undefined;
+    let resolvePause: ((value: boolean) => void) | undefined;
+    pauseCircuit.mockImplementation((signal) => {
+      capturedSignal = signal;
+      return new Promise<boolean>(r => { resolvePause = r; });
+    });
+
+    create();
+    setVisibility('hidden');
+    jest.advanceTimersByTime(1000);
+    await flushPromises();
+
+    expect(capturedSignal).toBeInstanceOf(AbortSignal);
+    manager!.dispose();
+    expect(capturedSignal!.aborted).toBe(true);
+
+    resolvePause!(false);
+    await flushPromises();
   });
 
   test('does not double-pause if visibility flips while pause is in flight', async () => {

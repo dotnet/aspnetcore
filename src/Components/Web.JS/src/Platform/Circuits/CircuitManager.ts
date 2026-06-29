@@ -19,6 +19,7 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
+import { PauseDeferralEntry, getMatchingPauseDeferrals } from './PauseDeferralRegistry';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -61,6 +62,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private _isFirstRender = true;
 
   private _activeOperations = new Set<object>();
+
+  private _activePauseDeferral?: AbortController;
 
   private _pendingJsCallTracking = new Map<number, () => void>();
 
@@ -211,6 +214,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
       this.resetActivity();
+      this.abortPauseDeferrals('connection closed');
 
       const pausingWasInProgress = this._pausingState.isInprogress();
       if (!pausingWasInProgress) {
@@ -317,15 +321,59 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return true;
   }
 
-  private async handleServerInitiatedPause(): Promise<void> {
-    if (this._options.onPauseRequested) {
-      await this._options.onPauseRequested();
+  private abortPauseDeferrals(reason?: string): void {
+    this._activePauseDeferral?.abort(reason);
+    this._activePauseDeferral = undefined;
+  }
+
+  // Client-initiated pause: runs the non-server deferral participants, then pauses unless the wait was aborted.
+  public async pauseCircuit(externalSignal?: AbortSignal): Promise<boolean> {
+    await this.invokePauseDeferrals(externalSignal);
+    if (externalSignal?.aborted) {
+      return false;
     }
-    if (Blazor.pauseCircuit) {
-      await Blazor.pauseCircuit();
+    if (!(await this.pause())) {
+      this._logger.log(LogLevel.Information, 'Pause attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
+      return false;
+    }
+    return true;
+  }
+
+  private async invokePauseDeferrals(externalSignal?: AbortSignal): Promise<void> {
+    await this.runPauseDeferrals(e => e.source !== 'server', externalSignal);
+  }
+
+  private async runPauseDeferrals(
+    matches: (entry: PauseDeferralEntry) => boolean,
+    externalSignal?: AbortSignal,
+  ): Promise<void> {
+    // The deferral registry is not owned by the circuit, so registered callbacks survive across this circuit's lifetime.
+    const matching = getMatchingPauseDeferrals(matches);
+    if (matching.length === 0) {
+      return;
+    }
+    let signal: AbortSignal;
+    if (externalSignal) {
+      signal = externalSignal;
     } else {
-      await this.pause(true);
+      this._activePauseDeferral?.abort('superseded by new pause request');
+      const controller = new AbortController();
+      this._activePauseDeferral = controller;
+      signal = controller.signal;
     }
+    try {
+      await Promise.all(matching.map(e => Promise.resolve(e.handler(signal, e.source))));
+    } finally {
+      if (!externalSignal && this._activePauseDeferral?.signal === signal) {
+        this._activePauseDeferral = undefined;
+      }
+    }
+  }
+
+  private async handleServerInitiatedPause(): Promise<void> {
+    // Runs only the 'server'-scoped deferrals, then pauses.
+    await this.runPauseDeferrals(e => e.source === 'server');
+    await this.pause(true);
   }
 
   public async pause(remote?: boolean): Promise<boolean> {
