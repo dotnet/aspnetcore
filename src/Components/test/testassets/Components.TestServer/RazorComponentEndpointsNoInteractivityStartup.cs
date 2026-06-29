@@ -29,7 +29,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", true);
 
-        var builder = services.AddRazorComponents(options =>
+        services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
@@ -39,7 +39,6 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         if (Configuration.GetValue<bool>("UseHybridCacheBoundaryStore"))
         {
             services.AddHybridCache();
-            builder.AddHybridCacheBoundaryStore();
         }
 
         services.AddHttpContextAccessor();

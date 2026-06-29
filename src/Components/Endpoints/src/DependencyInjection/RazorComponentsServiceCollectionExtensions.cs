@@ -76,8 +76,8 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
         services.TryAddSingleton<ICacheBoundaryStore>(static sp =>
-            sp.GetRequiredService<IOptions<CacheBoundaryStoreOptions>>().Value.UseHybridCache
-                ? ActivatorUtilities.CreateInstance<HybridCacheBoundaryStore>(sp)
+            sp.GetService<HybridCache>() is { } hybridCache
+                ? new HybridCacheBoundaryStore(hybridCache)
                 : ActivatorUtilities.CreateInstance<MemoryCacheBoundaryStore>(sp));
         services.TryAddSingleton<CacheBoundaryService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHybridCacheSerializer<SerializedRenderFragment>>(
