@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.ServerSentEvents;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -58,6 +59,50 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.Equal("Bad Request", response.Value.Description);
             Assert.Equal("application/json+problem", response.Value.Content.Keys.Single());
         });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEvents()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos/events"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            var content = Assert.Single(response.Value.Content);
+            Assert.Equal("text/event-stream", content.Key);
+            Assert.Null(content.Value.Schema);
+            var itemSchema = Assert.IsType<OpenApiSchema>(content.Value.ItemSchema);
+            Assert.Equal(JsonSchemaType.Object, itemSchema.Type);
+            Assert.Equal(["data"], itemSchema.Required);
+            Assert.Collection(itemSchema.Properties.OrderBy(property => property.Key),
+                property =>
+                {
+                    Assert.Equal("data", property.Key);
+                    var dataSchema = Assert.IsType<OpenApiSchemaReference>(property.Value);
+                    Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+                },
+                property =>
+                {
+                    Assert.Equal("event", property.Key);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                });
+        });
+
+        static async IAsyncEnumerable<SseItem<Todo>> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
     }
 
     [Fact]
