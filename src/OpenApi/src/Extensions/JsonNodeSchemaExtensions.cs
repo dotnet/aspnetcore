@@ -403,7 +403,7 @@ internal static class JsonNodeSchemaExtensions
         }
 
         if (parameterDescription.Source is { } bindingSource
-            && SupportsNullableProperty(bindingSource)
+            && DoesNotSupportNullValue(bindingSource)
             && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
             schemaTypes.HasFlag(JsonSchemaType.Null))
         {
@@ -412,7 +412,7 @@ internal static class JsonNodeSchemaExtensions
 
         // Parameters sourced from the header, query, route, and/or form cannot be nullable based on our binding
         // rules but can be optional.
-        static bool SupportsNullableProperty(BindingSource bindingSource) => bindingSource == BindingSource.Header
+        static bool DoesNotSupportNullValue(BindingSource bindingSource) => bindingSource == BindingSource.Header
             || bindingSource == BindingSource.Query
             || bindingSource == BindingSource.Path
             || bindingSource == BindingSource.Form
@@ -477,6 +477,10 @@ internal static class JsonNodeSchemaExtensions
         if (createSchemaReferenceId(context.TypeInfo) is { } schemaReferenceId)
         {
             schema[OpenApiConstants.SchemaId] = schemaReferenceId;
+        }
+        if (context.TypeInfo.Kind == JsonTypeInfoKind.Union)
+        {
+            schema[OpenApiConstants.SchemaIsUnion] = true;
         }
         // If the type is a non-abstract base class that is not one of the derived types then mark it as a base schema.
         if (context.BaseTypeInfo == context.TypeInfo &&

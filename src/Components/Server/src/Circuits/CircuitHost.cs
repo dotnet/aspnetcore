@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -399,7 +400,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // BeginInvokeDotNetFromJS is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
+    public async Task BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, [StringSyntax(StringSyntaxAttribute.Json)] string argsJson)
     {
         AssertInitialized();
         AssertNotDisposed();
@@ -946,33 +947,33 @@ internal partial class CircuitHost : IAsyncDisposable
         return result;
     }
 
-    internal async ValueTask<bool> RequestPauseAsync(CancellationToken cancellationToken)
+    internal Task<bool> RequestPauseAsync(CancellationToken cancellationToken)
     {
         Log.ServerPauseRequested(_logger, CircuitId);
 
         if (_disposed)
         {
             Log.ServerPauseRejected(_logger, CircuitId);
-            return false;
+            return Task.FromResult(false);
         }
 
         if (!_initialized || !_onConnectionUpFired)
         {
             Log.ServerPauseRejected(_logger, CircuitId);
-            return false;
+            return Task.FromResult(false);
         }
 
         if (!Client.Connected)
         {
             Log.ServerPauseRejected(_logger, CircuitId);
-            return false;
+            return Task.FromResult(false);
         }
 
         // Dispatch the send onto the dispatcher to serialize with any sync work
         // (renders, event handlers) that may be in progress.
         // The client receives the message and decides when to actually pause via
         // an optional onPauseRequested callback in CircuitStartOptions.
-        return await Renderer.Dispatcher.InvokeAsync(async () =>
+        return Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_disposed || !Client.Connected)
             {

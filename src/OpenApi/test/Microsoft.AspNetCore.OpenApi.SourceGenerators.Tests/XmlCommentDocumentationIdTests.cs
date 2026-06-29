@@ -87,4 +87,70 @@ public static class TestApi
         var result = XmlCommentGenerator.NormalizeDocId(input);
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public async Task ShouldNotDuplicateDocumentationIds()
+    {
+        var source = """
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+app.MapOpenApi();
+
+app.MapPost("/", (GenericFoo<bool> fooBool) => new Bar());
+
+app.Run();
+
+/// <summary>
+/// Should not be duplicated. <see cref="T" />
+/// </summary>
+public class GenericFoo<T>
+{
+}
+
+public class Bar
+{
+    /// <summary>
+    /// FooString property xml comment.
+    /// </summary>
+    public GenericFoo<string> FooString { get; set; }
+
+    /// <summary>
+    /// FooInt property xml comment.
+    /// </summary>
+    public GenericFoo<int> FooInt { get; set; }
+
+    /// <summary>
+    /// Method with GenericFoo{double} parameter.
+    /// </summary>
+    /// <param name="fooDouble">The GenericFoo of double.</param>
+    public void Test(GenericFoo<double> fooDouble)
+    {
+
+    }
+}
+""";
+
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, [], out var compilation, out var additionalAssemblies);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, additionalAssemblies, document =>
+        {
+            Assert.NotNull(document);
+            // Verify that GenericFoo<T> schema has the XML comment
+            var genericFooOfIntSchema = document.Components.Schemas["GenericFooOfint"];
+            Assert.Equal("Should not be duplicated. <see cref=\"!:T\" />", genericFooOfIntSchema.Description);
+
+            // Verify that Bar's FooInt property has the XML comment
+            var barSchema = document.Components.Schemas["Bar"];
+            var fooIntProperty = Assert.IsType<OpenApiSchemaReference>(barSchema.Properties["fooInt"]);
+            Assert.Equal("FooInt property xml comment.", fooIntProperty.Description);
+        });
+    }
 }
