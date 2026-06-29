@@ -828,6 +828,42 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    private class ExampleWithJsonExtensionData
+    {
+        public int Number { get; init; }
+
+        [JsonExtensionData]
+        public Dictionary<string, object> ExtensionData { get; init; } = [];
+    }
+
+    [Fact]
+    public async Task SupportsClassWithJsonExtensionData()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (ExampleWithJsonExtensionData type) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody;
+            var content = Assert.Single(requestBody.Content);
+            var schema = content.Value.Schema;
+
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("number", property.Key);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                });
+            Assert.True(schema.AdditionalPropertiesAllowed);
+            Assert.NotNull(schema.AdditionalProperties);
+        });
+    }
+
     [Fact]
     public async Task SupportsClassWithJsonUnmappedMemberHandlingSkipped()
     {
