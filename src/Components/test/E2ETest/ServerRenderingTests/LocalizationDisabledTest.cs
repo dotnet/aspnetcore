@@ -25,6 +25,7 @@ public class LocalizationDisabledTest : ServerTestBase<BasicTestAppServerSiteFix
     protected override void InitializeAsyncCore()
     {
         _serverFixture.AdditionalArguments.Add("EnableCultureTesting=true");
+        _serverFixture.AdditionalArguments.Add("EnforceServerCultureOnClient=false");
         base.InitializeAsyncCore();
     }
 
