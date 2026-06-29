@@ -431,7 +431,7 @@ internal sealed class OpenApiDocumentService(
         // When multiple entries contribute different schemas for the same content-type, they
         // will be merged into an anyOf composite schema.
         var schemasByContentType = new Dictionary<string, List<IOpenApiSchema>>();
-        var contentTypesUsingItemSchema = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        HashSet<string>? contentTypesUsingItemSchema = null;
 
         foreach (var apiResponseType in apiResponseTypes)
         {
@@ -471,6 +471,7 @@ internal sealed class OpenApiDocumentService(
                 schemas.Add(schema);
                 if (IsServerSentEventsResponse(contentType, apiResponseType.Type, out _))
                 {
+                    contentTypesUsingItemSchema ??= [with(StringComparer.OrdinalIgnoreCase)];
                     contentTypesUsingItemSchema.Add(contentType);
                 }
             }
@@ -481,7 +482,7 @@ internal sealed class OpenApiDocumentService(
             IOpenApiSchema finalSchema = schemas.Count == 1
                 ? schemas[0]
                 : new OpenApiSchema { AnyOf = [.. schemas] };
-            response.Content[contentType] = contentTypesUsingItemSchema.Contains(contentType)
+            response.Content[contentType] = contentTypesUsingItemSchema != null && contentTypesUsingItemSchema.Contains(contentType)
                 ? new OpenApiMediaType { ItemSchema = finalSchema }
                 : new OpenApiMediaType { Schema = finalSchema };
         }
