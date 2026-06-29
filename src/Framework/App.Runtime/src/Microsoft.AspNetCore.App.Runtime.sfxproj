@@ -139,7 +139,7 @@
     Publish the shared framework to the layout root by copying the already-built files, rather than
     invoking PublishToDisk through a nested <MSBuild> call that overrides OutputPath. Overriding
     OutputPath (a well-known global property) forks a new project configuration, and resolving the file
-    list under that forked configuration rebuilds the framework's assemblies a second time -- the
+    list under that forked configuration rebuilds the framework's assemblies a second time - the
     intermittent MSB3030 PDB copy race described in https://github.com/dotnet/msbuild/issues/12927.
 
     Instead we run AfterTargets="Build" (so the framework's files are already built) and reuse the file
