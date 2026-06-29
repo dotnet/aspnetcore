@@ -155,6 +155,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         Assert.Equal("HTTP: GET /{id}", routeEndpointBuilder.DisplayName);
         Assert.Equal("/{id}", routeEndpointBuilder.RoutePattern.RawText);
 
+        // Assert that we don't fallback to the query string
         var httpContext = new DefaultHttpContext();
 
         httpContext.Request.Query = new QueryCollection(new Dictionary<string, StringValues>
@@ -1323,7 +1324,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Fact]
     public async Task ParameterBindingFailure_WithEndpointFilterFactory_HandlerReturningValueTaskOfObject_DoesNotExecuteHandler()
     {
-
+        // Arrange - handler returns ValueTask<object?> which matches the filter pipeline return type
         var services = new ServiceCollection().AddSingleton(LoggerFactory);
         var serviceProvider = services.BuildServiceProvider();
 
@@ -1344,9 +1345,11 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             RequestServices = serviceProvider
         };
         httpContext.Request.RouteValues["id"] = "invalid-guid";
-
+		
+		// Act
         await endpoint.RequestDelegate!(httpContext);
-
+		
+		//  Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         Assert.False(handlerExecuted, "Handler should not have been executed when parameter binding fails");
     }
@@ -1354,12 +1357,14 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Fact]
     public async Task ParameterBindingFailure_WithoutFilter_DoesNotExecuteHandler()
     {
+		// Arrange
         var services = new ServiceCollection().AddSingleton(LoggerFactory);
         var serviceProvider = services.BuildServiceProvider();
 
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         var handlerExecuted = false;
-
+		
+		//Act
         builder.MapGet("/test/{id}", (Guid id) =>
         {
             handlerExecuted = true;
@@ -1374,9 +1379,11 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
             RequestServices = serviceProvider
         };
         httpContext.Request.RouteValues["id"] = "invalid-guid";
-
+		
+		// Act
         await endpoint.RequestDelegate!(httpContext);
-
+		
+		// Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         Assert.True(httpContext.Response.Body.Length == 0, "Response body should be empty");
         Assert.False(handlerExecuted, "Handler should not have been executed when parameter binding fails");
@@ -1385,12 +1392,14 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Fact]
     public async Task ParameterBindingFailure_WithFilterFactoryGeneratingResponse_WritesBody()
     {
+		// Arrange
         var services = new ServiceCollection().AddSingleton(LoggerFactory);
         var serviceProvider = services.BuildServiceProvider();
 
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         var handlerExecuted = false;
 
+        // Act - Filter explicitly generates custom response for 400 errors
         builder.MapGet("/test/{id}", (Guid id) =>
         {
             handlerExecuted = true;
@@ -1416,9 +1425,11 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         httpContext.Request.RouteValues["id"] = "invalid-guid";
         using var responseBody = new MemoryStream();
         httpContext.Response.Body = responseBody;
-
+		
+		// Act
         await endpoint.RequestDelegate!(httpContext);
-
+		
+		// Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         Assert.False(handlerExecuted, "Handler should not have been executed when parameter binding fails");
 
@@ -1433,6 +1444,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Fact]
     public async Task ParameterBindingFailure_WithAddValidation_DoesNotExecuteHandler()
     {
+		// Arrange
         var services = new ServiceCollection().AddSingleton(LoggerFactory);
         services.AddValidation(); // Register validation filter factory
         var serviceProvider = services.BuildServiceProvider();
@@ -1440,6 +1452,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
         var handlerExecuted = false;
 
+        // Act - Binding failure happens BEFORE validation filter runs
         builder.MapGet("/test/{id}", (Guid id) =>
         {
             handlerExecuted = true;
@@ -1455,8 +1468,10 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         };
         httpContext.Request.RouteValues["id"] = "invalid-guid";
 
+        // Act
         await endpoint.RequestDelegate!(httpContext);
-
+        
+		// Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         Assert.True(httpContext.Response.Body.Length == 0, "Response body should be empty");
         Assert.False(handlerExecuted, "Handler should not have been executed when parameter binding fails");
