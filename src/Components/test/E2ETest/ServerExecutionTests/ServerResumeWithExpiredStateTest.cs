@@ -34,7 +34,7 @@ public class ServerResumeWithExpiredStateTest : ServerTestBase<BasicTestAppServe
     public bool UseCustomReconnectionUI { get; set; }
 
     [Fact]
-    public async Task ReloadsPage_AfterClientPause_WithExpiredState()
+    public void ReloadsPage_AfterClientPause_WithExpiredState()
     {
         // Check interactivity
         Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
@@ -52,7 +52,7 @@ public class ServerResumeWithExpiredStateTest : ServerTestBase<BasicTestAppServe
 
         // Check for page reload using multiple conditions:
         // 1. Previously captured element is stale
-        Browser.True(initialElement.IsStale);
+        Browser.True(() => IsElementStale(initialElement));
         // 2. Counter state is reset
         Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
         // 3. WebSocket connection has been re-established
@@ -87,6 +87,19 @@ public class ServerResumeWithExpiredStateTest : ServerTestBase<BasicTestAppServe
         resume.Click();
 
         Browser.True(() => Browser.Exists(By.Id("persistent-counter-render")).Text != previousText);
+    }
+
+    private static bool IsElementStale(IWebElement element)
+    {
+        try
+        {
+            _ = element.Enabled;
+            return false;
+        }
+        catch (StaleElementReferenceException)
+        {
+            return true;
+        }
     }
 }
 
