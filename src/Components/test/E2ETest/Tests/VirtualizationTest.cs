@@ -41,13 +41,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("sync-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerHeight = "0";
 
         int initialItemCount = 0;
 
         // Wait until items have been rendered.
         Browser.True(() => (initialItemCount = GetItemCount()) > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.Equal(expectedInitialSpacerHeight, () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll halfway.
@@ -55,7 +55,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validate that we get the same item count after scrolling halfway.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerHeight, () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll to the bottom.
@@ -63,7 +63,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validate that we get the same item count after scrolling to the bottom.
         Browser.Equal(initialItemCount, GetItemCount);
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerHeight, () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         int GetItemCount() => Browser.FindElements(By.Id("sync-item")).Count;
@@ -204,13 +204,13 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public void CanUseViewportAsContainer()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerHeight = "0";
         var topSpacer = Browser.Exists(By.Id("viewport-as-root")).FindElement(By.TagName("div"));
 
         Browser.ExecuteJavaScript("const element = document.getElementById('viewport-as-root'); element.scrollIntoView();");
 
         // Validate that the top spacer has a height of zero.
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.Equal(expectedInitialSpacerHeight, () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         Browser.ExecuteJavaScript("window.scrollTo(0, document.body.scrollHeight);");
@@ -219,7 +219,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => Browser.Exists(By.Id("999")).Displayed);
 
         // Validate that the top spacer has expanded.
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerHeight, () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
     }
 
@@ -228,11 +228,11 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     {
         Browser.MountTestComponent<VirtualizationComponent>();
         var topSpacer = Browser.Exists(By.Id("incorrect-size-container")).FindElement(By.TagName("div"));
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0; overflow-anchor: none;";
+        var expectedInitialSpacerHeight = "0";
 
         // Wait until items have been rendered.
         Browser.True(() => GetItemCount() > 0);
-        Browser.Equal(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.Equal(expectedInitialSpacerHeight, () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         // Scroll slowly, in increments of 50px at a time. At one point this would trigger a bug
@@ -246,7 +246,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         }
 
         // Validate that the top spacer did change
-        Browser.NotEqual(expectedInitialSpacerStyle, () => topSpacer.GetDomAttribute("style"));
+        Browser.NotEqual(expectedInitialSpacerHeight, () => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
 
         int GetItemCount() => Browser.FindElements(By.ClassName("incorrect-size-item")).Count;
@@ -256,14 +256,14 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     public virtual void CanRenderHtmlTable()
     {
         Browser.MountTestComponent<VirtualizationTable>();
-        var expectedInitialSpacerStyle = "height: 0px; flex-shrink: 0;";
+        var expectedInitialSpacerHeight = "0";
         var topSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :first-child"));
         var bottomSpacer = Browser.Exists(By.CssSelector("#virtualized-table > tbody > :last-child"));
 
         // We can override the tag name of the spacer
         Assert.Equal("tr", topSpacer.TagName.ToLowerInvariant());
         Assert.Equal("tr", bottomSpacer.TagName.ToLowerInvariant());
-        Browser.True(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
+        Browser.True(() => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height") == expectedInitialSpacerHeight);
         Assert.Contains("true", topSpacer.GetDomAttribute("aria-hidden"));
         Assert.Contains("true", bottomSpacer.GetDomAttribute("aria-hidden"));
 
@@ -273,8 +273,8 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => Browser.Exists(By.Id("row-999")).Displayed);
 
         // Validate that the top spacer has expanded, and bottom one has collapsed
-        Browser.False(() => topSpacer.GetDomAttribute("style").Contains(expectedInitialSpacerStyle));
-        Assert.Contains(expectedInitialSpacerStyle, bottomSpacer.GetDomAttribute("style"));
+        Browser.False(() => topSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height") == expectedInitialSpacerHeight);
+        Assert.Equal(expectedInitialSpacerHeight, bottomSpacer.GetDomAttribute("data-blazor-virtualize-reserved-height"));
     }
 
     [Fact]
@@ -1190,7 +1190,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
 
         // At scrollTop=0, the natural floor prevents native anchoring from compensating — new items
-        // appear at the top and old items shift down. This is the default AnchorMode.Beginning behavior.
+        // appear at the top and old items shift down. This is the default AnchorMode.Start behavior.
         // In contrast, AnchorMode.None compensates scrollTop so old items stay in view.
         var scrollTopAfter = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
         Assert.True(scrollTopAfter < 50,
@@ -2142,6 +2142,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2205,6 +2206,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("append-items")).Click();
         Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2247,6 +2249,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2278,6 +2281,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("append-items")).Click();
         Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2308,6 +2312,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("append-items")).Click();
         Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2338,6 +2343,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2366,6 +2372,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("append-items")).Click();
         Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2449,6 +2456,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2478,6 +2486,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         // Wait for anchor restore to settle before expanding an item.
         AssertViewportStaysStable(
@@ -2491,6 +2500,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("expand-item")).Click();
         Browser.Contains("Expanded item", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2663,7 +2673,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -2689,7 +2699,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_AppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_AppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -2714,7 +2724,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_SmallAppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_SmallAppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -2727,6 +2737,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("append-items")).Click();
         Browser.Contains("Appended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2741,7 +2752,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_Beginning_MidList_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -2754,6 +2765,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -2782,6 +2794,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         // End mode at the top: viewport should stay stable — the same items
         // stay visible. scrollTop may increase to compensate for prepended items.
@@ -2837,6 +2850,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         Browser.Exists(By.Id("prepend-items")).Click();
         Browser.Contains("Prepended 10 items", () => Browser.Exists(By.Id("status")).Text);
+        WaitForRenderToSettle(container, js);
 
         AssertViewportStaysStable(
             js,
@@ -3068,7 +3082,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_LargePrependAtTop_StillShowsNewItems(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3141,7 +3155,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_PrependAfterLeavingTop_DoesNotReengage(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_PrependAfterLeavingTop_DoesNotReengage(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3176,7 +3190,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_Beginning_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_Start_LargeAppendAtBottom_DoesNotFollowToBottom(bool variableHeight, bool useItemsProvider)
     {
         MountAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3373,7 +3387,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(true, true)]
-    public void AnchorMode_WindowScroll_Beginning_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_PrependAtTop_NewItemsVisible(bool variableHeight, bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", variableHeight, useItemsProvider);
 
@@ -3394,7 +3408,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_WindowScroll_Beginning_AppendAtBottom_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_AppendAtBottom_ViewportStable(bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -3415,7 +3429,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void AnchorMode_WindowScroll_Beginning_MidList_ViewportStable(bool useItemsProvider)
+    public void AnchorMode_WindowScroll_Start_MidList_ViewportStable(bool useItemsProvider)
     {
         MountWindowScrollAnchorModeComponent("1", useItemsProvider: useItemsProvider);
 
@@ -4181,7 +4195,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_WithProviderDelay_NoPlaceholderAtTarget()
     {
-        // When ScrollToIndexAsync completes, the target row must show content, not placeholder.
+        // When ScrollToItemAsync completes, the target row must show content, not placeholder.
         MountAnchorModeForScrollToItem(delay: true);
         var js = (IJavaScriptExecutor)Browser;
 
@@ -4255,7 +4269,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             if (!last) return false;
             // Scroller must be pinned at max (within 2px) — proves the clamp targeted the end.
             return Math.abs((c.scrollTop + c.clientHeight) - c.scrollHeight) <= 2;
-        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialIndex=100000.");
+        "), "Expected last item (999) rendered and scroller pinned at end after clamping InitialItemIndex=100000.");
     }
 
     [Theory]
@@ -4312,7 +4326,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void ScrollToItem_UserScrollDuringProviderFetch_UserScrollWins()
     {
-        // While the provider is fetching for ScrollToIndexAsync, a real user scroll must win.
+        // While the provider is fetching for ScrollToItemAsync, a real user scroll must win.
         MountAnchorModeForScrollToItem();
         var js = (IJavaScriptExecutor)Browser;
         var container = Browser.Exists(By.Id("scroll-container"));
@@ -4394,7 +4408,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
-    public void ScrollToItem_AnchorBeginning_AtTop_LandsAtTarget()
+    public void ScrollToItem_AnchorStart_AtTop_LandsAtTarget()
     {
         // Anchor restore must NOT fight an active scroll.
         MountAnchorModeForScrollToItem();

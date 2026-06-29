@@ -50,6 +50,9 @@ internal static class HttpRuleParser
     // iso-8859-1, Western European (ISO)
     internal static readonly Encoding DefaultHttpEncoding = Encoding.GetEncoding("iso-8859-1");
 
+    internal static bool IsToken(StringSegment input) =>
+        !input.AsSpan().ContainsAnyExcept(TokenChars);
+
     [Pure]
     internal static int GetTokenLength(StringSegment input, int startIndex)
     {
@@ -292,7 +295,9 @@ internal static class HttpRuleParser
             current++;
         }
 
-        // We didn't see the final quote, therefore we have an invalid expression string.
+        // We didn't see the final close-char. Report how many characters were consumed so callers can
+        // skip past the malformed expression rather than re-scanning it.
+        length = current - startIndex;
         return HttpParseResult.InvalidFormat;
     }
 }
