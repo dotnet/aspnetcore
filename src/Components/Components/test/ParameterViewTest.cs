@@ -231,7 +231,7 @@ public partial class ParameterViewTest
         var found = parameters.TryGetValue<bool>("my entry", out var value);
 
         Assert.False(found);
-        Assert.False(value); // default(bool)
+        Assert.False(value);
     }
 
     [Fact]
@@ -579,7 +579,7 @@ public partial class ParameterViewTest
         var found = parameters.TryGetValue<double>("DebounceInterval", out var value);
 
         Assert.False(found);
-        Assert.Equal(default, value); // 0.0
+        Assert.Equal(default, value);
     }
 
     [Fact]
@@ -615,7 +615,7 @@ public partial class ParameterViewTest
     {
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { "Value", 10 } // int
+            { "Value", 10 }
         });
 
         var found = parameters.TryGetValue<double>("Value", out var value);
