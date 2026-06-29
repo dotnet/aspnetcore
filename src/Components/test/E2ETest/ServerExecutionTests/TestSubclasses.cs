@@ -48,7 +48,6 @@ public class ServerRoutingTest : RoutingTest
     public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
         => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66195")]
     public override void CanNavigateToQueryStringPageWithNoQuery()
         => base.CanNavigateToQueryStringPageWithNoQuery();
 }

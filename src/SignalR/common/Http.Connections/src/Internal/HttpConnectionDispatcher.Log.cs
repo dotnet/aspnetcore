@@ -67,5 +67,8 @@ internal sealed partial class HttpConnectionDispatcher
 
         [LoggerMessage(18, LogLevel.Debug, "Exception from IStatefulReconnectFeature.NotifyOnReconnect callback.", EventName = "NotifyOnReconnectError")]
         public static partial void NotifyOnReconnectError(ILogger logger, Exception ex);
+
+        [LoggerMessage(19, LogLevel.Debug, "Authentication refresh for connection '{ConnectionId}' was rejected by OnAuthenticationRefresh callback.", EventName = "AuthenticationRefreshRejectedByCallback")]
+        public static partial void AuthenticationRefreshRejectedByCallback(ILogger logger, string connectionId);
     }
 }
