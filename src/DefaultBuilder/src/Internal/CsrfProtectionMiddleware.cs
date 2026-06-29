@@ -8,8 +8,10 @@ namespace Microsoft.AspNetCore.Antiforgery;
 
 /// <summary>
 /// Auto-injected middleware that enforces <see cref="ICsrfProtection"/> on incoming requests.
-/// Skips validation when the matched endpoint opted out via <c>DisableAntiforgery()</c>
-/// (i.e. carries <see cref="IAntiforgeryMetadata"/> with <see cref="IAntiforgeryMetadata.RequiresValidation"/> = <see langword="false"/>).
+/// Validation only runs when the matched endpoint opts in via <see cref="IAntiforgeryMetadata"/>
+/// with <see cref="IAntiforgeryMetadata.RequiresValidation"/> = <see langword="true"/>. Endpoints
+/// without any <see cref="IAntiforgeryMetadata"/> (e.g. unannotated minimal-API handlers) and
+/// endpoints that opted out via <c>DisableAntiforgery()</c> pass through unchanged.
 /// </summary>
 internal sealed partial class CsrfProtectionMiddleware
 {
@@ -32,12 +34,17 @@ internal sealed partial class CsrfProtectionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Recording that CsrfProtection was invoked
+        // The sentinel is set unconditionally even when validation is skipped: the FormFeature
+        // antiforgery backstop relies on it to detect that some antiforgery-style middleware ran
+        // on this request (see PR #67082). Without it, a re-executed pipeline (e.g. status code
+        // re-execute into an antiforgery-required endpoint) would throw "missing middleware".
         context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
 
         var endpoint = context.GetEndpoint();
-        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
+        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is not { RequiresValidation: true })
         {
+            // No antiforgery metadata, or the endpoint opted out via DisableAntiforgery():
+            // mirror AntiforgeryMiddleware and pass through without recording a verdict.
             await _next(context);
             return;
         }

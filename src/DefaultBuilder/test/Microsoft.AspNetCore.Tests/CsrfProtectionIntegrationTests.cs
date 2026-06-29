@@ -143,7 +143,7 @@ public class CsrfProtectionIntegrationTests
         builder.WebHost.UseSetting("DisableCsrfProtection", value);
         using var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -163,6 +163,9 @@ public class CsrfProtectionIntegrationTests
         builder.Services.RemoveAll<ICsrfProtection>();
         using var app = builder.Build();
 
+        // Endpoint deliberately has no IAntiforgeryMetadata — with ICsrfProtection removed AND no
+        // antiforgery middleware in the pipeline, this exercises the "no enforcement available"
+        // path: the request should pass through to the endpoint.
         app.MapPost("/protected", EnforceCsrf);
         await app.StartAsync();
 
@@ -182,7 +185,7 @@ public class CsrfProtectionIntegrationTests
         builder.Services.AddSingleton<ICsrfProtection, AlwaysAllowCsrfProtection>();
         using var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -228,7 +231,7 @@ public class CsrfProtectionIntegrationTests
             options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com")));
         using var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -248,7 +251,7 @@ public class CsrfProtectionIntegrationTests
             options.AddDefaultPolicy(policy => policy.AllowAnyOrigin()));
         using var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -269,7 +272,7 @@ public class CsrfProtectionIntegrationTests
             options.AddDefaultPolicy(policy => policy.WithOrigins("https://trusted.example.com")));
         using var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -291,7 +294,7 @@ public class CsrfProtectionIntegrationTests
         using var app = builder.Build();
 
         app.UseCors();
-        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook");
+        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook").WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -316,7 +319,7 @@ public class CsrfProtectionIntegrationTests
         using var app = builder.Build();
 
         app.UseCors();
-        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook");
+        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook").WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -339,7 +342,7 @@ public class CsrfProtectionIntegrationTests
 
         app.UseCors();
         // Inline-policy variant: RequireCors(lambda) builds a CorsPolicy and attaches it as ICorsPolicyMetadata.
-        app.MapPost("/webhook", EnforceCsrf).RequireCors(p => p.WithOrigins("https://stripe.example.com"));
+        app.MapPost("/webhook", EnforceCsrf).RequireCors(p => p.WithOrigins("https://stripe.example.com")).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -361,7 +364,7 @@ public class CsrfProtectionIntegrationTests
             options.AddPolicy("Webhook", policy => policy.WithOrigins("https://stripe.example.com")));
         using var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -389,7 +392,7 @@ public class CsrfProtectionIntegrationTests
         // UseCors is required because the endpoint carries CORS metadata; the CSRF middleware no longer
         // short-circuits, so the request now reaches the endpoint pipeline.
         app.UseCors();
-        app.MapPost("/no-cors", EnforceCsrf).WithMetadata(new Cors.DisableCorsAttribute());
+        app.MapPost("/no-cors", EnforceCsrf).WithMetadata(new Cors.DisableCorsAttribute()).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -412,7 +415,7 @@ public class CsrfProtectionIntegrationTests
 
         app.UseRouting();
         app.UseCors();
-        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook");
+        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook").WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -434,7 +437,7 @@ public class CsrfProtectionIntegrationTests
         using var app = builder.Build();
 
         app.UseCors();
-        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook");
+        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook").WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -457,7 +460,7 @@ public class CsrfProtectionIntegrationTests
 
         app.UseRouting();
         app.UseCors();
-        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook");
+        app.MapPost("/webhook", EnforceCsrf).RequireCors("Webhook").WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -583,8 +586,12 @@ public class CsrfProtectionIntegrationTests
         builder.WebHost.UseTestServer();
         var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
-        app.MapGet("/protected-get", EnforceCsrf);
+        // The CSRF middleware only runs validation when the matched endpoint opts in via
+        // IAntiforgeryMetadata (mirroring AntiforgeryMiddleware). Bare minimal-API handlers have
+        // no such metadata; attach RequireAntiforgeryTokenAttribute so these "protected" routes
+        // actually exercise the validation path the surrounding tests assert against.
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
+        app.MapGet("/protected-get", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         app.MapPost("/unprotected", EnforceCsrf).DisableAntiforgery();
 
         await app.StartAsync();
@@ -606,7 +613,7 @@ public class CsrfProtectionIntegrationTests
         // Sanity: the instance the container returns is the one we registered.
         Assert.Same(counting, app.Services.GetRequiredService<ICsrfProtection>());
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -632,7 +639,7 @@ public class CsrfProtectionIntegrationTests
         builder.Logging.ClearProviders().AddProvider(captureProvider).SetMinimumLevel(LogLevel.Debug);
         using var app = builder.Build();
 
-        app.MapPost("/protected", EnforceCsrf);
+        app.MapPost("/protected", EnforceCsrf).WithMetadata(new RequireAntiforgeryTokenAttribute());
         await app.StartAsync();
 
         var client = app.GetTestClient();
@@ -754,19 +761,23 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
-    public async Task CsrfProtection_NonFormEndpoint_CrossOrigin_IsNotAutoRejected_ButRecordsInvalidVerdict()
+    public async Task CsrfProtection_NonFormEndpoint_CrossOrigin_PassesThrough_NoVerdictRecorded()
     {
-        // Behavior change: like token-based antiforgery, the CSRF middleware does not reject plain
-        // (non-form) endpoints on its own. It records the verdict; a consumer that never reads the
-        // feature simply runs. This documents that a bare MapPost is reachable cross-origin.
+        // The CSRF middleware mirrors AntiforgeryMiddleware: it only runs validation when the matched
+        // endpoint opts in via IAntiforgeryMetadata { RequiresValidation: true }. A bare MapPost has no
+        // such metadata, so the request passes through and no verdict is recorded on the feature.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
 
+        var endpointInvoked = false;
         IAntiforgeryValidationFeature? capturedFeature = null;
+        object? observedMarker = null;
         app.MapPost("/plain", (HttpContext ctx) =>
         {
+            endpointInvoked = true;
             capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
+            observedMarker = ctx.Items[CsrfProtectionInvokedKey];
             return "ok";
         });
         await app.StartAsync();
@@ -779,9 +790,82 @@ public class CsrfProtectionIntegrationTests
         var response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(endpointInvoked, "Endpoint should run when the CSRF middleware passes through.");
+        Assert.Null(capturedFeature);
+        // The sentinel is still set: it is the FormFeature backstop contract (PR #67082).
+        Assert.NotNull(observedMarker);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_DisableAntiforgeryEndpoint_CrossOrigin_PassesThrough_NoVerdictRecorded()
+    {
+        // An endpoint that opted out via DisableAntiforgery() carries IAntiforgeryMetadata with
+        // RequiresValidation = false. The middleware must skip validation but still set the sentinel
+        // so the FormFeature backstop knows antiforgery-style middleware ran (PR #67082).
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        var endpointInvoked = false;
+        IAntiforgeryValidationFeature? capturedFeature = null;
+        object? observedMarker = null;
+        app.MapPost("/exempt", (HttpContext ctx) =>
+        {
+            endpointInvoked = true;
+            capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
+            observedMarker = ctx.Items[CsrfProtectionInvokedKey];
+            return "ok";
+        }).DisableAntiforgery();
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/exempt");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://evil.example.com");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(endpointInvoked);
+        Assert.Null(capturedFeature);
+        Assert.NotNull(observedMarker);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_RequiresValidationEndpoint_CrossOriginUntrustedOrigin_RecordsInvalidVerdict()
+    {
+        // An endpoint that opted IN via RequireAntiforgeryTokenAttribute (RequiresValidation = true)
+        // exercises the validation path: cross-site Sec-Fetch with an untrusted origin records
+        // IsValid = false on IAntiforgeryValidationFeature without short-circuiting.
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        using var app = builder.Build();
+
+        var endpointInvoked = false;
+        IAntiforgeryValidationFeature? capturedFeature = null;
+        object? observedMarker = null;
+        app.MapPost("/protected", (HttpContext ctx) =>
+        {
+            endpointInvoked = true;
+            capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
+            observedMarker = ctx.Items[CsrfProtectionInvokedKey];
+            return "ok";
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "cross-site");
+        request.Headers.Add("Origin", "https://evil.example.com");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(endpointInvoked);
         Assert.NotNull(capturedFeature);
-        Assert.False(capturedFeature!.IsValid, "CSRF middleware should still record the cross-origin denial on the feature.");
+        Assert.False(capturedFeature!.IsValid, "CSRF middleware should record the cross-origin denial on the feature.");
         Assert.NotNull(capturedFeature.Error);
+        Assert.NotNull(observedMarker);
     }
 
     [Fact]
