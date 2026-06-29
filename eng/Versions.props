@@ -199,8 +199,8 @@
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
-    <MicrosoftOpenApiVersion>3.6.0</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>3.6.0</MicrosoftOpenApiYamlReaderVersion>
+    <MicrosoftOpenApiVersion>3.7.0</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>3.7.0</MicrosoftOpenApiYamlReaderVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
