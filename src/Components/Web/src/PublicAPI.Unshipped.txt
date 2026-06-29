@@ -45,10 +45,17 @@ Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.Name.set
 Microsoft.AspNetCore.Components.Web.SupplyParameterFromSessionAttribute.SupplyParameterFromSessionAttribute() -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.get -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.AnchorMode.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.IsGridLayout.get -> bool
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.IsGridLayout.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialItemIndex.get -> int
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialItemIndex.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.get -> System.Collections.Generic.IEqualityComparer<TItem>!
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemComparer.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemHeight.get -> float?
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemHeight.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemWidth.get -> float?
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemWidth.set -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.UpdateContainerWidth(float newWidth) -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ScrollToItemAsync(int itemIndex, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.Start = 1 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode

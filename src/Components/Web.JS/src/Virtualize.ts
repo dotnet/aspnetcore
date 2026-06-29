@@ -145,6 +145,36 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
 
+  // ResizeObserver for tracking container width (for grid layout support)
+  let lastReportedContainerWidth = 0;
+  let containerWidthObserverThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
+  const containerWidthResizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
+    if (containerWidthObserverThrottleTimeout) {
+      return; // Already scheduled
+    }
+
+    const containerElement = spacerBefore.parentElement;
+    if (!containerElement || !containerElement.isConnected) {
+      return;
+    }
+
+    containerWidthObserverThrottleTimeout = setTimeout(() => {
+      containerWidthObserverThrottleTimeout = null;
+      const currentWidth = containerElement.clientWidth;
+
+      if (Math.abs(currentWidth - lastReportedContainerWidth) > 1) {
+        lastReportedContainerWidth = currentWidth;
+        dotNetHelper.invokeMethodAsync('OnContainerWidthChanged', currentWidth);
+      }
+    }, THROTTLE_MS);
+  });
+
+  // Start observing container width changes
+  const containerElement = spacerBefore.parentElement;
+  if (containerElement) {
+    containerWidthResizeObserver.observe(containerElement);
+  }
+
   let convergingElements = false;
   let convergenceItems: Set<Element> = new Set();
 
@@ -556,6 +586,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       stopConvergenceObserving();
       anchoredItems.clear();
       resizeObserver.disconnect();
+      containerWidthResizeObserver.disconnect();
+      if (containerWidthObserverThrottleTimeout) {
+        clearTimeout(containerWidthObserverThrottleTimeout);
+        containerWidthObserverThrottleTimeout = null;
+      }
       keydownTarget.removeEventListener('keydown', handleJumpKeys);
       scrollEventTarget.removeEventListener('scroll', handleScroll);
       if (callbackTimeout) {
