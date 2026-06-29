@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// </summary>
 public sealed class OpenApiOptions
 {
-    internal readonly List<IDocumentInitializer> DocumentInitializers = [];
+    internal readonly List<IOpenApiDocumentInitializer> DocumentInitializers = [];
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
     internal readonly List<IOpenApiOperationTransformer> OperationTransformers = [];
     internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [];
@@ -60,21 +60,21 @@ public sealed class OpenApiOptions
     /// <summary>
     /// Registers a new document initializer on the current <see cref="OpenApiOptions"/> instance.
     /// </summary>
-    /// <typeparam name="TInitializerType">The type of the <see cref="IDocumentInitializer"/> to instantiate.</typeparam>
+    /// <typeparam name="TInitializerType">The type of the <see cref="IOpenApiDocumentInitializer"/> to instantiate.</typeparam>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
     public OpenApiOptions AddDocumentInitializer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TInitializerType>()
-        where TInitializerType : IDocumentInitializer
+        where TInitializerType : IOpenApiDocumentInitializer
     {
-        DocumentInitializers.Add(new TypeBasedDocumentInitializer(typeof(TInitializerType)));
+        DocumentInitializers.Add(new TypeBasedOpenApiDocumentInitializer(typeof(TInitializerType)));
         return this;
     }
 
     /// <summary>
-    /// Registers a given instance of <see cref="IDocumentInitializer"/> on the current <see cref="OpenApiOptions"/> instance.
+    /// Registers a given instance of <see cref="IOpenApiDocumentInitializer"/> on the current <see cref="OpenApiOptions"/> instance.
     /// </summary>
-    /// <param name="initializer">The <see cref="IDocumentInitializer"/> instance to use.</param>
+    /// <param name="initializer">The <see cref="IOpenApiDocumentInitializer"/> instance to use.</param>
     /// <returns>The <see cref="OpenApiOptions"/> instance for further customization.</returns>
-    public OpenApiOptions AddDocumentInitializer(IDocumentInitializer initializer)
+    public OpenApiOptions AddDocumentInitializer(IOpenApiDocumentInitializer initializer)
     {
         ArgumentNullException.ThrowIfNull(initializer);
 
@@ -107,7 +107,7 @@ public sealed class OpenApiOptions
     {
         ArgumentNullException.ThrowIfNull(initializer);
 
-        DocumentInitializers.Add(new DelegateDocumentInitializer(initializer));
+        DocumentInitializers.Add(new DelegateOpenApiDocumentInitializer(initializer));
         return this;
     }
 

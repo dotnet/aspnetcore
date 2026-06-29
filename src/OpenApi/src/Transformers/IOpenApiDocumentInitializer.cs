@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.OpenApi;
 /// <summary>
 /// Represents an initializer that can be used to modify an OpenAPI document before paths, operations, and components are generated.
 /// </summary>
-public interface IDocumentInitializer
+public interface IOpenApiDocumentInitializer
 {
     /// <summary>
     /// Initializes the specified OpenAPI document.

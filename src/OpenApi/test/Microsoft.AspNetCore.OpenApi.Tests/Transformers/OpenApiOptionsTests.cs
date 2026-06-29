@@ -18,7 +18,7 @@ public class OpenApiOptionsTests
         var result = options.AddDocumentInitializer(initializer);
 
         var insertedInitializer = Assert.Single(options.DocumentInitializers);
-        Assert.IsType<DelegateDocumentInitializer>(insertedInitializer);
+        Assert.IsType<DelegateOpenApiDocumentInitializer>(insertedInitializer);
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.OperationTransformers);
@@ -49,7 +49,7 @@ public class OpenApiOptionsTests
         var result = options.AddDocumentInitializer<TestDocumentInitializer>();
 
         var insertedInitializer = Assert.Single(options.DocumentInitializers);
-        Assert.IsType<TypeBasedDocumentInitializer>(insertedInitializer);
+        Assert.IsType<TypeBasedOpenApiDocumentInitializer>(insertedInitializer);
         Assert.IsType<OpenApiOptions>(result);
         Assert.Empty(options.DocumentTransformers);
         Assert.Empty(options.OperationTransformers);
@@ -235,7 +235,7 @@ public class OpenApiOptionsTests
         }
     }
 
-    private class TestDocumentInitializer : IDocumentInitializer
+    private class TestDocumentInitializer : IOpenApiDocumentInitializer
     {
         public Task InitializeAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
         {

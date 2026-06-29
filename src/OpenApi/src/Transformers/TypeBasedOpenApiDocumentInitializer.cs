@@ -7,13 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal sealed class TypeBasedDocumentInitializer : IDocumentInitializer
+internal sealed class TypeBasedOpenApiDocumentInitializer : IOpenApiDocumentInitializer
 {
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
     private readonly Type _initializerType;
     private readonly ObjectFactory _initializerFactory;
 
-    internal TypeBasedDocumentInitializer([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type initializerType)
+    internal TypeBasedOpenApiDocumentInitializer([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type initializerType)
     {
         _initializerType = initializerType;
         _initializerFactory = ActivatorUtilities.CreateFactory(_initializerType, []);
@@ -21,8 +21,8 @@ internal sealed class TypeBasedDocumentInitializer : IDocumentInitializer
 
     public async Task InitializeAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
     {
-        var initializer = _initializerFactory.Invoke(context.ApplicationServices, []) as IDocumentInitializer;
-        Debug.Assert(initializer is not null, $"The type {_initializerType} does not implement {nameof(IDocumentInitializer)}.");
+        var initializer = _initializerFactory.Invoke(context.ApplicationServices, []) as IOpenApiDocumentInitializer;
+        Debug.Assert(initializer is not null, $"The type {_initializerType} does not implement {nameof(IOpenApiDocumentInitializer)}.");
         try
         {
             await initializer.InitializeAsync(document, context, cancellationToken);

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.OpenApi;
 
-internal sealed class DelegateDocumentInitializer(Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task> initializer) : IDocumentInitializer
+internal sealed class DelegateOpenApiDocumentInitializer(Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task> initializer) : IOpenApiDocumentInitializer
 {
     public Task InitializeAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
         => initializer(document, context, cancellationToken);
