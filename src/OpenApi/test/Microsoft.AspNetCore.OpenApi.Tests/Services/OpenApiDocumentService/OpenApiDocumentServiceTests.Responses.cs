@@ -107,6 +107,35 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Fact]
+    public async Task GetOpenApiResponse_UsesSchemaAndItemSchemaForSameDataSchemaInDifferentMediaTypes()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/responses", () => { })
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(Todo), ["application/json"]))
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(SseItem<Todo>), ["text/event-stream"]));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = Assert.Single(document.Paths["/api/todos/responses"].Operations.Values);
+            var response = Assert.Single(operation.Responses);
+            Assert.Equal("200", response.Key);
+            Assert.Equal(2, response.Value.Content.Count);
+
+            var jsonContent = response.Value.Content["application/json"];
+            var jsonSchema = Assert.IsType<OpenApiSchemaReference>(jsonContent.Schema);
+            Assert.Equal(nameof(Todo), jsonSchema.Reference.Id);
+            Assert.Null(jsonContent.ItemSchema);
+
+            var eventStreamContent = response.Value.Content["text/event-stream"];
+            Assert.Null(eventStreamContent.Schema);
+            var itemSchema = Assert.IsType<OpenApiSchema>(eventStreamContent.ItemSchema);
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiResponse_UsesDiscriminatedUnionCasesForServerSentEventsEventSchema()
     {
         var builder = CreateBuilder();
