@@ -53,40 +53,27 @@ public class ColumnsPropertyTest
     [Fact]
     public void Columns_ReturnsEmptyList_Initially()
     {
-        // Arrange
         var grid = new QuickGridWithAccessibleColumns<ColumnsTestModel>();
-
-        // Act
         var columns = grid.GetColumns();
-
-        // Assert
         Assert.Empty(columns);
     }
 
     [Fact]
     public void Columns_Type_IsReadOnlyList()
     {
-        // Arrange
         var grid = new QuickGridWithAccessibleColumns<ColumnsTestModel>();
-
-        // Act
         var columns = grid.GetColumns();
-
-        // Assert
         Assert.IsAssignableFrom<IReadOnlyList<ColumnBase<ColumnsTestModel>>>(columns);
     }
 
     [Fact]
     public void Columns_CanBeAccessedFromDerivedClass()
     {
-        // Arrange
         var grid = new QuickGridWithAccessibleColumns<ColumnsTestModel>();
         var derivedType = typeof(QuickGridWithAccessibleColumns<ColumnsTestModel>);
 
-        // Act - Verify the derived class can access the protected Columns property
         var getColumnsMethod = derivedType.GetMethod(nameof(QuickGridWithAccessibleColumns<ColumnsTestModel>.GetColumns));
 
-        // Assert
         Assert.NotNull(getColumnsMethod);
         var result = getColumnsMethod.Invoke(grid, null);
         Assert.NotNull(result);
@@ -96,7 +83,6 @@ public class ColumnsPropertyTest
     [Fact]
     public void Columns_ReturnsColumns_AfterColumnsAdded()
     {
-        // Arrange
         var grid = new QuickGridWithAccessibleColumns<ColumnsTestModel>();
         var testColumns = new List<ColumnBase<ColumnsTestModel>>
         {
@@ -104,11 +90,9 @@ public class ColumnsPropertyTest
             CreatePropertyColumn<ColumnsTestModel, int>("Age", item => item.Age),
         };
 
-        // Act
         grid.SimulateColumnCollection(testColumns);
         var columns = grid.GetColumns();
 
-        // Assert
         Assert.Equal(2, columns.Count);
         Assert.Equal("Name", columns[0].Title);
         Assert.Equal("Age", columns[1].Title);
@@ -117,7 +101,6 @@ public class ColumnsPropertyTest
     [Fact]
     public void Columns_CanEnumerateTitles_ForExportScenario()
     {
-        // Arrange
         var grid = new QuickGridWithAccessibleColumns<ColumnsTestModel>();
         var testColumns = new List<ColumnBase<ColumnsTestModel>>
         {
@@ -126,31 +109,25 @@ public class ColumnsPropertyTest
         };
         grid.SimulateColumnCollection(testColumns);
 
-        // Act - Simulate enumerating columns to build CSV header row
         var headerRow = string.Join(",", grid.GetColumns().Select(c => c.Title));
 
-        // Assert
         Assert.Equal("Name,Age", headerRow);
     }
 
     [Fact]
     public void PropertyColumn_Title_IsAccessible()
     {
-        // Arrange
         var propertyColumn = CreatePropertyColumn<ColumnsTestModel, string>("Name", item => item.Name);
 
-        // Act & Assert
         Assert.Equal("Name", propertyColumn.Title);
     }
 
     [Fact]
     public void ColumnBase_Title_IsAccessible()
     {
-        // Arrange
         var propertyColumn = CreatePropertyColumn<ColumnsTestModel, string>("Name", item => item.Name);
         var columnBase = (ColumnBase<ColumnsTestModel>)propertyColumn;
 
-        // Act & Assert
         Assert.Equal("Name", columnBase.Title);
     }
 
