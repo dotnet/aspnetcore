@@ -37,7 +37,12 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Extensions.Validation.Generated")]);
 
-    internal static Task Verify(string source, out Compilation compilation)
+    // NOTE: This returns Task<VerifyResult> rather than Task purely as a workaround for a runtime-async
+    // JIT bug in the preview6 runtime, where awaiting a synchronous Task-returning method that has a byref
+    // (out) parameter miscompiles and throws InvalidProgramException. Returning Task<VerifyResult> avoids
+    // the non-generic Task await path that triggers the bug. See https://github.com/dotnet/runtime/pull/129999.
+    // This workaround is only needed on release/11.0-preview6; main ingests the real runtime fix.
+    internal static Task<VerifyResult> Verify(string source, out Compilation compilation)
     {
         var references = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
