@@ -86,6 +86,37 @@ public class ClientValidationScenariosTest : ClientValidationTestBase
     }
 
     [Fact]
+    public void ValidationFailureBlocksDownstreamSubmitHandler()
+    {
+        // Regression coverage for dotnet/aspnetcore#66732: when validation fails, the
+        // capture-phase interceptor must call stopPropagation(), which prevents a
+        // downstream form-level submit handler (like the Identity passkey custom element)
+        // from running.
+        NavigateToClientValidationPage("formnovalidate");
+
+        // Standard submit button with the required Name field empty.
+        Browser.Exists(By.Id("btn-submit")).Click();
+
+        Browser.Contains("valid:false", () => Browser.Exists(By.Id("event-log")).Text);
+        Browser.Equal("", () => Browser.Exists(By.Id("downstream-log")).Text);
+    }
+
+    [Fact]
+    public void FormnovalidateButtonAllowsDownstreamSubmitHandler()
+    {
+        // Regression coverage for dotnet/aspnetcore#66732: a formnovalidate submit button
+        // lets the validation interceptor bail out early so a downstream form-level submit
+        // handler (like the Identity passkey custom element) still runs on an invalid form.
+        NavigateToClientValidationPage("formnovalidate");
+
+        // formnovalidate button with the required Name field empty.
+        Browser.Exists(By.Id("btn-draft")).Click();
+
+        Browser.Equal("downstream-ran", () => Browser.Exists(By.Id("downstream-log")).Text);
+        Browser.Equal("", () => Browser.Exists(By.Id("event-log")).Text);
+    }
+
+    [Fact]
     public void UntrackedFormHasNoNovalidateAttribute()
     {
         // The 'no-validation' page intentionally has no [data-val=true] elements,
