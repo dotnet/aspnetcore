@@ -5,10 +5,11 @@ set -e
 usage()
 {
     echo "Usage: $0 [BuildArch] [CodeName] [lldbx.y] [llvmx[.y]] [--skipunmount] --rootfsdir <directory>]"
-    echo "BuildArch can be: arm(default), arm64, armel, armv6, loongarch64, ppc64le, riscv64, s390x, x64, x86"
+    echo "BuildArch can be: arm(default), arm64, loongarch64, ppc64le, riscv64, s390x, x64, x86"
     echo "CodeName - optional, Code name for Linux, can be: xenial(default), zesty, bionic, alpine"
     echo "                               for alpine can be specified with version: alpineX.YY or alpineedge"
     echo "                               for FreeBSD can be: freebsd13, freebsd14"
+    echo "                               for OpenBSD can be: openbsd"
     echo "                               for illumos can be: illumos"
     echo "                               for Haiku can be: haiku."
     echo "lldbx.y - optional, LLDB version, can be: lldb3.9(default), lldb4.0, lldb5.0, lldb6.0 no-lldb. Ignored for alpine and FreeBSD"
@@ -27,6 +28,8 @@ __BuildArch=arm
 __AlpineArch=armv7
 __FreeBSDArch=arm
 __FreeBSDMachineArch=armv7
+__OpenBSDArch=arm
+__OpenBSDMachineArch=armv7
 __IllumosArch=arm7
 __HaikuArch=arm
 __QEMUArch=arm
@@ -72,8 +75,8 @@ __AlpinePackages+=" krb5-dev"
 __AlpinePackages+=" openssl-dev"
 __AlpinePackages+=" zlib-dev"
 
-__FreeBSDBase="13.4-RELEASE"
-__FreeBSDPkg="1.21.3"
+__FreeBSDBase="13.5-RELEASE"
+__FreeBSDPkg="2.7.5"
 __FreeBSDABI="13"
 __FreeBSDPackages="libunwind"
 __FreeBSDPackages+=" icu"
@@ -81,6 +84,13 @@ __FreeBSDPackages+=" libinotify"
 __FreeBSDPackages+=" openssl"
 __FreeBSDPackages+=" krb5"
 __FreeBSDPackages+=" terminfo-db"
+
+__OpenBSDVersion="7.8"
+__OpenBSDPackages="heimdal-libs"
+__OpenBSDPackages+=" icu4c"
+__OpenBSDPackages+=" libinotify"
+__OpenBSDPackages+=" openssl"
+__OpenBSDPackages+=" e2fsprogs"
 
 __IllumosPackages="icu"
 __IllumosPackages+=" mit-krb5"
@@ -130,7 +140,6 @@ __AlpineKeys='
 616db30d:MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAnpUpyWDWjlUk3smlWeA0\nlIMW+oJ38t92CRLHH3IqRhyECBRW0d0aRGtq7TY8PmxjjvBZrxTNDpJT6KUk4LRm\na6A6IuAI7QnNK8SJqM0DLzlpygd7GJf8ZL9SoHSH+gFsYF67Cpooz/YDqWrlN7Vw\ntO00s0B+eXy+PCXYU7VSfuWFGK8TGEv6HfGMALLjhqMManyvfp8hz3ubN1rK3c8C\nUS/ilRh1qckdbtPvoDPhSbTDmfU1g/EfRSIEXBrIMLg9ka/XB9PvWRrekrppnQzP\nhP9YE3x/wbFc5QqQWiRCYyQl/rgIMOXvIxhkfe8H5n1Et4VAorkpEAXdsfN8KSVv\nLSMazVlLp9GYq5SUpqYX3KnxdWBgN7BJoZ4sltsTpHQ/34SXWfu3UmyUveWj7wp0\nx9hwsPirVI00EEea9AbP7NM2rAyu6ukcm4m6ATd2DZJIViq2es6m60AE6SMCmrQF\nwmk4H/kdQgeAELVfGOm2VyJ3z69fQuywz7xu27S6zTKi05Qlnohxol4wVb6OB7qG\nLPRtK9ObgzRo/OPumyXqlzAi/Yvyd1ZQk8labZps3e16bQp8+pVPiumWioMFJDWV\nGZjCmyMSU8V6MB6njbgLHoyg2LCukCAeSjbPGGGYhnKLm1AKSoJh3IpZuqcKCk5C\n8CM1S15HxV78s9dFntEqIokCAwEAAQ==
 66ba20fe:MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtfB12w4ZgqsXWZDfUAV/\n6Y4aHUKIu3q4SXrNZ7CXF9nXoAVYrS7NAxJdAodsY3vPCN0g5O8DFXR+390LdOuQ\n+HsGKCc1k5tX5ZXld37EZNTNSbR0k+NKhd9h6X3u6wqPOx7SIKxwAQR8qeeFq4pP\nrt9GAGlxtuYgzIIcKJPwE0dZlcBCg+GnptCUZXp/38BP1eYC+xTXSL6Muq1etYfg\nodXdb7Yl+2h1IHuOwo5rjgY5kpY7GcAs8AjGk3lDD/av60OTYccknH0NCVSmPoXK\nvrxDBOn0LQRNBLcAfnTKgHrzy0Q5h4TNkkyTgxkoQw5ObDk9nnabTxql732yy9BY\ns+hM9+dSFO1HKeVXreYSA2n1ndF18YAvAumzgyqzB7I4pMHXq1kC/8bONMJxwSkS\nYm6CoXKyavp7RqGMyeVpRC7tV+blkrrUml0BwNkxE+XnwDRB3xDV6hqgWe0XrifD\nYTfvd9ScZQP83ip0r4IKlq4GMv/R5shcCRJSkSZ6QSGshH40JYSoiwJf5FHbj9ND\n7do0UAqebWo4yNx63j/wb2ULorW3AClv0BCFSdPsIrCStiGdpgJDBR2P2NZOCob3\nG9uMj+wJD6JJg2nWqNJxkANXX37Qf8plgzssrhrgOvB0fjjS7GYhfkfmZTJ0wPOw\nA8+KzFseBh4UFGgue78KwgkCAwEAAQ==
 '
-__Keyring=
 __KeyringFile="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
 __SkipSigCheck=0
 __SkipEmulation=0
@@ -153,6 +162,10 @@ while :; do
             __AlpineArch=armv7
             __QEMUArch=arm
             ;;
+        armel)
+            # this is only used for tizen-build-rootfs.sh
+            __BuildArch=armel
+            ;;
         arm64)
             __BuildArch=arm64
             __UbuntuArch=arm64
@@ -160,31 +173,8 @@ while :; do
             __QEMUArch=aarch64
             __FreeBSDArch=arm64
             __FreeBSDMachineArch=aarch64
-            ;;
-        armel)
-            __BuildArch=armel
-            __UbuntuArch=armel
-            __UbuntuRepo="http://archive.debian.org/debian/"
-            __CodeName=buster
-            __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
-            __LLDB_Package="liblldb-6.0-dev"
-            __UbuntuPackages="${__UbuntuPackages// libomp-dev/}"
-            __UbuntuPackages="${__UbuntuPackages// libomp5/}"
-            __UbuntuSuites=
-            ;;
-        armv6)
-            __BuildArch=armv6
-            __UbuntuArch=armhf
-            __QEMUArch=arm
-            __UbuntuRepo="http://raspbian.raspberrypi.org/raspbian/"
-            __CodeName=buster
-            __KeyringFile="/usr/share/keyrings/raspbian-archive-keyring.gpg"
-            __LLDB_Package="liblldb-6.0-dev"
-            __UbuntuSuites=
-
-            if [[ -e "$__KeyringFile" ]]; then
-                __Keyring="--keyring $__KeyringFile"
-            fi
+            __OpenBSDArch=arm64
+            __OpenBSDMachineArch=aarch64
             ;;
         loongarch64)
             __BuildArch=loongarch64
@@ -193,10 +183,6 @@ while :; do
             __UbuntuArch=loong64
             __UbuntuSuites=unreleased
             __LLDB_Package="liblldb-19-dev"
-
-            if [[ "$__CodeName" == "sid" ]]; then
-                __UbuntuRepo="http://ftp.ports.debian.org/debian-ports/"
-            fi
             ;;
         riscv64)
             __BuildArch=riscv64
@@ -212,7 +198,7 @@ while :; do
             __AlpineArch=ppc64le
             __QEMUArch=ppc64le
             __UbuntuArch=ppc64el
-            __UbuntuRepo="http://ports.ubuntu.com/ubuntu-ports/"
+            __UbuntuRepo="https://ports.ubuntu.com/ubuntu-ports/"
             __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
             __UbuntuPackages="${__UbuntuPackages// libomp-dev/}"
             __UbuntuPackages="${__UbuntuPackages// libomp5/}"
@@ -223,7 +209,7 @@ while :; do
             __AlpineArch=s390x
             __QEMUArch=s390x
             __UbuntuArch=s390x
-            __UbuntuRepo="http://ports.ubuntu.com/ubuntu-ports/"
+            __UbuntuRepo="https://ports.ubuntu.com/ubuntu-ports/"
             __UbuntuPackages="${__UbuntuPackages// libunwind8-dev/}"
             __UbuntuPackages="${__UbuntuPackages// libomp-dev/}"
             __UbuntuPackages="${__UbuntuPackages// libomp5/}"
@@ -235,15 +221,17 @@ while :; do
             __UbuntuArch=amd64
             __FreeBSDArch=amd64
             __FreeBSDMachineArch=amd64
+            __OpenBSDArch=amd64
+            __OpenBSDMachineArch=amd64
             __illumosArch=x86_64
             __HaikuArch=x86_64
-            __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
+            __UbuntuRepo="https://archive.ubuntu.com/ubuntu/"
             ;;
         x86)
             __BuildArch=x86
             __UbuntuArch=i386
             __AlpineArch=x86
-            __UbuntuRepo="http://archive.ubuntu.com/ubuntu/"
+            __UbuntuRepo="https://archive.ubuntu.com/ubuntu/"
             ;;
         lldb*)
             version="$(echo "$lowerI" | tr -d '[:alpha:]-=')"
@@ -295,9 +283,7 @@ while :; do
             ;;
         noble) # Ubuntu 24.04
             __CodeName=noble
-            if [[ -z "$__LLDB_Package" ]]; then
-                __LLDB_Package="liblldb-19-dev"
-            fi
+            __LLDB_Package="liblldb-19-dev"
             ;;
         stretch) # Debian 9
             __CodeName=stretch
@@ -305,7 +291,7 @@ while :; do
             __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
-                __UbuntuRepo="http://ftp.debian.org/debian/"
+                __UbuntuRepo="https://archive.debian.org/debian/"
             fi
             ;;
         buster) # Debian 10
@@ -314,7 +300,7 @@ while :; do
             __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
-                __UbuntuRepo="http://archive.debian.org/debian/"
+                __UbuntuRepo="https://archive.debian.org/debian/"
             fi
             ;;
         bullseye) # Debian 11
@@ -322,7 +308,7 @@ while :; do
             __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
-                __UbuntuRepo="http://ftp.debian.org/debian/"
+                __UbuntuRepo="https://ftp.debian.org/debian/"
             fi
             ;;
         bookworm) # Debian 12
@@ -330,7 +316,7 @@ while :; do
             __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
             if [[ -z "$__UbuntuRepo" ]]; then
-                __UbuntuRepo="http://ftp.debian.org/debian/"
+                __UbuntuRepo="https://ftp.debian.org/debian/"
             fi
             ;;
         sid) # Debian sid
@@ -339,25 +325,21 @@ while :; do
 
             # Debian-Ports architectures need different values
             case "$__UbuntuArch" in
-            amd64|arm64|armel|armhf|i386|mips64el|ppc64el|riscv64|s390x)
+            amd64|arm64|armhf|i386|mips64el|ppc64el|riscv64|s390x)
                 __KeyringFile="/usr/share/keyrings/debian-archive-keyring.gpg"
 
                 if [[ -z "$__UbuntuRepo" ]]; then
-                    __UbuntuRepo="http://ftp.debian.org/debian/"
+                    __UbuntuRepo="https://ftp.debian.org/debian/"
                 fi
                 ;;
             *)
                 __KeyringFile="/usr/share/keyrings/debian-ports-archive-keyring.gpg"
 
                 if [[ -z "$__UbuntuRepo" ]]; then
-                    __UbuntuRepo="http://ftp.ports.debian.org/debian-ports/"
+                    __UbuntuRepo="https://ftp.debian.org/debian-ports/"
                 fi
                 ;;
             esac
-
-            if [[ -e "$__KeyringFile" ]]; then
-                __Keyring="--keyring $__KeyringFile"
-            fi
             ;;
         tizen)
             __CodeName=
@@ -383,8 +365,12 @@ while :; do
             ;;
         freebsd14)
             __CodeName=freebsd
-            __FreeBSDBase="14.2-RELEASE"
+            __FreeBSDBase="14.3-RELEASE"
             __FreeBSDABI="14"
+            __SkipUnmount=1
+            ;;
+        openbsd)
+            __CodeName=openbsd
             __SkipUnmount=1
             ;;
         illumos)
@@ -457,7 +443,7 @@ fi
 __UbuntuPackages+=" ${__LLDB_Package:-}"
 
 if [[ -z "$__UbuntuRepo" ]]; then
-    __UbuntuRepo="http://ports.ubuntu.com/"
+    __UbuntuRepo="https://ports.ubuntu.com/"
 fi
 
 if [[ -n "$__LLVM_MajorVersion" ]]; then
@@ -544,15 +530,15 @@ if [[ "$__CodeName" == "alpine" ]]; then
     # initialize DB
     # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
-        -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
-        -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
+        -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
+        -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" --initdb add
 
     if [[ "$__AlpineLlvmLibsLookup" == 1 ]]; then
         # shellcheck disable=SC2086
         __AlpinePackages+=" $("$__ApkToolsDir/apk.static" \
-            -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
-            -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
+            -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
+            -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
             -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" \
             search 'llvm*-libs' | grep -E '^llvm' | sort | tail -1 | sed 's/-[^-]*//2g')"
     fi
@@ -560,8 +546,8 @@ if [[ "$__CodeName" == "alpine" ]]; then
     # install all packages in one go
     # shellcheck disable=SC2086
     "$__ApkToolsDir/apk.static" \
-        -X "http://dl-cdn.alpinelinux.org/alpine/$version/main" \
-        -X "http://dl-cdn.alpinelinux.org/alpine/$version/community" \
+        -X "https://dl-cdn.alpinelinux.org/alpine/$version/main" \
+        -X "https://dl-cdn.alpinelinux.org/alpine/$version/community" \
         -U $__ApkSignatureArg --root "$__RootfsDir" --arch "$__AlpineArch" $__NoEmulationArg \
         add $__AlpinePackages
 
@@ -578,7 +564,7 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
         curl -SL "https://download.freebsd.org/ftp/releases/${__FreeBSDArch}/${__FreeBSDMachineArch}/${__FreeBSDBase}/base.txz" | tar -C "$__RootfsDir" -Jxf - ./lib ./usr/lib ./usr/libdata ./usr/include ./usr/share/keys ./etc ./bin/freebsd-version
     fi
     echo "ABI = \"FreeBSD:${__FreeBSDABI}:${__FreeBSDMachineArch}\"; FINGERPRINTS = \"${__RootfsDir}/usr/share/keys\"; REPOS_DIR = [\"${__RootfsDir}/etc/pkg\"]; REPO_AUTOUPDATE = NO; RUN_SCRIPTS = NO;" > "${__RootfsDir}"/usr/local/etc/pkg.conf
-    echo "FreeBSD: { url: \"pkg+http://pkg.FreeBSD.org/\${ABI}/quarterly\", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"/usr/share/keys/pkg\", enabled: yes }" > "${__RootfsDir}"/etc/pkg/FreeBSD.conf
+    echo "FreeBSD: { url: \"pkg+https://pkg.FreeBSD.org/\${ABI}/quarterly\", mirror_type: \"srv\", signature_type: \"fingerprints\", fingerprints: \"/usr/share/keys/pkg\", enabled: yes }" > "${__RootfsDir}"/etc/pkg/FreeBSD.conf
     mkdir -p "$__RootfsDir"/tmp
     # get and build package manager
     if [[ "$__hasWget" == 1 ]]; then
@@ -592,9 +578,69 @@ elif [[ "$__CodeName" == "freebsd" ]]; then
     ./autogen.sh && ./configure --prefix="$__RootfsDir"/host && make -j "$JOBS" && make install
     rm -rf "$__RootfsDir/tmp/pkg-${__FreeBSDPkg}"
     # install packages we need.
-    INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf update
+    INSTALL_AS_USER=$(whoami) IGNORE_OSVERSION=yes "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf update
     # shellcheck disable=SC2086
     INSTALL_AS_USER=$(whoami) "$__RootfsDir"/host/sbin/pkg -r "$__RootfsDir" -C "$__RootfsDir"/usr/local/etc/pkg.conf install --yes $__FreeBSDPackages
+elif [[ "$__CodeName" == "openbsd" ]]; then
+    # determine mirrors
+    OPENBSD_MIRROR="https://cdn.openbsd.org/pub/OpenBSD/$__OpenBSDVersion/$__OpenBSDMachineArch"
+
+    # download base system sets
+    ensureDownloadTool
+
+    BASE_SETS=(base comp)
+    for set in "${BASE_SETS[@]}"; do
+        FILE="${set}${__OpenBSDVersion//./}.tgz"
+        echo "Downloading $FILE..."
+        if [[ "$__hasWget" == 1 ]]; then
+            wget -O- "$OPENBSD_MIRROR/$FILE" | tar -C "$__RootfsDir" -xzpf -
+        else
+            curl -SL "$OPENBSD_MIRROR/$FILE" | tar -C "$__RootfsDir" -xzpf -
+        fi
+    done
+
+    PKG_MIRROR="https://cdn.openbsd.org/pub/OpenBSD/${__OpenBSDVersion}/packages/${__OpenBSDMachineArch}"
+
+    echo "Installing packages into sysroot..."
+
+    # Fetch package index once
+    if [[ "$__hasWget" == 1 ]]; then
+        PKG_INDEX=$(wget -qO- "$PKG_MIRROR/")
+    else
+        PKG_INDEX=$(curl -s "$PKG_MIRROR/")
+    fi
+
+    for pkg in $__OpenBSDPackages; do
+        PKG_FILE=$(echo "$PKG_INDEX" | grep -Po ">\K${pkg}-[0-9][^\" ]*\.tgz" \
+            | sort -V | tail -n1)
+
+        echo "Resolved package filename for $pkg: $PKG_FILE"
+
+        [[ -z "$PKG_FILE" ]] && { echo "ERROR: Package $pkg not found"; exit 1; }
+
+        if [[ "$__hasWget" == 1 ]]; then
+            wget -O- "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
+        else
+            curl -SL "$PKG_MIRROR/$PKG_FILE" | tar -C "$__RootfsDir/usr/local" -xzpf -
+        fi
+    done
+
+    echo "Creating versionless symlinks for shared libraries..."
+    # Find all versioned .so files and create the base .so symlink
+    for lib in "$__RootfsDir"/usr/lib/lib*.so.*; do
+        if [ -f "$lib" ]; then
+            # Extract the filename (e.g., libc++.so.12.0)
+            VERSIONED_NAME=$(basename "$lib")
+            # Remove the trailing version numbers (e.g., libc++.so)
+            BASE_NAME=${VERSIONED_NAME%.so.*}.so
+            # Create the symlink in the same directory
+            ln -sf "$VERSIONED_NAME" "$__RootfsDir/usr/lib/$BASE_NAME"
+        fi
+    done
+
+    echo "Cleaning up unnecessary paths"
+    # we don't use executables and kernel in rootfs (as we use host's compiler with -sysroot)
+    rm -rf "$__RootfsDir/usr/share" "$__RootfsDir/usr/bin"
 elif [[ "$__CodeName" == "illumos" ]]; then
     mkdir "$__RootfsDir/tmp"
     pushd "$__RootfsDir/tmp"
@@ -759,6 +805,14 @@ elif [[ "$__CodeName" == "haiku" ]]; then
 elif [[ -n "$__CodeName" ]]; then
     __Suites="$__CodeName $(for suite in $__UbuntuSuites; do echo -n "$__CodeName-$suite "; done)"
 
+    __SigCheckArgs=
+    if [[ "$__SkipSigCheck" == "0" ]]; then
+        if [[ -e "$__KeyringFile" ]]; then
+            __SigCheckArgs="--keyring $__KeyringFile"
+        fi
+        __SigCheckArgs="$__SigCheckArgs --force-check-gpg"
+    fi
+
     if [[ "$__SkipEmulation" == "1" ]]; then
         if [[ -z "$AR" ]]; then
             if command -v ar &>/dev/null; then
@@ -774,31 +828,23 @@ elif [[ -n "$__CodeName" ]]; then
         PYTHON=${PYTHON_EXECUTABLE:-python3}
 
         # shellcheck disable=SC2086,SC2046
-        echo running "$PYTHON" "$__CrossDir/install-debs.py" --arch "$__UbuntuArch" --mirror "$__UbuntuRepo" --rootfsdir "$__RootfsDir" --artool "$AR" \
+        echo running "$PYTHON" "$__CrossDir/install-debs.py" $__SigCheckArgs --arch "$__UbuntuArch" --mirror "$__UbuntuRepo" --rootfsdir "$__RootfsDir" --artool "$AR" \
             $(for suite in $__Suites; do echo -n "--suite $suite "; done) \
             $__UbuntuPackages
 
         # shellcheck disable=SC2086,SC2046
-        "$PYTHON" "$__CrossDir/install-debs.py" --arch "$__UbuntuArch" --mirror "$__UbuntuRepo" --rootfsdir "$__RootfsDir" --artool "$AR" \
+        "$PYTHON" "$__CrossDir/install-debs.py" $__SigCheckArgs --arch "$__UbuntuArch" --mirror "$__UbuntuRepo" --rootfsdir "$__RootfsDir" --artool "$AR" \
             $(for suite in $__Suites; do echo -n "--suite $suite "; done) \
             $__UbuntuPackages
 
         exit 0
     fi
 
-    __UpdateOptions=
-    if [[ "$__SkipSigCheck" == "0" ]]; then
-        __Keyring="$__Keyring --force-check-gpg"
-    else
-        __Keyring=
-        __UpdateOptions="--allow-unauthenticated --allow-insecure-repositories"
-    fi
+    # shellcheck disable=SC2086
+    echo running debootstrap "--variant=minbase" $__SigCheckArgs --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
 
     # shellcheck disable=SC2086
-    echo running debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"
-
-    # shellcheck disable=SC2086
-    if ! debootstrap "--variant=minbase" $__Keyring --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"; then
+    if ! debootstrap "--variant=minbase" $__SigCheckArgs --arch "$__UbuntuArch" "$__CodeName" "$__RootfsDir" "$__UbuntuRepo"; then
         echo "debootstrap failed! dumping debootstrap.log"
         cat "$__RootfsDir/debootstrap/debootstrap.log"
         exit 1
@@ -815,6 +861,11 @@ Suites: $__Suites
 Components: main universe
 Signed-By: $__KeyringFile
 EOF
+
+    __UpdateOptions=
+    if [[ "$__SkipSigCheck" == "1" ]]; then
+        __UpdateOptions="--allow-unauthenticated --allow-insecure-repositories"
+    fi
 
     # shellcheck disable=SC2086
     chroot "$__RootfsDir" apt-get update $__UpdateOptions
