@@ -825,12 +825,12 @@ public class CsrfProtectionIntegrationTests
 
         var endpointInvoked = false;
         IAntiforgeryValidationFeature? capturedFeature = null;
-        object? observedMarker = null;
+        var observedHasMarker = true;
         app.MapPost("/plain", (HttpContext ctx) =>
         {
             endpointInvoked = true;
             capturedFeature = ctx.Features.Get<IAntiforgeryValidationFeature>();
-            observedMarker = ctx.Items[CsrfProtectionInvokedKey];
+            observedHasMarker = ctx.Items.ContainsKey(CsrfProtectionInvokedKey);
             return "ok";
         });
         await app.StartAsync();
@@ -845,8 +845,13 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(endpointInvoked, "Endpoint should run when the CSRF middleware passes through.");
         Assert.Null(capturedFeature);
-        // The sentinel is still set: it is the FormFeature backstop contract (PR #67082).
-        Assert.NotNull(observedMarker);
+        // The sentinel is NOT set on endpoints with no IAntiforgeryMetadata. It would have no consumer:
+        // EndpointMiddleware only reads the marker for RequiresValidation:true endpoints, and the
+        // FormFeature backstop requires the marker AND an invalid IAntiforgeryValidationFeature
+        // (which is only ever set inside InvokeCoreAsync — not reached on this path).
+        // Skipping the marker write here avoids forcing the lazy HttpContext.Items dictionary to
+        // allocate on the hot path (regression introduced by #67119, see PR comment 4835979504).
+        Assert.False(observedHasMarker);
     }
 
     [Fact]
@@ -1096,16 +1101,22 @@ public class CsrfProtectionIntegrationTests
     }
 
     [Fact]
-    public async Task CsrfProtection_SetsItemsMarker_WhenEndpointMatched()
+    public async Task CsrfProtection_DoesNotSetItemsMarker_WhenEndpointHasNoAntiforgeryMetadata()
     {
+        // Hot-path perf invariant: when the matched endpoint carries no IAntiforgeryMetadata, the
+        // marker has no downstream consumer (EndpointMiddleware only checks it for RequiresValidation:true
+        // endpoints; FormFeature only checks it together with an invalid IAntiforgeryValidationFeature
+        // which is itself only set inside InvokeCoreAsync, which runs for RequiresValidation:true).
+        // Stamping HttpContext.Items here forces the lazy dictionary to allocate on every request
+        // (regression introduced by #67119; see PR comment 4835979504), so the middleware must skip it.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
 
-        object? observedMarker = null;
+        var observedHasMarker = true;
         app.MapPost("/probe", (HttpContext ctx) =>
         {
-            observedMarker = ctx.Items[CsrfProtectionInvokedKey];
+            observedHasMarker = ctx.Items.ContainsKey(CsrfProtectionInvokedKey);
             return "ok";
         });
 
@@ -1118,12 +1129,18 @@ public class CsrfProtectionIntegrationTests
         var response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(observedMarker);
+        Assert.False(observedHasMarker, "Marker must not be set on endpoints with no IAntiforgeryMetadata (hot-path allocation regression).");
     }
 
     [Fact]
     public async Task CsrfProtection_SetsItemsMarker_EvenWhenEndpointDisabledAntiforgery()
     {
+        // Marker IS set when the endpoint carries IAntiforgeryMetadata of ANY flavor (even
+        // RequiresValidation:false from DisableAntiforgery). This is required for re-execute
+        // scenarios where the original endpoint opts out of antiforgery and returns a 404, then
+        // UseStatusCodePagesWithReExecute re-routes into an antiforgery-required page (the
+        // rerouted pipeline does NOT re-invoke this middleware). See
+        // CsrfProtection_DisabledEndpointReExecutesIntoAntiforgeryRequiredPage_DoesNotThrowMissingMiddleware.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
@@ -1201,6 +1218,84 @@ public class CsrfProtectionIntegrationTests
         var response = await client.GetAsync("/resource");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task CsrfProtection_HotPath_NoEndpointMetadata_DoesNotAllocateItemsDictionary()
+    {
+        // Regression guard for #67119 (PR comment 4835979504): the middleware used to stamp
+        // HttpContext.Items[CsrfProtection] unconditionally, forcing the lazy Items dictionary to
+        // allocate on EVERY request. This blew up alloc/s on hot non-antiforgery paths (e.g. the
+        // TechEmpower plaintext benchmark). After the fix, the marker is only set when an endpoint
+        // matches with IAntiforgeryMetadata (or when no endpoint matched at all), so the hot path
+        // (matched endpoint, no antiforgery metadata) must not touch HttpContext.Items.
+
+        // Direct middleware invocation (no TestServer) keeps allocation noise minimal.
+        var loggerFactory = NullLoggerFactory.Instance;
+        var logger = loggerFactory.CreateLogger<Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware>();
+        var csrfProtection = new AlwaysAllowCsrfProtection();
+        var middleware = new Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware(
+            next: _ => Task.CompletedTask,
+            csrfProtection: csrfProtection,
+            logger: logger);
+
+        // Endpoint with NO IAntiforgeryMetadata — Brennan's plaintext shape.
+        var endpoint = new Endpoint(
+            requestDelegate: _ => Task.CompletedTask,
+            metadata: new EndpointMetadataCollection(),
+            displayName: "plaintext");
+
+        static DefaultHttpContext NewContext(Endpoint endpoint)
+        {
+            var ctx = new DefaultHttpContext();
+            ctx.SetEndpoint(endpoint);
+            return ctx;
+        }
+
+        // Warm up jitted code paths so the measurement only reflects per-request allocation.
+        for (var i = 0; i < 200; i++)
+        {
+            await middleware.InvokeAsync(NewContext(endpoint));
+        }
+
+        const int Iterations = 5_000;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var before = GC.GetAllocatedBytesForCurrentThread();
+
+        for (var i = 0; i < Iterations; i++)
+        {
+            await middleware.InvokeAsync(NewContext(endpoint));
+        }
+
+        var after = GC.GetAllocatedBytesForCurrentThread();
+        var totalBytes = after - before;
+        var bytesPerRequest = (double)totalBytes / Iterations;
+
+        // A fresh DefaultHttpContext itself allocates a few objects, but the middleware
+        // contribution must NOT include the Items dictionary. Empirically the Items dict
+        // (Dictionary<object, object?> + entries) adds ~150 bytes per request when stamped.
+        // Picking 100 bytes/request as a generous regression floor for the middleware's own
+        // contribution beyond the unavoidable DefaultHttpContext overhead measured below.
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        var ctxBefore = GC.GetAllocatedBytesForCurrentThread();
+        for (var i = 0; i < Iterations; i++)
+        {
+            _ = NewContext(endpoint);
+        }
+        var ctxAfter = GC.GetAllocatedBytesForCurrentThread();
+        var ctxOnlyPerRequest = (double)(ctxAfter - ctxBefore) / Iterations;
+
+        var middlewareDelta = bytesPerRequest - ctxOnlyPerRequest;
+
+        Assert.True(
+            middlewareDelta < 10,
+            $"Hot-path allocation regression: middleware InvokeAsync added {middlewareDelta:F1} bytes/request " +
+            $"on top of DefaultHttpContext baseline ({ctxOnlyPerRequest:F1} bytes). Total {bytesPerRequest:F1} bytes/request. " +
+            $"This indicates HttpContext.Items is being touched on the hot path.");
     }
 
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
