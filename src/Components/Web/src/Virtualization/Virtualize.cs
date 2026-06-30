@@ -87,7 +87,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // so the viewport stays stable after a prepend or append.
     private bool _pendingAnchorRestore;
 
-    // True after the first interactive render; false during SSR/prerender.
+    // Used instead of RenderInfo to track interactive state.
     private bool _isInteractive;
 
     [Inject]
@@ -414,8 +414,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _measuredItemCount = 0;
         }
 
-        // During SSR/prerender, there are no interactive measurements from JS yet.
-        // Use InitialItemCapacity to seed the first render with a reasonable estimate.
         if (_visibleItemCapacity == 0 && !_isInteractive && InitialItemCapacity > 0)
         {
             _visibleItemCapacity = InitialItemCapacity;

@@ -102,7 +102,7 @@ public class VirtualizeTest
     }
 
     [Fact]
-    public async Task Virtualize_UsesInitialItemCapacityWhenItemsAreProvided()
+    public async Task RenderComponentAsync_UsesInitialCapacityInStaticSsr()
     {
         Virtualize<int> renderedVirtualize = null;
 
@@ -826,7 +826,7 @@ public class VirtualizeTest
         Action<Virtualize<int>> captureRenderedVirtualize = null,
         string spacerElement = "div",
         VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start,
-        int initialItemCapacity = 20)
+        int initialItemCapacity = 0)
         => builder =>
     {
         builder.OpenComponent<Virtualize<int>>(0);
