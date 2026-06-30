@@ -17,23 +17,23 @@ namespace Microsoft.AspNetCore.Components.Web;
 /// <example>
 /// The following example shows how to conditionally render content based on the environment:
 /// <code>
-/// &lt;EnvironmentBoundary Include="Development"&gt;
+/// &lt;EnvironmentView Include="Development"&gt;
 ///     &lt;div class="alert alert-warning"&gt;
 ///         You are running in Development mode. Debug features are enabled.
 ///     &lt;/div&gt;
-/// &lt;/EnvironmentBoundary&gt;
+/// &lt;/EnvironmentView&gt;
 ///
-/// &lt;EnvironmentBoundary Include="Development, Staging"&gt;
+/// &lt;EnvironmentView Include="Development, Staging"&gt;
 ///     &lt;p&gt;This is a pre-production environment.&lt;/p&gt;
-/// &lt;/EnvironmentBoundary&gt;
+/// &lt;/EnvironmentView&gt;
 ///
-/// &lt;EnvironmentBoundary Exclude="Production"&gt;
+/// &lt;EnvironmentView Exclude="Production"&gt;
 ///     &lt;p&gt;Debug information: @DateTime.Now&lt;/p&gt;
-/// &lt;/EnvironmentBoundary&gt;
+/// &lt;/EnvironmentView&gt;
 /// </code>
 /// </example>
 /// </remarks>
-public sealed class EnvironmentBoundary : ComponentBase
+public sealed class EnvironmentView : ComponentBase
 {
     private const char NameSeparator = ',';
 
