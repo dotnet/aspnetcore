@@ -447,6 +447,7 @@ internal static class JsonNodeSchemaExtensions
             {
                 return;
             }
+            var baseSchemaReferenceId = createSchemaReferenceId(context.TypeInfo);
             var mappings = new JsonObject();
             foreach (var derivedType in polymorphismOptions.DerivedTypes)
             {
@@ -458,11 +459,15 @@ internal static class JsonNodeSchemaExtensions
                     // that we hardcode here. We could use `OpenApiReference` to construct the reference and
                     // serialize it but we use a hardcoded string here to avoid allocating a new object and
                     // working around Microsoft.OpenApi's serialization libraries.
-                    mappings[$"{discriminator}"] = $"{createSchemaReferenceId(context.TypeInfo)}{createSchemaReferenceId(jsonDerivedType)}";
+                    mappings[$"{discriminator}"] = $"{baseSchemaReferenceId}{createSchemaReferenceId(jsonDerivedType)}";
                 }
             }
             schema[OpenApiSchemaKeywords.DiscriminatorKeyword] = polymorphismOptions.TypeDiscriminatorPropertyName;
             schema[OpenApiSchemaKeywords.DiscriminatorMappingKeyword] = mappings;
+            if (baseSchemaReferenceId is not null && IsNonAbstractTypeWithDerivedTypeReference(context))
+            {
+                schema[OpenApiSchemaKeywords.DiscriminatorDefaultMappingKeyword] = baseSchemaReferenceId;
+            }
         }
     }
 
@@ -530,6 +535,18 @@ internal static class JsonNodeSchemaExtensions
         return !context.TypeInfo.Type.IsAbstract
             && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
             && !polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type);
+    }
+
+    /// <summary>
+    /// Returns <langword ref="true" /> if the current type is a non-abstract base class that is defined as its
+    /// own derived type with a discriminator.
+    /// </summary>
+    /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
+    private static bool IsNonAbstractTypeWithDerivedTypeReference(JsonSchemaExporterContext context)
+    {
+        return !context.TypeInfo.Type.IsAbstract
+            && context.TypeInfo.PolymorphismOptions is { } polymorphismOptions
+            && polymorphismOptions.DerivedTypes.Any(type => type.DerivedType == context.TypeInfo.Type && type.TypeDiscriminator is not null);
     }
 
     /// <summary>
