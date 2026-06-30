@@ -1371,14 +1371,9 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 setter(value!);
             }
-            else if (string.Empty.Equals(e.Value))
+            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
             {
-                var typeInfo = typeof(T);
-                var isNullable = typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
-                if (typeInfo == typeof(string) || isNullable)
-                {
-                    setter(default!);
-                }
+                setter(default!);
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
@@ -1419,7 +1414,7 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 await setter(value!);
             }
-            else if (string.Empty.Equals(e.Value))
+            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
             {
                 await setter(default!);
             }
@@ -1463,14 +1458,9 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 setter(value!);
             }
-            else if (string.Empty.Equals(e.Value))
+            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
             {
-                var typeInfo = typeof(T);
-                var isNullable = typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == typeof(Nullable<>);
-                if (typeInfo == typeof(string) || isNullable)
-                {
-                    setter(default!);
-                }
+                setter(default!);
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
@@ -1512,11 +1502,25 @@ public static class EventCallbackFactoryBinderExtensions
             {
                 await setter(value!);
             }
-            else if (string.Empty.Equals(e.Value))
+            else if (string.Empty.Equals(e.Value) && ShouldSetDefaultOnEmptyString<T>())
             {
                 await setter(default!);
             }
         };
         return factory.Create<ChangeEventArgs>(receiver, callback);
+    }
+
+    // Determines whether an empty string input should reset the bound value to default(T).
+    // For most types an empty string maps to default(T) (e.g., string => null, int => 0, int? => null).
+    // However, non-nullable date/time types have no meaningful "empty" representation, so resetting them
+    // to default (e.g., DateTime.MinValue) would be surprising. For those we leave the existing value
+    // unchanged instead.
+    private static bool ShouldSetDefaultOnEmptyString<T>()
+    {
+        var typeInfo = typeof(T);
+        return typeInfo != typeof(DateTime)
+            && typeInfo != typeof(DateTimeOffset)
+            && typeInfo != typeof(DateOnly)
+            && typeInfo != typeof(TimeOnly);
     }
 }

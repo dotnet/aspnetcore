@@ -500,6 +500,58 @@ public class EventCallbackFactoryBinderExtensionsTest
     }
 
     [Fact]
+    public async Task CreateBinder_AsyncSetter_NonNullableDateTime_EmptyValue_DoesNotResetBoundValue()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/40660
+        // This covers the Func<T, Task> overload (CreateBinderCoreAsync), which must also
+        // avoid resetting a non-nullable DateTime to default(DateTime) when the browser
+        // briefly reports an empty value during editing.
+        var value = new DateTime(2022, 2, 10);
+        var component = new EventCountingComponent();
+        Func<DateTime, Task> setter = (_) => { value = _; return Task.CompletedTask; };
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+
+        Assert.Equal(new DateTime(2022, 2, 10), value);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public async Task CreateBinder_AsyncSetter_NonNullableDateTime_NoFormat_EmptyValue_DoesNotResetBoundValue()
+    {
+        // Same regression as above, but exercising the CreateBinderCoreAsync overload without a format.
+        var value = new DateTime(2022, 2, 10);
+        var component = new EventCountingComponent();
+        Func<DateTime, Task> setter = (_) => { value = _; return Task.CompletedTask; };
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value, CultureInfo.InvariantCulture);
+
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+
+        Assert.Equal(new DateTime(2022, 2, 10), value);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public async Task CreateBinder_AsyncSetter_NullableInt_EmptyValue_CallsSetterWithDefault()
+    {
+        // The async setter overload must still apply default(T) on empty string for types where
+        // that is the expected behavior (e.g., nullable types reset to null).
+        var value = (int?)17;
+        var component = new EventCountingComponent();
+        Func<int?, Task> setter = (_) => { value = _; return Task.CompletedTask; };
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+
+        Assert.Null(value);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
     public async Task CreateBinder_DateTimeOffset()
     {
         // Arrange
