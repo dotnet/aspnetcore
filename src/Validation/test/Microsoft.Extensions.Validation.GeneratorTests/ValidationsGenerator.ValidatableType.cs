@@ -6,12 +6,16 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Validation;
 
+using static Microsoft.Extensions.Validation.Tests.ValidationTestBase;
+
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
-    [Fact]
-    public async Task CanValidateClassTypesWithAttribute()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanValidateClassTypesWithAttribute(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -105,7 +109,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -124,7 +128,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -143,7 +147,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -165,7 +169,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -194,7 +198,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -246,7 +250,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -276,7 +280,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -295,7 +299,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -322,7 +326,7 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -372,15 +376,17 @@ public class SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
         });
     }
 
-    [Fact]
-    public async Task CanValidateRecordTypesWithAttribute()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanValidateRecordTypesWithAttribute(bool useAsync)
     {
         var source = """
 #pragma warning disable ASP0029
@@ -474,7 +480,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableTypeInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -493,7 +499,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -512,7 +518,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -534,7 +540,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -563,7 +569,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -615,7 +621,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors,
                     kvp =>
@@ -645,7 +651,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -664,7 +670,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -691,7 +697,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Collection(context.ValidationErrors, kvp =>
                 {
@@ -741,7 +747,7 @@ public record SubTypeWithInheritance : SubType
                     ValidationContext = new ValidationContext(instance)
                 };
 
-                await validatableInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await ValidateAsync(validatableInfo, instance, context, useAsync, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }

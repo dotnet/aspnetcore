@@ -8,8 +8,10 @@ namespace Microsoft.AspNetCore.Antiforgery;
 
 /// <summary>
 /// Auto-injected middleware that enforces <see cref="ICsrfProtection"/> on incoming requests.
-/// Skips validation when the matched endpoint opted out via <c>DisableAntiforgery()</c>
-/// (i.e. carries <see cref="IAntiforgeryMetadata"/> with <see cref="IAntiforgeryMetadata.RequiresValidation"/> = <see langword="false"/>).
+/// Validation only runs when the matched endpoint opts in via <see cref="IAntiforgeryMetadata"/>
+/// with <see cref="IAntiforgeryMetadata.RequiresValidation"/> = <see langword="true"/>. Endpoints
+/// without any <see cref="IAntiforgeryMetadata"/> (e.g. unannotated minimal-API handlers) and
+/// endpoints that opted out via <c>DisableAntiforgery()</c> pass through unchanged.
 /// </summary>
 internal sealed partial class CsrfProtectionMiddleware
 {
@@ -30,20 +32,21 @@ internal sealed partial class CsrfProtectionMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public Task InvokeAsync(HttpContext context)
     {
+        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
+
         var endpoint = context.GetEndpoint();
-        if (endpoint is not null)
+        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is not { RequiresValidation: true })
         {
-            context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
+            return _next(context);
         }
 
-        if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
-        {
-            await _next(context);
-            return;
-        }
+        return InvokeCoreAsync(context);
+    }
 
+    private async Task InvokeCoreAsync(HttpContext context)
+    {
         // This middleware does not short-circuit, but only records the verdict.
         // When the application also calls UseAntiforgery(),
         // the later AntiforgeryMiddleware may overwrite this verdict with the result of token-based validation.

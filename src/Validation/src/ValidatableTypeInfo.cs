@@ -78,21 +78,23 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
     /// </remarks>
     /// <param name="propertyName">The CLR name of the property to find.</param>
     /// <param name="validationOptions">The <see cref="ValidationOptions"/> used to resolve metadata for super-types.</param>
-    /// <returns>The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
-    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</returns>
-    public IValidatablePropertyInfo? TryFindProperty(string propertyName, ValidationOptions validationOptions)
+    /// <param name="validatablePropertyInfo">The matching <see cref="ValidatablePropertyInfo"/>, or <see langword="null"/> if no
+    /// member with the specified name is declared on <see cref="Type"/> or any of its super-types.</param>
+    /// <returns>True if the property was found. Otherwise, false.</returns>
+    public bool TryFindProperty(string propertyName, ValidationOptions validationOptions, [NotNullWhen(true)] out IValidatablePropertyInfo? validatablePropertyInfo)
     {
         if (FindLocalMember(propertyName) is { } localMember)
         {
-            return localMember;
+            validatablePropertyInfo = localMember;
+            return true;
         }
 
         foreach (var @interface in _implementedInterfaces)
         {
             if (validationOptions.TryGetValidatableTypeInfo(@interface, out var interfaceTypeInfo) &&
-                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions) is { } interfaceProperty)
+                interfaceTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo))
             {
-                return interfaceProperty;
+                return true;
             }
         }
 
@@ -101,13 +103,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         {
             if (validationOptions.TryGetValidatableTypeInfo(baseType, out var baseTypeTypeInfo))
             {
-                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions);
+                return baseTypeTypeInfo.TryFindProperty(propertyName, validationOptions, out validatablePropertyInfo);
             }
 
             baseType = baseType.BaseType;
         }
 
-        return null;
+        validatablePropertyInfo = null;
+        return false;
     }
 
     private ValidatablePropertyInfo? FindLocalMember(string memberName)
@@ -123,14 +126,8 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         return null;
     }
 
-    /// <inheritdoc />
-    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    private void ValidateDepth(ValidateContext context)
     {
-        if (value == null)
-        {
-            return;
-        }
-
         // Check if we've exceeded the maximum depth
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
         {
@@ -139,6 +136,17 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
                 "This is likely caused by a circular reference in the object graph. " +
                 "Consider increasing the MaxDepth in ValidationOptions if deeper validation is required.");
         }
+    }
+
+    /// <inheritdoc />
+    public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    {
+        if (value == null)
+        {
+            return;
+        }
+
+        ValidateDepth(context);
 
         var originalErrorCount = context.ValidationErrors?.Count ?? 0;
 
@@ -155,7 +163,7 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         }
 
         var clonedContextsHasErrors = await tracker.CompleteAsync();
-        
+
         var currentCount = context.ValidationErrors?.Count ?? 0;
 
         // If any property-level validation errors were found, return early
@@ -180,6 +188,52 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         await ValidateValidatableObjectInterfaceAsync(value, context, displayName, cancellationToken);
     }
 
+    /// <inheritdoc />
+    public virtual void Validate(object? value, ValidateContext context)
+    {
+        if (value == null)
+        {
+            return;
+        }
+
+        ValidateDepth(context);
+
+        var originalErrorCount = context.ValidationErrors?.Count ?? 0;
+
+        ValidateMembersSynchronously(value, context);
+
+        var actualType = value.GetType();
+
+        // Then validate inherited members
+        foreach (var superTypeInfo in GetSuperTypeInfos(actualType, context.ValidationOptions))
+        {
+            superTypeInfo.ValidateMembersSynchronously(value, context);
+        }
+
+        var currentCount = context.ValidationErrors?.Count ?? 0;
+
+        // If any property-level validation errors were found, return early
+        if (currentCount > originalErrorCount)
+        {
+            return;
+        }
+
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Type.Name, Type) ?? Type.Name;
+
+        // Validate type-level attributes
+        ValidateTypeAttributes(value, context, displayName);
+
+        // If any type-level attribute errors were found, return early
+        currentCount = context.ValidationErrors?.Count ?? 0;
+        if (currentCount > originalErrorCount)
+        {
+            return;
+        }
+
+        // Finally validate IValidatableObject if implemented
+        ValidateValidatableObjectInterface(value, context, displayName);
+    }
+
     private ValidateContext.AsyncValidationTracker ValidateMembers(
         object value,
         ValidateContext.AsyncValidationTracker tracker,
@@ -202,6 +256,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
         return tracker;
     }
 
+    private void ValidateMembersSynchronously(object value, ValidateContext context)
+    {
+        for (var i = 0; i < _membersCount; i++)
+        {
+            Members[i].Validate(value, context);
+        }
+    }
+
     private async Task ValidateTypeAttributesAsync(object? value, ValidateContext context, string displayName, CancellationToken cancellationToken)
     {
         var originalDisplayName = context.ValidationContext.DisplayName;
@@ -213,6 +275,25 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
             context.ValidationContext.MemberName = null;
 
             await context.ValidateAttributesAsync(value, value, this, cancellationToken);
+        }
+        finally
+        {
+            context.ValidationContext.DisplayName = originalDisplayName;
+            context.ValidationContext.MemberName = originalMemberName;
+        }
+    }
+
+    private void ValidateTypeAttributes(object? value, ValidateContext context, string displayName)
+    {
+        var originalDisplayName = context.ValidationContext.DisplayName;
+        var originalMemberName = context.ValidationContext.MemberName;
+
+        try
+        {
+            context.ValidationContext.DisplayName = displayName;
+            context.ValidationContext.MemberName = null;
+
+            context.ValidateAllAttributesSynchronously(value, value, this);
         }
         finally
         {
@@ -240,14 +321,14 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
                 {
                     await foreach (var validationResult in asyncValidatable.ValidateAsync(context.ValidationContext, cancellationToken))
                     {
-                        HandleValidationResult(validationResult);
+                        HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
                     }
                 }
                 else
                 {
                     foreach (var validationResult in validatable.Validate(context.ValidationContext))
                     {
-                        HandleValidationResult(validationResult);
+                        HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
                     }
                 }
             }
@@ -257,39 +338,68 @@ public abstract class ValidatableTypeInfo : IValidatableTypeInfo, IValidationErr
                 context.ValidationContext.DisplayName = originalDisplayName;
                 context.ValidationContext.MemberName = originalMemberName;
             }
+        }
+    }
 
-            void HandleValidationResult(ValidationResult validationResult)
+    private static void HandleValidationResultForValidatableObject(ValidationResult validationResult, string errorPrefix, object? value, ValidateContext context)
+    {
+        if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
+        {
+            // Create a validation error for each member name that is provided
+            // We don't support automatic localization of IValidatableObject messages
+            foreach (var memberName in validationResult.MemberNames)
             {
-                if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
+                var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
+                var errorContext = new ValidationErrorContext()
                 {
-                    // Create a validation error for each member name that is provided
-                    // We don't support automatic localization of IValidatableObject messages
-                    foreach (var memberName in validationResult.MemberNames)
-                    {
-                        var key = string.IsNullOrEmpty(errorPrefix) ? memberName : $"{errorPrefix}.{memberName}";
-                        var errorContext = new ValidationErrorContext()
-                        {
-                            Name = memberName,
-                            Path = key,
-                            Errors = [validationResult.ErrorMessage],
-                            Container = value,
-                        };
-                        context.AddValidationError(errorContext);
-                    }
+                    Name = memberName,
+                    Path = key,
+                    Errors = [validationResult.ErrorMessage],
+                    Container = value,
+                };
+                context.AddValidationError(errorContext);
+            }
 
-                    if (!validationResult.MemberNames.Any())
-                    {
-                        // If no member names are specified, then treat this as a top-level error
-                        var errorContext = new ValidationErrorContext()
-                        {
-                            Name = string.Empty,
-                            Path = string.Empty,
-                            Errors = [validationResult.ErrorMessage],
-                            Container = value,
-                        };
-                        context.AddValidationError(errorContext);
-                    }
+            if (!validationResult.MemberNames.Any())
+            {
+                // If no member names are specified, then treat this as a top-level error
+                var errorContext = new ValidationErrorContext()
+                {
+                    Name = string.Empty,
+                    Path = string.Empty,
+                    Errors = [validationResult.ErrorMessage],
+                    Container = value,
+                };
+                context.AddValidationError(errorContext);
+            }
+        }
+    }
+
+    private void ValidateValidatableObjectInterface(object? value, ValidateContext context, string displayName)
+    {
+        if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
+        {
+            // Important: Set the DisplayName to the type's resolved display name for top-level
+            // validations, and restore the original validation context properties when done.
+            var originalDisplayName = context.ValidationContext.DisplayName;
+            var originalMemberName = context.ValidationContext.MemberName;
+            var errorPrefix = context.CurrentValidationPath;
+
+            try
+            {
+                context.ValidationContext.DisplayName = displayName;
+                context.ValidationContext.MemberName = null;
+
+                foreach (var validationResult in validatable.Validate(context.ValidationContext))
+                {
+                    HandleValidationResultForValidatableObject(validationResult, errorPrefix, value, context);
                 }
+            }
+            finally
+            {
+                // Restore the original validation context properties
+                context.ValidationContext.DisplayName = originalDisplayName;
+                context.ValidationContext.MemberName = originalMemberName;
             }
         }
     }
