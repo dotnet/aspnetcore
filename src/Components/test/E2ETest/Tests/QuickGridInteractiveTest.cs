@@ -153,7 +153,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
-    public void ColumnResizeRendersDragHandlesAndUpdatesRealDomWidths()
+    public void QuickGrid_EnableColumnResize()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
         Browser.Exists(By.CssSelector("#grid3 > table"));

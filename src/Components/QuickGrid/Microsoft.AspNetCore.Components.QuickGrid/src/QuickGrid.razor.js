@@ -33,12 +33,11 @@ export function init(tableElement) {
 
         let currentWidth = startWidth;
 
-        // ✅ STRONG pointer capture
         if (event.pointerId !== undefined) {
             try {
                 handle.setPointerCapture(event.pointerId);
             } catch (e) {
-                // ignore (some browsers throw)
+
             }
         }
 
@@ -53,7 +52,6 @@ export function init(tableElement) {
             const width = Math.max(48, Math.round(startWidth + delta));
             currentWidth = width;
 
-            // ✅ smooth rendering
             requestAnimationFrame(() => {
                 applyColumnWidth(columnIndex, currentWidth);
             });
@@ -66,7 +64,6 @@ export function init(tableElement) {
             document.removeEventListener('pointerup', stop);
             document.removeEventListener('pointercancel', stop);
 
-            // ✅ release capture safely
             if (event.pointerId !== undefined && handle.releasePointerCapture) {
                 try {
                     handle.releasePointerCapture(event.pointerId);
@@ -115,7 +112,7 @@ export function init(tableElement) {
         } else if (event.key === 'ArrowLeft') {
             newWidth = isRtl ? currentWidth + STEP : currentWidth - STEP;
         } else {
-            return; // ignore other keys
+            return;
         }
 
         event.preventDefault();
