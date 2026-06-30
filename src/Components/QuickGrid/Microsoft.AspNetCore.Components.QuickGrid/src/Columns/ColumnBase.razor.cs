@@ -47,6 +47,18 @@ public abstract partial class ColumnBase<TGridItem>
     [Parameter] public RenderFragment? ColumnOptions { get; set; }
 
     /// <summary>
+    /// Indicates whether the column's filter is currently active, causing a visual indicator to be displayed
+    /// on the column options button.
+    /// </summary>
+    [Parameter] public bool ColumnOptionsActive { get; set; }
+
+    /// <summary>
+    /// An optional CSS class name to apply to the column options button. This allows custom styling of the
+    /// filter indicator.
+    /// </summary>
+    [Parameter] public string? ColumnOptionsButtonClass { get; set; }
+    
+    /// <summary>
     /// Indicates whether the data should be sortable by this column.
     ///
     /// The default value may vary according to the column type (for example, a <see cref="TemplateColumn{TGridItem}" />
@@ -111,5 +123,24 @@ public abstract partial class ColumnBase<TGridItem>
     public ColumnBase()
     {
         HeaderContent = RenderDefaultHeaderContent;
+    }
+
+    internal string ColumnOptionsButtonCssClass
+    {
+        get
+        {
+            var result = "col-options-button";
+            if (!string.IsNullOrWhiteSpace(ColumnOptionsButtonClass))
+            {
+                result += " " + ColumnOptionsButtonClass.Trim();
+            }
+
+            if (ColumnOptionsActive)
+            {
+                result += " col-options-active";
+            }
+
+            return result;
+        }
     }
 }
