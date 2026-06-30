@@ -157,7 +157,9 @@ namespace Microsoft.Extensions.Validation.Generated
                 var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
 
                 // Get attributes from the property
-                var property = k.ContainingType.GetProperty(k.PropertyName);
+                var property = k.ContainingType.GetProperty(
+                    k.PropertyName,
+                    global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly);
                 if (property != null)
                 {
                     var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
@@ -309,7 +311,9 @@ namespace Microsoft.Extensions.Validation.Generated
                     }
                 }
 
-                var property = k.ContainingType.GetProperty(k.PropertyName);
+                var property = k.ContainingType.GetProperty(
+                    k.PropertyName,
+                    global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly);
                 return property is null
                     ? null
                     : global::System.Reflection.CustomAttributeExtensions
