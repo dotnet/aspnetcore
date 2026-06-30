@@ -2689,7 +2689,7 @@ public partial class HubConnectionTests : FunctionalTestBase
             var connectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var rejectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            Action<WriteContext>? handler = null;
+            Action<WriteContext> handler = null;
             handler = writeContext =>
             {
                 if (writeContext.EventId.Name == "UserNameChangedRejected")
