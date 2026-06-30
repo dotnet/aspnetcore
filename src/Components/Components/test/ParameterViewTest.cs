@@ -219,22 +219,6 @@ public partial class ParameterViewTest
     }
 
     [Fact]
-    public void TryGetValue_ReturnsFalse_WhenTypeMismatch()
-    {
-        // Arrange
-        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-        {
-            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-            RenderTreeFrame.Attribute(1, "my entry", "hello")
-        }, 0);
-
-        var found = parameters.TryGetValue<bool>("my entry", out var value);
-
-        Assert.False(found);
-        Assert.False(value);
-    }
-
-    [Fact]
     public void FromDictionary_CanBeInitializedWithEmptyDictionary()
     {
         // Arrange
@@ -568,21 +552,6 @@ public partial class ParameterViewTest
     }
 
     [Fact]
-    public void TryGetValue_ReturnsFalse_WithIncorrectType()
-    {
-        var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
-        {
-            RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
-            RenderTreeFrame.Attribute(1, "DebounceInterval", 500)
-        }, 0);
-
-        var found = parameters.TryGetValue<double>("DebounceInterval", out var value);
-
-        Assert.False(found);
-        Assert.Equal(default, value);
-    }
-
-    [Fact]
     public void TryGetValue_AllowsNullValue_ForNullableOrReferenceType()
     {
         var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
@@ -608,20 +577,6 @@ public partial class ParameterViewTest
         var found = parameters.TryGetValue<int?>("MyParam", out var value);
         Assert.True(found);
         Assert.Null(value);
-    }
-
-    [Fact]
-    public void TryGetValue_ReturnsFalse_ForNumericTypeMismatch()
-    {
-        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
-        {
-            { "Value", 10 }
-        });
-
-        var found = parameters.TryGetValue<double>("Value", out var value);
-
-        Assert.False(found);
-        Assert.Equal(default, value);
     }
 
     [Fact]
@@ -652,6 +607,33 @@ public partial class ParameterViewTest
 
         Assert.False(found);
         Assert.Equal(default, value);
+    }
+
+    [Theory]
+    [InlineData("hello", typeof(bool))]
+    [InlineData(123, typeof(double))]
+    [InlineData(10, typeof(double))]
+    public void TryGetValue_ReturnsFalse_ForTypeMismatch(object inputValue, Type targetType)
+    {
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            { "Value", inputValue }
+        });
+        var method = typeof(ParameterView)
+            .GetMethod(nameof(ParameterView.TryGetValue))
+            .MakeGenericMethod(targetType);
+
+        var args = new object[] { "Value", null };
+        var found = (bool)method.Invoke(parameters, args);
+        var value = args[1];
+
+        Assert.False(found);
+        Assert.Equal(GetDefault(targetType), value);
+    }
+
+    private static object GetDefault(Type type)
+    {
+        return type.IsValueType ? Activator.CreateInstance(type) : null;
     }
 
     private Action<ParameterValue> AssertParameter(string expectedName, object expectedValue, bool expectedIsCascading)
