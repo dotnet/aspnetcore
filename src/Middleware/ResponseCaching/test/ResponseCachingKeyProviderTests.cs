@@ -103,7 +103,7 @@ public class ResponseCachingKeyProviderTests
             Headers = new string[] { "HeaderA", "HeaderC" }
         };
 
-        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueAValueB{KeyDelimiter}HeaderC=",
+        Assert.Equal($"{context.CachedVaryByRules.VaryByKeyPrefix}{KeyDelimiter}H{KeyDelimiter}HeaderA=ValueA{KeySubDelimiter}ValueB{KeyDelimiter}HeaderC=",
             cacheKeyProvider.CreateStorageVaryByKey(context));
     }
 

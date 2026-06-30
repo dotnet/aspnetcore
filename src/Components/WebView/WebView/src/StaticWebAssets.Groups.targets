@@ -1,0 +1,74 @@
+<Project>
+  <!-- This file ships in the package's build/ folder and is auto-imported by consumers via
+       build/Microsoft.AspNetCore.Components.WebView.targets. (The SDK static web assets pack
+       imports a file named StaticWebAssets.Groups.targets by convention; the name is kept for
+       that reason even though this package no longer uses asset groups.)
+
+       Purpose: WebView apps fetch _framework/blazor.modules.json at runtime. When the app
+       contributes its own JS library modules, the SDK generates that manifest. When it does
+       not, nothing would be served, so this package ships an empty ([]) fallback and
+       materializes it as the consumer's own static web asset ONLY in that case. The decision is
+       made here, during ResolveStaticWebAssetsInputs (before the build manifest is generated and
+       its conflict check runs), so exactly one asset ever lands on the route and no group /
+       conflict-resolution machinery is required. -->
+  <PropertyGroup>
+    <!-- Emit the app's own JS module manifest at the path WebView serves. -->
+    <JSModuleManifestRelativePath>_framework/blazor.modules.json</JSModuleManifestRelativePath>
+    <CompressionEnabled>false</CompressionEnabled>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      $(ResolveStaticWebAssetsInputsDependsOn);
+      _AddBlazorWebViewModulesFallback;
+    </ResolveStaticWebAssetsInputsDependsOn>
+    <!-- Ensure the app's JS module resolution has run so @(_ExistingBuildJSModules) is populated
+         before we decide whether to add the fallback. -->
+    <_AddBlazorWebViewModulesFallbackDependsOn Condition="'$(GenerateJSModuleManifest)' == 'true'">GenerateJSModuleManifestBuildStaticWebAssets</_AddBlazorWebViewModulesFallbackDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_AddBlazorWebViewModulesFallback"
+          DependsOnTargets="$(_AddBlazorWebViewModulesFallbackDependsOn)">
+    <PropertyGroup>
+      <_BlazorWebViewModulesFallbackRoot>$(MSBuildThisFileDirectory)</_BlazorWebViewModulesFallbackRoot>
+      <_BlazorWebViewModulesFallbackFile>$(_BlazorWebViewModulesFallbackRoot)blazor.modules.json</_BlazorWebViewModulesFallbackFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_BlazorWebViewModulesFallbackCandidate
+        Include="$(_BlazorWebViewModulesFallbackFile)"
+        Condition="'@(_ExistingBuildJSModules)' == '' and Exists('$(_BlazorWebViewModulesFallbackFile)')">
+        <RelativePath>_framework/blazor.modules.json</RelativePath>
+      </_BlazorWebViewModulesFallbackCandidate>
+    </ItemGroup>
+
+    <Message Importance="Low"
+      Condition="'@(_BlazorWebViewModulesFallbackCandidate)' != ''"
+      Text="BlazorWebView: app has no JS library modules; adding fallback _framework/blazor.modules.json." />
+
+    <DefineStaticWebAssets Condition="'@(_BlazorWebViewModulesFallbackCandidate)' != ''"
+      CandidateAssets="@(_BlazorWebViewModulesFallbackCandidate)"
+      SourceId="$(PackageId)"
+      SourceType="Discovered"
+      ContentRoot="$(_BlazorWebViewModulesFallbackRoot)"
+      BasePath="/"
+      AssetKind="All"
+      AssetMode="All"
+      AssetRole="Primary"
+      FingerprintCandidates="true">
+      <Output TaskParameter="Assets" ItemName="_BlazorWebViewModulesFallbackAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints Condition="'@(_BlazorWebViewModulesFallbackAsset)' != ''"
+      CandidateAssets="@(_BlazorWebViewModulesFallbackAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="_BlazorWebViewModulesFallbackEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_BlazorWebViewModulesFallbackAsset)" />
+      <StaticWebAssetEndpoint Include="@(_BlazorWebViewModulesFallbackEndpoint)" />
+    </ItemGroup>
+  </Target>
+</Project>

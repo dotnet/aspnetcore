@@ -2475,6 +2475,97 @@ public class WebApplicationTests
 
     [Theory]
     [MemberData(nameof(CreateBuilderFuncs))]
+    public async Task RegisterAuthMiddlewaresCorrectly_WithExplicitUseRouting(CreateBuilderFunc createBuilder)
+    {
+        var helloEndpointCalled = false;
+        var customMiddlewareExecuted = false;
+        var username = "foobar";
+
+        var builder = createBuilder();
+
+        builder.Services.AddAuthorization();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, UberHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        // Calling UseRouting() explicitly makes the framework defer its implicit authentication/authorization
+        // middleware into a post-routing block. Authentication must still run (and populate the user) just as it
+        // does when routing is implicit.
+        app.UseRouting();
+
+        app.Use(next =>
+        {
+            return async context =>
+            {
+                // IAuthenticationFeature is added by the authentication middleware during invocation. This
+                // middleware runs inside the source pipeline (after the post-routing block) and must observe it.
+                var authFeature = context.Features.Get<IAuthenticationFeature>();
+                Assert.NotNull(authFeature);
+                customMiddlewareExecuted = true;
+                Assert.Equal(username, context.User.Identity.Name);
+                await next(context);
+            };
+        });
+
+        app.MapGet("/hello", (ClaimsPrincipal user) =>
+        {
+            helloEndpointCalled = true;
+            Assert.Equal(username, user.Identity.Name);
+        }).AllowAnonymous();
+
+        await app.StartAsync();
+        var client = app.GetTestClient();
+        await client.GetStringAsync($"/hello?username={username}");
+
+        Assert.True(helloEndpointCalled);
+        Assert.True(customMiddlewareExecuted);
+    }
+
+    [Theory]
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public Task Authorization_IsEnforced_WithImplicitRouting(CreateBuilderFunc createBuilder) =>
+        RunAuthorizationEnforcementAsync(createBuilder, explicitUseRouting: false);
+
+    [Theory]
+    [MemberData(nameof(CreateBuilderFuncs))]
+    public Task Authorization_IsEnforced_WithExplicitUseRouting(CreateBuilderFunc createBuilder) =>
+        RunAuthorizationEnforcementAsync(createBuilder, explicitUseRouting: true);
+
+    private static async Task RunAuthorizationEnforcementAsync(CreateBuilderFunc createBuilder, bool explicitUseRouting)
+    {
+        var builder = createBuilder();
+
+        builder.Services.AddAuthorization();
+        builder.Services.AddAuthentication("testSchemeName")
+            .AddScheme<AuthenticationSchemeOptions, ClaimsAuthHandler>("testSchemeName", "testDisplayName", _ => { });
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+
+        if (explicitUseRouting)
+        {
+            app.UseRouting();
+        }
+
+        // RequireAuthorization is per-endpoint metadata, so the authorization middleware can only enforce it once
+        // routing has matched the endpoint. This holds whether routing is implicit or the app calls UseRouting()
+        // explicitly (the latter relies on the deferred post-routing block running after the match). If authorization
+        // ran before the match instead, the endpoint would never resolve the policy and the endpoint middleware would
+        // throw, so the clean 200/401 split below also proves authorization runs in the right place.
+        app.MapGet("/admin", () => "ok").RequireAuthorization();
+
+        await app.StartAsync();
+        var client = app.GetTestClient();
+
+        var allowed = await client.GetAsync("/admin?username=admin");
+        Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
+
+        var denied = await client.GetAsync("/admin");
+        Assert.Equal(HttpStatusCode.Unauthorized, denied.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(CreateBuilderFuncs))]
     public async Task SupportsDisablingMiddlewareAutoRegistration(CreateBuilderFunc createBuilder)
     {
         var builder = createBuilder();
@@ -2751,6 +2842,7 @@ public class WebApplicationTests
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointRoutingMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Authentication.AuthenticationMiddleware", m),
             m => Assert.Equal("Microsoft.AspNetCore.Authorization.AuthorizationMiddlewareInternal", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", m),
             m => Assert.Equal(typeof(MiddlewareWithInterface).FullName, m),
             m => Assert.Equal("Microsoft.AspNetCore.Routing.EndpointMiddleware", m));
     }
@@ -2770,7 +2862,8 @@ public class WebApplicationTests
         var debugView = new WebApplication.WebApplicationDebugView(app);
 
         Assert.Collection(debugView.Middleware,
-            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m));
+            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
+            m => Assert.Equal("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", m));
     }
 
     [Fact]
@@ -2867,6 +2960,27 @@ public class WebApplicationTests
             principal.AddIdentity(id);
             return Task.FromResult(AuthenticateResult.Success(
                 new AuthenticationTicket(principal, "custom")));
+        }
+    }
+
+    // Unlike UberHandler, this handler produces a genuinely authenticated identity only when a username is supplied
+    // and does not suppress the default challenge/forbid responses, so authorization can yield real 401/403 results.
+    private class ClaimsAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    {
+        public ClaimsAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder) : base(options, logger, encoder) { }
+
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        {
+            var username = Request.Query["username"].ToString();
+            if (string.IsNullOrEmpty(username))
+            {
+                return Task.FromResult(AuthenticateResult.NoResult());
+            }
+
+            var identity = new ClaimsIdentity(Scheme.Name);
+            identity.AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, username));
+            var principal = new ClaimsPrincipal(identity);
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name)));
         }
     }
 
