@@ -14,7 +14,7 @@ interface WebStartOptionsLike {
 let config: AutoPauseConfig | undefined;
 let manager: AutoPauseManager | undefined;
 
-export function beforeWebStart(options: WebStartOptionsLike): void {
+function beforeWebStart(options: WebStartOptionsLike): void {
   const enabled = options.circuit?.['autoPauseEnabled'] as boolean | undefined;
   if (enabled === undefined) {
     return;
@@ -27,7 +27,7 @@ export function beforeWebStart(options: WebStartOptionsLike): void {
 
 // Called by the framework once Blazor has started; activates auto-pause when AddAutoPause
 // enabled it. A second call disposes the previous manager so listeners never accumulate.
-export function afterWebStarted(blazor: BlazorLike): void {
+function afterWebStarted(blazor: BlazorLike): void {
   // Avoid stale listeners on restart.
   manager?.dispose();
   manager = undefined;
@@ -41,4 +41,4 @@ export function afterWebStarted(blazor: BlazorLike): void {
   mgr.start();
 }
 
-export { beforeWebStart as beforeServerStart, afterWebStarted as afterServerStarted };
+export { beforeWebStart, beforeWebStart as beforeServerStart, afterWebStarted, afterWebStarted as afterServerStarted };
