@@ -51,6 +51,8 @@ public readonly struct RenderHandle
     /// </summary>
     public bool IsRenderingOnMetadataUpdate => HotReloadManager.IsSupported && (_renderer?.IsRenderingOnMetadataUpdate ?? false);
 
+    internal bool IsFirstHotReloadRender() => IsRenderingOnMetadataUpdate && _renderer?.IsFirstHotReloadRender(_componentId) == true;
+
     internal bool IsRendererDisposed => _renderer?.Disposed
         ?? throw new InvalidOperationException("No renderer has been initialized.");
 

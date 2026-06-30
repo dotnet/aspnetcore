@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -96,15 +95,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+            Configuration["Components:UseCultureFromServer"] = "true";
         }
         else
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(options =>
-            {
-                options.UseCultureFromServer = false;
-            });
+            Configuration["Components:UseCultureFromServer"] = "false";
         }
+
+        razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
