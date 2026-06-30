@@ -14,8 +14,8 @@
 namespace System.Runtime.CompilerServices
 {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    file sealed class InterceptsLocationAttribute : System.Attribute
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)
         {
@@ -74,16 +74,16 @@ namespace Microsoft.Extensions.Validation.Generated
             validatableTypeInfo = null;
             if (type == typeof(global::SubType))
             {
-                validatableTypeInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::SubType),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
                             name: "RequiredProperty",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::SubType),
                             propertyType: typeof(string),
                             name: "StringWithLength",
@@ -96,7 +96,7 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             if (type == typeof(global::ValidatableSubType))
             {
-                validatableTypeInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::ValidatableSubType),
                     members: [],
                     displayNameInfo: null
@@ -105,16 +105,16 @@ namespace Microsoft.Extensions.Validation.Generated
             }
             if (type == typeof(global::ComplexValidatableType))
             {
-                validatableTypeInfo = new GeneratedValidatableTypeInfo(
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
                     type: typeof(global::ComplexValidatableType),
                     members: [
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexValidatableType),
                             propertyType: typeof(string),
                             name: "Value2",
                             displayNameInfo: null
                         ),
-                        new GeneratedValidatablePropertyInfo(
+                        new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexValidatableType),
                             propertyType: typeof(global::ValidatableSubType),
                             name: "SubType",
@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.Validation.Generated
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
             {
-                options.Resolvers.Insert(0, new GeneratedValidatableInfoResolver());
+                options.Resolvers.Insert(0, new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableInfoResolver());
                 if (configureOptions is not null)
                 {
                     configureOptions(options);
@@ -178,7 +178,9 @@ namespace Microsoft.Extensions.Validation.Generated
                 var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
 
                 // Get attributes from the property
-                var property = k.ContainingType.GetProperty(k.PropertyName);
+                var property = k.ContainingType.GetProperty(
+                    k.PropertyName,
+                    global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly);
                 if (property != null)
                 {
                     var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
@@ -330,7 +332,9 @@ namespace Microsoft.Extensions.Validation.Generated
                     }
                 }
 
-                var property = k.ContainingType.GetProperty(k.PropertyName);
+                var property = k.ContainingType.GetProperty(
+                    k.PropertyName,
+                    global::System.Reflection.BindingFlags.Instance | global::System.Reflection.BindingFlags.Public | global::System.Reflection.BindingFlags.DeclaredOnly);
                 return property is null
                     ? null
                     : global::System.Reflection.CustomAttributeExtensions
