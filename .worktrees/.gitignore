@@ -1,0 +1,9 @@
+# Worktrees created here (e.g. by agents) must not be tracked or pollute the
+# parent's `git status`. Ignore everything in this folder except the committed
+# isolation files that keep those worktrees buildable and config-isolated.
+*
+!.gitignore
+!.editorconfig
+!Directory.Build.props
+!Directory.Build.targets
+!NuGet.config
