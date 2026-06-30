@@ -3,6 +3,8 @@
   <PropertyGroup>
     <Description>ASP.NET Core middleware that enables Device Bound Session Credentials (DBSC) over an inner authentication scheme.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- Experimental (ASP0030); ships as a 0.x preview package, matching the convention for experimental standalone packages. -->
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;dbsc;security</PackageTags>
     <IsTrimmable>true</IsTrimmable>
