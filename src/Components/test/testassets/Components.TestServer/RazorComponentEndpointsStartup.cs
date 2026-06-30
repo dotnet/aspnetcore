@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Security.Claims;
 using System.Web;
 using Components.TestServer.RazorComponents;
@@ -11,6 +12,7 @@ using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Localization;
@@ -42,6 +44,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
             ?.SetValue(null, enableUrlNavigation);
+
+        // The Hot Reload server forces HotReloadManager's cached "IsSupported" field to true via
+        // reflection. Because that field is process-global and the E2E suite runs serially, reset it
+        // back to the runtime default here so non-hot-reload servers don't inherit the forced value.
+        typeof(HotReloadManager).GetField("s_isSupported", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, MetadataUpdater.IsSupported);
 
         if (Configuration.GetValue<bool>("EnableCultureTesting"))
         {
