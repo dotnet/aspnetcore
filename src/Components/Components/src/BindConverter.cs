@@ -2073,10 +2073,6 @@ public static class BindConverter
                 // We intentionally close-over the TypeConverter to cache it. The TypeDescriptor infrastructure is slow.
                 if (obj == null)
                 {
-                    // For reference types and nullable value types, treat null as a successful conversion
-                    // that produces a null/default value. For non-nullable value types (e.g., uint),
-                    // treat null as a failed conversion to match the behavior of the other explicit
-                    // numeric parsers (they return false for empty/null input).
                     var targetType = typeof(T);
                     var isNullableOrReference = !targetType.IsValueType || Nullable.GetUnderlyingType(targetType) != null;
                     value = default!;
