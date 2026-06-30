@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation.Localization;
@@ -61,43 +60,7 @@ public class ValidationLocalizationOptions
     /// </remarks>
     public Func<Type?, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
 
-    /// <summary>
-    /// Gets or sets the delegate that determines the localization lookup key for a
-    /// validation attribute's error message. When configured, the delegate is invoked for
-    /// every attribute and takes precedence over <see cref="ValidationAttribute.ErrorMessage"/>.
-    /// Returning <see langword="null"/> or an empty string defers to using
-    /// <see cref="ValidationAttribute.ErrorMessage"/> directly as the lookup key.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// When <see langword="null"/> (the default), only attributes with
-    /// <see cref="ValidationAttribute.ErrorMessage"/> set are localized (using the
-    /// <see cref="ValidationAttribute.ErrorMessage"/> value as the key); attributes without
-    /// an explicit <see cref="ValidationAttribute.ErrorMessage"/> are not localized at all.
-    /// </para>
-    /// <para>
-    /// When configured, the delegate can:
-    /// </para>
-    /// <list type="bullet">
-    ///   <item>Provide a fallback key for attributes without an explicit
-    ///   <see cref="ValidationAttribute.ErrorMessage"/> (convention-based key selection).</item>
-    ///   <item>Transform an existing <see cref="ValidationAttribute.ErrorMessage"/> into a
-    ///   different lookup key by reading
-    ///   <see cref="ErrorMessageLocalizationContext.Attribute"/>'s
-    ///   <see cref="ValidationAttribute.ErrorMessage"/> from the context.</item>
-    ///   <item>Return <see langword="null"/> or an empty string to defer to the default
-    ///   behavior of using <see cref="ValidationAttribute.ErrorMessage"/> as the key.</item>
-    /// </list>
-    /// <example>
-    /// <code>
-    /// options.ErrorMessageKeyProvider = context =&gt;
-    ///     $"{context.Attribute.GetType().Name}_ValidationError";
-    /// // This makes the localizer look up "RequiredAttribute_ValidationError"
-    /// // instead of "The {0} field is required."
-    /// </code>
-    /// </example>
-    /// </remarks>
-    public Func<ErrorMessageLocalizationContext, string?>? ErrorMessageKeyProvider { get; set; }
+    public Func<ErrorMessageKeyContext, string?>? ErrorMessageKeyProvider { get; set; }
 
     /// <summary>
     /// Gets the registry of formatters for attribute-specific error message template formatting.
