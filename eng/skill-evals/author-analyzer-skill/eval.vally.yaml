@@ -1,0 +1,148 @@
+name: author-analyzer-skill
+description: A/B eval for the author-analyzer-skill skill.
+type: capability
+defaults:
+  runs: 5
+  timeout: 300s
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+scoring:
+  weights:
+    output-matches: 0.3
+    prompt: 0.7
+  threshold: 0.6
+stimuli:
+- name: Author a new framework analyzer end-to-end
+  prompt: |
+    I'm working in the dotnet/aspnetcore repo. I want to add a brand new analyzer that warns
+    when someone calls IServiceCollection.AddControllers() more than once in the same project.
+    What are all the steps I need to follow, where do the files go, and what conventions does
+    this repo expect me to follow?
+  graders:
+  - type: output-matches
+    config:
+      pattern: (list-of-diagnostics|DiagnosticDescriptors)
+  - type: output-contains
+    config:
+      substring: EnableConcurrentExecution
+  - type: prompt
+  - type: pairwise
+  rubric:
+  - Says new analyzers require an approved proposal (analyzer proposal issue) before implementation, reviewed like an API
+  - Explains reserving a diagnostic ID (ASP prefix for the framework set) and registering it in the repo's diagnostics list plus a central DiagnosticDescriptors file
+  - Covers choosing a category and severity, and using localized resource strings with a help link for the message
+  - Mentions the analyzer must enable concurrent execution and configure generated-code analysis
+  - Says to add unit tests including both positive (fires) and negative (does not fire) cases and to build/test the area
+- name: Review an analyzer with performance and correctness bugs
+  prompt: |
+    Please review this Roslyn analyzer for problems and tell me what to change:
+
+    [DiagnosticAnalyzer(LanguageNames.CSharp)]
+    public class MyAnalyzer : DiagnosticAnalyzer
+    {
+        private INamedTypeSymbol _controllerType;
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+        public override void Initialize(AnalysisContext context)
+        {
+            context.RegisterSyntaxNodeAction(ctx =>
+            {
+                _controllerType = ctx.Compilation.GetTypeByMetadataName("Microsoft.AspNetCore.Mvc.ControllerBase");
+                var model = ctx.Compilation.GetSemanticModel(ctx.Node.SyntaxTree);
+                var symbol = model.GetDeclaredSymbol(ctx.Node);
+                if (symbol.ContainingType == _controllerType)
+                    ctx.ReportDiagnostic(Diagnostic.Create(Rule, ctx.Node.GetLocation()));
+            }, SyntaxKind.MethodDeclaration);
+        }
+    }
+  graders:
+  - type: output-contains
+    config:
+      substring: SymbolEqualityComparer
+  - type: output-matches
+    config:
+      pattern: (EnableConcurrentExecution|ConfigureGeneratedCodeAnalysis)
+  - type: prompt
+  - type: pairwise
+  rubric:
+  - Flags storing a symbol/compilation in an analyzer instance field as unsafe state that goes stale across compilations
+  - Flags resolving the well-known type on every node instead of caching it once per compilation in a compilation-start action
+  - Flags comparing symbols with == and says to use SymbolEqualityComparer.Default
+  - Flags calling Compilation.GetSemanticModel inside the callback as a performance problem; use the context's model
+  - Notes the analyzer is missing EnableConcurrentExecution and ConfigureGeneratedCodeAnalysis calls
+- name: Diagnose a non-working FixAll in a code fix
+  prompt: |
+    I added a CodeFixProvider for one of our ASP.NET Core analyzers. The single-line fix works,
+    but the "Fix all occurrences in document" option never appears in Visual Studio. What's wrong
+    and how do I make FixAll work?
+  graders:
+  - type: output-matches
+    config:
+      pattern: (GetFixAllProvider|BatchFixer)
+  - type: output-contains
+    config:
+      substring: equivalenceKey
+  - type: prompt
+  - type: pairwise
+  rubric:
+  - Identifies that the provider must override GetFixAllProvider (e.g. returning WellKnownFixAllProviders.BatchFixer)
+  - Identifies that every registered CodeAction needs a non-null equivalence key for FixAll to work
+  - Gives correct, minimal guidance without inventing unrelated causes
+- name: Fix an analyzer false positive without regressing
+  prompt: |
+    Users report that one of our ASP.NET Core analyzers reports a warning on perfectly valid code
+    when the relevant call is nested inside another lambda. How should I approach fixing this false
+    positive so it doesn't come back later, and is there anything about where the warning is reported
+    that I should reconsider?
+  graders:
+  - type: output-matches
+    config:
+      pattern: (test|regression)
+  - type: output-matches
+    config:
+      pattern: (false positive|negative)
+  - type: output-matches
+    config:
+      pattern: (?i)(span|location|where.*report|smallest)
+  - type: prompt
+  - type: pairwise
+  rubric:
+  - Recommends adding a guard so the analyzer does not report in the nested case, narrowing the condition rather than broadening it
+  - Recommends adding a 'no diagnostic' regression unit test reproducing the reported case before fixing
+  - Mentions reporting on the smallest meaningful span and/or bailing out when unsure to avoid false positives
+- name: Choose ID, project, and severity for a new analyzer
+  prompt: |
+    In dotnet/aspnetcore, I'm adding an analyzer that detects a misuse of minimal API route handlers.
+    Which diagnostic ID prefix should I use, which analyzer project does it belong in, where do I
+    record the ID, and how should I think about picking the severity?
+  graders:
+  - type: output-contains
+    config:
+      substring: ASP
+  - type: output-matches
+    config:
+      pattern: (Warning|severity)
+  - type: prompt
+  - type: pairwise
+  rubric:
+  - Says minimal API / framework analyzers use the ASP#### prefix and live in the Framework AspNetCoreAnalyzers project
+  - Says to record the new ID in the repo's list-of-diagnostics doc and the area's DiagnosticDescriptors file
+  - Gives sound severity guidance (Warning is the common default; Error only for always-wrong code; Info/Hidden for suggestions) and notes users can override severity via editorconfig
+- name: Write analyzer unit tests with the repo's harness
+  prompt: |
+    How do I write unit tests for a new analyzer in dotnet/aspnetcore so that I assert the warning
+    appears on a specific piece of code, and also assert that valid code produces no warning? Show
+    me the testing approach this repo uses.
+  graders:
+  - type: output-matches
+    config:
+      pattern: (\{\|#0:|VerifyAnalyzerAsync|CSharpAnalyzerVerifier)
+  - type: output-matches
+    config:
+      pattern: (no diagnostic|negative|does not)
+  - type: prompt
+  - type: pairwise
+  rubric:
+  - Describes the Microsoft.CodeAnalysis.Testing based verifier helpers the repo uses (CSharpAnalyzerVerifier / CSharpCodeFixVerifier)
+  - Shows marking the expected diagnostic location inline in the test source (e.g. {|#0:...|}) and asserting with a DiagnosticResult
+  - Explicitly includes a negative test that asserts valid code produces no diagnostic
+  - Mentions running the tests via the area's build script
