@@ -2861,9 +2861,12 @@ public class WebApplicationTests
 
         var debugView = new WebApplication.WebApplicationDebugView(app);
 
+        // No endpoints are registered, so the CSRF middleware is not auto-injected. It only
+        // has consumers on the endpoint-routing pipeline (IAntiforgeryMetadata lookup and the
+        // FormFeature backstop), and injecting it on non-routing apps allocates the lazy
+        // HttpContext.Items dictionary on every request (see #67119 comment 4835979504).
         Assert.Collection(debugView.Middleware,
-            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m),
-            m => Assert.Equal("Microsoft.AspNetCore.Antiforgery.CsrfProtectionMiddleware", m));
+            m => Assert.Equal("Microsoft.AspNetCore.HostFiltering.HostFilteringMiddleware", m));
     }
 
     [Fact]

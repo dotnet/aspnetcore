@@ -435,8 +435,14 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         // Set the route builder so that UseRouting will use the WebApplication as the IEndpointRouteBuilder for route matching
         app.Properties.Add(WebApplication.GlobalEndpointRouteBuilderKey, _builtApplication);
 
+        // Endpoint routing is only relevant when the user has registered at least one endpoint
+        // via MapGet / MapControllers / MapRazorPages / etc. If none are registered, there is no
+        // matched endpoint on the request, and endpoint-scoped middleware (like CSRF) has nothing
+        // to do. This flag is also used to gate the auto-injected CSRF middleware below.
+        var hasEndpointDataSources = _builtApplication.DataSources.Count > 0;
+
         // Only call UseRouting() if there are endpoints configured and UseRouting() wasn't called on the global route builder already
-        if (_builtApplication.DataSources.Count > 0)
+        if (hasEndpointDataSources)
         {
             // If this is set, someone called UseRouting() when a global route builder was already set
             if (!_builtApplication.Properties.TryGetValue(EndpointRouteBuilderKey, out var localRouteBuilder))
@@ -471,9 +477,15 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
             _builtApplication.Properties[AuthorizationMiddlewareSetKey] = true;
         }
 
+        // Skip auto-injecting CSRF protection when the app has no endpoints registered.
+        // Without endpoint routing, no request can match an endpoint carrying IAntiforgeryMetadata,
+        // so the middleware has nothing to validate and no marker to stamp for a downstream consumer.
+        // Running it anyway would allocate the lazy HttpContext.Items dictionary on every request
+        // (see #67119 regression comment) even though nothing downstream reads the marker.
         if (addCsrfProtection = !WebHostUtilities.ParseBool(_builtApplication.Configuration["DisableCsrfProtection"])
             && serviceProviderIsService?.IsService(typeof(ICsrfProtection)) is true
-            && !_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey))
+            && !_builtApplication.Properties.ContainsKey(CsrfProtectionMiddlewareSetKey)
+            && hasEndpointDataSources)
         {
             _builtApplication.Properties[CsrfProtectionMiddlewareSetKey] = true;
         }
@@ -514,7 +526,7 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         var wireSourcePipeline = new WireSourcePipeline(_builtApplication);
         app.Use(wireSourcePipeline.CreateMiddleware);
 
-        if (_builtApplication.DataSources.Count > 0)
+        if (hasEndpointDataSources)
         {
             // We don't know if user code called UseEndpoints(), so we will call it just in case, UseEndpoints() will ignore duplicate DataSources
             app.UseEndpoints(_ => { });

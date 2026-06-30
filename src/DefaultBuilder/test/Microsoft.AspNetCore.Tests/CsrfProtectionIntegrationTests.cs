@@ -1202,6 +1202,45 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task CsrfProtection_NotAutoInjected_WhenAppHasNoEndpointDataSources()
+    {
+        // Regression guard for the aspnet/Benchmarks-style perf regression (companion to #67119
+        // comment 4835979504). Apps that never register any endpoints (e.g. `app.UsePlainText()`
+        // in TechEmpower's classic plaintext.benchmarks.yml) cannot possibly hit a
+        // RequiresValidation:true endpoint, so the auto-injected CSRF middleware has no consumer.
+        // Injecting it anyway forces the lazy HttpContext.Items dictionary to allocate on every
+        // request. This test ensures the middleware is NOT wired into the pipeline when the app
+        // has zero EndpointDataSource registrations.
+
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+
+        await using var app = builder.Build();
+
+        var observedHasMarker = true;
+
+        // No MapGet / MapControllers / MapRazorPages calls. Pure middleware pipeline.
+        app.Run(async context =>
+        {
+            observedHasMarker = context.Items.ContainsKey(CsrfProtectionInvokedKey);
+            await context.Response.WriteAsync("hello");
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/anything");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("hello", await response.Content.ReadAsStringAsync());
+        // If the CSRF middleware were still auto-injected, it would stamp the marker onto
+        // HttpContext.Items (via the endpoint-is-null defensive branch), which is exactly the
+        // allocation we want to avoid. Absence of the marker proves the middleware is not
+        // running.
+        Assert.False(observedHasMarker);
+    }
+
     private sealed class AlwaysAllowCsrfProtection : ICsrfProtection
     {
         public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
