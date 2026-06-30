@@ -1,0 +1,112 @@
+name: validate-blazor-feature
+description: A/B eval for the validate-blazor-feature skill (validating Blazor features with the Components samples).
+type: capability
+
+defaults:
+  runs: 5
+  timeout: 600s
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+
+scoring:
+  weights:
+    output-matches: 0.3
+    prompt: 0.7
+  threshold: 0.6
+
+stimuli:
+  - name: place-a-webassembly-test-page
+    prompt: |
+      I'm working in dotnet/aspnetcore and want to manually try out a new interactive component that
+      should run in the browser via WebAssembly, using the Blazor sample apps in src/Components before I
+      write any E2E tests. Which sample should I use, and exactly where do I put the new page and how do
+      I make it run on WebAssembly?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)\.client'
+      - type: output-matches
+        config:
+          pattern: '(?i)@rendermode'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Directs the user to one of the in-repo Blazor Web App samples (BlazorWebAppPerPage or BlazorWebAppGlobal), not a freshly scaffolded app"
+      - "Says a WebAssembly (or Auto) component must live in the .Client project so it compiles into the client assembly"
+      - "Shows setting the render mode to InteractiveWebAssembly (or InteractiveAuto), e.g. an @rendermode directive, and that the page needs an @page route"
+      - "Does not claim a component placed only in the server host project can run on WebAssembly"
+
+  - name: switch-global-app-to-server-only
+    prompt: |
+      I have the global-interactivity Blazor sample running (BlazorWebAppGlobal) and I want the whole app
+      to use interactive Server only instead of Auto, so I can validate a server-circuit behavior. What's
+      the minimal change?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)InteractiveServer'
+      - type: output-matches
+        config:
+          pattern: '(?i)(App\.razor|Routes|HeadOutlet|rendermode)'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Explains that a global app sets the render mode in the host App.razor on the Routes (and HeadOutlet) components"
+      - "Says to change the single @rendermode value from InteractiveAuto to InteractiveServer"
+      - "Treats it as a one-line/one-value change rather than restructuring the project or moving files"
+      - "Does not tell the user to remove the .Client project or change service registrations to accomplish this"
+
+  - name: confirm-actually-interactive
+    prompt: |
+      I added an interactive counter to a Blazor sample and the page renders with the button and the
+      count showing. How do I actually confirm it is interactive and not just statically server-rendered?
+      I have a browser automation tool available.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(click|interact)'
+      - type: output-matches
+        config:
+          pattern: '(?i)(static|SSR|circuit|websocket|_blazor|webassembly)'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Says that rendered markup alone does not prove interactivity because static SSR emits the same HTML"
+      - "Requires a behavioral check: interact (click the button) and assert the displayed state actually changes (e.g. the count increments)"
+      - "Mentions confirming the runtime attached, e.g. an interactive Server circuit's _blazor WebSocket connecting, or the WebAssembly runtime booting"
+      - "For WebAssembly, notes the runtime boots asynchronously so you must wait for it before interacting"
+
+  - name: scope-console-error-checks
+    prompt: |
+      While validating a Blazor sample in the browser I dumped all the console messages and there are a
+      bunch of red errors about a connection being refused and SignalR negotiation failing, but they
+      point at a localhost port that isn't the app I'm currently testing. Are these real problems, and
+      how should I be checking the console?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(stopped|previous|other port|not.*running|refused)'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Identifies the errors as stale/false positives from a previously-stopped server on a different port, not a defect in the app under test"
+      - "Advises scoping console checks to the current page rather than dumping the whole session history"
+      - "Tells the user to filter for errors whose URL belongs to the app/port currently under test and ignore other-port noise"
+      - "Does not tell the user to start debugging the app under test because of those unrelated errors"
+
+  - name: debug-button-does-nothing
+    prompt: |
+      I'm testing a Blazor feature in one of the src/Components sample apps. The page loads fine and the
+      button shows, but clicking it does nothing: the value on screen never changes. What are the most
+      likely causes and how do I fix it?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(rendermode|render mode|interactiv)'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Identifies that the component is rendering as static SSR, i.e. no interactive render mode is actually applied"
+      - "Says to add/verify the @rendermode (per page, or on Routes/HeadOutlet for a global app)"
+      - "Considers that a WebAssembly/Auto component must be in the .Client project, otherwise it won't be interactive"
+      - "Suggests confirming the framework JS (blazor.web.js) is built and served and checking the browser console, rather than only guessing"
