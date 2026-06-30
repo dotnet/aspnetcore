@@ -538,7 +538,7 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
-    /// Returns <langword ref="true" /> if the current type is a non-abstract base class that is defined as its
+    /// Returns <see langword="true"/> if the current type is a non-abstract base class that is defined as its
     /// own derived type with a discriminator.
     /// </summary>
     /// <param name="context">The <see cref="JsonSchemaExporterContext"/> associated with the current type.</param>
