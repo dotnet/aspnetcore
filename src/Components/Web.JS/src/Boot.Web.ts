@@ -139,14 +139,8 @@ function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
       }
 
       // Pass through library extension keys (server-side [JsonExtensionData]) to the circuit options.
-      const knownServerKeys = new Set<string>([
-        'reconnectionMaxRetries',
-        'reconnectionRetryIntervalMilliseconds',
-        'reconnectionDialogId',
-      ]);
-      const unsafeKeys = new Set<string>(['__proto__', 'constructor', 'prototype']);
       for (const [key, value] of Object.entries(browserConfig.server)) {
-        if (!knownServerKeys.has(key) && !unsafeKeys.has(key) && value !== undefined) {
+        if (value !== undefined) {
           (circuitOpts as Record<string, unknown>)[key] = value;
         }
       }
