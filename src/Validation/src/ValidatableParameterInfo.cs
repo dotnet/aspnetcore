@@ -55,6 +55,22 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     /// <returns>An array of validation attributes to apply to this parameter.</returns>
     protected abstract ValidationAttribute[] GetValidationAttributes();
 
+    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, object? value, ValidateContext context)
+    {
+        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
+        {
+            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
+
+            if (result is not null && result != ValidationResult.Success)
+            {
+                ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <inheritdoc />
     /// <remarks>
     /// If the parameter is a collection, each item in the collection will be validated.
@@ -69,22 +85,9 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
 
         var validationAttributes = GetValidationAttributes();
 
-        // Skip validation if value is null and there are no validation attributes to apply.
-        // If validation attributes exist (including custom ones), they should be evaluated even for null values.
-        if (value == null && validationAttributes.Length == 0)
+        if (!ValidateRequiredAttribute(validationAttributes, value, context))
         {
             return;
-        }
-
-        if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
-        {
-            var result = _requiredAttribute.GetValidationResult(value, context.ValidationContext);
-
-            if (result is not null && result != ValidationResult.Success)
-            {
-                ((IValidationErrorReporter)this).ReportError(context, container: null, _requiredAttribute, result);
-                return;
-            }
         }
 
         // Validate against validation attributes
@@ -124,7 +127,14 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
                 index++;
             }
 
-            await tracker.CompleteAsync();
+            try
+            {
+                await tracker.CompleteAsync();
+            }
+            finally
+            {
+                context.CurrentValidationPath = currentPrefix;
+            }
         }
         // If not enumerable, validate the single value
         else if (value != null)
@@ -133,6 +143,69 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
             if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
             {
                 await validatableType.ValidateAsync(value, context, cancellationToken);
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// If the parameter is a collection, each item in the collection will be validated.
+    /// If the parameter is not a collection but has a validatable type, the single value will be validated.
+    /// </remarks>
+    public virtual void Validate(object? value, ValidateContext context)
+    {
+        var displayName = DisplayNameInfo?.GetDisplayName(context, Name, type: null) ?? Name;
+
+        context.ValidationContext.DisplayName = displayName;
+        context.ValidationContext.MemberName = Name;
+
+        var validationAttributes = GetValidationAttributes();
+
+        if (!ValidateRequiredAttribute(validationAttributes, value, context))
+        {
+            return;
+        }
+
+        // Validate against validation attributes
+        context.ValidateAllAttributesSynchronously(value, null, this);
+
+        // If the parameter is a collection, validate each item
+        if (ParameterType.IsEnumerable() && value is IEnumerable enumerable)
+        {
+            var index = 0;
+            var currentPrefix = context.CurrentValidationPath;
+
+            var validationOptions = context.ValidationOptions;
+
+            foreach (var item in enumerable)
+            {
+                if (item != null)
+                {
+                    if (validationOptions.TryGetValidatableTypeInfo(item.GetType(), out var validatableType))
+                    {
+                        context.CurrentValidationPath = string.IsNullOrEmpty(currentPrefix)
+                            ? $"{Name}[{index}]"
+                            : $"{currentPrefix}.{Name}[{index}]";
+                        try
+                        {
+                            validatableType.Validate(item, context);
+                        }
+                        finally
+                        {
+                            context.CurrentValidationPath = currentPrefix;
+                        }
+                    }
+                }
+                index++;
+            }
+        }
+        // If not enumerable, validate the single value
+        else if (value != null)
+        {
+            var valueType = value.GetType();
+            if (context.ValidationOptions.TryGetValidatableTypeInfo(valueType, out var validatableType))
+            {
+                validatableType.Validate(value, context);
             }
         }
     }
