@@ -93,8 +93,8 @@ function createPackages(packagesToPack) {
     try {
       console.log(`Packing ${packageName}...`);
       // Log and execute the command
-      console.log(`npm pack "${packageDir}" --pack-destination "${packageOutputPath}"`);
-      execSync(`npm pack "${packageDir}" --pack-destination "${packageOutputPath}"`, { stdio: 'inherit' });
+      console.log(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`);
+      execSync(`npm pack ${packageDir} --pack-destination ${packageOutputPath}`, { stdio: 'inherit' });
 
       console.log(`Packed ${packageName} to ${resolve(packageOutputPath, packageTarball)}`);
     } finally {
