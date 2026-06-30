@@ -32,12 +32,10 @@ internal sealed partial class CsrfProtectionMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var endpoint = context.GetEndpoint();
-        if (endpoint is not null)
-        {
-            context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
-        }
+        // Recording that CsrfProtection was invoked
+        context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
 
+        var endpoint = context.GetEndpoint();
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: false })
         {
             await _next(context);
