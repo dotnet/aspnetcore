@@ -15,59 +15,47 @@ public class ColumnBaseTest
     [Fact]
     public void ColumnBase_IsSortableByDefault_ReturnsFalse()
     {
-        // Arrange
         var column = new TestColumn();
 
-        // Act
         var result = column.IsSortableByDefault();
 
-        // Assert
         Assert.False(result);
     }
 
     [Fact]
     public void TemplateColumn_IsSortableByDefault_ReturnsFalseWhenNoSortBy()
     {
-        // Arrange
         var column = new TemplateColumn<TestItem>
         {
             ChildContent = _ => null
         };
 
-        // Act
         var result = column.IsSortableByDefault();
 
-        // Assert
         Assert.False(result);
     }
 
     [Fact]
     public void TemplateColumn_IsSortableByDefault_ReturnsTrueWhenSortBySpecified()
     {
-        // Arrange
         var column = new TemplateColumn<TestItem>
         {
             ChildContent = _ => null,
             SortBy = GridSort<TestItem>.ByAscending(x => x.Name)
         };
 
-        // Act
         var result = column.IsSortableByDefault();
 
-        // Assert
         Assert.True(result);
     }
 
     [Fact]
     public void ColumnBase_IsSortableByDefault_OverrideInDerivedClass_Works()
     {
-        // Arrange - Create a custom column that overrides IsSortableByDefault
         var customColumn = new CustomSortableColumn<TestItem>();
 
-        // Act
         var result = customColumn.IsSortableByDefault();
 
-        // Assert
         Assert.True(result);
     }
 
