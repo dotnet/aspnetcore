@@ -79,8 +79,10 @@
     <Project Path="src/Components/Forms/test/Microsoft.AspNetCore.Components.Forms.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Components/Samples/">
-    <Project Path="src/Components/Samples/BlazorUnitedApp.Client/BlazorUnitedApp.Client.csproj" />
-    <Project Path="src/Components/Samples/BlazorUnitedApp/BlazorUnitedApp.csproj" />
+    <Project Path="src/Components/Samples/BlazorWebAppGlobal.Client/BlazorWebAppGlobal.Client.csproj" />
+    <Project Path="src/Components/Samples/BlazorWebAppGlobal/BlazorWebAppGlobal.csproj" />
+    <Project Path="src/Components/Samples/BlazorWebAppPerPage.Client/BlazorWebAppPerPage.Client.csproj" />
+    <Project Path="src/Components/Samples/BlazorWebAppPerPage/BlazorWebAppPerPage.csproj" />
   </Folder>
   <Folder Name="/src/Components/Server/">
     <Project Path="src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj" />
@@ -124,11 +126,8 @@
   <Folder Name="/src/Components/WebAssembly/JSInterop/">
     <Project Path="src/Components/WebAssembly/JSInterop/src/Microsoft.JSInterop.WebAssembly.csproj" />
   </Folder>
-  <Folder Name="/src/Components/WebAssembly/Samples/" />
-  <Folder Name="/src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/">
-    <Project Path="src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/Client/HostedBlazorWebassemblyApp.Client.csproj" />
-    <Project Path="src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/Server/HostedBlazorWebassemblyApp.Server.csproj" />
-    <Project Path="src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/Shared/HostedBlazorWebassemblyApp.Shared.csproj" />
+  <Folder Name="/src/Components/WebAssembly/Samples/">
+    <Project Path="src/Components/WebAssembly/Samples/BlazorWebAssemblyStandalone/BlazorWebAssemblyStandalone.csproj" />
   </Folder>
   <Folder Name="/src/Components/WebAssembly/Server/">
     <Project Path="src/Components/WebAssembly/Server/src/Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
