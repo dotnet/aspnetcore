@@ -55,6 +55,10 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   await initializersPromise;
   const jsInitializer = await fetchAndInvokeInitializers(options);
 
+  if (!jsEventRegistry) {
+    throw new Error('Circuit event registry was not set. Call setCircuitEventRegistry(...) before startServer.');
+  }
+
   appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
   circuit = new CircuitManager(components, appState, options, logger, jsEventRegistry);
