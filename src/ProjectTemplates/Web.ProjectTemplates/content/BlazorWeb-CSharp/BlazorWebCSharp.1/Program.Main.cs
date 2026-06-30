@@ -112,8 +112,6 @@ public class Program
         app.UseHttpsRedirection();
 
 #endif
-        app.UseAntiforgery();
-
         app.MapStaticAssets();
         #if (UseServer && UseWebAssembly)
         app.MapRazorComponents<App>()
