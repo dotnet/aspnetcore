@@ -16,12 +16,13 @@ let manager: AutoPauseManager | undefined;
 
 export function beforeWebStart(options: WebStartOptionsLike): void {
   const enabled = options.circuit?.['autoPauseEnabled'] as boolean | undefined;
-  config = enabled === undefined
-    ? undefined
-    : {
-      enabled,
-      hiddenDelayMilliseconds: options.circuit?.['autoPauseHiddenDelayMilliseconds'] as number | undefined ?? 120000,
-    };
+  if (enabled === undefined) {
+    return;
+  }
+  config = {
+    enabled,
+    hiddenDelayMilliseconds: options.circuit?.['autoPauseHiddenDelayMilliseconds'] as number | undefined ?? 120000,
+  };
 }
 
 // The Blazor Server bundle uses the server-specific initializer names.

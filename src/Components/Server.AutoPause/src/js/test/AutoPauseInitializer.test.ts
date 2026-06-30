@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { beforeWebStart, afterWebStarted } from '../autopause.lib.module';
+import { beforeWebStart, afterWebStarted, beforeServerStart, afterServerStarted } from '../autopause.lib.module';
 import { BlazorActivityHost } from '../AutoPauseManager';
 
 type ActivityHandler = (ev: { busy: boolean }) => void;
@@ -80,5 +80,24 @@ describe('autopause initializer', () => {
     beforeWebStart({ circuit: { autoPauseEnabled: false } });
     afterWebStarted(blazor);
     expect(blazor.removed).toEqual([blazor.added[0]]);
+  });
+
+  it('a config-less server start does not disable auto-pause configured by the web start', () => {
+    // Regression: in a Blazor Web app the initializer runs once per runtime start. The
+    // server-emitted config is merged only into the web start options, so the server
+    // start path carries no auto-pause keys. It must not clobber the config nor leave the
+    // circuit without a running manager.
+    const blazor = createBlazor();
+    beforeWebStart({ circuit: { autoPauseEnabled: true, autoPauseHiddenDelayMilliseconds: 100 } });
+    afterWebStarted(blazor);
+    expect(blazor.added).toHaveLength(1);
+
+    // The server runtime start (no merged config) must keep auto-pause active.
+    beforeServerStart({ circuit: undefined });
+    afterServerStarted(blazor);
+
+    // The latest manager is still attached (the prior one was replaced, not removed-without-replacement).
+    const attached = blazor.added.filter(h => !blazor.removed.includes(h));
+    expect(attached).toHaveLength(1);
   });
 });
