@@ -27,7 +27,7 @@ public class EditFormTest
     }
 
     [Fact]
-    public async Task SubmitAsync_AwaitsAsyncValidationBeforeOnValidSubmit()
+    public async Task SubmitAsync_AwaitsValidationBeforeOnValidSubmit()
     {
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
@@ -59,7 +59,7 @@ public class EditFormTest
     }
 
     [Fact]
-    public async Task SubmitAsync_WithOnSubmit_InvokesHandlerAndWaitsForAsyncValidation()
+    public async Task SubmitAsync_InvokesOnSubmitAndAwaitsValidation()
     {
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
@@ -116,7 +116,7 @@ public class EditFormTest
     }
 
     [Fact]
-    public async Task SubmitAsync_InvalidAsyncValidation_FiresOnInvalidSubmit()
+    public async Task SubmitAsync_InvalidValidation_InvokesOnInvalidSubmit()
     {
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
@@ -154,7 +154,7 @@ public class EditFormTest
     }
 
     [Fact]
-    public async Task SubmitAsync_AsyncValidatorThrows_FiresOnInvalidSubmitWithFaultedContext()
+    public async Task SubmitAsync_ValidatorException_InvokesOnInvalidSubmit()
     {
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
@@ -202,7 +202,7 @@ public class EditFormTest
     }
 
     [Fact]
-    public async Task SubmitAsync_WithPendingFieldTask_CancelsFieldTaskAndRunsFormValidation()
+    public async Task SubmitAsync_CancelsPendingFieldValidationAndRunsFormValidation()
     {
         var editContext = new EditContext(new TestModel());
         var field = editContext.Field(nameof(TestModel.StringProperty));
