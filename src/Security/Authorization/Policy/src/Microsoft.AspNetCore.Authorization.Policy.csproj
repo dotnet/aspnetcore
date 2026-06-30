@@ -4,6 +4,7 @@
     <Description>ASP.NET Core authorization policy helper classes.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authorization</PackageTags>
     <IsPackable>false</IsPackable>
     <IsTrimmable>true</IsTrimmable>

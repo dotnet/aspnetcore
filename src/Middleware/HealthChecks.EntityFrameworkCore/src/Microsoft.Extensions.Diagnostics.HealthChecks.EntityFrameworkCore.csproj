@@ -5,6 +5,7 @@
       Components for performing health checks using EntityFrameworkCore.
     </Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks;entityframeworkcore</PackageTags>
     <BaseNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</BaseNamespace>
     <IsTrimmable>true</IsTrimmable>

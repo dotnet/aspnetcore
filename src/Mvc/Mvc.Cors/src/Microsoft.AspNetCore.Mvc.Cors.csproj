@@ -4,6 +4,7 @@
     <Description>ASP.NET Core MVC cross-origin resource sharing (CORS) features.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;cors</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>

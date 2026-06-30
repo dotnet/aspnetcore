@@ -7,6 +7,7 @@ Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer&lt;TResource&gt;
 Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;localization</PackageTags>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

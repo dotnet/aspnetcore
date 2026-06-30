@@ -4,6 +4,7 @@
     <Description>Server side rendering for ASP.NET Core Components.</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);CS0436</NoWarn>
     <IsPackable>false</IsPackable>

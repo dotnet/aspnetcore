@@ -6,6 +6,7 @@
     <DefineConstants>$(DefineConstants);INTERNAL_NULLABLE_ATTRIBUTES;AspNetCoreTesting</DefineConstants>
     <!-- This package is internal, ignore API doc requirements -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>true</IsPackable>
     <GenerateFrameworkReferenceAssembly>true</GenerateFrameworkReferenceAssembly>

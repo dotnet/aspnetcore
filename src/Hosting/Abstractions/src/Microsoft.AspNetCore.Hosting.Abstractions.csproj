@@ -4,6 +4,7 @@
     <Description>ASP.NET Core hosting and startup abstractions for web applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>

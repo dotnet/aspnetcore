@@ -4,6 +4,7 @@
     <Description>Localization support for .NET validation infrastructure.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>validation;localization</PackageTags>
     <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>

@@ -4,6 +4,7 @@
     <Description>Runtime server features for ASP.NET Core Components.</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>$(NoWarn);CS0436</NoWarn>
     <DefineConstants>$(DefineConstants);ENABLE_UNSAFE_MSGPACK;SPAN_BUILTIN;MESSAGEPACK_INTERNAL;COMPONENTS_SERVER</DefineConstants>

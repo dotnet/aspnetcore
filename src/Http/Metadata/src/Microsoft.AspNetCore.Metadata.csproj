@@ -4,6 +4,7 @@
     <Description>ASP.NET Core metadata.</Description>
     <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>

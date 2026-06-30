@@ -7,6 +7,7 @@
     <!-- Required to generated trimmable Map-invocations. -->
     <EnableRequestDelegateGenerator>true</EnableRequestDelegateGenerator>
     <IsAotCompatible>true</IsAotCompatible>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
