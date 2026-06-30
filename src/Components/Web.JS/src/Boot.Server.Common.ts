@@ -22,11 +22,6 @@ let options: CircuitStartOptions;
 let logger: ConsoleLogger;
 let serverStartPromise: Promise<void>;
 let circuitStarting: Promise<boolean> | undefined;
-let jsEventRegistry: JSEventRegistry;
-
-export function setCircuitEventRegistry(registry: JSEventRegistry) {
-  jsEventRegistry = registry;
-}
 
 export function setCircuitOptions(initializersReady: Promise<Partial<CircuitStartOptions>>) {
   if (options) {
@@ -41,23 +36,19 @@ export function setCircuitOptions(initializersReady: Promise<Partial<CircuitStar
   }
 }
 
-export function startServer(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
+export function startServer(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry): Promise<void> {
   if (serverStartPromise !== undefined) {
     throw new Error('Blazor Server has already started.');
   }
 
-  serverStartPromise = new Promise(startServerCore.bind(null, components));
+  serverStartPromise = new Promise(startServerCore.bind(null, components, jsEventRegistry));
 
   return serverStartPromise;
 }
 
-async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, resolve: () => void, _: any) {
+async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry, resolve: () => void, _: any) {
   await initializersPromise;
   const jsInitializer = await fetchAndInvokeInitializers(options);
-
-  if (!jsEventRegistry) {
-    throw new Error('Circuit event registry was not set. Call setCircuitEventRegistry(...) before startServer.');
-  }
 
   appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
@@ -172,7 +163,7 @@ export async function startCircuit(): Promise<boolean> {
   if (circuit && circuit.isDisposedOrDisposing()) {
     // If the current circuit is no longer available, create a new one.
     appState = discoverServerPersistedState(document) || '';
-    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger, jsEventRegistry);
+    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger, circuit.getEventRegistry());
   }
 
   // Start the circuit. If the circuit has already started, this will return the existing

@@ -9,7 +9,7 @@
 //    of interactive components
 
 import { DotNet } from '@microsoft/dotnet-js-interop';
-import { setCircuitOptions, setCircuitEventRegistry } from './Boot.Server.Common';
+import { setCircuitOptions } from './Boot.Server.Common';
 import { setWebAssemblyOptions } from './Boot.WebAssembly.Common';
 import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
@@ -52,9 +52,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     }
   };
 
-  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000);
   const jsEventRegistry = JSEventRegistry.create(Blazor);
-  setCircuitEventRegistry(jsEventRegistry);
+  rootComponentManager = new WebRootComponentManager(options?.ssr?.circuitInactivityTimeoutMs ?? 2000, jsEventRegistry);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
     enhancedNavigationStarted: () => {

@@ -577,6 +577,10 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._componentManager;
   }
 
+  public getEventRegistry(): JSEventRegistry {
+    return this._eventRegistry;
+  }
+
   private unhandledError(err: Error): void {
     this._logger.log(LogLevel.Error, err);
 
