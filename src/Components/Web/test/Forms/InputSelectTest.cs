@@ -207,8 +207,9 @@ public class InputSelectTest
 
         // Act
         var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+		var exception = Record.Exception(() => _ = inputSelectComponent.Element);
+		
         // Assert
-        var exception = Record.Exception(() => _ = inputSelectComponent.Element);
         Assert.Null(exception);
         Assert.NotNull(inputSelectComponent.Element);
     }
