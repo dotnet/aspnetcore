@@ -1,4 +1,6 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using System.Linq
+@using System.Threading
 
 <h1>Virtualization Anchor Mode</h1>
 
@@ -6,36 +8,71 @@
     <label>Anchor Mode:
         <select id="anchor-mode-select" @onchange="OnAnchorModeChanged">
             <option value="0" selected="@(anchorMode == VirtualizeAnchorMode.None)">None</option>
-            <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Beginning)">Beginning</option>
+            <option value="1" selected="@(anchorMode == VirtualizeAnchorMode.Start)">Start</option>
             <option value="2" selected="@(anchorMode == VirtualizeAnchorMode.End)">End</option>
         </select>
     </label>
 </div>
 
 <div id="scroll-container" style="height: 300px; overflow-y: auto; border: 1px solid black;">
-    @if (useItemsProvider)
+    @if (listLoaded)
     {
-        <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" Context="item">
-            <div class="item"
-                 data-index="@item.Index"
-                 data-anchor-mode="@((int)anchorMode)"
-                 style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
-                <div>Item @item.Index</div>
-            </div>
-        </Virtualize>
+        @if (useItemsProvider)
+        {
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@initialItemIndex" Context="item">
+                <ItemContent>
+                    <div class="item"
+                         data-index="@item.Index"
+                         data-anchor-mode="@((int)anchorMode)"
+                         style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
+                        <div>Item @item.Index</div>
+                    </div>
+                </ItemContent>
+                <Placeholder>
+                    <div class="loading-placeholder"
+                         style="border: 1px dashed orange; padding: 5px; min-height: 50px; background: #fff8e6;">
+                        <span>Loading...</span>
+                    </div>
+                </Placeholder>
+            </Virtualize>
+        }
+        else
+        {
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
+                <div class="item"
+                     data-index="@item.Index"
+                     data-anchor-mode="@((int)anchorMode)"
+                     style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
+                    <div>Item @item.Index</div>
+                </div>
+            </Virtualize>
+        }
     }
     else
     {
-        <Virtualize Items="@items" ItemSize="50" AnchorMode="@anchorMode" Context="item">
-            <div class="item"
-                 data-index="@item.Index"
-                 data-anchor-mode="@((int)anchorMode)"
-                 style="border: 1px solid gray; padding: 5px; min-height: @(item.Height)px;">
-                <div>Item @item.Index</div>
-            </div>
-        </Virtualize>
+        <p id="list-not-loaded" style="padding: 10px; color: #666;">List not loaded. Set an Initial Index below and click "Load list".</p>
     }
 </div>
+
+<div style="margin-top: 6px;">
+    <label>Initial Index:
+        <input id="manual-initial-index" type="number" @bind="manualInitialIndex" style="width: 80px;" />
+    </label>
+    <button id="reload-with-initial-index" @onclick="ReloadWithInitialIndex">Load list with Initial Index</button>
+    <button id="unload-list" @onclick="UnloadList">Unload list</button>
+    <span id="manual-initial-index-bound" data-value="@manualInitialIndex" style="margin-left: 8px; color:#888;">bound:@manualInitialIndex</span>
+</div>
+
+<div style="margin-top: 6px;">
+    <input id="scroll-target-index" type="number" @bind="scrollTargetIndex" style="width: 80px;" />
+    <span id="scroll-target-index-bound" data-value="@scrollTargetIndex" style="margin-left: 8px; color:#888;">bound:@scrollTargetIndex</span>
+    <button id="scroll-to-item" @onclick="ScrollToTarget">Scroll To Item</button>
+    <button id="scroll-to-item-rapid" @onclick="ScrollRapid">Scroll Rapid (final=250)</button>
+    <button id="scroll-to-item-cancellable" @onclick="ScrollCancellable">Scroll Cancellable</button>
+    <button id="cancel-scroll" @onclick="CancelScroll">Cancel Scroll</button>
+</div>
+
+<p id="scroll-status" style="margin: 0; font-size: 12px;">@scrollStatus</p>
 
 <div style="margin-top: 10px;">
     <button id="prepend-items" @onclick="PrependItems">Prepend 10 Items</button>
@@ -56,19 +93,35 @@
     <button id="toggle-delay" @onclick="ToggleDelay">
         Provider Delay: @(useProviderDelay ? "500ms" : "None")
     </button>
+    <button id="toggle-provider-gate" @onclick="ToggleProviderGate">
+        Gate: @(useProviderGate ? "On" : "Off")
+    </button>
+    <button id="release-provider-gate" @onclick="ReleaseProviderGate">Release gate</button>
 </div>
 
 <p id="status">@statusMessage</p>
 <p id="current-mode">@((int)anchorMode)</p>
+<p id="provider-call-index" data-value="@providerCallIndex">@providerCallIndex</p>
+<p id="provider-events" data-value="@string.Join("|", providerEvents)">@string.Join("|", providerEvents)</p>
 
 @code {
     private List<DynamicItem> items = new();
     private string statusMessage = "Ready";
-    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning;
+    private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
     private bool useProviderDelay = false;
+    private bool useProviderGate = false;
+    private TaskCompletionSource providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int providerCallIndex;
+    private List<string> providerEvents = new();
     private Virtualize<DynamicItem> virtualizeRef;
+    private int initialItemIndex;
+    private int manualInitialIndex;
+    private bool listLoaded = true;
+    private int scrollTargetIndex = 200;
+    private string scrollStatus = "Idle";
+    private CancellationTokenSource _userScrollCts;
     private static readonly IEqualityComparer<DynamicItem> _itemComparer =
         EqualityComparer<DynamicItem>.Create((a, b) => a.Index == b.Index, item => item.Index);
 
@@ -80,7 +133,7 @@
 
     protected override void OnInitialized()
     {
-        items = Enumerable.Range(0, 500)
+        items = Enumerable.Range(0, 1000)
             .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
             .ToList();
     }
@@ -110,7 +163,7 @@
     }
 
     private int nextPrependIndex = -1;
-    private int nextAppendIndex = 500;
+    private int nextAppendIndex = 1000;
 
     private async Task PrependItems()
     {
@@ -274,6 +327,25 @@
         {
             await Task.Delay(500);
         }
+        if (useProviderGate)
+        {
+            var n = Interlocked.Increment(ref providerCallIndex);
+            var gate = providerGate;
+            lock (providerEvents) providerEvents.Add($"p{n}-enter");
+            await InvokeAsync(StateHasChanged);
+            try
+            {
+                await gate.Task.WaitAsync(request.CancellationToken);
+                lock (providerEvents) providerEvents.Add($"p{n}-return");
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (OperationCanceledException)
+            {
+                lock (providerEvents) providerEvents.Add($"p{n}-cancel");
+                await InvokeAsync(StateHasChanged);
+                throw;
+            }
+        }
 
         // Apply pending mutations (simulates fetching updated data from a DB).
         if (_pendingPrepend != null)
@@ -308,6 +380,107 @@
     {
         useProviderDelay = !useProviderDelay;
         statusMessage = useProviderDelay ? "Provider delay: 500ms" : "Provider delay: None";
+    }
+
+    private void ToggleProviderGate()
+    {
+        useProviderGate = !useProviderGate;
+        statusMessage = useProviderGate ? "Provider gate: On" : "Provider gate: Off";
+    }
+
+    private void ReleaseProviderGate()
+    {
+        var old = providerGate;
+        providerGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        old.TrySetResult();
+    }
+
+    private async Task ReloadWithInitialIndex()
+    {
+        listLoaded = false;
+        StateHasChanged();
+        await Task.Yield();
+        initialItemIndex = manualInitialIndex;
+        listLoaded = true;
+    }
+
+    private void UnloadList()
+    {
+        listLoaded = false;
+    }
+
+    private async Task ScrollToTarget()
+    {
+        if (virtualizeRef == null) { scrollStatus = "Faulted: no virtualizeRef"; return; }
+        lock (providerEvents) providerEvents.Add("scroll-start");
+        scrollStatus = $"Scrolling to {scrollTargetIndex}...";
+        try
+        {
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex);
+            scrollStatus = $"Completed: {scrollTargetIndex}";
+            lock (providerEvents) providerEvents.Add("scroll-complete");
+        }
+        catch (OperationCanceledException)
+        {
+            scrollStatus = $"Canceled: {scrollTargetIndex}";
+            lock (providerEvents) providerEvents.Add("scroll-cancel");
+        }
+        catch (Exception ex)
+        {
+            scrollStatus = $"Faulted: {ex.Message}";
+        }
+    }
+
+    private async Task ScrollRapid()
+    {
+        if (virtualizeRef == null) { scrollStatus = "Faulted: no virtualizeRef"; return; }
+        scrollStatus = "Rapid scrolling...";
+        // Fire 5 calls back-to-back; each subsequent call supersedes the previous.
+        // Superseded tasks complete normally — only the final target lands in the viewport.
+        var tasks = new[]
+        {
+            virtualizeRef.ScrollToItemAsync(50),
+            virtualizeRef.ScrollToItemAsync(400),
+            virtualizeRef.ScrollToItemAsync(100),
+            virtualizeRef.ScrollToItemAsync(350),
+            virtualizeRef.ScrollToItemAsync(250),
+        };
+        foreach (var t in tasks) { await SafeAwait(t); }
+        var canceled = tasks.Count(t => t.IsCanceled);
+        var completed = tasks.Count(t => t.Status == TaskStatus.RanToCompletion);
+        var faulted = tasks.Count(t => t.IsFaulted);
+        scrollStatus = $"Completed: 250 (canceled={canceled}, completed={completed}, faulted={faulted})";
+    }
+
+    private static async Task SafeAwait(Task t)
+    {
+        try { await t; } catch (OperationCanceledException) { }
+    }
+
+    private async Task ScrollCancellable()
+    {
+        if (virtualizeRef == null) { scrollStatus = "Faulted: no virtualizeRef"; return; }
+        _userScrollCts?.Dispose();
+        _userScrollCts = new CancellationTokenSource();
+        scrollStatus = $"Scrolling to {scrollTargetIndex} (cancellable)...";
+        try
+        {
+            await virtualizeRef.ScrollToItemAsync(scrollTargetIndex, _userScrollCts.Token);
+            scrollStatus = $"Completed: {scrollTargetIndex}";
+        }
+        catch (OperationCanceledException)
+        {
+            scrollStatus = "Canceled";
+        }
+        catch (Exception ex)
+        {
+            scrollStatus = $"Faulted: {ex.Message}";
+        }
+    }
+
+    private void CancelScroll()
+    {
+        _userScrollCts?.Cancel();
     }
 
     private class DynamicItem

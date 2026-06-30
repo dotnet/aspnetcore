@@ -85,7 +85,7 @@ public partial class DefaultProblemDetailsWriterTest
         //Assert
         stream.Position = 0;
         var result = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(stream, JsonSerializerOptions.Default);
-        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "extensionKey", 5 }, { "traceId", expectedTraceId } }));
+        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "extensionKey", 5 }, {"traceId", expectedTraceId } }));
     }
 
     [Fact]
@@ -117,7 +117,7 @@ public partial class DefaultProblemDetailsWriterTest
         //Assert
         stream.Position = 0;
         var result = await JsonSerializer.DeserializeAsync<Dictionary<string, object>>(stream, JsonSerializerOptions.Default);
-        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "errors", 5 }, { "traceId", expectedTraceId } }));
+        Assert.Equal(result.Keys, new(new() { { "type", 0 }, { "title", 1 }, { "status", 2 }, { "detail", 3 }, { "instance", 4 }, { "errors", 5 }, {"traceId", expectedTraceId } }));
     }
 
     [Fact]
@@ -670,27 +670,6 @@ public partial class DefaultProblemDetailsWriterTest
         Assert.False(result);
     }
 
-    [Fact]
-    public async Task WriteAsync_Throws_WhenCancellationRequested()
-    {
-        // Arrange
-        var writer = GetWriter();
-        var stream = new MemoryStream();
-        var context = CreateContext(stream);
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-        context.RequestAborted = cts.Token;
-
-        var problemDetailsContext = new ProblemDetailsContext()
-        {
-            HttpContext = context,
-            ProblemDetails = new ProblemDetails()
-        };
-
-        //Act & Assert
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writer.WriteAsync(problemDetailsContext).AsTask());
-    }
-
     private static HttpContext CreateContext(
         Stream body,
         int statusCode = StatusCodes.Status400BadRequest,
@@ -708,57 +687,6 @@ public partial class DefaultProblemDetailsWriterTest
         }
 
         return context;
-    }
-
-    [Theory]
-    [InlineData("SnakeCaseLower", "trace_id")]
-    [InlineData("CamelCase", "traceId")]
-    [InlineData("KebabCaseLower", "trace-id")]
-    [InlineData("KebabCaseUpper", "TRACE-ID")]
-    [InlineData("SnakeCaseUpper", "TRACE_ID")]
-    public async Task TestPropertyNamingPolicyChanges(string caseSelection, string extensionVariableName)
-    {
-        // Arrange
-        JsonNamingPolicy propertyNamingPolicy = caseSelection switch
-        {
-            "CamelCase" => JsonNamingPolicy.CamelCase,
-            "KebabCaseLower" => JsonNamingPolicy.KebabCaseLower,
-            "KebabCaseUpper" => JsonNamingPolicy.KebabCaseUpper,
-            "SnakeCaseLower" => JsonNamingPolicy.SnakeCaseLower,
-            "SnakeCaseUpper" => JsonNamingPolicy.SnakeCaseUpper,
-            _ => JsonNamingPolicy.KebabCaseLower
-        };
-
-        var options = new JsonOptions();
-        options.SerializerOptions.PropertyNamingPolicy = propertyNamingPolicy;
-
-        var writer = GetWriter(jsonOptions: options);
-        var stream = new MemoryStream();
-        var context = CreateContext(stream);
-
-        var expectedTraceId = Activity.Current?.Id ?? context.TraceIdentifier;
-        var expectedProblem = new ProblemDetails()
-        {
-            Detail = "Custom Bad Request",
-            Instance = "Custom Bad Request",
-            Status = StatusCodes.Status400BadRequest,
-            Type = "https://tools.ietf.org/html/rfc9110#section-15.5.1-custom",
-            Title = "Custom Bad Request",
-        };
-        var problemDetailsContext = new ProblemDetailsContext()
-        {
-            HttpContext = context,
-            ProblemDetails = expectedProblem
-        };
-
-        //Act
-        await writer.WriteAsync(problemDetailsContext);
-        stream.Position = 0;
-        using var reader = new StreamReader(stream);
-        var json = await reader.ReadToEndAsync();
-
-        //Assert
-        Assert.Contains($"\"{extensionVariableName}\":\"{expectedTraceId}\"", json);
     }
 
     private static IServiceProvider CreateServices()

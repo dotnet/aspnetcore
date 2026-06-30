@@ -1,17 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Generators.Tests;
 
@@ -58,6 +59,12 @@ public class Todo : ITodo
     public int Id { get; set; }
     public string? Name { get; set; } = "Todo";
     public bool IsComplete { get; set; }
+}
+
+public class ModelWithRequiredProperty
+{
+    [Required]
+    public required string Prop { get; set; }
 }
 
 public class TryParseTodo : Todo
@@ -810,6 +817,10 @@ public class ParameterListClassWithParameterizedContructor
 
     public int Value { get; set; }
 }
+
+public record ParameterListRecordWithValidationAttributes(
+    HttpContext HttpContext,
+    [FromRoute][Required][property: Required] string Id);
 
 public class ParameterListWitDefaultValue
 {

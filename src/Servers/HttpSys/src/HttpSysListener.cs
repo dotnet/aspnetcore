@@ -52,7 +52,7 @@ internal sealed partial class HttpSysListener : IDisposable
 
         if (!HttpApi.Supported)
         {
-            throw new PlatformNotSupportedException();
+            throw CreateHttpInitializeFailureException(HttpApi.HttpInitializeStatusCode);
         }
 
         MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
@@ -254,6 +254,19 @@ internal sealed partial class HttpSysListener : IDisposable
         Debug.Assert(!_serverSession.Id.IsInvalid, "ServerSessionHandle is invalid in CloseV2Config");
 
         _serverSession.Dispose();
+    }
+
+    internal static Exception CreateHttpInitializeFailureException(uint httpInitializeStatusCode)
+    {
+        if (httpInitializeStatusCode == ErrorCodes.ERROR_SUCCESS)
+        {
+            // Keep the existing PlatformNotSupportedException behavior when no specific native error is available.
+            return new PlatformNotSupportedException();
+        }
+
+        return new HttpSysException(
+            (int)httpInitializeStatusCode,
+            $"HttpInitialize failed with status code 0x{httpInitializeStatusCode:X8}.");
     }
 
     /// <summary>

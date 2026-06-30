@@ -80,19 +80,19 @@
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\tsconfig.tsbuildinfo" />
 
     <!-- Components Web.JS outputs -->
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.server.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.server.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.web.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.web.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webassembly.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webassembly.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.server.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.server.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.web.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.web.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.webassembly.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\_framework\blazor.webassembly.js.map" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webview.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.server.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.server.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.web.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.web.js.map" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webassembly.js" />
-    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webassembly.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.server.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.server.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.web.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.web.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.webassembly.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\_framework\blazor.webassembly.js.map" />
     <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webview.js" />
 
     <!-- WebAssembly Authentication outputs -->
