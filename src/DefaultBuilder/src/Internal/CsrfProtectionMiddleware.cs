@@ -32,19 +32,21 @@ internal sealed partial class CsrfProtectionMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public Task InvokeAsync(HttpContext context)
     {
         context.Items[MiddlewareInvokedKeys.CsrfProtection] = MiddlewareInvokedKeys.Sentinel;
 
         var endpoint = context.GetEndpoint();
         if (endpoint?.Metadata.GetMetadata<IAntiforgeryMetadata>() is not { RequiresValidation: true })
         {
-            // No antiforgery metadata, or the endpoint opted out via DisableAntiforgery():
-            // mirror AntiforgeryMiddleware and pass through without recording a verdict.
-            await _next(context);
-            return;
+            return _next(context);
         }
 
+        return InvokeCoreAsync(context);
+    }
+
+    private async Task InvokeCoreAsync(HttpContext context)
+    {
         // This middleware does not short-circuit, but only records the verdict.
         // When the application also calls UseAntiforgery(),
         // the later AntiforgeryMiddleware may overwrite this verdict with the result of token-based validation.
