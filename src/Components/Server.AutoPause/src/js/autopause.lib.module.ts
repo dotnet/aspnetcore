@@ -25,11 +25,6 @@ export function beforeWebStart(options: WebStartOptionsLike): void {
   };
 }
 
-// The Blazor Server bundle uses the server-specific initializer names.
-export function beforeServerStart(options: WebStartOptionsLike): void {
-  beforeWebStart(options);
-}
-
 // Called by the framework once Blazor has started; activates auto-pause when AddAutoPause
 // enabled it. A second call disposes the previous manager so listeners never accumulate.
 export function afterWebStarted(blazor: BlazorLike): void {
@@ -46,6 +41,4 @@ export function afterWebStarted(blazor: BlazorLike): void {
   mgr.start();
 }
 
-export function afterServerStarted(blazor: BlazorLike): void {
-  afterWebStarted(blazor);
-}
+export { beforeWebStart as beforeServerStart, afterWebStarted as afterServerStarted };
