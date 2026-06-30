@@ -845,12 +845,6 @@ public class CsrfProtectionIntegrationTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(endpointInvoked, "Endpoint should run when the CSRF middleware passes through.");
         Assert.Null(capturedFeature);
-        // The sentinel is NOT set on endpoints with no IAntiforgeryMetadata. It would have no consumer:
-        // EndpointMiddleware only reads the marker for RequiresValidation:true endpoints, and the
-        // FormFeature backstop requires the marker AND an invalid IAntiforgeryValidationFeature
-        // (which is only ever set inside InvokeCoreAsync — not reached on this path).
-        // Skipping the marker write here avoids forcing the lazy HttpContext.Items dictionary to
-        // allocate on the hot path (regression introduced by #67119, see PR comment 4835979504).
         Assert.False(observedHasMarker);
     }
 
@@ -1103,12 +1097,6 @@ public class CsrfProtectionIntegrationTests
     [Fact]
     public async Task CsrfProtection_DoesNotSetItemsMarker_WhenEndpointHasNoAntiforgeryMetadata()
     {
-        // Hot-path perf invariant: when the matched endpoint carries no IAntiforgeryMetadata, the
-        // marker has no downstream consumer (EndpointMiddleware only checks it for RequiresValidation:true
-        // endpoints; FormFeature only checks it together with an invalid IAntiforgeryValidationFeature
-        // which is itself only set inside InvokeCoreAsync, which runs for RequiresValidation:true).
-        // Stamping HttpContext.Items here forces the lazy dictionary to allocate on every request
-        // (regression introduced by #67119; see PR comment 4835979504), so the middleware must skip it.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
@@ -1129,18 +1117,12 @@ public class CsrfProtectionIntegrationTests
         var response = await client.SendAsync(request);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(observedHasMarker, "Marker must not be set on endpoints with no IAntiforgeryMetadata (hot-path allocation regression).");
+        Assert.False(observedHasMarker);
     }
 
     [Fact]
     public async Task CsrfProtection_SetsItemsMarker_EvenWhenEndpointDisabledAntiforgery()
     {
-        // Marker IS set when the endpoint carries IAntiforgeryMetadata of ANY flavor (even
-        // RequiresValidation:false from DisableAntiforgery). This is required for re-execute
-        // scenarios where the original endpoint opts out of antiforgery and returns a 404, then
-        // UseStatusCodePagesWithReExecute re-routes into an antiforgery-required page (the
-        // rerouted pipeline does NOT re-invoke this middleware). See
-        // CsrfProtection_DisabledEndpointReExecutesIntoAntiforgeryRequiredPage_DoesNotThrowMissingMiddleware.
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         using var app = builder.Build();
