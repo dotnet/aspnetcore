@@ -38,12 +38,13 @@ public sealed class ValidationRequestedEventArgs : EventArgs
     /// resulting <see cref="Task"/>. It is invoked by <see cref="EditContext.ValidateAsync(CancellationToken)"/>
     /// with the validation pass's cancellation token, and the returned task is awaited before the pass
     /// completes. The factory must not return a <see langword="null"/> task; doing so throws
-    /// <see cref="ArgumentNullException"/> from <see cref="EditContext.ValidateAsync(CancellationToken)"/>.</param>
+    /// <see cref="InvalidOperationException"/> from <see cref="EditContext.ValidateAsync(CancellationToken)"/>.</param>
     /// <remarks>
     /// Subscribe to <see cref="EditContext.OnValidationRequested"/>, check that <see cref="IsAsync"/> is
     /// <see langword="true"/>, and register a factory with this method. Registered factories are invoked
-    /// together so the validators run concurrently. A factory that throws synchronously is contained as a
-    /// fault rather than propagating. Calling this method when <see cref="IsAsync"/> is <see langword="false"/>
+    /// together so the validators run concurrently. A factory that throws synchronously, or returns a
+    /// <see langword="null"/> task, is a programming error that propagates out of
+    /// <see cref="EditContext.ValidateAsync(CancellationToken)"/>. Calling this method when <see cref="IsAsync"/> is <see langword="false"/>
     /// (a synchronous <see cref="EditContext.Validate"/> pass, or the shared <see cref="Empty"/> instance)
     /// throws <see cref="InvalidOperationException"/> without invoking the factory.
     /// <example>

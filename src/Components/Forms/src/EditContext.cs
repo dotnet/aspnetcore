@@ -338,8 +338,8 @@ public sealed class EditContext
     /// <param name="fieldIdentifier">Identifies the field being validated.</param>
     /// <param name="validate">A factory that starts the asynchronous validation using the supplied
     /// cancellation token and returns the in-flight <see cref="Task"/>.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="validate"/> is <see langword="null"/>,
-    /// or it returned a <see langword="null"/> task.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="validate"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException"><paramref name="validate"/> returned a <see langword="null"/> task.</exception>
     public void TrackFieldValidation(in FieldIdentifier fieldIdentifier, Func<CancellationToken, Task> validate)
     {
         ArgumentNullException.ThrowIfNull(validate);
