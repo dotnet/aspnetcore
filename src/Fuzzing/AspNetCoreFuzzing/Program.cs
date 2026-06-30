@@ -404,13 +404,13 @@ public static class Program
         {
             return
                 $$"""
-                        - task: onefuzz-task@0
-                          inputs:
-                            onefuzzOSes: 'Windows'
-                          env:
-                            onefuzzDropDirectory: $(fuzzerProject)/deployment/{{fuzzer.Name}}
-                            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-                          displayName: Send {{fuzzer.Name}} to OneFuzz
+                          - task: onefuzz-task@0
+                            inputs:
+                              onefuzzOSes: 'Windows'
+                            env:
+                              onefuzzDropDirectory: $(fuzzerProject)/deployment/{{fuzzer.Name}}
+                              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+                            displayName: Send {{fuzzer.Name}} to OneFuzz
                 """;
         }));
 
