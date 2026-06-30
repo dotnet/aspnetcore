@@ -8,7 +8,6 @@
     <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <NuspecFile Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(MSBuildProjectName).netcoreapp.nuspec</NuspecFile>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>files;filesystem</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <Nullable>enable</Nullable>

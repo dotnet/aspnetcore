@@ -3,7 +3,6 @@
     <Description>Runtime compilation support for Razor views and Razor Pages in ASP.NET Core MVC.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
 
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;razor</PackageTags>
     <IsPackable>true</IsPackable>
   </PropertyGroup>

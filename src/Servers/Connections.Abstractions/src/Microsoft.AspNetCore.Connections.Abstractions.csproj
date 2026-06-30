@@ -6,7 +6,6 @@
     <TargetFrameworks Condition="! $(TargetFrameworks.Contains('$(CurrentLtsTargetFramework)'))">$(TargetFrameworks);$(CurrentLtsTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>

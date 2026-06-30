@@ -6,7 +6,6 @@
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <DefineConstants>$(DefineConstants);WebEncoders_In_WebUtilities;QueryStringEnumerable_In_WebUtilities</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>

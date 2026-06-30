@@ -5,7 +5,6 @@
     <Nullable>enable</Nullable>
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- NU5100: Tasks DLL is intentionally in tasks/ folder, not lib/ -->
     <!-- RS0026: New package with no prior shipped API; optional parameter backcompat is N/A -->
     <NoWarn>$(NoWarn);NU5100;RS0026</NoWarn>

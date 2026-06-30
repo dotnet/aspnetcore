@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;openapi</PackageTags>
     <!-- Needed to support compiling Utf8BufferTextWriter implementation shared with SignalR -->
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

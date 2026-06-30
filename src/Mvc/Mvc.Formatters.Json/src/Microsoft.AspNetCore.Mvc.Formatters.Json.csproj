@@ -4,7 +4,6 @@
     <Description>ASP.NET Core MVC formatters for JSON input and output.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;json</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>

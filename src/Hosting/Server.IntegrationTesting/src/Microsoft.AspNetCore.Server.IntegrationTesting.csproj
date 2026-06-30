@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>ASP.NET Core helpers to deploy applications to IIS Express, IIS, WebListener and Kestrel for testing.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;testing</PackageTags>
     <IsTestAssetProject>true</IsTestAssetProject>
     <!-- This is used as a package by ASP.NET benchmarking infrastructure. It is meant for internal use only. -->

@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>Output cache implementation of Microsoft.AspNetCore.OutputCaching.IOutputCacheStore using Redis.</Description>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;outputcache;redis</PackageTags>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>

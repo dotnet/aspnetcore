@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" !$(IsTestProject) ">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;signalr</PackageTags>
   </PropertyGroup>
 

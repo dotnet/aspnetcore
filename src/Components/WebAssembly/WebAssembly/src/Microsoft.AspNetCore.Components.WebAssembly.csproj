@@ -6,7 +6,6 @@
     <NoWarn>$(NoWarn);BL0006</NoWarn>
     <!-- Workaround for https://github.com/dotnet/runtime/issues/52227 -->
     <NoWarn>$(NoWarn);CS8603</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
     <DefineConstants>$(DefineConstants);COMPONENTS_WEBASSEMBLY</DefineConstants>

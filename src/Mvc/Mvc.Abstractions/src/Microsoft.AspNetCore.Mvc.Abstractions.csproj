@@ -6,7 +6,6 @@ Commonly used types:
 Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
     <IsPackable>false</IsPackable>
     <!-- Mark this assembly as trimmable to support the LinkabilityChecker and trim warnings

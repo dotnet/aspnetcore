@@ -7,7 +7,6 @@
     <IsShippingPackage>true</IsShippingPackage>
     <DefineConstants>$(DefineConstants);BLAZOR_WEBVIEW</DefineConstants>
     <NoWarn>$(NoWarn);BL0006</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>annotations</Nullable>
 
     <StaticWebAssetBasePath>/_framework</StaticWebAssetBasePath>

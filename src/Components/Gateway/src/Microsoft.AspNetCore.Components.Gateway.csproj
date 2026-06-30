@@ -10,7 +10,6 @@
          <NuspecFile> below is honored and the shipping package is produced. -->
     <IsPackable>true</IsPackable>
     <Description>Gateway server for hosting standalone Blazor WebAssembly applications.</Description>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Assemblies should not reference this assembly directly -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
