@@ -263,7 +263,12 @@ public readonly struct HostString : IEquatable<HostString>
                 var allowedRoot = pattern.Subsegment(1);
 
                 var hostRoot = host.Subsegment(host.Length - allowedRoot.Length);
-                if (hostRoot.Equals(allowedRoot, StringComparison.OrdinalIgnoreCase))
+                if (hostRoot.Equals(allowedRoot, StringComparison.OrdinalIgnoreCase) &&
+                    // We don't want the wildcard to match a portion that starts with `.` (includes empty wildcard).
+                    // For example:
+                    //   - `*.example.com` should not match `..example.com`
+                    //   - `*.example.com` should not match `.example.com`
+                    host[0] != '.')
                 {
                     return true;
                 }

@@ -43,8 +43,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 namespace System.Runtime.CompilerServices
 {
     {{GeneratedCodeAttribute}}
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    file sealed class InterceptsLocationAttribute : System.Attribute
+    [global::System.AttributeUsage(global::System.AttributeTargets.Method, AllowMultiple = true)]
+    file sealed class InterceptsLocationAttribute : global::System.Attribute
     {
         public InterceptsLocationAttribute(int version, string data)
         {
@@ -122,7 +122,7 @@ namespace Microsoft.Extensions.Validation.Generated
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
             {
-                options.Resolvers.Insert(0, new GeneratedValidatableInfoResolver());
+                options.Resolvers.Insert(0, new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableInfoResolver());
                 if (configureOptions is not null)
                 {
                     configureOptions(options);
@@ -355,7 +355,7 @@ namespace Microsoft.Extensions.Validation.Generated
             var typeName = validatableType.TypeFQN;
             cw.WriteLine($"if (type == typeof({typeName}))");
             cw.StartBlock();
-            cw.WriteLine($"validatableTypeInfo = new GeneratedValidatableTypeInfo(");
+            cw.WriteLine($"validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(");
             cw.Indent++;
             cw.WriteLine($"type: typeof({typeName}),");
             if (validatableType.Members.IsDefaultOrEmpty)
@@ -384,7 +384,7 @@ namespace Microsoft.Extensions.Validation.Generated
 
     private static void EmitValidatableMemberForCreate(ValidatableProperty member, CodeWriter cw)
     {
-        cw.WriteLine("new GeneratedValidatablePropertyInfo(");
+        cw.WriteLine("new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(");
         cw.Indent++;
         cw.WriteLine($"containingType: typeof({member.ContainingTypeFQN}),");
         cw.WriteLine($"propertyType: typeof({member.TypeFQN}),");
@@ -398,11 +398,11 @@ namespace Microsoft.Extensions.Validation.Generated
     {
         if (member.HasResourceDisplayAttribute)
         {
-            return $"new PropertyResourceDisplayName(typeof({member.ContainingTypeFQN}), \"{member.Name}\")";
+            return $"new global::Microsoft.Extensions.Validation.Generated.PropertyResourceDisplayName(typeof({member.ContainingTypeFQN}), \"{member.Name}\")";
         }
         if (member.DisplayName is not null)
         {
-            return $"new LiteralDisplayName({SymbolDisplay.FormatLiteral(member.DisplayName, quote: true)})";
+            return $"new global::Microsoft.Extensions.Validation.Generated.LiteralDisplayName({SymbolDisplay.FormatLiteral(member.DisplayName, quote: true)})";
         }
         return "null";
     }
@@ -411,11 +411,11 @@ namespace Microsoft.Extensions.Validation.Generated
     {
         if (validatableType.HasResourceDisplayAttribute)
         {
-            return $"new TypeResourceDisplayName(typeof({validatableType.TypeFQN}))";
+            return $"new global::Microsoft.Extensions.Validation.Generated.TypeResourceDisplayName(typeof({validatableType.TypeFQN}))";
         }
         if (validatableType.DisplayName is not null)
         {
-            return $"new LiteralDisplayName({SymbolDisplay.FormatLiteral(validatableType.DisplayName, quote: true)})";
+            return $"new global::Microsoft.Extensions.Validation.Generated.LiteralDisplayName({SymbolDisplay.FormatLiteral(validatableType.DisplayName, quote: true)})";
         }
         return "null";
     }
