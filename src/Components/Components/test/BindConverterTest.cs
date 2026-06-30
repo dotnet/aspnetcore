@@ -431,8 +431,8 @@ public class BindConverterTest
     [Fact]
     public void FormatValue_Array_Null()
     {
-        string[] value = null;
-        string expected = null;
+        string[]? value = null;
+        string? expected = null;
 
         var actual = BindConverter.FormatValue(value);
 
@@ -464,7 +464,7 @@ public class BindConverterTest
     [Fact]
     public void FormatValue_Array_NullElement()
     {
-        string[] value = new[] { "a", null, "b" };
+        string?[] value = new[] { "a", null, "b" };
         string expected = "[\"a\", \"\", \"b\"]";
 
         var actual = BindConverter.FormatValue(value);
@@ -527,7 +527,7 @@ public class BindConverterTest
     [Fact]
     public void TryConvertTo_Array_NullInput_Fails()
     {
-        object input = null;
+        object? input = null;
 
         var success = BindConverter.TryConvertTo<int[]>(input, CultureInfo.CurrentCulture, out var actual);
 

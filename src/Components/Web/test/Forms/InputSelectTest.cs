@@ -235,7 +235,7 @@ public class InputSelectTest
     public async Task InputSelectMultipleWithNullValue_RendersSuccessfully()
     {
         var model = new TestModel { StringArray = null };
-        var rootComponent = new TestInputHostComponent<string[], TestInputSelect<string[]>>
+        var rootComponent = new TestInputHostComponent<string[]?, TestInputSelect<string[]?>>
         {
             EditContext = new EditContext(model),
             ValueExpression = () => model.StringArray,
@@ -293,7 +293,7 @@ public class InputSelectTest
 
         public int? NullableInt { get; set; }
 
-        public string[] StringArray { get; set; } = default!;
+        public string[]? StringArray { get; set; }
     }
 
     class TestInputSelect<TValue> : InputSelect<TValue>

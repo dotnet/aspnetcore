@@ -327,48 +327,26 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void InputSelectWithMultipleHandlesNullArray()
     {
-        // REGRESSION TEST: Validates null array handling in BindConverter.MakeArrayFormatter()
-        // This test ensures that binding a nullable array property to <InputSelect multiple> does not throw
-        // NullReferenceException. The issue was in BindConverter.MakeArrayFormatter() where the formatter
-        // tried to access value.Length without first checking if value is null.
-        //
-        // Related fix: Added null check in BindConverter.MakeArrayFormatter():
-        //   if (value is null) return null;
-        //
-        // This differs from the empty array ([]) scenario which should already be covered
-        // by InputSelectInteractsWithEditContext_MultipleAttribute().
-
         var appElement = MountTypicalValidationComponent();
         var container = Browser.Exists(By.ClassName("cities-nullable"));
         var citiesNullableSelect = new SelectElement(container.FindElement(By.TagName("select")));
         var select = citiesNullableSelect.WrappedElement;
         var citiesNullableLabel = Browser.Exists(By.Id("selected-cities-nullable"));
 
-        // Verify component renders without NullReferenceException
-        // Initial state: property is null, so label should show "null"
         Browser.Equal("null", () => citiesNullableLabel.Text);
-
-        // Verify multiple attribute is present (indicating true array binding)
         Browser.True(() => citiesNullableSelect.IsMultiple);
-
-        // Initially, no options should be selected (null → no selection)
         Browser.Equal(0, () => citiesNullableSelect.AllSelectedOptions.Count);
 
-        // Test interaction: select one option
-        // This transitions the bound value from null to a valid array
         citiesNullableSelect.SelectByText("San Francisco");
         Browser.Equal("SanFrancisco", () => citiesNullableLabel.Text);
 
-        // Test interaction: select multiple options
         citiesNullableSelect.SelectByText("Tokyo");
         Browser.Equal("SanFrancisco, Tokyo", () => citiesNullableLabel.Text);
 
-        // Test interaction: deselect to go back to empty array (not null)
         citiesNullableSelect.DeselectByText("San Francisco");
         citiesNullableSelect.DeselectByText("Tokyo");
         Browser.Equal("", () => citiesNullableLabel.Text);
 
-        // Verify binding is working bi-directionally without formatter crashes
         Browser.Equal(0, () => citiesNullableSelect.AllSelectedOptions.Count);
     }
 
@@ -624,14 +602,14 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Wait for async validation error to appear (takes 500ms in the component)
         Browser.Equal(new[] { "This is invalid, asynchronously" }, messagesAccessor);
 
-        // Field becomes invalid after async error
-        Browser.Equal("modified invalid", () => usernameInput.GetDomAttribute("class"));
+        // Field becomes invalid after async error, but remains unmodified because no user edit occurred
+        Browser.Equal("invalid", () => usernameInput.GetDomAttribute("class"));
 
-        // Can clear the error
+        // Editing the field marks it modified, but the custom validation message remains until explicitly cleared
         usernameInput.SendKeys("validuser\t");
         Browser.Empty(messagesAccessor);
-        Browser.Equal("modified valid", () => usernameInput.GetDomAttribute("class"));
-    }
+        Browser.Equal(new[] { "This is invalid, asynchronously" }, messagesAccessor);
+        Browser.Equal("modified invalid", () => usernameInput.GetDomAttribute("class"));  }
 
     [Fact]
     public void DisplayNameReadsAttributesCorrectly()

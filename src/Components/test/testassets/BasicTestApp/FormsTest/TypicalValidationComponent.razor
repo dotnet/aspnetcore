@@ -92,7 +92,7 @@
             <option value="@City.London">London</option>
             <option value="@City.Madrid">Madrid</option>
         </InputSelect>
-        <span id="selected-cities-nullable">@(person.SelectedCitiesNullable == null ? "null" : string.Join(", ", person.SelectedCitiesNullable))</span>
+        <span id="selected-cities-nullable">@(person.SelectedCitiesNullable is null ? "null" : string.Join(", ", person.SelectedCitiesNullable))</span>
     </p>
     <p class="select-bool-values">
         T/F: 77 + 33 = 100<br>
@@ -280,8 +280,11 @@
             // so long that we time out. Picking a value that's long enough for humans
             // to observe the asynchrony too.
             await Task.Delay(500);
-            customValidationMessageStore!.Add(editContext!.Field(nameof(Person.Username)), "This is invalid, asynchronously");
-            _ = InvokeAsync(editContext!.NotifyValidationStateChanged);
+            await InvokeAsync(() =>
+            {
+                customValidationMessageStore!.Add(editContext!.Field(nameof(Person.Username)), "This is invalid, asynchronously");
+                editContext!.NotifyValidationStateChanged();
+            });
         });
     }
 
