@@ -54,4 +54,10 @@
       Text="'%(_MissingBlazorJSFile.Identity)' does not exist. Run 'npm run build' in the repo root to generate the file." />
   </Target>
 
+  <!-- Warm the publish-compressed assets here so parallel consumer publishes hit the incremental cache instead of racing the shared obj. -->
+  <Target Name="_PrecompressPublishAssets"
+          AfterTargets="Build"
+          DependsOnTargets="ResolvePublishCompressedStaticWebAssets"
+          Condition="'$(BuildNodeJS)' != 'false' and '$(CompressionEnabled)' == 'true'" />
+
 </Project>
