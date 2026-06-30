@@ -249,4 +249,13 @@
   <data name="ForLoopIteratorVariableUsedInClosure_Title" xml:space="preserve">
     <value>For loop iterator used inside a closure.</value>
   </data>
+  <data name="UnguardedJSInteropCall_Description" xml:space="preserve">
+    <value>JS interop calls should be guarded with try catch block to handle potential exceptions.</value>
+  </data>
+  <data name="UnguardedJSInteropCall_Format" xml:space="preserve">
+    <value>JS interop call '{0}' is not guarded with try catch block.</value>
+  </data>
+  <data name="UnguardedJSInteropCall_Title" xml:space="preserve">
+    <value>Unguarded JS interop call</value>
+  </data>
 </root>
