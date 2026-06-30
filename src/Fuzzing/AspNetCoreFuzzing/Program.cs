@@ -260,10 +260,6 @@ public static class Program
                 startInfo.EnvironmentVariables.Add("SHARPFUZZ_INSTRUMENT_MIXED_MODE_ASSEMBLIES", "1");
             }
 
-            // The sharpfuzz global tool may target a different runtime version than the repo's local SDK.
-            // Clear DOTNET_ROOT so it can find system-installed runtimes instead of only the repo's local SDK.
-            startInfo.EnvironmentVariables.Remove("DOTNET_ROOT");
-            startInfo.EnvironmentVariables.Remove("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR");
             startInfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "1";
 
             var processOutput = Process.RunAndCaptureText(startInfo);
@@ -341,11 +337,11 @@ public static class Program
                     ".\\*"
                   ],
                   "AdoTemplate": {
-                    "Org": "devdiv",
-                    "Project": "DevDiv",
+                    "Org": "dnceng",
+                    "Project": "internal",
                     "AssignedTo": "brecon@microsoft.com",
-                    "AreaPath": "DevDiv\\ASP.NET Core",
-                    "IterationPath": "DevDiv",
+                    "AreaPath": "internal\\ASP.NET Core",
+                    "IterationPath": "internal",
                     "AdoFields": {
                         "System.Title": "[{{ job.project }} {{ job.name }}]: {{ report.crash_site }}",
                         "Custom.CustomField01": "{{ job.name }}-{{ report.minimized_stack_function_lines_sha256 }}"
