@@ -118,7 +118,7 @@ public class ComponentsMetricsTest
     }
 
     [Fact]
-    public void FailEventSync_RecordsErrorMetric()
+    public async Task FailEventSync_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
@@ -128,6 +128,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measurable duration
         componentsMetrics.FailEventSync(exception, startTimestamp,
             "TestComponent", "OnClick", "onclick");
 
@@ -202,7 +203,7 @@ public class ComponentsMetricsTest
     }
 
     [Fact]
-    public void FailParametersSync_RecordsErrorMetric()
+    public async Task FailParametersSync_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
@@ -212,6 +213,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measurable duration
         componentsMetrics.FailParametersSync(exception, startTimestamp, "TestComponent");
 
         // Assert
@@ -281,7 +283,7 @@ public class ComponentsMetricsTest
     }
 
     [Fact]
-    public void FailBatchSync_RecordsErrorMetric()
+    public async Task FailBatchSync_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
@@ -291,6 +293,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measurable duration
         componentsMetrics.FailBatchSync(exception, startTimestamp);
 
         // Assert
