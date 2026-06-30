@@ -1505,7 +1505,6 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
         await endpoint.RequestDelegate!(httpContext);
 
-        // Validation should pass when valid value provided
         Assert.Equal(StatusCodes.Status200OK, httpContext.Response.StatusCode);
         Assert.True(handlerExecuted);
     }
@@ -1513,7 +1512,6 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
     [Fact]
     public async Task Validation_SkipsForNonNullableType_WithNullArgument()
     {
-        // Non-nullable types with null should skip validation (bound by model binding)
         var services = new ServiceCollection().AddSingleton(LoggerFactory);
         services.AddValidation();
         var serviceProvider = services.BuildServiceProvider();
@@ -1534,11 +1532,9 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         {
             RequestServices = serviceProvider
         };
-        // No query string - model binding will fail for non-nullable int
 
         await endpoint.RequestDelegate!(httpContext);
 
-        // Binding failure, not validation
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         Assert.False(handlerExecuted);
     }
