@@ -21,11 +21,13 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         [typeof(DateTime)] = "datetime",
     };
 
-    private static readonly HashSet<Type> _supportedTypes = [.. _scalarNames.Keys];
-
+    // Enums are stored as their Int32 value, so only enums whose underlying type always fits in an Int32 are supported.
     private static readonly HashSet<Type> _int32EnumUnderlyingTypes =
         [typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int)];
 
+    // Compact, stable type tokens (e.g. "list[int]") are persisted instead of Type.FullName, which for generic
+    // types embeds assembly version and public key token, bloating payloads and breaking across runtime upgrades.
+    // _typeToName is the authoritative allow-list of directly-storable types.
     private static readonly Dictionary<string, Type> _nameToType = BuildNameToType();
     private static readonly Dictionary<Type, string> _typeToName = BuildTypeToName(_nameToType);
 
@@ -97,6 +99,8 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
             throw new InvalidOperationException($"Cannot deserialize type '{typeName}'.");
         }
 
+        // object[] is the only kind stored recursively (each element carries its own type token),
+        // so it is rebuilt element-by-element rather than delegated to System.Text.Json.
         if (type == typeof(object[]))
         {
             var array = new object?[valueElement.GetArrayLength()];
@@ -112,47 +116,35 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         return (value, type);
     }
 
-    public bool CanSerialize(Type type)
+    public bool CanSerialize(Type type) => TryGetStorageType(type, out _);
+
+    // Resolves the storage type for a runtime type, or returns false if it can't be serialized.
+    // _typeToName is checked first so pre-registered kinds (scalars, nullables, arrays, List/HashSet/
+    // SortedSet/Collection/ObservableCollection, Dictionary<string,T>, object[]) win. Enums fall back to
+    // their Int32 (or Int32[]) form. Checking _typeToName first keeps the intentional asymmetry that
+    // enum arrays are supported while enum-element collections (e.g. List<enum>) are not.
+    private static bool TryGetStorageType(Type type, out Type storageType)
     {
-        if (IsSupportedElement(type))
+        if (_typeToName.ContainsKey(type))
         {
+            storageType = type;
             return true;
         }
 
-        if (type == typeof(object[]))
+        if (IsInt32Enum(type))
         {
+            storageType = typeof(int);
             return true;
         }
 
-        if (type.IsArray && IsSupportedElement(type.GetElementType()!))
+        if (type.IsArray && IsInt32Enum(type.GetElementType()!))
         {
+            storageType = typeof(int[]);
             return true;
         }
 
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)
-            && type.GetGenericArguments()[0] == typeof(string) && IsSupportedElement(type.GetGenericArguments()[1]))
-        {
-            return true;
-        }
-
-        var collectionElementType = GetCollectionElementType(type);
-        if (collectionElementType is not null)
-        {
-            return _typeToName.ContainsKey(type);
-        }
-
+        storageType = type;
         return false;
-    }
-
-    private static bool IsSupportedElement(Type type)
-    {
-        if (_supportedTypes.Contains(type) || IsInt32Enum(type))
-        {
-            return true;
-        }
-
-        var underlyingType = Nullable.GetUnderlyingType(type);
-        return underlyingType is not null && _supportedTypes.Contains(underlyingType);
     }
 
     private static bool IsInt32Enum(Type type)
@@ -177,7 +169,7 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         return buffer.ToArray();
     }
 
-    private void WriteEntry(Utf8JsonWriter writer, object? value, Type? type)
+    private static void WriteEntry(Utf8JsonWriter writer, object? value, Type? type)
     {
         if (value is null)
         {
@@ -186,24 +178,20 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         }
 
         var valueType = type ?? value.GetType();
-        if (!CanSerialize(valueType))
+        if (!TryGetStorageType(valueType, out var storageType))
         {
             throw new InvalidOperationException($"Cannot serialize type '{valueType}'.");
         }
 
-        var collectionElementType = GetCollectionElementType(valueType);
-        var (writeValue, writeType) = NormalizeValue(value, valueType, collectionElementType);
-
-        if (!_typeToName.TryGetValue(writeType, out var writeTypeName))
-        {
-            throw new InvalidOperationException($"Cannot serialize type '{writeType}'.");
-        }
+        var writeValue = NormalizeEnums(value, valueType, storageType);
 
         writer.WriteStartObject();
-        writer.WriteString("type", writeTypeName);
+        writer.WriteString("type", _typeToName[storageType]);
         writer.WritePropertyName("value");
 
-        if (writeType == typeof(object[]))
+        // object[] is the only kind stored recursively (each element carries its own type token),
+        // so it is written element-by-element rather than delegated to System.Text.Json.
+        if (storageType == typeof(object[]))
         {
             writer.WriteStartArray();
             foreach (var item in (object?[])writeValue)
@@ -214,7 +202,7 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         }
         else
         {
-            JsonSerializer.Serialize(writer, writeValue, writeType, _options);
+            JsonSerializer.Serialize(writer, writeValue, storageType, _options);
         }
 
         writer.WriteEndObject();
@@ -237,42 +225,21 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         return DeserializeEntry(element);
     }
 
-    private static (object Value, Type Type) NormalizeValue(object value, Type type, Type? collectionElementType)
+    // Enums have no direct JSON representation, so they are converted to their Int32 form to match
+    // the "int"/"int[]" storage type resolved by TryGetStorageType. All other values pass through.
+    private static object NormalizeEnums(object value, Type valueType, Type storageType)
     {
-        if (type.IsEnum)
+        if (storageType == typeof(int) && valueType.IsEnum)
         {
-            return (Convert.ToInt32(value, CultureInfo.InvariantCulture), typeof(int));
+            return Convert.ToInt32(value, CultureInfo.InvariantCulture);
         }
 
-        if (collectionElementType?.IsEnum == true)
+        if (storageType == typeof(int[]) && valueType != typeof(int[]))
         {
-            return (ConvertEnumsToInts((IEnumerable)value), typeof(int[]));
+            return ConvertEnumsToInts((IEnumerable)value);
         }
 
-        return (value, type);
-    }
-
-    private static Type? GetCollectionElementType(Type type)
-    {
-        if (type.IsArray)
-        {
-            return type.GetElementType();
-        }
-
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
-        {
-            return null;
-        }
-
-        foreach (var @interface in type.GetInterfaces())
-        {
-            if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(ICollection<>))
-            {
-                return @interface.GetGenericArguments()[0];
-            }
-        }
-
-        return null;
+        return value;
     }
 
     private static int[] ConvertEnumsToInts(IEnumerable values)

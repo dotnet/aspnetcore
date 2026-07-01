@@ -29,6 +29,7 @@ public class JsonTempDataAndSessionSerializerTest
                     { typeof(LongEnum[]) },
                     { typeof(List<LongEnum>) },
                     { typeof(LinkedList<int>) },
+                    { typeof(int[,]) },
                 };
         }
     }
