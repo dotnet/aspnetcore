@@ -7,8 +7,10 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-internal class JsonTempDataSerializer : ITempDataSerializer
+internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSerializer
 {
+    private static readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
+
     private static readonly HashSet<Type> _supportedTypes = [typeof(int), typeof(bool), typeof(string), typeof(Guid), typeof(DateTime)];
 
     private static readonly Dictionary<string, Type> _nameToType = BuildNameToType();
@@ -64,7 +66,7 @@ internal class JsonTempDataSerializer : ITempDataSerializer
             return (array, type);
         }
 
-        var value = JsonSerializer.Deserialize(valueElement, type);
+        var value = JsonSerializer.Deserialize(valueElement, type, _options);
         return (value, type);
     }
 
@@ -150,10 +152,27 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         }
         else
         {
-            JsonSerializer.Serialize(writer, writeValue, writeType);
+            JsonSerializer.Serialize(writer, writeValue, writeType, _options);
         }
 
         writer.WriteEndObject();
+    }
+
+    public byte[] SerializeValue(object value, Type type)
+    {
+        using var buffer = new MemoryStream();
+        using var writer = new Utf8JsonWriter(buffer);
+
+        WriteEntry(writer, value, type);
+        writer.Flush();
+
+        return buffer.ToArray();
+    }
+
+    public (object? Value, Type? Type) DeserializeValue(ReadOnlySpan<byte> utf8Json)
+    {
+        var element = JsonSerializer.Deserialize<JsonElement>(utf8Json, _options);
+        return DeserializeEntry(element);
     }
 
     private static (object Value, Type Type) NormalizeValue(object value, Type type, Type? collectionElementType)

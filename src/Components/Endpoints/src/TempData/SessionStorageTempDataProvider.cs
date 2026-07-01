@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed partial class SessionStorageTempDataProvider : ITempDataProvider
 {
     internal const string TempDataSessionStateKey = "__BlazorTempData";
-    private readonly ITempDataSerializer _tempDataSerializer;
+    private readonly ITempDataAndSessionSerializer _tempDataSerializer;
     private readonly ILogger<SessionStorageTempDataProvider> _logger;
 
     public SessionStorageTempDataProvider(
-        ITempDataSerializer tempDataSerializer,
+        ITempDataAndSessionSerializer tempDataSerializer,
         ILogger<SessionStorageTempDataProvider> logger)
     {
         _tempDataSerializer = tempDataSerializer;

@@ -16,11 +16,11 @@ internal static class TempDataProviderServiceCollectionExtensions
 
     internal static IServiceCollection AddTempData(this IServiceCollection services)
     {
-        services.TryAddSingleton<ITempDataSerializer, JsonTempDataSerializer>();
+        services.TryAddSingleton<ITempDataAndSessionSerializer, JsonTempDataAndSessionSerializer>();
         services.TryAddSingleton<ITempDataProvider>(serviceProvider =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>();
-            var serializer = serviceProvider.GetRequiredService<ITempDataSerializer>();
+            var serializer = serviceProvider.GetRequiredService<ITempDataAndSessionSerializer>();
             var dataProtectionProvider = serviceProvider.GetRequiredService<IDataProtectionProvider>();
             var logger = serviceProvider.GetRequiredService<ILogger<CookieTempDataProvider>>();
             return options.Value.TempDataProviderType switch

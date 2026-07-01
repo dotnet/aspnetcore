@@ -19,7 +19,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken";
     private readonly IDataProtector _dataProtector;
     private readonly ISpanDataProtector? _spanDataProtector;
-    private readonly ITempDataSerializer _tempDataSerializer;
+    private readonly ITempDataAndSessionSerializer _tempDataSerializer;
     private readonly RazorComponentsServiceOptions _options;
     private readonly ChunkingCookieManager _chunkingCookieManager;
     private readonly ILogger<CookieTempDataProvider> _logger;
@@ -27,7 +27,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     public CookieTempDataProvider(
         IDataProtectionProvider dataProtectionProvider,
         IOptions<RazorComponentsServiceOptions> options,
-        ITempDataSerializer tempDataSerializer,
+        ITempDataAndSessionSerializer tempDataSerializer,
         ILogger<CookieTempDataProvider> logger)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(Purpose);

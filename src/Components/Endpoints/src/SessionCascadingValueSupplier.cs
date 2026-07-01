@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Reflection;
-using System.Text.Json;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -16,13 +15,14 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal partial class SessionCascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web);
     private HttpContext? _httpContext;
     private readonly Dictionary<string, Func<object?>> _valueCallbacks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ITempDataAndSessionSerializer _serializer;
     private readonly ILogger<SessionCascadingValueSupplier> _logger;
 
-    public SessionCascadingValueSupplier(ILogger<SessionCascadingValueSupplier> logger)
+    public SessionCascadingValueSupplier(ITempDataAndSessionSerializer serializer, ILogger<SessionCascadingValueSupplier> logger)
     {
+        _serializer = serializer;
         _logger = logger;
     }
 
@@ -92,8 +92,8 @@ internal partial class SessionCascadingValueSupplier
                 var value = valueGetter();
                 if (value is not null)
                 {
-                    var json = JsonSerializer.Serialize(value, value.GetType(), _jsonOptions);
-                    session.SetString(sessionKey, json);
+                    var bytes = _serializer.SerializeValue(value, value.GetType());
+                    session.Set(sessionKey, bytes);
                 }
                 else
                 {
@@ -126,7 +126,8 @@ internal partial class SessionCascadingValueSupplier
     {
         private readonly SessionCascadingValueSupplier _owner;
         private readonly string _sessionKey;
-        private readonly Type _propertyType;
+        private readonly Type _underlyingType;
+        private readonly bool _isEnum;
         private readonly Func<object?> _currentValueGetter;
         private bool _delivered;
 
@@ -138,7 +139,8 @@ internal partial class SessionCascadingValueSupplier
         {
             _owner = owner;
             _sessionKey = sessionKey;
-            _propertyType = propertyType;
+            _underlyingType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
+            _isEnum = _underlyingType.IsEnum;
             _currentValueGetter = currentValueGetter;
         }
 
@@ -158,12 +160,28 @@ internal partial class SessionCascadingValueSupplier
 
             try
             {
-                var json = session.GetString(_sessionKey.ToLowerInvariant());
-                if (string.IsNullOrEmpty(json))
+                if (!session.TryGetValue(_sessionKey.ToLowerInvariant(), out var bytes) || bytes.Length == 0)
                 {
                     return null;
                 }
-                return JsonSerializer.Deserialize(json, _propertyType, _jsonOptions);
+
+                var (value, _) = _owner._serializer.DeserializeValue(bytes);
+                if (value is null)
+                {
+                    return null;
+                }
+
+                if (_isEnum && value is int intValue)
+                {
+                    return Enum.ToObject(_underlyingType, intValue);
+                }
+
+                if (!_underlyingType.IsAssignableFrom(value.GetType()))
+                {
+                    return null;
+                }
+
+                return value;
             }
             catch (Exception ex)
             {

@@ -8,9 +8,6 @@
 <p id="text-null">@NoElement</p>
 <p id="text-number">@Number</p>
 
-<p id="text-testclass-email">@TestClassObject?.Email</p>
-<p id="text-testclass-age">@TestClassObject?.Age</p>
-
 <form @onsubmit="SetEmail" @formname="set-email" method="post">
     <AntiforgeryToken />
     <input id="input-email" @bind="EmailInput" name="EmailInput"/>
@@ -29,13 +26,6 @@
     <button type="submit" id="set-email-redirect">Set Email And Redirect</button>
 </form>
 
-<form @onsubmit="SetTestClassObject" @formname="set-testclass-object" method="post">
-    <AntiforgeryToken />
-    <input id="input-testclass-email" @bind="EmailInput" name="EmailInput" />
-    <input id="input-testclass-age" @bind="AgeInput" name="AgeInput" />
-    <button type="submit" id="set-testclass-object">Set TestClass Object</button>
-</form>
-
 @code {
     [SupplyParameterFromSession]
     public string? Email { get; set; }
@@ -51,12 +41,6 @@
 
     [SupplyParameterFromForm]
     public int? NumberInput { get; set; }
-
-    [SupplyParameterFromForm]
-    public int? AgeInput { get; set; }
-
-    [SupplyParameterFromSession]
-    public TestClass? TestClassObject { get; set; }
 
     void SetEmail()
     {
@@ -77,24 +61,5 @@
         Email = EmailInput;
         EmailInput = string.Empty;
         NavigationManager.NavigateTo("/subdir/supply-parameter-from-session/navigation", forceLoad: true);
-    }
-
-    void SetTestClassObject()
-    {
-        if (TestClassObject == null)
-        {
-            TestClassObject = new TestClass();
-        }
-        TestClassObject.Email = EmailInput;
-        TestClassObject.Age = AgeInput;
-        EmailInput = string.Empty;
-        AgeInput = null;
-        NavigationManager.NavigateTo("/subdir/supply-parameter-from-session", forceLoad: true);
-    }
-
-    public class TestClass
-    {
-        public string? Email { get; set; }
-        public int? Age { get; set; }
     }
 }

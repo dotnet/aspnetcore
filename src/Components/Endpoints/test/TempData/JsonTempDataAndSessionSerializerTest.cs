@@ -6,9 +6,9 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
-public class JsonTempDataSerializerTest
+public class JsonTempDataAndSessionSerializerTest
 {
-    private static JsonTempDataSerializer CreateSerializer() => new JsonTempDataSerializer();
+    private static JsonTempDataAndSessionSerializer CreateSerializer() => new JsonTempDataAndSessionSerializer();
 
     public static TheoryData<Type> InvalidTypes
     {
@@ -290,6 +290,51 @@ public class JsonTempDataSerializerTest
         var array = Assert.IsType<object[]>(result["key"].Value);
         Assert.Equal(new int[] { 1 }, array[0]);
         Assert.Equal(new int[] { 2, 3, 4 }, array[1]);
+    }
+
+    [Fact]
+    public void SerializeValue_RoundTrips_ToDeclaredType()
+    {
+        var serializer = CreateSerializer();
+
+        var bytes = serializer.SerializeValue("hello", typeof(string));
+        var (value, type) = serializer.DeserializeValue(bytes);
+
+        Assert.Equal("hello", value);
+        Assert.Equal(typeof(string), type);
+    }
+
+    [Fact]
+    public void SerializeValue_SerializesEnumAsUnderlyingInt()
+    {
+        var serializer = CreateSerializer();
+
+        var bytes = serializer.SerializeValue(TestEnum.Value2, typeof(TestEnum));
+        var (value, type) = serializer.DeserializeValue(bytes);
+
+        Assert.Equal(1, value);
+        Assert.Equal(typeof(int), type);
+    }
+
+    [Fact]
+    public void SerializeValue_Throws_ForUnsupportedType()
+    {
+        var serializer = CreateSerializer();
+
+        Assert.Throws<InvalidOperationException>(() => serializer.SerializeValue(new TestItem(), typeof(TestItem)));
+    }
+
+    [Fact]
+    public void SerializeValue_NormalizesCollection_ToArray()
+    {
+        var serializer = CreateSerializer();
+
+        var bytes = serializer.SerializeValue(new List<int> { 1, 2, 3 }, typeof(List<int>));
+        var (value, type) = serializer.DeserializeValue(bytes);
+
+        var array = Assert.IsType<int[]>(value);
+        Assert.Equal(new int[] { 1, 2, 3 }, array);
+        Assert.Equal(typeof(int[]), type);
     }
 
     private class TestItem

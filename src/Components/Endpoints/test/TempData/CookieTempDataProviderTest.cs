@@ -24,7 +24,7 @@ public class CookieTempDataProviderTest
         _cookieTempDataProvider = new CookieTempDataProvider(
             new EphemeralDataProtectionProvider(),
             Options.Create<RazorComponentsServiceOptions>(new()),
-            new JsonTempDataSerializer(),
+            new JsonTempDataAndSessionSerializer(),
             NullLogger<CookieTempDataProvider>.Instance);
     }
 
