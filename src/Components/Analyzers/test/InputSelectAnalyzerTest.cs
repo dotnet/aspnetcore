@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components
     private static DiagnosticResult CreateWarning(string type, int line)
         => new DiagnosticResult
         {
-            Id = "BL0012",
+            Id = "BL0015",
             Message = $"InputSelect<{type}> with nullable type requires an empty option element to represent the null value. Add <option value=\"\">Select an option</option> as the first option.",
             Severity = DiagnosticSeverity.Warning,
             Locations = new[]

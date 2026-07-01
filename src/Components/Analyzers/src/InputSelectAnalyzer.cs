@@ -3,9 +3,10 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using System;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 #nullable enable
 
@@ -24,8 +25,8 @@ public sealed class InputSelectAnalyzer : DiagnosticAnalyzer
             miscellaneousOptions: SymbolDisplayMiscellaneousOptions.None);
 
     /// <inheritdoc />
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(DiagnosticDescriptors.InputSelectRequiresEmptyOption);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
+        = ImmutableArray.Create(DiagnosticDescriptors.InputSelectRequiresEmptyOption);
 
     /// <inheritdoc />
     public override void Initialize(AnalysisContext context)
@@ -42,10 +43,7 @@ public sealed class InputSelectAnalyzer : DiagnosticAnalyzer
     /// </summary>
     private static void AnalyzeNamedType(SymbolAnalysisContext context)
     {
-        if (context.Symbol is not INamedTypeSymbol containingType)
-        {
-            return;
-        }
+        var containingType = (INamedTypeSymbol)context.Symbol;
 
         foreach (var property in containingType.GetMembers().OfType<IPropertySymbol>())
         {
@@ -54,19 +52,17 @@ public sealed class InputSelectAnalyzer : DiagnosticAnalyzer
                 continue;
             }
 
-            if (!IsNullableType(typeArgument, typeArgumentSyntax))
+            if (!IsNullableType(typeArgument, context.Compilation, typeArgumentSyntax))
             {
                 continue;
             }
 
-            // Skip diagnostic if empty <option value=""> exists
             if (HasEmptyOption(property))
             {
                 continue;
             }
 
             var location = typeArgumentSyntax?.GetLocation() ?? property.Locations.FirstOrDefault();
-
             if (location is null)
             {
                 continue;
@@ -92,33 +88,73 @@ public sealed class InputSelectAnalyzer : DiagnosticAnalyzer
         typeArgument = null!;
         typeArgumentSyntax = null;
 
-        if (property.Type is not INamedTypeSymbol namedTypeSymbol)
+        if (property.Type is not INamedTypeSymbol namedType)
         {
             return false;
         }
 
-        var original = namedTypeSymbol.OriginalDefinition;
-
+        var original = namedType.OriginalDefinition;
         if (original.Name != "InputSelect" || original.Arity != 1)
         {
             return false;
         }
 
-        typeArgument = namedTypeSymbol.TypeArguments[0];
+        typeArgument = namedType.TypeArguments[0];
 
-        var syntaxReference = property.DeclaringSyntaxReferences.FirstOrDefault();
-        if (syntaxReference?.GetSyntax() is not PropertyDeclarationSyntax propertySyntax)
+        // Extract syntax from property declaration
+        var syntaxRef = property.DeclaringSyntaxReferences.FirstOrDefault();
+        if (syntaxRef?.GetSyntax() is PropertyDeclarationSyntax propertySyntax)
+        {
+            var propertyType = propertySyntax.Type;
+
+            // Handle direct generic name: InputSelect<T>
+            if (propertyType is GenericNameSyntax generic &&
+                generic.TypeArgumentList.Arguments.Count == 1)
+            {
+                typeArgumentSyntax = generic.TypeArgumentList.Arguments[0];
+            }
+            // Handle qualified generic name: namespace.InputSelect<T>
+            else if (propertyType is QualifiedNameSyntax qualified &&
+                qualified.Right is GenericNameSyntax qualifiedGeneric &&
+                qualifiedGeneric.TypeArgumentList.Arguments.Count == 1)
+            {
+                typeArgumentSyntax = qualifiedGeneric.TypeArgumentList.Arguments[0];
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Determines whether the given type represents a nullable type.
+    /// </summary>
+    private static bool IsNullableType(
+        ITypeSymbol type,
+        Compilation compilation,
+        TypeSyntax? typeSyntax)
+    {
+        if (type is INamedTypeSymbol named &&
+            named.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
         {
             return true;
         }
 
-        if (propertySyntax.Type is GenericNameSyntax generic &&
-            generic.TypeArgumentList.Arguments.Count == 1)
+        if (typeSyntax is NullableTypeSyntax)
         {
-            typeArgumentSyntax = generic.TypeArgumentList.Arguments[0];
+            return true;
         }
 
-        return true;
+        if (typeSyntax is not null && typeSyntax.ToString().Contains("?", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        if (typeSyntax is null && compilation.Options.NullableContextOptions == NullableContextOptions.Disable)
+        {
+            return false;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -131,7 +167,6 @@ public sealed class InputSelectAnalyzer : DiagnosticAnalyzer
         {
             var innerType = named.TypeArguments[0];
 
-            // Special handling for enums
             if (innerType.TypeKind == TypeKind.Enum)
             {
                 return innerType.Name;
@@ -145,32 +180,18 @@ public sealed class InputSelectAnalyzer : DiagnosticAnalyzer
     }
 
     /// <summary>
-    /// Determines whether the given type represents a nullable type.
-    /// </summary>
-    private static bool IsNullableType(ITypeSymbol type, SyntaxNode? syntax = null)
-    {
-        // Nullable value type (Nullable&lt;T&gt;)
-        if (type is INamedTypeSymbol namedType &&
-            namedType.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T)
-        {
-            return true;
-        }
-
-        // Nullable reference type (T?)
-        return syntax is NullableTypeSyntax;
-    }
-
-    /// <summary>
     /// Checks if an empty option (&lt;option value=""&gt;) exists.
     /// </summary>
     private static bool HasEmptyOption(IPropertySymbol property)
     {
         foreach (var syntaxRef in property.DeclaringSyntaxReferences)
         {
-            var syntax = syntaxRef.GetSyntax();
-            var syntaxText = syntax.ToString();
+            var node = syntaxRef.GetSyntax();
+            var text = node.ToString();
 
-            if (syntaxText.Contains("option value=\"\""))
+            if (text.Contains("<option", System.StringComparison.OrdinalIgnoreCase) &&
+                (text.Contains("value=\"\"", System.StringComparison.OrdinalIgnoreCase) ||
+                text.Contains("value=''", System.StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
