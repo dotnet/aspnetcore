@@ -16,7 +16,7 @@ import { ConsoleLogger } from '../Logging/Loggers';
 import { RenderQueue } from './RenderQueue';
 import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
-import { attachWebRendererInterop, detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
+import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
@@ -56,6 +56,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private _persistedCircuitState?: { components: string, applicationState: string };
 
   private _isFirstRender = true;
+
+  private _pauseAbortController?: AbortController;
 
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
@@ -174,6 +176,18 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._componentManager.onAfterUpdateRootComponents?.(batchId);
     });
 
+    connection.on('JS.RequestPause', async () => {
+      try {
+        if (this._options.onPauseRequested) {
+          this._pauseAbortController?.abort();
+          this._pauseAbortController = new AbortController();
+          await this._options.onPauseRequested(this._pauseAbortController.signal);
+        }
+        await this.pause(true);
+      } catch (error) {
+        this._logger.log(LogLevel.Error, `Failed to handle server-initiated pause: ${error}`);
+      }
+    });
     connection.on('JS.EndLocationChanging', Blazor._internal.navigationManager.endLocationChanging);
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
@@ -272,6 +286,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
+      if (isRendererAttached(WebRendererId.Server)) {
+        this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
+      }
       return false;
     }
 
@@ -516,6 +533,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     if (!this._startPromise) {
       // The circuit hasn't started, so there isn't anything to dispose.
       this._disposed = true;
+      this._pauseAbortController?.abort();
       return;
     }
 
@@ -524,6 +542,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     await this._startPromise;
 
     this._disposed = true;
+    this._pauseAbortController?.abort();
     this._connection?.stop();
 
     // Dispose the circuit on the server immediately. Closing the SignalR connection alone

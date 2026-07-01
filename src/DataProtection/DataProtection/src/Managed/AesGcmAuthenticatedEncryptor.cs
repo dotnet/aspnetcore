@@ -154,8 +154,8 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
 
         byte[] rentedBuffer = null!;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
@@ -186,8 +186,8 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         var outputSize = (int)(preBufferSize + size + postBufferSize);
 
         byte[] rentedBuffer = null!;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);

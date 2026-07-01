@@ -289,8 +289,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         var outputSize = KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
 
         byte[]? rentedBuffer = null;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
@@ -377,8 +377,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 }
                 finally
                 {
-                    Array.Clear(keyModifier, 0, keyModifierLength);
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
+                    CryptoUtil.ZeroMemory(keyModifier);
+                    CryptoUtil.ZeroMemory(decryptedKdk);
                 }
             }
         }
@@ -453,7 +453,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
         finally
         {
-            Array.Clear(correctHashArray, 0, correctHashArray.Length);
+            CryptoUtil.ZeroMemory(correctHashArray);
         }
     }
 #endif
@@ -472,8 +472,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
 
         byte[]? rentedBuffer = null;
-        var buffer = outputSize < 256
-            ? stackalloc byte[255]
+        var buffer = outputSize <= 256
+            ? stackalloc byte[256]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
 
         var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
@@ -573,7 +573,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                 {
                     // delete since these contain secret material
                     validationSubkey.Clear();
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
+                    CryptoUtil.ZeroMemory(decryptedKdk);
                 }
             }
         }

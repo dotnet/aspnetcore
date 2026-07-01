@@ -17,22 +17,32 @@ nav {
     align-items: center;
 }
 
+    nav a,
     nav button {
         border: 0;
         background: none center center / 1rem no-repeat;
         width: 2rem;
         height: 2rem;
+        display: inline-block;
+        text-decoration: none;
+        font-size: 0;
+        cursor: pointer;
+        padding: 0;
     }
 
-    nav button[disabled] {
+    nav a[aria-disabled="true"],
+    nav button:disabled {
         opacity: 0.4;
+        pointer-events: none;
     }
 
-    nav button:not([disabled]):hover {
+    nav a:not([aria-disabled="true"]):hover,
+    nav button:not(:disabled):hover {
         background-color: #eee;
     }
 
-    nav button:not([disabled]):active {
+    nav a:not([aria-disabled="true"]):active,
+    nav button:not(:disabled):active {
         background-color: #aaa;
     }
 

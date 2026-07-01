@@ -9,11 +9,13 @@ using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.RazorComponents.Pages.PersistentState;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using TestContentPackage;
 using TestContentPackage.Services;
 
@@ -31,9 +33,29 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddValidation();
+        var enableUrlNavigation = !Configuration.GetValue<bool>("DisableUrlDrivenNavigation");
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.QuickGrid.EnableUrlBasedQuickGridNavigationAndSorting", enableUrlNavigation);
 
-        services.AddRazorComponents(options =>
+        // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
+        // switch value once at static initialization and won't see subsequent AppContext changes.
+        // This write at fixture creation is only safe because the E2E suite runs serially
+        // (parallelizeAssembly/parallelizeTestCollections are false); enabling parallelization would
+        // let servers needing opposite values race on this process-global field and reintroduce #66883.
+        var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
+            .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
+        featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
+            ?.SetValue(null, enableUrlNavigation);
+
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        {
+            services.AddControllers();
+        }
+        services.AddSingleton<IStringLocalizerFactory>(
+            new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
+        services.AddValidation();
+        services.AddValidationLocalization();
+
+        var razorComponentsBuilder = services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
@@ -42,7 +64,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
-            .AddInteractiveWebAssemblyComponents()
             .AddInteractiveServerComponents(options =>
             {
                 if (Configuration.GetValue<bool>("DisableReconnectionCache"))
@@ -75,6 +96,17 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 options.SerializeAllClaims = serializeAllClaims;
             });
 
+        if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
+        {
+            Configuration["Components:UseCultureFromServer"] = "true";
+        }
+        else
+        {
+            Configuration["Components:UseCultureFromServer"] = "false";
+        }
+
+        razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
             services.AddHybridCache();
@@ -95,6 +127,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         var circuitContextAccessor = new TestCircuitContextAccessor();
         services.AddSingleton<CircuitHandler>(circuitContextAccessor);
         services.AddSingleton(circuitContextAccessor);
+
+        services.AddScoped<PauseTrackingHandler>();
+        services.AddScoped<CircuitHandler>(sp => sp.GetRequiredService<PauseTrackingHandler>());
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -141,7 +176,26 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
+        if (Configuration.GetValue<bool>("EnableCultureTesting"))
+        {
+            app.UseRequestLocalization(options =>
+            {
+                options.AddSupportedCultures("en-US", "fr-FR", "es-ES");
+                options.AddSupportedUICultures("en-US", "fr-FR", "es-ES");
+                options.RequestCultureProviders.Clear();
+                options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+                options.SetDefaultCulture("en-US");
+            });
+        }
+        else
+        {
+            app.UseRequestLocalization(options =>
+            {
+                options.RequestCultureProviders.Clear();
+                options.SetDefaultCulture("en-US");
+            });
+        }
 
         if (!env.IsDevelopment())
         {
@@ -151,6 +205,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         app.UseRouting();
         UseFakeAuthState(app);
         app.UseAntiforgery();
+
+        app.UseRequestLocalization(new RequestLocalizationOptions
+        {
+            DefaultRequestCulture = new RequestCulture("en-US"),
+            SupportedCultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
+            SupportedUICultures = [new CultureInfo("en-US"), new CultureInfo("es-ES"), new CultureInfo("fr"), new CultureInfo("fr-FR"), new CultureInfo("de")],
+        });
 
         app.Use((ctx, nxt) =>
         {
@@ -167,6 +228,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     {
         _ = app.UseEndpoints(endpoints =>
         {
+            if (Configuration.GetValue<bool>("EnableCultureTesting"))
+            {
+                endpoints.MapControllers();
+            }
+
             var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
             if (File.Exists(contentRootStaticAssetsPath))
             {
@@ -189,7 +255,17 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
                     options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
                 })
-                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
+                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal")
+                .WithBrowserOptions(config =>
+                {
+                    config.WebAssembly.EnvironmentVariables["MY_TEST_VAR"] = "test-value-from-server";
+                    config.WebAssembly.EnvironmentVariables["ANOTHER_TEST_VAR"] = "another-test-value";
+                    if (string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_E2E_OUT_OF_PROCESS_RENDERER"), "true", StringComparison.OrdinalIgnoreCase)
+                        || Configuration.GetValue<bool>("EnableOutOfProcessRenderer"))
+                    {
+                        config.WebAssembly.EnvironmentVariables["__BLAZOR_WEBASSEMBLY_OUT_OF_PROCESS_RENDERER"] = "true";
+                    }
+                });
 
             NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
             StreamingRenderingForm.MapEndpoints(endpoints);

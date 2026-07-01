@@ -50,6 +50,12 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
             return ValueTask.CompletedTask;
         }
 
+        if (context.HttpContext.User?.Identity?.IsAuthenticated == true)
+        {
+            context.AllowCacheStorage = false;
+            return ValueTask.CompletedTask;
+        }
+
         // Check response code
         if (response.StatusCode != StatusCodes.Status200OK)
         {

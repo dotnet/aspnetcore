@@ -163,8 +163,8 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65915")]
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_http2rhr")]
     public async Task RequestHeaderStringReuse_MultipleStreams_KnownHeaderReused()
     {
         var requestHeaders = new[]
@@ -3136,32 +3136,21 @@ public class Http2ConnectionTests : Http2TestBase
             expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
     }
 
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
+    [Theory]
+    [InlineData("transfer-encoding", "chunked")]
+    [InlineData("keep-alive", "timeout=5, max=1000")]
+    [InlineData("proxy-connection", "keep-alive")]
+    [InlineData("upgrade", "websocket")]
+    [InlineData("connection", "keep-alive")]
+    [InlineData("te", "trailers, deflate")]
+    public Task HEADERS_Received_HeaderBlockContainsConnectionSpecificHeader_ConnectionError(string headerName, string headerValue)
     {
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
             new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("connection", "keep-alive")
-        };
-
-        return HEADERS_Received_InvalidHeaderFields_ConnectionError(
-            headers,
-            CoreStrings.HttpErrorConnectionSpecificHeaderField,
-            expectedEndReason: ConnectionEndReason.InvalidRequestHeaders);
-    }
-
-    [Fact]
-    public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
-    {
-        var headers = new[]
-        {
-            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
-            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
-            new KeyValuePair<string, string>("te", "trailers, deflate")
+            new KeyValuePair<string, string>(headerName, headerValue)
         };
 
         return HEADERS_Received_InvalidHeaderFields_ConnectionError(
@@ -5430,7 +5419,6 @@ public class Http2ConnectionTests : Http2TestBase
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60111")]
     public async Task IgnoreNewStreamsDuringClosedConnection()
     {
         // Remove callback that completes _pair.Application.Output on abort.

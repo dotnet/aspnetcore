@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
+    <Compile Include="$(RepoRoot)src\Validation\test\Microsoft.Extensions.Validation.Tests\ValidationTestBase.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,7 +47,6 @@
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.Validation" />
     <Reference Include="Verify.SourceGenerators" />
     <Reference Include="Verify.XUnit" />

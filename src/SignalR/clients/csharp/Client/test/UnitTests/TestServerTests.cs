@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests;
 public class TestServerTests : VerifiableLoggedTest
 {
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/#aw_wswrks1")]
     public async Task WebSocketsWorks()
     {
         using (StartVerifiableLog())
@@ -76,11 +75,13 @@ public class TestServerTests : VerifiableLoggedTest
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
             Assert.True(webSocketFactoryCalled);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65702")]
     public async Task LongPollingWorks()
     {
         using (StartVerifiableLog())
@@ -131,6 +132,9 @@ public class TestServerTests : VerifiableLoggedTest
 
             await connection.StartAsync();
             await connection.InvokeAsync("Echo", originalMessage);
+
+            await connection.StopAsync();
+            await host.StopAsync();
         }
     }
 }

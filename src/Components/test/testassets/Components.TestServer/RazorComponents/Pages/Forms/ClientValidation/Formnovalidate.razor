@@ -1,0 +1,58 @@
+﻿@page "/forms/client-validation/formnovalidate"
+
+<h2 id="page-title">formnovalidate + skipped fields</h2>
+
+<style>
+    .field-validation-error { color: red; }
+    .field-validation-valid { display: none; }
+</style>
+
+<form id="test-form" method="post" data-enhance="false">
+    <input id="name" name="Name" type="text"
+           data-val="true"
+           data-val-required="Name is required." />
+    <span data-valmsg-for="Name" data-valmsg-replace="true"></span>
+
+    <input id="hidden-field" name="HiddenField" type="hidden"
+           data-val="true"
+           data-val-required="HiddenField is required." />
+    <span data-valmsg-for="HiddenField" data-valmsg-replace="true"></span>
+
+    <input id="disabled-field" name="DisabledField" type="text" disabled
+           data-val="true"
+           data-val-required="DisabledField is required." />
+    <span data-valmsg-for="DisabledField" data-valmsg-replace="true"></span>
+
+    <div style="display:none">
+        <input id="display-none-field" name="DisplayNoneField" type="text"
+               data-val="true"
+               data-val-required="DisplayNoneField is required." />
+        <span data-valmsg-for="DisplayNoneField" data-valmsg-replace="true"></span>
+    </div>
+
+    <button type="submit" id="btn-submit">Submit</button>
+    <button type="submit" id="btn-draft" formnovalidate>Save as Draft</button>
+</form>
+
+<div id="event-log"></div>
+<div id="downstream-log"></div>
+
+<script suppress-error="BL9992">
+    const testForm = document.getElementById('test-form');
+
+    testForm.addEventListener('validationcomplete', function (e) {
+        document.getElementById('event-log').textContent =
+            'valid:' + e.detail.valid + ';errors:' + e.detail.errors.size;
+    });
+
+    // Mirrors the Identity template's passkey-submit custom element: a form-level
+    // submit listener that intercepts the submit to run its own logic. The validation
+    // interceptor runs first in the capture phase; when validation fails it calls
+    // stopPropagation(), which prevents this listener from running. Using a
+    // formnovalidate submit button lets the validation interceptor bail out early so
+    // this downstream handler still runs.
+    testForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        document.getElementById('downstream-log').textContent = 'downstream-ran';
+    });
+</script>

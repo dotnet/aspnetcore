@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -21,6 +22,7 @@ public class HttpConnectionManagerTests : LoggedTest
 #if !DEBUG
     [ConditionalFact]
     [NoDebuggerCondition]
+    [QuarantinedTest("https://github.com/dotnet/runtime/issues/126735")]
     public async Task CriticalErrorLoggedIfApplicationDoesntComplete()
     {
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -55,14 +57,10 @@ public class HttpConnectionManagerTests : LoggedTest
         },
         testContext))
         {
-            using (var connection = server.CreateConnection())
-            {
-                await connection.SendEmptyGet();
-
-                Assert.True(await appStartedWh.WaitAsync(TestConstants.DefaultTimeout));
-
-                // Close connection without waiting for a response
-            }
+            // Create the connection in a separate non-inlined method so that the connection
+            // and any locals it references aren't kept rooted on this method's stack frame,
+            // which would prevent HttpConnection from being garbage collected.
+            await CreateConnectionAndSendRequest(server, appStartedWh);
 
             var logWaitAttempts = 0;
 
@@ -73,6 +71,19 @@ public class HttpConnectionManagerTests : LoggedTest
             }
 
             Assert.True(logWaitAttempts < 10);
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static async Task CreateConnectionAndSendRequest(TestServer server, SemaphoreSlim appStartedWh)
+    {
+        using (var connection = server.CreateConnection())
+        {
+            await connection.SendEmptyGet();
+
+            Assert.True(await appStartedWh.WaitAsync(TestConstants.DefaultTimeout));
+
+            // Close connection without waiting for a response
         }
     }
 
