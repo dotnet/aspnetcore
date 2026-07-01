@@ -84,6 +84,11 @@ public static class BlazorGateway
             app.UsePathBase(options.PathBase);
         }
 
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseWebAssemblyDebugging();
+        }
+
         if (app.Environment.IsDevelopment() && options.HealthChecks.Enabled)
         {
             app.MapHealthChecks(options.HealthChecks.Path);

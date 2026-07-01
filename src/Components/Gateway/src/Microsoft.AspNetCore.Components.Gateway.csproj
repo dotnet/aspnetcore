@@ -29,6 +29,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Yarp.ReverseProxy" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery" />
     <Reference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" />
