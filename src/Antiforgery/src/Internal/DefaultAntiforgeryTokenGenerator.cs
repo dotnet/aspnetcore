@@ -168,13 +168,32 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
 
         if (!comparer.Equals(requestToken.Username, currentUsername))
         {
-            message = Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername);
+            // Special case: if current user is not authenticated but the request token was meant for an authenticated user,
+            // provide a more helpful error message suggesting middleware ordering issue
+            if (authenticatedIdentity == null && !string.IsNullOrEmpty(requestToken.Username))
+            {
+                message = Resources.AntiforgeryToken_ClaimUidMismatch_UnauthenticatedUser;
+            }
+            else
+            {
+                message = Resources.FormatAntiforgeryToken_UsernameMismatch(requestToken.Username, currentUsername);
+            }
             return false;
         }
 
         if (!AreIdenticalClaimUids(requestToken, extractedClaimUidBytes, currentClaimUidBytes))
         {
-            message = Resources.AntiforgeryToken_ClaimUidMismatch;
+            // Special case: if current user is not authenticated but the request token was meant for an authenticated user,
+            // provide a more helpful error message suggesting middleware ordering issue
+            if (authenticatedIdentity == null && 
+                (requestToken.ClaimUid != null || !string.IsNullOrEmpty(requestToken.Username)))
+            {
+                message = Resources.AntiforgeryToken_ClaimUidMismatch_UnauthenticatedUser;
+            }
+            else
+            {
+                message = Resources.AntiforgeryToken_ClaimUidMismatch;
+            }
             return false;
         }
 
