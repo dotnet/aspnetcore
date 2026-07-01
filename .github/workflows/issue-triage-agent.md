@@ -34,6 +34,7 @@ tools:
     min-integrity: none
 
 safe-outputs:
+  report-failure-as-issue: false
   noop:
     report-as-issue: false
   set-issue-type:

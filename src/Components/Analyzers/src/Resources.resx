@@ -240,7 +240,16 @@
   <data name="AuthenticationStateProviderCachedWithoutSubscription_Title" xml:space="preserve">
     <value>AuthenticationStateProvider.GetAuthenticationStateAsync used without subscribing to AuthenticationStateChanged</value>
   </data>
-   <data name="InputSelectRequiresEmptyOption_Description" xml:space="preserve">
+  <data name="ForLoopIteratorVariableUsedInClosure_Description" xml:space="preserve">
+    <value>Using iterator variable inside a closure or RenderFragment/ChildContent could lead to unexpected runtime behavior. The variable is changed each loop and after the for loop completes, it holds the final iterator value. Since most closures don't execute when defined, they will most likely execute using the final iterator value.</value>
+  </data>
+  <data name="ForLoopIteratorVariableUsedInClosure_Format" xml:space="preserve">
+    <value>For loop iterator '{0}' is used in a closure or RenderFragment/ChildContent. This can lead to unexpected runtime behavior.</value>
+  </data>
+  <data name="ForLoopIteratorVariableUsedInClosure_Title" xml:space="preserve">
+    <value>For loop iterator used inside a closure.</value>
+  </data>
+  <data name="InputSelectRequiresEmptyOption_Description" xml:space="preserve">
     <value>InputSelect with a nullable TValue requires an empty option element like &lt;option value=""&gt;Select an option&lt;/option&gt; to properly represent the null value.</value>
   </data>
   <data name="InputSelectRequiresEmptyOption_Format" xml:space="preserve">
