@@ -4,12 +4,13 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 
 [[nodiscard]]
 bool endsWith(const std::wstring &source, const std::wstring &suffix, bool ignoreCase = false);
 
 [[nodiscard]]
-bool isChunkedTransferEncoding(const std::string& transferEncoding);
+bool isChunkedTransferEncoding(std::string_view transferEncoding);
 
 [[nodiscard]]
 bool equals_ignore_case(const std::wstring& s1, const std::wstring& s2);

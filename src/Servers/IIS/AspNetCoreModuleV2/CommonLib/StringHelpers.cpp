@@ -4,41 +4,42 @@
 #include "StringHelpers.h"
 #include "exceptions.h"
 
-bool isChunkedTransferEncoding(const std::string& transferEncoding)
+bool isChunkedTransferEncoding(std::string_view transferEncoding)
 {
     //
     // Trim trailing optional whitespace and commas so that the real final
     // coding is evaluated (e.g. "chunked," -> "chunked").
     //
-    size_t end = transferEncoding.length();
-    while (end > 0 &&
-        (transferEncoding[end - 1] == ' ' ||
-            transferEncoding[end - 1] == '\t' ||
-            transferEncoding[end - 1] == ','))
+    while (!transferEncoding.empty())
     {
-        end--;
+        const char ch = transferEncoding.back();
+        if (ch != ' ' && ch != '\t' && ch != ',')
+        {
+            break;
+        }
+        transferEncoding.remove_suffix(1);
     }
 
     //
-    // Find the start of the last token (everything after the last comma).
+    // Keep only the last token (everything after the last comma).
     //
-    size_t start = end;
-    while (start > 0 && transferEncoding[start - 1] != ',')
+    const size_t lastComma = transferEncoding.find_last_of(',');
+    if (lastComma != std::string_view::npos)
     {
-        start--;
+        transferEncoding.remove_prefix(lastComma + 1);
     }
 
     //
     // Trim leading optional whitespace on the final token.
     //
-    while (start < end &&
-        (transferEncoding[start] == ' ' || transferEncoding[start] == '\t'))
+    while (!transferEncoding.empty() &&
+        (transferEncoding.front() == ' ' || transferEncoding.front() == '\t'))
     {
-        start++;
+        transferEncoding.remove_prefix(1);
     }
 
-    const size_t tokenLength = end - start;
-    return tokenLength == 7 && _strnicmp(transferEncoding.c_str() + start, "chunked", 7) == 0;
+    return transferEncoding.length() == 7 &&
+        _strnicmp(transferEncoding.data(), "chunked", 7) == 0;
 }
 
 bool endsWith(const std::wstring& source, const std::wstring& suffix, bool ignoreCase)
