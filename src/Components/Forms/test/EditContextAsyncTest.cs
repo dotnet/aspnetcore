@@ -630,7 +630,9 @@ public class EditContextAsyncTest
 
         Assert.False(result);
         Assert.True(editContext.IsValidationFaulted());
-        Assert.True(notificationCount >= 2);
+        // A synchronously-faulted task never announces the pending state, so only the final settle
+        // notification fires (no pending true-then-false pair).
+        Assert.Equal(1, notificationCount);
     });
 
     [Fact]
@@ -860,13 +862,13 @@ public class EditContextAsyncTest
 
         Assert.True(await editContext.ValidateAsync());
 
-        Assert.True(notificationCount >= 3);
+        Assert.True(notificationCount >= 2);
         Assert.False(editContext.IsValidationPending(field));
         Assert.False(editContext.IsValidationFaulted(field));
     });
 
     [Fact]
-    public Task ValidateAsync_NoHandlers_FiresStartAndEndNotifications() => RunOnDispatcher(async () =>
+    public Task ValidateAsync_NoHandlers_DoesNotAnnouncePending() => RunOnDispatcher(async () =>
     {
         var editContext = new EditContext(new TestModel());
         var notificationCount = 0;
@@ -874,7 +876,9 @@ public class EditContextAsyncTest
 
         Assert.True(await editContext.ValidateAsync());
 
-        Assert.Equal(2, notificationCount);
+        // With no registered tasks nothing suspends, so the pending state is never announced; only
+        // the final settle notification fires.
+        Assert.Equal(1, notificationCount);
         Assert.False(editContext.IsValidationPending());
     });
 
@@ -972,7 +976,7 @@ public class EditContextAsyncTest
         Assert.True(await editContext.ValidateAsync());
 
         Assert.False(editContext.IsValidationFaulted(field));
-        Assert.True(notificationCount >= 3);
+        Assert.True(notificationCount >= 2);
     });
 
     [Fact]

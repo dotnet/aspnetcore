@@ -265,26 +265,36 @@ public sealed class EditContext
     {
         var args = new ValidationRequestedEventArgs { IsAsync = true };
 
-        // Form submission supersedes any in-flight per-field async validation, and the form is shown
-        // as pending for the duration of this pass.
+        // Form submission supersedes any in-flight per-field async validation.
         CancelAllPendingValidationTasks();
-        _isFormValidationPending = true;
-        NotifyValidationStateChanged();
+
+        // A synchronous handler exception is captured into the returned task. Handlers only register
+        // factories during the raise; none have been invoked yet, so a throw leaves no work started.
+        OnValidationRequested?.Invoke(this, args);
+
+        // Invoke all registered factories to start their work concurrently, tracking whether any suspends.
+        var factories = args.ValidationTaskFactories;
+        var tasks = new Task[factories.Count];
+        var completedSynchronously = true;
+
+        for (var i = 0; i < tasks.Length; i++)
+        {
+            var task = InvokeValidationFactory(factories[i], cancellationToken);
+            tasks[i] = task;
+            completedSynchronously &= task.IsCompleted;
+        }
+
+        // Announce the pending transition only when some task actually suspends.
+        // If every task completed synchronously the form never observably enters the pending state.
+        // This prevents spurious state change notifications and UI flashes.
+        if (!completedSynchronously)
+        {
+            _isFormValidationPending = true;
+            NotifyValidationStateChanged();
+        }
 
         try
         {
-            // A synchronous handler exception is captured into the returned task. Handlers only register
-            // factories during the raise; none have been invoked yet, so a throw leaves no work started.
-            OnValidationRequested?.Invoke(this, args);
-
-            // Invoke all registered factories to start their work concurrently.
-            var factories = args.ValidationTaskFactories;
-            var tasks = new Task[factories.Count];
-            for (var i = 0; i < tasks.Length; i++)
-            {
-                tasks[i] = InvokeValidationFactory(factories[i], cancellationToken);
-            }
-
             var faulted = false;
             foreach (var task in tasks)
             {
