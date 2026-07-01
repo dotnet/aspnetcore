@@ -77,7 +77,7 @@
             @onclick="@rowClick">
             @foreach (var col in _columns)
             {
-                <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+                <td class="@ColumnClass(col, item)" @key="@col">@{ col.CellContent(__builder, item); }</td>
             }
         </tr>
     }
