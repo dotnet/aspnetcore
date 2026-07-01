@@ -218,9 +218,8 @@ public abstract class ValidatableParameterInfo : IValidatableParameterInfo, IVal
     void IValidationErrorReporter.ReportError(ValidateContext context, object? container, ValidationAttribute attribute, ValidationResult result)
     {
         var errorMessage = context.ResolveAttributeErrorMessage(
-            memberName: Name,
             context.ValidationContext.DisplayName,
-            declaringType: null,
+            type: null,
             attribute,
             result);
 

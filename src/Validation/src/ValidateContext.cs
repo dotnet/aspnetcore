@@ -3,7 +3,10 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -13,6 +16,8 @@ namespace Microsoft.Extensions.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private static readonly ValidationAttributeFormatterRegistry _formatterRegistry = new();
+    private bool _localizerFactoryInitialized;
     private Dictionary<string, IEnumerable<string>>? _validationErrors;
 
     /// <summary>
@@ -97,12 +102,31 @@ public sealed class ValidateContext
     /// </summary>
     public event Action<ValidationErrorContext>? OnValidationError;
 
+    private IStringLocalizerFactory? LocalizerFactory
+    {
+        get
+        {
+            if (!_localizerFactoryInitialized)
+            {
+                field = (IStringLocalizerFactory?)ValidationContext.GetService(typeof(IStringLocalizerFactory));
+                _localizerFactoryInitialized = true;
+            }
+            return field;
+        }
+        set
+        {
+            field = value;
+            _localizerFactoryInitialized = true;
+        }
+    }
+
     internal ValidateContext CopyWithState(ValidateContextMutableState state)
     {
         return new ValidateContext(this, state)
         {
-            ValidationOptions = this.ValidationOptions,
+            ValidationOptions = ValidationOptions,
             ValidationContext = CloneValidationContextWithMutableState(state),
+            LocalizerFactory = LocalizerFactory,
         };
     }
 
@@ -174,26 +198,81 @@ public sealed class ValidateContext
     }
 
     internal string? ResolveAttributeErrorMessage(
-        string memberName,
         string displayName,
-        Type? declaringType,
+        Type? type,
         ValidationAttribute attribute,
         ValidationResult result)
     {
-        if (ValidationOptions.Localizer is null || attribute.ErrorMessageResourceType is not null)
+        if (attribute.ErrorMessageResourceType is not null)
         {
             return result.ErrorMessage;
         }
 
-        var context = new ErrorMessageLocalizationContext
+        if (LocalizerFactory is null)
         {
-            MemberName = memberName,
-            DisplayName = displayName,
-            DeclaringType = declaringType,
-            Attribute = attribute,
-        };
+            return result.ErrorMessage;
+        }
 
-        return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
+        return LocalizeAttributeErrorMessage() ?? result.ErrorMessage;
+
+        string? LocalizeAttributeErrorMessage()
+        {
+            // MessageKeyProvider, when configured, has precedence over Attribute.ErrorMessage.
+            // The provider receives the full context (including Attribute.ErrorMessage) and may
+            // return a derived key, or return null/empty to defer to using Attribute.ErrorMessage
+            // as the key.
+            var lookupKey = GetErrorMessageKey();
+
+            if (string.IsNullOrEmpty(lookupKey))
+            {
+                return null;
+            }
+
+            var localizer = GetStringLocalizer();
+            var localizedTemplate = localizer[lookupKey];
+
+            if (localizedTemplate.ResourceNotFound)
+            {
+                return null;
+            }
+
+            // Format the localized template with attribute-specific arguments
+            var attributeFormatter = _formatterRegistry.GetFormatter(attribute);
+
+            return attributeFormatter?.FormatMessage(CultureInfo.CurrentCulture, localizedTemplate, displayName)
+                ?? string.Format(CultureInfo.CurrentCulture, localizedTemplate, displayName);
+        }
+
+        string? GetErrorMessageKey()
+        {
+            if (ValidationOptions.MessageKeyProvider is { } keyProvider)
+            {
+                return keyProvider.Invoke(new ValidationMessageKeyContext
+                {
+                    Attribute = attribute,
+                    DisplayName = displayName,
+                    Type = type,
+                });
+            }
+            else
+            {
+                return attribute.ErrorMessage;
+            }
+        }
+
+        IStringLocalizer GetStringLocalizer()
+        {
+            if (ValidationOptions.LocalizerProvider is { } provider)
+            {
+                return provider(type, LocalizerFactory)
+                    ?? throw new InvalidOperationException(
+                        $"The {nameof(ValidationOptions)}.{nameof(ValidationOptions.LocalizerProvider)} " +
+                        $"delegate returned null for type '{type?.FullName ?? "<null>"}'. " +
+                        $"The delegate must return a non-null {nameof(IStringLocalizer)} instance.");
+            }
+
+            return LocalizerFactory.Create(type ?? typeof(object));
+        }
     }
 
     private ValidationContext CloneValidationContextWithMutableState(ValidateContextMutableState state)
@@ -339,56 +418,55 @@ public sealed class ValidateContext
         => new AsyncValidationTracker(this);
 
     internal struct AsyncValidationTracker
+{
+    private readonly ValidateContext _originalContext;
+    private readonly ValidateContextMutableState _originalState;
+
+    private bool _nextNeedsClone;
+    private ValidateContext _currentContext;
+    private List<ValidateContext>? _clonedContexts;
+    private List<Task>? _pendingTasks;
+
+    public AsyncValidationTracker(ValidateContext context)
     {
-        private readonly ValidateContext _originalContext;
-        private readonly ValidateContextMutableState _originalState;
-
-        private bool _nextNeedsClone;
-        private ValidateContext _currentContext;
-        private List<ValidateContext>? _clonedContexts;
-        private List<Task>? _pendingTasks;
-
-        public AsyncValidationTracker(ValidateContext context)
-        {
-            _originalContext = context;
-            _currentContext = context;
-            _originalState = context.CaptureMutableState();
-        }
-
-        // Reuses the context while validations complete synchronously; clones only after one goes async,
-        // so two concurrently-running validations never share a context.
-        public ValidateContext NextContext()
-        {
-            if (_nextNeedsClone)
-            {
-                _currentContext = _originalContext.CopyWithState(_originalState);
-                (_clonedContexts ??= []).Add(_currentContext);
-                _nextNeedsClone = false;
-            }
-
-            return _currentContext;
-        }
-
-        public void Track(Task validationTask)
-        {
-            if (validationTask.IsCompletedSuccessfully)
-            {
-                return; // synchronous: keep using the same context
-            }
-
-            _nextNeedsClone = true; // the next item must get its own clone
-            (_pendingTasks ??= []).Add(validationTask);
-        }
-
-        // Stays fully synchronous when nothing was tracked; otherwise awaits all and merges clone errors back.
-        public readonly Task<bool> CompleteAsync()
-            => _pendingTasks is null ? Task.FromResult(false) : AwaitAndMergeAsync(_pendingTasks, _clonedContexts, _originalContext);
-
-        private static async Task<bool> AwaitAndMergeAsync(List<Task> pendingTasks, List<ValidateContext>? clonedContexts, ValidateContext originalContext)
-        {
-            await Task.WhenAll(pendingTasks);
-            return originalContext.MergeErrorsFromClonedContexts(clonedContexts);
-        }
+        _originalContext = context;
+        _currentContext = context;
+        _originalState = context.CaptureMutableState();
     }
 
+    // Reuses the context while validations complete synchronously; clones only after one goes async,
+    // so two concurrently-running validations never share a context.
+    public ValidateContext NextContext()
+    {
+        if (_nextNeedsClone)
+        {
+            _currentContext = _originalContext.CopyWithState(_originalState);
+            (_clonedContexts ??= []).Add(_currentContext);
+            _nextNeedsClone = false;
+        }
+
+        return _currentContext;
+    }
+
+    public void Track(Task validationTask)
+    {
+        if (validationTask.IsCompletedSuccessfully)
+        {
+            return; // synchronous: keep using the same context
+        }
+
+        _nextNeedsClone = true; // the next item must get its own clone
+        (_pendingTasks ??= []).Add(validationTask);
+    }
+
+    // Stays fully synchronous when nothing was tracked; otherwise awaits all and merges clone errors back.
+    public readonly Task<bool> CompleteAsync()
+        => _pendingTasks is null ? Task.FromResult(false) : AwaitAndMergeAsync(_pendingTasks, _clonedContexts, _originalContext);
+
+    private static async Task<bool> AwaitAndMergeAsync(List<Task> pendingTasks, List<ValidateContext>? clonedContexts, ValidateContext originalContext)
+    {
+        await Task.WhenAll(pendingTasks);
+        return originalContext.MergeErrorsFromClonedContexts(clonedContexts);
+    }
+}
 }

@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.Validation.Localization;
 /// </code>
 /// </example>
 /// </remarks>
-public sealed class ValidationAttributeFormatterRegistry
+internal sealed class ValidationAttributeFormatterRegistry
 {
     private readonly Dictionary<Type, Func<ValidationAttribute, IValidationAttributeFormatter>> _factories = [];
 

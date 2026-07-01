@@ -15,7 +15,7 @@ public class BuiltInFormattersTests
     {
         var formatter = Registry.GetFormatter(new RangeAttribute(18, 120));
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             messageTemplate: "{0} must be between {1} and {2}.",
             displayName: "Age");
@@ -28,7 +28,7 @@ public class BuiltInFormattersTests
     {
         var formatter = Registry.GetFormatter(new MinLengthAttribute(3));
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             "{0} must be at least {1} characters.",
             "Name");
@@ -41,7 +41,7 @@ public class BuiltInFormattersTests
     {
         var formatter = Registry.GetFormatter(new MaxLengthAttribute(50));
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             "{0} must be at most {1} characters.",
             "Name");
@@ -54,7 +54,7 @@ public class BuiltInFormattersTests
     {
         var formatter = Registry.GetFormatter(new LengthAttribute(3, 50));
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             "{0} must be between {1} and {2} characters.",
             "Name");
@@ -68,7 +68,7 @@ public class BuiltInFormattersTests
         // Note: StringLength's template uses {1}=max, {2}=min (matches BCL convention).
         var formatter = Registry.GetFormatter(new StringLengthAttribute(50) { MinimumLength = 3 });
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             "{0} must be between {2} and {1} characters.",
             "Name");
@@ -81,7 +81,7 @@ public class BuiltInFormattersTests
     {
         var formatter = Registry.GetFormatter(new RegularExpressionAttribute(@"^[A-Z]+$"));
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             "{0} must match {1}.",
             "Code");
@@ -95,7 +95,7 @@ public class BuiltInFormattersTests
         var attr = new FileExtensionsAttribute { Extensions = "png,jpg" };
         var formatter = Registry.GetFormatter(attr);
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             "{0} must have one of these extensions: {1}.",
             "File");
@@ -109,7 +109,7 @@ public class BuiltInFormattersTests
         var attr = new CompareAttribute("ConfirmPassword");
         var formatter = Registry.GetFormatter(attr);
 
-        var result = formatter!.FormatErrorMessage(
+        var result = formatter!.FormatMessage(
             CultureInfo.InvariantCulture,
             "{0} must match {1}.",
             "Password");

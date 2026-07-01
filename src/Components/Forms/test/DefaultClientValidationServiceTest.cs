@@ -636,7 +636,7 @@ public class DefaultClientValidationServiceTest
     private sealed class RecordingValidationLocalizer : IValidationLocalizer
     {
         public List<DisplayNameLocalizationContext> DisplayNameCalls { get; } = new();
-        public List<ErrorMessageLocalizationContext> ErrorMessageCalls { get; } = new();
+        public List<ValidationAttributeLocalizationContext> ErrorMessageCalls { get; } = new();
         public Dictionary<string, string?> DisplayNameResults { get; } = new();
         public Dictionary<string, string?> ErrorMessageResults { get; } = new();
 
@@ -646,7 +646,7 @@ public class DefaultClientValidationServiceTest
             return context.DisplayName is not null && DisplayNameResults.TryGetValue(context.DisplayName, out var v) ? v : null;
         }
 
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context)
         {
             ErrorMessageCalls.Add(context);
             var key = context.Attribute.ErrorMessage ?? context.Attribute.GetType().Name;
@@ -659,14 +659,14 @@ public class DefaultClientValidationServiceTest
         public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
             => throw new InvalidOperationException("ResolveDisplayName must not be called for the resource-attribute path.");
 
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context) => null;
     }
 
     private sealed class ThrowingErrorMessageLocalizer : IValidationLocalizer
     {
         public string? ResolveDisplayName(in DisplayNameLocalizationContext context) => null;
 
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context)
             => throw new InvalidOperationException("ResolveErrorMessage must not be called when ErrorMessageResourceType is set.");
     }
 
@@ -674,7 +674,7 @@ public class DefaultClientValidationServiceTest
     {
         public string? ResolveDisplayName(in DisplayNameLocalizationContext context) => null;
 
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context)
             => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
             {
                 "fr" => $"Le champ {context.DisplayName} est requis (fr)",

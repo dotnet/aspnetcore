@@ -214,17 +214,17 @@ namespace Microsoft.Extensions.Validation.Generated
 
         public override string? GetDisplayName(global::Microsoft.Extensions.Validation.ValidateContext context, string memberName, global::System.Type? type)
         {
-            var localizer = context.GetLocalizer();
-            if (localizer is null)
+            var factory = (global::Microsoft.Extensions.Localization.IStringLocalizerFactory)context.ValidationContext.GetService(typeof(global::Microsoft.Extensions.Localization.IStringLocalizerFactory));
+            if (factory is null)
             {
                 return _literal;
             }
-            return localizer.ResolveDisplayName(new global::Microsoft.Extensions.Validation.DisplayNameLocalizationContext
-            {
-                Type = type,
-                DisplayName = _literal,
-                MemberName = memberName,
-            }) ?? _literal;
+            var localizer = context.ValidationOptions.LocalizerProvider is { } provider
+                ? provider(type, factory)
+                : factory.Create(type ?? typeof(object));
+            var localizedName = localizer[literal];
+
+            return localizedName.ResourceNotFound ? _literal : localizedName.Value;
         }
     }
 

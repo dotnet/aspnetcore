@@ -69,7 +69,7 @@ public class DefaultValidationLocalizerTests
     {
         var localizer = CreateLocalizer(translations: []);
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Name",
             DisplayName = "Name",
@@ -84,7 +84,7 @@ public class DefaultValidationLocalizerTests
     {
         var localizer = CreateLocalizer(new() { ["RequiredKey"] = "Le {0} est requis." });
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Name",
             DisplayName = "Nom",
@@ -99,7 +99,7 @@ public class DefaultValidationLocalizerTests
     {
         var localizer = CreateLocalizer(translations: []);
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Name",
             DisplayName = "Name",
@@ -121,7 +121,7 @@ public class DefaultValidationLocalizerTests
             options.ErrorMessageKeyProvider = ctx => $"{ctx.Attribute.GetType().Name}_Default";
         });
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Name",
             DisplayName = "Name",
@@ -137,7 +137,7 @@ public class DefaultValidationLocalizerTests
         var localizer = CreateLocalizer(new() { ["RequiredAttribute_Default"] = "Should not be used" },
             options => options.ErrorMessageKeyProvider = _ => null);
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Name",
             DisplayName = "Name",
@@ -158,7 +158,7 @@ public class DefaultValidationLocalizerTests
         var localizer = CreateLocalizer(translations, options =>
             options.ErrorMessageKeyProvider = ctx => $"{ctx.Attribute.GetType().Name}_Default");
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Name",
             DisplayName = "Name",
@@ -178,7 +178,7 @@ public class DefaultValidationLocalizerTests
         var localizer = CreateLocalizer(translations,
             options => options.ErrorMessageKeyProvider = _ => null);
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Name",
             DisplayName = "Name",
@@ -197,7 +197,7 @@ public class DefaultValidationLocalizerTests
         };
         var localizer = CreateLocalizer(translations);
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Score",
             DisplayName = "Score",
@@ -217,7 +217,7 @@ public class DefaultValidationLocalizerTests
         };
         var localizer = CreateLocalizer(translations);
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "Email",
             DisplayName = "Email",
@@ -368,7 +368,7 @@ public class DefaultValidationLocalizerTests
             options.AttributeFormatters.AddFormatter<CustomAttribute>(
                 attr => new CustomAttributeFormatter(attr)));
 
-        var result = localizer.ResolveErrorMessage(new()
+        var result = localizer.ResolveMessage(new()
         {
             MemberName = "M",
             DisplayName = "TheField",
@@ -411,7 +411,7 @@ public class DefaultValidationLocalizerTests
 
     private sealed class CustomAttributeFormatter(CustomAttribute attribute) : IValidationAttributeFormatter
     {
-        public string FormatErrorMessage(System.Globalization.CultureInfo culture, string messageTemplate, string displayName)
+        public string FormatMessage(System.Globalization.CultureInfo culture, string messageTemplate, string displayName)
             => string.Format(culture, messageTemplate, displayName, attribute.Extra);
     }
 }

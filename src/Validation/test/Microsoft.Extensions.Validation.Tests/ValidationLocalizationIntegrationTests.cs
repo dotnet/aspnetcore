@@ -340,7 +340,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
     private sealed class RecordingValidationLocalizer : IValidationLocalizer
     {
         public List<DisplayNameLocalizationContext> DisplayNameCalls { get; } = [];
-        public List<ErrorMessageLocalizationContext> ErrorMessageCalls { get; } = [];
+        public List<ValidationAttributeLocalizationContext> ErrorMessageCalls { get; } = [];
         public string? DisplayNameResult { get; set; }
         public string? ErrorMessageResult { get; set; }
 
@@ -350,7 +350,7 @@ public class ValidationLocalizationIntegrationTests : ValidationTestBase
             return DisplayNameResult;
         }
 
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context)
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context)
         {
             ErrorMessageCalls.Add(context);
             return ErrorMessageResult;

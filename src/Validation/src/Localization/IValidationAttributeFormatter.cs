@@ -6,46 +6,10 @@ using System.Globalization;
 namespace Microsoft.Extensions.Validation.Localization;
 
 /// <summary>
-/// Formats a validation error message template with attribute-specific arguments.
-/// Used by the validation localization pipeline to produce fully formatted error messages
-/// from localized templates that contain positional placeholders beyond <c>{0}</c> (the display name).
+/// Formats a validation message template with attribute-specific arguments.
+/// Used by the validation localization pipeline to produce fully formatted messages
+/// from localized templates that contain positional placeholders.
 /// </summary>
-/// <remarks>
-/// <para>
-/// To add formatting support for a custom validation attribute, you have two options:
-/// </para>
-/// <list type="number">
-///   <item>
-///     <description>
-///     Implement <see cref="IValidationAttributeFormatter"/> directly on the attribute itself.
-///     <see cref="ValidationAttributeFormatterRegistry"/> checks for this first and uses the
-///     attribute as its own formatter automatically.
-///     </description>
-///   </item>
-///   <item>
-///     <description>
-///     Create a separate <see cref="IValidationAttributeFormatter"/> implementation and register
-///     it via <see cref="ValidationLocalizationOptions.AttributeFormatters"/> by calling
-///     <see cref="ValidationAttributeFormatterRegistry.AddFormatter{TAttribute}(Func{TAttribute, IValidationAttributeFormatter})"/>.
-///     </description>
-///   </item>
-/// </list>
-/// <example>
-/// The following example shows how to register a formatter for a custom attribute:
-/// <code>
-/// public class MyAttributeFormatter(MyAttribute attribute) : IValidationAttributeFormatter
-/// {
-///     public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)
-///         => string.Format(culture, messageTemplate, displayName, attribute.CustomProperty);
-/// }
-///
-/// // Register it in Program.cs:
-/// builder.Services.AddValidationLocalization(options =&gt;
-///     options.AttributeFormatters.AddFormatter&lt;MyAttribute&gt;(
-///         attribute =&gt; new MyAttributeFormatter(attribute)));
-/// </code>
-/// </example>
-/// </remarks>
 public interface IValidationAttributeFormatter
 {
     /// <summary>
@@ -53,8 +17,8 @@ public interface IValidationAttributeFormatter
     /// arguments alongside the <paramref name="displayName"/>.
     /// </summary>
     /// <param name="culture">The <see cref="CultureInfo"/> to use when formatting.</param>
-    /// <param name="messageTemplate">The error message template containing format placeholders.</param>
+    /// <param name="messageTemplate">The message template containing format placeholders.</param>
     /// <param name="displayName">The resolved display name of the member being validated.</param>
-    /// <returns>The fully formatted error message.</returns>
-    string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName);
+    /// <returns>The fully formatted message.</returns>
+    string FormatMessage(CultureInfo culture, string messageTemplate, string displayName);
 }

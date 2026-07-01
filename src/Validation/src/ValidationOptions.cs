@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Validation.Localization;
 
 namespace Microsoft.Extensions.Validation;
@@ -34,7 +35,9 @@ public class ValidationOptions
     /// </remarks>
     public int MaxDepth { get; set; } = 32;
 
-    public ValidationLocalizationOptions Localization { get; } = new();
+    public Func<Type?, IStringLocalizerFactory, IStringLocalizer>? LocalizerProvider { get; set; }
+
+    public Func<ValidationMessageKeyContext, string?>? MessageKeyProvider { get; set; }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

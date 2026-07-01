@@ -135,19 +135,19 @@ public class ValidationAttributeFormatterRegistryTests
 
     private sealed class CustomAttributeFormatter(CustomAttribute attribute) : IValidationAttributeFormatter
     {
-        public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)
+        public string FormatMessage(CultureInfo culture, string messageTemplate, string displayName)
             => string.Format(culture, messageTemplate, displayName, attribute.Extra);
     }
 
     private sealed class ReplacementFormatter : IValidationAttributeFormatter
     {
-        public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)
+        public string FormatMessage(CultureInfo culture, string messageTemplate, string displayName)
             => "REPLACEMENT";
     }
 
     private sealed class SelfFormattingAttribute : ValidationAttribute, IValidationAttributeFormatter
     {
-        public string FormatErrorMessage(CultureInfo culture, string messageTemplate, string displayName)
+        public string FormatMessage(CultureInfo culture, string messageTemplate, string displayName)
             => $"Self: {displayName}";
     }
 }

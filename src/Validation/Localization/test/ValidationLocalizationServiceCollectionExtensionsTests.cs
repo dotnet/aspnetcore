@@ -170,7 +170,7 @@ public class ValidationLocalizationServiceCollectionExtensionsTests
     private sealed class NoOpValidationLocalizer : IValidationLocalizer
     {
         public string? ResolveDisplayName(in DisplayNameLocalizationContext context) => null;
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context) => null;
     }
 
     private sealed class SharedResources { }

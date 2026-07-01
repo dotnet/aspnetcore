@@ -10,6 +10,8 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -105,20 +107,18 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
     {
         public override string? GetDisplayName(ValidateContext context, string memberName, Type? type)
         {
-            var localizer = context.ValidationOptions.Localizer;
-            if (localizer is null)
+            var factory = context.ValidationContext.GetService<IStringLocalizerFactory>();
+            if (factory is null)
             {
                 return literal;
             }
 
-            // The literal acts as both the lookup key for the localizer AND the fallback display
-            // name when the localizer can't translate.
-            return localizer.ResolveDisplayName(new DisplayNameLocalizationContext
-            {
-                Type = type,
-                DisplayName = literal,
-                MemberName = memberName,
-            }) ?? literal;
+            var localizer = context.ValidationOptions.LocalizerProvider is { } provider
+                ? provider(type, factory)
+                : factory.Create(type ?? typeof(object));
+            var localizedName = localizer[literal];
+
+            return localizedName.ResourceNotFound ? literal : localizedName.Value;
         }
     }
 

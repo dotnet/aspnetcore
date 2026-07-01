@@ -242,7 +242,7 @@ internal sealed class DefaultClientValidationService : IClientValidationService
             return attribute.FormatErrorMessage(displayName);
         }
 
-        return _validationLocalizer.ResolveErrorMessage(new ErrorMessageLocalizationContext
+        return _validationLocalizer.ResolveMessage(new ValidationAttributeLocalizationContext
         {
             MemberName = fieldName,
             DisplayName = displayName,

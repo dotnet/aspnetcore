@@ -512,6 +512,6 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
     private sealed class ConstantLocalizer(string message) : IValidationLocalizer
     {
         public string? ResolveDisplayName(in DisplayNameLocalizationContext context) => null;
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => message;
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context) => message;
     }
 }

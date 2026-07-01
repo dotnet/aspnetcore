@@ -205,7 +205,7 @@ public class RuntimeValidatableParameterInfoResolverTests
             return context.DisplayName is not null && Translations.TryGetValue(context.DisplayName, out var v) ? v : null;
         }
 
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context) => null;
     }
 
     private sealed class ThrowingValidationLocalizer : IValidationLocalizer
@@ -213,7 +213,7 @@ public class RuntimeValidatableParameterInfoResolverTests
         public string? ResolveDisplayName(in DisplayNameLocalizationContext context)
             => throw new InvalidOperationException("ResolveDisplayName must not be called for resource-attribute paths.");
 
-        public string? ResolveErrorMessage(in ErrorMessageLocalizationContext context) => null;
+        public string? ResolveMessage(in ValidationAttributeLocalizationContext context) => null;
     }
 
     private static ParameterInfo GetParameter(Type parameterType)
