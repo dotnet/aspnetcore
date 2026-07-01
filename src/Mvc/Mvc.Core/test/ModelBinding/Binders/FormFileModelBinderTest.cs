@@ -429,6 +429,96 @@ public class FormFileModelBinderTest
         Assert.Null(bindingContext.Result.Model);
     }
 
+    [Fact]
+    public async Task FormFileModelBinder_ExpectMultipleFiles_WithIndexBinding_BindSuccessful()
+    {
+        // Arrange
+        var formFiles = new FormFileCollection
+        {
+            GetMockFormFile("file[0]", "file1.txt"),
+            GetMockFormFile("file[1]", "file2.txt"),
+        };
+        var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+        var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
+        var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+
+        var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+        Assert.False(entry.SuppressValidation);
+        Assert.Equal("file", entry.Key);
+        Assert.Null(entry.Metadata);
+
+        var files = Assert.IsAssignableFrom<IList<IFormFile>>(bindingContext.Result.Model);
+        Assert.Equal(2, files.Count);
+        Assert.Equal("file1.txt", files[0].FileName);
+        Assert.Equal("file2.txt", files[1].FileName);
+    }
+
+    [Fact]
+    public async Task FormFileModelBinder_ExpectMultipleFiles_WithNamedIndexBinding_BindSuccessful()
+    {
+        // Arrange
+        var formFiles = new FormFileCollection
+        {
+            GetMockFormFile("file[foo]", "file1.txt"),
+            GetMockFormFile("file[bar]", "file2.txt"),
+        };
+        var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+        var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
+        var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+
+        var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+        Assert.False(entry.SuppressValidation);
+        Assert.Equal("file", entry.Key);
+        Assert.Null(entry.Metadata);
+
+        var files = Assert.IsAssignableFrom<IList<IFormFile>>(bindingContext.Result.Model);
+        Assert.Equal(2, files.Count);
+        Assert.Equal("file1.txt", files[0].FileName);
+        Assert.Equal("file2.txt", files[1].FileName);
+    }
+
+    [Fact]
+    public async Task FormFileModelBinder_ExpectMultipleFiles_WithEmptyBracketBinding_BindSuccessful()
+    {
+        // Arrange
+        var formFiles = new FormFileCollection
+        {
+            GetMockFormFile("file[]", "file1.txt"),
+            GetMockFormFile("file[]", "file2.txt"),
+        };
+        var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+        var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
+        var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+        // Act
+        await binder.BindModelAsync(bindingContext);
+
+        // Assert
+        Assert.True(bindingContext.Result.IsModelSet);
+
+        var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+        Assert.False(entry.SuppressValidation);
+        Assert.Equal("file", entry.Key);
+        Assert.Null(entry.Metadata);
+
+        var files = Assert.IsAssignableFrom<IList<IFormFile>>(bindingContext.Result.Model);
+        Assert.Equal(2, files.Count);
+        Assert.Equal("file1.txt", files[0].FileName);
+        Assert.Equal("file2.txt", files[1].FileName);
+    }
+
     private static DefaultModelBindingContext GetBindingContextForReadOnlyArray(HttpContext httpContext)
     {
         var metadataProvider = new TestModelMetadataProvider();
