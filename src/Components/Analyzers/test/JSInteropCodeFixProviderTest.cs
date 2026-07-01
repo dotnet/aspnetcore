@@ -138,7 +138,7 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     }
 
     [Fact]
-    public void WrapsUnguardedInvokeAsyncInTryCatch()
+    public void WrapsUnguardedInvokeAsyncExpressionStatementInTryCatch()
     {
         var oldSource = @"
     namespace BlazorApp1.Components
@@ -154,7 +154,7 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
 
             protected override async Task OnAfterRenderAsync(bool firstRender)
             {
-                var result = await JS.InvokeAsync<string>(""prompt"", ""Name?"");
+                await JS.InvokeAsync<string>(""prompt"", ""Name?"");
             }
         }
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
@@ -175,7 +175,7 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
             {
             try
             {
-                var result = await JS.InvokeAsync<string>(""prompt"", ""Name?"");
+                await JS.InvokeAsync<string>(""prompt"", ""Name?"");
             }
             catch (Exception)
             {
@@ -233,5 +233,56 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(oldSource, newSource);
+    }
+
+    [Fact]
+    public void DoesNotOfferFixForLocalDeclarationStatement()
+    {
+        var source = @"
+    namespace BlazorApp1.Components
+    {
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            private IJSRuntime JS = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                var result = await JS.InvokeAsync<string>(""prompt"", ""Name?"");
+                _ = result;
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpFix(source, source);
+    }
+
+    [Fact]
+    public void DoesNotOfferFixForReturnStatement()
+    {
+        var source = @"
+    namespace BlazorApp1.Components
+    {
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            private IJSRuntime JS = default!;
+
+            public ValueTask DisplayCustomer()
+            {
+                return JS.InvokeVoidAsync(""console.log"", $""Customer submitted: {1}, {2}, {3}, {4}, {5}"");
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpFix(source, source);
     }
 }

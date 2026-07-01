@@ -50,25 +50,28 @@ public class JSInteropCodeFixProvider : CodeFixProvider
             return;
         }
 
+        var statement = invocation.FirstAncestorOrSelf<StatementSyntax>();
+        if (statement is not ExpressionStatementSyntax expressionStatement)
+        {
+            return;
+        }
+
         var title = Title.ToString(CultureInfo.CurrentCulture);
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: title,
-                createChangedDocument: cancellationToken => TryCatchWrapJSInteropCallAsync(context.Document, root, invocation, cancellationToken),
+                createChangedDocument: cancellationToken => TryCatchWrapJSInteropCallAsync(context.Document, root, expressionStatement, cancellationToken),
                 equivalenceKey: title),
             diagnostic);
     }
 
-    private static async Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
+    private static async Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, ExpressionStatementSyntax expressionStatement, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Find the enclosing statement
-        var statement = invocation.FirstAncestorOrSelf<StatementSyntax>();
-
         var tryStatement =
             SyntaxFactory.TryStatement(
-                SyntaxFactory.Block(statement),
+                SyntaxFactory.Block(expressionStatement),
                 SyntaxFactory.SingletonList(
                     SyntaxFactory.CatchClause()
                         .WithDeclaration(
@@ -77,7 +80,7 @@ public class JSInteropCodeFixProvider : CodeFixProvider
                         .WithBlock(SyntaxFactory.Block())), null)
             .WithAdditionalAnnotations(Formatter.Annotation);
 
-        var newRoot = root.ReplaceNode(statement, tryStatement);
+        var newRoot = root.ReplaceNode(expressionStatement, tryStatement);
         if (newRoot is null)
         {
             return document;
