@@ -63,12 +63,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
         }
 
         var app = BlazorGateway.BuildWebHost(args.ToArray());
-
-        // BlazorGateway serves individual static assets (e.g. index.html, _framework/*) but does not
-        // register a default-document/SPA fallback. The E2E tests navigate to the app's path base
-        // (e.g. /subdir), so fall back to index.html for requests that don't match a static asset.
         app.MapFallbackToFile("index.html");
-
         return app;
     }
 
