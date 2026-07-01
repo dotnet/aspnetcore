@@ -72,3 +72,4 @@ Microsoft.AspNetCore.Components.Forms.Label<TValue>.ChildContent.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.For.set -> void
 Microsoft.AspNetCore.Components.Forms.Label<TValue>.Label() -> void
+Microsoft.AspNetCore.Components.Forms.EditForm.SubmitAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
