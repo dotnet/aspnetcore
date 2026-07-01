@@ -8,6 +8,7 @@
 #include "ServerErrorHandler.h"
 #include "resource.h"
 #include "file_utility.h"
+#include "StringHelpers.h"
 
 // Just to be aware of the FORWARDING_HANDLER object size.
 C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
@@ -2235,7 +2236,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
             switch (headerIndex)
             {
             case HttpHeaderTransferEncoding:
-                if (!strHeaderValue.Equals("chunked", TRUE))
+                if (!isChunkedTransferEncoding(strHeaderValue.QueryStr()))
                 {
                     break;
                 }

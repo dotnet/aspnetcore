@@ -9,6 +9,9 @@
 bool endsWith(const std::wstring &source, const std::wstring &suffix, bool ignoreCase = false);
 
 [[nodiscard]]
+bool isChunkedTransferEncoding(const std::string& transferEncoding);
+
+[[nodiscard]]
 bool equals_ignore_case(const std::wstring& s1, const std::wstring& s2);
 
 [[nodiscard]]

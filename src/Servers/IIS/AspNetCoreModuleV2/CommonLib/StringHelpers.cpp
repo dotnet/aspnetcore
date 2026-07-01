@@ -4,6 +4,43 @@
 #include "StringHelpers.h"
 #include "exceptions.h"
 
+bool isChunkedTransferEncoding(const std::string& transferEncoding)
+{
+    //
+    // Trim trailing optional whitespace and commas so that the real final
+    // coding is evaluated (e.g. "chunked," -> "chunked").
+    //
+    size_t end = transferEncoding.length();
+    while (end > 0 &&
+        (transferEncoding[end - 1] == ' ' ||
+            transferEncoding[end - 1] == '\t' ||
+            transferEncoding[end - 1] == ','))
+    {
+        end--;
+    }
+
+    //
+    // Find the start of the last token (everything after the last comma).
+    //
+    size_t start = end;
+    while (start > 0 && transferEncoding[start - 1] != ',')
+    {
+        start--;
+    }
+
+    //
+    // Trim leading optional whitespace on the final token.
+    //
+    while (start < end &&
+        (transferEncoding[start] == ' ' || transferEncoding[start] == '\t'))
+    {
+        start++;
+    }
+
+    const size_t tokenLength = end - start;
+    return tokenLength == 7 && _strnicmp(transferEncoding.c_str() + start, "chunked", 7) == 0;
+}
+
 bool endsWith(const std::wstring& source, const std::wstring& suffix, bool ignoreCase)
 {
     if (source.length() < suffix.length())
