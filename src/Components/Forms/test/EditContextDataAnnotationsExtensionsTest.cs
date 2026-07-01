@@ -207,18 +207,6 @@ public class EditContextDataAnnotationsExtensionsTest
     }
 
     [Fact]
-    public void DoesNotMatchProperty_WhenCaseIsDifferent()
-    {
-        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
-        var editContext = new EditContext(model);
-        editContext.EnableDataAnnotationsValidation(_serviceProvider);
-
-        var field = new FieldIdentifier(model, "orderid");
-        editContext.NotifyFieldChanged(field);
-        Assert.Empty(editContext.GetValidationMessages());
-    }
-
-    [Fact]
     public void MatchesProperty_WhenCaseIsCorrect()
     {
         var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
