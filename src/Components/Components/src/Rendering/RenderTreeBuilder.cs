@@ -283,7 +283,7 @@ public sealed class RenderTreeBuilder : IDisposable
             // to box.
             _entries.AppendAttribute(sequence, name, value);
         }
-        else if (value.RequiresExplicitReceiver)
+        else if (value.RequiresExplicitReceiver && value.HasDelegate)
         {
             // If we need to preserve the receiver, we just box the EventCallback
             // so we can get it out on the other side.
