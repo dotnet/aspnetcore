@@ -37,6 +37,14 @@ public class NavLink : ComponentBase, IDisposable
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
     /// <summary>
+    /// Gets or sets a callback invoked with the current active state when it changes.
+    /// Use this to react to the active state from a parent component (e.g., to apply a
+    /// class to a surrounding element) when styling the <c>a</c> tag alone is not enough.
+    /// </summary>
+    [Parameter]
+    public EventCallback<bool> ActivationChanged { get; set; }
+
+    /// <summary>
     /// Gets or sets the computed CSS class based on whether or not the link is active.
     /// </summary>
     protected string? CssClass { get; set; }
@@ -113,7 +121,7 @@ public class NavLink : ComponentBase, IDisposable
         CssClass = _isActive ? CombineWithSpace(_class, ActiveClass ?? DefaultActiveClass) : _class;
     }
 
-    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    private async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         // We could just re-render always, but for this component we know the
         // only relevant state change is to the _isActive property.
@@ -123,6 +131,10 @@ public class NavLink : ComponentBase, IDisposable
             _isActive = shouldBeActiveNow;
             UpdateCssClass();
             StateHasChanged();
+            if (ActivationChanged.HasDelegate)
+            {
+                await ActivationChanged.InvokeAsync(_isActive);
+            }
         }
     }
 
