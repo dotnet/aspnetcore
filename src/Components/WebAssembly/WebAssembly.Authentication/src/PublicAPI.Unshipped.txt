@@ -1,4 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationTokenStorage
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationTokenStorage.SessionStorage = 0 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationTokenStorage
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationTokenStorage.LocalStorage = 1 -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationTokenStorage
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.TokenStorage.get -> Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationTokenStorage
+Microsoft.AspNetCore.Components.WebAssembly.Authentication.OidcProviderOptions.TokenStorage.set -> void
 *REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.AccessTokenResult(Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResultStatus status, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessToken! token, string! redirectUrl) -> void
 *REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccessTokenResult.RedirectUrl.get -> string?
 *REMOVED*Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationService<TRemoteAuthenticationState, TAccount, TProviderOptions>.RemoteAuthenticationService(Microsoft.JSInterop.IJSRuntime! jsRuntime, Microsoft.Extensions.Options.IOptionsSnapshot<Microsoft.AspNetCore.Components.WebAssembly.Authentication.RemoteAuthenticationOptions<TProviderOptions>!>! options, Microsoft.AspNetCore.Components.NavigationManager! navigation, Microsoft.AspNetCore.Components.WebAssembly.Authentication.AccountClaimsPrincipalFactory<TAccount!>! accountClaimsPrincipalFactory) -> void
