@@ -12,18 +12,22 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 
     private static readonly bool s_throwNavigationException =
         !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
-    private static bool? s_throwNavigationExceptionOverride;
+    private static int s_throwNavigationExceptionOverride = -1;
 
     [FeatureSwitchDefinition(_disableThrowNavigationException)]
-    private static bool _throwNavigationException => s_throwNavigationExceptionOverride ?? s_throwNavigationException;
+    private static bool _throwNavigationException => System.Threading.Volatile.Read(ref s_throwNavigationExceptionOverride) switch
+    {
+        0 => false,
+        1 => true,
+        _ => s_throwNavigationException,
+    };
 
     private Func<string, Task>? _onNavigateTo;
 
-    internal static IDisposable SetThrowNavigationExceptionOverrideForTest(bool throwNavigationException)
+    internal static IDisposable SetThrowNavigationExceptionOverrideForTest(bool value)
     {
-        var previousValue = s_throwNavigationExceptionOverride;
-        s_throwNavigationExceptionOverride = throwNavigationException;
-        return new TestSwitchOverride(previousValue);
+        var previousValue = System.Threading.Interlocked.Exchange(ref s_throwNavigationExceptionOverride, value ? 1 : 0);
+        return new ThrowNavigationExceptionOverrideScope(previousValue);
     }
 
     void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
@@ -56,11 +60,11 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
         }
     }
 
-    private sealed class TestSwitchOverride(bool? previousValue) : IDisposable
+    private sealed class ThrowNavigationExceptionOverrideScope(int previousValue) : IDisposable
     {
         public void Dispose()
         {
-            s_throwNavigationExceptionOverride = previousValue;
+            _ = System.Threading.Interlocked.Exchange(ref s_throwNavigationExceptionOverride, previousValue);
         }
     }
 }
