@@ -156,6 +156,9 @@
   <data name="AssemblyDescription" xml:space="preserve">
     <value>The assembly path to use. Required.</value>
   </data>
+  <data name="EnvironmentDescription" xml:space="preserve">
+    <value>The environment name to use (e.g., Development, Production).</value>
+  </data>
   <data name="QuietAndVerboseSpecified" xml:space="preserve">
     <value>Cannot specify both '--quiet' and '--verbose' options.</value>
   </data>
