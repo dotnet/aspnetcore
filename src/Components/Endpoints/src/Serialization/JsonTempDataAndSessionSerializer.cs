@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 
@@ -11,21 +12,62 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
 {
     private static readonly JsonSerializerOptions _options = new(JsonSerializerDefaults.Web);
 
-    private static readonly HashSet<Type> _supportedTypes = [typeof(int), typeof(bool), typeof(string), typeof(Guid), typeof(DateTime)];
+    private static readonly Dictionary<Type, string> _scalarNames = new()
+    {
+        [typeof(int)] = "int",
+        [typeof(bool)] = "bool",
+        [typeof(string)] = "string",
+        [typeof(Guid)] = "guid",
+        [typeof(DateTime)] = "datetime",
+    };
+
+    private static readonly HashSet<Type> _supportedTypes = [.. _scalarNames.Keys];
+
+    private static readonly HashSet<Type> _int32EnumUnderlyingTypes =
+        [typeof(byte), typeof(sbyte), typeof(short), typeof(ushort), typeof(int)];
 
     private static readonly Dictionary<string, Type> _nameToType = BuildNameToType();
+    private static readonly Dictionary<Type, string> _typeToName = BuildTypeToName(_nameToType);
 
     private static Dictionary<string, Type> BuildNameToType()
     {
-        var map = new Dictionary<string, Type>();
-        foreach (var type in _supportedTypes)
+        var map = new Dictionary<string, Type>(StringComparer.Ordinal);
+
+        foreach (var (scalar, name) in _scalarNames)
         {
-            map[type.FullName!] = type;
-            map[type.MakeArrayType().FullName!] = type.MakeArrayType();
-            var dictType = typeof(Dictionary<,>).MakeGenericType(typeof(string), type);
-            map[dictType.FullName!] = dictType;
+            map[name] = scalar;
+            AddCollectionTypeNames(map, scalar, name);
+
+            if (scalar.IsValueType)
+            {
+                var nullable = typeof(Nullable<>).MakeGenericType(scalar);
+                map[$"{name}?"] = nullable;
+                AddCollectionTypeNames(map, nullable, $"{name}?");
+            }
         }
-        map[typeof(object[]).FullName!] = typeof(object[]);
+
+        map["object[]"] = typeof(object[]);
+        return map;
+    }
+
+    private static void AddCollectionTypeNames(Dictionary<string, Type> map, Type element, string name)
+    {
+        map[$"{name}[]"] = element.MakeArrayType();
+        map[$"list[{name}]"] = typeof(List<>).MakeGenericType(element);
+        map[$"set[{name}]"] = typeof(HashSet<>).MakeGenericType(element);
+        map[$"sortedset[{name}]"] = typeof(SortedSet<>).MakeGenericType(element);
+        map[$"collection[{name}]"] = typeof(Collection<>).MakeGenericType(element);
+        map[$"observable[{name}]"] = typeof(ObservableCollection<>).MakeGenericType(element);
+        map[$"dict[{name}]"] = typeof(Dictionary<,>).MakeGenericType(typeof(string), element);
+    }
+
+    private static Dictionary<Type, string> BuildTypeToName(Dictionary<string, Type> nameToType)
+    {
+        var map = new Dictionary<Type, string>();
+        foreach (var (name, type) in nameToType)
+        {
+            map[type] = name;
+        }
         return map;
     }
 
@@ -72,7 +114,7 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
 
     public bool CanSerialize(Type type)
     {
-        if (_supportedTypes.Contains(type) || type.IsEnum)
+        if (IsSupportedElement(type))
         {
             return true;
         }
@@ -82,12 +124,13 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
             return true;
         }
 
-        if (type.IsArray && (_supportedTypes.Contains(type.GetElementType()!) || type.GetElementType()!.IsEnum))
+        if (type.IsArray && IsSupportedElement(type.GetElementType()!))
         {
             return true;
         }
 
-        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>) && type.GetGenericArguments()[0] == typeof(string) && _supportedTypes.Contains(type.GetGenericArguments()[1]))
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+            && type.GetGenericArguments()[0] == typeof(string) && IsSupportedElement(type.GetGenericArguments()[1]))
         {
             return true;
         }
@@ -95,11 +138,25 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         var collectionElementType = GetCollectionElementType(type);
         if (collectionElementType is not null)
         {
-            return _supportedTypes.Contains(collectionElementType) || collectionElementType.IsEnum;
+            return _typeToName.ContainsKey(type);
         }
 
         return false;
     }
+
+    private static bool IsSupportedElement(Type type)
+    {
+        if (_supportedTypes.Contains(type) || IsInt32Enum(type))
+        {
+            return true;
+        }
+
+        var underlyingType = Nullable.GetUnderlyingType(type);
+        return underlyingType is not null && _supportedTypes.Contains(underlyingType);
+    }
+
+    private static bool IsInt32Enum(Type type)
+        => type.IsEnum && _int32EnumUnderlyingTypes.Contains(type.GetEnumUnderlyingType());
 
     public byte[] SerializeData(IDictionary<string, (object? Value, Type? Type)> data)
     {
@@ -137,8 +194,13 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
         var collectionElementType = GetCollectionElementType(valueType);
         var (writeValue, writeType) = NormalizeValue(value, valueType, collectionElementType);
 
+        if (!_typeToName.TryGetValue(writeType, out var writeTypeName))
+        {
+            throw new InvalidOperationException($"Cannot serialize type '{writeType}'.");
+        }
+
         writer.WriteStartObject();
-        writer.WriteString("type", writeType.FullName);
+        writer.WriteString("type", writeTypeName);
         writer.WritePropertyName("value");
 
         if (writeType == typeof(object[]))
@@ -187,11 +249,6 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
             return (ConvertEnumsToInts((IEnumerable)value), typeof(int[]));
         }
 
-        if (collectionElementType is not null && !type.IsArray)
-        {
-            return (ConvertToArray((IEnumerable)value, collectionElementType), collectionElementType.MakeArrayType());
-        }
-
         return (value, type);
     }
 
@@ -207,8 +264,15 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
             return null;
         }
 
-        var collectionInterface = type.GetInterface(typeof(ICollection<>).Name);
-        return collectionInterface?.GetGenericArguments()[0];
+        foreach (var @interface in type.GetInterfaces())
+        {
+            if (@interface.IsGenericType && @interface.GetGenericTypeDefinition() == typeof(ICollection<>))
+            {
+                return @interface.GetGenericArguments()[0];
+            }
+        }
+
+        return null;
     }
 
     private static int[] ConvertEnumsToInts(IEnumerable values)
@@ -219,15 +283,5 @@ internal sealed class JsonTempDataAndSessionSerializer : ITempDataAndSessionSeri
             result.Add(Convert.ToInt32(item, CultureInfo.InvariantCulture));
         }
         return result.ToArray();
-    }
-
-    private static Array ConvertToArray(IEnumerable values, Type elementType)
-    {
-        var list = new ArrayList();
-        foreach (var item in values)
-        {
-            list.Add(item);
-        }
-        return list.ToArray(elementType);
     }
 }

@@ -103,6 +103,20 @@ public class SessionSubscriptionTest
     }
 
     [Fact]
+    public void GetValue_RestoresList_FromSession()
+    {
+        var httpContext = CreateHttpContextWithSession();
+        SetSessionValue(httpContext, "numbers", new List<int> { 1, 2, 3 }, typeof(List<int>));
+        _supplier.SetRequestContext(httpContext);
+
+        var subscription = CreateSubscription("numbers", typeof(List<int>));
+        var result = subscription.GetCurrentValue();
+
+        var list = Assert.IsType<List<int>>(result);
+        Assert.Equal(new List<int> { 1, 2, 3 }, list);
+    }
+
+    [Fact]
     public void GetValue_ReturnsNull_WhenDeserializationFails()
     {
         var httpContext = CreateHttpContextWithSession();
