@@ -153,4 +153,16 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("people_sort=FirstName", Browser.Url);
         Assert.Contains("people_order=asc", Browser.Url);
     }
+
+    [Fact]
+    public void QuickGrid_EnableColumnResize()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+        Browser.Exists(By.CssSelector("#grid3 > table"));
+
+        var grid = Browser.FindElement(By.CssSelector("#grid3 > table"));
+
+        Browser.Equal(2, () => grid.FindElements(By.CssSelector(".col-width-draghandle")).Count);
+        Assert.Contains("col-resize", grid.GetAttribute("class"));
+    }
 }
