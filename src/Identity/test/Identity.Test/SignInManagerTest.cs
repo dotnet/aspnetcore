@@ -648,6 +648,33 @@ public class SignInManagerTest
         auth.Verify();
     }
 
+    [Fact]
+    public async Task PasskeySignInReturnsFailedWhenSessionChallengeHasExpired()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        var manager = SetupUserManager(user, passkeyHandler: passkeyHandler.Object);
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+
+        // Do NOT call SetupPasskeyAuth — simulates expired/missing session
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+            .ReturnsAsync(AuthenticateResult.Fail("Session expired."));
+        auth.Setup(a => a.SignOutAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<AuthenticationProperties>()))
+            .Returns(Task.CompletedTask);
+
+        var helper = SetupSignInManager(manager.Object, context);
+
+        // Act
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
+
+        // Assert
+        Assert.False(signInResult.Succeeded);
+        Assert.Same(SignInResult.Failed, signInResult);
+        auth.Verify();
+    }
+
     private static void SetupPasskeyAuth(HttpContext context, Mock<IAuthenticationService> auth)
     {
         // Calling AuthenticateAsync will return a failure result

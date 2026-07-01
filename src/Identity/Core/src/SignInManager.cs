@@ -663,6 +663,12 @@ public class SignInManager<TUser> where TUser : class
     {
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
+        var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync();
+        if (passkeyInfo is null || !string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
+        {
+            return SignInResult.Failed;
+        }
+
         var assertionResult = await PerformPasskeyAssertionAsync(credentialJson);
         if (!assertionResult.Succeeded)
         {
