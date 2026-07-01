@@ -60,13 +60,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _isFirstRender = true;
 
-  private _activeOperations = new Set<object>();
+  private _activeOperationCount = 0;
+
+  private _connectionUp = false;
 
   private _activePauseDeferral?: AbortController;
-
-  private _pendingJsCallTracking = new Map<number, () => void>();
-
-  private _pendingDotNetCallTracking = new Map<string, () => void>();
 
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
@@ -149,17 +147,15 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(WebRendererId.Server, this.resolveElement(selector), componentId, false));
     connection.on('JS.BeginInvokeJS', (asyncHandle: number, ...rest: unknown[]) => {
-      if (asyncHandle !== 0 && this.activityTrackingEnabled()) {
-        this._pendingJsCallTracking.set(asyncHandle, this.trackActivity());
+      if (asyncHandle !== 0) {
+        this.changeActivity(1);
       }
       (this._dispatcher.beginInvokeJSFromDotNet as (...a: unknown[]) => unknown)
         .call(this._dispatcher, asyncHandle, ...rest);
     });
     connection.on('JS.EndInvokeDotNet', (asyncCallId: string, success: boolean, resultJsonOrExceptionMessage: string) => {
-      const untrack = this._pendingDotNetCallTracking.get(asyncCallId);
-      if (untrack) {
-        this._pendingDotNetCallTracking.delete(asyncCallId);
-        untrack();
+      if (asyncCallId) {
+        this.changeActivity(-1);
       }
       this._dispatcher.endInvokeDotNetFromJS(asyncCallId, success, resultJsonOrExceptionMessage);
     });
@@ -179,11 +175,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
-          const untrack = this.activityTrackingEnabled() ? this.trackActivity() : undefined;
+          this.changeActivity(1);
           connection.stream('SendDotNetStreamToJS', streamId).subscribe({
             next: (chunk: Uint8Array) => controller.enqueue(chunk),
-            complete: () => { controller.close(); untrack?.(); },
-            error: (err) => { controller.error(err); untrack?.(); },
+            complete: () => { controller.close(); this.changeActivity(-1); },
+            error: (err) => { controller.error(err); this.changeActivity(-1); },
           });
         },
       });
@@ -212,7 +208,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
-      this.resetActivity();
+      this.handleConnectionDown();
       this.abortPauseDeferrals('connection closed');
 
       const pausingWasInProgress = this._pausingState.isInprogress();
@@ -233,6 +229,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     try {
       await connection.start();
+      this.handleConnectionUp();
     } catch (ex: any) {
       this.unhandledError(ex as Error);
 
@@ -505,8 +502,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
     this.throwIfDispatchingWhenDisposed();
-    if (callId !== 0 && this.activityTrackingEnabled()) {
-      this._pendingDotNetCallTracking.set(callId.toString(), this.trackActivity());
+    if (callId !== 0) {
+      this.changeActivity(1);
     }
     this._connection!.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
   }
@@ -514,10 +511,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   // Implements DotNet.DotNetCallDispatcher
   public endInvokeJSFromDotNet(asyncHandle: number, succeeded: boolean, argsJson: any): void {
     this.throwIfDispatchingWhenDisposed();
-    const untrack = this._pendingJsCallTracking.get(asyncHandle);
-    if (untrack) {
-      this._pendingJsCallTracking.delete(asyncHandle);
-      untrack();
+    if (asyncHandle !== 0) {
+      this.changeActivity(-1);
     }
     this._connection!.send('EndInvokeJSFromDotNet', asyncHandle, succeeded, argsJson);
   }
@@ -543,8 +538,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public sendJsDataStream(data: ArrayBufferView | Blob, streamId: number, chunkSize: number) {
-    const untrack = this.activityTrackingEnabled() ? this.trackActivity() : undefined;
-    return sendJSDataStream(this._connection!, data, streamId, chunkSize, untrack);
+    this.changeActivity(1);
+    return sendJSDataStream(this._connection!, data, streamId, chunkSize, () => this.changeActivity(-1));
   }
 
   public resolveElement(sequenceOrIdentifier: string): LogicalElement {
@@ -591,29 +586,24 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._renderingFailed;
   }
 
-  private activityTrackingEnabled(): boolean {
-    return this._eventRegistry.hasListeners('circuitactivitychanged');
-  }
-
-  private trackActivity(): () => void {
-    const token = {};
-    if (this._activeOperations.size === 0) {
-      this.dispatchActivity(true);
+  private changeActivity(delta: number): void {
+    const wasActive = this._activeOperationCount > 0;
+    this._activeOperationCount += delta;
+    const isActive = this._activeOperationCount > 0;
+    if (this._connectionUp && wasActive !== isActive) {
+      this.dispatchActivity(isActive);
     }
-    this._activeOperations.add(token);
-    return () => {
-      // delete() is a no-op if this token was already released or cleared by a reset.
-      if (this._activeOperations.delete(token) && this._activeOperations.size === 0) {
-        this.dispatchActivity(false);
-      }
-    };
   }
 
-  private resetActivity(): void {
-    this._pendingJsCallTracking.clear();
-    this._pendingDotNetCallTracking.clear();
-    if (this._activeOperations.size > 0) {
-      this._activeOperations.clear();
+  private handleConnectionUp(): void {
+    this._activeOperationCount = 0;
+    this._connectionUp = true;
+  }
+
+  private handleConnectionDown(): void {
+    const wasBusy = this._connectionUp && this._activeOperationCount > 0;
+    this._connectionUp = false;
+    if (wasBusy) {
       this.dispatchActivity(false);
     }
   }

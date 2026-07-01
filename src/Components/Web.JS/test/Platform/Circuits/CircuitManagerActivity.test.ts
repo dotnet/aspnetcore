@@ -7,8 +7,15 @@ import { resolveOptions } from '../../../src/Platform/Circuits/CircuitStartOptio
 import { JSEventRegistry } from '../../../src/Services/JSEventRegistry';
 
 interface InternalActivity {
-  trackActivity(): () => void;
-  resetActivity(): void;
+  changeActivity(delta: number): void;
+  handleConnectionUp(): void;
+  handleConnectionDown(): void;
+}
+
+function newCircuit(registry: JSEventRegistry): InternalActivity {
+  const options = resolveOptions({});
+  const circuit = new CircuitManager({} as never, '', options, { log: () => { /* no-op */ } } as never, registry);
+  return circuit as unknown as InternalActivity;
 }
 
 describe('CircuitManager activity tracking', () => {
@@ -20,68 +27,94 @@ describe('CircuitManager activity tracking', () => {
     registry = new JSEventRegistry();
     events = [];
     registry.addEventListener('circuitactivitychanged', ev => events.push(ev.busy));
-    const options = resolveOptions({});
-    const circuit = new CircuitManager({} as never, '', options, { log: () => { /* no-op */ } } as never, registry);
-    internal = circuit as unknown as InternalActivity;
+    internal = newCircuit(registry);
+    // Activity is only reported while connected; simulate the connection up-edge.
+    internal.handleConnectionUp();
   });
 
   test('dispatches busy=true on the first operation and busy=false when the last completes', () => {
-    const untrack = internal.trackActivity();
+    internal.changeActivity(1);
     expect(events).toEqual([true]);
-    untrack();
+    internal.changeActivity(-1);
     expect(events).toEqual([true, false]);
   });
 
   test('only the edges dispatch for nested/overlapping operations', () => {
-    const a = internal.trackActivity();
-    const b = internal.trackActivity();
+    internal.changeActivity(1);
+    internal.changeActivity(1);
     expect(events).toEqual([true]);
-    a();
+    internal.changeActivity(-1);
     expect(events).toEqual([true]);
-    b();
+    internal.changeActivity(-1);
     expect(events).toEqual([true, false]);
   });
 
-  test('a release closure is idempotent', () => {
-    const untrack = internal.trackActivity();
-    untrack();
-    untrack();
+  test('overlapping decrements below zero do not spuriously re-dispatch', () => {
+    internal.changeActivity(1);
+    internal.changeActivity(-1);
+    expect(events).toEqual([true, false]);
+    // An extra decrement (e.g. a contract violation) must not dispatch again.
+    internal.changeActivity(-1);
     expect(events).toEqual([true, false]);
   });
 
-  test('resetActivity drains a never-completing operation and dispatches idle', () => {
-    internal.trackActivity();
+  test('no activity is reported before the connection up-edge', () => {
+    const registry2 = new JSEventRegistry();
+    const events2: boolean[] = [];
+    registry2.addEventListener('circuitactivitychanged', ev => events2.push(ev.busy));
+    const internal2 = newCircuit(registry2);
+
+    // Without a preceding handleConnectionUp(), operations must not dispatch busy.
+    internal2.changeActivity(1);
+    internal2.changeActivity(-1);
+    expect(events2).toEqual([]);
+  });
+
+  test('disconnect reports idle for a never-completing operation', () => {
+    internal.changeActivity(1);
     expect(events).toEqual([true]);
-    internal.resetActivity();
+    internal.handleConnectionDown();
     expect(events).toEqual([true, false]);
   });
 
-  test('resetActivity with no active operations does not dispatch', () => {
-    internal.resetActivity();
+  test('disconnect with no active operations does not dispatch', () => {
+    internal.handleConnectionDown();
     expect(events).toEqual([]);
   });
 
-  test('a stale release from a previous connection does not corrupt the reconnected circuit', () => {
-    // An operation from the old connection is in flight; keep its untrack closure.
-    const staleUntrack = internal.trackActivity();
+  test('a stale stream release that fires while disconnected does not corrupt the reconnected circuit', () => {
+    // An operation from the old connection is in flight.
+    internal.changeActivity(1);
     expect(events).toEqual([true]);
 
-    // The connection drops: onclose -> resetActivity clears trackers and reports idle.
-    internal.resetActivity();
+    // The connection drops: onclose -> handleConnectionDown reports idle. The operation count
+    // is intentionally NOT zeroed here.
+    internal.handleConnectionDown();
+    expect(events).toEqual([true, false]);
+    internal.changeActivity(-1);
     expect(events).toEqual([true, false]);
 
-    // After reconnect, a brand-new operation starts a fresh busy cycle.
-    const newUntrack = internal.trackActivity();
-    expect(events).toEqual([true, false, true]);
+    // Reconnect: the up-edge zeroes the count, discarding anything left over.
+    internal.handleConnectionUp();
 
-    // The old connection's stream finally errors/completes and fires its stale untrack.
-    // Its token was already cleared by resetActivity, so it must NOT dispatch a spurious
-    // idle nor remove a token belonging to the still-busy reconnected circuit.
-    staleUntrack();
+    // A brand-new operation starts a fresh, correct busy/idle cycle.
+    internal.changeActivity(1);
     expect(events).toEqual([true, false, true]);
+    internal.changeActivity(-1);
+    expect(events).toEqual([true, false, true, false]);
+  });
 
-    // Only the genuine new operation completing reports idle.
-    newUntrack();
+  test('orphaned operations from a dropped connection are discarded on reconnect', () => {
+    internal.changeActivity(1);
+    expect(events).toEqual([true]);
+
+    internal.handleConnectionDown();
+    expect(events).toEqual([true, false]);
+
+    internal.handleConnectionUp();
+    internal.changeActivity(1);
+    expect(events).toEqual([true, false, true]);
+    internal.changeActivity(-1);
     expect(events).toEqual([true, false, true, false]);
   });
 });

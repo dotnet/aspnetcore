@@ -32,10 +32,6 @@ export class JSEventRegistry {
     return result;
   }
 
-  public hasListeners(type: keyof BlazorEventMap): boolean {
-    return (this._eventListeners.get(type)?.size ?? 0) > 0;
-  }
-
   public addEventListener<K extends keyof BlazorEventMap>(type: K, listener: (ev: BlazorEventMap[K]) => void): void {
     let listenersForEventType = this._eventListeners.get(type);
     if (!listenersForEventType) {
