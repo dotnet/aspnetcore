@@ -60,7 +60,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
     internal DisplayNameInfo? DisplayNameInfo { get; }
 
     private PropertyInfo Property
-        => DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+        => DeclaringType.GetProperty(Name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
 
     /// <summary>
     /// Gets the validation attributes for this property.
