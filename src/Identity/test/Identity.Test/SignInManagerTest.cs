@@ -660,9 +660,11 @@ public class SignInManagerTest
 
         // Do NOT call SetupPasskeyAuth — simulates expired/missing session
         auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
-            .ReturnsAsync(AuthenticateResult.Fail("Session expired."));
+            .ReturnsAsync(AuthenticateResult.Fail("Session expired."))
+            .Verifiable();
         auth.Setup(a => a.SignOutAsync(context, IdentityConstants.TwoFactorUserIdScheme, It.IsAny<AuthenticationProperties>()))
-            .Returns(Task.CompletedTask);
+            .Returns(Task.CompletedTask)
+            .Verifiable();
 
         var helper = SetupSignInManager(manager.Object, context);
 
@@ -672,6 +674,7 @@ public class SignInManagerTest
         // Assert
         Assert.False(signInResult.Succeeded);
         Assert.Same(SignInResult.Failed, signInResult);
+        passkeyHandler.Verify(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()), Times.Never);
         auth.Verify();
     }
 
