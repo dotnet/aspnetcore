@@ -254,9 +254,9 @@ public class TempDataTest
     [Fact]
     public void Get_ConsumesValue_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object>
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>
         {
-            ["Message"] = "hello"
+            ["Message"] = ("hello", typeof(string))
         });
 
         var value = tempData.Get("Message");
@@ -269,9 +269,9 @@ public class TempDataTest
     [Fact]
     public void Indexer_ConsumesValue_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object>
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>
         {
-            ["Message"] = "hello"
+            ["Message"] = ("hello", typeof(string))
         });
 
         var value = tempData["Message"];
@@ -284,9 +284,9 @@ public class TempDataTest
     [Fact]
     public void Remove_RemovesValue_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object>
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>
         {
-            ["Message"] = "hello"
+            ["Message"] = ("hello", typeof(string))
         });
 
         var result = tempData.Remove("Message");
@@ -299,27 +299,27 @@ public class TempDataTest
     [Fact]
     public void Keep_RetainsAllKeys_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object>
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>
         {
-            ["Key1"] = "Value1",
-            ["Key2"] = "Value2"
+            ["Key1"] = ("Value1", typeof(string)),
+            ["Key2"] = ("Value2", typeof(string))
         });
 
         tempData.Keep();
         var saved = tempData.Save();
 
         Assert.Equal(2, saved.Count);
-        Assert.Equal("Value1", saved["Key1"]);
-        Assert.Equal("Value2", saved["Key2"]);
+        Assert.Equal("Value1", saved["Key1"].Value);
+        Assert.Equal("Value2", saved["Key2"].Value);
     }
 
     [Fact]
     public void Enumerator_IteratesAllKeys_WhenFirstAccessTriggersLazyLoad()
     {
-        var tempData = new TempData(() => new Dictionary<string, object>
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>
         {
-            ["Key1"] = "Value1",
-            ["Key2"] = "Value2"
+            ["Key1"] = ("Value1", typeof(string)),
+            ["Key2"] = ("Value2", typeof(string))
         });
 
         var items = ((IEnumerable<KeyValuePair<string, object>>)tempData).ToList();

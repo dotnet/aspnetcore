@@ -113,12 +113,12 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
         foreach (var kvp in values)
         {
-            if (kvp.Value.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.Type!))
+            var (value, type) = kvp.Value;
+            if (value is not null && !_tempDataSerializer.CanSerialize(type ?? value.GetType()))
             {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.Type}'.");
+                throw new InvalidOperationException($"TempData cannot store values of type '{type ?? value.GetType()}'.");
             }
         }
-
         var cookieName = _options.TempDataCookie.Name ?? CookieName;
         var cookieOptions = _options.TempDataCookie.Build(context);
         SetCookiePath(context, cookieOptions);

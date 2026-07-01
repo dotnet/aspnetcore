@@ -25,7 +25,7 @@ public class TempDataCascadingValueSupplierTest
             return "value";
         });
 
-        var tempData = new TempData(() => new Dictionary<string, object>());
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>());
         _supplier.PersistValues(tempData);
 
         Assert.True(callbackInvoked);
@@ -47,7 +47,7 @@ public class TempDataCascadingValueSupplierTest
     {
         _supplier.RegisterValueCallback("key", () => "persisted value");
 
-        var tempData = new TempData(() => new Dictionary<string, object>());
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>());
         _supplier.PersistValues(tempData);
 
         Assert.Equal("persisted value", tempData.Peek("key"));
@@ -56,7 +56,7 @@ public class TempDataCascadingValueSupplierTest
     [Fact]
     public void PersistValues_RemovesKey_WhenCallbackReturnsNull()
     {
-        var tempData = new TempData(() => new Dictionary<string, object>());
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>());
         tempData["key"] = "existing";
 
         _supplier.RegisterValueCallback("key", () => null);
@@ -72,7 +72,7 @@ public class TempDataCascadingValueSupplierTest
         _supplier.RegisterValueCallback("key2", () => "value2");
         _supplier.RegisterValueCallback("key3", () => "value3");
 
-        var tempData = new TempData(() => new Dictionary<string, object>());
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>());
         _supplier.PersistValues(tempData);
 
         Assert.Equal("value1", tempData.Peek("key1"));
@@ -86,7 +86,7 @@ public class TempDataCascadingValueSupplierTest
         _supplier.RegisterValueCallback("key1", () => throw new InvalidOperationException("Test exception"));
         _supplier.RegisterValueCallback("key2", () => "value2");
 
-        var tempData = new TempData(() => new Dictionary<string, object>());
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>());
         _supplier.PersistValues(tempData);
 
         Assert.Null(tempData.Peek("key1"));
@@ -98,7 +98,7 @@ public class TempDataCascadingValueSupplierTest
     {
         _supplier.RegisterValueCallback("MyKey", () => "value");
 
-        var tempData = new TempData(() => new Dictionary<string, object>());
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>());
         _supplier.PersistValues(tempData);
 
         Assert.True(tempData.ContainsKey("mykey"));
@@ -116,7 +116,7 @@ public class TempDataCascadingValueSupplierTest
 
         _supplier.DeleteValueCallback("key");
 
-        var tempData = new TempData(() => new Dictionary<string, object>());
+        var tempData = new TempData(() => new Dictionary<string, (object Value, Type Type)>());
         _supplier.PersistValues(tempData);
 
         Assert.False(callbackInvoked);

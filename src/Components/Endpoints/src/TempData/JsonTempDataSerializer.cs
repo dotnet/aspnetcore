@@ -23,6 +23,7 @@ internal class JsonTempDataSerializer : ITempDataSerializer
             var dictType = typeof(Dictionary<,>).MakeGenericType(typeof(string), type);
             map[dictType.FullName!] = dictType;
         }
+        map[typeof(object[]).FullName!] = typeof(object[]);
         return map;
     }
 
@@ -32,29 +33,49 @@ internal class JsonTempDataSerializer : ITempDataSerializer
 
         foreach (var (key, element) in data)
         {
-            if (element.ValueKind is JsonValueKind.Null)
-            {
-                result[key] = (null, null);
-                continue;
-            }
-
-            var typeName = element.GetProperty("type").GetString()!;
-            var valueElement = element.GetProperty("value");
-
-            if (!_nameToType.TryGetValue(typeName, out var type))
-            {
-                throw new InvalidOperationException($"Cannot deserialize type '{typeName}'.");
-            }
-
-            var value = JsonSerializer.Deserialize(valueElement, type);
-            result[key] = (value, type);
+            result[key] = DeserializeEntry(element);
         }
         return result;
+    }
+
+    private static (object? Value, Type? Type) DeserializeEntry(JsonElement element)
+    {
+        if (element.ValueKind is JsonValueKind.Null)
+        {
+            return (null, null);
+        }
+
+        var typeName = element.GetProperty("type").GetString()!;
+        var valueElement = element.GetProperty("value");
+
+        if (!_nameToType.TryGetValue(typeName, out var type))
+        {
+            throw new InvalidOperationException($"Cannot deserialize type '{typeName}'.");
+        }
+
+        if (type == typeof(object[]))
+        {
+            var array = new object?[valueElement.GetArrayLength()];
+            var index = 0;
+            foreach (var item in valueElement.EnumerateArray())
+            {
+                array[index++] = DeserializeEntry(item).Value;
+            }
+            return (array, type);
+        }
+
+        var value = JsonSerializer.Deserialize(valueElement, type);
+        return (value, type);
     }
 
     public bool CanSerialize(Type type)
     {
         if (_supportedTypes.Contains(type) || type.IsEnum)
+        {
+            return true;
+        }
+
+        if (type == typeof(object[]))
         {
             return true;
         }
@@ -88,32 +109,51 @@ internal class JsonTempDataSerializer : ITempDataSerializer
         foreach (var (key, (value, type)) in data)
         {
             writer.WritePropertyName(key);
-
-            if (value is null)
-            {
-                writer.WriteNullValue();
-                continue;
-            }
-
-            if (type is null || !CanSerialize(type))
-            {
-                throw new InvalidOperationException($"Cannot serialize type '{type}'.");
-            }
-
-            var collectionElementType = GetCollectionElementType(type);
-            var (writeValue, writeType) = NormalizeValue(value, type, collectionElementType);
-
-            writer.WriteStartObject();
-            writer.WriteString("type", writeType.FullName);
-            writer.WritePropertyName("value");
-            JsonSerializer.Serialize(writer, writeValue, writeType);
-            writer.WriteEndObject();
+            WriteEntry(writer, value, type);
         }
 
         writer.WriteEndObject();
         writer.Flush();
 
         return buffer.ToArray();
+    }
+
+    private void WriteEntry(Utf8JsonWriter writer, object? value, Type? type)
+    {
+        if (value is null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        var valueType = type ?? value.GetType();
+        if (!CanSerialize(valueType))
+        {
+            throw new InvalidOperationException($"Cannot serialize type '{valueType}'.");
+        }
+
+        var collectionElementType = GetCollectionElementType(valueType);
+        var (writeValue, writeType) = NormalizeValue(value, valueType, collectionElementType);
+
+        writer.WriteStartObject();
+        writer.WriteString("type", writeType.FullName);
+        writer.WritePropertyName("value");
+
+        if (writeType == typeof(object[]))
+        {
+            writer.WriteStartArray();
+            foreach (var item in (object?[])writeValue)
+            {
+                WriteEntry(writer, item, item?.GetType());
+            }
+            writer.WriteEndArray();
+        }
+        else
+        {
+            JsonSerializer.Serialize(writer, writeValue, writeType);
+        }
+
+        writer.WriteEndObject();
     }
 
     private static (object Value, Type Type) NormalizeValue(object value, Type type, Type? collectionElementType)

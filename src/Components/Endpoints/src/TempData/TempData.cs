@@ -49,9 +49,9 @@ internal sealed class TempData : ITempData
 
     public object? Get(string key)
     {
-        var value = Data.GetValueOrDefault(key);
+        var value = Data.GetValueOrDefault(key).Value;
         _retainedKeys.Remove(key);
-        return Data.TryGetValue(key, out var entry) ? entry.Value : null;
+        return value;
     }
 
     public object? Peek(string key)
@@ -123,7 +123,7 @@ internal sealed class TempData : ITempData
             {
                 values.Add(entry.Value);
             }
-            return values;
+            return values.AsReadOnly();
         }
     }
 
@@ -159,6 +159,13 @@ internal sealed class TempData : ITempData
 
     void ICollection<KeyValuePair<string, object?>>.CopyTo(KeyValuePair<string, object?>[] array, int arrayIndex)
     {
+        ArgumentNullException.ThrowIfNull(array);
+        ArgumentOutOfRangeException.ThrowIfNegative(arrayIndex);
+        if (array.Length - arrayIndex < Data.Count)
+        {
+            throw new ArgumentException("The destination array is not large enough to copy all the items in the collection. Check the array index and length.", nameof(array));
+        }
+
         foreach (var kvp in Data)
         {
             array[arrayIndex++] = new KeyValuePair<string, object?>(kvp.Key, kvp.Value.Value);
