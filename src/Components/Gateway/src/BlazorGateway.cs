@@ -39,6 +39,7 @@ public static class BlazorGateway
 
         builder.Services.AddServiceDiscovery();
 
+        builder.WebHost.UseKestrelHttpsConfiguration();
         builder.WebHost.UseStaticWebAssets();
 
         var appConfigs = builder.Configuration.GetSection("ClientApps")
