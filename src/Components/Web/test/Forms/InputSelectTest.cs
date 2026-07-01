@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
@@ -298,9 +300,9 @@ public class InputSelectTest
 
     class TestInputSelect<TValue> : InputSelect<TValue>
     {
-        public new TValue CurrentValue => base.CurrentValue;
+        public new TValue? CurrentValue => base.CurrentValue;
 
-        public new string CurrentValueAsString
+        public new string? CurrentValueAsString
         {
             get => base.CurrentValueAsString;
             set => base.CurrentValueAsString = value;

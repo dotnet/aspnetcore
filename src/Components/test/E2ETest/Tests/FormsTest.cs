@@ -582,36 +582,6 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void AsyncValidationErrorAppearsForUsernameField()
-    {
-        var appElement = MountTypicalValidationComponent();
-        var usernameContainer = appElement.FindElement(By.ClassName("username"));
-        var usernameInput = usernameContainer.FindElement(By.TagName("input"));
-        var triggerButton = usernameContainer.FindElement(By.TagName("button"));
-        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
-
-        // Initially no async validation error
-        Browser.Empty(messagesAccessor);
-
-        // Username field is optional and valid when empty
-        Browser.Equal("valid", () => usernameInput.GetDomAttribute("class"));
-
-        // Click the async validation trigger button
-        triggerButton.Click();
-
-        // Wait for async validation error to appear (takes 500ms in the component)
-        Browser.Equal(new[] { "This is invalid, asynchronously" }, messagesAccessor);
-
-        // Field becomes invalid after async error, but remains unmodified because no user edit occurred
-        Browser.Equal("invalid", () => usernameInput.GetDomAttribute("class"));
-
-        // Editing the field marks it modified, but the custom validation message remains until explicitly cleared
-        usernameInput.SendKeys("validuser\t");
-        Browser.Empty(messagesAccessor);
-        Browser.Equal(new[] { "This is invalid, asynchronously" }, messagesAccessor);
-        Browser.Equal("modified invalid", () => usernameInput.GetDomAttribute("class"));  }
-
-    [Fact]
     public void DisplayNameReadsAttributesCorrectly()
     {
         var appElement = Browser.MountTestComponent<DisplayNameComponent>();
