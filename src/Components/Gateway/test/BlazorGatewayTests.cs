@@ -201,16 +201,19 @@ public class BlazorGatewayTests
     [Fact]
     public async Task BuildWebHost_StartsWithHttpsUrl_WhenKestrelCertificateConfigured()
     {
+        var testCertificatePath = Path.Combine(AppContext.BaseDirectory, "shared", "TestCertificates", "testCert.pfx");
         var builder = WebApplication.CreateSlimBuilder(new[] { "--urls", "https://127.0.0.1:0" });
         builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            ["Kestrel:Certificates:Default:Path"] = Path.Combine(AppContext.BaseDirectory, "shared", "TestCertificates", "testCert.pfx"),
+            ["Kestrel:Certificates:Default:Path"] = testCertificatePath,
             ["Kestrel:Certificates:Default:Password"] = "testPassword",
         });
 
         await using var app = BlazorGateway.BuildWebHost(builder);
 
         await app.StartAsync();
+
+        Assert.Contains(app.Urls, address => address.StartsWith("https://127.0.0.1:", StringComparison.Ordinal));
     }
 
     private static bool IsRedirect(HttpStatusCode status) =>
