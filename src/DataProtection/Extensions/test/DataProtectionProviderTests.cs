@@ -118,8 +118,9 @@ public class DataProtectionProviderTests
     [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
     public void System_UsesProvidedDirectoryAndCertificate()
     {
-        var filePath = Path.Combine(GetTestFilesPath(), "TestCert.pfx");
-        using (var imported = new X509Certificate2(filePath, "password", X509KeyStorageFlags.Exportable))
+        var subjectName = $"TestCert-{Guid.NewGuid():N}";
+        using (var imported = TestCertificateFactory.CreateRsaStoreCertificate($"CN={subjectName}"))
+        using (var certWithoutKey = TestCertificateFactory.CreatePublicKeyOnlyCertificate(imported))
         {
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
@@ -132,7 +133,7 @@ public class DataProtectionProviderTests
             {
                 var certificateStore = new X509Store(StoreName.My, StoreLocation.CurrentUser);
                 certificateStore.Open(OpenFlags.ReadWrite);
-                var certificate = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, "TestCert", false)[0];
+                var certificate = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, subjectName, false)[0];
                 Assert.True(certificate.HasPrivateKey, "Cert should have a private key");
                 try
                 {
@@ -143,9 +144,7 @@ public class DataProtectionProviderTests
                     // Step 2: instantiate the system and round-trip a payload
                     var protector = DataProtectionProvider.Create(directory, certificate).CreateProtector("purpose");
                     var data = protector.Protect("payload");
-
                     // add a cert without the private key to ensure the decryption will still fallback to the cert store
-                    var certWithoutKey = new X509Certificate2(Path.Combine(GetTestFilesPath(), "TestCertWithoutPrivateKey.pfx"), "password");
                     var unprotector = DataProtectionProvider.Create(directory, o => o.UnprotectKeysWithAnyCertificate(certWithoutKey)).CreateProtector("purpose");
                     Assert.Equal("payload", unprotector.Unprotect(data));
 
@@ -171,51 +170,52 @@ public class DataProtectionProviderTests
     [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
     public void System_UsesProvidedCertificateNotFromStore()
     {
-        using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+        var subjectName = $"TestCert-{Guid.NewGuid():N}";
+        using (var certWithKey = TestCertificateFactory.CreateRsaCertificate($"CN={subjectName}"))
+        using (var certWithoutKey = TestCertificateFactory.CreatePublicKeyOnlyCertificate(certWithKey))
         {
-            store.Open(OpenFlags.ReadWrite);
-            var certWithoutKey = new X509Certificate2(Path.Combine(GetTestFilesPath(), "TestCert3WithoutPrivateKey.pfx"), "password3", X509KeyStorageFlags.Exportable);
-            Assert.False(certWithoutKey.HasPrivateKey, "Cert should not have private key");
-            store.Add(certWithoutKey);
-            store.Close();
-        }
-
-        WithUniqueTempDirectory(directory =>
-        {
-            using (var certificateStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
-                certificateStore.Open(OpenFlags.ReadWrite);
-                var certInStore = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, "TestCert", false)[0];
-                Assert.NotNull(certInStore);
-                Assert.False(certInStore.HasPrivateKey, "Cert should not have private key");
-
-                try
-                {
-                    var certWithKey = new X509Certificate2(Path.Combine(GetTestFilesPath(), "TestCert3.pfx"), "password3");
-
-                    var protector = DataProtectionProvider.Create(directory, certWithKey).CreateProtector("purpose");
-                    var data = protector.Protect("payload");
-
-                    var keylessUnprotector = DataProtectionProvider.Create(directory).CreateProtector("purpose");
-                    Assert.Throws<CryptographicException>(() => keylessUnprotector.Unprotect(data));
-
-                    var unprotector = DataProtectionProvider.Create(directory, o => o.UnprotectKeysWithAnyCertificate(certInStore, certWithKey)).CreateProtector("purpose");
-                    Assert.Equal("payload", unprotector.Unprotect(data));
-                }
-                finally
-                {
-                    certificateStore.Remove(certInStore);
-                    certificateStore.Close();
-                }
+                store.Open(OpenFlags.ReadWrite);
+                Assert.False(certWithoutKey.HasPrivateKey, "Cert should not have private key");
+                store.Add(certWithoutKey);
+                store.Close();
             }
-        });
+
+            WithUniqueTempDirectory(directory =>
+            {
+                using (var certificateStore = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                {
+                    certificateStore.Open(OpenFlags.ReadWrite);
+                    var certInStore = certificateStore.Certificates.Find(X509FindType.FindBySubjectName, subjectName, false)[0];
+                    Assert.NotNull(certInStore);
+                    Assert.False(certInStore.HasPrivateKey, "Cert should not have private key");
+
+                    try
+                    {
+                        var protector = DataProtectionProvider.Create(directory, certWithKey).CreateProtector("purpose");
+                        var data = protector.Protect("payload");
+
+                        var keylessUnprotector = DataProtectionProvider.Create(directory).CreateProtector("purpose");
+                        Assert.Throws<CryptographicException>(() => keylessUnprotector.Unprotect(data));
+
+                        var unprotector = DataProtectionProvider.Create(directory, o => o.UnprotectKeysWithAnyCertificate(certInStore, certWithKey)).CreateProtector("purpose");
+                        Assert.Equal("payload", unprotector.Unprotect(data));
+                    }
+                    finally
+                    {
+                        certificateStore.Remove(certInStore);
+                        certificateStore.Close();
+                    }
+                }
+            });
+        }
     }
 
     [Fact]
     public void System_UsesInMemoryCertificate()
     {
-        var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
-        var certificate = new X509Certificate2(filePath, "password");
+        using var certificate = TestCertificateFactory.CreateRsaCertificate();
 
         AssetStoreDoesNotContain(certificate);
 
@@ -243,8 +243,7 @@ public class DataProtectionProviderTests
     [Fact]
     public void System_UsesCertificate()
     {
-        var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
-        var certificate = new X509Certificate2(filePath, "password");
+        using var certificate = TestCertificateFactory.CreateRsaCertificate();
 
         AssetStoreDoesNotContain(certificate);
 
@@ -285,8 +284,7 @@ public class DataProtectionProviderTests
     [Fact]
     public void System_CanUnprotectWithCert()
     {
-        var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
-        var certificate = new X509Certificate2(filePath, "password");
+        using var certificate = TestCertificateFactory.CreateRsaCertificate();
 
         WithUniqueTempDirectory(directory =>
         {
@@ -336,7 +334,4 @@ public class DataProtectionProviderTests
             }
         }
     }
-
-    private static string GetTestFilesPath()
-        => Path.Combine(AppContext.BaseDirectory, "TestFiles");
 }

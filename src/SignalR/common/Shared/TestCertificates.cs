@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Win32;
 
 namespace Microsoft.AspNetCore.SignalR.Test.Internal;
@@ -32,14 +32,18 @@ internal static class TestCertificateHelper
         if (useRSA)
         {
             // RSA cert, won't work on Windows 8.1 & Windows 2012 R2 using HTTP2, and ECC won't work in some Node environments
-            var certPath = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "TestCertificates", "testCert.pfx");
-            return new X509Certificate2(certPath, "testPassword");
+            return TestCertificateFactory.CreateRsaServerCertificate(
+                enhancedKeyUsages: [TestCertificateFactory.ServerAuthentication],
+                includeSubjectAlternativeName: true,
+                configureSubjectAlternativeNames: TestCertificateFactory.ConfigureLocalhostSubjectAlternativeNames);
         }
         else
         {
             // ECC cert, works on Windows 8.1 & Windows 2012 R2 using HTTP2
-            var certPath = Path.Combine(Path.GetDirectoryName(Assembly.GetCallingAssembly().Location), "TestCertificates", "testCertECC.pfx");
-            return new X509Certificate2(certPath, "testPassword");
+            return TestCertificateFactory.CreateEcdsaServerCertificate(
+                enhancedKeyUsages: [TestCertificateFactory.ServerAuthentication],
+                includeSubjectAlternativeName: true,
+                configureSubjectAlternativeNames: TestCertificateFactory.ConfigureLocalhostSubjectAlternativeNames);
         }
     }
 }

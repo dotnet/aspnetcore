@@ -5,8 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)TestCertificateFactory.cs" LinkBase="shared" />
     <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="shared" />
-    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

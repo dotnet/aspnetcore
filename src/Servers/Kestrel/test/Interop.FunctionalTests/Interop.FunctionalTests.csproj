@@ -21,9 +21,9 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IHostPortExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IWebHostPortExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestConstants.cs" LinkBase="shared" />
+    <Compile Include="$(SharedSourceRoot)TestCertificateFactory.cs" LinkBase="shared" />
     <Compile Include="$(SharedSourceRoot)TestResources.cs" LinkBase="shared" />
     <Compile Include="$(SharedSourceRoot)HttpClient\HttpEventSourceListener.cs" LinkBase="shared" />
-    <Content Include="$(SharedSourceRoot)TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(SharedSourceRoot)TransportTestHelpers\MsQuicSupportedAttribute.cs" LinkBase="shared\TransportTestHelpers\MsQuicSupportedAttribute.cs" />
     <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" Link="shared\TransportTestHelpers\TlsAlpnSupportedAttribute.cs" />

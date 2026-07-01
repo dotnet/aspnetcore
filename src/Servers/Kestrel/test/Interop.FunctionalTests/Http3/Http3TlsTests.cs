@@ -415,7 +415,7 @@ public class Http3TlsTests : LoggedTest
                         {
                             new KeyValuePair<string, string>("Endpoints:end1:Url", "https://127.0.0.1:0"),
                             new KeyValuePair<string, string>("Endpoints:end1:Protocols", "Http3"),
-                            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "aspnetdevcert.pfx")),
+                            new KeyValuePair<string, string>("Certificates:Default:Path", TestResources.GetCertPath("aspnetdevcert.pfx")),
                             new KeyValuePair<string, string>("Certificates:Default:Password", "testPassword"),
                         }).Build();
                         serverOptions.Configure(config);
