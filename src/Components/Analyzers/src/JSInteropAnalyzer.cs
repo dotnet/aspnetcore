@@ -60,7 +60,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 var invocation = (IInvocationOperation)operationContext.Operation;
                 var targetMethod = invocation.TargetMethod;
 
-                if (invocation.Syntax.Ancestors().OfType<TryStatementSyntax>().Any())
+                if (IsInsideTryBlockWithCatch(invocation.Syntax))
                 {
                     return;
                 }
@@ -112,6 +112,19 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
 
         var receiverType = GetReceiverType(invocation);
         return IsJSInteropType(receiverType, ijsRuntimeType, ijsInProcessRuntimeType, ijsObjectReferenceType, ijsInProcessObjectReferenceType);
+    }
+
+    private static bool IsInsideTryBlockWithCatch(SyntaxNode invocationSyntax)
+    {
+        foreach (var tryStatement in invocationSyntax.Ancestors().OfType<TryStatementSyntax>())
+        {
+            if (tryStatement.Catches.Count > 0 && tryStatement.Block.Span.Contains(invocationSyntax.Span))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static ITypeSymbol? GetReceiverType(IInvocationOperation invocation)
