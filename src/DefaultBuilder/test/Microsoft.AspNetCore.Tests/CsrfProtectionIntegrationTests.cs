@@ -1309,4 +1309,123 @@ public class CsrfProtectionIntegrationTests
             }
         }
     }
+
+    [Fact]
+    public async Task Probe_ImplicitRouting_ReExecuteIntoAntiforgeryEndpoint_CsrfSeesMatchedEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseStatusCodePagesWithReExecute("/rerouted");
+
+        app.MapGet("/rerouted", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("rerouted");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/does-not-exist");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task Probe_ExplicitRouting_ReExecuteIntoAntiforgeryEndpoint_CsrfSeesMatchedEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseRouting();
+        app.UseStatusCodePagesWithReExecute("/rerouted");
+
+        app.MapGet("/rerouted", (HttpContext ctx) =>
+        {
+            ctx.Response.StatusCode = StatusCodes.Status404NotFound;
+            return ctx.Response.WriteAsync("rerouted");
+        }).WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/does-not-exist");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task Probe_ImplicitRouting_NormalRequestToAntiforgeryEndpoint_CsrfSeesEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.MapPost("/protected", () => "ok").WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+        await client.SendAsync(request);
+
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    [Fact]
+    public async Task Probe_ExplicitRouting_NormalRequestToAntiforgeryEndpoint_CsrfSeesEndpoint()
+    {
+        var probe = new EndpointCapturingCsrfProtection();
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<ICsrfProtection>(probe);
+        using var app = builder.Build();
+
+        app.UseRouting();
+
+        app.MapPost("/protected", () => "ok").WithMetadata(new RequireAntiforgeryTokenAttribute());
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/protected");
+        request.Headers.Add("Sec-Fetch-Site", "same-origin");
+        await client.SendAsync(request);
+
+        Assert.Contains(
+            probe.ObservedEndpoints,
+            e => e is not null && e.Metadata.GetMetadata<IAntiforgeryMetadata>() is { RequiresValidation: true });
+    }
+
+    private sealed class EndpointCapturingCsrfProtection : ICsrfProtection
+    {
+        public List<Endpoint?> ObservedEndpoints { get; } = new();
+
+        public ValueTask<CsrfProtectionResult> ValidateAsync(HttpContext context)
+        {
+            lock (ObservedEndpoints)
+            {
+                ObservedEndpoints.Add(context.GetEndpoint());
+            }
+            return ValueTask.FromResult(CsrfProtectionResult.Allowed());
+        }
+    }
 }
