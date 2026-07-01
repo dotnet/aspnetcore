@@ -925,6 +925,27 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegatePopulatesNullFromBodyNullableParameterWithEmptyBody()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+        httpContext.Request.Headers["Content-Length"] = "0";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
+
+        var factoryResult = RequestDelegateFactory.Create(
+            ([FromBody] int? body) =>
+            {
+                httpContext.Items["body"] = body;
+            }
+        );
+
+        var requestDelegate = factoryResult.RequestDelegate;
+        await requestDelegate(httpContext);
+
+        Assert.Null(httpContext.Items["body"]);
+    }
+
+    [Fact]
     public void RequestDelegateFactoryThrowsForByRefReturnTypes()
     {
         ReadOnlySpan<byte> Method1() => "hello world"u8;
