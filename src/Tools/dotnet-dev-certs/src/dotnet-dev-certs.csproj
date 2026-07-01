@@ -12,7 +12,7 @@
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+  <PropertyGroup>
     <PublishAot>true</PublishAot>
     <RuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true'">$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
     <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>

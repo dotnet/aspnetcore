@@ -186,7 +186,7 @@
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <DotNetProjects Include="$(RepoRoot)src\Tools\NativeAot\aspnetcoretools\aspnetcoretools.csproj"
                         Exclude="@(ProjectToBuild);@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*"
-                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' " />
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <!-- Only build the composite R2R runtime pack when we will actually ship it -->
         <DotNetProjects Include="$(RepoRoot)src\Framework\App.Runtime\src\aspnetcore-runtime-composite.proj"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' and '$(TargetOsName)' != 'win' " />
