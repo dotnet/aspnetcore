@@ -198,6 +198,21 @@ public class BlazorGatewayTests
         Assert.Equal(json, body, ignoreLineEndingDifferences: true);
     }
 
+    [Fact]
+    public async Task BuildWebHost_StartsWithHttpsUrl_WhenKestrelCertificateConfigured()
+    {
+        var builder = WebApplication.CreateSlimBuilder(new[] { "--urls", "https://127.0.0.1:0" });
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["Kestrel:Certificates:Default:Path"] = Path.Combine(AppContext.BaseDirectory, "shared", "TestCertificates", "testCert.pfx"),
+            ["Kestrel:Certificates:Default:Password"] = "testPassword",
+        });
+
+        await using var app = BlazorGateway.BuildWebHost(builder);
+
+        await app.StartAsync();
+    }
+
     private static bool IsRedirect(HttpStatusCode status) =>
         status is HttpStatusCode.MovedPermanently
             or HttpStatusCode.Found
