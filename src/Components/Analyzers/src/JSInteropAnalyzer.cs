@@ -16,6 +16,14 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
 {
+    private static readonly ImmutableHashSet<string> JSInteropTypeNames = ImmutableHashSet.Create(
+        "JSRuntimeExtensions",
+        "JSObjectReferenceExtensions",
+        "IJSRuntime",
+        "IJSInProcessRuntime",
+        "IJSObjectReference",
+        "IJSInProcessObjectReference");
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.UnguardedJSInteropCall);
 
@@ -26,43 +34,33 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
 
         context.RegisterSymbolStartAction(context =>
         {
-            var unguardedJSInterlopCalls = new ConcurrentDictionary<IMethodSymbol, ImmutableArray<Location>>(SymbolEqualityComparer.Default);
+            var unguardedJSInteropCalls = new ConcurrentBag<(IMethodSymbol Method, Location Location)>();
 
-            //collect JSInterop calls
             context.RegisterOperationAction(operationContext =>
             {
                 var invocation = (IInvocationOperation)operationContext.Operation;
-
-                // Get the symbol being invoked
                 var symbol = invocation.TargetMethod;
 
-                if (symbol == null) {
+                if (symbol is null)
+                {
                     return;
                 }
 
-                if (symbol.ContainingType.Name == "JSRuntimeExtensions" &&
-                 !invocation.Syntax.Ancestors().OfType<TryStatementSyntax>().Any()
-                )
+                if (JSInteropTypeNames.Contains(symbol.ContainingType.Name) &&
+                    !invocation.Syntax.Ancestors().OfType<TryStatementSyntax>().Any())
                 {
-                    // This is a JsInterop call not within a try block
-                    unguardedJSInterlopCalls.TryAdd(symbol, ImmutableArray.Create(invocation.Syntax.GetLocation()));
+                    unguardedJSInteropCalls.Add((symbol, invocation.Syntax.GetLocation()));
                 }
-
             }, OperationKind.Invocation);
 
             context.RegisterSymbolEndAction(endContext =>
             {
-                foreach (var call in unguardedJSInterlopCalls)
+                foreach (var (method, location) in unguardedJSInteropCalls)
                 {
-                    var method = call.Key;
-                    var locations = call.Value;
-                    foreach (var location in locations)
-                    {
-                        endContext.ReportDiagnostic(Diagnostic.Create(
-                            DiagnosticDescriptors.UnguardedJSInteropCall,
-                            location,
-                            method.Name));
-                    }
+                    endContext.ReportDiagnostic(Diagnostic.Create(
+                        DiagnosticDescriptors.UnguardedJSInteropCall,
+                        location,
+                        method.Name));
                 }
             });
         }, SymbolKind.NamedType);

@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
@@ -58,7 +59,7 @@ public class JSInteropCodeFixProvider : CodeFixProvider
             diagnostic);
     }
 
-    private static Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
+    private static async Task<Document> TryCatchWrapJSInteropCallAsync(Document document, SyntaxNode root, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -73,9 +74,18 @@ public class JSInteropCodeFixProvider : CodeFixProvider
                         .WithDeclaration(
                             SyntaxFactory.CatchDeclaration(
                                 SyntaxFactory.ParseTypeName("Exception")))
-                        .WithBlock(SyntaxFactory.Block())), null);
+                        .WithBlock(SyntaxFactory.Block())), null)
+            .WithAdditionalAnnotations(Formatter.Annotation);
 
         var newRoot = root.ReplaceNode(statement, tryStatement);
-        return Task.FromResult(newRoot is null ? document : document.WithSyntaxRoot(newRoot));
+        if (newRoot is null)
+        {
+            return document;
+        }
+
+        var newDocument = document.WithSyntaxRoot(newRoot);
+        var formattedRoot = await Formatter.FormatAsync(newDocument, Formatter.Annotation, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        return formattedRoot;
     }
 }
