@@ -340,4 +340,81 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
 
         VerifyCSharpDiagnostic(test);
     }
+
+    [Fact]
+    public void UnguardedConcreteTypeImplementingIJSRuntime_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class CustomJsRuntime : IJSRuntime
+        {
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+                => default;
+
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+                => default;
+        }
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public CustomJsRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                await JS.InvokeAsync<string>(""prompt"", new object[] { ""Name?"" });
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'InvokeAsync' is not guarded with try catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 23) }
+            });
+    }
+
+    [Fact]
+    public void InvokeMethodOnUnrelatedJSRuntimeExtensionsType_DoesNotReportDiagnostic()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using System.Threading.Tasks;
+
+        class FakeRuntime
+        {
+        }
+
+        class TestClass
+        {
+            public async Task TestMethod(FakeRuntime runtime)
+            {
+                await Microsoft.JSInterop.JSRuntimeExtensions.InvokeVoidAsync(runtime, ""myFunction"");
+            }
+        }
+    }
+
+    namespace Microsoft.JSInterop
+    {
+        using System.Threading.Tasks;
+
+        public static class JSRuntimeExtensions
+        {
+            public static ValueTask InvokeVoidAsync(global::ConsoleApplication1.FakeRuntime runtime, string identifier)
+                => default;
+        }
+    }";
+
+        VerifyCSharpDiagnostic(test);
+    }
 }
