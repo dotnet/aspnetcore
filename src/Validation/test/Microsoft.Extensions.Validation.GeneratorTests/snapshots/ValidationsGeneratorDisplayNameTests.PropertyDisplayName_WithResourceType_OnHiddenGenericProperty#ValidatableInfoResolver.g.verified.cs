@@ -72,16 +72,25 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo)
         {
             validatableTypeInfo = null;
-            if (type == typeof(global::ComplexType))
+            if (type == typeof(global::ETag<int>))
             {
                 validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
-                    type: typeof(global::ComplexType),
+                    type: typeof(global::ETag<int>),
+                    members: [],
+                    displayNameInfo: null
+                );
+                return true;
+            }
+            if (type == typeof(global::DerivedQueryOptions<int>))
+            {
+                validatableTypeInfo = new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatableTypeInfo(
+                    type: typeof(global::DerivedQueryOptions<int>),
                     members: [
                         new global::Microsoft.Extensions.Validation.Generated.GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::ComplexType),
-                            propertyType: typeof(int),
-                            name: "IntegerWithRange",
-                            displayNameInfo: null
+                            containingType: typeof(global::DerivedQueryOptions<int>),
+                            propertyType: typeof(global::ETag<int>),
+                            name: "IfMatch",
+                            displayNameInfo: new global::Microsoft.Extensions.Validation.Generated.PropertyResourceDisplayName(typeof(global::DerivedQueryOptions<int>), "IfMatch")
                         ),
                     ],
                     displayNameInfo: null
