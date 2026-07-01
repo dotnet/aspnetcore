@@ -53,7 +53,7 @@ describe('autopause initializer', () => {
   it('does not expose any package-specific global on blazor', () => {
     const blazor = createBlazor();
     enable(blazor);
-    // The single public API is the framework's Blazor.pause.waitFor; the package adds nothing.
+    // The single public API is the framework's CircuitHandler.onCircuitPausing; the package adds nothing.
     expect(blazor.autoPause).toBeUndefined();
   });
 

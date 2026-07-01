@@ -54,6 +54,16 @@
             if (params.get('auto-pause') === 'true') {
                 window.autoPauseEvents = [];
             }
+            const pauseDeferrals = new Set();
+            window.myApp = {
+                deferPause: (handler) => {
+                    pauseDeferrals.add(handler);
+                    return () => pauseDeferrals.delete(handler);
+                }
+            };
+            circuitOptions.circuitHandlers = [{
+                onCircuitPausing: (signal) => Promise.all([...pauseDeferrals].map(h => h(signal)))
+            }];
             Blazor.start({
                 ssr: {
                     disableDomPreservation: suppressEnhancedNavigation,

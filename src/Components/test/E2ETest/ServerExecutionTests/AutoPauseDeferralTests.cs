@@ -889,7 +889,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
         {
             WaitForBlazorPause();
             ((IJavaScriptExecutor)Browser).ExecuteScript(
-                "Blazor.pause.waitFor(window.__mitigationHandler)");
+                "window.myApp.deferPause(window.__mitigationHandler)");
         }
 
         if (setupScript != null)
@@ -1125,7 +1125,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
                     resolve();
                 });
             });
-            window.__abortUnsub = Blazor.pause.waitFor(window.__abortHandler);
+            window.__abortUnsub = window.myApp.deferPause(window.__abortHandler);
         ");
     }
 
@@ -1171,7 +1171,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
                     resolve();
                 });
             });
-            window.__serverAbortUnsub = Blazor.pause.waitFor(window.__serverAbortHandler, { source: 'server' });
+            window.__serverAbortUnsub = window.myApp.deferPause(window.__serverAbortHandler);
         ");
     }
 
@@ -1222,7 +1222,7 @@ public class AutoPauseDeferralTests : ServerTestBase<BasicTestAppServerSiteFixtu
     private void WaitForBlazorPause()
     {
         Browser.True(() => (bool)((IJavaScriptExecutor)Browser).ExecuteScript(
-            "return !!(window.Blazor && Blazor.pause && typeof Blazor.pause.waitFor === 'function')"));
+            "return !!(window.Blazor && window.myApp && typeof window.myApp.deferPause === 'function')"));
     }
 
     private void ClearBlazorLogs()

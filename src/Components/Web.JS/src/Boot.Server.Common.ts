@@ -13,7 +13,6 @@ import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Serv
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
 import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
-import { registerPauseDeferral } from './Platform/Circuits/PauseDeferralRegistry';
 
 let initializersPromise: Promise<void> | undefined;
 let appState: string;
@@ -81,12 +80,6 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     }
 
     return circuit.pauseCircuit(signal);
-  };
-
-  Blazor.pause = {
-    waitFor(handler, options) {
-      return registerPauseDeferral(handler, options?.source);
-    },
   };
 
   Blazor.resumeCircuit = async () => {

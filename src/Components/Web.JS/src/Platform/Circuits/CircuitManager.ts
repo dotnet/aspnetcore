@@ -19,7 +19,6 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop, isRendererAttached } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
-import { PauseDeferralEntry, getMatchingPauseDeferrals } from './PauseDeferralRegistry';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
@@ -326,9 +325,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._activePauseDeferral = undefined;
   }
 
-  // Client-initiated pause: runs the non-server deferral participants, then pauses unless the wait was aborted.
+  // Client-initiated pause: runs the registered pause deferrals, then pauses unless the wait was aborted.
   public async pauseCircuit(externalSignal?: AbortSignal): Promise<boolean> {
-    await this.invokePauseDeferrals(externalSignal);
+    await this.runPauseDeferrals(externalSignal);
     if (externalSignal?.aborted) {
       return false;
     }
@@ -339,17 +338,9 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return true;
   }
 
-  private async invokePauseDeferrals(externalSignal?: AbortSignal): Promise<void> {
-    await this.runPauseDeferrals(e => e.source !== 'server', externalSignal);
-  }
-
-  private async runPauseDeferrals(
-    matches: (entry: PauseDeferralEntry) => boolean,
-    externalSignal?: AbortSignal,
-  ): Promise<void> {
-    // The deferral registry is not owned by the circuit, so registered callbacks survive across this circuit's lifetime.
-    const matching = getMatchingPauseDeferrals(matches);
-    if (matching.length === 0) {
+  private async runPauseDeferrals(externalSignal?: AbortSignal): Promise<void> {
+    const handlers = this._options.circuitHandlers.filter(h => h.onCircuitPausing);
+    if (handlers.length === 0) {
       return;
     }
     let signal: AbortSignal;
@@ -362,7 +353,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       signal = controller.signal;
     }
     try {
-      await Promise.all(matching.map(async e => e.handler(signal, e.source)));
+      await Promise.all(handlers.map(h => h.onCircuitPausing!(signal)));
     } finally {
       if (!externalSignal && this._activePauseDeferral?.signal === signal) {
         this._activePauseDeferral = undefined;
@@ -371,8 +362,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   private async handleServerInitiatedPause(): Promise<void> {
-    // Runs the 'server'-scoped and untagged ("run always") deferrals, then pauses.
-    await this.runPauseDeferrals(e => e.source == null || e.source === 'server');
+    // Runs the registered pause deferrals, then pauses.
+    await this.runPauseDeferrals();
     await this.pause(true);
   }
 
