@@ -121,7 +121,7 @@ public class NavLink : ComponentBase, IDisposable
         CssClass = _isActive ? CombineWithSpace(_class, ActiveClass ?? DefaultActiveClass) : _class;
     }
 
-    private async void OnLocationChanged(object? sender, LocationChangedEventArgs args)
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         // We could just re-render always, but for this component we know the
         // only relevant state change is to the _isActive property.
@@ -133,7 +133,7 @@ public class NavLink : ComponentBase, IDisposable
             StateHasChanged();
             if (ActivationChanged.HasDelegate)
             {
-                await ActivationChanged.InvokeAsync(_isActive);
+                _ = ActivationChanged.InvokeAsync(_isActive);
             }
         }
     }
