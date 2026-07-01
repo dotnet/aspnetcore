@@ -171,11 +171,11 @@
     <OpenTelemetryInstrumentationAspNetCoreVersion>1.15.1</OpenTelemetryInstrumentationAspNetCoreVersion>
     <OpenTelemetryInstrumentationRuntimeVersion>1.15.1</OpenTelemetryInstrumentationRuntimeVersion>
     <PhotinoNETVersion>2.5.2</PhotinoNETVersion>
-    <MicrosoftPlaywrightVersion>1.60.0</MicrosoftPlaywrightVersion>
+    <MicrosoftPlaywrightVersion>1.61.0</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.2.4</PollyVersion>
-    <SeleniumSupportVersion>4.44.0</SeleniumSupportVersion>
-    <SeleniumWebDriverVersion>4.44.0</SeleniumWebDriverVersion>
+    <SeleniumSupportVersion>4.45.0</SeleniumSupportVersion>
+    <SeleniumWebDriverVersion>4.45.0</SeleniumWebDriverVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogSinksFileVersion>4.0.0</SerilogSinksFileVersion>
     <SharpFuzzVersion>2.2.0</SharpFuzzVersion>
@@ -199,8 +199,8 @@
     <YarpReverseProxyVersion>2.3.0</YarpReverseProxyVersion>
     <MicrosoftDataSqlClientVersion>7.0.0</MicrosoftDataSqlClientVersion>
     <MicrosoftDataSqlClientExtensionsAzureVersion>1.0.0</MicrosoftDataSqlClientExtensionsAzureVersion>
-    <MicrosoftOpenApiVersion>3.6.0</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>3.6.0</MicrosoftOpenApiYamlReaderVersion>
+    <MicrosoftOpenApiVersion>3.7.0</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>3.7.0</MicrosoftOpenApiYamlReaderVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
