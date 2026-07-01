@@ -10,7 +10,8 @@ updates:
   directory: /
   ignore:
   - dependency-name: "martincostello*"
-  - dependency-name: "github/gh-aw-actions/**" # Managed by gh aw compile. Version-locked to the gh-aw compiler; do not bump.
+  - dependency-name: "github/gh-aw-actions/**"
+  - dependency-name: "github/gh-aw-actions" # Managed by gh aw compile. Version-locked to the gh-aw compiler; do not bump.
   labels:
   - area-infrastructure
   package-ecosystem: github-actions

@@ -19,8 +19,9 @@ on:
 
 description: >
   Triage newly opened issues in dotnet/aspnetcore. Classifies the area label,
-  issue type, and searches for potential duplicates. Posts a summary comment
-  and applies labels automatically.
+  issue type, searches for potential duplicates, and applies labels. The
+  drafted triage comment is handed off to the triage-comment-reviewer worker
+  workflow, which validates it before posting.
 
 permissions:
   contents: read
@@ -33,6 +34,7 @@ tools:
     min-integrity: none
 
 safe-outputs:
+  report-failure-as-issue: false
   noop:
     report-as-issue: false
   set-issue-type:
@@ -67,10 +69,11 @@ safe-outputs:
       - test-failure
       - performance
     max: 3
-  add-comment:
-    hide-older-comments: true
   remove-labels:
     allowed: [needs-area-label]
+    max: 1
+  call-workflow:
+    workflows: [triage-comment-reviewer]
     max: 1
 ---
 
@@ -292,6 +295,8 @@ When multiple areas could match, use these priorities:
 - **Route templates, constraints, `LinkGenerator`** → `area-routing`
 - **`IDataProtector`, key management, protect/unprotect** → `area-dataprotection`
 - **Build failures, `eng/`, packages, CI** → `area-infrastructure`
+- **`OpenApiSchemaService`, `Microsoft.AspNetCore.OpenApi.*` runtime APIs, OpenAPI document generation at request time** → `area-minimal` (the runtime OpenAPI service lives under minimal APIs)
+- **`dotnet-openapi` CLI tool, `Microsoft.dotnet-openapi` package, build-time OpenAPI client/server generation** → `area-commandlinetools` (the **tool**, not the runtime service)
 
 If you are truly unsure (confidence below ~40%), do **not** add an area label.
 Explain why in the comment instead.
@@ -364,41 +369,164 @@ Only flag an issue as a potential duplicate if you have **high confidence** that
 it describes the same problem or feature request. When in doubt, list it as
 "related" rather than "duplicate".
 
-## Step 6: Post Results
+## Step 6: Draft the Triage Comment
 
-Compose a single triage comment summarizing your findings. Structure it as:
+Compose a single triage comment summarizing your findings. Use **exactly** this
+structure — no additional sections beyond what is listed below:
 
 ```markdown
 ### Triage Summary
 
 **Area:** `area-xyz` (brief reason)
-**Type:** `bug` | `feature-request` | ... (brief reason)
+**Type:** `Bug` | `Feature` (brief reason)
 
 #### Regression Info
 - **Previously working version:** .NET x.y / ASP.NET Core x.y
 - **Broken since:** .NET x.y / ASP.NET Core x.y
 - Brief description of the behavior change
-- _(Omit this section if not a regression)_
+- _(Omit this entire section if the issue is not a regression)_
 
 #### Potential Duplicates
 - #123 - Title (similarity: high/medium)
-- _None found_
+- _(Always include this section. If you found no candidate duplicates, write a single bullet `- _None found_` and omit any per-issue bullets.)_
 
 #### Notes
-Any additional observations (e.g., might also relate to another area,
-issue may need more info from the author, etc.)
+- _(Optional, additive-only. See "What belongs in Notes" below. Omit the entire section if you have nothing of this kind to add.)_
 ```
 
-Then apply labels and post the comment using safe outputs.
+Do **not** add a `#### Labels Applied` section or otherwise list /
+recommend labels inside the comment body — the applied labels are
+visible in the issue's label sidebar, which is the source of truth.
+Do **not** construct security analysis, hardening rationale, or
+RFC-compliance arguments the issue itself does not make, and do **not**
+add third-party comparisons (e.g. Squid, HaProxy) as hardening
+arguments. You **may** factually restate the issue's own framing in
+the Area/Type parentheticals — echoing the reporter's own words is not
+editorializing.
+
+### What belongs in `#### Notes`
+
+Notes is an **additive** section. Everything in it must be (a) new
+information not already stated in the issue body and (b) verifiable,
+not speculative. Acceptable kinds of bullets, in priority order:
+
+1. **Concrete code pointers** for the maintainer — file + symbol where
+   the relevant logic lives, e.g. *"Likely in
+   `src/Http/Routing/src/Matching/DfaMatcherBuilder.cs:Build()`"*. Only
+   include a pointer you can actually justify from the issue
+   description and the repo structure. Do not invent line numbers.
+
+2. **Deterministic regression evidence** — *only if the reporter did
+   NOT already state versions*. If you can verify via `git blame` /
+   commit history / PR references the precise commit or PR that
+   introduced the behavior, name it: *"Behavior introduced by PR
+   #NNNN merged in .NET 10.0.5"*. Do **not** guess (*"may have been
+   introduced in 10.0.4"* is a guess — drop it). If you cannot verify
+   deterministically, omit this bullet.
+
+3. **Reproduction requests** — flag when the reporter omitted critical
+   information needed to act on the issue. Be specific: list exactly
+   what is missing. E.g. *"Missing: runtime version, full stack trace,
+   minimal repro"*. Do not list every theoretically-useful field —
+   only what is actually required to act.
+
+4. **Verified cross-references** — issue is already closed by a
+   maintainer, is a sub-issue of #NNN, is a verified duplicate of an
+   open #NNN. You must verify the cited issue's state via `get_issue`
+   before including it.
+
+### What does NOT belong in `#### Notes`
+
+Hard prohibitions. Each of these is exactly the failure mode the
+reviewer worker is configured to strip — adding them gets the entire
+comment rejected, costing the reporter useful triage:
+
+- **Rephrasing the issue body.** If the reporter said *"X throws Y on
+  Z"*, do not write *"The issue reports that X throws Y on Z"*. That
+  is noise. Notes is for new information only.
+- **Security or hardening framing of any kind.** Do not analyze
+  vulnerability impact, suggest a security label, frame the issue as
+  a "hardening request," or cite RFC compliance as a security
+  argument. Do not compare to other HTTP infrastructure (Squid,
+  HaProxy, NGINX).
+- **Speculation, hypotheses, or "this might be related to…"** If you
+  cannot verify it, omit it. *"The error message suggests X is
+  missing"* is speculation. *"git blame on file:line shows the check
+  was removed in PR #NNNN"* is evidence.
+- **Editorial fluff** — *"This is a reasonable request,"* *"The
+  proposal is well-documented,"* *"The author correctly identifies
+  the root cause."* These are opinions; maintainers do not need an
+  LLM's opinion on issue quality.
+- **.NET version-status claims** — do not call versions "preview,"
+  "RC," "stable," "released," or "unreleased." State the version
+  number and let the maintainer judge release status.
+- **Label suggestions** — applied labels are visible in the issue's
+  label sidebar. Do not list them or suggest additional ones in the
+  comment body.
+
+If after applying these rules you have nothing left to say, **omit the
+`#### Notes` section entirely**. An empty Notes section is worse than
+no Notes section.
+
+## Step 7: Apply Labels, Type, and Hand Off the Comment
+
+You do **not** post the triage comment directly. Posting is handled by the
+`triage-comment-reviewer` worker workflow, which validates the comment
+before it reaches the issue.
+
+Order of operations matters. Do these in this exact order:
+
+1. **Decide the labels and issue type** you will apply, based on Steps 1–5.
+
+2. **Apply the area label** and (if applicable from Step 3) one **additional
+   sub-type label** using the `add-labels` safe output. The `add-labels`
+   allowed list includes the area labels and the sub-type labels
+   (`by-design`, `question`, `external`, `docs`, `api-proposal`,
+   `test-failure`, `performance`). It does **not** include `Bug` or
+   `Feature` — those are issue types, applied via `set-issue-type` in
+   step 3 below.
+
+3. **Apply the issue type** using `set-issue-type` with one of `Bug`,
+   `Feature`, `Task`, or `Epic` based on your Step 2 classification. Call
+   `set-issue-type` exactly once.
+
+4. If the issue currently has `needs-area-label` and you assigned an area,
+   **remove `needs-area-label`** using `remove-labels`.
+
+5. **Now draft the comment per Step 6.** The applied labels and issue
+   type are visible in the issue's label sidebar; do not list them inside
+   the comment body.
+
+6. **Call the `triage_comment_reviewer` MCP tool exactly once** with:
+
+   - `issue_number`: the triggering issue number as a string (for
+     `issues.opened`, use `${{ github.event.issue.number }}`; for
+     `workflow_dispatch`, use `${{ github.event.inputs.issue_number }}`).
+   - `proposed_comment`: the **complete** markdown comment you drafted in
+     step 5, exactly as it should appear on the issue (or as it should
+     appear before the reviewer rewrites it).
+   - `dry_run`: pass through `${{ github.event.inputs.dry_run }}` if set,
+     otherwise `false`.
+
+   The reviewer worker will either post the comment as-is, post a sanitized
+   rewrite, or skip posting entirely if the issue itself is a vulnerability
+   report.
 
 ### Dry Run Mode
 
-If `${{ github.event.inputs.dry_run }}` is `true`, do **not** apply any labels.
-Post the comment with the analysis but prefix the comment title with
-`### [DRY RUN] Triage Summary` so it's clear no labels were applied.
+If `${{ github.event.inputs.dry_run }}` is `true`, do **not** apply any
+labels or issue type (skip `add-labels`, `set-issue-type`, `remove-labels`).
+Still call the `triage_comment_reviewer` MCP tool with `dry_run: true` —
+the reviewer will prefix the posted comment with `### [DRY RUN] Triage
+Summary` so it's clear no labels were applied.
 
-If no action is needed (e.g., the issue already has an area label and type label),
-you MUST call the `noop` tool with a message explaining why:
+### No-op Fallback
+
+If no action is needed (e.g., the issue already has an area label and a
+type label, and there are no duplicates worth flagging), you MUST call the
+`noop` tool with a message explaining why, and you MUST NOT call the
+`triage_comment_reviewer` tool:
+
 ```json
 {"noop": {"message": "No action needed: issue already has area and type labels"}}
 ```

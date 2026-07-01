@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 internal static class ValidationEndpointFilterFactory
 {
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
-    private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string Name);
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableParameterInfo Parameter, string Name);
 
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
@@ -97,7 +97,10 @@ internal static class ValidationEndpointFilterFactory
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                var problemDetails = new HttpValidationProblemDetails(validateContext.ValidationErrors)
+                var validationErrors = validateContext.ValidationErrors.ToDictionary(
+                    keySelector: kvp => kvp.Key,
+                    elementSelector: kvp => kvp.Value.ToArray());
+                var problemDetails = new HttpValidationProblemDetails(validationErrors)
                 {
                     Status = StatusCodes.Status400BadRequest
                 };
