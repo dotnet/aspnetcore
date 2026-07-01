@@ -15,9 +15,17 @@ internal sealed class HotReloadManager
 
     private static readonly bool s_isSupported =
         AppContext.TryGetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", out bool isSupported) ? isSupported : true;
+    private static bool? s_isSupportedOverride;
 
     [FeatureSwitchDefinition("System.Reflection.Metadata.MetadataUpdater.IsSupported")]
-    internal static bool IsSupported => s_isSupported;
+    internal static bool IsSupported => s_isSupportedOverride ?? s_isSupported;
+
+    internal static IDisposable SetIsSupportedOverrideForTest(bool isSupported)
+    {
+        var previousValue = s_isSupportedOverride;
+        s_isSupportedOverride = isSupported;
+        return new TestSwitchOverride(previousValue);
+    }
 
     /// <summary>
     /// Gets a value that determines if OnDeltaApplied is subscribed to.
@@ -33,4 +41,12 @@ internal sealed class HotReloadManager
 
     // For testing purposes only
     internal void TriggerOnDeltaApplied() => OnDeltaApplied?.Invoke();
+
+    private sealed class TestSwitchOverride(bool? previousValue) : IDisposable
+    {
+        public void Dispose()
+        {
+            s_isSupportedOverride = previousValue;
+        }
+    }
 }

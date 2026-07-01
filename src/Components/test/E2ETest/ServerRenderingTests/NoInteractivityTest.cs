@@ -72,7 +72,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     public void NavigatesWithoutInteractivityByRequestRedirection(bool controlFlowByException, bool isStreaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: !controlFlowByException);
+        using var _ = ComponentsTestHooks.SetDisableThrowNavigationExceptionForTest(!controlFlowByException);
         string streaming = isStreaming ? $"streaming-" : "";
         Navigate($"{ServerPathBase}/routing/ssr-{streaming}navigate-to");
         Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
@@ -85,7 +85,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false)]
     public void ProgrammaticNavigationToNotExistingPath_ReExecutesTo404(bool streaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        using var _ = ComponentsTestHooks.SetDisableThrowNavigationExceptionForTest(true);
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}?navigate-programmatically=true");
         AssertReExecutionPageRendered();
@@ -94,7 +94,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Fact]
     public void ProgrammaticNavigationToNotExistingPath_AfterAsyncOperation_ReExecutesTo404()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        using var _ = ComponentsTestHooks.SetDisableThrowNavigationExceptionForTest(true);
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr?doAsync=true&navigate-programmatically=true");
         AssertReExecutionPageRendered();
     }
@@ -104,7 +104,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false)]
     public void LinkNavigationToNotExistingPath_ReExecutesTo404(bool streaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        using var _ = ComponentsTestHooks.SetDisableThrowNavigationExceptionForTest(true);
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}");
         Browser.Click(By.Id("link-to-not-existing-page"));
@@ -116,7 +116,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false)]
     public void BrowserNavigationToNotExistingPath_ReExecutesTo404(bool streaming)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        using var _ = ComponentsTestHooks.SetDisableThrowNavigationExceptionForTest(true);
         // non-existing path has to have re-execution middleware set up
         // so it has to have "reexecution" prefix. Otherwise middleware mapping
         // will not be activated, see configuration in Startup
@@ -128,7 +128,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Fact]
     public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        using var _ = ComponentsTestHooks.SetDisableThrowNavigationExceptionForTest(true);
         Navigate($"{ServerPathBase}/reexecution/not-existing-page?useOnNavigateAsync=true");
         AssertReExecutionPageRendered();
     }
@@ -136,7 +136,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Fact]
     public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404_CanStream()
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        using var _ = ComponentsTestHooks.SetDisableThrowNavigationExceptionForTest(true);
         Navigate($"{ServerPathBase}/streaming-reexecution/not-existing-page?useOnNavigateAsync=true");
         AssertReExecutionPageRendered();
         Browser.Equal("Streaming completed.", () => Browser.Exists(By.Id("reexecute-streaming-status")).Text);

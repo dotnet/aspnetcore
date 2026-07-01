@@ -5013,6 +5013,20 @@ public class RendererTest
     }
 
     [Fact]
+    public void HotReloadManager_TestOverrideCanBeScoped()
+    {
+        using var _ = HotReloadManager.SetIsSupportedOverrideForTest(true);
+        Assert.True(HotReloadManager.IsSupported);
+
+        using (HotReloadManager.SetIsSupportedOverrideForTest(false))
+        {
+            Assert.False(HotReloadManager.IsSupported);
+        }
+
+        Assert.True(HotReloadManager.IsSupported);
+    }
+
+    [Fact]
     public async Task DisposingRenderer_UnsubsribesFromHotReloadManager()
     {
         // Arrange

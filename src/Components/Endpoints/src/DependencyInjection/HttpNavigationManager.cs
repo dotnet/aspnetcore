@@ -12,11 +12,19 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 
     private static readonly bool s_throwNavigationException =
         !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
+    private static bool? s_throwNavigationExceptionOverride;
 
     [FeatureSwitchDefinition(_disableThrowNavigationException)]
-    private static bool _throwNavigationException => s_throwNavigationException;
+    private static bool _throwNavigationException => s_throwNavigationExceptionOverride ?? s_throwNavigationException;
 
     private Func<string, Task>? _onNavigateTo;
+
+    internal static IDisposable SetThrowNavigationExceptionOverrideForTest(bool throwNavigationException)
+    {
+        var previousValue = s_throwNavigationExceptionOverride;
+        s_throwNavigationExceptionOverride = throwNavigationException;
+        return new TestSwitchOverride(previousValue);
+    }
 
     void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
 
@@ -45,6 +53,14 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
                 throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
             }
             await _onNavigateTo(absoluteUriString);
+        }
+    }
+
+    private sealed class TestSwitchOverride(bool? previousValue) : IDisposable
+    {
+        public void Dispose()
+        {
+            s_throwNavigationExceptionOverride = previousValue;
         }
     }
 }
