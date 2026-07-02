@@ -17,11 +17,11 @@ public enum VirtualizeAnchorMode
     None = 0,
 
     /// <summary>
-    /// Pins the viewport to the beginning of the list. When the user is
-    /// at or near the top and new items arrive at the beginning, the viewport
+    /// Pins the viewport to the start of the list. When the user is
+    /// at or near the top and new items arrive at the start, the viewport
     /// stays at the top showing the newest items.
     /// </summary>
-    Beginning = 1,
+    Start = 1,
 
     /// <summary>
     /// Pins the viewport to the end of the list. When the user is at or near

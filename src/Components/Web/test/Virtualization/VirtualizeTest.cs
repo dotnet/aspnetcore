@@ -793,7 +793,7 @@ public class VirtualizeTest
         ICollection<int> items,
         Action<Virtualize<int>> captureRenderedVirtualize = null,
         string spacerElement = "div",
-        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Beginning)
+        VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start)
         => builder =>
     {
         builder.OpenComponent<Virtualize<int>>(0);

@@ -120,4 +120,22 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.UnnecessaryStateHasChangedCall_Description)));
+
+    public static readonly DiagnosticDescriptor AuthenticationStateProviderCachedWithoutSubscription = new(
+        "BL0013",
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Title)),
+        CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.AuthenticationStateProviderCachedWithoutSubscription_Description)));
+
+    public static readonly DiagnosticDescriptor ForLoopIteratorVariableUsedInClosure = new(
+        "BL0014",
+        CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
 }

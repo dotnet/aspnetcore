@@ -3,6 +3,10 @@
 
 using System.Globalization;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
@@ -22,6 +26,89 @@ public class GridSortTest
     {
         public string ChildName { get; set; } = string.Empty;
         public DateTime? ChildNullableDate { get; set; }
+    }
+
+    private class WeatherForecast
+    {
+        public string Summary { get; set; }
+    }
+
+    private class Employee
+    {
+        public string LastName { get; set; }
+    }
+
+    private class MismatchedTupleColumnWithTitleComponent : ComponentBase
+    {
+        private static readonly WeatherForecast[] _items = [];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<QuickGrid<WeatherForecast>>(0);
+            builder.AddAttribute(1, "Items", _items.AsQueryable());
+            builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
+            {
+                b.OpenComponent<TemplateColumn<(WeatherForecast, bool)>>(0);
+                b.AddAttribute(1, "Title", "Summary");
+                b.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    private class MismatchedTupleColumnWithoutTitleComponent : ComponentBase
+    {
+        private static readonly WeatherForecast[] _items = [];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<QuickGrid<WeatherForecast>>(0);
+            builder.AddAttribute(1, "Items", _items.AsQueryable());
+            builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
+            {
+                b.OpenComponent<TemplateColumn<(WeatherForecast, bool)>>(0);
+                b.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    private class MismatchedPropertyColumnComponent : ComponentBase
+    {
+        private static readonly WeatherForecast[] _items = [];
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<QuickGrid<WeatherForecast>>(0);
+            builder.AddAttribute(1, "Items", _items.AsQueryable());
+            builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
+            {
+                b.OpenComponent<PropertyColumn<Employee, string>>(0);
+                b.AddAttribute(1, "Title", "First Name");
+                b.AddAttribute(2, "Property", (Expression<Func<Employee, string>>)(e => e.LastName));
+                b.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }
+    }
+
+    private static TestRenderer CreateRenderer()
+    {
+        var services = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(new TestJsRuntime(new TaskCompletionSource(), new TaskCompletionSource()))
+            .AddSingleton<NavigationManager, TestNavigationManager>()
+            .BuildServiceProvider();
+        return new TestRenderer(services);
+    }
+
+    private static InvalidOperationException RenderAndCatchTypeMismatch<TComponent>()
+        where TComponent : IComponent, new()
+    {
+        var renderer = CreateRenderer();
+        var component = new TComponent();
+        var componentId = renderer.AssignRootComponentId(component);
+        return Assert.Throws<InvalidOperationException>(
+            () => renderer.RenderRootComponent(componentId));
     }
 
     [Fact]
@@ -339,5 +426,37 @@ public class GridSortTest
 
         Assert.Equal(new[] { "Bob", "Alice", "Charlie" },
             descending.Select(x => x.Name));
+    }
+}
+    [Fact]
+    public void SortByTypeMismatchShowsClearError()
+    {
+        var ex = RenderAndCatchTypeMismatch<MismatchedTupleColumnWithTitleComponent>();
+
+        Assert.Contains("Column 'Summary' expects item type 'System.ValueTuple`2", ex.Message);
+        Assert.Contains("WeatherForecast", ex.Message);
+        Assert.Contains("System.Boolean", ex.Message);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", ex.Message);
+    }
+
+    [Fact]
+    public void SortByTypeMismatchWithoutTitleShowsGenericError()
+    {
+        var ex = RenderAndCatchTypeMismatch<MismatchedTupleColumnWithoutTitleComponent>();
+
+        Assert.Contains("Column '(unnamed)' expects item type 'System.ValueTuple`2", ex.Message);
+        Assert.Contains("WeatherForecast", ex.Message);
+        Assert.Contains("System.Boolean", ex.Message);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", ex.Message);
+    }
+
+    [Fact]
+    public void PropertyColumnTypeMismatchShowsClearError()
+    {
+        var ex = RenderAndCatchTypeMismatch<MismatchedPropertyColumnComponent>();
+
+        Assert.Contains("Column 'First Name' expects item type", ex.Message);
+        Assert.Contains("Employee", ex.Message);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", ex.Message);
     }
 }

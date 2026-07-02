@@ -770,7 +770,7 @@ internal static class RoutePatternFactory
     {
         ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
-        if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+        if (parameterName.ContainsAny(RoutePatternParser.InvalidParameterNameChars))
         {
             throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
         }
@@ -793,7 +793,7 @@ internal static class RoutePatternFactory
     {
         ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
-        if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+        if (parameterName.ContainsAny(RoutePatternParser.InvalidParameterNameChars))
         {
             throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
         }
@@ -820,7 +820,7 @@ internal static class RoutePatternFactory
     {
         ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
-        if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+        if (parameterName.ContainsAny(RoutePatternParser.InvalidParameterNameChars))
         {
             throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
         }
@@ -854,7 +854,7 @@ internal static class RoutePatternFactory
     {
         ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
-        if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+        if (parameterName.ContainsAny(RoutePatternParser.InvalidParameterNameChars))
         {
             throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
         }
@@ -890,7 +890,7 @@ internal static class RoutePatternFactory
     {
         ArgumentException.ThrowIfNullOrEmpty(parameterName);
 
-        if (parameterName.AsSpan().IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+        if (parameterName.ContainsAny(RoutePatternParser.InvalidParameterNameChars))
         {
             throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
         }
