@@ -7,6 +7,7 @@
         <InputDate id="test-date-input" @bind-Value="dateValue" />
         <span id="current-date-value">@dateValue?.ToString("yyyy-MM-dd")</span>
         <button type="button" id="set-new-date-btn" @onclick="SetNewDate">Set New Date</button>
+        <button type="button" id="set-another-new-date-btn" @onclick="SetAnotherNewDate">Set Another New Date</button>
         <ValidationMessage For="@(() => dateValue)" />
     </div>
 
@@ -32,6 +33,11 @@
     private void SetNewDate()
     {
         dateValue = new DateTime(2020, 1, 1);
+    }
+
+    private void SetAnotherNewDate()
+    {
+        dateValue = new DateTime(2021, 6, 15);
     }
 
     private void SetNewNumber()
