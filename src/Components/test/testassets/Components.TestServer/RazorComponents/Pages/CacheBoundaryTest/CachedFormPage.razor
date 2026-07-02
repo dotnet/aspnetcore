@@ -1,0 +1,35 @@
+﻿@page "/cache-component-form"
+@using Microsoft.AspNetCore.Components.Forms
+
+<h3>CacheBoundary form</h3>
+
+<div id="test-form-in-cache">
+    <EditForm Model="Model" method="POST" OnValidSubmit="DisplaySubmitted" FormName="cachedForm">
+        <CacheBoundary ExpiresAfter="TimeSpan.FromHours(1)" VaryByQuery="testId">
+            <p class="form-cached-guid">@Guid.NewGuid()</p>
+            <p class="form-display-name"><DisplayName For="() => Model.Message" /></p>
+            <Label For="() => Model.Message" />
+            <InputText id="cached-form-input" @bind-Value="Model.Message" />
+            <ValidationMessage For="() => Model.Message" />
+            <ValidationSummary />
+        </CacheBoundary>
+        <button id="cached-form-submit" type="submit">Submit</button>
+    </EditForm>
+    <p id="cached-form-message">@SubmittedMessage</p>
+</div>
+
+@code
+{
+    private string SubmittedMessage { get; set; } = "never";
+
+    public void DisplaySubmitted() => SubmittedMessage = Model.Message;
+
+    [SupplyParameterFromForm] public FormModel Model { get; set; }
+
+    protected override void OnInitialized() => Model ??= new FormModel();
+
+    public class FormModel
+    {
+        public string Message { get; set; } = "";
+    }
+}

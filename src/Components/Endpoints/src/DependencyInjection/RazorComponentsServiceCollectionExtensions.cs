@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -74,6 +75,14 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddCascadingValue(sp => sp.GetRequiredService<EndpointHtmlRenderer>().HttpContext);
         services.TryAddScoped<ResourcePreloadService>();
         services.AddTempData();
+        services.TryAddSingleton<ICacheBoundaryStore>(static sp =>
+            sp.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value.CacheBoundaryHybridCache is { } hybridCache
+                ? new HybridCacheBoundaryStore(hybridCache)
+                : ActivatorUtilities.CreateInstance<MemoryCacheBoundaryStore>(sp));
+        services.TryAddSingleton<CacheBoundaryService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHybridCacheSerializer<SerializedRenderFragment>>(
+            SerializedRenderFragmentHybridCacheSerializer.Instance));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<RazorComponentsServiceOptions>, DefaultCacheBoundaryHybridCache>());
         services.TryAddScoped<TempDataCascadingValueSupplier>();
         services.TryAddCascadingValueSupplier<SupplyParameterFromTempDataAttribute>(
             sp => sp.GetRequiredService<TempDataCascadingValueSupplier>().CreateSubscription);

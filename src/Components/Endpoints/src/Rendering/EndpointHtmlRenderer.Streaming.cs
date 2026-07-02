@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -271,7 +272,61 @@ internal partial class EndpointHtmlRenderer
         _visitedComponentIdsInCurrentStreamingBatch?.Add(componentId);
 
         var componentState = (EndpointComponentState)GetComponentState(componentId);
+
+        if (componentState.Component is CacheBoundary cacheBoundary)
+        {
+            CacheBoundaryService.ThrowIfNestedInsideCapturingBoundary(output);
+
+            var renderState = cacheBoundary.RenderState;
+
+            if (renderState?.IsCacheHit == true)
+            {
+                // Cache hit: the boundary's render tree already holds the cached content.
+                base.WriteComponentHtml(componentId, output);
+                return;
+            }
+
+            if (CacheBoundaryService.TryBeginWrite(renderState, cacheBoundary, output, out var wrappedOutput))
+            {
+                var captureCompletedSuccessfully = false;
+                try
+                {
+                    base.WriteComponentHtml(componentId, wrappedOutput);
+                    captureCompletedSuccessfully = true;
+                }
+                finally
+                {
+                    GetCacheBoundaryService().EndCapture(renderState, captureCompletedSuccessfully);
+                }
+                return;
+            }
+        }
+
         var renderBoundaryMarkers = allowBoundaryMarkers && componentState.StreamRendering;
+        var captureWriter = output as CacheBoundaryTextWriter;
+        var pausedCapture = false;
+        if (captureWriter is not null && captureWriter.IsCapturing && (!CacheBoundaryService.IsCacheableComponent(componentState.Component.GetType(), captureWriter.VaryBy) || renderBoundaryMarkers))
+        {
+            pausedCapture = true;
+            captureWriter.PauseCapture();
+
+            // A validation-only writer (a disabled boundary) records nothing; the hole-policy error
+            // already surfaced in the condition above. Only a real capture records the hole.
+            if (!captureWriter.IsValidationOnly)
+            {
+                // An interactive hole is wrapped in an SSRRenderModeBoundary that owns the inner component
+                // type and render mode; a plain [CacheBoundaryPolicy] hole is the component itself with no
+                // render mode.
+                var holeBoundary = componentState.Component as SSRRenderModeBoundary;
+                var holeComponentType = holeBoundary?.ComponentType ?? componentState.Component.GetType();
+
+                var holeCapture = TryCaptureHoleParameterFrames(componentState)
+                    ?? throw new InvalidOperationException(
+                        $"CacheBoundary could not locate the hole component '{holeComponentType.FullName}' in its parent's render tree.");
+
+                captureWriter.CreateHole(holeComponentType, holeBoundary?.RenderMode, holeCapture, GetRenderFragmentSerializationLogger());
+            }
+        }
 
         ComponentEndMarker? endMarkerOrNull = default;
 
@@ -320,7 +375,51 @@ internal partial class EndpointHtmlRenderer
             output.Write(serializedEndRecord);
             output.Write("-->");
         }
+
+        if (pausedCapture)
+        {
+            captureWriter!.StartCapture();
+        }
     }
+
+    // Captures frames for a hole component from its parent's render tree
+    private RenderFragmentCapture? TryCaptureHoleParameterFrames(EndpointComponentState holeComponentState)
+    {
+        if (holeComponentState.ParentComponentState is not { } parentComponentState)
+        {
+            return null;
+        }
+
+        var frames = GetRenderTreeFrames(parentComponentState.ComponentId);
+        var array = frames.Array;
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref readonly var frame = ref array[i];
+            if (frame.FrameType is RenderTreeFrameType.Component && ReferenceEquals(frame.Component, holeComponentState.Component))
+            {
+                var length = frame.ComponentSubtreeLength;
+                var slice = new RenderTreeFrame[length];
+                Array.Copy(array, i, slice, 0, length);
+                return new RenderFragmentCapture(slice);
+            }
+        }
+
+        return null;
+    }
+
+    private ILogger? _renderFragmentSerializerLogger;
+
+    private ILogger GetRenderFragmentSerializationLogger()
+    {
+        return _renderFragmentSerializerLogger ??= _httpContext.RequestServices
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger(typeof(RenderFragmentSerializer).FullName!);
+    }
+
+    private CacheBoundaryService? _cacheBoundaryService;
+
+    private CacheBoundaryService GetCacheBoundaryService()
+        => _cacheBoundaryService ??= _httpContext.RequestServices.GetRequiredService<CacheBoundaryService>();
 
     internal static bool IsProgressivelyEnhancedNavigation(HttpRequest request)
     {
