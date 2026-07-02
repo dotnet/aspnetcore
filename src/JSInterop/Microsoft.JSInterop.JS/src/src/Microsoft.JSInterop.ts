@@ -306,7 +306,7 @@ export module DotNet {
      * Invoked by the runtime to complete an asynchronous JavaScript function call started from .NET
      *
      * @param callId A value identifying the asynchronous operation.
-     * @param succeded Whether the operation succeeded or not.
+     * @param succeeded Whether the operation succeeded or not.
      * @param resultOrError The serialized result or the serialized error from the async operation.
      */
     endInvokeJSFromDotNet(callId: number, succeeded: boolean, resultOrError: any): void;

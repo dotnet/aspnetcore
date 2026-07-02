@@ -224,7 +224,7 @@ public static class HandshakeProtocol
         // For error messages, we want to print the payload as text
         string GetPayloadAsString()
         {
-            // REVIEW: Should we show hex for binary charaters?
+            // REVIEW: Should we show hex for binary characters?
             return Encoding.UTF8.GetString(payload.ToArray());
         }
 

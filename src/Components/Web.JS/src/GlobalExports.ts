@@ -24,7 +24,7 @@ import { ValidationService } from './Validation';
 
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
-// It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
+// It's important to know this information when dealing with the possibility of multiple .NET platforms being available.
 // e.g., which of these APIs need to account for there being multiple .NET runtimes, and which don't?
 
 // We should consider separating it all out so that we can easily identify the platform requirements of each API.

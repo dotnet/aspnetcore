@@ -31,7 +31,7 @@ internal static class PathNormalizer
             }
             if (nextDotSegmentIndex < 0)
             {
-                // Copy the remianing src to dst, and return.
+                // Copy the remaining src to dst, and return.
                 currentSrc.CopyTo(src[writtenLength..]);
                 writtenLength += src.Length - readPointer;
                 return writtenLength;

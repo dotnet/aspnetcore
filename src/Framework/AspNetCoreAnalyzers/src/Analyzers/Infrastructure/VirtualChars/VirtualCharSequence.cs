@@ -85,7 +85,7 @@ internal partial struct VirtualCharSequence
     public bool IsDefaultOrEmpty => IsDefault || IsEmpty;
 
     /// <summary>
-    /// Retreives a sub-sequence from this <see cref="VirtualCharSequence"/>.
+    /// Retrieves a sub-sequence from this <see cref="VirtualCharSequence"/>.
     /// </summary>
     public VirtualCharSequence GetSubSequence(TextSpan span)
        => new(_leafCharacters, new TextSpan(_span.Start + span.Start, span.Length));
