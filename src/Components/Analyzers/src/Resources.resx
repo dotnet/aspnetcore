@@ -249,4 +249,13 @@
   <data name="ForLoopIteratorVariableUsedInClosure_Title" xml:space="preserve">
     <value>For loop iterator used inside a closure.</value>
   </data>
+  <data name="InputSelectRequiresEmptyOption_Description" xml:space="preserve">
+    <value>InputSelect with a nullable TValue requires an empty option element like &lt;option value=""&gt;Select an option&lt;/option&gt; to properly represent the null value.</value>
+  </data>
+  <data name="InputSelectRequiresEmptyOption_Format" xml:space="preserve">
+    <value>InputSelect&lt;{0}&gt; with nullable type requires an empty option element to represent the null value. Add &lt;option value=""&gt;Select an option&lt;/option&gt; as the first option.</value>
+  </data>
+  <data name="InputSelectRequiresEmptyOption_Title" xml:space="preserve">
+    <value>InputSelect with nullable TValue requires empty option</value>
+  </data>
 </root>

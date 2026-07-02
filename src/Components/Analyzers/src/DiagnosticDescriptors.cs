@@ -138,4 +138,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
+
+    public static readonly DiagnosticDescriptor InputSelectRequiresEmptyOption = new(
+        "BL0015",
+        CreateLocalizableResourceString(nameof(Resources.InputSelectRequiresEmptyOption_Title)),
+        CreateLocalizableResourceString(nameof(Resources.InputSelectRequiresEmptyOption_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.InputSelectRequiresEmptyOption_Description)));
 }

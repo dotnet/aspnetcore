@@ -46,7 +46,6 @@ internal static class ComponentsApi
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
         public const string MetadataName = FullTypeName;
     }
-
     public static class AuthenticationStateProvider
     {
         public const string FullTypeName = "Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider";
@@ -70,6 +69,12 @@ internal static class ComponentsApi
     public static class RenderTreeBuilder
     {
         public const string FullTypeName = "Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class InputSelect
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.Forms.InputSelect`1";
         public const string MetadataName = FullTypeName;
     }
 }
