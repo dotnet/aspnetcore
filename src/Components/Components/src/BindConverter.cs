@@ -1817,7 +1817,6 @@ public static class BindConverter
 
             string? FormatArrayValue(T[]? value, CultureInfo? culture)
             {
-             
                 if (value is null || value.Length == 0)
                 {
                     return "[]";
