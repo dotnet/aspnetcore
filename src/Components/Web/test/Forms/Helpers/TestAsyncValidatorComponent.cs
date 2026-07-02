@@ -75,7 +75,6 @@ internal sealed class TestAsyncValidator : IDisposable
         _store = new ValidationMessageStore(editContext);
         _editContext.OnFieldChanged += OnFieldChanged;
         _editContext.OnValidationRequested += OnValidationRequested;
-        _editContext.OnValidationRequestedAsync += OnValidationRequestedAsync;
     }
 
     public ValidationOutcome DefaultOutcome { get; set; } = ValidationOutcome.Valid;
@@ -138,7 +137,6 @@ internal sealed class TestAsyncValidator : IDisposable
         _disposed = true;
         _editContext.OnFieldChanged -= OnFieldChanged;
         _editContext.OnValidationRequested -= OnValidationRequested;
-        _editContext.OnValidationRequestedAsync -= OnValidationRequestedAsync;
     }
 
     private void OnFieldChanged(object sender, FieldChangedEventArgs args)
@@ -146,25 +144,20 @@ internal sealed class TestAsyncValidator : IDisposable
         var field = args.FieldIdentifier;
         var config = GetConfig(field);
         _store.Clear(field);
-        var cts = new CancellationTokenSource();
-        var task = RunValidationAsync(field, config, cts.Token);
-        _editContext.AddValidationTask(field, task, cts);
+        _editContext.TrackFieldValidation(field, token => RunValidationAsync(field, config, token));
     }
 
     private void OnValidationRequested(object sender, ValidationRequestedEventArgs args)
     {
-    }
-
-    private async Task OnValidationRequestedAsync(object sender, ValidationRequestedEventArgs args)
-    {
         FormValidationStartCount++;
         _store.Clear();
 
-        var tasks = _configs.Keys
-            .Select(field => RunValidationAsync(field, GetConfig(field), args.CancellationToken))
-            .ToArray();
-
-        await Task.WhenAll(tasks);
+        foreach (var field in _configs.Keys)
+        {
+            // Register each field's validation as a factory. RunValidationAsync is an async method, so a
+            // synchronous throw is captured into the returned task. The framework invokes the factory.
+            args.AddValidationTask(token => RunValidationAsync(field, GetConfig(field), token));
+        }
     }
 
     private async Task RunValidationAsync(FieldIdentifier field, ValidationConfig config, CancellationToken cancellationToken)

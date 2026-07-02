@@ -52,7 +52,10 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         services.AddSingleton<IStringLocalizerFactory>(
             new TestStringLocalizerFactory(ClientValidationLocalizationData.Translations));
-        services.AddValidation();
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates.
+        services.AddValidation(options =>
+            options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
+#pragma warning restore ASP0029
         services.AddValidationLocalization();
 
         var razorComponentsBuilder = services.AddRazorComponents(options =>

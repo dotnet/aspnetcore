@@ -60,7 +60,7 @@ public class FieldCssClassProviderTest
         var editContext = new EditContext(model);
         var field = FieldIdentifier.Create(() => model.Property);
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        editContext.AddValidationTask(field, tcs.Task, new CancellationTokenSource());
+        editContext.TrackFieldValidation(field, _ => tcs.Task);
 
         Assert.Equal("pending", _provider.GetFieldCssClass(editContext, field));
 
@@ -75,7 +75,7 @@ public class FieldCssClassProviderTest
         var field = FieldIdentifier.Create(() => model.Property);
         editContext.NotifyFieldChanged(field);
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        editContext.AddValidationTask(field, tcs.Task, new CancellationTokenSource());
+        editContext.TrackFieldValidation(field, _ => tcs.Task);
 
         Assert.Equal("modified pending", _provider.GetFieldCssClass(editContext, field));
 
@@ -92,7 +92,7 @@ public class FieldCssClassProviderTest
         var messages = new ValidationMessageStore(editContext);
         messages.Add(field, "stale");
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        editContext.AddValidationTask(field, tcs.Task, new CancellationTokenSource());
+        editContext.TrackFieldValidation(field, _ => tcs.Task);
 
         Assert.Equal("pending", _provider.GetFieldCssClass(editContext, field));
 
@@ -107,7 +107,7 @@ public class FieldCssClassProviderTest
         var editContext = new EditContext(model);
         var field = FieldIdentifier.Create(() => model.Property);
         var faultingTask = Task.FromException(new InvalidOperationException("boom"));
-        editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
+        editContext.TrackFieldValidation(field, _ => faultingTask);
 
         Assert.Equal("faulted", _provider.GetFieldCssClass(editContext, field));
     }
@@ -120,7 +120,7 @@ public class FieldCssClassProviderTest
         var field = FieldIdentifier.Create(() => model.Property);
         editContext.NotifyFieldChanged(field);
         var faultingTask = Task.FromException(new InvalidOperationException("boom"));
-        editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
+        editContext.TrackFieldValidation(field, _ => faultingTask);
 
         Assert.Equal("modified faulted", _provider.GetFieldCssClass(editContext, field));
     }
@@ -134,7 +134,7 @@ public class FieldCssClassProviderTest
         var messages = new ValidationMessageStore(editContext);
         messages.Add(field, "ignored-by-faulted");
         var faultingTask = Task.FromException(new InvalidOperationException("boom"));
-        editContext.AddValidationTask(field, faultingTask, new CancellationTokenSource());
+        editContext.TrackFieldValidation(field, _ => faultingTask);
 
         Assert.Equal("faulted", _provider.GetFieldCssClass(editContext, field));
     }
