@@ -146,11 +146,10 @@ public static partial class EditContextDataAnnotationsExtensions
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private async Task ValidateFormAsync(IValidatableTypeInfo validatableInfo, CancellationToken cancellationToken)
         {
-            var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
             var validateContext = new ValidateContext
             {
                 ValidationOptions = _validationOptions!,
-                ValidationContext = validationContext,
+                ServiceProvider = _serviceProvider,
             };
 
             // Clear stale messages up-front. If the validator throws partway through, the form
@@ -208,11 +207,10 @@ public static partial class EditContextDataAnnotationsExtensions
             IValidatablePropertyInfo validatableInfo,
             CancellationToken cancellationToken)
         {
-            var validationContext = new ValidationContext(fieldIdentifier.Model, _serviceProvider, items: null);
             var validateContext = new ValidateContext
             {
                 ValidationOptions = _validationOptions!,
-                ValidationContext = validationContext,
+                ServiceProvider = _serviceProvider,
             };
 
             // Clear stale messages up-front so the field shows neutral state during validation and
