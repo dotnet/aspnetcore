@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
@@ -230,6 +232,72 @@ public class InputSelectTest
         Assert.Equal("model_NotNullableEnum", idAttribute.AttributeValue);
     }
 
+    // InputSelect<string[]> with null value should not throw during render
+    [Fact]
+    public async Task InputSelectMultipleWithNullValue_RendersSuccessfully()
+    {
+        var model = new TestModel { StringArray = null };
+        var rootComponent = new TestInputHostComponent<string[]?, TestInputSelect<string[]?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = null
+        };
+
+        var exception = await Record.ExceptionAsync(() => InputRenderer.RenderAndGetComponent(rootComponent));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public async Task InputSelectMultiple_EditForm_DeselectingAll_DoesNotThrow()
+    {
+        var model = new TestModel { StringArray = new[] { "alpha", "beta" } };
+        var rootComponent = new TestInputHostComponent<string[]?, TestInputSelect<string[]?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = model.StringArray
+        };
+
+        var component = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        var setArrayMethod = typeof(InputSelect<string[]?>).GetMethod(
+            "SetCurrentValueAsStringArray",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.NotNull(setArrayMethod);
+
+        var exception = Record.Exception(() => setArrayMethod!.Invoke(component, new object?[] { Array.Empty<string>() }));
+
+        Assert.Null(exception);
+        Assert.NotNull(component.CurrentValue);
+        Assert.Empty(component.CurrentValue!);
+    }
+
+    [Fact]
+    public async Task InputSelectMultiple_EditForm_NullValue_DeselectingAll_DoesNotThrow()
+    {
+        var model = new TestModel { StringArray = null };
+        var rootComponent = new TestInputHostComponent<string[]?, TestInputSelect<string[]?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = null
+        };
+
+        var component = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        var setArrayMethod = typeof(InputSelect<string[]?>).GetMethod(
+            "SetCurrentValueAsStringArray",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.NotNull(setArrayMethod);
+
+        var exception = Record.Exception(() => setArrayMethod!.Invoke(component, new object?[] { Array.Empty<string>() }));
+
+        Assert.Null(exception);
+        Assert.NotNull(component.CurrentValue);
+        Assert.Empty(component.CurrentValue!);
+    }
+
     [Fact]
     public async Task ExplicitIdOverridesGenerated()
     {
@@ -276,13 +344,15 @@ public class InputSelectTest
         public int NotNullableInt { get; set; }
 
         public int? NullableInt { get; set; }
+
+        public string[]? StringArray { get; set; }
     }
 
     class TestInputSelect<TValue> : InputSelect<TValue>
     {
-        public new TValue CurrentValue => base.CurrentValue;
+        public new TValue? CurrentValue => base.CurrentValue;
 
-        public new string CurrentValueAsString
+        public new string? CurrentValueAsString
         {
             get => base.CurrentValueAsString;
             set => base.CurrentValueAsString = value;

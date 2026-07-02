@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
@@ -317,7 +319,7 @@ public class BindConverterTest
     [InlineData("invalidguid")]
     [InlineData("")]
     [InlineData(null)]
-    public void TryConvertTo_Guid_Invalid(string incomingValue)
+    public void TryConvertTo_Guid_Invalid(string? incomingValue)
     {
         // Act
         var successfullyConverted = BindConverter.TryConvertTo<Guid>(incomingValue, CultureInfo.CurrentCulture, out var actual);
@@ -339,13 +341,14 @@ public class BindConverterTest
 
         // Assert
         Assert.True(successfullyConverted);
-        Assert.Equal(expected, actual.Value);
+        Assert.NotNull(actual);
+        Assert.Equal(expected, actual!.Value);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void TryConvertTo_NullableGuid_ValidEmptyOrNull(string incomingValue)
+    public void TryConvertTo_NullableGuid_ValidEmptyOrNull(string? incomingValue)
     {
         // Act
         var successfullyConverted = BindConverter.TryConvertTo<Guid?>(incomingValue, CultureInfo.CurrentCulture, out var actual);
@@ -380,14 +383,14 @@ public class BindConverterTest
     [TypeConverter(typeof(PersonConverter))]
     private class Person
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public int Age { get; set; }
     }
 
     private class PersonConverter : TypeConverter
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
         {
             if (sourceType == typeof(string))
             {
@@ -397,7 +400,7 @@ public class BindConverterTest
             return base.CanConvertFrom(context, sourceType);
         }
 
-        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
         {
             if (value is string text)
             {
@@ -407,7 +410,7 @@ public class BindConverterTest
             return base.ConvertFrom(context, culture, value);
         }
 
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
         {
             if (destinationType == typeof(string))
             {
@@ -417,14 +420,38 @@ public class BindConverterTest
             return base.CanConvertTo(context, destinationType);
         }
 
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
             if (destinationType == typeof(string))
             {
-                return JsonSerializer.Serialize((Person)value);
+                return JsonSerializer.Serialize((Person)value!);
             }
 
             return base.ConvertTo(context, culture, value, destinationType);
         }
     }
+
+    [Fact]
+    public void FormatValue_Array_Null()
+    {
+        string[]? value = null;
+        string? expected = "[]";
+
+        var actual = BindConverter.FormatValue(value);
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void FormatValue_Array_Empty()
+    {
+        string[] value = new string[0];
+        string expected = "[]";
+
+        var actual = BindConverter.FormatValue(value);
+
+        Assert.Equal(expected, actual);
+    }
+
+    
 }

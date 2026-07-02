@@ -76,6 +76,15 @@
             <option value="@City.Madrid">Madrid</option>
         </InputSelect>
     </p>
+    <p class="cities-deselect-all">
+        <InputSelect @bind-Value="person.SelectedCitiesForDeselectAll">
+            <option value="@City.SanFrancisco">San Francisco</option>
+            <option value="@City.Tokyo">Tokyo</option>
+            <option value="@City.London">London</option>
+            <option value="@City.Madrid">Madrid</option>
+        </InputSelect>
+        <span id="selected-cities-deselect-all">@(person.SelectedCitiesForDeselectAll.Length == 0 ? "empty" : string.Join(", ", person.SelectedCitiesForDeselectAll))</span>
+    </p>
     <p class="select-multiple-hostile">
         <InputSelect @bind-Value="person.HostileStrings">
             <option value="@("\"")">@("\"")</option>
@@ -151,11 +160,12 @@
 <button id="toggle-dataannotations" @onclick="ToggleDataAnnotations">Toggle DataAnnotations support</button>
 
 @code {
+#nullable enable
     protected virtual bool UseExperimentalValidator => false;
 
     Person person = new Person();
-    EditContext editContext;
-    ValidationMessageStore customValidationMessageStore;
+    EditContext? editContext;
+    ValidationMessageStore? customValidationMessageStore;
     bool enableDataAnnotationsSupport = true;
     bool includeTimeSeconds;
     bool includeDateTimeLocalSeconds;
@@ -171,14 +181,14 @@
     class Person
     {
         [Required(ErrorMessage = "Enter a name"), StringLength(10, ErrorMessage = "That name is too long")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [EmailAddress(ErrorMessage = "That doesn't look like a real email address")]
         [StringLength(10, ErrorMessage = "We only accept very short email addresses (max 10 chars)")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [Compare(nameof(Email), ErrorMessage = "Email and confirm email do not match.")]
-        public string ConfirmEmail { get; set; }
+        public string? ConfirmEmail { get; set; }
 
         [Range(0, 200, ErrorMessage = "Nobody is that old")]
         public int AgeInYears { get; set; }
@@ -202,7 +212,7 @@
         public bool IsEvil { get; set; } = true;
 
         [Required, StringLength(20, ErrorMessage = "Description is max 20 chars")]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required, EnumDataType(typeof(TicketClass))]
         public TicketClass TicketClass { get; set; }
@@ -224,7 +234,7 @@
         public bool IsRadioMathStatementTrue { get; set; } = false;
 
         [Required, StringLength(10), CustomValidationClassName(Valid = "valid-socks", Invalid = "invalid-socks")]
-        public string SocksColor { get; set; }
+        public string? SocksColor { get; set; }
 
         [Required, MinLength(2), MaxLength(3)]
         public City[] SelectedCities { get; set; } = new[] { City.SanFrancisco };
@@ -232,7 +242,13 @@
         [Required]
         public string[] HostileStrings { get; set; } = new string[] { "\"", "{" };
 
-        public string Username { get; set; }
+        // Regression test property for null array handling in InputSelect binding
+        // This ensures that BindConverter.MakeArrayFormatter() safely handles null values
+        public City[]? SelectedCitiesNullable { get; set; } = null;
+
+        public City[] SelectedCitiesForDeselectAll { get; set; } = new[] { City.SanFrancisco, City.Tokyo };
+
+        public string? Username { get; set; }
     }
 
     enum TicketClass { Economy, Premium, First }
@@ -254,7 +270,7 @@
 
     void TriggerAsyncValidationError()
     {
-        customValidationMessageStore.Clear();
+        customValidationMessageStore!.Clear();
 
         // Note that this method returns void, so the renderer doesn't react to
         // its async flow by default. This is to simulate some external system
@@ -265,8 +281,11 @@
             // so long that we time out. Picking a value that's long enough for humans
             // to observe the asynchrony too.
             await Task.Delay(500);
-            customValidationMessageStore.Add(editContext.Field(nameof(Person.Username)), "This is invalid, asynchronously");
-            _ = InvokeAsync(editContext.NotifyValidationStateChanged);
+            await InvokeAsync(() =>
+            {
+                customValidationMessageStore!.Add(editContext!.Field(nameof(Person.Username)), "This is invalid, asynchronously");
+                editContext!.NotifyValidationStateChanged();
+            });
         });
     }
 
@@ -275,4 +294,5 @@
         enableDataAnnotationsSupport = !enableDataAnnotationsSupport;
         submissionLog.Add($"DataAnnotations support is now {(enableDataAnnotationsSupport ? "enabled" : "disabled")}");
     }
+#nullable restore
 }

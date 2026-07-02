@@ -324,6 +324,27 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("{,", () => hostileSelectLabel.Text);
     }
 
+  
+
+    [Fact]
+    public void InputSelectMultiple_EditForm_DeselectingAll_DoesNotThrow()
+    {
+        var appElement = MountTypicalValidationComponent();
+        var container = Browser.Exists(By.ClassName("cities-deselect-all"));
+        var deselectAllSelect = new SelectElement(container.FindElement(By.TagName("select")));
+        var deselectAllLabel = Browser.Exists(By.Id("selected-cities-deselect-all"));
+
+        Browser.True(() => deselectAllSelect.IsMultiple);
+        Browser.Equal(2, () => deselectAllSelect.AllSelectedOptions.Count);
+        Browser.Equal("SanFrancisco, Tokyo", () => deselectAllLabel.Text);
+
+        deselectAllSelect.DeselectByText("San Francisco");
+        deselectAllSelect.DeselectByText("Tokyo");
+
+        Browser.Equal("empty", () => deselectAllLabel.Text);
+        Browser.Equal(0, () => deselectAllSelect.AllSelectedOptions.Count);
+    }
+
     [Fact]
     public void InputCheckboxInteractsWithEditContext()
     {
