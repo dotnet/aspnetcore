@@ -121,6 +121,21 @@ public class HttpSysOptions
     public bool EnableKernelResponseBuffering { get; set; }
 
     /// <summary>
+    /// When <see langword="true"/>, Http.Sys is configured to expose the RFC 5929 TLS
+    /// channel binding token (CBT) for each request via
+    /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature"/>.
+    /// The default is <see langword="false"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Enabling this option sets the <c>HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN</c> flag
+    /// on the URL group's <c>HttpServerChannelBindProperty</c>, instructing Http.Sys to
+    /// attach <c>HTTP_REQUEST_CHANNEL_BIND_STATUS</c> to every incoming TLS request.
+    /// </para>
+    /// </remarks>
+    public bool EnableTlsChannelBinding { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum number of concurrent connections to accept. Set `-1` for infinite.
     /// Set to `null` to use the registry's machine-wide setting.
     /// The default value is `null` (machine-wide setting).
@@ -276,5 +291,10 @@ public class HttpSysOptions
 
         Authentication.SetUrlGroupSecurity(urlGroup);
         Timeouts.SetUrlGroupTimeouts(urlGroup);
+
+        if (EnableTlsChannelBinding)
+        {
+            urlGroup.SetChannelBindingProperty();
+        }
     }
 }

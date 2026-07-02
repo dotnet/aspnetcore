@@ -21,6 +21,7 @@ internal partial class IISHttpContext
     private static readonly Type IItemsFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IItemsFeature);
     private static readonly Type ITlsConnectionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ITlsConnectionFeature);
     private static readonly Type ITlsHandshakeFeatureType = typeof(global::Microsoft.AspNetCore.Connections.Features.ITlsHandshakeFeature);
+    private static readonly Type ITlsChannelBindingFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature);
     private static readonly Type IHttpWebSocketFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpWebSocketFeature);
     private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ISessionFeature);
     private static readonly Type IHttpBodyControlFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
@@ -51,6 +52,7 @@ internal partial class IISHttpContext
     private object? _currentIItemsFeature;
     private object? _currentITlsConnectionFeature;
     private object? _currentITlsHandshakeFeature;
+    private object? _currentITlsChannelBindingFeature;
     private object? _currentIHttpWebSocketFeature;
     private object? _currentISessionFeature;
     private object? _currentIHttpBodyControlFeature;
@@ -80,6 +82,7 @@ internal partial class IISHttpContext
         _currentIHttpMaxRequestBodySizeFeature = this;
         _currentITlsConnectionFeature = this;
         _currentITlsHandshakeFeature = GetTlsHandshakeFeature();
+        _currentITlsChannelBindingFeature = GetTlsChannelBindingFeature();
         _currentIHttpResponseTrailersFeature = GetResponseTrailersFeature();
         _currentIHttpResetFeature = GetResetFeature();
         _currentIConnectionLifetimeNotificationFeature = this;
@@ -155,6 +158,10 @@ internal partial class IISHttpContext
         if (key == ITlsHandshakeFeatureType)
         {
             return _currentITlsHandshakeFeature;
+        }
+        if (key == ITlsChannelBindingFeatureType)
+        {
+            return _currentITlsChannelBindingFeature;
         }
         if (key == IHttpWebSocketFeatureType)
         {
@@ -296,6 +303,11 @@ internal partial class IISHttpContext
             _currentITlsHandshakeFeature = feature;
             return;
         }
+        if (key == ITlsChannelBindingFeatureType)
+        {
+            _currentITlsChannelBindingFeature = feature;
+            return;
+        }
         if (key == IHttpWebSocketFeatureType)
         {
             _currentIHttpWebSocketFeature = feature;
@@ -427,6 +439,10 @@ internal partial class IISHttpContext
         if (_currentITlsHandshakeFeature != null)
         {
             yield return new KeyValuePair<Type, object>(ITlsHandshakeFeatureType, _currentITlsHandshakeFeature);
+        }
+        if (_currentITlsChannelBindingFeature != null)
+        {
+            yield return new KeyValuePair<Type, object>(ITlsChannelBindingFeatureType, _currentITlsChannelBindingFeature);
         }
         if (_currentIHttpWebSocketFeature != null)
         {

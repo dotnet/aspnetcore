@@ -1,2 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.EnableChannelBinding.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions.EnableChannelBinding.set -> void
+Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.EnableChannelBinding.get -> bool
+Microsoft.AspNetCore.Server.Kestrel.Https.TlsHandshakeCallbackOptions.EnableChannelBinding.set -> void
 static Microsoft.AspNetCore.Hosting.ListenOptionsHttpsExtensions.UseTlsClientHelloListener(this Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions! listenOptions, System.Action<Microsoft.AspNetCore.Connections.ConnectionContext!, System.Buffers.ReadOnlySequence<byte>>! tlsClientHelloBytesCallback, System.TimeSpan? timeout = null) -> Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!

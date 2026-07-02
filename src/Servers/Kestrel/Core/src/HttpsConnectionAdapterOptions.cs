@@ -6,6 +6,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -82,6 +83,14 @@ public class HttpsConnectionAdapterOptions
     /// Specifies whether the certificate revocation list is checked during authentication.
     /// </summary>
     public bool CheckCertificateRevocation { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether <see cref="ITlsChannelBindingFeature"/> is exposed
+    /// on connections. Defaults to <see langword="false"/>. Enable for scenarios such as SPNEGO/NTLM
+    /// Extended Protection for Authentication or SCRAM-*-PLUS where the application needs to
+    /// retrieve TLS channel-binding tokens (<c>tls-server-end-point</c> / <c>tls-unique</c>).
+    /// </summary>
+    public bool EnableChannelBinding { get; set; }
 
     /// <summary>
     /// Overrides the current <see cref="ClientCertificateValidation"/> callback and allows any client certificate.

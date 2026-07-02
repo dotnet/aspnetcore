@@ -749,6 +749,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public bool EnableKernelResponseBuffering { get; set; }
 
         /// <summary>
+        /// When <see langword="true"/>, Http.Sys is configured to expose the RFC 5929
+        /// TLS channel binding token (CBT) for each request via
+        /// <see cref="Microsoft.AspNetCore.Http.Features.ITlsChannelBindingFeature"/>.
+        /// The default is <see langword="false"/>.
+        /// </summary>
+        public bool EnableTlsChannelBinding { get; set; }
+
+        /// <summary>
         /// Gets or sets the maximum number of concurrent connections to accept. Set <c>-1</c> for infinite.
         /// Set to <c>null</c> to use the registry's machine-wide setting.
         /// The default value is <c>null</c>.

@@ -45,6 +45,9 @@ internal sealed class HttpsConnectionMiddleware
     private readonly Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>>? _tlsCallbackOptions;
     private readonly object? _tlsCallbackOptionsState;
 
+    // Set by either ctor based on the corresponding options object.
+    private readonly bool _enableChannelBinding;
+
     // Captures raw TLS client hello and invokes a user callback if any
     private readonly TlsListener? _tlsListener;
 
@@ -80,6 +83,7 @@ internal sealed class HttpsConnectionMiddleware
         //_sslStreamFactory = s => new SslStream(s);
 
         _options = options;
+        _enableChannelBinding = options.EnableChannelBinding;
         _httpProtocols = ValidateAndNormalizeHttpProtocols(httpProtocols, _logger);
 
         // capture the certificate now so it can't be switched after validation
@@ -139,6 +143,7 @@ internal sealed class HttpsConnectionMiddleware
         _tlsCallbackOptions = tlsCallbackOptions.OnConnection;
         _tlsCallbackOptionsState = tlsCallbackOptions.OnConnectionState;
         _httpProtocols = ValidateAndNormalizeHttpProtocols(tlsCallbackOptions.HttpProtocols, _logger);
+        _enableChannelBinding = tlsCallbackOptions.EnableChannelBinding;
         _sslStreamFactory = s => new SslStream(s);
     }
 
@@ -162,6 +167,10 @@ internal sealed class HttpsConnectionMiddleware
         context.Features.Set<ITlsConnectionFeature>(feature);
         context.Features.Set<ITlsHandshakeFeature>(feature);
         context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+        if (_enableChannelBinding)
+        {
+            context.Features.Set<ITlsChannelBindingFeature>(feature);
+        }
         context.Features.Set<ISslStreamFeature>(feature);
         context.Features.Set<SslStream>(sslStream); // Anti-pattern, but retain for back compat
 

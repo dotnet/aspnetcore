@@ -4,6 +4,7 @@
 using System.Net.Http;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using Microsoft.AspNetCore.Connections.Features;
@@ -155,6 +156,69 @@ public class HttpsConnectionMiddlewareTests : LoggedTest
             Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
             Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
 #pragma warning restore SYSLIB0058 // Type or member is obsolete
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
+    [ConditionalFact]
+    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX, SkipReason = "tls-server-end-point format is well-defined on Windows; other platforms may return null or a different shape.")]
+    public async Task TlsChannelBindingFeatureExposesEndpointBinding()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
+            var feature = context.Features.Get<ITlsChannelBindingFeature>();
+            Assert.NotNull(feature);
+
+            var bytes = feature.GetChannelBindingBytes(ChannelBindingKind.Endpoint);
+            Assert.NotNull(bytes);
+
+            // The buffer is a SEC_CHANNEL_BINDINGS struct (32-byte header) followed by the
+            // application data: ASCII "tls-server-end-point:" + SHA-256 of the server cert.
+            var raw = bytes.Value.Span;
+            Assert.True(raw.Length >= 32, "Buffer should be at least the header size.");
+
+            var appDataLength = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(24, 4));
+            var appDataOffset = System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(raw.Slice(28, 4));
+            Assert.True(appDataOffset + appDataLength <= raw.Length, "Application data must lie within the buffer.");
+
+            var appData = raw.Slice((int)appDataOffset, (int)appDataLength);
+            var prefix = "tls-server-end-point:"u8;
+            Assert.True(appData.StartsWith(prefix), "Application data must begin with 'tls-server-end-point:'.");
+
+            var expectedHash = System.Security.Cryptography.SHA256.HashData(_x509Certificate2.RawData);
+            Assert.True(appData.Slice(prefix.Length).SequenceEqual(expectedHash), "Channel binding hash must match SHA-256 of server certificate.");
+
+            return context.Response.WriteAsync("hello world");
+        }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+        {
+            var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+            Assert.Equal("hello world", result);
+        }
+    }
+
+    [Fact]
+    public async Task TlsChannelBindingFeatureReturnsNullForUnsupportedKind()
+    {
+        void ConfigureListenOptions(ListenOptions listenOptions)
+        {
+            listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+        };
+
+        await using (var server = new TestServer(context =>
+        {
+            var feature = context.Features.Get<ITlsChannelBindingFeature>();
+            Assert.NotNull(feature);
+            Assert.Null(feature.GetChannelBindingBytes(ChannelBindingKind.Unknown));
 
             return context.Response.WriteAsync("hello world");
         }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))

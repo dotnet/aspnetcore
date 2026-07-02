@@ -12,14 +12,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 
 internal sealed partial class UrlGroup : IDisposable
 {
-    private static readonly int BindingInfoSize =
-        Marshal.SizeOf<HTTP_BINDING_INFO>();
-    private static readonly int QosInfoSize =
-        Marshal.SizeOf<HTTP_QOS_SETTING_INFO>();
-    private static readonly int RequestPropertyInfoSize =
-        Marshal.SizeOf<HTTP_BINDING_INFO>();
-    private static readonly int ChannelBindInfoSize =
-        Marshal.SizeOf<HTTP_CHANNEL_BIND_INFO>();
+    // See https://learn.microsoft.com/windows/win32/api/http/ns-http-http_channel_bind_info
+    private const uint HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN = 0x00000008;
+
+    private static readonly int BindingInfoSize = Marshal.SizeOf<HTTP_BINDING_INFO>();
+    private static readonly int QosInfoSize = Marshal.SizeOf<HTTP_QOS_SETTING_INFO>();
+    private static readonly int RequestPropertyInfoSize = Marshal.SizeOf<HTTP_BINDING_INFO>();
+    private static readonly int ChannelBindInfoSize = Marshal.SizeOf<HTTP_CHANNEL_BIND_INFO>();
 
     private readonly ILogger _logger;
 
@@ -45,6 +44,7 @@ internal sealed partial class UrlGroup : IDisposable
         Debug.Assert(urlGroupId != 0, "Invalid id returned by HttpCreateUrlGroup");
         Id = urlGroupId;
 
+        // Legacy behavior: the AppContext switch alone raises Hardening only.
         if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled)
         {
             var channelBindingSettings = new HTTP_CHANNEL_BIND_INFO
@@ -55,6 +55,29 @@ internal sealed partial class UrlGroup : IDisposable
             };
             SetProperty(HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty, new(&channelBindingSettings), (uint)ChannelBindInfoSize);
         }
+    }
+
+    // Re-issues HttpServerChannelBindProperty with the combined flags so the
+    // per-request CBT (HTTP_REQUEST_CHANNEL_BIND_STATUS) is delivered to the app.
+    // No-op when the feature is not requested and the legacy hardening AppContext
+    // switch is not set (the constructor already covered that case).
+    internal unsafe void SetChannelBindingProperty()
+    {
+        var hardeningEnabled = AppContext.TryGetSwitch("Microsoft.AspNetCore.Server.HttpSys.EnableCBTHardening", out var enabled) && enabled;
+
+        // todo maybe have public API to control the HTTP_AUTHENTICATION_HARDENING_LEVELS? Or new app context switch?
+
+        var info = new HTTP_CHANNEL_BIND_INFO
+        {
+            Hardening = hardeningEnabled
+                ? HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningMedium
+                : HTTP_AUTHENTICATION_HARDENING_LEVELS.HttpAuthenticationHardeningLegacy,
+            ServiceNames = (HTTP_SERVICE_BINDING_BASE**)IntPtr.Zero,
+            NumberOfServiceNames = 0,
+            Flags = HTTP_CHANNEL_BIND_SECURE_CHANNEL_TOKEN,
+        };
+
+        SetProperty(HTTP_SERVER_PROPERTY.HttpServerChannelBindProperty, new IntPtr(&info), (uint)ChannelBindInfoSize);
     }
 
     internal ulong Id { get; private set; }

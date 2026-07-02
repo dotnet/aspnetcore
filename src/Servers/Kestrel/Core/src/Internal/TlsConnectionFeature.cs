@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Authentication.ExtendedProtection;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -12,7 +14,7 @@ using Obsoletions = Microsoft.AspNetCore.Shared.Obsoletions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
-internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ISslStreamFeature
+internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature, ITlsChannelBindingFeature, ISslStreamFeature
 {
     private readonly SslStream _sslStream;
     private readonly ConnectionContext _context;
@@ -24,6 +26,10 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
     private SslProtocols _protocol;
     private TlsCipherSuite? _negotiatedCipherSuite;
     private ReadOnlyMemory<byte> _applicationProtocol;
+    private ReadOnlyMemory<byte>? _endpointChannelBinding;
+    private bool _endpointChannelBindingFetched;
+    private ReadOnlyMemory<byte>? _uniqueChannelBinding;
+    private bool _uniqueChannelBindingFetched;
 #pragma warning disable SYSLIB0058 // Obsolete TLS cipher algorithm enums
     private CipherAlgorithmType _cipherAlgorithm;
     private int _cipherStrength;
@@ -184,5 +190,69 @@ internal sealed class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicat
             X509Certificate2 cert2 => cert2,
             _ => new X509Certificate2(certificate),
         };
+    }
+
+    ReadOnlyMemory<byte>? ITlsChannelBindingFeature.GetChannelBindingBytes(ChannelBindingKind kind) => kind switch
+    {
+        ChannelBindingKind.Endpoint => EnsureEndpointChannelBindingCached(),
+        ChannelBindingKind.Unique => EnsureUniqueChannelBindingCached(),
+        _ => null,
+    };
+
+    private ReadOnlyMemory<byte>? EnsureEndpointChannelBindingCached()
+    {
+        if (!_endpointChannelBindingFetched)
+        {
+            // After Snapshot() the SslStream may be disposed; don't attempt to read.
+            if (!_snapshotted)
+            {
+                _endpointChannelBinding = ReadChannelBindingFromSslStream(ChannelBindingKind.Endpoint);
+            }
+            _endpointChannelBindingFetched = true;
+        }
+
+        return _endpointChannelBinding;
+    }
+
+    private ReadOnlyMemory<byte>? EnsureUniqueChannelBindingCached()
+    {
+        if (!_uniqueChannelBindingFetched)
+        {
+            // After Snapshot() the SslStream may be disposed; don't attempt to read.
+            if (!_snapshotted)
+            {
+                _uniqueChannelBinding = ReadChannelBindingFromSslStream(ChannelBindingKind.Unique);
+            }
+            _uniqueChannelBindingFetched = true;
+        }
+
+        return _uniqueChannelBinding;
+    }
+
+    private ReadOnlyMemory<byte>? ReadChannelBindingFromSslStream(ChannelBindingKind kind)
+    {
+        try
+        {
+            using var binding = _sslStream.TransportContext?.GetChannelBinding(kind);
+            if (binding is null || binding.IsInvalid || binding.IsClosed)
+            {
+                return null;
+            }
+
+            var size = binding.Size;
+            if (size <= 0)
+            {
+                return null;
+            }
+
+            var buffer = new byte[size];
+            Marshal.Copy(binding.DangerousGetHandle(), buffer, 0, size);
+            return buffer;
+        }
+        catch
+        {
+            // SslStream/TransportContext may throw if the handshake hasn't completed or the connection is torn down.
+            return null;
+        }
     }
 }

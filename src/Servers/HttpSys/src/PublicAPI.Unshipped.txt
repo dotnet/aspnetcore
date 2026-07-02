@@ -1,2 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.EnableTlsChannelBinding.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.EnableTlsChannelBinding.set -> void
 Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature.TryGetRequestProperty(int propertyId, System.ReadOnlySpan<byte> qualifier, System.Span<byte> output, out int bytesReturned) -> bool
