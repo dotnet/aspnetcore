@@ -159,22 +159,22 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        if (ImplementsInterface(type, ijsRuntimeType, IJSRuntimeTypeName))
+        if (ImplementsInterface(type, ijsRuntimeType))
         {
             return true;
         }
 
-        if (ImplementsInterface(type, ijsInProcessRuntimeType, IJSInProcessRuntimeTypeName))
+        if (ImplementsInterface(type, ijsInProcessRuntimeType))
         {
             return true;
         }
 
-        if (ImplementsInterface(type, ijsObjectReferenceType, IJSObjectReferenceTypeName))
+        if (ImplementsInterface(type, ijsObjectReferenceType))
         {
             return true;
         }
 
-        if (ImplementsInterface(type, ijsInProcessObjectReferenceType, IJSInProcessObjectReferenceTypeName))
+        if (ImplementsInterface(type, ijsInProcessObjectReferenceType))
         {
             return true;
         }
@@ -182,7 +182,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool ImplementsInterface(ITypeSymbol type, INamedTypeSymbol? interfaceType, string interfaceTypeName)
+    private static bool ImplementsInterface(ITypeSymbol type, INamedTypeSymbol? interfaceType)
     {
         if (interfaceType is not null)
         {
