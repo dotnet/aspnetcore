@@ -324,4 +324,33 @@ public class FieldIdentifierTest
         public int Value { get; set; }
         public int value;
     }
+
+    [Fact]
+    public void DefaultFieldIdentifier_GetHashCode_DoesNotThrow()
+    {
+        var fieldIdentifier = default(FieldIdentifier);
+
+        var exception = Record.Exception(() => fieldIdentifier.GetHashCode());
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void DefaultFieldIdentifier_Equals_DoesNotThrow()
+    {
+        var fieldIdentifier1 = default(FieldIdentifier);
+        var fieldIdentifier2 = default(FieldIdentifier);
+
+        Assert.True(fieldIdentifier1.Equals(fieldIdentifier2));
+    }
+
+    [Fact]
+    public void DefaultFieldIdentifier_DoesNotEqualInitializedFieldIdentifier()
+    {
+        var defaultIdentifier = default(FieldIdentifier);
+        var model = new object();
+        var initialized = FieldIdentifier.Create(() => model);
+
+        Assert.False(defaultIdentifier.Equals(initialized));
+    }
 }
