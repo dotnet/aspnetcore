@@ -1,0 +1,18 @@
+﻿@page "/textarea-method-interactive"
+@using Microsoft.AspNetCore.Components.Web
+
+@{
+    IComponentRenderMode renderMode = Mode switch
+    {
+        "wasm" => new InteractiveWebAssemblyRenderMode(),
+        _ => new InteractiveServerRenderMode(),
+    };
+}
+
+<TestContentPackage.TextareaMethodInteractive @rendermode="renderMode" />
+
+@code
+{
+    [Parameter, SupplyParameterFromQuery(Name = "mode")]
+    public string? Mode { get; set; }
+}
