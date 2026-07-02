@@ -29,7 +29,7 @@ public interface ICompatibilitySwitch
     /// <remarks>
     /// Setting the switch value using <see cref="Value"/> will not set <see cref="IsValueSet"/> to <c>true</c>.
     /// This should be used by the compatibility infrastructure when <see cref="IsValueSet"/> is <c>false</c>
-    /// to apply a compatibility value based on <see cref="CompatibilityVersion"/>.
+    /// to apply a framework-defined compatibility value.
     /// </remarks>
     object Value { get; set; }
 }

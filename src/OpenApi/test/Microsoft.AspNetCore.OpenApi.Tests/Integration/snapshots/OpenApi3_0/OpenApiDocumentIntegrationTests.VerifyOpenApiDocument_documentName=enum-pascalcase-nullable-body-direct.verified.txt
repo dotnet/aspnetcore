@@ -1,0 +1,59 @@
+﻿{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Sample | enum-pascalcase-nullable-body-direct",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/enums/pascalcase/nullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/PascalCaseStatus"
+                  }
+                ],
+                "nullable": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PascalCaseStatus": {
+        "enum": [
+          "Active",
+          "Inactive",
+          "Pending",
+          null
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

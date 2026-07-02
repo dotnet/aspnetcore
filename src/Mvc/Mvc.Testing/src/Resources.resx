@@ -135,4 +135,7 @@
   <data name="UseKestrelCanBeCalledBeforeInitialization" xml:space="preserve">
     <value>UseKestrel should be called before server initialization. Calling UseKestrel after the server was initialized will have no effect.</value>
   </data>
+  <data name="ConfigureHostApplicationBuilderNotSupported" xml:space="preserve">
+    <value>Overriding 'ConfigureHostApplicationBuilder' is only supported when working with 'WebApplicationBuilder' in app entrypoint.</value>
+  </data>
 </root>
