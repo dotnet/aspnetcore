@@ -557,7 +557,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         IncrementRequestHeadersCount();
 
-        // This method should be overriden in specific implementations and the base should be
+        // This method should be overridden in specific implementations and the base should be
         // called to validate the header count.
     }
 
@@ -593,7 +593,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
     {
         try
         {
-            // We run the request processing loop in a seperate async method so per connection
+            // We run the request processing loop in a separate async method so per connection
             // exception handling doesn't complicate the generated asm for the loop.
             await ProcessRequests(application);
         }

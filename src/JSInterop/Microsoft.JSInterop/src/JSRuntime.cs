@@ -223,8 +223,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <summary>
     /// Transfers a byte array from .NET to JS.
     /// </summary>
-    /// <param name="id">Atomically incrementing identifier for the byte array being transfered.</param>
-    /// <param name="data">Byte array to be transfered to JS.</param>
+    /// <param name="id">Atomically incrementing identifier for the byte array being transferred.</param>
+    /// <param name="data">Byte array to be transferred to JS.</param>
     protected internal virtual void SendByteArray(int id, byte[] data)
     {
         throw new NotSupportedException("JSRuntime subclasses are responsible for implementing byte array transfer to JS.");
@@ -233,8 +233,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// <summary>
     /// Accepts the byte array data being transferred from JS to DotNet.
     /// </summary>
-    /// <param name="id">Identifier for the byte array being transfered.</param>
-    /// <param name="data">Byte array to be transfered from JS.</param>
+    /// <param name="id">Identifier for the byte array being transferred.</param>
+    /// <param name="data">Byte array to be transferred from JS.</param>
     protected internal virtual void ReceiveByteArray(int id, byte[] data)
     {
         if (id == 0)

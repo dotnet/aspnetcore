@@ -122,7 +122,7 @@ internal class RouteValueDictionary : IDictionary<string, object?>, IReadOnlyDic
     /// property names are keys, and property values are the values, and copied into the dictionary.
     /// Only public instance non-index properties are considered.
     /// </remarks>
-    [RequiresUnreferencedCode("This constructor may perform reflection on the specificed value which may be trimmed if not referenced directly. Consider using a different overload to avoid this issue.")]
+    [RequiresUnreferencedCode("This constructor may perform reflection on the specified value which may be trimmed if not referenced directly. Consider using a different overload to avoid this issue.")]
     public RouteValueDictionary(object? values)
     {
         if (values is RouteValueDictionary dictionary)

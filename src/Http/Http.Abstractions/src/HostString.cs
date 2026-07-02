@@ -131,7 +131,7 @@ public readonly struct HostString : IEquatable<HostString>
     /// Returns the value properly formatted and encoded for use in a URI in a HTTP header.
     /// Any Unicode is converted to punycode. IPv6 addresses will have brackets added if they are missing.
     /// </summary>
-    /// <returns>The <see cref="HostString"/> value formated for use in a URI or HTTP header.</returns>
+    /// <returns>The <see cref="HostString"/> value formatted for use in a URI or HTTP header.</returns>
     public string ToUriComponent()
     {
         if (!HasValue)

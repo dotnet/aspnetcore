@@ -18,7 +18,7 @@ public class FileProviderRazorProjectItem : RazorProjectItem
     private bool _isRelativePhysicalPathSet;
 
     /// <summary>
-    /// Intializes a new instance of a <see cref="FileProviderRazorProjectItem"/>.
+    /// Initializes a new instance of a <see cref="FileProviderRazorProjectItem"/>.
     /// </summary>
     /// <param name="fileInfo">The file info.</param>
     /// <param name="basePath">The base path.</param>
@@ -29,7 +29,7 @@ public class FileProviderRazorProjectItem : RazorProjectItem
     }
 
     /// <summary>
-    /// Intializes a new instance of a <see cref="FileProviderRazorProjectItem"/>.
+    /// Initializes a new instance of a <see cref="FileProviderRazorProjectItem"/>.
     /// </summary>
     /// <param name="fileInfo">The file info.</param>
     /// <param name="basePath">The base path.</param>

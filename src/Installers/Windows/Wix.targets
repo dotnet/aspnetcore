@@ -1,7 +1,7 @@
 <Project>
   <!-- Set versioning properties after Arcade SDK targets have been imported. -->
   <PropertyGroup>
-    <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
+    <!-- Actual upgrade code used in bundles to ensure upgrades within a version band, e.g. 3.0.0.xxx -->
     <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
     <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
     <BundleVersion Condition="'$(BundleVersion)' != ''" >$(BundleVersion).$(_FileRevisionVersion)</BundleVersion>
