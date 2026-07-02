@@ -777,35 +777,6 @@ public sealed class RenderTreeBuilder : IDisposable
     public ArrayRange<RenderTreeFrame> GetFrames() =>
         _entries.ToRange();
 
-    /// <summary>
-    /// Replaces the attribute value of an existing attribute frame at the specified index.
-    /// This is used to update attribute values in-place after frames have been appended,
-    /// for example when wrapping <see cref="RenderFragment"/> delegates during serialization.
-    /// </summary>
-    /// <param name="frameIndex">The zero-based index of the attribute frame whose value should be replaced.</param>
-    /// <param name="value">The new attribute value.</param>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="frameIndex"/> is outside the range of appended frames.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the frame at <paramref name="frameIndex"/> is not of type <see cref="RenderTreeFrameType.Attribute"/>.</exception>
-    public void SetAttributeValue(int frameIndex, object? value)
-    {
-        var frames = _entries.Buffer;
-        var count = _entries.Count;
-
-        if ((uint)frameIndex >= (uint)count)
-        {
-            throw new ArgumentOutOfRangeException(nameof(frameIndex));
-        }
-
-        ref var frame = ref frames[frameIndex];
-        if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
-        {
-            throw new InvalidOperationException(
-                $"The frame at index {frameIndex} is of type '{frame.FrameTypeField}', not '{RenderTreeFrameType.Attribute}'.");
-        }
-
-        frame.AttributeValueField = value;
-    }
-
     internal void AssertTreeIsValid(IComponent component)
     {
         if (_openElementIndices.Count > 0)

@@ -3,7 +3,6 @@ abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose(
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
 Microsoft.AspNetCore.Components.CascadingParameterSubscription
 Microsoft.AspNetCore.Components.CascadingParameterSubscription.CascadingParameterSubscription() -> void
-Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder.SetAttributeValue(int frameIndex, object? value) -> void
 static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithFragment(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string? fragment) -> string!
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.NavigationOptions.RelativeToCurrentUri.init -> void

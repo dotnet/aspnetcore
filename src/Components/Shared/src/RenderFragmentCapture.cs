@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -66,7 +67,7 @@ internal sealed class RenderFragmentCapture
             // soon as we hit the first non-Attribute frame.
             for (var j = i + 1; j < componentSubtreeEnd && frames.Array[j].FrameType is RenderTreeFrameType.Attribute; j++)
             {
-                ref readonly var attrFrame = ref frames.Array[j];
+                ref var attrFrame = ref frames.Array[j];
                 if (attrFrame.AttributeValue is RenderFragment innerRf)
                 {
                     var innerCapture = new RenderFragmentCapture(innerRf);
@@ -76,10 +77,19 @@ internal sealed class RenderFragmentCapture
                     // populates innerCapture._capturedFrames. Looking up the capture by frame
                     // index in _childCaptures would otherwise find an entry whose frames were
                     // never recorded.
-                    builder.SetAttributeValue(j, (RenderFragment)innerCapture.Invoke);
+                    //
+                    // RenderTreeFrame.AttributeValueField is internal to the core Components
+                    // assembly and this shared source compiles into other assemblies, so we
+                    // write to it directly through an UnsafeAccessor ref rather than widening
+                    // the public API or granting InternalsVisibleTo. frames.Array is the live
+                    // builder buffer, so this mutation is observed by the renderer.
+                    GetAttributeValueField(ref attrFrame) = (RenderFragment)innerCapture.Invoke;
                     _childCaptures[j - start] = innerCapture;
                 }
             }
         }
     }
+
+    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "AttributeValueField")]
+    private static extern ref object GetAttributeValueField(ref RenderTreeFrame frame);
 }
