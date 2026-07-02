@@ -138,4 +138,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.ForLoopIteratorVariableUsedInClosure_Description)));
+
+        public static readonly DiagnosticDescriptor UnguardedJSInteropCall = new(
+        "BL0015",
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Title)),
+        CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_Description)));
 }
