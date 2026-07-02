@@ -82,7 +82,7 @@ internal sealed partial class HttpConnectionDispatcher
             if (HttpMethods.IsPost(context.Request.Method))
             {
                 // POST /{path}
-                await ProcessSend(context);
+                await ProcessSend(context, options);
             }
             else if (HttpMethods.IsGet(context.Request.Method) || HttpMethods.IsConnect(context.Request.Method))
             {
@@ -92,7 +92,7 @@ internal sealed partial class HttpConnectionDispatcher
             else if (HttpMethods.IsDelete(context.Request.Method))
             {
                 // DELETE /{path}
-                await ProcessDeleteAsync(context);
+                await ProcessDeleteAsync(context, options);
             }
             else
             {
@@ -687,7 +687,7 @@ internal sealed partial class HttpConnectionDispatcher
 
     private static StringValues GetConnectionToken(HttpContext context) => context.Request.Query["id"];
 
-    private async Task ProcessSend(HttpContext context)
+    private async Task ProcessSend(HttpContext context, HttpConnectionDispatcherOptions options)
     {
         var connection = await GetConnectionAsync(context);
         if (connection == null)
@@ -703,6 +703,11 @@ internal sealed partial class HttpConnectionDispatcher
             Log.PostNotAllowedForWebSockets(_logger);
             context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
             await context.Response.WriteAsync("POST requests are not allowed for WebSocket connections.");
+            return;
+        }
+
+        if (!options.EnableAuthenticationRefresh && await RejectIfUserChangedAsync(connection, context))
+        {
             return;
         }
 
@@ -780,7 +785,7 @@ internal sealed partial class HttpConnectionDispatcher
         }
     }
 
-    private async Task ProcessDeleteAsync(HttpContext context)
+    private async Task ProcessDeleteAsync(HttpContext context, HttpConnectionDispatcherOptions options)
     {
         var connection = await GetConnectionAsync(context);
         if (connection == null)
@@ -796,6 +801,11 @@ internal sealed partial class HttpConnectionDispatcher
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             context.Response.ContentType = "text/plain";
             await context.Response.WriteAsync("Cannot terminate this connection using the DELETE endpoint.");
+            return;
+        }
+
+        if (!options.EnableAuthenticationRefresh && await RejectIfUserChangedAsync(connection, context))
+        {
             return;
         }
 
@@ -838,6 +848,17 @@ internal sealed partial class HttpConnectionDispatcher
                 Log.CannotChangeTransport(_logger, connection.TransportType, transportType);
                 await context.Response.WriteAsync("Cannot change transports mid-connection");
                 return false;
+        }
+
+        // Only connections that reuse their state across requests (Stateful Reconnect or Long
+        // Polling) re-enter here with an already-populated User; other transports handle a single
+        // request per connection. This must run before any connection state is mutated below so a
+        // rejected request leaves the existing connection fully intact. When authentication refresh
+        // is enabled the application owns principal-change policy via OnAuthenticationRefresh, so the
+        // hardening reject only applies when that feature is not enabled.
+        if (!options.EnableAuthenticationRefresh && connection.ClientReconnectExpected() && await RejectIfUserChangedAsync(connection, context))
+        {
+            return false;
         }
 
         // Set the IHttpConnectionFeature now that we can access it.
@@ -889,14 +910,6 @@ internal sealed partial class HttpConnectionDispatcher
         var currentUser = connection.User;
         if (currentUser is not null)
         {
-            var originalName = currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var newName = newPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (originalName != newName)
-            {
-                // Log warning, different user
-                Log.UserNameChanged(_logger, originalName, newName);
-            }
-
             // WindowsIdentity is cloned on first poll and must not be swapped here (disposing the old
             // SafeHandles could race the application), so those connections keep the legacy behavior below.
             var authRefreshEligible = options.EnableAuthenticationRefresh
@@ -1146,6 +1159,31 @@ internal sealed partial class HttpConnectionDispatcher
         newHttpContext.Items = new Dictionary<object, object?>(context.Items);
 
         connection.HttpContext = newHttpContext;
+    }
+
+    // The connection is resolved purely by its connection token, so a different authenticated and
+    // endpoint-authorized user who obtained that token could otherwise act on a connection bound to
+    // another user. Reject the request (403) when the incoming user's NameIdentifier differs from
+    // the one the connection is bound to, leaving the connection intact for the original user.
+    private async Task<bool> RejectIfUserChangedAsync(HttpConnectionContext connection, HttpContext context)
+    {
+        if (connection.User is null)
+        {
+            return false;
+        }
+
+        var originalName = connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var newName = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (originalName == newName)
+        {
+            return false;
+        }
+
+        Log.UserNameChangedRejected(_logger, originalName, newName);
+        context.Response.ContentType = "text/plain";
+        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+        await context.Response.WriteAsync("The user associated with this connection changed.");
+        return true;
     }
 
     private async Task<HttpConnectionContext?> GetConnectionAsync(HttpContext context)
