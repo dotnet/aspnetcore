@@ -1,7 +1,0 @@
-deployment
-publish
-crash-*
-timeout-*
-*inputs*
-*corpus*
-*coverage-report*
