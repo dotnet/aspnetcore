@@ -7,3 +7,7 @@ override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnInitialized() -> 
 override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSetAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnInitialized() -> void
 *REMOVED*override Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnParametersSet() -> void
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanged.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanged.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanging.get -> Microsoft.AspNetCore.Components.EventCallback<int>
+Microsoft.AspNetCore.Components.QuickGrid.Paginator.OnPageChanging.set -> void

@@ -28,6 +28,24 @@ public partial class Paginator : IDisposable
     [Parameter] public RenderFragment? SummaryTemplate { get; set; }
 
     /// <summary>
+    /// A callback that is invoked immediately before the page changes.
+    /// The callback receives the target page number as a 1-based, user-facing value
+    /// (for example, the first page is <c>1</c>, not <c>0</c>).
+    /// This is invoked before <see cref="PaginationState.SetCurrentPageIndexAsync(int)"/> is called,
+    /// so <see cref="PaginationState.CurrentPageIndex"/> still reflects the previous page when the callback runs.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnPageChanging { get; set; }
+
+    /// <summary>
+    /// A callback that is invoked immediately after the page has changed.
+    /// The callback receives the new page number as a 1-based, user-facing value
+    /// (for example, the first page is <c>1</c>, not <c>0</c>).
+    /// This is invoked after <see cref="PaginationState.SetCurrentPageIndexAsync(int)"/> has completed,
+    /// so <see cref="PaginationState.CurrentPageIndex"/> reflects the new page when the callback runs.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    /// <summary>
     /// Constructs an instance of <see cref="Paginator" />.
     /// </summary>
     public Paginator()
@@ -73,10 +91,17 @@ public partial class Paginator : IDisposable
         var pageFromQuery = ReadPageIndexFromQueryString() ?? 0;
         if (pageFromQuery != State.CurrentPageIndex)
         {
-            return State.SetCurrentPageIndexAsync(pageFromQuery);
+            return HandlePageChangeAsync(pageFromQuery);
         }
 
         return Task.CompletedTask;
+    }
+
+    internal async Task HandlePageChangeAsync(int newPageIndex)
+    {
+        await OnPageChanging.InvokeAsync(newPageIndex + 1);
+        await State.SetCurrentPageIndexAsync(newPageIndex);
+        await OnPageChanged.InvokeAsync(newPageIndex + 1);
     }
 
     private async void OnLocationChanged(object? sender, LocationChangedEventArgs e)
@@ -87,7 +112,7 @@ public partial class Paginator : IDisposable
         {
             if (pageFromQuery != State.CurrentPageIndex)
             {
-                await State.SetCurrentPageIndexAsync(pageFromQuery);
+                await HandlePageChangeAsync(pageFromQuery);
             }
             StateHasChanged();
         });
