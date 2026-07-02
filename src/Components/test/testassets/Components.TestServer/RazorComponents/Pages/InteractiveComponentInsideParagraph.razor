@@ -1,0 +1,15 @@
+﻿@page "/hydration-error"
+
+<p>
+    <ServerInteractiveCounter />
+</p>
+
+
+<script>
+    window.__e2eErrors = [];
+
+    window.onerror = function (message) {
+        window.__e2eErrors.push(message);
+    };
+</script>
+

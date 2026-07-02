@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Collections.ObjectModel;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -114,5 +115,34 @@ public class RenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorC
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
+    }
+
+    [Fact]
+    public void HydrationFails_WhenInteractiveComponentInsideParagraph()
+    {
+        Navigate($"{ServerPathBase}/hydration-error");
+
+        WaitAssert.True(Browser, () =>
+        {
+            var errors = (ReadOnlyCollection<object>)((IJavaScriptExecutor)Browser)
+                .ExecuteScript("return window.__e2eErrors");
+
+            return errors.Count > 0;
+        }, TimeSpan.FromSeconds(10));
+
+        var errors = (ReadOnlyCollection<object>)((IJavaScriptExecutor)Browser)
+            .ExecuteScript("return window.__e2eErrors");
+
+        Assert.NotNull(errors);
+        Assert.NotEmpty(errors);
+
+        var message = errors.First().ToString();
+
+        Output.WriteLine(message);
+
+        Assert.Contains("hydration", message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("malformed", message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("invalid markup", message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Ensure valid HTML structure", message, StringComparison.OrdinalIgnoreCase);
     }
 }
