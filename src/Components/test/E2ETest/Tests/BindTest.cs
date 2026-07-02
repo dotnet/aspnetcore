@@ -2078,6 +2078,38 @@ public class BindTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>
         Browser.Equal(expected, () => TimeOnly.Parse(boundValue.Text, CultureInfo.InvariantCulture));
     }
 
+    [Fact]
+    public void InputEvent_ShadowDom_RespondsOnKeystrokes()
+    {
+        Navigate(ServerPathBase);
+        Browser.MountTestComponent<ShadowDomBindingComponent>();
+        Browser.Exists(By.Id("shadow-dom-binding"));
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        var boundValue = Browser.Exists(By.Id("shadow-bound-value"));
+
+        // Type into the input inside the shadow DOM via JavaScript since
+        // Selenium cannot directly interact with shadow DOM internals.
+        javascript.ExecuteScript("""
+            const host = document.getElementById('shadow-input');
+            const input = host.shadowRoot.querySelector('input');
+            input.value = 'Hello';
+            input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        """);
+
+        Browser.Equal("Hello", () => boundValue.Text);
+
+        // Type additional text
+        javascript.ExecuteScript("""
+            const host = document.getElementById('shadow-input');
+            const input = host.shadowRoot.querySelector('input');
+            input.value = 'Hello Shadow';
+            input.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        """);
+
+        Browser.Equal("Hello Shadow", () => boundValue.Text);
+    }
+
     // Applies an input through javascript to datetime-local/month/time controls.
     private void ApplyInputValue(string cssSelector, string value)
     {

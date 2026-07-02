@@ -173,7 +173,7 @@ registerBuiltInEventType([
 ], createBlankEventArgsOptions);
 
 function parseChangeEvent(event: Event): ChangeEventArgs {
-  const element = event.target as Element;
+  const element = (event.composed ? event.composedPath()[0] : event.target) as Element;
   if (isTimeBasedInput(element)) {
     const normalizedValue = normalizeTimeBasedValue(element);
     return { value: normalizedValue };
