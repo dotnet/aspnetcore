@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
+//using System.Linq;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
 
@@ -32,10 +32,10 @@ public class HubOptionsSetup : IConfigureOptions<HubOptions>
     {
         foreach (var hubProtocol in protocols)
         {
-            if (hubProtocol.GetType().CustomAttributes.Where(a => a.AttributeType.FullName == "Microsoft.AspNetCore.SignalR.Internal.NonDefaultHubProtocolAttribute").Any())
-            {
-                continue;
-            }
+            // if (hubProtocol.GetType().CustomAttributes.Where(a => a.AttributeType.FullName == "Microsoft.AspNetCore.SignalR.Internal.NonDefaultHubProtocolAttribute").Any())
+            // {
+            //     continue;
+            // }
             _defaultProtocols.Add(hubProtocol.Name);
         }
     }
