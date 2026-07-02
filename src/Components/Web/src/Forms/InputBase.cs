@@ -95,7 +95,7 @@ public abstract class InputBase<TValue> : ComponentBase, IDisposable
                 // by component depth or similar.
                 Value = value;
 
-                _ = ValueChanged.InvokeAsync(Value);
+                _ = ValueChanged.InvokeAsync(Value!);
                 EditContext?.NotifyFieldChanged(FieldIdentifier);
             }
         }
