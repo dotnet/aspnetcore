@@ -1,0 +1,644 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dotnet/aspnetcore/triage-schema.json",
+  "title": "ASP.NET Core Issue Triage",
+  "description": "Per-issue AI triage output for dotnet/aspnetcore. Classification values are GitHub labels (e.g., 'bug', 'area-blazor').",
+  "type": "object",
+  "required": [
+    "meta",
+    "summary",
+    "classification",
+    "evidence",
+    "analysis",
+    "output"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "0.0-1.0 confidence score. 0.95+=explicit, 0.80-0.94=strong inference, 0.60-0.79=ambiguous, <0.60=uncertain."
+    },
+    "classifiedType": {
+      "type": "string",
+      "enum": [
+        "bug",
+        "enhancement",
+        "feature-request",
+        "question",
+        "documentation"
+      ],
+      "description": "Issue type. Pick ONE best fit — trust issue content over title prefix."
+    },
+    "classifiedArea": {
+      "type": "string",
+      "enum": [
+        "area-auth",
+        "area-blazor",
+        "area-commandlinetools",
+        "area-dataprotection",
+        "area-grpc",
+        "area-healthchecks",
+        "area-hosting",
+        "area-identity",
+        "area-infrastructure",
+        "area-middleware",
+        "area-minimal",
+        "area-mvc",
+        "area-networking",
+        "area-perf",
+        "area-routing",
+        "area-security",
+        "area-signalr",
+        "area-ui-rendering"
+      ],
+      "description": "Component area. Pick MOST SPECIFIC match. Values are actual GitHub labels."
+    },
+    "classifiedFeature": {
+      "type": "string",
+      "enum": [
+        "feature-accessibility",
+        "feature-analytics",
+        "feature-antiforgery",
+        "feature-application-parts",
+        "feature-authentication",
+        "feature-azure",
+        "feature-blazor-aot-compilation",
+        "feature-blazor-boot-up",
+        "feature-blazor-builtin-components",
+        "feature-blazor-client-assets",
+        "feature-blazor-component-model",
+        "feature-blazor-debugging",
+        "feature-blazor-deployment",
+        "feature-blazor-desktop",
+        "feature-blazor-enhanced-form-post",
+        "feature-blazor-enhanced-navigation",
+        "feature-blazor-error-boundary",
+        "feature-blazor-form-validation",
+        "feature-blazor-hybrid",
+        "feature-blazor-jsinterop",
+        "feature-blazor-lazy-loading",
+        "feature-blazor-linking",
+        "feature-blazor-msal",
+        "feature-blazor-native-dependencies",
+        "feature-blazor-navigation",
+        "feature-blazor-quickgrid",
+        "feature-blazor-routing",
+        "feature-blazor-sections",
+        "feature-blazor-server",
+        "feature-blazor-server-auth",
+        "feature-blazor-server-experience",
+        "feature-blazor-single-project",
+        "feature-blazor-ssr",
+        "feature-blazor-state-preservation",
+        "feature-blazor-streaming-rendering",
+        "feature-blazor-tooling",
+        "feature-blazor-virtualization",
+        "feature-blazor-vscode-extension",
+        "feature-blazor-wasm",
+        "feature-blazor-wasm-auth",
+        "feature-blazor-wasm-threading",
+        "feature-caching",
+        "feature-circuit-lifecycle",
+        "feature-client-c++",
+        "feature-client-java",
+        "feature-client-javascript",
+        "feature-client-net",
+        "feature-cors",
+        "feature-css-isolation",
+        "feature-dataprotection-redis",
+        "feature-devcerts",
+        "feature-diagnostics",
+        "feature-embedded-fileprovider",
+        "feature-forwarded-headers",
+        "feature-full-stack-web-ui",
+        "feature-hot-reload",
+        "feature-http-abstractions",
+        "feature-httpclient-extensions",
+        "feature-httpclientfactory",
+        "feature-httpsys",
+        "feature-identity-apis",
+        "feature-identity-service",
+        "feature-identity-ui",
+        "feature-iis",
+        "feature-installers",
+        "feature-integrity-check",
+        "feature-js-root-components",
+        "feature-json-patch",
+        "feature-kestrel",
+        "feature-localization",
+        "feature-minimal-actions",
+        "feature-minimal-hosting",
+        "feature-model-binding",
+        "feature-mvc-antiforgery",
+        "feature-mvc-application-model",
+        "feature-mvc-execution-pipeline",
+        "feature-mvc-formatting",
+        "feature-mvc-razor-views",
+        "feature-mvc-testing",
+        "feature-observability",
+        "feature-oidc",
+        "feature-openapi",
+        "feature-output-caching",
+        "feature-pipelines",
+        "feature-platform",
+        "feature-prerendering",
+        "feature-problem-details",
+        "feature-pwa",
+        "feature-rate-limit",
+        "feature-razor-pages",
+        "feature-razor-sdk",
+        "feature-razor.formatting",
+        "feature-razor.language",
+        "feature-razor.languageserver",
+        "feature-razor.vs",
+        "feature-razor.vscode",
+        "feature-rdg",
+        "feature-rendering",
+        "feature-response-caching",
+        "feature-response-compression",
+        "feature-rewrite-middleware",
+        "feature-routing",
+        "feature-runtime-compilation",
+        "feature-scaffolding",
+        "feature-seo",
+        "feature-session",
+        "feature-single-file-publishing",
+        "feature-source-generators",
+        "feature-spa",
+        "feature-static-files",
+        "feature-static-web-assets",
+        "feature-tag-helpers",
+        "feature-templates",
+        "feature-token-identity",
+        "feature-trimming",
+        "feature-user-secrets",
+        "feature-userjwts",
+        "feature-websockets",
+        "feature-yarp"
+      ],
+      "description": "Sub-feature label within an area. Omit if the area label is sufficient."
+    },
+    "classifiedPlatform": {
+      "type": "string",
+      "enum": [
+        "os/Windows",
+        "os/Linux",
+        "os/macOS",
+        "os/WASM"
+      ],
+      "description": "Platform label. Omit platforms array entirely if not platform-specific."
+    },
+    "classifiedTenet": {
+      "type": "string",
+      "enum": [
+        "tenet/compatibility",
+        "tenet/performance",
+        "tenet/reliability",
+        "tenet/security"
+      ],
+      "description": "Quality tenet label. Omit tenets array entirely if no tenets apply."
+    },
+    "suggestedAction": {
+      "type": "string",
+      "enum": [
+        "needs-investigation",
+        "close-as-fixed",
+        "close-as-by-design",
+        "close-with-docs",
+        "close-as-duplicate",
+        "convert-to-discussion",
+        "request-info",
+        "keep-open"
+      ],
+      "description": "Recommended next action for the maintainer."
+    },
+    "actionType": {
+      "type": "string",
+      "enum": [
+        "update-labels",
+        "add-comment",
+        "close-issue",
+        "convert-to-discussion",
+        "link-related",
+        "link-duplicate",
+        "update-project",
+        "set-milestone"
+      ],
+      "description": "Type of automatable operation."
+    },
+    "actionRisk": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "low=reversible/cosmetic. medium=state change. high=irreversible or reputation-sensitive."
+    }
+  },
+  "properties": {
+    "meta": {
+      "type": "object",
+      "description": "Metadata about this triage analysis.",
+      "required": [
+        "schemaVersion",
+        "number",
+        "repo",
+        "analyzedAt"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "1.0",
+          "description": "Schema version."
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "GitHub issue number."
+        },
+        "repo": {
+          "type": "string",
+          "description": "Repository in owner/name format.",
+          "pattern": "^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$"
+        },
+        "analyzedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 UTC timestamp of when triage was performed."
+        },
+        "currentLabels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Labels currently on the issue at time of triage."
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 20,
+      "description": "Reporter-facing summary: what the user reported, their environment, and symptoms. Factual restatement only — no analysis or hypothesis."
+    },
+    "classification": {
+      "type": "object",
+      "description": "Issue classification labels and confidence scores.",
+      "required": [
+        "type",
+        "area"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "object",
+          "required": ["value", "confidence"],
+          "additionalProperties": false,
+          "properties": {
+            "value": { "$ref": "#/$defs/classifiedType" },
+            "confidence": { "$ref": "#/$defs/confidence" }
+          }
+        },
+        "area": {
+          "type": "object",
+          "required": ["value", "confidence"],
+          "additionalProperties": false,
+          "properties": {
+            "value": { "$ref": "#/$defs/classifiedArea" },
+            "confidence": { "$ref": "#/$defs/confidence" }
+          }
+        },
+        "feature": {
+          "type": "object",
+          "required": ["value", "confidence"],
+          "additionalProperties": false,
+          "properties": {
+            "value": { "$ref": "#/$defs/classifiedFeature" },
+            "confidence": { "$ref": "#/$defs/confidence" }
+          },
+          "description": "Sub-feature classification. Include when more specific than area."
+        },
+        "platforms": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/classifiedPlatform" },
+          "description": "Platform labels if issue is platform-specific. Omit if cross-platform."
+        },
+        "tenets": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/classifiedTenet" },
+          "description": "Quality tenet labels. Omit if no tenets apply."
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Evidence extracted from the issue.",
+      "additionalProperties": false,
+      "properties": {
+        "reproEvidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "stepsToReproduce": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Steps to reproduce as described by the reporter."
+            },
+            "codeSnippets": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Code snippets from the issue body."
+            },
+            "screenshots": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["url"],
+                "additionalProperties": false,
+                "properties": {
+                  "url": { "type": "string", "format": "uri" },
+                  "description": { "type": "string" }
+                }
+              }
+            },
+            "attachments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["url", "filename"],
+                "additionalProperties": false,
+                "properties": {
+                  "url": { "type": "string", "format": "uri" },
+                  "filename": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            },
+            "environmentDetails": {
+              "type": "string",
+              "description": "Reporter's environment as described in the issue."
+            },
+            "relatedIssues": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 1 },
+              "description": "GitHub issue numbers referenced in the issue text."
+            },
+            "repoLinks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["url"],
+                "additionalProperties": false,
+                "properties": {
+                  "url": { "type": "string", "format": "uri" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "bugSignals": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "severity": {
+              "type": "string",
+              "enum": ["critical", "high", "medium", "low"],
+              "description": "critical=crash/data loss/security. high=feature broken. medium=degraded. low=cosmetic."
+            },
+            "regressionClaimed": {
+              "type": "boolean",
+              "description": "Whether the reporter said this worked in a previous version."
+            },
+            "errorType": {
+              "type": "string",
+              "enum": [
+                "crash",
+                "exception",
+                "wrong-output",
+                "missing-output",
+                "performance",
+                "build-error",
+                "memory-leak",
+                "security",
+                "platform-specific",
+                "other"
+              ]
+            },
+            "errorMessage": {
+              "type": "string",
+              "description": "Primary error message from the report."
+            },
+            "stackTrace": {
+              "type": "string",
+              "maxLength": 5000,
+              "description": "Stack trace if provided. Max 50 lines. Redact absolute paths."
+            },
+            "reproQuality": {
+              "type": "string",
+              "enum": ["complete", "partial", "none"]
+            },
+            "dotnetVersion": {
+              "type": "string",
+              "description": ".NET version mentioned by reporter, e.g. '8.0.10', '9.0.0'."
+            },
+            "aspnetcoreVersion": {
+              "type": "string",
+              "description": "ASP.NET Core version mentioned, e.g. '8.0.10'."
+            },
+            "targetFrameworks": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Target framework monikers mentioned, e.g. ['net8.0', 'net9.0']."
+            }
+          }
+        },
+        "versionAnalysis": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mentionedVersions": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": ".NET / ASP.NET Core versions mentioned in the issue."
+            },
+            "workedIn": { "type": "string" },
+            "brokeIn": { "type": "string" },
+            "currentRelevance": {
+              "type": "string",
+              "enum": ["likely", "unlikely", "unknown"]
+            },
+            "relevanceReason": { "type": "string" }
+          }
+        },
+        "regression": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "isRegression": { "type": "boolean" },
+            "confidence": { "$ref": "#/$defs/confidence" },
+            "reason": { "type": "string" },
+            "workedInVersion": { "type": "string" },
+            "brokeInVersion": { "type": "string" }
+          }
+        },
+        "fixStatus": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "likelyFixed": { "type": "boolean" },
+            "confidence": { "$ref": "#/$defs/confidence" },
+            "reason": { "type": "string" },
+            "relatedPRs": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 1 }
+            },
+            "relatedCommits": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "fixedInVersion": { "type": "string" }
+          }
+        }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "description": "Analytical assessment: root cause hypothesis, code investigation, and resolution proposals.",
+      "required": ["summary"],
+      "additionalProperties": false,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Root cause hypothesis and technical analysis."
+        },
+        "rationale": {
+          "type": "string",
+          "description": "Single paragraph explaining key classification decisions."
+        },
+        "keySignals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["text", "source"],
+            "additionalProperties": false,
+            "properties": {
+              "text": { "type": "string" },
+              "source": { "type": "string" },
+              "interpretation": { "type": "string" }
+            }
+          }
+        },
+        "codeInvestigation": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["file", "finding", "relevance"],
+            "additionalProperties": false,
+            "properties": {
+              "file": { "type": "string", "minLength": 1 },
+              "lines": { "type": "string" },
+              "finding": { "type": "string" },
+              "relevance": {
+                "type": "string",
+                "enum": ["direct", "related", "context"]
+              }
+            }
+          },
+          "description": "Source code investigation results. MANDATORY for bugs."
+        },
+        "errorFingerprint": {
+          "type": "string",
+          "description": "Short normalized string summarizing the error signature for cross-issue dedup."
+        },
+        "workarounds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "nextQuestions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "resolution": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "hypothesis": { "type": "string" },
+            "proposals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["title", "description"],
+                "additionalProperties": false,
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "category": {
+                    "type": "string",
+                    "enum": ["workaround", "fix", "alternative", "investigation"]
+                  },
+                  "codeSnippet": { "type": "string" },
+                  "validated": {
+                    "type": "string",
+                    "enum": ["untested", "yes", "no"]
+                  },
+                  "confidence": { "$ref": "#/$defs/confidence" },
+                  "effort": {
+                    "type": "string",
+                    "enum": ["trivial", "small", "medium", "large"]
+                  }
+                }
+              }
+            },
+            "recommendedProposal": { "type": "string" },
+            "recommendedReason": { "type": "string" }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "required": ["actionability", "actions"],
+      "additionalProperties": false,
+      "properties": {
+        "actionability": {
+          "type": "object",
+          "required": ["suggestedAction", "confidence", "reason"],
+          "additionalProperties": false,
+          "properties": {
+            "suggestedAction": { "$ref": "#/$defs/suggestedAction" },
+            "confidence": { "$ref": "#/$defs/confidence" },
+            "reason": { "type": "string" }
+          }
+        },
+        "missingInfo": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "type": { "$ref": "#/$defs/actionType" },
+              "description": { "type": "string" },
+              "risk": { "$ref": "#/$defs/actionRisk" },
+              "confidence": { "$ref": "#/$defs/confidence" },
+              "labels": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "comment": { "type": "string" },
+              "linkedIssue": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}
