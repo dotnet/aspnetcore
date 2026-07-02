@@ -23,12 +23,16 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <!-- Sequence the aggregate tool build/publish before this test payload consumes its published files. -->
+    <!-- Sequence the aggregate tool build/publish before this test payload consumes its published files.
+         aspnetcoretools is single-targeted, so the solution traversal builds it with NO TargetFramework
+         (or RuntimeIdentifier) global property. Pass no explicit properties here so this reference resolves
+         to that same MSBuild project instance and dedupes onto it, instead of spawning a second, differently
+         keyed NativeAOT compile that races with it on the shared intermediate sourcelink file. -->
     <ProjectReference Include="..\aspnetcoretools\aspnetcoretools.csproj"
                       ReferenceOutputAssembly="false"
                       SkipGetTargetFrameworkProperties="true"
                       Targets="Build"
-                      Properties="RuntimeIdentifier=$(NativeAotToolPublishRuntimeIdentifier);TargetRuntimeIdentifier=$(NativeAotToolPublishRuntimeIdentifier)"
+                      UndefineProperties="TargetFramework;RuntimeIdentifier"
                       Private="false" />
   </ItemGroup>
 
