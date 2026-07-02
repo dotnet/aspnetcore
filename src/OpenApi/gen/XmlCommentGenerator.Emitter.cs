@@ -584,29 +584,63 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     {{GeneratedCodeAttribute}}
     file static class JsonNodeExtensions
     {
-        public static JsonNode? Parse(this string? json)
+        public static JsonNode? Parse(this string? value)
         {
-            if (json is null)
+            if (value is null)
             {
                 return null;
             }
 
-            try
+            if (bool.TryParse(value, out var boolValue))
             {
-                return JsonNode.Parse(json);
+                return JsonValue.Create(boolValue);
             }
-            catch (JsonException)
+            else if (long.TryParse(value, out var longValue))
             {
-                try
-                {
-                    // If parsing fails, try wrapping in quotes to make it a valid JSON string
-                    return JsonNode.Parse($"\"{json.Replace("\"", "\\\"")}\"");
-                }
-                catch (JsonException)
-                {
-                    return null;
-                }
+                return JsonValue.Create(longValue);
             }
+            else if (sbyte.TryParse(value, out var sbyteValue))
+            {
+                return JsonValue.Create(sbyteValue);
+            }
+            else if (float.TryParse(value, out var floatValue))
+            {
+                return JsonValue.Create(floatValue);
+            }
+            else if (ushort.TryParse(value, out var ushortValue))
+            {
+                return JsonValue.Create(ushortValue);
+            }
+            else if (uint.TryParse(value, out var uintValue))
+            {
+                return JsonValue.Create(uintValue);
+            }
+            else if (int.TryParse(value, out var intValue))
+            {
+                return JsonValue.Create(intValue);
+            }
+            else if (ulong.TryParse(value, out var ulongValue))
+            {
+                return JsonValue.Create(ulongValue);
+            }
+            else if (short.TryParse(value, out var shortValue))
+            {
+                return JsonValue.Create(shortValue);
+            }
+            else if (Guid.TryParse(value, out var guidValue))
+            {
+                return JsonValue.Create(guidValue);
+            }
+            else if (double.TryParse(value, out var doubleValue))
+            {
+                return JsonValue.Create(doubleValue);
+            }
+            else if (decimal.TryParse(value, out var decimalValue))
+            {
+                return JsonValue.Create(decimalValue);
+            }
+
+            return JsonValue.Create(value);
         }
     }
 
