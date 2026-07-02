@@ -8,9 +8,13 @@ public static class WebElementExtensions
     // see: https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/214
     //
     // Calling Clear() can trigger onchange, which will revert the value to its default.
-    public static void ReplaceText(this IWebElement element, string text)
+    public static void ReplaceText(this IWebElement element, string text, bool clear = true)
     {
-        element.SendKeys(Keys.Control + "a");
+        if (clear)
+        {
+            element.Clear();
+        }
+        element.SendKeys(Keys.Control + "a" + Keys.Delete);
         element.SendKeys(text);
     }
 }

@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
+
+using ParsingResetComponent = BasicTestApp.FormsTest.ParsingResetComponent;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
@@ -232,6 +235,166 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
         appointmentInput.SendKeys(string.Concat(Enumerable.Repeat(Keys.ArrowLeft, 6)) + $"10101970{Keys.ArrowRight}105321");
         Browser.Equal("modified valid", () => appointmentInput.GetDomAttribute("class"));
         Browser.Equal("1970-10-10T10:53:21", () => appointmentInput.GetDomProperty("value"));
+    }
+
+    [Fact]
+    public void InputDate_ResetParsingStateWhenValueSetByParent()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("valid", () => dateInput.GetDomAttribute("class"));
+
+        Browser.ExecuteJavaScript("""
+            const el = document.querySelector('.parsing-reset-test input');
+            el.type = 'text';
+            el.value = 'invalid-date';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.type = 'date';
+        """);
+
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The dateValue field must be a date." }, messagesAccessor);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("2020-01-01", () => dateInput.GetDomProperty("value"));
+
+        Browser.Empty(messagesAccessor);
+
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputNumber_ResetParsingStateWhenValueSetByParent()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var numberInput = appElement.FindElement(By.ClassName("parsing-reset-number-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        Browser.Equal("valid", () => numberInput.GetDomAttribute("class"));
+
+        Browser.ExecuteJavaScript(@$"
+            const el = document.querySelector('.parsing-reset-number-test input');
+            el.value = 'abc';
+            el.dispatchEvent(new Event('change', {{ bubbles: true }}));
+        ");
+        Browser.True(() =>
+        {
+            Assert.Equal(["The NumberValue field must be a number."], messagesAccessor(), StringComparer.OrdinalIgnoreCase);
+            return numberInput.GetDomAttribute("class") == "modified invalid";
+        });
+        appElement.FindElement(By.Id("set-new-number-btn")).Click();
+        Browser.Equal("42", () => numberInput.GetDomProperty("value"));
+
+        Browser.Empty(messagesAccessor);
+
+        Browser.Equal("modified valid", () => numberInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputDate_ClearsValidationMessagesWhenValueSetByParent_AfterMultipleParsingFailures()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("valid", () => dateInput.GetDomAttribute("class"));
+
+        Browser.ExecuteJavaScript("""
+            const el = document.querySelector('.parsing-reset-test input');
+            el.type = 'text';
+            el.value = 'invalid1';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.type = 'date';
+        """);
+
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The dateValue field must be a date." }, messagesAccessor);
+
+        Browser.ExecuteJavaScript("""
+            const el = document.querySelector('.parsing-reset-test input');
+            el.type = 'text';
+            el.value = 'invalid2';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.type = 'date';
+        """);
+
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The dateValue field must be a date." }, messagesAccessor);
+
+        Browser.Exists(By.Id("set-another-new-date-btn")).Click();
+        Browser.Exists(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal("2020-01-01", () => dateInput.GetDomProperty("value"));
+        Browser.Empty(messagesAccessor);
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputDate_ParsingFailedStateClearedOnEditAfterParentSetsValue()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.ExecuteJavaScript("""
+            const el = document.querySelector('.parsing-reset-test input');
+            el.type = 'text';
+            el.value = 'invalid';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.type = 'date';
+        """);
+
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+
+        appElement.FindElement(By.Id("set-another-new-date-btn")).Click();
+        Browser.Equal("2021-06-15", () => dateInput.GetDomProperty("value"));
+        Browser.Equal("modified valid", () => dateInput.GetDomAttribute("class"));
+
+        Browser.ExecuteJavaScript("""
+            const el = document.querySelector('.parsing-reset-test input');
+            el.type = 'text';
+            el.value = 'another-invalid';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.type = 'date';
+        """);
+
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+    }
+
+    [Fact]
+    public void InputDate_ParentSettingSameValue_DoesNotClearParsingState()
+    {
+        var appElement = Browser.MountTestComponent<ParsingResetComponent>();
+        var dateInput = appElement.FindElement(By.ClassName("parsing-reset-test")).FindElement(By.TagName("input"));
+        var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+        Browser.Equal("2020-01-01", () => dateInput.GetDomProperty("value"));
+        Browser.Equal("valid", () => dateInput.GetDomAttribute("class"));
+
+        Browser.ExecuteJavaScript("""
+            const el = document.querySelector('.parsing-reset-test input');
+            el.type = 'text';
+            el.value = 'not-a-date';
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+            el.type = 'date';
+        """);
+
+        Browser.Equal("modified invalid", () => dateInput.GetDomAttribute("class"));
+        Browser.Equal(new[] { "The dateValue field must be a date." }, messagesAccessor);
+
+        appElement.FindElement(By.Id("set-new-date-btn")).Click();
+
+        Browser.Equal(string.Empty, () => dateInput.GetDomProperty("value"));
+        Browser.Equal(new[] { "The dateValue field must be a date." }, messagesAccessor);
     }
 
     private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
