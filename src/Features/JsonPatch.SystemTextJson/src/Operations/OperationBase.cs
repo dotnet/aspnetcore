@@ -44,6 +44,7 @@ public class OperationBase
     }
 
     [JsonPropertyName(nameof(from))]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string from { get; set; }
 
     public OperationBase()

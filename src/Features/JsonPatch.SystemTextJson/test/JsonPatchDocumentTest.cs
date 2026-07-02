@@ -255,4 +255,18 @@ public class JsonPatchDocumentTest
 
         return JsonSerializer.Serialize<JsonPatchDocument<SimpleObject>>(document, jsonSerializerOptions);
     }
+
+    [Fact]
+    public void Serialization_DoesNotEmitFromProperty_ForAddOperation()
+    {
+        // Arrange
+        var patchDocument = new JsonPatchDocument();
+        patchDocument.Add("/a/b/c", new[] { "foo", "bar" });
+
+        // Act
+        var json = JsonSerializer.Serialize(patchDocument);
+
+        // Assert
+        Assert.DoesNotContain("\"from\"", json);
+    }
 }
