@@ -74,6 +74,7 @@
         }
 
         _streaming = true;
+        _streamCts?.Dispose();
         _streamCts = new CancellationTokenSource();
         var token = _streamCts.Token;
         _ = StreamLoopAsync(token);
@@ -119,6 +120,8 @@
     private void StopStreaming()
     {
         _streamCts?.Cancel();
+        _streamCts?.Dispose();
+        _streamCts = null;
         _streaming = false;
     }
 
