@@ -1,3 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.Aaguid.get -> byte[]?
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.Aaguid.set -> void
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.UserPasskeyInfo(byte[]! credentialId, byte[]! publicKey, System.DateTimeOffset createdAt, uint signCount, string![]? transports, bool isUserVerified, bool isBackupEligible, bool isBackedUp, byte[]! attestationObject, byte[]! clientDataJson, string? name) -> void
