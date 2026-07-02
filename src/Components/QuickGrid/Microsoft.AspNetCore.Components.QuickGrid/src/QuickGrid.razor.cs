@@ -138,6 +138,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // This happens on every render so that the column list can be updated dynamically
     private readonly InternalGridContext<TGridItem> _internalGridContext;
     private readonly List<ColumnBase<TGridItem>> _columns;
+
+    /// <summary>
+    /// Gets the columns defined in the grid.
+    /// </summary>
+    protected IReadOnlyList<ColumnBase<TGridItem>> Columns => _columns;
     private bool _collectingColumns; // Columns might re-render themselves arbitrarily. We only want to capture them at a defined time.
 
     // Tracking state for options and sorting

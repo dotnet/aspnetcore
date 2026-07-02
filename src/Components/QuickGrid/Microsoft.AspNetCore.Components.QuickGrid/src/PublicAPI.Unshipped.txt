@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Columns.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>!>!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.get -> string!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QueryParameterNamePrefix.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OnRowClick.get -> Microsoft.AspNetCore.Components.EventCallback<TGridItem>
