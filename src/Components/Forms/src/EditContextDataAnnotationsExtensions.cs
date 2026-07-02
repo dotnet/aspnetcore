@@ -103,7 +103,7 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             if (e.IsAsync)
             {
-                // ValidateAsync invokes the registered factory and awaits the resulting task.
+                // ValidateAsync invokes the registered validator and awaits the resulting task.
                 e.AddAsyncValidator(ValidateFormAndNotifyAsync);
             }
             else
