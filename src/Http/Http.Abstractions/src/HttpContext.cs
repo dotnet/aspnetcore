@@ -79,7 +79,11 @@ public abstract class HttpContext
     /// The endpoint for a request is typically set by routing middleware. A request might not have
     /// an endpoint if routing middleware hasn't run yet, or the request didn't match a route.
     /// </remarks>
-    public abstract Endpoint? Endpoint { get; set; }
+    public virtual Endpoint? Endpoint
+    {
+        get => this.GetEndpoint();
+        set => this.SetEndpoint(value);
+    }
 
     /// <summary>
     /// Aborts the connection underlying this request.
