@@ -106,6 +106,7 @@ public class PersistentComponentState
     /// <param name="key">The key to use to persist the state.</param>
     /// <param name="instance">The instance to persist.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonSerializer needs dynamic code generation for type-based serialization. The type is constrained by DynamicallyAccessedMembers(JsonSerialized).")]
     public void PersistAsJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, TValue instance)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -122,6 +123,7 @@ public class PersistentComponentState
     }
 
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonSerializer needs dynamic code generation for type-based serialization. The type is constrained by DynamicallyAccessedMembers(JsonSerialized).")]
     internal void PersistAsJson(string key, object instance, [DynamicallyAccessedMembers(JsonSerialized)] Type type)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -167,6 +169,7 @@ public class PersistentComponentState
     /// <param name="instance">The persisted instance.</param>
     /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonSerializer needs dynamic code generation for type-based deserialization. The type is constrained by DynamicallyAccessedMembers(JsonSerialized).")]
     public bool TryTakeFromJson<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string key, [MaybeNullWhen(false)] out TValue? instance)
     {
         ArgumentNullException.ThrowIfNull(key);
@@ -185,6 +188,7 @@ public class PersistentComponentState
     }
 
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "JsonSerializer needs dynamic code generation for type-based deserialization. The type is constrained by DynamicallyAccessedMembers(JsonSerialized).")]
     internal bool TryTakeFromJson(string key, [DynamicallyAccessedMembers(JsonSerialized)] Type type, [MaybeNullWhen(false)] out object? instance)
     {
         ArgumentNullException.ThrowIfNull(type);
