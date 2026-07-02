@@ -107,6 +107,48 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEventsOfDataItems()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/todos/data-events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/todos/data-events");
+            var dataSchema = Assert.IsType<OpenApiSchemaReference>(itemSchema.Properties["data"]);
+            Assert.Equal(nameof(Todo), dataSchema.Reference.Id);
+        });
+
+        static async IAsyncEnumerable<Todo> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_UsesItemSchemaForServerSentEventsOfStringItems()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/api/messages/events", () => TypedResults.ServerSentEvents(GetEvents()));
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var itemSchema = GetServerSentEventsItemSchema(document, "/api/messages/events");
+            var dataSchema = Assert.IsType<OpenApiSchema>(itemSchema.Properties["data"]);
+            Assert.Equal(JsonSchemaType.String, dataSchema.Type);
+        });
+
+        static async IAsyncEnumerable<string> GetEvents()
+        {
+            await Task.CompletedTask;
+            yield break;
+        }
+    }
+
+    [Fact]
     public async Task GetOpenApiResponse_UsesSchemaAndItemSchemaForSameDataSchemaInDifferentMediaTypes()
     {
         var builder = CreateBuilder();
