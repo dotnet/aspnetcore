@@ -46,6 +46,18 @@ builder.Services.AddOpenApi("forms");
 builder.Services.AddOpenApi("schemas-by-ref");
 builder.Services.AddOpenApi("xml");
 builder.Services.AddOpenApi("unions");
+builder.Services.AddOpenApi("enum-pascalcase-nonnullable-param");
+builder.Services.AddOpenApi("enum-pascalcase-nullable-param");
+builder.Services.AddOpenApi("enum-camelcase-nonnullable-param");
+builder.Services.AddOpenApi("enum-camelcase-nullable-param");
+builder.Services.AddOpenApi("enum-pascalcase-nonnullable-body-model");
+builder.Services.AddOpenApi("enum-pascalcase-nullable-body-model");
+builder.Services.AddOpenApi("enum-camelcase-nonnullable-body-model");
+builder.Services.AddOpenApi("enum-camelcase-nullable-body-model");
+builder.Services.AddOpenApi("enum-pascalcase-nonnullable-body-direct");
+builder.Services.AddOpenApi("enum-pascalcase-nullable-body-direct");
+builder.Services.AddOpenApi("enum-camelcase-nonnullable-body-direct");
+builder.Services.AddOpenApi("enum-camelcase-nullable-body-direct");
 builder.Services.AddOpenApi("localized", options =>
 {
     options.ShouldInclude = _ => true;
@@ -72,6 +84,7 @@ app.MapXmlEndpoints();
 app.MapSchemasEndpoints();
 app.MapResponseEndpoints();
 app.MapUnionsEndpoints();
+app.MapEnumsEndpoints();
 
 app.MapGet("/first-doc/get1", () => "Hello, world").WithGroupName("first-doc");
 app.MapGet("/first-doc/get2", () => "Hello, world").WithGroupName("first-doc");
