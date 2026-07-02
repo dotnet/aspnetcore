@@ -19,7 +19,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     private const string Purpose = "Microsoft.AspNetCore.Components.CookieTempDataProviderToken";
     private readonly IDataProtector _dataProtector;
     private readonly ISpanDataProtector? _spanDataProtector;
-    private readonly ITempDataSerializer _tempDataSerializer;
+    private readonly ITempDataAndSessionSerializer _tempDataSerializer;
     private readonly RazorComponentsServiceOptions _options;
     private readonly ChunkingCookieManager _chunkingCookieManager;
     private readonly ILogger<CookieTempDataProvider> _logger;
@@ -27,7 +27,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
     public CookieTempDataProvider(
         IDataProtectionProvider dataProtectionProvider,
         IOptions<RazorComponentsServiceOptions> options,
-        ITempDataSerializer tempDataSerializer,
+        ITempDataAndSessionSerializer tempDataSerializer,
         ILogger<CookieTempDataProvider> logger)
     {
         _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
@@ -38,7 +38,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
         _logger = logger;
     }
 
-    public IDictionary<string, object?> LoadTempData(HttpContext context)
+    public IDictionary<string, (object? Value, Type? Type)> LoadTempData(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
         var cookieName = _options.TempDataCookie.Name ?? CookieName;
@@ -48,12 +48,12 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             if (!context.Request.Cookies.ContainsKey(cookieName))
             {
                 Log.TempDataCookieNotFound(_logger, cookieName);
-                return ReadOnlyDictionary<string, object?>.Empty;
+                return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
             }
             var serializedDataFromCookie = _chunkingCookieManager.GetRequestCookie(context, cookieName);
             if (serializedDataFromCookie is null)
             {
-                return ReadOnlyDictionary<string, object?>.Empty;
+                return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
             }
 
             byte[]? rentedDecodeBuffer = null;
@@ -82,7 +82,7 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
 
                 if (dataFromCookie is null)
                 {
-                    return ReadOnlyDictionary<string, object?>.Empty;
+                    return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
                 }
                 var convertedData = _tempDataSerializer.DeserializeData(dataFromCookie);
                 Log.TempDataCookieLoadSuccess(_logger, cookieName);
@@ -103,22 +103,22 @@ internal sealed partial class CookieTempDataProvider : ITempDataProvider
             var cookieOptions = _options.TempDataCookie.Build(context);
             SetCookiePath(context, cookieOptions);
             context.Response.Cookies.Delete(cookieName, cookieOptions);
-            return ReadOnlyDictionary<string, object?>.Empty;
+            return ReadOnlyDictionary<string, (object? Value, Type? Type)>.Empty;
         }
     }
 
-    public void SaveTempData(HttpContext context, IDictionary<string, object?> values)
+    public void SaveTempData(HttpContext context, IDictionary<string, (object? Value, Type? Type)> values)
     {
         ArgumentNullException.ThrowIfNull(context);
 
         foreach (var kvp in values)
         {
-            if (kvp.Value is not null && !_tempDataSerializer.CanSerialize(kvp.Value.GetType()))
+            var (value, type) = kvp.Value;
+            if (value is not null && !_tempDataSerializer.CanSerialize(type ?? value.GetType()))
             {
-                throw new InvalidOperationException($"TempData cannot store values of type '{kvp.Value.GetType()}'.");
+                throw new InvalidOperationException($"TempData cannot store values of type '{type ?? value.GetType()}'.");
             }
         }
-
         var cookieName = _options.TempDataCookie.Name ?? CookieName;
         var cookieOptions = _options.TempDataCookie.Build(context);
         SetCookiePath(context, cookieOptions);

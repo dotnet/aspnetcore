@@ -28,7 +28,7 @@ public class TempDataProviderServiceCollectionExtensionsTest
 
         // Assert
         var tempDataProvider = serviceProvider.GetService<ITempDataProvider>();
-        var tempDataSerializer = serviceProvider.GetService<ITempDataSerializer>();
+        var tempDataSerializer = serviceProvider.GetService<ITempDataAndSessionSerializer>();
         var tempDataService = serviceProvider.GetService<TempDataService>();
 
         Assert.NotNull(tempDataProvider);
@@ -56,7 +56,7 @@ public class TempDataProviderServiceCollectionExtensionsTest
 
         // Assert
         var tempDataProvider = serviceProvider.GetService<ITempDataProvider>();
-        var tempDataSerializer = serviceProvider.GetService<ITempDataSerializer>();
+        var tempDataSerializer = serviceProvider.GetService<ITempDataAndSessionSerializer>();
         var tempDataService = serviceProvider.GetService<TempDataService>();
 
         Assert.NotNull(tempDataProvider);
