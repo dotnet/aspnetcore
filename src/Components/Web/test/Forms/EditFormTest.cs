@@ -27,6 +27,77 @@ public class EditFormTest
     }
 
     [Fact]
+    public async Task SubmitAsync_AwaitsValidationBeforeOnValidSubmit()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        TestAsyncValidator validator = null;
+        var validSubmitCount = 0;
+        var rootComponent = new AsyncEditFormHostComponent
+        {
+            EditContext = editContext,
+            Configure = current =>
+            {
+                current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.Valid });
+                current.GetGate(field);
+            },
+            Created = current => validator = current,
+            OnValidSubmit = _ => validSubmitCount++,
+        };
+        await RenderAsyncRootAsync(rootComponent);
+
+        var editForm = FindEditFormComponent(_testRenderer.Batches.Last());
+        var submitTask = editForm.SubmitAsync();
+        await WaitUntilAsync(() => validator.FormValidationStartCount == 1);
+
+        Assert.Equal(0, validSubmitCount);
+
+        validator.OpenGate(field, ValidationOutcome.Valid);
+        await submitTask.WaitAsync(DefaultAsyncTimeout);
+
+        Assert.Equal(1, validSubmitCount);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_InvokesOnSubmitAndAwaitsValidation()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+
+        var submitCount = 0;
+
+        var rootComponent = new AsyncEditFormHostComponent
+        {
+            EditContext = editContext,
+
+            Configure = current =>
+            {
+                current.Configure(field, new ValidationConfig
+                {
+                    Outcome = ValidationOutcome.Valid
+                });
+
+                current.GetGate(field);
+            },
+
+            // ✅ OnSubmit handler
+            OnSubmit = _ =>
+            {
+                submitCount++;
+            }
+        };
+
+        await RenderAsyncRootAsync(rootComponent);
+
+        var editForm = FindEditFormComponent(_testRenderer.Batches.Last());
+        var submitTask = editForm.SubmitAsync();
+
+        await submitTask.WaitAsync(DefaultAsyncTimeout);
+
+        Assert.Equal(1, submitCount);
+    }
+
+    [Fact]
     public async Task ThrowsIfBothEditContextAndModelAreSupplied()
     {
         // Arrange
@@ -45,6 +116,30 @@ public class EditFormTest
     }
 
     [Fact]
+    public async Task SubmitAsync_InvalidValidation_InvokesOnInvalidSubmit()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        var validSubmitCount = 0;
+        var invalidSubmitCount = 0;
+        var rootComponent = new AsyncEditFormHostComponent
+        {
+            EditContext = editContext,
+            Configure = current => current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.Invalid, ErrorMessage = "Invalid" }),
+            OnValidSubmit = _ => validSubmitCount++,
+            OnInvalidSubmit = _ => invalidSubmitCount++,
+        };
+        await RenderAsyncRootAsync(rootComponent);
+
+        var editForm = FindEditFormComponent(_testRenderer.Batches.Last());
+        await editForm.SubmitAsync().WaitAsync(DefaultAsyncTimeout);
+
+        Assert.Equal(0, validSubmitCount);
+        Assert.Equal(1, invalidSubmitCount);
+        Assert.Equal(new[] { "Invalid" }, editContext.GetValidationMessages(field));
+    }
+
+    [Fact]
     public async Task ThrowsIfBothEditContextAndModelAreNull()
     {
         // Arrange
@@ -56,6 +151,35 @@ public class EditFormTest
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => testRenderer.RenderRootComponentAsync(componentId));
         Assert.StartsWith($"{nameof(EditForm)} requires either a {nameof(EditForm.Model)} parameter, or an {nameof(EditContext)} parameter, please provide one of these.", ex.Message);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_ValidatorException_InvokesOnInvalidSubmit()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        var validSubmitCount = 0;
+        var invalidSubmitCount = 0;
+        var observedFaulted = false;
+        var rootComponent = new AsyncEditFormHostComponent
+        {
+            EditContext = editContext,
+            Configure = current => current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.ThrowInfraException }),
+            OnValidSubmit = _ => validSubmitCount++,
+            OnInvalidSubmit = context =>
+            {
+                invalidSubmitCount++;
+                observedFaulted = context.IsValidationFaulted();
+            },
+        };
+        await RenderAsyncRootAsync(rootComponent);
+
+        var editForm = FindEditFormComponent(_testRenderer.Batches.Last());
+        await editForm.SubmitAsync().WaitAsync(DefaultAsyncTimeout);
+
+        Assert.Equal(0, validSubmitCount);
+        Assert.Equal(1, invalidSubmitCount);
+        Assert.True(observedFaulted);
     }
 
     [Fact]
@@ -75,6 +199,35 @@ public class EditFormTest
         // Assert
         Assert.NotNull(returnedEditContext);
         Assert.Same(model, returnedEditContext.Model);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_CancelsPendingFieldValidationAndRunsFormValidation()
+    {
+        var editContext = new EditContext(new TestModel());
+        var field = editContext.Field(nameof(TestModel.StringProperty));
+        TestAsyncValidator validator = null;
+        var validSubmitCount = 0;
+        var rootComponent = new AsyncEditFormHostComponent
+        {
+            EditContext = editContext,
+            Configure = current => current.Configure(field, new ValidationConfig { Outcome = ValidationOutcome.Valid }),
+            Created = current => validator = current,
+            OnValidSubmit = _ => validSubmitCount++,
+        };
+        await RenderAsyncRootAsync(rootComponent);
+        var pendingCts = new CancellationTokenSource();
+        var pendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var pendingRegistration = pendingCts.Token.Register(() => pendingTcs.TrySetCanceled(pendingCts.Token));
+        editContext.AddValidationTask(field, pendingTcs.Task, pendingCts);
+
+        var editForm = FindEditFormComponent(_testRenderer.Batches.Last());
+        await editForm.SubmitAsync().WaitAsync(DefaultAsyncTimeout);
+
+        Assert.True(pendingCts.IsCancellationRequested);
+        Assert.False(editContext.IsValidationPending(field));
+        Assert.Equal(1, validator.FormValidationStartCount);
+        Assert.Equal(1, validSubmitCount);
     }
 
     [Theory]
@@ -363,6 +516,8 @@ public class EditFormTest
 
         public Action<EditContext> OnInvalidSubmit { get; set; }
 
+         public Action<EditContext> OnSubmit { get; set; }
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<EditForm>(0);
@@ -375,7 +530,11 @@ public class EditFormTest
             {
                 builder.AddComponentParameter(3, nameof(EditForm.OnInvalidSubmit), EventCallback.Factory.Create(this, OnInvalidSubmit));
             }
-            builder.AddComponentParameter(4, nameof(EditForm.ChildContent), (RenderFragment<EditContext>)(context => childBuilder =>
+            if (OnSubmit is not null)
+            {
+                builder.AddComponentParameter(4, nameof(EditForm.OnSubmit), EventCallback.Factory.Create(this, OnSubmit));
+            }
+            builder.AddComponentParameter(5, nameof(EditForm.ChildContent), (RenderFragment<EditContext>)(context => childBuilder =>
             {
                 childBuilder.OpenComponent<TestAsyncValidatorComponent>(0);
                 childBuilder.AddComponentParameter(1, nameof(TestAsyncValidatorComponent.Configure), Configure);

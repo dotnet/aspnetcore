@@ -16,6 +16,7 @@ public class EditForm : ComponentBase
 
     private EditContext? _editContext;
     private bool _hasSetEditContextExplicitly;
+    private bool _isSubmitting;
 
     /// <summary>
     /// Constructs an instance of <see cref="EditForm"/>.
@@ -187,6 +188,33 @@ public class EditForm : ComponentBase
         builder.CloseComponent();
 
         builder.CloseRegion();
+    }
+
+    /// <summary>
+    /// Triggers form submission programmatically, including validation and invocation of
+    /// <see cref="OnSubmit"/>, <see cref="OnValidSubmit"/>, or <see cref="OnInvalidSubmit"/> as appropriate.
+    /// </summary>
+    public async Task SubmitAsync()
+    {
+        if (_editContext is null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(EditForm)}.{nameof(SubmitAsync)} cannot be called before the component has been initialized. " +
+                $"Ensure the {nameof(EditForm)} has rendered at least once before calling this method.");
+        }
+        if (_isSubmitting)
+        {
+            return;
+        }
+        _isSubmitting = true;
+        try
+        {
+            await HandleSubmitAsync();
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
     }
 
     private async Task HandleSubmitAsync()
