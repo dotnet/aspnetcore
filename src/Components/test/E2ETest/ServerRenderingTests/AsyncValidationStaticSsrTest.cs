@@ -38,21 +38,21 @@ public class AsyncValidationStaticSsrTest : ServerTestBase<BasicTestAppServerSit
     {
         // An async [ValidationAttribute] on a property: "taken" is rejected by the per-property async check.
         Submit("validator-username", "validator-submit", "taken");
-        Browser.Equal(new[] { "Username is taken" }, FormMessages("validator-form"));
+        WaitForFormMessages("validator-form", "Username is taken");
 
         // IAsyncValidatableObject object-level check: "reserved" passes the property check but is rejected here.
         Submit("validator-username", "validator-submit", "reserved");
-        Browser.Equal(new[] { "Username is reserved" }, FormMessages("validator-form"));
+        WaitForFormMessages("validator-form", "Username is reserved");
     }
 
     [Fact]
     public void MevPath_FormLevelAsyncValidation_RendersMessagesOnPost()
     {
         Submit("mev-username", "mev-submit", "taken");
-        Browser.Equal(new[] { "Username is taken" }, FormMessages("mev-form"));
+        WaitForFormMessages("mev-form", "Username is taken");
 
         Submit("mev-username", "mev-submit", "reserved");
-        Browser.Equal(new[] { "Username is reserved" }, FormMessages("mev-form"));
+        WaitForFormMessages("mev-form", "Username is reserved");
     }
 
     private void Submit(string inputId, string submitId, string value)
@@ -62,6 +62,12 @@ public class AsyncValidationStaticSsrTest : ServerTestBase<BasicTestAppServerSit
         input.SendKeys(value);
         Browser.Exists(By.Id(submitId)).Click();
     }
+
+    private void WaitForFormMessages(string formId, params string[] expected)
+        => Browser.True(
+            () => FormMessages(formId)().SequenceEqual(expected),
+            TimeSpan.FromSeconds(60),
+            $"Expected form '{formId}' messages: [{string.Join(", ", expected)}]");
 
     private Func<string[]> FormMessages(string formId)
         => () => Browser.FindElements(By.CssSelector($"#{formId} .validation-message"))

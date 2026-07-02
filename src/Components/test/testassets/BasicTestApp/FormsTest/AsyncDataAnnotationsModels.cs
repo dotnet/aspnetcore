@@ -16,15 +16,16 @@ using Microsoft.Extensions.Validation;
 
 namespace BasicTestApp.FormsTest;
 
-// Async per-field validation attribute used by the DataAnnotations async E2E components. It is
-// genuinely asynchronous (Task.Yield) but completes promptly; the tests assert the settled outcome
-// with polling rather than relying on a fixed delay. The field value selects the outcome:
-//   "error" -> throws (surfaced as a faulted field), "taken" -> invalid, anything else -> valid.
+// Async per-field validation attribute used by the DataAnnotations async E2E components.
+// It awaits the test controlled AsyncValidationGate when one is registered, so the pending to settled
+// transition is deterministic.
+// The field value selects the outcome:
+// "error" -> throws (surfaced as a faulted field), "taken" -> invalid, anything else -> valid.
 public sealed class AsyncAvailabilityAttribute : AsyncValidationAttribute
 {
     protected override async Task<ValidationResult> IsValidAsync(object value, ValidationContext validationContext, CancellationToken cancellationToken)
     {
-        await Task.Yield();
+        await AsyncRegistrationModelBase.WaitForGateOrYieldAsync(validationContext, cancellationToken);
 
         var text = value as string;
         if (string.Equals(text, "error", StringComparison.Ordinal))
@@ -60,11 +61,25 @@ public abstract class AsyncRegistrationModelBase : IAsyncValidatableObject
         ValidationContext validationContext,
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await Task.Yield();
+        await WaitForGateOrYieldAsync(validationContext, cancellationToken);
 
         if (string.Equals(Username, "reserved", StringComparison.Ordinal))
         {
             yield return new ValidationResult("Username is reserved", new[] { nameof(Username) });
+        }
+    }
+
+    // Interactive hosts register AsyncValidationGate so the test controls when validation settles.
+    // When it is absent (for example under static SSR) the validators complete on their own.
+    internal static async Task WaitForGateOrYieldAsync(ValidationContext validationContext, CancellationToken cancellationToken)
+    {
+        if (validationContext.GetService(typeof(AsyncValidationGate)) is AsyncValidationGate gate)
+        {
+            await gate.WaitAsync(cancellationToken);
+        }
+        else
+        {
+            await Task.Yield();
         }
     }
 }

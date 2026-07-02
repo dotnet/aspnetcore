@@ -29,6 +29,9 @@ public class Program
             options.Resolvers.Add(new BasicTestApp.FormsTest.AsyncValidationResolver()));
 #pragma warning restore ASP0029
 
+        // Interactive host registers the gate so the async validation E2E tests control settling deterministically.
+        builder.Services.AddSingleton<BasicTestApp.FormsTest.AsyncValidationGate>();
+
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.RootComponents.Add<Index>("root");
         builder.RootComponents.RegisterForJavaScript<DynamicallyAddedRootComponent>("my-dynamic-root-component");

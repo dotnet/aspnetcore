@@ -146,6 +146,11 @@ public abstract class AsyncFormValidationTestBase : ServerTestBase<ToggleExecuti
 
         userNameInput.SendKeys("taken\t");
 
+        // The validator holds the field pending until released, so this is deterministic rather than timed.
+        Browser.Exists(By.Id("field-pending"));
+
+        appElement.FindElement(By.Id("release-validation")).Click();
+
         Browser.Equal(new[] { "Username is taken" }, messagesAccessor);
     }
 
@@ -159,7 +164,12 @@ public abstract class AsyncFormValidationTestBase : ServerTestBase<ToggleExecuti
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         userNameInput.SendKeys("reserved\t");
+        Browser.Exists(By.Id("field-pending"));
+
         appElement.FindElement(By.Id("submit")).Click();
+        Browser.Exists(By.Id("form-pending"));
+
+        appElement.FindElement(By.Id("release-validation")).Click();
 
         Browser.Equal("OnInvalidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
         Browser.Equal(new[] { "Username is reserved" }, messagesAccessor);
@@ -175,6 +185,9 @@ public abstract class AsyncFormValidationTestBase : ServerTestBase<ToggleExecuti
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         userNameInput.SendKeys("taken\t");
+        Browser.Exists(By.Id("field-pending"));
+
+        appElement.FindElement(By.Id("release-validation")).Click();
 
         Browser.Equal(new[] { "Username is taken" }, messagesAccessor);
     }
@@ -190,7 +203,12 @@ public abstract class AsyncFormValidationTestBase : ServerTestBase<ToggleExecuti
         var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
         userNameInput.SendKeys("reserved\t");
+        Browser.Exists(By.Id("field-pending"));
+
         appElement.FindElement(By.Id("submit")).Click();
+        Browser.Exists(By.Id("form-pending"));
+
+        appElement.FindElement(By.Id("release-validation")).Click();
 
         Browser.Equal("OnInvalidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
         Browser.Equal(new[] { "Username is reserved" }, messagesAccessor);
