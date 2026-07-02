@@ -617,6 +617,44 @@ public class DotNetDispatcherTest
     }
 
     [Fact]
+    public void SyncInvokeOfAsyncMethod_Task_ThrowsMeaningfulException()
+    {
+        // Arrange: Track an instance with an async method
+        var jsRuntime = new TestJSRuntime();
+        var targetInstance = new SomePublicType();
+        var objectRef = DotNetObjectReference.Create(targetInstance);
+        jsRuntime.Invoke<object>("unimportant", objectRef);
+
+        // Act & Assert: Synchronously invoking an async method should throw a clear error
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(SomePublicType.InvokableAsyncReturningTask), 1, default), null);
+        });
+
+        Assert.Contains("invokeMethodAsync", ex.Message);
+        Assert.Contains("InvokableAsyncReturningTask", ex.Message);
+    }
+
+    [Fact]
+    public void SyncInvokeOfAsyncMethod_ValueTask_ThrowsMeaningfulException()
+    {
+        // Arrange: Track an instance with an async method returning ValueTask
+        var jsRuntime = new TestJSRuntime();
+        var targetInstance = new SomePublicType();
+        var objectRef = DotNetObjectReference.Create(targetInstance);
+        jsRuntime.Invoke<object>("unimportant", objectRef);
+
+        // Act & Assert: Synchronously invoking an async method should throw a clear error
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, nameof(SomePublicType.InvokableAsyncMethodReturningValueTaskNonGeneric), 1, default), null);
+        });
+
+        Assert.Contains("invokeMethodAsync", ex.Message);
+        Assert.Contains("InvokableAsyncMethodReturningValueTaskNonGeneric", ex.Message);
+    }
+
+    [Fact]
     public async Task CanInvokeAsyncMethod()
     {
         // Arrange: Track some instance plus another object we'll pass as a param
@@ -999,6 +1037,12 @@ public class DotNetDispatcherTest
                     IntVal = dtoByRef.IntVal * 2,
                 })
             });
+        }
+
+        [JSInvokable]
+        public async Task InvokableAsyncReturningTask()
+        {
+            await Task.CompletedTask;
         }
 
         [JSInvokable]
