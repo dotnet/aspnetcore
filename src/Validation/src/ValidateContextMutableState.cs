@@ -7,6 +7,4 @@ internal readonly struct ValidateContextMutableState
 {
     public required int Depth { get; init; }
     public required string Path { get; init; }
-    public required string DisplayName { get; init; }
-    public required string? MemberName { get; init; }
 }
