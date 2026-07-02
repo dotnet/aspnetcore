@@ -229,25 +229,38 @@ public class EditForm : ComponentBase
     /// This works by making a JS interop call to instruct the browser to submit the
     /// form (via <c>HTMLFormElement.requestSubmit()</c>). This ensures that any
     /// expected client-side behaviors, such as triggering HTML's built-in validation
-    /// prompts, also occur.
+    /// prompts, also occur. The resulting <c>submit</c> event is then handled by the
+    /// form's <c>onsubmit</c> handler, which runs the <see cref="EditContext"/>
+    /// validation and invokes the appropriate <see cref="OnSubmit"/>,
+    /// <see cref="OnValidSubmit"/>, or <see cref="OnInvalidSubmit"/> callback.
     /// <para>
-    /// In interactive rendering scenarios, the resulting <c>submit</c> event is
-    /// handled by the form's <c>onsubmit</c> handler, which runs the
-    /// <see cref="EditContext"/> validation and invokes the appropriate
-    /// <see cref="OnSubmit"/>, <see cref="OnValidSubmit"/>, or
-    /// <see cref="OnInvalidSubmit"/> callback.
-    /// </para>
-    /// <para>
-    /// In server-side rendering (SSR) scenarios, the form is submitted via a
-    /// full-page POST, just as if the user had clicked a submit button.
+    /// This method is only supported in interactive rendering scenarios. When the
+    /// form is configured for server-side rendering (i.e., when <see cref="FormName"/>
+    /// is set and the form is rendered within a form mapping context), calling this
+    /// method throws <see cref="InvalidOperationException"/> because the form's
+    /// submission is handled by a server-side endpoint via a full-page POST, not by
+    /// an interactive <c>onsubmit</c> handler.
     /// </para>
     /// </remarks>
     /// <param name="cancellationToken">
     /// A <see cref="CancellationToken"/> that can be used to cancel the operation.
     /// </param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous submission operation.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the form is configured for server-side rendering (i.e., when a
+    /// <see cref="FormName"/> is set and the form is rendered within a form mapping context).
+    /// </exception>
     public async Task SubmitAsync(CancellationToken cancellationToken = default)
     {
+        if (MappingContext is not null)
+        {
+            throw new InvalidOperationException(
+                $"Submitting an {nameof(EditForm)} programmatically via {nameof(SubmitAsync)} is not supported " +
+                $"when the form is configured for server-side rendering (i.e., when {nameof(FormName)} is set " +
+                $"and the form is rendered within a form mapping context). In that scenario, the form is submitted " +
+                $"via a full-page POST to a server-side endpoint, not via an interactive onsubmit handler.");
+        }
+
         await JSRuntime.InvokeVoidAsync(EditFormInterop.Submit, cancellationToken, _formElement);
     }
 }

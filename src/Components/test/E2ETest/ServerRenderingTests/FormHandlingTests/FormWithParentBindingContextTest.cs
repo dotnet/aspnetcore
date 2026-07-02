@@ -91,18 +91,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanSubmitEditFormProgrammaticallyInSSR(bool suppressEnhancedNavigation)
-    {
-        SuppressEnhancedNavigation(suppressEnhancedNavigation);
-        GoTo("forms/programmatic-submit");
-        Browser.Exists(By.Id("submit-from-code"));
-        Browser.Click(By.Id("submit-from-code"));
-        Browser.Equal("Form submitted!", () => Browser.Exists(By.Id("pass")).Text);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
     public void CanBindParameterToTheDefaultForm(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)

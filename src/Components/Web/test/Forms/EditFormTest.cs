@@ -359,6 +359,23 @@ public class EditFormTest
         jsRuntime.VerifyAll();
     }
 
+    [Fact]
+    public async Task SubmitAsync_ThrowsWhenFormIsConfiguredForSSR()
+    {
+        var editContext = new EditContext(new object());
+        var rootComponent = new TestEditFormHostComponent
+        {
+            FormName = "my-form",
+            MappingContextName = "mapping-context-name",
+            EditContext = editContext,
+        };
+
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editForm = FindEditFormComponent(_testRenderer.Batches.Single());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => editForm.SubmitAsync());
+    }
+
     private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
     {
         var componentId = _testRenderer.AssignRootComponentId(rootComponent);
