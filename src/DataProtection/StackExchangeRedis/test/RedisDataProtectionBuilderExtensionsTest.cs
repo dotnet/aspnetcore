@@ -28,4 +28,21 @@ public class RedisDataProtectionBuilderExtensionsTest
         var options = services.GetRequiredService<IOptions<KeyManagementOptions>>();
         Assert.IsType<RedisXmlRepository>(options.Value.XmlRepository);
     }
+
+    [Fact]
+    public void PersistKeysToRedis_FactoryMethod_UsesRedisXmlRepository()
+    {
+        // Arrange
+        var connection = Mock.Of<IConnectionMultiplexer>();
+        var serviceCollection = new ServiceCollection();
+        var builder = serviceCollection.AddDataProtection();
+
+        // Act
+        builder.PersistKeysToStackExchangeRedis(services => services.GetRequiredService<IConnectionMultiplexer>().GetDatabase());
+        var services = serviceCollection.BuildServiceProvider();
+
+        // Assert
+        var options = services.GetRequiredService<IOptions<KeyManagementOptions>>();
+        Assert.IsType<RedisXmlRepository>(options.Value.XmlRepository);
+    }
 }
