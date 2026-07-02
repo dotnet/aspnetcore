@@ -7,7 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.WebSockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -18,14 +20,13 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using System.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client;
 
 /// <summary>
 /// Used to make a connection to an ASP.NET Core ConnectionHandler using an HTTP-based transport.
 /// </summary>
-public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature
+public partial class HttpConnection : ConnectionContext, IConnectionInherentKeepAliveFeature, IAuthenticationRefreshFeature
 {
     // Not configurable on purpose, high enough that if we reach here, it's likely
     // a buggy server
@@ -47,6 +48,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private ITransport? _transport;
     private readonly ITransportFactory _transportFactory;
     private string? _connectionId;
+    private string? _connectionToken;
+    private TimeSpan? _initialTokenLifetime;
     private readonly ConnectionLogScope _logScope;
     private readonly ILoggerFactory _loggerFactory;
     private readonly Uri _url;
@@ -91,6 +94,9 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     /// <inheritdoc />
     bool IConnectionInherentKeepAliveFeature.HasInherentKeepAlive => _hasInherentKeepAlive;
+
+    /// <inheritdoc />
+    TimeSpan? IAuthenticationRefreshFeature.InitialTokenLifetime => _initialTokenLifetime;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="HttpConnection"/> class.
@@ -159,6 +165,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         _logScope = new ConnectionLogScope();
 
         Features.Set<IConnectionInherentKeepAliveFeature>(this);
+        Features.Set<IAuthenticationRefreshFeature>(this);
     }
 
     // Used by unit tests
@@ -512,6 +519,18 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         return Utils.AppendQueryString(url, $"id={connectionId}");
     }
 
+    private static Uri CreateRefreshUrl(Uri url, string connectionToken)
+    {
+        var urlBuilder = new UriBuilder(url);
+        if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
+        {
+            urlBuilder.Path += "/";
+        }
+
+        urlBuilder.Path += "refresh";
+        return Utils.AppendQueryString(urlBuilder.Uri, $"id={connectionToken}");
+    }
+
     private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat,
         CancellationToken cancellationToken, bool useStatefulReconnect)
     {
@@ -720,8 +739,79 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         {
             negotiationResponse.ConnectionToken = _connectionId;
         }
+        _connectionToken = negotiationResponse.ConnectionToken;
+        _initialTokenLifetime = negotiationResponse.TokenLifetime;
 
         _logScope.ConnectionId = _connectionId;
         return negotiationResponse;
+    }
+
+    /// <inheritdoc />
+    async Task<TimeSpan?> IAuthenticationRefreshFeature.RefreshAuthenticationAsync(CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(_connectionToken))
+        {
+            throw new InvalidOperationException("Cannot refresh authentication before the connection is started.");
+        }
+
+        var refreshUri = CreateRefreshUrl(_url, _connectionToken);
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, refreshUri);
+
+        // Mark this as a refresh request so the AccessTokenHttpMessageHandler fetches a fresh access token
+        // (and updates its cache) rather than reusing the token captured when the connection started. Setting
+        // the Authorization header directly here is not sufficient because that handler overwrites it.
+#if NET5_0_OR_GREATER
+        request.Options.Set(new HttpRequestOptionsKey<bool>("IsRefresh"), true);
+#else
+        request.Properties.Add("IsRefresh", true);
+#endif
+
+        using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+#pragma warning disable CA2016 // Forward the 'CancellationToken' parameter to methods
+        var responseBuffer = await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+#pragma warning restore CA2016
+        // Parse the simple JSON response: { "tokenLifetimeSeconds": ... }
+        return ParseRefreshTokenLifetime(responseBuffer);
+    }
+
+    // Manually reads "tokenLifetimeSeconds" from the /refresh response with a Utf8JsonReader, consistent with
+    // NegotiateProtocol.ParseResponse rather than materializing a JsonDocument for a single optional value.
+    private static TimeSpan? ParseRefreshTokenLifetime(ReadOnlySpan<byte> content)
+    {
+        var reader = new Utf8JsonReader(content, isFinalBlock: true, state: default);
+
+        if (!reader.Read() || reader.TokenType != JsonTokenType.StartObject)
+        {
+            throw new System.IO.InvalidDataException("Invalid refresh response JSON: expected an object.");
+        }
+
+        TimeSpan? tokenLifetime = null;
+        while (reader.Read())
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.PropertyName:
+                    if (reader.ValueTextEquals("tokenLifetimeSeconds"u8))
+                    {
+                        reader.Read();
+                        if (reader.TokenType == JsonTokenType.Number)
+                        {
+                            tokenLifetime = TimeSpan.FromSeconds(reader.GetInt32());
+                        }
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
+                    break;
+                case JsonTokenType.EndObject:
+                    return tokenLifetime;
+            }
+        }
+
+        return tokenLifetime;
     }
 }
