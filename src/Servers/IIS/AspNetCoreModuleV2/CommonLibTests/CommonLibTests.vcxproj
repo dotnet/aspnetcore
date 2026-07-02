@@ -9,7 +9,6 @@
     <ProjectGuid>{1eac8125-1765-4e2d-8cbe-56dc98a1c8c1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v$(PlatformToolsetVersion)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <IsTestProject>true</IsTestProject>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
