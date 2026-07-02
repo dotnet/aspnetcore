@@ -2073,18 +2073,29 @@ public static class BindConverter
                 // We intentionally close-over the TypeConverter to cache it. The TypeDescriptor infrastructure is slow.
                 if (obj == null)
                 {
+                    var targetType = typeof(T);
+                    var isNullableOrReference = !targetType.IsValueType || Nullable.GetUnderlyingType(targetType) != null;
                     value = default!;
-                    return true;
-                }
-                var converted = typeConverter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
-                if (converted == null)
-                {
-                    value = default!;
-                    return true;
+                    return isNullableOrReference;
                 }
 
-                value = (T)converted;
-                return true;
+                try
+                {
+                    var converted = typeConverter.ConvertFrom(context: null, culture ?? CultureInfo.CurrentCulture, obj);
+                    if (converted == null)
+                    {
+                        value = default!;
+                        return true;
+                    }
+
+                    value = (T)converted;
+                    return true;
+                }
+                catch (Exception ex) when (ex is NotSupportedException || ex is FormatException || ex is OverflowException || ex is ArgumentException || ex is JsonException)
+                {
+                    value = default!;
+                    return false;
+                }
             }
         }
     }
