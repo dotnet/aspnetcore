@@ -663,6 +663,18 @@ public class SignInManager<TUser> where TUser : class
     {
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
+        var passkeyInfo = await RetrievePasskeyAuthenticationInfoAsync();
+        if (passkeyInfo is null)
+        {
+            return SignInResult.Failed;
+        }
+        if (!string.Equals(PasskeyOperations.Assertion, passkeyInfo.Operation, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException(
+                $"Expected passkey operation '{PasskeyOperations.Assertion}', but got '{passkeyInfo.Operation}'. " +
+                $"This may indicate that you have not previously called '{nameof(SignInManager<>)}.{nameof(MakePasskeyRequestOptionsAsync)}()'.");
+        }
+
         var assertionResult = await PerformPasskeyAssertionAsync(credentialJson);
         if (!assertionResult.Succeeded)
         {
