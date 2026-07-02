@@ -21,12 +21,36 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
         {
             ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
             ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args);
+            ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
+                => default;
+            ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
+                => default;
+            ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+                => default;
+            ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+                => default;
+            ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+                => default;
+            ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+                => default;
         }
 
         public interface IJSObjectReference : System.IAsyncDisposable
         {
             ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
             ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args);
+            ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
+                => default;
+            ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
+                => default;
+            ValueTask<TValue> GetValueAsync<TValue>(string identifier)
+                => default;
+            ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken)
+                => default;
+            ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+                => default;
+            ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+                => default;
         }
 
         public interface IJSInProcessRuntime : IJSRuntime
@@ -183,6 +207,102 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
+    public void UnguardedIJSRuntimeGetValueAsyncCall_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                await JS.GetValueAsync<string>(""document.title"");
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'GetValueAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
+            });
+    }
+
+    [Fact]
+    public void UnguardedIJSRuntimeSetValueAsyncCall_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                await JS.SetValueAsync(""document.title"", ""My title"");
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'SetValueAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
+            });
+    }
+
+    [Fact]
+    public void UnguardedIJSRuntimeInvokeConstructorAsyncCall_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                await JS.InvokeConstructorAsync(""window.SomeClass"", new object[] { ""arg"" });
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'InvokeConstructorAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
+            });
+    }
+
+    [Fact]
     public void UnguardedIJSObjectReferenceCall_ReportsDiagnostic()
     {
         var test = @"
@@ -209,6 +329,102 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
                 Message = "JS interop call 'InvokeAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
+            });
+    }
+
+    [Fact]
+    public void UnguardedIJSObjectReferenceGetValueAsyncCall_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            private IJSObjectReference Module = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                await Module.GetValueAsync<string>(""title"");
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'GetValueAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
+            });
+    }
+
+    [Fact]
+    public void UnguardedIJSObjectReferenceSetValueAsyncCall_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            private IJSObjectReference Module = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                await Module.SetValueAsync(""title"", ""My title"");
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'SetValueAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
+            });
+    }
+
+    [Fact]
+    public void UnguardedIJSObjectReferenceInvokeConstructorAsyncCall_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            private IJSObjectReference Module = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                await Module.InvokeConstructorAsync(""SomeClass"", new object[] { ""arg"" });
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'InvokeConstructorAsync' is not guarded with try/catch block.",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
