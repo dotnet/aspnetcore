@@ -2236,6 +2236,17 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
             switch (headerIndex)
             {
             case HttpHeaderTransferEncoding:
+                //
+                // WinHTTP has already de-chunked the response body, so the
+                // whole Transfer-Encoding header must be dropped whenever the
+                // final coding is "chunked" (e.g. "chunked" or "gzip, chunked");
+                // otherwise the client would see chunked-framing headers over a
+                // plain body. Dropping the entire header is safe here: the
+                // backend is always the local Kestrel process, which only ever
+                // applies "chunked" (never a real "gzip"/other transfer coding),
+                // and WinHTTP applies no other transfer-coding decoding. IIS
+                // re-applies chunked framing toward the client as needed.
+                //
                 if (!isChunkedTransferEncoding(strHeaderValue.QueryStr()))
                 {
                     break;
