@@ -151,6 +151,7 @@ public class EditForm : ComponentBase
 
         builder.AddMultipleAttributes(4, AdditionalAttributes);
         builder.AddAttribute(5, "onsubmit", _handleSubmitDelegate);
+        builder.AddAttribute(6, "onreset", EventCallback.Factory.Create<EventArgs>(this, HandleResetRequested));
 
         // In SSR cases, we register onsubmit as a named event and emit other child elements
         // to include the handler and antiforgery token in the post data
@@ -161,18 +162,25 @@ public class EditForm : ComponentBase
                 builder.AddNamedEvent("onsubmit", FormName);
             }
 
-            RenderSSRFormHandlingChildren(builder, 6);
+            RenderSSRFormHandlingChildren(builder, 7);
         }
 
-        builder.OpenComponent<CascadingValue<EditContext>>(7);
-        builder.AddComponentParameter(7, "IsFixed", true);
-        builder.AddComponentParameter(8, "Value", _editContext);
-        builder.AddComponentParameter(9, "ChildContent", ChildContent?.Invoke(_editContext));
+        builder.OpenComponent<CascadingValue<EditContext>>(8);
+        builder.AddComponentParameter(9, "IsFixed", true);
+        builder.AddComponentParameter(10, "Value", _editContext);
+        builder.AddComponentParameter(11, "ChildContent", ChildContent?.Invoke(_editContext));
         builder.CloseComponent();
 
         builder.CloseElement();
 
         builder.CloseRegion();
+    }
+
+    private void HandleResetRequested()
+    {
+        EditContext?.NotifyResetRequested();
+        EditContext?.MarkAsUnmodified();
+        EditContext?.NotifyValidationStateChanged();
     }
 
     private void RenderSSRFormHandlingChildren(RenderTreeBuilder builder, int sequence)
