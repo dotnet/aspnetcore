@@ -492,8 +492,11 @@ public static class UrlHelperExtensions
     /// Generates an absolute URL for an action method, which contains the specified
     /// <paramref name="action"/> name, <paramref name="controller"/> name, route <paramref name="values"/>,
     /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
-    /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
-    /// non-<c>null</c>. See the remarks section for important security information.
+    /// Always generates an absolute URL when <paramref name="protocol"/> and
+    /// <paramref name="host"/> are non-null and non-empty. When <paramref name="protocol"/>
+    /// or <paramref name="host"/> are <c>null</c>, the values are taken from the current
+    /// HTTP request. Passing empty strings may result in a relative URL.
+    /// See the remarks section for important security information.
     /// </summary>
     /// <param name="helper">The <see cref="IUrlHelper"/>.</param>
     /// <param name="action">The name of the action method. When <see langword="null" />, defaults to the current executing action.</param>
@@ -541,8 +544,11 @@ public static class UrlHelperExtensions
     /// Generates an absolute URL for a page, which contains the specified
     /// <paramref name="pageName"/>, <paramref name="pageHandler"/>, route <paramref name="values"/>,
     /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
-    /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
-    /// non-<c>null</c>. See the remarks section for important security information.
+    /// Always generates an absolute URL when <paramref name="protocol"/> and
+    /// <paramref name="host"/> are non-null and non-empty. When <paramref name="protocol"/>
+    /// or <paramref name="host"/> are <c>null</c>, the values are taken from the current
+    /// HTTP request. Passing empty strings may result in a relative URL.
+    /// See the remarks section for important security information.
     /// </summary>
     /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
     /// <param name="pageName">The page name to generate the url for. When <see langword="null"/>, defaults to the current executing page.</param>
