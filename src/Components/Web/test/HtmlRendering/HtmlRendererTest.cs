@@ -12,6 +12,9 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Components.Web.Virtualization;
+using Microsoft.JSInterop;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components.HtmlRendering;
 
@@ -84,6 +87,42 @@ public class HtmlRendererTest
 
             // Assert
             AssertHtmlContentEquals(expectedHtml, result);
+        });
+    }
+
+    [Fact]
+    public async Task RenderComponentAsync_UsesInitialItemCapacityForVirtualizeDuringStaticSsr()
+    {
+        var serviceProvider = GetServiceProvider(collection =>
+        {
+            collection.AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenComponent<Virtualize<int>>(0);
+                rtb.AddAttribute(1, "ItemSize", 50f);
+                rtb.AddAttribute(2, "Items", Enumerable.Range(1, 8).ToList());
+                rtb.AddAttribute(3, "InitialItemCapacity", 3);
+                rtb.AddAttribute(4, "ChildContent", (RenderFragment<int>)(item => b =>
+                {
+                    b.OpenElement(0, "span");
+                    b.AddContent(1, item);
+                    b.CloseElement();
+                }));
+                rtb.CloseComponent();
+            }));
+
+            collection.AddTransient<IJSRuntime>(_ => Mock.Of<IJSRuntime>());
+        });
+
+        var htmlRenderer = GetHtmlRenderer(serviceProvider);
+        await htmlRenderer.Dispatcher.InvokeAsync(async () =>
+        {
+            var result = await htmlRenderer.RenderComponentAsync<TestComponent>();
+            var html = result.ToHtmlString();
+
+            Assert.Contains("<span>1</span>", html);
+            Assert.Contains("<span>2</span>", html);
+            Assert.Contains("<span>3</span>", html);
+            Assert.DoesNotContain("<span>4</span>", html);
         });
     }
 

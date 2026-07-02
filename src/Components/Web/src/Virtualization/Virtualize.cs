@@ -87,6 +87,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     // so the viewport stays stable after a prepend or append.
     private bool _pendingAnchorRestore;
 
+    // Used instead of RenderInfo to track interactive state.
+    private bool _isInteractive;
+
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -164,6 +167,15 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// </summary>
     [Parameter]
     public int MaxItemCount { get; set; } = 100;
+
+    /// <summary>
+    /// Specifies the number of items to render before the viewport is measured.
+    /// Primarily used in SSR scenarios to determine the initial HTML output.
+    /// Must be a non-negative value and is only supported when using the <see cref="Items"/> property.
+    /// Not applicable for <see cref="ItemsProvider"/>, as triggering data requests during SSR is not valid.
+    /// </summary>
+    [Parameter]
+    public int InitialItemCapacity { get; set; }
 
     /// <summary>
     /// Gets or sets the anchor mode that controls how the viewport behaves at the edges
@@ -402,6 +414,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _measuredItemCount = 0;
         }
 
+        if (_visibleItemCapacity == 0 && !_isInteractive && InitialItemCapacity > 0)
+        {
+            _visibleItemCapacity = InitialItemCapacity;
+        }
+
         if (ItemsProvider != null)
         {
             if (Items != null)
@@ -458,6 +475,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         if (firstRender)
         {
+            _isInteractive = true;
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
             await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
             _lastRenderedAnchorMode = AnchorMode;
