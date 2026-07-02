@@ -498,15 +498,17 @@ internal sealed class OpenApiDocumentService(
         return response;
     }
 
-    private sealed record OpenApiResponseContentSchemas
+    private sealed class OpenApiResponseContentSchemas
     {
-        public List<IOpenApiSchema> Schemas { get; } = [];
+        private readonly List<IOpenApiSchema> _schemas = [];
+
+        public IReadOnlyList<IOpenApiSchema> Schemas => _schemas;
 
         public bool UseItemSchema { get; private set; }
 
         public void AddSchema(IOpenApiSchema schema, bool useItemSchema)
         {
-            Schemas.Add(schema);
+            _schemas.Add(schema);
             UseItemSchema |= useItemSchema;
         }
     }
