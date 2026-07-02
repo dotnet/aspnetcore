@@ -881,7 +881,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             }
 
             var methodName =
-                methodInfo.GetCustomAttribute<HubMethodNameAttribute>()?.Name ??
+                methodInfo.GetCustomAttribute<HubMethodNameAttribute>(inherit: true)?.Name ??
                 methodInfo.Name;
 
             if (_methods.ContainsKey(methodName))
