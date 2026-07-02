@@ -38,6 +38,10 @@ let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
 
+// When an EventDelegator is available, we defer click handling to it so that
+// @onclick:preventDefault can be respected. See https://github.com/dotnet/aspnetcore/issues/52514
+let hasEventDelegatorClickHandler: boolean = false;
+
 // This gets initialized to the current URL when we load.
 // After that, it gets updated every time we successfully complete a navigation.
 let currentContentUrl = location.href;
@@ -71,23 +75,18 @@ export function detachProgressivelyEnhancedNavigationListener() {
   window.removeEventListener('popstate', onPopState);
 }
 
-function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
-  const originalLocation = location.href;
-
-  if (replace) {
-    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
-  } else {
-    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-  }
-
-  if (!isForSamePath(absoluteInternalHref, originalLocation)) {
-    scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
-  }
-
-  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
+// Called from BrowserRenderer to wire up the enhanced navigation click handler through
+// the EventDelegator, ensuring it runs after @onclick:preventDefault has been processed.
+// See https://github.com/dotnet/aspnetcore/issues/52514
+export function attachEnhancedNavigationClickHandlerToEventDelegator(notifyAfterClick: (callback: (event: MouseEvent) => void) => void) {
+  hasEventDelegatorClickHandler = true;
+  notifyAfterClick(handleEnhancedNavigationClick);
 }
 
-function onDocumentClick(event: MouseEvent) {
+// Core logic for handling a click for enhanced navigation purposes.
+// This is called either from the native click handler (pure SSR) or from EventDelegator's
+// afterClick callback (interactive scenarios).
+function handleEnhancedNavigationClick(event: MouseEvent) {
   if (hasInteractiveRouter()) {
     return;
   }
@@ -112,6 +111,35 @@ function onDocumentClick(event: MouseEvent) {
       }
     }
   });
+}
+
+function performProgrammaticEnhancedNavigation(absoluteInternalHref: string, replace: boolean) : void {
+  const originalLocation = location.href;
+
+  if (replace) {
+    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
+  } else {
+    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  }
+
+  if (!isForSamePath(absoluteInternalHref, originalLocation)) {
+    scheduleScrollReset(ScrollResetSchedule.AfterDocumentUpdate);
+  }
+
+  performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ false);
+}
+
+function onDocumentClick(event: MouseEvent) {
+  // If we have an EventDelegator handling clicks, skip this native handler.
+  // The EventDelegator will call handleEnhancedNavigationClick after processing
+  // @onclick:preventDefault and other Blazor event handlers.
+  // See https://github.com/dotnet/aspnetcore/issues/52514
+  if (hasEventDelegatorClickHandler) {
+    return;
+  }
+
+  // No EventDelegator available (pure SSR), handle the click directly.
+  handleEnhancedNavigationClick(event);
 }
 
 function onPopState(state: PopStateEvent) {
