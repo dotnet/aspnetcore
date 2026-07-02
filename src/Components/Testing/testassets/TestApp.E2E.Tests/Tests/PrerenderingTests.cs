@@ -2,34 +2,31 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
-using Microsoft.AspNetCore.Components.Testing.Infrastructure;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Verifying prerendered content by holding blazor.web.js via ResourceLock.
-[Collection(nameof(E2ECollection))]
+[TestClass]
 public class PrerenderingTests : BrowserTest
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
     private ServerInstance _server = null!;
 
-    public PrerenderingTests(ServerFixture<E2ETestAssembly> fixture)
+    [TestInitialize]
+    public async Task Init()
     {
-        _fixture = fixture;
+        _server = await TestRoot.Servers.StartServerAsync<App>();
     }
 
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>();
-    }
+    [TestCleanup]
+    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
-    [Fact]
+    [TestMethod]
     public async Task HomePage_ShowsPrerenderContent_BeforeBlazorStarts()
     {
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
@@ -65,7 +62,7 @@ public class PrerenderingTests : BrowserTest
         await Expect(counterDisplay).ToHaveTextAsync("Current count: 1");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WeatherPage_ShowsLoadingState_BeforeBlazorStarts()
     {
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));

@@ -11,6 +11,15 @@
     <!-- NU1903: Transitive Newtonsoft.Json vulnerability from nuget.org packages -->
     <!-- CA1310: String comparisons in test assertions don't need StringComparison -->
     <NoWarn>$(NoWarn);NU1605;NU1903;CA1310</NoWarn>
+    <!-- The transitively-referenced Microsoft.AspNetCore.Components.Testing pulls in MSTest.TestFramework
+         which injects a Reference to MSTest.TestFramework.Extensions via buildTransitive. The HintPath
+         check in ResolveReferences.targets now handles these gracefully, so this flag is kept only
+         because it may be needed for any future explicit PackageReference additions. -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- MSTest.TestFramework auto-adds `<Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />`
+         when ImplicitUsings is enabled, which collides with this project's xUnit `using Xunit;`
+         (`Assert`, `TestContext`). Disable implicit usings; an explicit GlobalUsings.cs covers what we need. -->
+    <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
 
   <!-- Remove auto-added test infra references from CSharp.Common.props that conflict with xUnit v3 -->

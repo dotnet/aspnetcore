@@ -9,8 +9,8 @@
     <!-- NU5100: Tasks DLL is intentionally in tasks/ folder, not lib/ -->
     <!-- RS0026: New package with no prior shipped API; optional parameter backcompat is N/A -->
     <NoWarn>$(NoWarn);NU5100;RS0026</NoWarn>
-    <Description>Cross-render-mode E2E testing library for Blazor using Playwright, xUnit V3, and YARP.</Description>
-    <PackageTags>blazor;e2e;testing;playwright</PackageTags>
+    <Description>Cross-render-mode E2E testing library for Blazor using Playwright, MSTest on the Microsoft Testing Platform, and YARP.</Description>
+    <PackageTags>blazor;e2e;testing;playwright;mstest</PackageTags>
   </PropertyGroup>
 
 
@@ -34,8 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Playwright.Xunit.v3" />
-    <Reference Include="xunit.v3.extensibility.core" />
+    <Reference Include="MSTest.TestFramework" />
+    <Reference Include="Microsoft.Playwright" />
+    <Reference Include="Microsoft.Testing.Extensions.Retry" />
     <Reference Include="Yarp.ReverseProxy" />
   </ItemGroup>
 

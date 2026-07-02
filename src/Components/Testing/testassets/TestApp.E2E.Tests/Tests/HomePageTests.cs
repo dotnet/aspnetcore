@@ -2,35 +2,32 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
-[Collection(nameof(E2ECollection))]
+[TestClass]
 public class HomePageTests : BrowserTest
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
     private ServerInstance _server = null!;
     private IPage _page = null!;
 
-    public HomePageTests(ServerFixture<E2ETestAssembly> fixture)
+    [TestInitialize]
+    public async Task Init()
     {
-        _fixture = fixture;
-    }
-
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>();
+        _server = await TestRoot.Servers.StartServerAsync<App>();
         var context = await NewContext(new BrowserNewContextOptions().WithServerRouting(_server));
         _page = await context.NewPageAsync();
     }
 
-    [Fact]
+    [TestCleanup]
+    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
+
+    [TestMethod]
     public async Task HomePage_DisplaysTitle()
     {
         await _page.GotoAsync(_server.TestUrl);
@@ -38,7 +35,7 @@ public class HomePageTests : BrowserTest
         await Expect(_page).ToHaveTitleAsync("Home");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task HomePage_HasHelloWorldHeading()
     {
         await _page.GotoAsync(_server.TestUrl);
@@ -47,7 +44,7 @@ public class HomePageTests : BrowserTest
         await Expect(heading).ToHaveTextAsync("Hello, world!");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task CounterPage_IncrementsOnClick()
     {
         await _page.GotoAsync($"{_server.TestUrl}/counter");
@@ -55,7 +52,6 @@ public class HomePageTests : BrowserTest
         var button = _page.GetByRole(AriaRole.Button, new() { Name = "Click me" });
         await Expect(button).ToBeVisibleAsync();
 
-        // Wait for Blazor Server interactivity before clicking
         await _page.WaitForInteractiveAsync("button.btn-primary");
 
         await button.ClickAsync();

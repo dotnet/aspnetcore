@@ -5,12 +5,32 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <TestingPlatformCommandLineArguments>--timeout 15m --maximum-failed-tests 25 --minimum-expected-tests 1 --report-trx</TestingPlatformCommandLineArguments>
     <IsPackable>false</IsPackable>
+    <!-- MSTest.TestAdapter must be listed as an explicit PackageReference (not Reference) so
+         the version is pinned to MSTest.TestFramework; DisablePackageReferenceRestrictions
+         allows that explicit PackageReference. -->
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <!-- NETSDK1023: SDK warns about explicit MSTest.TestAdapter PackageReference; we want the
+         explicit one so the version is pinned to MSTest.TestFramework. -->
+    <!-- MSTEST0001: Parallelism analyzer requires opt-in/opt-out at assembly level; opt out
+         until we have a strategy (default is method-level parallelism, which is fine here). -->
+    <NoWarn>$(NoWarn);NETSDK1023;MSTEST0001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Playwright.Xunit.v3" />
-    <Reference Include="xunit.v3" />
+    <Reference Include="MSTest.TestFramework" />
+    <Reference Include="Microsoft.Testing.Platform.MSBuild" />
+    <Reference Include="Microsoft.Playwright" />
+    <Reference Include="Microsoft.Testing.Extensions.Retry" />
+  </ItemGroup>
+
+  <!-- MSTest.TestAdapter is implicitly referenced by the SDK for test projects.
+       We list it as an explicit PackageReference (not Reference, to avoid the aspnetcore
+       custom resolver replacing it) so the version is pinned to match MSTest.TestFramework. -->
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestAdapter" Version="$(MSTestVersion)" />
   </ItemGroup>
 
   <ItemGroup>

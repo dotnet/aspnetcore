@@ -2,36 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Testing.Infrastructure;
+using Microsoft.AspNetCore.Components.Testing.Playwright;
+using Microsoft.Playwright;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TestApp.Components;
 using TestApp.E2E.Tests.Fixtures;
-using Microsoft.Playwright;
-using Microsoft.Playwright.Xunit.v3;
-using Xunit;
 
 namespace TestApp.E2E.Tests.Tests;
 
 // Validates the tracing infrastructure.
-[Collection(nameof(E2ECollection))]
+[TestClass]
 public class TracingTests : BrowserTest
 {
-    private readonly ServerFixture<E2ETestAssembly> _fixture;
     private ServerInstance _server = null!;
 
-    public TracingTests(ServerFixture<E2ETestAssembly> fixture)
+    [TestInitialize]
+    public async Task Init()
     {
-        _fixture = fixture;
+        _server = await TestRoot.Servers.StartServerAsync<App>();
     }
 
-    public override async ValueTask InitializeAsync()
-    {
-        await base.InitializeAsync();
-        _server = await _fixture.StartServerAsync<App>();
-    }
+    [TestCleanup]
+    public void AttachServerOutput() => TestContext.AttachServerOutputIfFailed(_server);
 
-    [Fact]
+    [TestMethod]
     public async Task HomePage_WithTracing_DisplaysContent()
     {
-        await using var ctx = await this.NewTracedContextAsync(_server);
+        await using var ctx = await Browser.NewTracedContextAsync(TestContext, _server);
 
         var page = await ctx.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
@@ -40,10 +37,10 @@ public class TracingTests : BrowserTest
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Counter_WithTracing_IncrementsOnClick()
     {
-        await using var ctx = await this.NewTracedContextAsync(_server);
+        await using var ctx = await Browser.NewTracedContextAsync(TestContext, _server);
         var page = await ctx.NewPageAsync();
 
         await page.GotoAsync($"{_server.TestUrl}/counter");
@@ -59,20 +56,20 @@ public class TracingTests : BrowserTest
         await Expect(countLocator).ToHaveTextAsync("Current count: 1");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task TracedContext_ContextProperty_ExposesUnderlyingContext()
     {
-        await using var traced = await this.NewTracedContextAsync(_server);
+        await using var traced = await Browser.NewTracedContextAsync(TestContext, _server);
 
         var context = traced.Context;
-        Assert.NotNull(context);
+        Assert.IsNotNull(context);
 
         var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ManualTracing_TraceAndWithArtifacts_WorkTogether()
     {
         var artifactDir = Path.Combine(
@@ -83,24 +80,24 @@ public class TracingTests : BrowserTest
                 .WithServerRouting(_server)
                 .WithArtifacts(artifactDir));
 
-        await using var tracing = await context.TraceAsync(artifactDir);
+        await using var tracing = await context.TraceAsync(TestContext, artifactDir);
 
         var page = await context.NewPageAsync();
         await page.GotoAsync(_server.TestUrl);
         await Expect(page.Locator("h1")).ToHaveTextAsync("Hello, world!");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ArtifactDirectory_IsCreated_WhenTracingStarts()
     {
-        await using var ctx = await this.NewTracedContextAsync(_server);
+        await using var ctx = await Browser.NewTracedContextAsync(TestContext, _server);
 
-        var testName = TestContext.Current.Test?.TestDisplayName ?? "unknown";
+        var testName = TestContext.TestName ?? "unknown";
         var sanitized = PlaywrightExtensions.SanitizeFileName(testName);
         var expectedDir = Path.Combine(
             AppContext.BaseDirectory, "test-artifacts", sanitized);
 
-        Assert.True(Directory.Exists(expectedDir),
+        Assert.IsTrue(Directory.Exists(expectedDir),
             $"Expected artifact directory to exist at: {expectedDir}");
 
         var page = await ctx.NewPageAsync();
