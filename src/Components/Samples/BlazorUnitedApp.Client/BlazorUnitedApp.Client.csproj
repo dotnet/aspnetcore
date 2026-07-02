@@ -15,4 +15,8 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="ThrowExceptionsChild.razor.cs" />
+  </ItemGroup>
+
 </Project>
