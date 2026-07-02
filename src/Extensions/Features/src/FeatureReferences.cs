@@ -99,13 +99,11 @@ public struct FeatureReferences<TCache>
         var revision = Collection?.Revision ?? ContextDisposed();
         if (Revision != revision)
         {
-            // Clear cached value to force call to UpdateCached
-            cached = null!;
             // Collection changed, clear whole feature cache
             flush = true;
         }
 
-        return cached ?? UpdateCached(ref cached!, state, factory, revision, flush);
+        return (flush ? null : cached) ?? UpdateCached(ref cached!, state, factory, revision, flush);
     }
 
     // Update and cache clearing logic, when the fast-path in Fetch isn't applicable
@@ -117,13 +115,13 @@ public struct FeatureReferences<TCache>
             Cache = default;
         }
 
-        cached = Collection.Get<TFeature>();
-        if (cached == null)
+        var value = Collection.Get<TFeature>();
+        if (value == null)
         {
             // Item not in collection, create it with factory
-            cached = factory(state);
+            value = factory(state);
             // Add item to IFeatureCollection
-            Collection.Set(cached);
+            Collection.Set(value);
             // Revision changed by .Set, update revision to new value
             Revision = Collection.Revision;
         }
@@ -134,7 +132,11 @@ public struct FeatureReferences<TCache>
             Revision = revision;
         }
 
-        return cached;
+        // Write to ref field to populate the cache for subsequent fast-path reads.
+        // Return from local rather than ref field to avoid reading a value
+        // that a concurrent Cache = default may have zeroed.
+        cached = value;
+        return value;
     }
 
     /// <summary>
