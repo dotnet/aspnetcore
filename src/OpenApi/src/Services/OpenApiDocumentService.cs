@@ -569,14 +569,8 @@ internal sealed class OpenApiDocumentService(
             : schema;
 
     private static bool IsServerSentEventsContentType(string contentType)
-    {
-        var mediaTypeEnd = contentType.IndexOf(';');
-        var mediaType = mediaTypeEnd >= 0
-            ? contentType[..mediaTypeEnd]
-            : contentType;
-
-        return mediaType.Trim().Equals("text/event-stream", StringComparison.OrdinalIgnoreCase);
-    }
+        => MediaTypeHeaderValue.TryParse(contentType, out var mediaType)
+            && mediaType.MatchesMediaType("text/event-stream");
 
     private async Task<List<IOpenApiParameter>?> GetParametersAsync(
         OpenApiDocument document,
