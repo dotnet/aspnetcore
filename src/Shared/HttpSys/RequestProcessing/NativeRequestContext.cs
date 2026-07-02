@@ -819,7 +819,7 @@ internal unsafe class NativeRequestContext : IDisposable
         var clientCert = clientCertInfo->pCertEncoded + fixup;
         var certEncoded = new byte[clientCertInfo->CertEncodedSize];
         Marshal.Copy((IntPtr)clientCert, certEncoded, 0, certEncoded.Length);
-        return new X509Certificate2(certEncoded);
+        return X509CertificateLoader.LoadCertificate(certEncoded);
     }
 
     // Copied from https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Memory/PointerMemoryManager.cs

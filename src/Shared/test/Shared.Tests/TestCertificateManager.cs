@@ -428,15 +428,15 @@ internal sealed class TestCertificateManager : CertificateManager
             {
                 try
                 {
-                    return new X509Certificate2(PfxBytes, (string?)null, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+                    return X509CertificateLoader.LoadPkcs12(PfxBytes, (string?)null, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
                 }
                 catch (PlatformNotSupportedException)
                 {
-                    return new X509Certificate2(PfxBytes, (string?)null, X509KeyStorageFlags.Exportable);
+                    return X509CertificateLoader.LoadPkcs12(PfxBytes, (string?)null, X509KeyStorageFlags.Exportable);
                 }
             }
 
-            return new X509Certificate2(CertBytes);
+            return X509CertificateLoader.LoadCertificate(CertBytes);
         }
     }
 }
