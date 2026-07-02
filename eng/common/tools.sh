@@ -423,7 +423,7 @@ function InitializeToolset {
   if [[ -z "$nuget_config" ]]; then
     # Search for any variation of nuget.config in the RepoRoot
     local found_config
-    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname "nuget.config" -print -quit)
+    found_config=$(find "$repo_root" -maxdepth 1 -type f -iname nuget.config | head -n 1)
 
     if [[ -n "$found_config" ]]; then
       nuget_config="$found_config"
