@@ -26,3 +26,6 @@ Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationPending() -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> bool
 Microsoft.AspNetCore.Components.Forms.EditContext.IsValidationFaulted() -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.NotifyValidationStateChanged(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void
+Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs.FieldIdentifier.get -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier?
+Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs.ValidationStateChangedEventArgs(in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) -> void

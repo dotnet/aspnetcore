@@ -129,6 +129,55 @@ public class EditContextDataAnnotationsExtensionsTest
         Assert.Equal(new[] { "IntFrom1To100:range" }, editContext.GetValidationMessages());
     }
 
+    [Fact]
+    public void Validate_HasNullFieldIdentifier_OnValidationStateChanged()
+    {
+        var model = new TestModel { IntFrom1To100 = 101 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var capturedFieldIdentifiers = new List<FieldIdentifier?>();
+
+        editContext.OnValidationStateChanged += (sender, eventArgs) =>
+        {
+            capturedFieldIdentifiers.Add(eventArgs.FieldIdentifier);
+        };
+
+        editContext.Validate();
+
+        Assert.Single(capturedFieldIdentifiers);
+        Assert.False(capturedFieldIdentifiers[0].HasValue);
+    }
+
+    [Fact]
+    public void NotifyFieldChanged_DataAnnotations_Raises_FieldSpecific_FieldName()
+    {
+        var model = new TestModel(); // RequiredString is null → invalid
+        var editContext = new EditContext(model);
+
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var expectedFieldName = nameof(TestModel.RequiredString);
+        var fieldNameObserved = false;
+
+        var fieldIdentifier = editContext.Field(expectedFieldName);
+
+        editContext.OnValidationStateChanged += (_, args) =>
+        {
+            if (args.FieldIdentifier is { } field &&
+                field.FieldName == expectedFieldName)
+            {
+                fieldNameObserved = true;
+            }
+        };
+
+        // FIELD-LEVEL validation
+        editContext.NotifyFieldChanged(fieldIdentifier);
+
+        Assert.True(
+            fieldNameObserved,
+            $"Expected field-level validation notification for field '{expectedFieldName}'.");
+    }
+
     [Theory]
     [InlineData(nameof(TestModel.ThisWillNotBeValidatedBecauseItIsAField))]
     [InlineData(nameof(TestModel.ThisWillNotBeValidatedBecauseItIsInternal))]

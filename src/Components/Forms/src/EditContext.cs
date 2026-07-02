@@ -21,6 +21,9 @@ public sealed class EditContext
     private bool _isFormValidationFaulted;
     private bool _isFormValidationPending;
 
+    // Cache ValidationStateChangedEventArgs per field to avoid repeated allocations
+    private readonly Dictionary<FieldIdentifier, ValidationStateChangedEventArgs> _validationStateChangedArgsCache = new();
+
     /// <summary>
     /// Constructs an instance of <see cref="EditContext"/>.
     /// </summary>
@@ -114,7 +117,22 @@ public sealed class EditContext
     /// </summary>
     public void NotifyValidationStateChanged()
     {
+        _validationStateChangedArgsCache.Clear();
         OnValidationStateChanged?.Invoke(this, ValidationStateChangedEventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Signals that the validation state for the specified field has changed.
+    /// </summary>
+    /// <param name="fieldIdentifier">Identifies the field whose validation state has changed.</param>
+    public void NotifyValidationStateChanged(in FieldIdentifier fieldIdentifier)
+    {
+        if (!_validationStateChangedArgsCache.TryGetValue(fieldIdentifier, out var args))
+        {
+            args = new ValidationStateChangedEventArgs(fieldIdentifier);
+            _validationStateChangedArgsCache[fieldIdentifier] = args;
+        }
+        OnValidationStateChanged?.Invoke(this, args);
     }
 
     /// <summary>
@@ -248,7 +266,7 @@ public sealed class EditContext
     /// <see cref="OnValidationRequestedAsync"/>, or <see cref="OnValidationStateChanged"/>
     /// handler attached to the same <see cref="EditContext"/>; doing so produces undefined
     /// behavior (in particular, it can cause infinite recursion via the validator's own
-    /// <see cref="NotifyValidationStateChanged"/> calls).
+    /// <see cref="NotifyValidationStateChanged()"/> calls).
     /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Thrown when an <see cref="OnValidationRequestedAsync"/> handler does not complete synchronously.

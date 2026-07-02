@@ -314,6 +314,101 @@ public class EditFormTest
         Assert.Equal(1, validSubmitCount);
     }
 
+    [Fact]
+    public async Task OnValidationStateChanged_HasNullFieldIdentifier_WhenFormValidatesOnSubmit()
+    {
+        var model = new TestModel { StringProperty = "test" }; // Required field must be set
+        var editContext = new EditContext(model);
+
+        // Set up DataAnnotationsValidator through EnableDataAnnotationsValidation
+        var serviceProvider = new ServiceCollection()
+            .AddLogging()
+            .BuildServiceProvider();
+        var validationSubscription = editContext.EnableDataAnnotationsValidation(serviceProvider);
+
+        var capturedFieldIdentifiers = new List<FieldIdentifier?>();
+
+        editContext.OnValidationStateChanged += (sender, e) =>
+        {
+            capturedFieldIdentifiers.Add(e.FieldIdentifier);
+        };
+
+        var rootComponent = new TestEditFormHostComponent
+        {
+            EditContext = editContext
+        };
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+
+        editContext.Validate();
+
+        Assert.NotEmpty(capturedFieldIdentifiers);
+        Assert.All(capturedFieldIdentifiers, fi => Assert.False(fi.HasValue));
+    }
+
+    [Fact]
+    public async Task OnFieldChanged_EventContainsFieldIdentifier_ForFieldSpecificChanges()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        var capturedFieldIdentifiers = new List<FieldIdentifier>();
+
+        editContext.OnFieldChanged += (sender, e) =>
+        {
+            capturedFieldIdentifiers.Add(e.FieldIdentifier);
+        };
+
+        var rootComponent = new TestEditFormHostComponent
+        {
+            EditContext = editContext
+        };
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+
+        var fieldIdentifier = new FieldIdentifier(model, "StringProperty");
+        editContext.NotifyFieldChanged(fieldIdentifier);
+
+        Assert.Single(capturedFieldIdentifiers);
+        Assert.Equal(fieldIdentifier.Model, capturedFieldIdentifiers[0].Model);
+        Assert.Equal(fieldIdentifier.FieldName, capturedFieldIdentifiers[0].FieldName);
+    }
+
+    [Fact]
+    public void NotifyValidationStateChanged_WithFieldIdentifier_TriggersEventWithFieldSet()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        FieldIdentifier capturedFieldIdentifier = default;
+
+        editContext.OnValidationStateChanged += (sender, e) =>
+        {
+            if (e.FieldIdentifier.HasValue)
+            {
+                capturedFieldIdentifier = e.FieldIdentifier.Value;
+            }
+        };
+
+        var fieldIdentifier = new FieldIdentifier(model, "StringProperty");
+        editContext.NotifyValidationStateChanged(fieldIdentifier);
+
+        Assert.Equal(fieldIdentifier.Model, capturedFieldIdentifier.Model);
+        Assert.Equal(fieldIdentifier.FieldName, capturedFieldIdentifier.FieldName);
+    }
+
+    [Fact]
+    public void NotifyValidationStateChanged_WithoutFieldIdentifier_TriggersEventWithNullFieldIdentifier()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+        FieldIdentifier? capturedFieldIdentifier = null;
+
+        editContext.OnValidationStateChanged += (sender, e) =>
+        {
+            capturedFieldIdentifier = e.FieldIdentifier;
+        };
+
+        editContext.NotifyValidationStateChanged();
+        Assert.False(capturedFieldIdentifier.HasValue);
+    }
+
     private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
     {
         var componentId = _testRenderer.AssignRootComponentId(rootComponent);
