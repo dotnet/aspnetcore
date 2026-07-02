@@ -57,6 +57,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private HotReloadRenderHandler? _hotReloadRenderHandler;
     private HashSet<int>? _hotReloadRenderedComponentIds;
 
+    // Stores the component ID currently allowed to bypass its _hasPendingQueuedRender
+    // guard exactly once. -1 means "no permit". Used so the renderer can queue an empty
+    // render for an error boundary and still let HandleException trigger an ErrorContent render.
+    private int _allowOneRenderForComponentId = -1;
+
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
     /// </summary>
@@ -429,6 +434,25 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         _componentStateById.Add(componentId, componentState);
         _componentStateByComponent.Add(component, componentState);
+    }
+
+    // Grants a one-time permit allowing the specified component to bypass its
+    // _hasPendingQueuedRender guard on its next StateHasChanged call. Used by the renderer
+    // when it queues an empty render for an error boundary, so the boundary's subsequent
+    // call to StateHasChanged (from inside HandleException) is not silently dropped.
+    internal void AllowOneRenderForComponent(int componentId)
+        => _allowOneRenderForComponentId = componentId;
+
+    // Returns true and consumes the permit if one was granted for this component;
+    // returns false otherwise.
+    internal bool TryConsumeAllowOneRender(int componentId)
+    {
+        if (_allowOneRenderForComponentId == componentId)
+        {
+            _allowOneRenderForComponentId = -1;
+            return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -1203,7 +1227,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // Don't just trust the error boundary to dispose its subtree - force it to do so by
                 // making it render an empty fragment. Ensures that failed components don't continue to
                 // operate, which would be a whole new kind of edge case to support forever.
+                // Grant a one-time permit so the boundary's StateHasChanged call (triggered from
+                // inside HandleException) isn't blocked by the empty render we just queued.
                 AddToRenderQueue(candidate.ComponentId, builder => { });
+                AllowOneRenderForComponent(candidate.ComponentId);
 
                 try
                 {
