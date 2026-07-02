@@ -1218,6 +1218,56 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateInjectingHandlerForUnboundCustomDelegate()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        serviceCollection.AddScoped<HttpHandler>();
+
+        var services = serviceCollection.BuildServiceProvider();
+
+        using var requestScoped = services.CreateScope();
+
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = requestScoped.ServiceProvider;
+
+        var requestMethod = typeof(HttpHandler).GetMethod(nameof(HttpHandler.Handle))!;
+        var requestMethodDelegate = requestMethod.CreateDelegate<Func<HttpHandler, HttpContext, Task>>();
+
+        var factoryResult = RequestDelegateFactory.Create(requestMethodDelegate, options: new() { ServiceProvider = services });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(1, httpContext.Items["calls"]);
+    }
+
+    [Fact]
+    public async Task RequestDelegateInjectingHandlerForUnboundRequestDelegate()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(LoggerFactory);
+        serviceCollection.AddScoped<HttpHandler>();
+
+        var services = serviceCollection.BuildServiceProvider();
+
+        using var requestScoped = services.CreateScope();
+
+        var httpContext = CreateHttpContext();
+        httpContext.RequestServices = requestScoped.ServiceProvider;
+
+        var requestMethod = typeof(HttpHandler).GetMethod(nameof(HttpHandler.Handle))!;
+        var requestMethodDelegate = requestMethod.CreateDelegate<RequestDelegate>(null);
+
+        var factoryResult = RequestDelegateFactory.Create(requestMethodDelegate, options: new() { ServiceProvider = services });
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        Assert.Equal(1, httpContext.Items["calls"]);
+    }
+
+    [Fact]
     public async Task RequestDelegatePopulatesHttpContextParameterWithoutAttribute()
     {
         HttpContext? httpContextArgument = null;
@@ -3659,14 +3709,19 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     {
     }
 
-    class HttpHandler
+    private class HttpHandler
     {
         private int _calls;
 
-        public void Handle(HttpContext httpContext)
+        /// <remarks>
+        /// Method in form of <see cref="RequestDelegate"/>.
+        /// </remarks>
+        public Task Handle(HttpContext httpContext)
         {
             _calls++;
             httpContext.Items["calls"] = _calls;
+
+            return Task.CompletedTask;
         }
     }
 
