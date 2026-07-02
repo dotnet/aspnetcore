@@ -63,6 +63,16 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
 
         _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
+
+        try
+        {
+            this.PerformSelfTest();
+        }
+        catch
+        {
+            _keyDerivationKey.Dispose();
+            throw;
+        }
     }
 
     public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
