@@ -8,6 +8,7 @@ import { CircuitManager } from './Platform/Circuits/CircuitManager';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { discoverServerPersistedState, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
+import { JSEventRegistry } from './Services/JSEventRegistry';
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
@@ -34,23 +35,23 @@ export function setCircuitOptions(initializersReady: Promise<Partial<CircuitStar
   }
 }
 
-export function startServer(components: RootComponentManager<ServerComponentDescriptor>): Promise<void> {
+export function startServer(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry): Promise<void> {
   if (serverStartPromise !== undefined) {
     throw new Error('Blazor Server has already started.');
   }
 
-  serverStartPromise = new Promise(startServerCore.bind(null, components));
+  serverStartPromise = new Promise(startServerCore.bind(null, components, jsEventRegistry));
 
   return serverStartPromise;
 }
 
-async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, resolve: () => void, _: any) {
+async function startServerCore(components: RootComponentManager<ServerComponentDescriptor>, jsEventRegistry: JSEventRegistry, resolve: () => void, _: any) {
   await initializersPromise;
   const jsInitializer = await fetchAndInvokeInitializers(options);
 
   appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
-  circuit = new CircuitManager(components, appState, options, logger);
+  circuit = new CircuitManager(components, appState, options, logger, jsEventRegistry);
 
   addDispatchEventMiddleware((_browserRendererId, eventHandlerId, continuation) => {
     logger.log(LogLevel.Debug, `Dispatching event with handler id ${eventHandlerId}.`);
@@ -73,18 +74,12 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     return true;
   };
 
-  Blazor.pauseCircuit = async () => {
+  Blazor.pauseCircuit = async (signal?: AbortSignal) => {
     if (circuit.didRenderingFail()) {
-      // We can't pause after a failure, so exit early.
       return false;
     }
 
-    if (!(await circuit.pause())) {
-      logger.log(LogLevel.Information, 'Pause attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
-      return false;
-    }
-
-    return true;
+    return circuit.pauseCircuit(signal);
   };
 
   Blazor.resumeCircuit = async () => {
@@ -161,7 +156,7 @@ export async function startCircuit(): Promise<boolean> {
   if (circuit && circuit.isDisposedOrDisposing()) {
     // If the current circuit is no longer available, create a new one.
     appState = discoverServerPersistedState(document) || '';
-    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger);
+    circuit = new CircuitManager(circuit.getRootComponentManager(), appState, options, logger, circuit.getEventRegistry());
   }
 
   // Start the circuit. If the circuit has already started, this will return the existing

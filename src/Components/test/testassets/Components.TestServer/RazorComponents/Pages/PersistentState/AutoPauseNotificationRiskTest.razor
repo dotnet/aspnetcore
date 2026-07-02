@@ -1,0 +1,31 @@
+@page "/persistent-state/auto-pause-notification-risk"
+@rendermode RenderMode.InteractiveServer
+
+<h1>Auto-pause — Notification state risk</h1>
+
+<script src="/subdir/auto-pause-log-capture.js"></script>
+
+@if (RendererInfo.IsInteractive)
+{
+    <span id="render-mode-interactive">True</span>
+}
+
+<script>
+    if (!window.__notificationHookInitialized) {
+        window.__notificationHookInitialized = true;
+        window.__savedNotificationState = null;
+
+        // Mock active notifications since headless Chrome won't grant permission.
+        window.__activeNotifications = [
+            { title: 'New message', tag: 'msg-1' },
+            { title: 'Reminder', tag: 'reminder-2' }
+        ];
+
+        if (new URLSearchParams(location.search).get('use-mitigation') === 'true') {
+            window.__mitigationHandler = function () {
+                window.__savedNotificationState = window.__activeNotifications
+                    .map(function (n) { return n.tag; }).join(',');
+            };
+        }
+    }
+</script>

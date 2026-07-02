@@ -13,6 +13,7 @@ import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
+import { JSEventRegistry } from './JSEventRegistry';
 
 type RootComponentOperationBatch = {
   batchId: number;
@@ -70,7 +71,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
-  public constructor(private readonly _circuitInactivityTimeoutMs: number) {
+  public constructor(private readonly _circuitInactivityTimeoutMs: number, private readonly _jsEventRegistry: JSEventRegistry) {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
     registerRendererAttachedListener(() => {
@@ -176,7 +177,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private startCircutIfNotStarted() {
     if (!hasStartedServer()) {
-      return startServer(this);
+      return startServer(this, this._jsEventRegistry);
     }
 
     if (!isCircuitAvailable()) {

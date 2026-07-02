@@ -61,6 +61,10 @@ public sealed class ConfigureBrowser : IComponent
         target.Server.ReconnectionMaxRetries = source.Server.ReconnectionMaxRetries ?? target.Server.ReconnectionMaxRetries;
         target.Server.ReconnectionRetryInterval = source.Server.ReconnectionRetryInterval ?? target.Server.ReconnectionRetryInterval;
         target.Server.ReconnectionDialogId = source.Server.ReconnectionDialogId ?? target.Server.ReconnectionDialogId;
+        foreach (var kvp in source.Server.Extensions)
+        {
+            target.Server.Extensions[kvp.Key] = kvp.Value;
+        }
 
         // SSR
         target.Ssr.PreserveDom = source.Ssr.PreserveDom ?? target.Ssr.PreserveDom;

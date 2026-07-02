@@ -972,7 +972,7 @@ internal partial class CircuitHost : IAsyncDisposable
         // Dispatch the send onto the dispatcher to serialize with any sync work
         // (renders, event handlers) that may be in progress.
         // The client receives the message and decides when to actually pause via
-        // an optional onPauseRequested callback in CircuitStartOptions.
+        // any registered pause deferral participants (CircuitHandler.onCircuitPausing).
         return Renderer.Dispatcher.InvokeAsync(async () =>
         {
             if (_disposed || !Client.Connected)

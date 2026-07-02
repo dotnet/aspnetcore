@@ -1,0 +1,75 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Opt-in automatic pausing of Blazor Server circuits when a browser tab is hidden. Built on the in-box circuit activity primitives.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
+  </ItemGroup>
+
+  <!-- The JS initializer (src/js/autopause.lib.module.ts) is bundled by rollup into
+       js/dist/$(Configuration) and shipped as a static web asset. Blazor auto-discovers
+       *.lib.module.js from referenced Razor class libraries. -->
+  <PropertyGroup>
+    <InteropWorkingDir>$(MSBuildThisFileDirectory)js\</InteropWorkingDir>
+    <ResolveStaticWebAssetsInputsDependsOn>
+      IncludeCompileJsOutput;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="IncludeCompileJsOutput" BeforeTargets="ResolveJSModuleStaticWebAssets;ResolveJsInitializerModuleStaticWebAssets">
+    <ItemGroup>
+      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+      <_JsBuildOutput>
+        <RelativePath>%(_JsBuildOutput.RecursiveDir)%(Filename)%(Extension)</RelativePath>
+      </_JsBuildOutput>
+    </ItemGroup>
+
+    <DefineStaticWebAssets Condition="'@(_JsBuildOutput)' != ''"
+      SourceType="Discovered"
+      SourceId="$(PackageId)"
+      ContentRoot="$(InteropWorkingDir)dist\$(Configuration)\"
+      BasePath="_content\$(PackageId)"
+      CandidateAssets="@(_JsBuildOutput)"
+      RelativePathFilter="**.js"
+      RelativePathPattern="**"
+    >
+      <Output TaskParameter="Assets" ItemName="_JSBuildStaticWebAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_JsBuildOutput)' != ''"
+      CandidateAssets="@(_JSBuildStaticWebAsset)"
+      ExistingEndpoints="@()"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_JSBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_JSBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_JSBuildStaticWebAssetEndpoint)" />
+      <_JsBuildOutput Include="$(InteropWorkingDir)dist\$(Configuration)\**" Exclude="$(InteropWorkingDir)dist\.gitignore" />
+      <FileWrites Include="$(_JsBuildOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Exclude JavaScript sources and configuration files from being packaged as Content -->
+  <ItemGroup>
+    <Content Remove="js\**\*.ts" />
+    <Content Remove="js\babel.config.js" />
+    <Content Remove="js\jest.config.js" />
+    <Content Remove="js\package.json" />
+    <Content Remove="js\rollup.config.mjs" />
+    <Content Remove="js\tsconfig.json" />
+  </ItemGroup>
+
+</Project>

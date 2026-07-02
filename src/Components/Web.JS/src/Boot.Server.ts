@@ -25,10 +25,9 @@ function boot(userOptions?: BlazorServerStartOptions): Promise<void> {
   const configuredOptions = resolveOptions(normalizedOptions);
   setCircuitOptions(Promise.resolve(configuredOptions || {}));
 
-  JSEventRegistry.create(Blazor);
   const serverComponents = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const components = new InitialRootComponentsList(serverComponents);
-  return startServer(components);
+  return startServer(components, JSEventRegistry.create(Blazor));
 }
 
 Blazor.start = boot;
