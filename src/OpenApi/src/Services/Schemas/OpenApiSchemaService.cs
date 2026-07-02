@@ -97,6 +97,16 @@ internal sealed class OpenApiSchemaService(
             {
                 schema = new JsonObject();
             }
+            // Types with JsonExtensionData can deserialize properties that are not explicitly
+            // declared on the model, so represent that as free-form additional properties.
+            // Preserve an existing additionalProperties value if one has already been added.
+            if (context.TypeInfo.Kind == JsonTypeInfoKind.Object &&
+                context.TypeInfo.Properties.Any(property => property.IsExtensionData) &&
+                schema is JsonObject schemaObject &&
+                !schemaObject.ContainsKey(OpenApiSchemaKeywords.AdditionalPropertiesKeyword))
+            {
+                schemaObject[OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = new JsonObject();
+            }
             var createSchemaReferenceId = optionsMonitor.Get(documentName).CreateSchemaReferenceId;
             schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
