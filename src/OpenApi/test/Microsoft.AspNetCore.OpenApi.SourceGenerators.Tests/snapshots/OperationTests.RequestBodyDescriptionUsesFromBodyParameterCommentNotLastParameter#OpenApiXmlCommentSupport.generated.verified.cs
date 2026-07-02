@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
+            cache.Add(@"M:TestEndpoint.PostData(SampleData,Microsoft.Extensions.Logging.ILogger{SampleData},System.Threading.CancellationToken)", new XmlComment(@"Process some sample input.", null, null, @"The number the user supplied.", null, false, null, [new XmlParameterComment(@"data", @"Sample data provided by the user.", null, false), new XmlParameterComment(@"logger", @"Logger for diagnostics and tracing.", null, false), new XmlParameterComment(@"cancellation", @"Injected cancellation token.", null, false)], null));
 
             return cache;
         }
@@ -608,38 +609,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
-            });
-        }
-        [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
-        {
-            return services.AddOpenApi(documentName, options =>
-            {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-            });
-        }
-        
-        [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
-        {
-            return services.AddOpenApi("v1", options =>
-            {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-                configureOptions(options);
-            });
-        }
-        [InterceptsLocation]
-        [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName, Action<OpenApiOptions> configureOptions)
-        {
-            // This overload is not intercepted.
-            return OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
-            {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-                configureOptions(options);
             });
         }
 
