@@ -17,7 +17,7 @@ using Microsoft.CodeAnalysis.Formatting;
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(JSInteropCodeFixProvider)), Shared]
-public class JSInteropCodeFixProvider : CodeFixProvider
+public sealed class JSInteropCodeFixProvider : CodeFixProvider
 {
     private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.UnguardedJSInteropCall_FixTitle), Resources.ResourceManager, typeof(Resources));
 
@@ -46,6 +46,11 @@ public class JSInteropCodeFixProvider : CodeFixProvider
             .FirstOrDefault();
 
         if (invocation is null)
+        {
+            return;
+        }
+
+        if (invocation.Ancestors().OfType<AnonymousFunctionExpressionSyntax>().Any())
         {
             return;
         }

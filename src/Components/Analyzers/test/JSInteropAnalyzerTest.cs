@@ -717,6 +717,86 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
+    public void JSInteropCallInLambdaInsideTryCatch_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                try
+                {
+                    Func<Task> action = async () => await JS.InvokeVoidAsync(""initializeComponent"");
+                    await action();
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'InvokeVoidAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 59) }
+            });
+    }
+
+    [Fact]
+    public void JSInteropCallInLocalFunctionInsideTryCatch_ReportsDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                try
+                {
+                    async Task InitAsync() => await JS.InvokeVoidAsync(""initializeComponent"");
+                    await InitAsync();
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(
+            test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
+                Message = "JS interop call 'InvokeVoidAsync' is not guarded with try/catch block.",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 53) }
+            });
+    }
+
+    [Fact]
     public void InvokeMethodOnUnrelatedJSRuntimeExtensionsType_DoesNotReportDiagnostic()
     {
         var test = @"

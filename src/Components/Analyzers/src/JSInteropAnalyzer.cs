@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
@@ -32,16 +30,16 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
         context.EnableConcurrentExecution();
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
 
-        context.RegisterCompilationStartAction(compilationContext =>
+        context.RegisterCompilationStartAction(context =>
         {
-            var ijsRuntimeType = compilationContext.Compilation.GetTypeByMetadataName(IJSRuntimeTypeName);
-            var ijsInProcessRuntimeType = compilationContext.Compilation.GetTypeByMetadataName(IJSInProcessRuntimeTypeName);
-            var ijsObjectReferenceType = compilationContext.Compilation.GetTypeByMetadataName(IJSObjectReferenceTypeName);
-            var ijsInProcessObjectReferenceType = compilationContext.Compilation.GetTypeByMetadataName(IJSInProcessObjectReferenceTypeName);
-            var jsRuntimeExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSRuntimeExtensionsTypeName);
-            var jsObjectReferenceExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSObjectReferenceExtensionsTypeName);
-            var jsInProcessRuntimeExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSInProcessRuntimeExtensionsTypeName);
-            var jsInProcessObjectReferenceExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSInProcessObjectReferenceExtensionsTypeName);
+            var ijsRuntimeType = context.Compilation.GetTypeByMetadataName(IJSRuntimeTypeName);
+            var ijsInProcessRuntimeType = context.Compilation.GetTypeByMetadataName(IJSInProcessRuntimeTypeName);
+            var ijsObjectReferenceType = context.Compilation.GetTypeByMetadataName(IJSObjectReferenceTypeName);
+            var ijsInProcessObjectReferenceType = context.Compilation.GetTypeByMetadataName(IJSInProcessObjectReferenceTypeName);
+            var jsRuntimeExtensionsType = context.Compilation.GetTypeByMetadataName(JSRuntimeExtensionsTypeName);
+            var jsObjectReferenceExtensionsType = context.Compilation.GetTypeByMetadataName(JSObjectReferenceExtensionsTypeName);
+            var jsInProcessRuntimeExtensionsType = context.Compilation.GetTypeByMetadataName(JSInProcessRuntimeExtensionsTypeName);
+            var jsInProcessObjectReferenceExtensionsType = context.Compilation.GetTypeByMetadataName(JSInProcessObjectReferenceExtensionsTypeName);
 
             if (ijsRuntimeType is null &&
                 ijsInProcessRuntimeType is null &&
@@ -55,12 +53,12 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 return;
             }
 
-            compilationContext.RegisterOperationAction(operationContext =>
+            context.RegisterOperationAction(context =>
             {
-                var invocation = (IInvocationOperation)operationContext.Operation;
+                var invocation = (IInvocationOperation)context.Operation;
                 var targetMethod = invocation.TargetMethod;
 
-                if (IsInsideTryBlockWithCatch(invocation.Syntax))
+                if (IsInsideTryBlockWithCatch(invocation))
                 {
                     return;
                 }
@@ -80,7 +78,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                operationContext.ReportDiagnostic(Diagnostic.Create(
+                context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticDescriptors.UnguardedJSInteropCall,
                     invocation.Syntax.GetLocation(),
                     targetMethod.Name));
@@ -114,14 +112,26 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
         return IsJSInteropType(receiverType, ijsRuntimeType, ijsInProcessRuntimeType, ijsObjectReferenceType, ijsInProcessObjectReferenceType);
     }
 
-    private static bool IsInsideTryBlockWithCatch(SyntaxNode invocationSyntax)
+    private static bool IsInsideTryBlockWithCatch(IOperation invocationOperation)
     {
-        foreach (var tryStatement in invocationSyntax.Ancestors().OfType<TryStatementSyntax>())
+        var previous = invocationOperation;
+        var current = invocationOperation.Parent;
+
+        while (current is not null)
         {
-            if (tryStatement.Catches.Count > 0 && tryStatement.Block.Span.Contains(invocationSyntax.Span))
+            switch (current)
             {
-                return true;
+                case IMethodBodyOperation:
+                case IConstructorBodyOperation:
+                case IAnonymousFunctionOperation:
+                case ILocalFunctionOperation:
+                    return false;
+                case ITryOperation tryOperation when tryOperation.Catches.Length > 0 && ReferenceEquals(previous, tryOperation.Body):
+                    return true;
             }
+
+            previous = current;
+            current = current.Parent;
         }
 
         return false;
@@ -190,19 +200,6 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
             }
 
             return false;
-        }
-
-        if (type is INamedTypeSymbol namedType && namedType.ToDisplayString() == interfaceTypeName)
-        {
-            return true;
-        }
-
-        foreach (var iface in type.AllInterfaces)
-        {
-            if (iface.ToDisplayString() == interfaceTypeName)
-            {
-                return true;
-            }
         }
 
         return false;

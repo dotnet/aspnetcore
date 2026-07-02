@@ -236,6 +236,32 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     }
 
     [Fact]
+    public void DoesNotOfferFixForLambdaExpression()
+    {
+        var source = @"
+    namespace BlazorApp1.Components
+    {
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            private IJSRuntime JS = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                Func<Task> action = async () => await JS.InvokeVoidAsync(""initializeComponent"");
+                await action();
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpFix(source, source);
+    }
+
+    [Fact]
     public void DoesNotOfferFixForLocalDeclarationStatement()
     {
         var source = @"
