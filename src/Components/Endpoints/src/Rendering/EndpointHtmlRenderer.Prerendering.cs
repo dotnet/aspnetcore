@@ -33,6 +33,11 @@ internal partial class EndpointHtmlRenderer
         {
             // We're already inside a subtree with a rendermode. Once it becomes interactive, the entire DOM subtree
             // will get replaced anyway. So there is no point emitting further rendermode boundaries.
+            if (closestRenderModeBoundary is not null && !SSRRenderModeBoundary.ShouldPrerenderChild(renderMode))
+            {
+                // Allow nested boundary so SSRRenderModeBoundary can suppress prerender
+                return new SSRRenderModeBoundary(_httpContext, componentType, renderMode);
+            }
             return componentActivator.CreateInstance(componentType);
         }
         else
