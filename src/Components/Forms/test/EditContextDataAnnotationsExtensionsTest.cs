@@ -170,6 +170,54 @@ public class EditContextDataAnnotationsExtensionsTest
         Assert.Empty(editContext.GetValidationMessages());
     }
 
+    [Fact]
+    public void ValidatesHiddenPropertiesWithoutAmbiguousMatchException()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        Assert.False(editContext.Validate());
+        Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
+
+        var orderIdIdentifier = new FieldIdentifier(model, nameof(DerivedModelWithHiddenProperty.OrderID));
+        editContext.NotifyFieldChanged(orderIdIdentifier);
+        model.OrderID = 50;
+        editContext.NotifyFieldChanged(orderIdIdentifier);
+        Assert.Empty(editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void ValidatesHiddenPropertiesWithPropertyCaching()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+        var orderIdIdentifier = new FieldIdentifier(model, nameof(DerivedModelWithHiddenProperty.OrderID));
+
+        for (int i = 0; i < 5; i++)
+        {
+            model.OrderID = 150 + i;
+            editContext.NotifyFieldChanged(orderIdIdentifier);
+            Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
+        }
+        model.OrderID = 150;
+        editContext.NotifyFieldChanged(orderIdIdentifier);
+        Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
+    }
+
+    [Fact]
+    public void MatchesProperty_WhenCaseIsCorrect()
+    {
+        var model = new DerivedModelWithHiddenProperty { OrderID = 150 };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(_serviceProvider);
+
+        var field = new FieldIdentifier(model, "OrderID");
+        editContext.NotifyFieldChanged(field);
+        Assert.Equal(new[] { "OrderID:range" }, editContext.GetValidationMessages());
+    }
+
     class TestModel
     {
         [Required(ErrorMessage = "RequiredString:required")] public string RequiredString { get; set; }
@@ -181,5 +229,16 @@ public class EditContextDataAnnotationsExtensionsTest
         [Required] string ThisWillNotBeValidatedBecauseItIsPrivate { get; set; }
         [Required] internal string ThisWillNotBeValidatedBecauseItIsInternal { get; set; }
 #pragma warning restore 649
+    }
+
+    class DerivedModelWithHiddenProperty : ModelWithHiddenBaseProperty
+    {
+        [Range(1, 100, ErrorMessage = "OrderID:range")]
+        public new int OrderID { get; set; }
+    }
+
+    class ModelWithHiddenBaseProperty
+    {
+        public object OrderID { get; set; }
     }
 }
