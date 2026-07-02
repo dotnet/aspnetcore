@@ -76,6 +76,15 @@
             <option value="@City.Madrid">Madrid</option>
         </InputSelect>
     </p>
+    <p class="cities-deselect-all">
+        <InputSelect @bind-Value="person.SelectedCitiesForDeselectAll">
+            <option value="@City.SanFrancisco">San Francisco</option>
+            <option value="@City.Tokyo">Tokyo</option>
+            <option value="@City.London">London</option>
+            <option value="@City.Madrid">Madrid</option>
+        </InputSelect>
+        <span id="selected-cities-deselect-all">@(person.SelectedCitiesForDeselectAll.Length == 0 ? "empty" : string.Join(", ", person.SelectedCitiesForDeselectAll))</span>
+    </p>
     <p class="select-multiple-hostile">
         <InputSelect @bind-Value="person.HostileStrings">
             <option value="@("\"")">@("\"")</option>
@@ -84,16 +93,7 @@
         </InputSelect>
         <span>@string.Join(", ", person.HostileStrings)</span>
     </p>
-    <p class="cities-nullable">
-        @*Test case: binding to a nullable array property (regression test for BindConverter null handling).*@
-        <InputSelect @bind-Value="person.SelectedCitiesNullable">
-            <option value="@City.SanFrancisco">San Francisco</option>
-            <option value="@City.Tokyo">Tokyo</option>
-            <option value="@City.London">London</option>
-            <option value="@City.Madrid">Madrid</option>
-        </InputSelect>
-        <span id="selected-cities-nullable">@(person.SelectedCitiesNullable is null ? "null" : string.Join(", ", person.SelectedCitiesNullable))</span>
-    </p>
+   
     <p class="select-bool-values">
         T/F: 77 + 33 = 100<br>
         <InputSelect @bind-Value="person.IsSelectMathStatementTrue">
@@ -246,6 +246,8 @@
         // Regression test property for null array handling in InputSelect binding
         // This ensures that BindConverter.MakeArrayFormatter() safely handles null values
         public City[]? SelectedCitiesNullable { get; set; } = null;
+
+        public City[] SelectedCitiesForDeselectAll { get; set; } = new[] { City.SanFrancisco, City.Tokyo };
 
         public string? Username { get; set; }
     }

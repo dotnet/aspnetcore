@@ -324,30 +324,25 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("{,", () => hostileSelectLabel.Text);
     }
 
+  
+
     [Fact]
-    public void InputSelectWithMultipleHandlesNullArray()
+    public void InputSelectMultiple_EditForm_DeselectingAll_DoesNotThrow()
     {
         var appElement = MountTypicalValidationComponent();
-        var container = Browser.Exists(By.ClassName("cities-nullable"));
-        var citiesNullableSelect = new SelectElement(container.FindElement(By.TagName("select")));
-        var select = citiesNullableSelect.WrappedElement;
-        var citiesNullableLabel = Browser.Exists(By.Id("selected-cities-nullable"));
+        var container = Browser.Exists(By.ClassName("cities-deselect-all"));
+        var deselectAllSelect = new SelectElement(container.FindElement(By.TagName("select")));
+        var deselectAllLabel = Browser.Exists(By.Id("selected-cities-deselect-all"));
 
-        Browser.Equal("null", () => citiesNullableLabel.Text);
-        Browser.True(() => citiesNullableSelect.IsMultiple);
-        Browser.Equal(0, () => citiesNullableSelect.AllSelectedOptions.Count);
+        Browser.True(() => deselectAllSelect.IsMultiple);
+        Browser.Equal(2, () => deselectAllSelect.AllSelectedOptions.Count);
+        Browser.Equal("SanFrancisco, Tokyo", () => deselectAllLabel.Text);
 
-        citiesNullableSelect.SelectByText("San Francisco");
-        Browser.Equal("SanFrancisco", () => citiesNullableLabel.Text);
+        deselectAllSelect.DeselectByText("San Francisco");
+        deselectAllSelect.DeselectByText("Tokyo");
 
-        citiesNullableSelect.SelectByText("Tokyo");
-        Browser.Equal("SanFrancisco, Tokyo", () => citiesNullableLabel.Text);
-
-        citiesNullableSelect.DeselectByText("San Francisco");
-        citiesNullableSelect.DeselectByText("Tokyo");
-        Browser.Equal("", () => citiesNullableLabel.Text);
-
-        Browser.Equal(0, () => citiesNullableSelect.AllSelectedOptions.Count);
+        Browser.Equal("empty", () => deselectAllLabel.Text);
+        Browser.Equal(0, () => deselectAllSelect.AllSelectedOptions.Count);
     }
 
     [Fact]

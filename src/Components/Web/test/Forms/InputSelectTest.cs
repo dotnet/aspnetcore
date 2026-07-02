@@ -249,6 +249,56 @@ public class InputSelectTest
     }
 
     [Fact]
+    public async Task InputSelectMultiple_EditForm_DeselectingAll_DoesNotThrow()
+    {
+        var model = new TestModel { StringArray = new[] { "alpha", "beta" } };
+        var rootComponent = new TestInputHostComponent<string[]?, TestInputSelect<string[]?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = model.StringArray
+        };
+
+        var component = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        var setArrayMethod = typeof(InputSelect<string[]?>).GetMethod(
+            "SetCurrentValueAsStringArray",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.NotNull(setArrayMethod);
+
+        var exception = Record.Exception(() => setArrayMethod!.Invoke(component, new object?[] { Array.Empty<string>() }));
+
+        Assert.Null(exception);
+        Assert.NotNull(component.CurrentValue);
+        Assert.Empty(component.CurrentValue!);
+    }
+
+    [Fact]
+    public async Task InputSelectMultiple_EditForm_NullValue_DeselectingAll_DoesNotThrow()
+    {
+        var model = new TestModel { StringArray = null };
+        var rootComponent = new TestInputHostComponent<string[]?, TestInputSelect<string[]?>>
+        {
+            EditContext = new EditContext(model),
+            ValueExpression = () => model.StringArray,
+            Value = null
+        };
+
+        var component = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+        var setArrayMethod = typeof(InputSelect<string[]?>).GetMethod(
+            "SetCurrentValueAsStringArray",
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        Assert.NotNull(setArrayMethod);
+
+        var exception = Record.Exception(() => setArrayMethod!.Invoke(component, new object?[] { Array.Empty<string>() }));
+
+        Assert.Null(exception);
+        Assert.NotNull(component.CurrentValue);
+        Assert.Empty(component.CurrentValue!);
+    }
+
+    [Fact]
     public async Task ExplicitIdOverridesGenerated()
     {
         var model = new TestModel();
