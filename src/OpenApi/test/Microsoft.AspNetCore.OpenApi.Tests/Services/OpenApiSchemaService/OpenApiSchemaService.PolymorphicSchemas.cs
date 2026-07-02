@@ -185,6 +185,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var schema = mediaType.Schema;
             // Assert discriminator mappings have been configured correctly
             Assert.Equal("$type", schema.Discriminator.PropertyName);
+            Assert.Equal("#/components/schemas/Pet", schema.Discriminator.DefaultMapping.Reference.ReferenceV3);
+            Assert.False(schema.Discriminator.DefaultMapping.UnresolvedReference);
+            Assert.Same(document.Components.Schemas["Pet"], schema.Discriminator.DefaultMapping.Target);
             Assert.Collection(schema.Discriminator.Mapping,
                 item => Assert.Equal("cat", item.Key),
                 item => Assert.Equal("dog", item.Key),

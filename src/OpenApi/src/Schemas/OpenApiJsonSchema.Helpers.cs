@@ -336,6 +336,15 @@ internal sealed partial class OpenApiJsonSchema
                     }
                 }
                 break;
+            case OpenApiSchemaKeywords.DiscriminatorDefaultMappingKeyword:
+                reader.Read();
+                var defaultMapping = reader.GetString();
+                if (defaultMapping is not null)
+                {
+                    schema.Discriminator ??= new OpenApiDiscriminator();
+                    schema.Discriminator.DefaultMapping = new OpenApiSchemaReference(defaultMapping);
+                }
+                break;
             case OpenApiConstants.SchemaId:
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();
