@@ -107,6 +107,33 @@ public class NavLinkTest
         Assert.Equal(new[] { true, false }, capturedValues);
     }
 
+    [Fact]
+    public async Task IsActive_ReflectsCurrentActiveState()
+    {
+        var navigationManager = new TestNavigationManager();
+        navigationManager.Initialize("https://example.com/", "https://example.com/");
+
+        var renderer = new TestRenderer();
+        var component = new NavLink { NavigationManager = navigationManager };
+        var componentId = renderer.AssignRootComponentId(component);
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object> { ["href"] = "/page" }
+        });
+
+        await renderer.RenderRootComponentAsync(componentId, parameters);
+        Assert.False(component.IsActive);
+
+        await renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/page"));
+        await Task.Delay(100);
+        Assert.True(component.IsActive);
+
+        await renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/elsewhere"));
+        await Task.Delay(100);
+        Assert.False(component.IsActive);
+    }
+
     private async Task<object?> RenderNavLinkAndGetAttributeAsync(
         string baseUri, string currentUri, string href, bool relativeToCurrentUri, string attributeName)
     {

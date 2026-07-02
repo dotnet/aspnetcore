@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.get -> bool
 Microsoft.AspNetCore.Components.Routing.NavLink.RelativeToCurrentUri.set -> void
 Microsoft.AspNetCore.Components.Routing.NavLink.ActivationChanged.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
 Microsoft.AspNetCore.Components.Routing.NavLink.ActivationChanged.set -> void
+Microsoft.AspNetCore.Components.Routing.NavLink.IsActive.get -> bool
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.get -> int
 *REMOVED*Microsoft.AspNetCore.Components.Forms.RemoteBrowserFileStreamOptions.MaxBufferSize.set -> void

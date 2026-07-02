@@ -45,6 +45,13 @@ public class NavLink : ComponentBase, IDisposable
     public EventCallback<bool> ActivationChanged { get; set; }
 
     /// <summary>
+    /// Gets a value indicating whether the current URI matches the NavLink's href,
+    /// according to the configured <see cref="Match"/> behavior. The value is updated
+    /// as part of the standard component lifecycle and in response to location changes.
+    /// </summary>
+    public bool IsActive { get; private set; }
+
+    /// <summary>
     /// Gets or sets the computed CSS class based on whether or not the link is active.
     /// </summary>
     protected string? CssClass { get; set; }
@@ -99,6 +106,7 @@ public class NavLink : ComponentBase, IDisposable
 
         _hrefAbsolute = href == null ? null : NavigationManager.ToAbsoluteUri(href).AbsoluteUri;
         _isActive = ShouldMatch(NavigationManager.Uri);
+        IsActive = _isActive;
 
         _class = (string?)null;
         if (AdditionalAttributes != null && AdditionalAttributes.TryGetValue("class", out obj))
@@ -129,6 +137,7 @@ public class NavLink : ComponentBase, IDisposable
         if (shouldBeActiveNow != _isActive)
         {
             _isActive = shouldBeActiveNow;
+            IsActive = _isActive;
             UpdateCssClass();
             StateHasChanged();
             if (ActivationChanged.HasDelegate)
