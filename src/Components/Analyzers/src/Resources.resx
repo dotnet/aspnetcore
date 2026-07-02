@@ -249,4 +249,16 @@
   <data name="ForLoopIteratorVariableUsedInClosure_Title" xml:space="preserve">
     <value>For loop iterator used inside a closure.</value>
   </data>
+  <data name="JSInvokableMethodShouldBePublic_Description" xml:space="preserve">
+    <value>Methods decorated with [JSInvokable] must be public to be callable from JavaScript.</value>
+  </data>
+  <data name="JSInvokableMethodShouldBePublic_Format" xml:space="preserve">
+    <value>Method '{0}' decorated with [JSInvokable] should be public.</value>
+  </data>
+  <data name="JSInvokableMethodShouldBePublic_Title" xml:space="preserve">
+    <value>[JSInvokable] methods should be public</value>
+  </data>
+  <data name="JSInvokableMethodShouldBePublic_FixTitle" xml:space="preserve">
+    <value>Make [JSInvokable] method public.</value>
+  </data>
 </root>
