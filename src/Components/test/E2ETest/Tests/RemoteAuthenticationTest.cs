@@ -31,4 +31,14 @@ public class RemoteAuthenticationTest :
         var heading = Browser.Exists(By.TagName("h1"));
         Browser.Equal("Hello, Jane Doe!", () => heading.Text);
     }
+
+    [Fact]
+    public void NavigateToLogin_HandlesCallbackErrorsFromUrlFragments()
+    {
+        Navigate("/subdir/test-remote-authentication?callbackResponseMode=fragment&callbackError=access_denied&callbackErrorDescription=sensitive-provider-message");
+
+        var message = Browser.Exists(By.TagName("p"));
+        Browser.Equal("There was an error trying to log you in: 'Access was denied during sign-in.'", () => message.Text);
+        Assert.DoesNotContain("sensitive-provider-message", message.Text);
+    }
 }

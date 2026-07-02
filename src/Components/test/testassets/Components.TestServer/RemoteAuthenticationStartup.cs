@@ -58,7 +58,14 @@ public class RemoteAuthenticationStartup
                 });
 
                 var lastCode = "";
-                oidcEndpoints.MapGet("authorize", (string redirect_uri, string? state, string? prompt, bool? preservedExtraQueryParams) =>
+                oidcEndpoints.MapGet("authorize", (
+                    string redirect_uri,
+                    string? state,
+                    string? prompt,
+                    bool? preservedExtraQueryParams,
+                    string? callbackResponseMode,
+                    string? callbackError,
+                    string? callbackErrorDescription) =>
                 {
                     // Require interaction so silent sign-in does not skip RedirectToLogin.razor.
                     if (prompt == "none")
@@ -70,6 +77,18 @@ public class RemoteAuthenticationStartup
                     if (preservedExtraQueryParams != true)
                     {
                         return Results.Redirect($"{redirect_uri}?error=invalid_request&error_description=extraQueryParams%20not%20preserved&state={state}");
+                    }
+
+                    if (string.Equals(callbackResponseMode, "fragment", StringComparison.Ordinal))
+                    {
+                        callbackError ??= "access_denied";
+                        var fragment = $"error={Uri.EscapeDataString(callbackError)}&state={Uri.EscapeDataString(state ?? string.Empty)}";
+                        if (!string.IsNullOrEmpty(callbackErrorDescription))
+                        {
+                            fragment += $"&error_description={Uri.EscapeDataString(callbackErrorDescription)}";
+                        }
+
+                        return Results.Redirect($"{redirect_uri}#{fragment}");
                     }
 
                     lastCode = Random.Shared.Next().ToString(CultureInfo.InvariantCulture);
