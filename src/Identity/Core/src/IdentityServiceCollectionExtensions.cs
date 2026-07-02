@@ -100,6 +100,7 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<IdentityErrorDescriber>();
         services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<DataProtectionTokenProviderOptions>, PostConfigureDataProtectionTokenProviderOptions>());
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();

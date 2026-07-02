@@ -1,1 +1,4 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions.TimeProvider.get -> System.TimeProvider?
+Microsoft.AspNetCore.Identity.DataProtectionTokenProviderOptions.TimeProvider.set -> void
+Microsoft.AspNetCore.Identity.DataProtectorTokenProvider<TUser>.TimeProvider.get -> System.TimeProvider!
