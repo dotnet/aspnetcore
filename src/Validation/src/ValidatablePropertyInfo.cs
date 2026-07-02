@@ -80,15 +80,15 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
     }
 
-    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject)
+    private bool ValidateRequiredAttribute(ValidationAttribute[] validationAttributes, ValidateContext context, object? propertyValue, object containingObject, ValidationContext validationContext)
     {
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
-            var result = _requiredAttribute.GetValidationResult(propertyValue, context.ValidationContext);
+            var result = _requiredAttribute.GetValidationResult(propertyValue, validationContext);
 
             if (result is not null && result != ValidationResult.Success)
             {
-                ((IValidationErrorReporter)this).ReportError(context, containingObject, _requiredAttribute, result);
+                ((IValidationErrorReporter)this).ReportError(context, validationContext.DisplayName, containingObject, _requiredAttribute, result);
 
                 return false;
             }
@@ -119,11 +119,10 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        context.ValidationContext.DisplayName = displayName;
-        context.ValidationContext.MemberName = Name;
+        var validationContext = context.CreateValidationContext(containingObject, displayName, Name);
 
         // Check required attribute first
-        if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject))
+        if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
         {
             // Restore the validation path mutated above before returning early so that sibling
             // members validated with the same (shared) context observe the original prefix.
@@ -132,7 +131,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
 
         // Validate any other attributes
-        await context.ValidateAttributesAsync(propertyValue, containingObject, this, cancellationToken);
+        await context.ValidateAttributesAsync(propertyValue, containingObject, this, validationContext, displayName, cancellationToken);
 
         var validationOptions = context.ValidationOptions;
 
@@ -217,11 +216,10 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
 
         var displayName = DisplayNameInfo?.GetDisplayName(context, Name, DeclaringType) ?? Name;
 
-        context.ValidationContext.DisplayName = displayName;
-        context.ValidationContext.MemberName = Name;
+        var validationContext = context.CreateValidationContext(containingObject, displayName, Name);
 
         // Check required attribute first
-        if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject))
+        if (!ValidateRequiredAttribute(validationAttributes, context, propertyValue, containingObject, validationContext))
         {
             // Restore the validation path mutated above before returning early so that sibling
             // members validated with the same (shared) context observe the original prefix.
@@ -230,7 +228,7 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         }
 
         // Validate any other attributes
-        context.ValidateAllAttributesSynchronously(propertyValue, containingObject, this);
+        context.ValidateAllAttributesSynchronously(propertyValue, containingObject, this, validationContext, displayName);
 
         var validationOptions = context.ValidationOptions;
 
@@ -286,11 +284,11 @@ public abstract class ValidatablePropertyInfo : IValidatablePropertyInfo, IValid
         return GetValidationAttributes();
     }
 
-    void IValidationErrorReporter.ReportError(ValidateContext context, object? container, ValidationAttribute attribute, ValidationResult result)
+    void IValidationErrorReporter.ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result)
     {
         var errorMessage = context.ResolveAttributeErrorMessage(
             memberName: Name,
-            context.ValidationContext.DisplayName,
+            displayName,
             declaringType: DeclaringType,
             attribute,
             result);

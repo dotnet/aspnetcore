@@ -11,5 +11,5 @@ internal interface IValidationErrorReporter
     ValidationAttribute[] GetValidationAttributes();
 
     [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
-    void ReportError(ValidateContext context, object? container, ValidationAttribute attribute, ValidationResult result);
+    void ReportError(ValidateContext context, string displayName, object? container, ValidationAttribute attribute, ValidationResult result);
 }

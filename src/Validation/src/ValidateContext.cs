@@ -37,27 +37,9 @@ public sealed class ValidateContext
     }
 
     /// <summary>
-    /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
-    /// This context provides access to service provider and other validation metadata.
+    /// Gets or sets the service provider. This will also be made available on the <see cref="ValidationContext"/> instances..
     /// </summary>
-    /// <remarks>
-    /// This property should be set by the consumer of the validatable info
-    /// interface to provide the necessary context for validation. The object should be initialized
-    /// with the current object being validated, the display name, and the service provider to support
-    /// the complete set of validation scenarios.
-    /// </remarks>
-    /// <example>
-    /// <code language="csharp">
-    /// var validationContext = new ValidationContext(objectToValidate, serviceProvider, items);
-    /// var validationOptions = serviceProvider.GetService&lt;IOptions&lt;ValidationOptions&gt;&gt;()?.Value;
-    /// var validateContext = new ValidateContext
-    /// {
-    ///     ValidationContext = validationContext,
-    ///     ValidationOptions = validationOptions
-    /// };
-    /// </code>
-    /// </example>
-    public required ValidationContext ValidationContext { get; set; }
+    public required IServiceProvider? ServiceProvider { get; init; }
 
     /// <summary>
     /// Gets or sets the prefix used to identify the current object being validated in a complex object graph.
@@ -102,7 +84,7 @@ public sealed class ValidateContext
         return new ValidateContext(this, state)
         {
             ValidationOptions = this.ValidationOptions,
-            ValidationContext = CloneValidationContextWithMutableState(state),
+            ServiceProvider = this.ServiceProvider,
         };
     }
 
@@ -111,8 +93,6 @@ public sealed class ValidateContext
         {
             Depth = CurrentDepth,
             Path = CurrentValidationPath,
-            DisplayName = ValidationContext.DisplayName,
-            MemberName = ValidationContext.MemberName,
         };
 
     /// <summary>
@@ -196,23 +176,12 @@ public sealed class ValidateContext
         return ValidationOptions.Localizer.ResolveErrorMessage(context) ?? result.ErrorMessage;
     }
 
-    private ValidationContext CloneValidationContextWithMutableState(ValidateContextMutableState state)
-    {
-        var original = ValidationContext;
-        return new ValidationContext(
-            original.ObjectInstance,
-            state.DisplayName,
-            original,
-            original.Items)
-        {
-            MemberName = state.MemberName,
-        };
-    }
-
     internal async Task ValidateAttributesAsync(
         object? value,
         object? container,
         IValidationErrorReporter reporter,
+        ValidationContext? validationContext,
+        string displayName,
         CancellationToken cancellationToken)
     {
         // NOTE: In case there are no async validation attributes, there should be no performance impact.
@@ -221,27 +190,29 @@ public sealed class ValidateContext
         // And if this method completed synchronously because no async validation attributes exist, this
         // will returned the same cached instance as Task.CompletedTask.
         var validationAttributes = reporter.GetValidationAttributes();
-        if (ValidateSynchronousOnly(validationAttributes, value, container, reporter))
+        if (ValidateSynchronousOnly(validationAttributes, value, container, reporter, validationContext, displayName))
         {
             // Only validate async attributes if synchronous validation passed.
-            await ValidateAsynchronousOnlyAsync(validationAttributes, value, container, reporter, cancellationToken);
+            await ValidateAsynchronousOnlyAsync(validationAttributes, value, container, reporter, validationContext, displayName, cancellationToken);
         }
     }
 
     internal void ValidateAllAttributesSynchronously(
         object? value,
         object? container,
-        IValidationErrorReporter reporter)
+        IValidationErrorReporter reporter,
+        ValidationContext? validationContext,
+        string displayName)
     {
         var validationAttributes = reporter.GetValidationAttributes();
         for (var i = 0; i < validationAttributes.Length; i++)
         {
             var attribute = validationAttributes[i];
 
-            var result = attribute.GetValidationResult(value, ValidationContext);
+            var result = attribute.GetValidationResult(value, validationContext!);
             if (result is not null && result != ValidationResult.Success)
             {
-                reporter.ReportError(this, container, attribute, result);
+                reporter.ReportError(this, displayName, container, attribute, result);
             }
         }
     }
@@ -250,7 +221,9 @@ public sealed class ValidateContext
         ValidationAttribute[] validationAttributes,
         object? value,
         object? container,
-        IValidationErrorReporter reporter)
+        IValidationErrorReporter reporter,
+        ValidationContext? validationContext,
+        string displayName)
     {
         bool hasErrors = false;
         for (var i = 0; i < validationAttributes.Length; i++)
@@ -262,11 +235,11 @@ public sealed class ValidateContext
                 continue;
             }
 
-            var result = attribute.GetValidationResult(value, ValidationContext);
+            var result = attribute.GetValidationResult(value, validationContext!);
             if (result is not null && result != ValidationResult.Success)
             {
                 hasErrors = true;
-                reporter.ReportError(this, container, attribute, result);
+                reporter.ReportError(this, displayName, container, attribute, result);
             }
         }
 
@@ -278,6 +251,8 @@ public sealed class ValidateContext
         object? value,
         object? container,
         IValidationErrorReporter reporter,
+        ValidationContext? validationContext,
+        string displayName,
         CancellationToken cancellationToken)
     {
         CancellationTokenSource? linkedCts = null;
@@ -295,7 +270,7 @@ public sealed class ValidateContext
 
                 linkedCts ??= CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 tracker.Track(
-                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, reporter, tracker.NextContext(), cancellationToken, linkedCts));
+                    GetValidationResultTaskCoreAsync(asyncValidationAttribute, value, container, reporter, tracker.NextContext(), validationContext, displayName, cancellationToken, linkedCts));
             }
 
             await tracker.CompleteAsync();
@@ -312,6 +287,8 @@ public sealed class ValidateContext
         object? container,
         IValidationErrorReporter reporter,
         ValidateContext context,
+        ValidationContext? validationContext,
+        string displayName,
         CancellationToken originalCancellationToken,
         CancellationTokenSource linkedCancellationTokenSource)
     {
@@ -321,10 +298,10 @@ public sealed class ValidateContext
         // 2. cancellation when we want to short-circuit on first error.
         try
         {
-            var result = await attribute.GetValidationResultAsync(value, context.ValidationContext, linkedCancellationTokenSource.Token);
+            var result = await attribute.GetValidationResultAsync(value, validationContext!, linkedCancellationTokenSource.Token);
             if (result is not null && result != ValidationResult.Success)
             {
-                reporter.ReportError(context, container, attribute, result);
+                reporter.ReportError(context, displayName, container, attribute, result);
                 linkedCancellationTokenSource.Cancel();
             }
         }
@@ -334,6 +311,15 @@ public sealed class ValidateContext
             // In this case, we want to just ignore this cancellation.
         }
     }
+
+    [return: NotNullIfNotNull(nameof(objectInstance))]
+    internal ValidationContext? CreateValidationContext(object? objectInstance, string displayName, string? memberName)
+        => objectInstance is null
+            ? null
+            : new ValidationContext(objectInstance, displayName, ServiceProvider, null)
+            {
+                MemberName = memberName,
+            };
 
     internal AsyncValidationTracker TrackAsyncValidations()
         => new AsyncValidationTracker(this);

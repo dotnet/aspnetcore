@@ -363,7 +363,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         return new ValidateContext
         {
             ValidationOptions = options,
-            ValidationContext = new ValidationContext(new object()),
+            ServiceProvider = null,
         };
     }
 
@@ -383,7 +383,7 @@ public class ValidationLocalizationPipelineTests : ValidationTestBase
         return new ValidateContext
         {
             ValidationOptions = options,
-            ValidationContext = new ValidationContext(new object()),
+            ServiceProvider = null,
         };
     }
 
