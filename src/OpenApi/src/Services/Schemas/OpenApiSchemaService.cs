@@ -300,7 +300,9 @@ internal sealed class OpenApiSchemaService(
             return optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
         });
 
-        return ResolveReferenceForSchema(document, schema, baseSchemaId);
+        var resolvedSchema = ResolveReferenceForSchema(document, schema, baseSchemaId);
+        await ApplyNullableWrapperSchemaTransformersAsync(resolvedSchema, document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
+        return resolvedSchema;
     }
 
     private static bool IsNonBodyBindingSource(BindingSource bindingSource) => bindingSource == BindingSource.Header
@@ -461,6 +463,32 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
+    internal async Task ApplyNullableWrapperSchemaTransformersAsync(IOpenApiSchema schema, OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default, bool includeNestedSchemas = true)
+    {
+        if (schemaTransformers.Length == 0)
+        {
+            return;
+        }
+
+        var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(type);
+        var context = new OpenApiSchemaTransformerContext
+        {
+            DocumentName = documentName,
+            JsonTypeInfo = jsonTypeInfo,
+            JsonPropertyInfo = null,
+            ParameterDescription = parameterDescription,
+            ApplicationServices = scopedServiceProvider,
+            Document = document,
+            SchemaTransformers = schemaTransformers
+        };
+
+        for (var i = 0; i < schemaTransformers.Length; i++)
+        {
+            var transformer = schemaTransformers[i];
+            await InnerApplyNullableWrapperSchemaTransformersAsync(schema, jsonTypeInfo, null, context, transformer, new HashSet<OpenApiSchema>(), cancellationToken, includeNestedSchemas);
+        }
+    }
+
     private async Task InnerApplySchemaTransformersAsync(IOpenApiSchema inputSchema,
         JsonTypeInfo jsonTypeInfo,
         JsonPropertyInfo? jsonPropertyInfo,
@@ -512,6 +540,98 @@ internal sealed class OpenApiSchemaService(
         {
             var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
             await InnerApplySchemaTransformersAsync(schema.AdditionalProperties, elementTypeInfo, null, context, transformer, cancellationToken);
+        }
+    }
+
+    private async Task InnerApplyNullableWrapperSchemaTransformersAsync(IOpenApiSchema inputSchema,
+        JsonTypeInfo jsonTypeInfo,
+        JsonPropertyInfo? jsonPropertyInfo,
+        OpenApiSchemaTransformerContext context,
+        IOpenApiSchemaTransformer transformer,
+        HashSet<OpenApiSchema> visitedSchemas,
+        CancellationToken cancellationToken = default,
+        bool includeNestedSchemas = true)
+    {
+        context.UpdateJsonTypeInfo(jsonTypeInfo, jsonPropertyInfo);
+        var schema = UnwrapOpenApiSchema(inputSchema);
+        if (!visitedSchemas.Add(schema))
+        {
+            return;
+        }
+
+        if (schema.IsOneOfNullableWrapper())
+        {
+            await transformer.TransformAsync(schema, context, cancellationToken);
+        }
+
+        if (!includeNestedSchemas)
+        {
+            return;
+        }
+
+        if (schema.AnyOf is { Count: > 0 } && jsonTypeInfo.PolymorphismOptions is not null)
+        {
+            var anyOfIndex = 0;
+            foreach (var derivedType in jsonTypeInfo.PolymorphismOptions.DerivedTypes)
+            {
+                var derivedJsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(derivedType.DerivedType);
+                if (schema.AnyOf.Count <= anyOfIndex)
+                {
+                    break;
+                }
+                await InnerApplyNullableWrapperSchemaTransformersAsync(schema.AnyOf[anyOfIndex], derivedJsonTypeInfo, null, context, transformer, visitedSchemas, cancellationToken, includeNestedSchemas);
+                anyOfIndex++;
+            }
+        }
+
+        if (schema.Items is not null && jsonTypeInfo.ElementType is not null)
+        {
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
+            await InnerApplyNullableWrapperSchemaTransformersAsync(schema.Items, elementTypeInfo, null, context, transformer, visitedSchemas, cancellationToken, includeNestedSchemas);
+        }
+
+        if (schema.Properties is { Count: > 0 })
+        {
+            foreach (var propertyInfo in jsonTypeInfo.Properties)
+            {
+                if (schema.Properties.TryGetValue(propertyInfo.Name, out var propertySchema))
+                {
+                    await InnerApplyNullableWrapperSchemaTransformersAsync(propertySchema, _jsonSerializerOptions.GetTypeInfo(propertyInfo.PropertyType), propertyInfo, context, transformer, visitedSchemas, cancellationToken, includeNestedSchemas);
+                }
+            }
+        }
+
+        if (schema is { AdditionalPropertiesAllowed: true, AdditionalProperties: not null } &&
+            jsonTypeInfo.ElementType is not null)
+        {
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
+            await InnerApplyNullableWrapperSchemaTransformersAsync(schema.AdditionalProperties, elementTypeInfo, null, context, transformer, visitedSchemas, cancellationToken, includeNestedSchemas);
+        }
+
+        if (schema.AllOf is { Count: > 0 })
+        {
+            for (var i = 0; i < schema.AllOf.Count; i++)
+            {
+                await InnerApplyNullableWrapperSchemaTransformersAsync(schema.AllOf[i], jsonTypeInfo, jsonPropertyInfo, context, transformer, visitedSchemas, cancellationToken, includeNestedSchemas);
+            }
+        }
+
+        if (schema.OneOf is { Count: > 0 })
+        {
+            for (var i = 0; i < schema.OneOf.Count; i++)
+            {
+                if (schema.OneOf[i] is OpenApiSchema { Type: JsonSchemaType.Null })
+                {
+                    continue;
+                }
+
+                await InnerApplyNullableWrapperSchemaTransformersAsync(schema.OneOf[i], jsonTypeInfo, jsonPropertyInfo, context, transformer, visitedSchemas, cancellationToken, includeNestedSchemas);
+            }
+        }
+
+        if (schema.Not is not null)
+        {
+            await InnerApplyNullableWrapperSchemaTransformersAsync(schema.Not, jsonTypeInfo, jsonPropertyInfo, context, transformer, visitedSchemas, cancellationToken, includeNestedSchemas);
         }
     }
 

@@ -444,9 +444,11 @@ internal sealed class OpenApiDocumentService(
                 if (apiResponseType.Type is { } responseType)
                 {
                     schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
-                    schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
-                        ? schema.CreateOneOfNullableWrapper()
-                        : schema;
+                    if (apiResponseType.ShouldApplyNullableResponseSchema(apiDescription))
+                    {
+                        schema = schema.CreateOneOfNullableWrapper();
+                        await _componentService.ApplyNullableWrapperSchemaTransformersAsync(schema, document, responseType, scopedServiceProvider, schemaTransformers, cancellationToken: cancellationToken, includeNestedSchemas: false);
+                    }
                 }
 
                 schema ??= new OpenApiSchema();
@@ -787,9 +789,11 @@ internal sealed class OpenApiDocumentService(
         {
             var contentType = requestFormat.MediaType;
             var schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken: cancellationToken);
-            schema = bodyParameter.ShouldApplyNullableRequestSchema()
-                ? schema.CreateOneOfNullableWrapper()
-                : schema;
+            if (bodyParameter.ShouldApplyNullableRequestSchema())
+            {
+                schema = schema.CreateOneOfNullableWrapper();
+                await _componentService.ApplyNullableWrapperSchemaTransformersAsync(schema, document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken, includeNestedSchemas: false);
+            }
             requestBody.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 
