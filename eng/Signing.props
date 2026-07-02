@@ -15,6 +15,14 @@
     <FileSignInfo Include="Mono.Cecil.Mdb.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Mono.Cecil.Pdb.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Api.ProviderBuilderExtensions.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Api.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Extensions.Hosting.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Instrumentation.AspNetCore.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Instrumentation.Http.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Instrumentation.Runtime.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 
   <ItemGroup>

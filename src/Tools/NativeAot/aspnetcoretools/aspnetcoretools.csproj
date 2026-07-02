@@ -6,13 +6,15 @@
     <PackageId>aspnetcoretools</PackageId>
     <PackAsTool>true</PackAsTool>
     <IsShippingPackage>false</IsShippingPackage>
-    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
-    <PublishAot Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</PublishAot>
+    <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+    <!-- Native AOT requires the CoreCLR runtime; the aggregate executable cannot be produced when building with the Mono runtime. -->
+    <ExcludeFromSourceOnlyBuild Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">true</ExcludeFromSourceOnlyBuild>
+    <PublishAot>true</PublishAot>
     <NativeLib>Shared</NativeLib>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <RuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(BundledToolTargetRuntimeIdentifiers)</RuntimeIdentifiers>
-    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
-    <RuntimeIdentifier Condition="'$(PublishAot)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true' and '$(RuntimeIdentifier)' == '' and '$(TargetRuntimeIdentifier)' != ''">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</RuntimeIdentifiers>
+    <RuntimeIdentifier Condition="'$(PublishAot)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(TargetRuntimeIdentifier)' != ''">$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(PublishAot)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true' and '$(RuntimeIdentifier)' == ''">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
     <NoWarn>$(NoWarn);CS2008</NoWarn>
   </PropertyGroup>
