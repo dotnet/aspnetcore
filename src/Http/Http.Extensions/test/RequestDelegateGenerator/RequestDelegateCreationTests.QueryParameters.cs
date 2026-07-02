@@ -226,4 +226,44 @@ app.MapGet("/", ([FromQuery] DateTime date = default) => $"Date: {date:O}");
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, "test", 200);
     }
+
+    [Fact]
+    public async Task MapAction_NullableBoolParam_WithEmptyQueryStringValue_SetsNull()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/65754
+        // ?myBool= should bind to null for bool? parameter, not throw.
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/test", ([FromQuery] bool? myBool) => myBool.HasValue ? $"Value: {myBool.Value}" : "null");
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        VerifyStaticEndpointModel(results, endpointModel =>
+        {
+            Assert.Equal("MapGet", endpointModel.HttpMethod);
+            var p = Assert.Single(endpointModel.Parameters);
+            Assert.Equal(EndpointParameterSource.Query, p.Source);
+            Assert.Equal("myBool", p.SymbolName);
+        });
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?myBool=");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "null");
+    }
+
+    [Fact]
+    public async Task MapAction_NullableIntParam_WithEmptyQueryStringValue_SetsNull()
+    {
+        var (results, compilation) = await RunGeneratorAsync("""
+app.MapGet("/test", ([FromQuery] int? value) => value.HasValue ? $"{value.Value}" : "null");
+""");
+        var endpoint = GetEndpointFromCompilation(compilation);
+
+        var httpContext = CreateHttpContext();
+        httpContext.Request.QueryString = new QueryString("?value=");
+
+        await endpoint.RequestDelegate(httpContext);
+        await VerifyResponseBodyAsync(httpContext, "null");
+    }
 }
