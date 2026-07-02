@@ -45,6 +45,68 @@ public class NavLinkTest
         Assert.Equal("active", classValue);
     }
 
+    [Fact]
+    public async Task ActivationChanged_InvokedWhenNavigationChangesActiveState()
+    {
+        var navigationManager = new TestNavigationManager();
+        navigationManager.Initialize("https://example.com/", "https://example.com/");
+
+        var renderer = new TestRenderer();
+        var component = new NavLink { NavigationManager = navigationManager };
+        var componentId = renderer.AssignRootComponentId(component);
+
+        var callbackInvoked = false;
+        bool callbackValue = false;
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object> { ["href"] = "/page" },
+            [nameof(NavLink.ActivationChanged)] = EventCallback.Factory.Create<bool>(component,
+                (value) =>
+                {
+                    callbackInvoked = true;
+                    callbackValue = value;
+                })
+        });
+
+        await renderer.RenderRootComponentAsync(componentId, parameters);
+
+        await renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/page"));
+
+        Assert.True(callbackInvoked);
+        Assert.True(callbackValue);
+    }
+
+    [Fact]
+    public async Task ActivationChanged_PassesCorrectBooleanValue()
+    {
+        var navigationManager = new TestNavigationManager();
+        navigationManager.Initialize("https://example.com/", "https://example.com/");
+
+        var renderer = new TestRenderer();
+        var component = new NavLink { NavigationManager = navigationManager };
+        var componentId = renderer.AssignRootComponentId(component);
+
+        var capturedValues = new List<bool>();
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(NavLink.AdditionalAttributes)] = new Dictionary<string, object> { ["href"] = "/target" },
+            [nameof(NavLink.ActivationChanged)] = EventCallback.Factory.Create<bool>(component,
+                (value) => capturedValues.Add(value))
+        });
+
+        await renderer.RenderRootComponentAsync(componentId, parameters);
+
+        await renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/target"));
+        await Task.Delay(100);
+
+        await renderer.Dispatcher.InvokeAsync(() => navigationManager.NavigateTo("/other"));
+        await Task.Delay(100);
+
+        Assert.Equal(new[] { true, false }, capturedValues);
+    }
+
     private async Task<object?> RenderNavLinkAndGetAttributeAsync(
         string baseUri, string currentUri, string href, bool relativeToCurrentUri, string attributeName)
     {
@@ -73,7 +135,9 @@ public class NavLinkTest
 
         protected override void NavigateToCore(string uri, NavigationOptions options)
         {
-            Uri = uri;
+            // Resolve to an absolute URI so the base-relative validation in the
+            // Uri setter accepts the new value.
+            Uri = ToAbsoluteUri(uri).AbsoluteUri;
             NotifyLocationChanged(false);
         }
     }
