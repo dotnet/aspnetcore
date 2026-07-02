@@ -1,4 +1,6 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Components.ElementReference.Id.get -> string!
+Microsoft.AspNetCore.Components.ElementReference.Id.get -> string?
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.Dispose() -> void
 abstract Microsoft.AspNetCore.Components.CascadingParameterSubscription.GetCurrentValue() -> object?
 Microsoft.AspNetCore.Components.CascadingParameterSubscription

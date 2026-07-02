@@ -19,7 +19,7 @@ public readonly struct ElementReference
     /// The Id is unique at least within the scope of a given user/circuit.
     /// This property is public to support Json serialization and should not be used by user code.
     /// </remarks>
-    public string Id { get; }
+    public string? Id { get; }
 
     /// <summary>
     /// Gets the <see cref="ElementReferenceContext"/> instance.
