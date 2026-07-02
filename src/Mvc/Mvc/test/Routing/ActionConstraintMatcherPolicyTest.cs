@@ -448,7 +448,7 @@ public class ActionConstraintMatcherPolicyTest
                 }
             });
 
-        var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
+        using var actionDescriptorCollectionProvider = new DefaultActionDescriptorCollectionProvider(
             new IActionDescriptorProvider[] { actionDescriptorProvider.Object, },
             Enumerable.Empty<IActionDescriptorChangeProvider>(),
             NullLogger<DefaultActionDescriptorCollectionProvider>.Instance);
