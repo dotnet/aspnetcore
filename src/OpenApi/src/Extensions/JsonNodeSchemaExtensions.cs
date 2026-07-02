@@ -541,7 +541,16 @@ internal static class JsonNodeSchemaExtensions
     {
         // Avoid setting explicit nullability annotations for `object` types so they continue to match on the catch
         // all schema (no type, no format, no constraints).
-        if (propertyInfo.PropertyType != typeof(object) && (propertyInfo.IsGetNullable || propertyInfo.IsSetNullable))
+        if (propertyInfo.PropertyType == typeof(object))
+        {
+            return;
+        }
+
+        // Only consider IsSetNullable when the property has a setter: a get-only non-nullable property should
+        // not be marked nullable just because STJ computes a nullable write-state for its backing field.
+        var isNullable = propertyInfo.IsGetNullable || (propertyInfo.Set is not null && propertyInfo.IsSetNullable);
+
+        if (isNullable)
         {
             if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
                 !schemaTypes.HasFlag(JsonSchemaType.Null))
@@ -549,8 +558,19 @@ internal static class JsonNodeSchemaExtensions
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
         }
-        if (schema.WillBeComponentized() &&
-            propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
+        else
+        {
+            // The underlying JsonSchemaExporter may have added "null" using IsSetNullable when no setter
+            // exists. Remove it so the schema correctly reflects the NRT non-nullable annotation.
+            if (MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes &&
+                schemaTypes.HasFlag(JsonSchemaType.Null))
+            {
+                var withoutNull = schemaTypes & ~JsonSchemaType.Null;
+                schema[OpenApiSchemaKeywords.TypeKeyword] = withoutNull.ToString();
+            }
+        }
+
+        if (schema.WillBeComponentized() && propertyInfo.ShouldApplyNullablePropertySchema())
         {
             schema[OpenApiConstants.NullableProperty] = true;
         }
