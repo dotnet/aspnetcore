@@ -128,7 +128,6 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
     internal sealed class Context
     {
         public HttpContext? HttpContext { get; set; }
-        public IDisposable? Scope { get; set; }
         public Activity? Activity
         {
             get => HttpActivityFeature?.Activity;
@@ -161,7 +160,6 @@ internal sealed class HostingApplication : IHttpApplication<HostingApplication.C
         {
             // Not resetting HttpContext here as we pool it on the Context
 
-            Scope = null;
             Activity = null;
             StartLog = null;
 
