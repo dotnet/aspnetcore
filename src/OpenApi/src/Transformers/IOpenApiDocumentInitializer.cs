@@ -4,16 +4,16 @@
 namespace Microsoft.AspNetCore.OpenApi;
 
 /// <summary>
-/// Represents a transformer that can be used to modify an OpenAPI document.
+/// Represents an initializer that can be used to modify an OpenAPI document before paths, operations, and components are generated.
 /// </summary>
-public interface IOpenApiDocumentTransformer
+public interface IOpenApiDocumentInitializer
 {
     /// <summary>
-    /// Transforms the specified OpenAPI document.
+    /// Initializes the specified OpenAPI document.
     /// </summary>
     /// <param name="document">The <see cref="OpenApiDocument"/> to modify.</param>
     /// <param name="context">The <see cref="OpenApiDocumentTransformerContext"/> associated with the <paramref name="document"/>.</param>
     /// <param name="cancellationToken">The cancellation token to use.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken);
+    Task InitializeAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken);
 }

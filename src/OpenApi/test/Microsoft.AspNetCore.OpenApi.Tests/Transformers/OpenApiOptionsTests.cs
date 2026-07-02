@@ -6,6 +6,57 @@ using Microsoft.AspNetCore.OpenApi;
 public class OpenApiOptionsTests
 {
     [Fact]
+    public void AddDocumentInitializer_WithDocumentInitializerDelegate()
+    {
+        var options = new OpenApiOptions();
+        var initializer = new Func<OpenApiDocument, OpenApiDocumentTransformerContext, CancellationToken, Task>((document, context, cancellationToken) =>
+        {
+            document.Info.Title = "New Title";
+            return Task.CompletedTask;
+        });
+
+        var result = options.AddDocumentInitializer(initializer);
+
+        var insertedInitializer = Assert.Single(options.DocumentInitializers);
+        Assert.IsType<DelegateOpenApiDocumentInitializer>(insertedInitializer);
+        Assert.IsType<OpenApiOptions>(result);
+        Assert.Empty(options.DocumentTransformers);
+        Assert.Empty(options.OperationTransformers);
+        Assert.Empty(options.SchemaTransformers);
+    }
+
+    [Fact]
+    public void AddDocumentInitializer_WithDocumentInitializerInstance()
+    {
+        var options = new OpenApiOptions();
+        var initializer = new TestDocumentInitializer();
+
+        var result = options.AddDocumentInitializer(initializer);
+
+        var insertedInitializer = Assert.Single(options.DocumentInitializers);
+        Assert.Same(initializer, insertedInitializer);
+        Assert.IsType<OpenApiOptions>(result);
+        Assert.Empty(options.DocumentTransformers);
+        Assert.Empty(options.OperationTransformers);
+        Assert.Empty(options.SchemaTransformers);
+    }
+
+    [Fact]
+    public void AddDocumentInitializer_WithDocumentInitializerType()
+    {
+        var options = new OpenApiOptions();
+
+        var result = options.AddDocumentInitializer<TestDocumentInitializer>();
+
+        var insertedInitializer = Assert.Single(options.DocumentInitializers);
+        Assert.IsType<TypeBasedOpenApiDocumentInitializer>(insertedInitializer);
+        Assert.IsType<OpenApiOptions>(result);
+        Assert.Empty(options.DocumentTransformers);
+        Assert.Empty(options.OperationTransformers);
+        Assert.Empty(options.SchemaTransformers);
+    }
+
+    [Fact]
     public void AddDocumentTransformer_WithDocumentTransformerDelegate()
     {
         // Arrange
@@ -179,6 +230,14 @@ public class OpenApiOptionsTests
     private class TestOpenApiDocumentTransformer : IOpenApiDocumentTransformer
     {
         public Task TransformAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private class TestDocumentInitializer : IOpenApiDocumentInitializer
+    {
+        public Task InitializeAsync(OpenApiDocument document, OpenApiDocumentTransformerContext context, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
