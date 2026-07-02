@@ -809,6 +809,12 @@
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSample/CookieSample.csproj" />
     <Project Path="src/Security/Authentication/Cookies/samples/CookieSessionSample/CookieSessionSample.csproj" />
   </Folder>
+  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/">
+    <Project Path="src/Security/Authentication/DeviceBoundSessions/src/Microsoft.AspNetCore.Authentication.DeviceBoundSessions.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/DeviceBoundSessions/samples/">
+    <Project Path="src/Security/Authentication/DeviceBoundSessions/samples/DbscDebugServer/DbscDebugServer.csproj" />
+  </Folder>
   <Folder Name="/src/Security/Authentication/Core/">
     <Project Path="src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
   </Folder>

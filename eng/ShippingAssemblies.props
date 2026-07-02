@@ -122,6 +122,7 @@
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Identity.UI" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Certificate" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.DeviceBoundSessions" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.Google" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
