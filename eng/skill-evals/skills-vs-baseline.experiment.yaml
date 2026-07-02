@@ -1,0 +1,33 @@
+name: skills-vs-baseline
+
+# Controlled A/B for every skill that ships a Vally eval: the same stimuli run with
+# no skill (baseline) and with that skill loaded (skilled). Only /environment/skills
+# varies. Each eng/skill-evals/<skill>/eval.vally.yaml is picked up automatically, and
+# the skilled variant loads .github/skills/<skill> (via ${eval.parent}).
+#
+# NOTE: `vally experiment run` executes the agent in the current working directory, and
+# some stimuli ask the agent to act on the repo (e.g. create a worktree), so run it from
+# an isolated empty directory with an absolute path to this file (paths inside the
+# experiment resolve relative to this file's dir):
+#   mkdir /tmp/skill-eval && cd /tmp/skill-eval
+#   vally experiment run <repo>/eng/skill-evals/skills-vs-baseline.experiment.yaml --output-dir .
+# Run a single skill with: --variant skilled and a glob that matches one eval, or filter by tag.
+evals:
+  - "*/eval.vally.yaml"
+
+overrides:
+  runs: 5
+
+vary:
+  - /environment/skills
+
+baseline: baseline
+
+variants:
+  baseline:
+    environment:
+      skills: []
+  skilled:
+    environment:
+      skills:
+        - "../../.github/skills/${eval.parent}"

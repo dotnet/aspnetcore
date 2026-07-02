@@ -1,0 +1,91 @@
+name: create-worktree
+description: A/B eval for the create-worktree skill (isolated git worktrees under .worktrees/).
+type: capability
+
+# The skill is loaded per-variant by skill-vs-baseline.experiment.yaml (it varies
+# /environment/skills): the baseline runs with no skill, the skilled variant loads
+# create-worktree. Run this spec via `vally experiment run`, not `vally eval` directly.
+defaults:
+  runs: 5
+  timeout: 1200s
+  model: claude-opus-4.6
+  judge_model: claude-opus-4.6
+
+scoring:
+  weights:
+    output-matches: 0.3
+    prompt: 0.7
+  threshold: 0.6
+
+stimuli:
+  - name: create-worktree-to-work-on-a-branch
+    prompt: |
+      I'm working in the dotnet/aspnetcore repository and I want an agent to do some work on a new
+      branch without disturbing my main checkout. Set me up with a git worktree for that branch and
+      walk me through the exact steps so it ends up properly isolated and able to build. Where should
+      the worktree live, and what do I need to do after creating it?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)\.worktrees'
+      - type: output-matches
+        config:
+          pattern: '(?i)submodule'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Places the worktree project-local under .worktrees/<name> rather than as a sibling outside the repo"
+      - "Calls out that the nested worktree must be kept out of the parent's git status (e.g. via a committed .worktrees/.gitignore) so it does not pollute it"
+      - "Says submodules (MessagePack-CSharp / googletest) must be initialized inside the new worktree before building"
+      - "Addresses providing the .NET SDK to the worktree (sharing the parent .dotnet or running restore) instead of assuming it is inherited"
+
+  - name: worktree-build-fails-missing-submodules
+    prompt: |
+      I created a git worktree of the dotnet/aspnetcore repo and tried to build, but it fails with
+      errors about missing MessagePack and googletest sources under src/submodules. The main checkout
+      builds fine. What's wrong and how do I fix just this worktree?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)submodule'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Identifies that a fresh worktree starts with empty submodule working trees even though the main checkout is populated"
+      - "Gives the fix as running git submodule update --init --recursive inside the worktree"
+      - "Does not suggest re-cloning the whole repository or that the main checkout is broken"
+
+  - name: avoid-redownloading-sdk-per-worktree
+    prompt: |
+      Every time I spin up a new worktree of dotnet/aspnetcore, restoring pulls down the whole .NET SDK
+      again and eats gigabytes of disk. I already have the SDK provisioned in my main checkout. How can
+      a new worktree reuse that instead of downloading its own copy?
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(junction|symlink|symbolic link|ln -s|mklink)'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Recommends linking the worktree's .dotnet to the main checkout's already-provisioned .dotnet (junction on Windows, symlink on Linux/macOS)"
+      - "Explains this works because global.json resolves sdk.paths (.dotnet) relative to the worktree"
+      - "Notes the shared SDK is only valid while the global.json sdk.version matches, otherwise restore is needed"
+      - "Does NOT recommend editing global.json sdk.paths to point at the parent SDK"
+
+  - name: in-repo-worktree-config-inheritance
+    prompt: |
+      I want to create a git worktree inside the dotnet/aspnetcore repo, in a subfolder of the repo
+      root rather than as a sibling. Set it up so that MSBuild, NuGet, and editorconfig for projects in
+      that worktree do not pick up the configuration from the top-level repo folder above it, and
+      explain how that isolation is achieved.
+    graders:
+      - type: output-matches
+        config:
+          pattern: '(?i)(Directory\.Build|editorconfig|nuget|root\s*=\s*true|clear)'
+      - type: prompt
+      - type: pairwise
+    rubric:
+      - "Explains that Directory.Build.props/.targets, global.json, and .editorconfig stop at the first match walking up, and the worktree (a full checkout) carries its own at its root, so they do not inherit the parent's"
+      - "Notes that NuGet.config is the one that merges up the tree, and the repo's <clear/> makes the worktree's sources win"
+      - "Recommends nesting under .worktrees/ with barrier/ceiling files (or relies on the committed ones) to cap traversal"
+      - "Does not incorrectly claim the worktree silently inherits the repo-root configuration"

@@ -1,0 +1,3 @@
+<!-- Traversal ceiling: empty project stops MSBuild Directory.Build.targets
+     discovery from climbing past .worktrees/ into the repo-root build. -->
+<Project />
