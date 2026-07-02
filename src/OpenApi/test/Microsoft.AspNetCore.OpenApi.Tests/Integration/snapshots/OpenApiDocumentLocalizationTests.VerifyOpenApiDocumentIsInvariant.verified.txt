@@ -11,6 +11,372 @@
     }
   ],
   "paths": {
+    "/enums/pascalcase/nonnullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PascalCaseStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/PascalCaseStatus"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nonnullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "Active",
+                "Inactive",
+                "Pending"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "enum": [
+                "Active",
+                "Inactive",
+                "Pending"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nonnullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PascalCaseNonNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseNonNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PascalCaseNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nonnullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseNonNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseNonNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nullable-body-model": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseNullableModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nonnullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PascalCaseStatus"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/pascalcase/nullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PascalCaseStatus"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PascalCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nonnullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CamelCaseStatus"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enums/camelcase/nullable-body-direct": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CamelCaseStatus"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/first-doc/get1": {
       "get": {
         "tags": [
@@ -2226,6 +2592,39 @@
         },
         "description": "An item on the board."
       },
+      "CamelCaseNonNullableModel": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/CamelCaseStatus"
+          }
+        }
+      },
+      "CamelCaseNullableModel": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CamelCaseStatus"
+              }
+            ]
+          }
+        }
+      },
+      "CamelCaseStatus": {
+        "enum": [
+          "active",
+          "inactive",
+          "pending"
+        ]
+      },
       "Category": {
         "required": [
           "name",
@@ -2775,6 +3174,39 @@
             }
           }
         }
+      },
+      "PascalCaseNonNullableModel": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PascalCaseStatus"
+          }
+        }
+      },
+      "PascalCaseNullableModel": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/PascalCaseStatus"
+              }
+            ]
+          }
+        }
+      },
+      "PascalCaseStatus": {
+        "enum": [
+          "Active",
+          "Inactive",
+          "Pending"
+        ]
       },
       "Person": {
         "required": [
