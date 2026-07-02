@@ -30,7 +30,7 @@ public class DistributedSessionStore : ISessionStore
     }
 
     /// <inheritdoc />
-    public ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
+    public ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey, HttpContext context)
     {
         ArgumentException.ThrowIfNullOrEmpty(sessionKey);
         ArgumentNullException.ThrowIfNull(tryEstablishSession);
