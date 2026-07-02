@@ -7,6 +7,8 @@
     <PackAsTool>true</PackAsTool>
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
+    <!-- Native AOT requires the CoreCLR runtime; the aggregate executable cannot be produced when building with the Mono runtime. -->
+    <ExcludeFromSourceOnlyBuild Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">true</ExcludeFromSourceOnlyBuild>
     <PublishAot>true</PublishAot>
     <NativeLib>Shared</NativeLib>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
