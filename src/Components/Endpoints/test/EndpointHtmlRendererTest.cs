@@ -1052,6 +1052,23 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public void HttpNavigationManager_TestOverrideCanBeScoped()
+    {
+        var navigationManager = new HttpNavigationManager();
+        ((IHostEnvironmentNavigationManager)navigationManager).Initialize("http://localhost/", "http://localhost/", _ => Task.CompletedTask);
+
+        using var _ = HttpNavigationManager.SetThrowNavigationExceptionOverrideForTest(true);
+        Assert.Throws<NavigationException>(() => navigationManager.NavigateTo("/outer"));
+
+        using (HttpNavigationManager.SetThrowNavigationExceptionOverrideForTest(false))
+        {
+            navigationManager.NavigateTo("/inner");
+        }
+
+        Assert.Throws<NavigationException>(() => navigationManager.NavigateTo("/outer-again"));
+    }
+
+    [Fact]
     public async Task HtmlHelper_Redirects_WhenComponentNavigates()
     {
         // Arrange

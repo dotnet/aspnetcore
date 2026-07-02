@@ -3,16 +3,18 @@
 
 using System.Globalization;
 using System.Net.WebSockets;
-using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace TestServer;
 
 public class HotReloadStartup
+    : IDisposable
 {
+    private readonly IDisposable _isSupportedOverride;
+
     public HotReloadStartup()
     {
-        AppContext.SetSwitch("System.Reflection.Metadata.MetadataUpdater.IsSupported", true);
+        _isSupportedOverride = ComponentsTestHooks.SetMetadataUpdaterIsSupportedForTest(true);
     }
 
     public void ConfigureServices(IServiceCollection services)
@@ -60,5 +62,10 @@ public class HotReloadStartup
             context.DangerousEnableCompression = true;
             return originalFeature.AcceptAsync(context);
         }
+    }
+
+    public void Dispose()
+    {
+        _isSupportedOverride.Dispose();
     }
 }
