@@ -35,15 +35,9 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
     /// Optionally specifies a custom comparer for sorting this column.
     /// </summary>
     /// <remarks>
-    /// <para>
     /// Custom comparers are applied only when sorting in-memory data (LINQ-to-Objects).
     /// If the data source is backed by an IQueryable provider such as EF Core,
     /// the comparer cannot be translated and may result in a runtime exception.
-    /// </para>
-    /// <para>
-    /// For best performance, use a singleton instance rather than creating a new comparer
-    /// on each render, because change detection uses reference equality.
-    /// </para>
     /// </remarks>
     [Parameter] public IComparer<TProp>? Comparer { get; set; }
 
