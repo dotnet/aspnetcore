@@ -156,6 +156,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   let ignoreAnchorScroll = false;
   // Whether the viewport was at the bottom before the last render (for End-mode follow).
   let wasAtBottom = false;
+  // Whether the End-mode viewport is currently "following" the bottom, updated only on user scrolls.
+  let endFollowActive = (anchorMode & 2) !== 0;
   // Pending scroll correction after redistribution changes spacer→item heights.
   let pendingScrollCorrection = false;
   let scrollCorrectionItemIndex = 0;
@@ -479,6 +481,12 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       reobserveSpacers();
     }
 
+    // Track End-mode follow state from user scrolls only.
+    if (anchorMode & 2) {
+      endFollowActive = scrollElement.scrollHeight <= scrollElement.clientHeight
+        || Math.abs(scrollElement.scrollTop + scrollElement.clientHeight - scrollElement.scrollHeight) < 2;
+    }
+
     updateAnchorSnapshot();
   }
   scrollEventTarget.addEventListener('scroll', handleScroll, { passive: true });
@@ -546,7 +554,8 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
     scrollElement,
     startConvergenceObserving,
     setConvergingToBottom: () => { convergingToBottom = true; },
-    setAnchorMode: (mode: number) => { anchorMode = mode; },
+    getEndFollowActive: () => endFollowActive,
+    setAnchorMode: (mode: number) => { anchorMode = mode; endFollowActive = (mode & 2) !== 0; },
     restoreAnchor: restoreAnchorForShift,
     alignToItem: alignToItemAt,
     beginProgrammaticScroll: beginProgrammaticScrollSuppression,
@@ -749,7 +758,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 function scrollToBottom(dotNetHelper: DotNet.DotNetObject): void {
   const { observersByDotNetObjectId, id } = getObserversMapEntry(dotNetHelper);
   const entry = observersByDotNetObjectId[id];
-  if (entry) {
+  if (entry && entry.getEndFollowActive?.()) {
     entry.setConvergingToBottom?.();
     entry.scrollElement.scrollTop = entry.scrollElement.scrollHeight;
     entry.startConvergenceObserving?.();
