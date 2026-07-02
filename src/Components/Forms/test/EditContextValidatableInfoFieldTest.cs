@@ -76,6 +76,32 @@ public class EditContextValidatableInfoFieldTest
     });
 
     [Fact]
+    public Task Validate_WithChildObjectValidationMessages_AreQueryableByChildObject() => RunOnDispatcher(async () =>
+    {
+        var item = new ItemModel { Value = 0 };
+        var rootModel = new RootModel { Name = "valid", Items = { item } };
+        var (editContext, _) = CreateEditContextWithValidation(rootModel);
+
+        var isValid = editContext.Validate();
+
+        Assert.False(isValid);
+        Assert.Equal(new[] { "Value out of range." }, editContext.GetValidationMessages(item));
+    });
+
+    [Fact]
+    public Task ValidateAsync_WithChildObjectValidationMessages_AreQueryableByChildObject() => RunOnDispatcher(async () =>
+    {
+        var item = new ItemModel { Value = 0 };
+        var rootModel = new RootModel { Name = "valid", Items = { item } };
+        var (editContext, _) = CreateEditContextWithValidation(rootModel);
+
+        var isValid = await editContext.ValidateAsync();
+
+        Assert.False(isValid);
+        Assert.Equal(new[] { "Value out of range." }, editContext.GetValidationMessages(item));
+    });
+
+    [Fact]
     public Task NotifyFieldChanged_FixingValue_ClearsPreviousMessage() => RunOnDispatcher(async () =>
     {
         var item = new ItemModel { Value = 200 };

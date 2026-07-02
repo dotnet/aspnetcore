@@ -1,4 +1,7 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Forms.EditContext.GetValidationMessages(object! model) -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.AspNetCore.Components.Forms.EditContext.IsModified(object! model) -> bool
+Microsoft.AspNetCore.Components.Forms.EditContext.MarkAsUnmodified(object! model) -> void
 Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.ValidationRequestedEventArgs(System.Threading.CancellationToken cancellationToken) -> void
 Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.CancellationToken.get -> System.Threading.CancellationToken
 *REMOVED*static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!

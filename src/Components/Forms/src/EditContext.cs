@@ -141,6 +141,27 @@ public sealed class EditContext
     }
 
     /// <summary>
+    /// Clears any modification flag that may be tracked for fields on the specified model object.
+    /// </summary>
+    /// <remarks>
+    /// This performs an O(N) scan across all tracked fields. In scenarios with very large forms, this could be optimized by
+    /// maintaining a secondary index keyed by model instance. This is intentionally deferred to keep the implementation simple.
+    /// </remarks>
+    /// <param name="model">The model object whose field modification flags should be cleared.</param>
+    public void MarkAsUnmodified(object model)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+
+        foreach (var state in _fieldStates)
+        {
+            if (ReferenceEquals(state.Key.Model, model))
+            {
+                state.Value.IsModified = false;
+            }
+        }
+    }
+
+    /// <summary>
     /// Determines whether any of the fields in this <see cref="EditContext"/> have been modified.
     /// </summary>
     /// <returns>True if any of the fields in this <see cref="EditContext"/> have been modified; otherwise false.</returns>
@@ -207,6 +228,32 @@ public sealed class EditContext
         => GetValidationMessages(FieldIdentifier.Create(accessor));
 
     /// <summary>
+    /// Gets the current validation messages for fields on the specified model object.    ///
+    /// This method does not perform validation itself. It only returns messages determined by previous validation actions.
+    /// </summary>
+    /// <remarks>
+    /// This performs an O(N) scan across all tracked fields. In scenarios with very large forms, this could be optimized by
+    /// maintaining a secondary index keyed by model instance. This is intentionally deferred to keep the implementation simple.
+    /// </remarks>
+    /// <param name="model">The model object whose associated field validation messages should be returned.</param>
+    /// <returns>The current validation messages for fields on the specified model object.</returns>
+    public IEnumerable<string> GetValidationMessages(object model)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+
+        foreach (var state in _fieldStates)
+        {
+            if (ReferenceEquals(state.Key.Model, model))
+            {
+                foreach (var message in state.Value.GetValidationMessages())
+                {
+                    yield return message;
+                }
+            }
+        }
+    }
+
+    /// <summary>
     /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
     /// </summary>
     /// <returns>True if the field has been modified; otherwise false.</returns>
@@ -222,6 +269,37 @@ public sealed class EditContext
     /// <returns>True if the field has been modified; otherwise false.</returns>
     public bool IsModified(Expression<Func<object>> accessor)
         => IsModified(FieldIdentifier.Create(accessor));
+
+    /// <summary>
+    /// Determines whether any fields on the specified model object have been modified.
+    /// </summary>
+    /// <remarks>
+    /// This performs an O(N) scan across all tracked fields. In scenarios with very large forms,
+    /// this could be optimized by maintaining a secondary index keyed by model instance.
+    /// This is intentionally deferred to keep the implementation simple.
+    ///
+    /// If an expression (for example, () => model.Property) is passed as an object,
+    /// it will be treated as a model instance rather than an expression. Callers should use
+    /// the expression overload directly to avoid unexpected behavior.
+    /// </remarks>
+    /// <param name="model">The model object to query for modified field state.</param>
+    /// <returns>
+    /// True if any fields on the specified model object have been modified; otherwise false.
+    /// </returns>
+    public bool IsModified(object model)
+    {
+        ArgumentNullException.ThrowIfNull(model);
+
+        foreach (var state in _fieldStates)
+        {
+            if (ReferenceEquals(state.Key.Model, model) && state.Value.IsModified)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Determines whether the specified fields in this <see cref="EditContext"/> has no associated validation messages.

@@ -153,6 +153,162 @@ public class EditContextTest
     }
 
     [Fact]
+    public void CanEnumerateValidationMessagesAcrossAllStoresForModelObject()
+    {
+        var editContext = new EditContext(new object());
+        var model = new object();
+        var otherModel = new object();
+        var store1 = new ValidationMessageStore(editContext);
+        var store2 = new ValidationMessageStore(editContext);
+        var field1 = new FieldIdentifier(model, "field1");
+        var field2 = new FieldIdentifier(model, "field2");
+        var otherField = new FieldIdentifier(otherModel, "field1");
+
+        store1.Add(field1, "Model message 1");
+        store2.Add(field2, "Model message 2");
+        store1.Add(otherField, "Other model message");
+
+        Assert.Equal(new[] { "Model message 1", "Model message 2" }, editContext.GetValidationMessages(model).OrderBy(x => x));
+        Assert.DoesNotContain("Other model message", editContext.GetValidationMessages(model));
+
+        Assert.Empty(editContext.GetValidationMessages(new object()));
+    }
+
+    [Fact]
+    public void CanDetermineIfAnyFieldOnModelObjectIsModified()
+    {
+        var editContext = new EditContext(new object());
+        var model = new object();
+        var otherModel = new object();
+        var field = new FieldIdentifier(model, "field");
+        var otherField = new FieldIdentifier(otherModel, "field");
+
+        Assert.False(editContext.IsModified(model));
+
+        editContext.NotifyFieldChanged(field);
+        editContext.NotifyFieldChanged(otherField);
+
+        Assert.True(editContext.IsModified(model));
+        Assert.True(editContext.IsModified(otherModel));
+        Assert.False(editContext.IsModified(new object()));
+    }
+
+    [Fact]
+    public void CanMarkAllFieldsOnModelObjectAsUnmodified()
+    {
+        var editContext = new EditContext(new object());
+        var model = new object();
+        var otherModel = new object();
+        var field = new FieldIdentifier(model, "field1");
+        var field2 = new FieldIdentifier(model, "field2");
+        var otherField = new FieldIdentifier(otherModel, "field");
+
+        editContext.NotifyFieldChanged(field);
+        editContext.NotifyFieldChanged(field2);
+        editContext.NotifyFieldChanged(otherField);
+
+        editContext.MarkAsUnmodified(model);
+
+        Assert.False(editContext.IsModified(model));
+        Assert.True(editContext.IsModified(otherModel));
+        Assert.False(editContext.IsModified(new object()));
+    }
+
+    [Fact]
+    public void GetValidationMessages_ThrowsForNull()
+    {
+        var editContext = new EditContext(new object());
+
+        Assert.Throws<ArgumentNullException>(() =>
+            editContext.GetValidationMessages(null!));
+    }
+
+    [Fact]
+    public void GetValidationMessages_ReturnsEmpty_WhenNoMatches()
+    {
+        var editContext = new EditContext(new object());
+        var result = editContext.GetValidationMessages(new object());
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void GetValidationMessages_ReturnsAllFieldsForSameObject()
+    {
+        var editContext = new EditContext(new object());
+        var model = new object();
+
+        var store = new ValidationMessageStore(editContext);
+
+        store.Add(new FieldIdentifier(model, "A"), "Error A");
+        store.Add(new FieldIdentifier(model, "B"), "Error B");
+
+        var result = editContext.GetValidationMessages(model).OrderBy(x => x);
+
+        Assert.Equal(new[] { "Error A", "Error B" }, result);
+    }
+
+    [Fact]
+    public void GetValidationMessages_DuplicatesPreserved()
+    {
+        var editContext = new EditContext(new object());
+        var model = new object();
+
+        var store1 = new ValidationMessageStore(editContext);
+        var store2 = new ValidationMessageStore(editContext);
+
+        var field = new FieldIdentifier(model, "A");
+
+        store1.Add(field, "Error");
+        store2.Add(field, "Error");
+
+        var result = editContext.GetValidationMessages(model).ToList();
+
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public void GetValidationMessages_Works_For_RootModel()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+
+        var field = new FieldIdentifier(model, nameof(TestModel.Name));
+        var store = new ValidationMessageStore(editContext);
+        store.Add(field, "Error");
+
+        var messages = editContext.GetValidationMessages(model);
+
+        Assert.Contains("Error", messages);
+    }
+
+    [Fact]
+    public void IsModified_Works_For_RootModel()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+
+        var field = new FieldIdentifier(model, nameof(TestModel.Name));
+        editContext.NotifyFieldChanged(field);
+
+        Assert.True(editContext.IsModified(model));
+    }
+
+    [Fact]
+    public void MarkAsUnmodified_Works_For_RootModel()
+    {
+        var model = new TestModel();
+        var editContext = new EditContext(model);
+
+        var field = new FieldIdentifier(model, nameof(TestModel.Name));
+        editContext.NotifyFieldChanged(field);
+
+        editContext.MarkAsUnmodified(model);
+
+        Assert.False(editContext.IsModified(model));
+    }
+
+    [Fact]
     public void CanEnumerateValidationMessagesAcrossAllStoresForAllFields()
     {
         // Arrange
@@ -349,5 +505,10 @@ public class EditContextTest
         {
             return StringComparer.Ordinal.GetHashCode(Property);
         }
+    }
+
+    private class TestModel
+    {
+        public string Name { get; set; }
     }
 }
