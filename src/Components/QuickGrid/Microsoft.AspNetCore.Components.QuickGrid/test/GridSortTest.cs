@@ -221,11 +221,11 @@ public class GridSortTest
 
         // Assert
         Assert.Equal(2, propertyList.Count);
-        
+
         var firstProperty = propertyList.First();
         Assert.Equal("Name", firstProperty.PropertyName);
         Assert.Equal(SortDirection.Ascending, firstProperty.Direction);
-        
+
         var secondProperty = propertyList.Last();
         Assert.Equal("NullableDate", secondProperty.PropertyName);
         Assert.Equal(SortDirection.Descending, secondProperty.Direction);
@@ -265,6 +265,208 @@ public class GridSortTest
         var gridSort = GridSort<TestEntity>.ByAscending(invalidExpression);
         var exception = Assert.Throws<ArgumentException>(() => gridSort.ToPropertyList(ascending: true));
         Assert.Contains("The supplied expression can't be represented as a property name for sorting", exception.Message);
+    }
+
+    private class StringLengthComparer : System.Collections.Generic.IComparer<string>
+    {
+        public static readonly StringLengthComparer Instance = new();
+        public int Compare(string x, string y)
+        {
+            if (ReferenceEquals(x, y))
+            {
+                return 0;
+            }
+            if (x is null)
+            {
+                return 1;
+            }
+            if (y is null)
+            {
+                return -1;
+            }
+
+            int lengthCmp = y.Length.CompareTo(x.Length);
+            return lengthCmp != 0 ? lengthCmp : string.Compare(x, y, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void ByAscending_WithComparer_SortsUsingComparer()
+    {
+        var data = new[] {
+            new TestEntity { Name = "Alice" },
+            new TestEntity { Name = "Bob" },
+            new TestEntity { Name = "Charlie" }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByAscending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Equal("Charlie", result[0].Name);
+        Assert.Equal("Alice", result[1].Name);
+        Assert.Equal("Bob", result[2].Name);
+    }
+
+    [Fact]
+    public void ByDescending_WithComparer_SortsUsingComparerDescending()
+    {
+        var data = new[] {
+            new TestEntity { Name = "Alice" },
+            new TestEntity { Name = "Bob" },
+            new TestEntity { Name = "Charlie" }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByDescending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Equal("Bob", result[0].Name);
+        Assert.Equal("Alice", result[1].Name);
+        Assert.Equal("Charlie", result[2].Name);
+    }
+
+    [Fact]
+    public void ThenAscending_WithComparer_AppliesComparerAsSecondarySort()
+    {
+        var data = new[] {
+            new TestEntity { Name = "Alice", Age = 30 },
+            new TestEntity { Name = "Bob", Age = 25 },
+            new TestEntity { Name = "Charlie", Age = 30 }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByAscending((TestEntity x) => x.Age)
+            .ThenAscending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Equal("Bob", result[0].Name);
+        Assert.Equal("Charlie", result[1].Name);
+        Assert.Equal("Alice", result[2].Name);
+    }
+
+    [Fact]
+    public void ThenDescending_WithComparer_AppliesComparerAsSecondarySortDescending()
+    {
+        var data = new[] {
+            new TestEntity { Name = "Alice", Age = 30 },
+            new TestEntity { Name = "Bob", Age = 25 },
+            new TestEntity { Name = "Charlie", Age = 30 }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByAscending((TestEntity x) => x.Age)
+            .ThenDescending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Equal("Bob", result[0].Name);
+        Assert.Equal("Alice", result[1].Name);
+        Assert.Equal("Charlie", result[2].Name);
+    }
+
+    [Fact]
+    public void WithComparer_IdenticalLengthStrings_FallsBackToOrdinalComparison()
+    {
+        var data = new[] {
+            new TestEntity { Name = "abc" },
+            new TestEntity { Name = "aaa" },
+            new TestEntity { Name = "abd" }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByAscending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Equal("aaa", result[0].Name);
+        Assert.Equal("abc", result[1].Name);
+        Assert.Equal("abd", result[2].Name);
+    }
+
+    [Fact]
+    public void WithComparer_HandlesNullValues_InSortedSequence()
+    {
+        var data = new[] {
+            new TestEntity { Name = "Alice" },
+            new TestEntity { Name = null! },
+            new TestEntity { Name = "Bob" },
+            new TestEntity { Name = "Charlie" }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByAscending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Equal("Charlie", result[0].Name);
+        Assert.Equal("Alice", result[1].Name);
+        Assert.Equal("Bob", result[2].Name);
+        Assert.Null(result[3].Name);
+    }
+
+    [Fact]
+    public void WithComparer_ToPropertyList_ReturnsCorrectPropertyMetadata()
+    {
+        Expression<Func<TestEntity, string>> expression = x => x.Name;
+
+        var gridSortAsc = GridSort<TestEntity>.ByAscending(expression, StringLengthComparer.Instance);
+        var propertyListAsc = gridSortAsc.ToPropertyList(ascending: true);
+
+        Assert.Single(propertyListAsc);
+        Assert.Equal("Name", propertyListAsc.First().PropertyName);
+        Assert.Equal(SortDirection.Ascending, propertyListAsc.First().Direction);
+
+        var gridSortDesc = GridSort<TestEntity>.ByDescending(expression, StringLengthComparer.Instance);
+        var propertyListDesc = gridSortDesc.ToPropertyList(ascending: true);
+
+        Assert.Single(propertyListDesc);
+        Assert.Equal("Name", propertyListDesc.First().PropertyName);
+        Assert.Equal(SortDirection.Descending, propertyListDesc.First().Direction);
+    }
+
+    [Fact]
+    public void WithComparer_EmptyCollection_ReturnsEmptyResult()
+    {
+        var data = Array.Empty<TestEntity>().AsQueryable();
+        var gridSort = GridSort<TestEntity>.ByAscending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public void WithComparer_SingleItem_ReturnsSameItem()
+    {
+        var data = new[] { new TestEntity { Name = "Solo" } }.AsQueryable();
+        var gridSort = GridSort<TestEntity>.ByAscending((TestEntity x) => x.Name, StringLengthComparer.Instance);
+
+        var result = gridSort.Apply(data, ascending: true).ToArray();
+
+        Assert.Single(result);
+        Assert.Equal("Solo", result[0].Name);
+    }
+
+    [Fact]
+    public void ByAscending_WithComparer_ToggleDescending_ReversesOrder()
+    {
+        var data = new[]
+        {
+            new TestEntity { Name = "Alice" },
+            new TestEntity { Name = "Bob" },
+            new TestEntity { Name = "Charlie" }
+        }.AsQueryable();
+
+        var gridSort = GridSort<TestEntity>.ByAscending(
+            x => x.Name,
+            StringLengthComparer.Instance);
+
+        var ascending = gridSort.Apply(data, true).ToArray();
+        var descending = gridSort.Apply(data, false).ToArray();
+
+        Assert.Equal(new[] { "Charlie", "Alice", "Bob" },
+            ascending.Select(x => x.Name));
+
+        Assert.Equal(new[] { "Bob", "Alice", "Charlie" },
+            descending.Select(x => x.Name));
     }
 
     [Fact]

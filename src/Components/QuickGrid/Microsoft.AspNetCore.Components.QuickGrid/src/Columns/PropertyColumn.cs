@@ -16,6 +16,8 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
     private Expression<Func<TGridItem, TProp>>? _lastAssignedProperty;
     private Func<TGridItem, string?>? _cellTextFunc;
     private GridSort<TGridItem>? _sortBuilder;
+    private IComparer<TProp>? _lastAssignedComparer;
+    private bool _rebuildSort;
 
     /// <summary>
     /// Defines the value to be displayed in this column's cells.
@@ -28,6 +30,16 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
     /// Using this requires the <typeparamref name="TProp"/> type to implement <see cref="IFormattable" />.
     /// </summary>
     [Parameter] public string? Format { get; set; }
+
+    /// <summary>
+    /// Optionally specifies a custom comparer for sorting this column.
+    /// </summary>
+    /// <remarks>
+    /// Custom comparers are applied only when sorting in-memory data (LINQ-to-Objects).
+    /// If the data source is backed by an IQueryable provider such as EF Core,
+    /// the comparer cannot be translated and may result in a runtime exception.
+    /// </remarks>
+    [Parameter] public IComparer<TProp>? Comparer { get; set; }
 
     /// <inheritdoc/>
     public override GridSort<TGridItem>? SortBy
@@ -65,7 +77,17 @@ public class PropertyColumn<TGridItem, TProp> : ColumnBase<TGridItem>
                 _cellTextFunc = item => compiledPropertyExpression!(item)?.ToString();
             }
 
-            _sortBuilder = GridSort<TGridItem>.ByAscending(Property);
+            _rebuildSort = true;
+        }
+
+        if (_rebuildSort || _lastAssignedComparer != Comparer)
+        {
+            _lastAssignedComparer = Comparer;
+            _rebuildSort = false;
+
+            _sortBuilder = Comparer is not null
+                ? GridSort<TGridItem>.ByAscending(Property, Comparer)
+                : GridSort<TGridItem>.ByAscending(Property);
         }
 
         if (Title is null && Property.Body is MemberExpression memberExpression)
