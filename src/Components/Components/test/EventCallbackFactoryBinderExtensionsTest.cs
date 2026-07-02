@@ -459,6 +459,99 @@ public class EventCallbackFactoryBinderExtensionsTest
     }
 
     [Fact]
+    public async Task CreateBinder_NonNullableDateTime_EmptyValue_DoesNotResetBoundValue()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/40660
+        // While the user edits a <input type="date" @bind="..."> bound to a non-nullable
+        // DateTime, the browser briefly reports an empty value for the change event. The
+        // binder must NOT reset the bound field to default(DateTime) (0001-01-01) in that
+        // case, otherwise the component re-renders the default date and the partially
+        // entered value is lost/reset.
+        var value = new DateTime(2022, 2, 10);
+        var component = new EventCountingComponent();
+        Action<DateTime> setter = (_) => value = _;
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+
+        Assert.Equal(new DateTime(2022, 2, 10), value);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public async Task CreateBinder_NonNullableDateTime_EmptyValue_PreservesEachBoundValue()
+    {
+        var value = new DateTime(2022, 2, 10);
+        var component = new EventCountingComponent();
+        Action<DateTime> setter = (_) => value = _;
+
+        EventCallback<ChangeEventArgs> binder = EventCallback.Factory.CreateBinder(component, setter, value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+        Assert.Equal(1, component.Count);
+        var value1 = new DateTime(2023, 02, 09);
+        Action<DateTime> setter1 = (_) => value1 = _;
+
+        var binder1 = EventCallback.Factory.CreateBinder(component, setter1, value1, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+        await binder1.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+        // The setter must not have been called, so the previous valid value is preserved.
+        Assert.Equal(new DateTime(2023, 02, 9), value1);
+        Assert.Equal(2, component.Count);
+    }
+
+    [Fact]
+    public async Task CreateBinder_AsyncSetter_NonNullableDateTime_EmptyValue_DoesNotResetBoundValue()
+    {
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/40660
+        // This covers the Func<T, Task> overload (CreateBinderCoreAsync), which must also
+        // avoid resetting a non-nullable DateTime to default(DateTime) when the browser
+        // briefly reports an empty value during editing.
+        var value = new DateTime(2022, 2, 10);
+        var component = new EventCountingComponent();
+        Func<DateTime, Task> setter = (_) => { value = _; return Task.CompletedTask; };
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+
+        Assert.Equal(new DateTime(2022, 2, 10), value);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public async Task CreateBinder_AsyncSetter_NonNullableDateTime_NoFormat_EmptyValue_DoesNotResetBoundValue()
+    {
+        // Same regression as above, but exercising the CreateBinderCoreAsync overload without a format.
+        var value = new DateTime(2022, 2, 10);
+        var component = new EventCountingComponent();
+        Func<DateTime, Task> setter = (_) => { value = _; return Task.CompletedTask; };
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value, CultureInfo.InvariantCulture);
+
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+
+        Assert.Equal(new DateTime(2022, 2, 10), value);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
+    public async Task CreateBinder_AsyncSetter_NullableInt_EmptyValue_CallsSetterWithDefault()
+    {
+        // The async setter overload must still apply default(T) on empty string for types where
+        // that is the expected behavior (e.g., nullable types reset to null).
+        var value = (int?)17;
+        var component = new EventCountingComponent();
+        Func<int?, Task> setter = (_) => { value = _; return Task.CompletedTask; };
+
+        var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+        await binder.InvokeAsync(new ChangeEventArgs() { Value = string.Empty, });
+
+        Assert.Null(value);
+        Assert.Equal(1, component.Count);
+    }
+
+    [Fact]
     public async Task CreateBinder_DateTimeOffset()
     {
         // Arrange
