@@ -448,7 +448,7 @@ internal static class StaticRouteHandlerModelEmitter
 
         for (var i = 0; i < endpoint.Parameters.Length; i++)
         {
-            // The null suppression operator on the GetArgument(...) call here is required because we'll occassionally be
+            // The null suppression operator on the GetArgument(...) call here is required because we'll occasionally be
             // dealing with nullable types here. We could try to do fancy things to branch the logic here depending on
             // the nullability, but at the end of the day we are going to call GetArguments(...) - at runtime the nullability
             // suppression operator doesn't come into play - so its not worth worrying about.
