@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
@@ -23,6 +26,7 @@ public class EditFormTest
         services.AddSingleton<ComponentStatePersistenceManager>();
         services.AddSingleton(services => services.GetRequiredService<ComponentStatePersistenceManager>().State);
         services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        services.AddSingleton(Mock.Of<IJSRuntime>());
         _testRenderer = new(services.BuildServiceProvider());
     }
 
@@ -118,13 +122,14 @@ public class EditFormTest
         //  - Does not set any "method" attribute
         //  - Does not assign any name to the submit event
         Assert.Collection(editFormFrames.AsEnumerable(),
-            frame => AssertFrame.Region(frame, 7),
-            frame => AssertFrame.Element(frame, "form", 6),
+            frame => AssertFrame.Region(frame, 8),
+            frame => AssertFrame.Element(frame, "form", 7),
             frame => AssertFrame.Attribute(frame, "onsubmit"),
             frame => AssertFrame.Component<CascadingValue<EditContext>>(frame, 4),
             frame => AssertFrame.Attribute(frame, "IsFixed", true),
             frame => AssertFrame.Attribute(frame, "Value"),
-            frame => AssertFrame.Attribute(frame, "ChildContent"));
+            frame => AssertFrame.Attribute(frame, "ChildContent"),
+            frame => { Assert.Equal(RenderTreeFrameType.ElementReferenceCapture, frame.FrameType); Assert.Equal(10, frame.Sequence); });
     }
 
     [Fact]
@@ -147,8 +152,8 @@ public class EditFormTest
 
         // Assert
         Assert.Collection(editFormFrames.AsEnumerable(),
-            frame => AssertFrame.Region(frame, 13),
-            frame => AssertFrame.Element(frame, "form", 12),
+            frame => AssertFrame.Region(frame, 14),
+            frame => AssertFrame.Element(frame, "form", 13),
 
             // Sets "method" to "post" by default
             frame => AssertFrame.Attribute(frame, "method", "post"),
@@ -169,7 +174,9 @@ public class EditFormTest
             frame => AssertFrame.Component<CascadingValue<EditContext>>(frame, 4),
             frame => AssertFrame.Attribute(frame, "IsFixed", true),
             frame => AssertFrame.Attribute(frame, "Value"),
-            frame => AssertFrame.Attribute(frame, "ChildContent"));
+            frame => AssertFrame.Attribute(frame, "ChildContent"),
+
+            frame => { Assert.Equal(RenderTreeFrameType.ElementReferenceCapture, frame.FrameType); Assert.Equal(10, frame.Sequence); });
     }
 
     [Fact]
@@ -312,6 +319,61 @@ public class EditFormTest
         Assert.False(editContext.IsValidationPending(field));
         Assert.Equal(1, validator.FormValidationStartCount);
         Assert.Equal(1, validSubmitCount);
+    }
+
+    [Fact]
+    public async Task SubmitAsync_InvokesJsInteropToSubmitForm()
+    {
+        var jsRuntime = new Mock<IJSRuntime>(MockBehavior.Strict);
+        var model = new TestModel();
+        var rootComponent = new TestEditFormHostComponent
+        {
+            Model = model,
+        };
+
+        ElementReference? capturedElementReference = null;
+        jsRuntime.Setup(x => x.InvokeAsync<IJSVoidResult>(It.IsAny<string>(), It.IsAny<CancellationToken>(), It.IsAny<object[]>()))
+            .Callback<string, CancellationToken, object[]>((identifier, token, args) =>
+            {
+                Assert.Equal("Blazor._internal.Forms.submitForm", identifier);
+                capturedElementReference = (ElementReference)args[0];
+            })
+            .Returns(ValueTask.FromResult(Mock.Of<IJSVoidResult>()));
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IFormValueMapper, TestFormValueModelBinder>();
+        services.AddAntiforgery();
+        services.AddLogging();
+        services.AddSingleton<ComponentStatePersistenceManager>();
+        services.AddSingleton(services => services.GetRequiredService<ComponentStatePersistenceManager>().State);
+        services.AddSingleton<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
+        services.AddSingleton(jsRuntime.Object);
+        var testRenderer = new TestRenderer(services.BuildServiceProvider());
+        var componentId = testRenderer.AssignRootComponentId(rootComponent);
+        await testRenderer.RenderRootComponentAsync(componentId);
+
+        var editForm = FindEditFormComponent(testRenderer.Batches.Single());
+        await editForm.SubmitAsync();
+
+        Assert.True(capturedElementReference.HasValue, "The JS interop call was not made.");
+        jsRuntime.VerifyAll();
+    }
+
+    [Fact]
+    public async Task SubmitAsync_ThrowsWhenFormIsConfiguredForSSR()
+    {
+        var editContext = new EditContext(new object());
+        var rootComponent = new TestEditFormHostComponent
+        {
+            FormName = "my-form",
+            MappingContextName = "mapping-context-name",
+            EditContext = editContext,
+        };
+
+        await RenderAndGetTestEditFormComponentAsync(rootComponent);
+        var editForm = FindEditFormComponent(_testRenderer.Batches.Single());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => editForm.SubmitAsync());
     }
 
     private async Task RenderAsyncRootAsync(AsyncEditFormHostComponent rootComponent)
