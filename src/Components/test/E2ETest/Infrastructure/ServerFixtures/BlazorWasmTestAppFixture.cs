@@ -50,7 +50,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             {
                 "--urls", $"http://{host}:0",
                 "--contentroot", ContentRoot,
-                "--pathbase", PathBase,
+                "--Gateway:PathBase", PathBase,
                 "--staticWebAssets", Path.ChangeExtension(assemblyLocation, ".staticwebassets.runtime.json"),
                 "--ClientApps:app:EndpointsManifest", Path.ChangeExtension(assemblyLocation, ".staticwebassets.endpoints.json"),
                 "--ClientApps:app:PathPrefix", "",
@@ -62,7 +62,9 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add(Environment);
         }
 
-        return BlazorGateway.BuildWebHost(args.ToArray());
+        var app = BlazorGateway.BuildWebHost(args.ToArray());
+        app.MapFallbackToFile("index.html");
+        return app;
     }
 
     private IHost CreateStaticWebHost(string contentRoot)

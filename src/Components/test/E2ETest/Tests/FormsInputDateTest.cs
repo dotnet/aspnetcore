@@ -74,16 +74,16 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
 
         // Validates on edit
         Browser.Equal("valid", () => expiryDateInput.GetDomAttribute("class"));
-        expiryDateInput.SendKeys("01-01-2000\t");
+        SetDateInputValue(expiryDateInput, "2000-01-01");
         Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
 
-        // Can become invalid
-        expiryDateInput.SendKeys("11-11-11111\t");
+        // Can become invalid (year is out of range for DateTimeOffset)
+        SetDateInputValue(expiryDateInput, "11111-11-11");
         Browser.Equal("modified invalid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
 
         // Empty is valid, because it's nullable
-        expiryDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+        SetDateInputValue(expiryDateInput, "");
         Browser.Equal("modified valid", () => expiryDateInput.GetDomAttribute("class"));
         Browser.Empty(messagesAccessor);
     }
@@ -241,4 +241,15 @@ public class FormsInputDateTest : ServerTestBase<ToggleExecutionModeServerFixtur
             .OrderBy(x => x)
             .ToArray();
     }
+
+    // Sets the value of a native date/time input directly and raises the "change" event that
+    // InputDate binds to. This avoids the well-known flakiness of driving the browser's native
+    // date-picker segments via simulated keystrokes (see the class-level comment above), while
+    // still exercising the real value-parsing and EditContext validation path.
+    private void SetDateInputValue(IWebElement input, string value)
+        => ((IJavaScriptExecutor)Browser).ExecuteScript(
+            "arguments[0].value = arguments[1];" +
+            "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+            input,
+            value);
 }
