@@ -72,6 +72,8 @@
       "src\\Components\\Testing\\testassets\\TestApp\\TestApp.csproj",
       "src\\Components\\Testing\\testassets\\TestApp.Client\\TestApp.Client.csproj",
       "src\\Components\\Testing\\testassets\\TestApp.E2E.Tests\\TestApp.E2E.Tests.csproj",
+      "src\\Components\\AI\\src\\Microsoft.AspNetCore.Components.AI.csproj",
+      "src\\Components\\AI\\test\\Microsoft.AspNetCore.Components.AI.Tests.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
       "src\\DataProtection\\Cryptography.Internal\\src\\Microsoft.AspNetCore.Cryptography.Internal.csproj",
       "src\\DataProtection\\Cryptography.KeyDerivation\\src\\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj",
