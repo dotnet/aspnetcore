@@ -46,8 +46,8 @@ public sealed class EditContext
     /// <remarks>
     /// Handlers run synchronously in subscription order. A validator that performs asynchronous work
     /// keeps its handler synchronous and registers a factory via
-    /// <see cref="ValidationRequestedEventArgs.AddValidationTask(Func{CancellationToken, Task})"/>, for example
-    /// <c>(sender, args) =&gt; args.AddValidationTask(token =&gt; ValidateAsyncCore(token))</c>.
+    /// <see cref="ValidationRequestedEventArgs.AddAsyncValidator(Func{CancellationToken, Task})"/>, for example
+    /// <c>(sender, args) =&gt; args.AddAsyncValidator(token =&gt; ValidateAsyncCore(token))</c>.
     /// <see cref="ValidateAsync(CancellationToken)"/> invokes every registered factory and awaits the
     /// resulting tasks; <see cref="Validate"/> throws <see cref="InvalidOperationException"/> if a handler
     /// registers asynchronous work. Do not use an <c>async void</c> handler: its work is not awaited and
@@ -229,14 +229,14 @@ public sealed class EditContext
     /// <returns><c>true</c> if there are no validation messages after validation; otherwise <c>false</c>.</returns>
     /// <remarks>
     /// Runs synchronous validators only. A handler that registers asynchronous work via
-    /// <see cref="ValidationRequestedEventArgs.AddValidationTask(Func{CancellationToken, Task})"/> causes an
+    /// <see cref="ValidationRequestedEventArgs.AddAsyncValidator(Func{CancellationToken, Task})"/> causes an
     /// <see cref="InvalidOperationException"/>; use <see cref="ValidateAsync"/> for async validators.
     /// Do not call validation re-entrantly from a validation handler.
     /// </remarks>
     /// <exception cref="InvalidOperationException">A handler registered an asynchronous validation task.</exception>
     public bool Validate()
     {
-        // Sync pass: args.IsAsync is false, so AddValidationTask throws. A handler exception propagates.
+        // Sync pass: args.IsAsync is false, so AddAsyncValidator throws. A handler exception propagates.
         OnValidationRequested?.Invoke(this, new ValidationRequestedEventArgs());
 
         // A clean sync pass produced no infrastructure fault.
@@ -247,7 +247,7 @@ public sealed class EditContext
 
     /// <summary>
     /// Validates this <see cref="EditContext"/> asynchronously, awaiting any validation tasks that handlers
-    /// register via <see cref="ValidationRequestedEventArgs.AddValidationTask(Func{CancellationToken, Task})"/>.
+    /// register via <see cref="ValidationRequestedEventArgs.AddAsyncValidator(Func{CancellationToken, Task})"/>.
     /// </summary>
     /// <param name="cancellationToken">Cancels this validation pass; it is passed to each registered factory.
     /// If cancelled (including already-cancelled on entry) this method throws <see cref="OperationCanceledException"/>
@@ -273,40 +273,42 @@ public sealed class EditContext
         OnValidationRequested?.Invoke(this, args);
 
         // Invoke all registered factories to start their work concurrently, tracking whether any suspends.
-        var factories = args.ValidationTaskFactories;
-        var tasks = new Task[factories.Count];
-        var completedSynchronously = true;
+        var validators = args.AsyncValidators;
+        List<Task>? pendingTasks = null;
 
-        for (var i = 0; i < tasks.Length; i++)
+        for (var i = 0; i < validators.Count; i++)
         {
-            var task = InvokeValidationFactory(factories[i], cancellationToken);
-            tasks[i] = task;
-            completedSynchronously &= task.IsCompleted;
-        }
-
-        // Announce the pending transition only when some task actually suspends.
-        // If every task completed synchronously the form never observably enters the pending state.
-        // This prevents spurious state change notifications and UI flashes.
-        if (!completedSynchronously)
-        {
-            _isFormValidationPending = true;
-            NotifyValidationStateChanged();
+            var task = InvokeAsyncValidator(validators[i], cancellationToken);
+            if (!task.IsCompleted)
+            {
+                (pendingTasks ??= new()).Add(task);
+            }
         }
 
         try
         {
             var faulted = false;
-            foreach (var task in tasks)
+
+            if (pendingTasks is { Count: > 0 } tasks)
             {
-                try
+                // Announce the pending transition only when some task actually suspends.
+                // If every task completed synchronously the form never observably enters the pending state.
+                // This prevents spurious state change notifications and UI flashes.
+                _isFormValidationPending = true;
+                NotifyValidationStateChanged();
+
+                foreach (var task in tasks)
                 {
-                    await task;
-                }
-                catch
-                {
-                    // The validation faulted, or was cancelled by a source other than the caller's token.
-                    // A caller-cancelled task is discarded below when ThrowIfCancellationRequested throws.
-                    faulted = true;
+                    try
+                    {
+                        await task;
+                    }
+                    catch
+                    {
+                        // The validation faulted, or was cancelled by a source other than the caller's token.
+                        // A caller-cancelled task is discarded below when ThrowIfCancellationRequested throws.
+                        faulted = true;
+                    }
                 }
             }
 
@@ -323,13 +325,13 @@ public sealed class EditContext
             NotifyValidationStateChanged();
         }
 
-        static Task InvokeValidationFactory(Func<CancellationToken, Task> validate, CancellationToken cancellationToken)
+        static Task InvokeAsyncValidator(Func<CancellationToken, Task> validate, CancellationToken cancellationToken)
             => validate(cancellationToken)
                 ?? throw new InvalidOperationException("The validation task factory returned a null task.");
     }
 
     /// <summary>
-    /// Registers an asynchronous validation for a specific field. The <paramref name="validate"/> factory
+    /// Registers an asynchronous validation for a specific field. The <paramref name="validator"/> factory
     /// is invoked immediately with a <see cref="CancellationToken"/> owned by this <see cref="EditContext"/>,
     /// and the returned <see cref="Task"/> is tracked for <see cref="IsValidationPending(in FieldIdentifier)"/>
     /// and <see cref="IsValidationFaulted(in FieldIdentifier)"/>. A validation already tracked for the field
@@ -337,22 +339,22 @@ public sealed class EditContext
     /// </summary>
     /// <remarks>
     /// The <see cref="EditContext"/> owns the token source end to end; to also cancel from another source,
-    /// link inside <paramref name="validate"/> via
+    /// link inside <paramref name="validator"/> via
     /// <see cref="CancellationTokenSource.CreateLinkedTokenSource(CancellationToken)"/>. Write
-    /// <paramref name="validate"/> as an <c>async</c> method so a pre-<c>await</c> throw is captured into the
-    /// task rather than thrown from this method. If <paramref name="validate"/> throws or returns
+    /// <paramref name="validator"/> as an <c>async</c> method so a pre-<c>await</c> throw is captured into the
+    /// task rather than thrown from this method. If <paramref name="validator"/> throws or returns
     /// <see langword="null"/>, any prior validation for the field is still superseded before the exception
     /// propagates. Validators should clear prior messages for the field up-front and avoid writing partial
     /// results on a path that may throw.
     /// </remarks>
     /// <param name="fieldIdentifier">Identifies the field being validated.</param>
-    /// <param name="validate">A factory that starts the asynchronous validation using the supplied
+    /// <param name="validator">A factory that starts the asynchronous validation using the supplied
     /// cancellation token and returns the in-flight <see cref="Task"/>.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="validate"/> is <see langword="null"/>.</exception>
-    /// <exception cref="InvalidOperationException"><paramref name="validate"/> returned a <see langword="null"/> task.</exception>
-    public void TrackFieldValidation(in FieldIdentifier fieldIdentifier, Func<CancellationToken, Task> validate)
+    /// <exception cref="ArgumentNullException"><paramref name="validator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="InvalidOperationException"><paramref name="validator"/> returned a <see langword="null"/> task.</exception>
+    public void RegisterAsyncFieldValidator(in FieldIdentifier fieldIdentifier, Func<CancellationToken, Task> validator)
     {
-        ArgumentNullException.ThrowIfNull(validate);
+        ArgumentNullException.ThrowIfNull(validator);
 
         var state = GetOrAddFieldState(fieldIdentifier);
 
@@ -362,7 +364,7 @@ public sealed class EditContext
         Task task;
         try
         {
-            task = validate(cts.Token);
+            task = validator(cts.Token);
         }
         catch
         {

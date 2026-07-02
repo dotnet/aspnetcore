@@ -1,10 +1,10 @@
-@using System.Threading
+﻿@using System.Threading
 @using Microsoft.AspNetCore.Components.Forms
 @implements IDisposable
 
 @* Exercises the async form validation APIs end to end with deterministic timing. Both the per-field
-   validator (registered via EditContext.TrackFieldValidation on field change) and the form-level
-   validator (registered via ValidationRequestedEventArgs.AddValidationTask on validation request)
+   validator (registered via EditContext.RegisterAsyncFieldValidator on field change) and the form-level
+   validator (registered via ValidationRequestedEventArgs.AddAsyncValidator on validation request)
    block on a TaskCompletionSource gate that the test releases by clicking a button, so the
    pending -> settled transition is observable without relying on time delays. The field value
    selects the outcome: "error" faults, "taken" is invalid, "reserved" is rejected by the form-level
@@ -78,7 +78,7 @@
     {
         if (e.FieldIdentifier.FieldName == nameof(TestModel.Username))
         {
-            _editContext.TrackFieldValidation(e.FieldIdentifier, ValidateUsernameAsync);
+            _editContext.RegisterAsyncFieldValidator(e.FieldIdentifier, ValidateUsernameAsync);
         }
     }
 
@@ -105,7 +105,7 @@
     }
 
     private void OnValidationRequested(object sender, ValidationRequestedEventArgs e)
-        => e.AddValidationTask(ValidateFormAsync);
+        => e.AddAsyncValidator(ValidateFormAsync);
 
     private async Task ValidateFormAsync(CancellationToken token)
     {

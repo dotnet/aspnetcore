@@ -114,7 +114,7 @@ internal sealed class TestAsyncValidator : IDisposable
         var field = args.FieldIdentifier;
         var config = GetConfig(field);
         _store.Clear(field);
-        _editContext.TrackFieldValidation(field, token => RunValidationAsync(field, config, token));
+        _editContext.RegisterAsyncFieldValidator(field, token => RunValidationAsync(field, config, token));
     }
 
     private void OnValidationRequested(object sender, ValidationRequestedEventArgs args)
@@ -126,7 +126,7 @@ internal sealed class TestAsyncValidator : IDisposable
         {
             // Register each field's validation as a factory. RunValidationAsync is an async method, so a
             // synchronous throw is captured into the returned task. The framework invokes the factory.
-            args.AddValidationTask(token => RunValidationAsync(field, GetConfig(field), token));
+            args.AddAsyncValidator(token => RunValidationAsync(field, GetConfig(field), token));
         }
     }
 

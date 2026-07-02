@@ -86,14 +86,14 @@ public static partial class EditContextDataAnnotationsExtensions
                 _validationOptions.TryGetValidatableTypeInfo(modelType, out var typeInfo) &&
                 typeInfo.TryFindProperty(fieldIdentifier.FieldName, _validationOptions, out var validatablePropertyInfo))
             {
-                _editContext.TrackFieldValidation(
+                _editContext.RegisterAsyncFieldValidator(
                     fieldIdentifier,
                     token => ValidateFieldWithValidatableInfoAsync(fieldIdentifier, validatablePropertyInfo, token));
             }
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             else if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
             {
-                _editContext.TrackFieldValidation(
+                _editContext.RegisterAsyncFieldValidator(
                     fieldIdentifier,
                     token => ValidateFieldWithValidatorAsync(fieldIdentifier, propertyInfo, token));
             }
@@ -104,7 +104,7 @@ public static partial class EditContextDataAnnotationsExtensions
             if (e.IsAsync)
             {
                 // ValidateAsync invokes the registered factory and awaits the resulting task.
-                e.AddValidationTask(ValidateFormAndNotifyAsync);
+                e.AddAsyncValidator(ValidateFormAndNotifyAsync);
             }
             else
             {
@@ -288,7 +288,7 @@ public static partial class EditContextDataAnnotationsExtensions
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // Cancelled (field re-edited or form submitting); the superseding TrackFieldValidation
+                // Cancelled (field re-edited or form submitting); the superseding RegisterAsyncFieldValidator
                 // call already notified with the cleared messages.
                 return;
             }
@@ -324,7 +324,7 @@ public static partial class EditContextDataAnnotationsExtensions
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                // Cancelled (field re-edited or form submitting); the superseding TrackFieldValidation
+                // Cancelled (field re-edited or form submitting); the superseding RegisterAsyncFieldValidator
                 // call already notified with the cleared messages.
                 return;
             }

@@ -17,7 +17,7 @@ public class FieldCssClassProvider
     /// Gets a string that indicates the status of the specified field as a CSS class: one of
     /// <c>"valid"</c>, <c>"invalid"</c>, <c>"pending"</c>, or <c>"faulted"</c>, optionally prefixed with
     /// <c>"modified "</c> when <see cref="EditContext.IsModified(in FieldIdentifier)"/> is <c>true</c>.
-    /// <c>"pending"</c> (async validation registered via <see cref="EditContext.TrackFieldValidation"/> in
+    /// <c>"pending"</c> (async validation registered via <see cref="EditContext.RegisterAsyncFieldValidator"/> in
     /// flight) and <c>"faulted"</c> (the last async validation threw) both supersede valid/invalid since
     /// the outcome is not yet known; otherwise <c>"valid"</c>/<c>"invalid"</c> reflects whether the field
     /// has any validation messages.

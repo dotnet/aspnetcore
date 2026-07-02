@@ -303,7 +303,7 @@ public class EditFormTest
         await RenderAsyncRootAsync(rootComponent);
         CancellationToken capturedToken = default;
         var pendingTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        editContext.TrackFieldValidation(field, token =>
+        editContext.RegisterAsyncFieldValidator(field, token =>
         {
             capturedToken = token;
             token.Register(() => pendingTcs.TrySetCanceled(token));
