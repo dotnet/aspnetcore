@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
@@ -71,6 +72,7 @@ public static class SchemasEndpointsExtensions
             RequiredEnum = TestEnum.Value1,
             NullableEnum = null
         }));
+        schemas.MapGet("/nullable-enum-params", (MyEnum requiredEnum, MyEnum? nullableEnum) => TypedResults.NoContent());
 
         return endpointRouteBuilder;
     }
@@ -260,6 +262,13 @@ public static class SchemasEndpointsExtensions
         Value1,
         Value2,
         Value3
+    }
+
+    [JsonConverter(typeof(JsonStringEnumConverter<MyEnum>))]
+    public enum MyEnum
+    {
+        Value1,
+        Value2
     }
 
     public sealed class EnumNullableModel

@@ -566,7 +566,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                         });
                 });
 
-            Assert.Equal(["Point", "Todo"], [.. document.Components.Schemas.Keys]);
+            Assert.Equal(["NullableOfPoint", "Todo"], [.. document.Components.Schemas.Keys]);
             Assert.Collection(document.Components.Schemas.Values,
                 item => Assert.Equal(JsonSchemaType.Object, item.Type),
                 item => Assert.Equal(JsonSchemaType.Object, item.Type));
@@ -1060,7 +1060,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var paths = Assert.Single(document.Paths.Values);
             var operation = paths.Operations[HttpMethod.Post];
 
-            var modelSchema = document.Components.Schemas["SampleEnum"];
+            var modelSchema = document.Components.Schemas["NullableOfSampleEnum"];
             Assert.Equal("Enum: SampleEnum", modelSchema.Description);
         });
     }
