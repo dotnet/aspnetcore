@@ -116,6 +116,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
 
     /// <summary>
+    /// Optional template for displaying expandable row details. When supplied, the grid renders a toggle button in each row, and the expanded details content appears in a separate row below the item row.
+    /// The expanded state is tracked by <see cref="ItemKey"/>, so it remains stable across data refreshes.
+    /// </summary>
+    [Parameter] public RenderFragment<TGridItem>? RowDetailsTemplate { get; set; }
+
+    /// <summary>
     /// The parameter from which the page and sorting URL parameters are derived. The default value is an empty string, which results in query parameters named "page", "sort", and "order". If you provide a non-empty value, for example "products",
     /// then the query parameters will be "products_page", "products_sort", and "products_order". This allows you to use multiple <see cref="QuickGrid{TGridItem}"/> components on the same page without their URL parameters conflicting with each other.
     /// </summary>
@@ -173,6 +179,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private bool _firstRefreshDataAsync = true;
 
     private (string ColumnTitle, bool Ascending)? _cachedSortFromQuery;
+    private readonly HashSet<object?> _expandedRowDetails = new();
 
     private string SortQueryParameterNameBy => QueryParameterNamePrefix == "" ? "sort" : $"{QueryParameterNamePrefix}_sort";
     private string SortQueryParameterNameOrder => QueryParameterNamePrefix == "" ? "order" : $"{QueryParameterNamePrefix}_order";
@@ -510,6 +517,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // Normalizes all the different ways of configuring a data source so they have common GridItemsProvider-shaped API
     private async ValueTask<GridItemsProviderResult<TGridItem>> ResolveItemsRequestAsync(GridItemsProviderRequest<TGridItem> request)
     {
+        _expandedRowDetails.Clear();
         if (ItemsProvider is not null)
         {
             return await ItemsProvider(request);
@@ -543,9 +551,48 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     private string GridClass()
     {
-        var gridClass = $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")}";
+        var gridClass = $"quickgrid {Class} {(_pendingDataLoadCancellationTokenSource is null ? null : "loading")} {(RowDetailsTemplate is not null ? "row-details-enabled" : null)}";
         return AttributeUtilities.CombineClassNames(AdditionalAttributes, gridClass) ?? string.Empty;
     }
+
+    private int GetAriaBodyRowCount()
+    {
+        if (Virtualize)
+        {
+            return _ariaBodyRowCount;
+        }
+
+        var rowDetailsRowCount = RowDetailsTemplate is not null ? _currentNonVirtualizedViewItems.Count(IsRowDetailsExpanded) : 0;
+        var rowCount = _currentNonVirtualizedViewItems.Count + rowDetailsRowCount;
+
+        if (Pagination is not null)
+        {
+            rowCount = Math.Max(rowCount, Pagination.ItemsPerPage);
+        }
+
+        return rowCount;
+    }
+
+    private bool IsRowDetailsExpanded(TGridItem item)
+        => RowDetailsTemplate is not null && _expandedRowDetails.Contains(ItemKey(item));
+
+    private void ToggleRowDetailsAsync(TGridItem item)
+    {
+        if (RowDetailsTemplate is null)
+        {
+            return;
+        }
+
+        var key = ItemKey(item);
+        if (!_expandedRowDetails.Add(key))
+        {
+            _expandedRowDetails.Remove(key);
+        }
+    }
+
+    private object GetRowDetailsKey(TGridItem item) => (ItemKey(item), true);
+
+    private int GetBodyColumnCount() => _columns.Count + (RowDetailsTemplate is not null ? 1 : 0);
 
     private static string? ColumnClass(ColumnBase<TGridItem> column) => column.Align switch
     {
@@ -560,6 +607,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _expandedRowDetails.Clear();
         NavigationManager.LocationChanged -= OnLocationChanged;
         _wasDisposed = true;
         _currentPageItemsChanged.Dispose();
