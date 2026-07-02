@@ -234,6 +234,33 @@ namespace Test
     }
 
     [Fact]
+    public async Task DiagnosticsAreReturned_ForActionsReturnedFromConditionalExpression()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Mvc;
+
+namespace Test
+{
+    [ApiController]
+    public class Foo : ControllerBase
+    {
+        public IActionResult Get(bool b)
+        {
+            return b ? Ok() : BadRequest();
+        }
+    }
+}";
+        var testSource = TestSource.Read(source);
+
+        // Act
+        var result = await Executor.GetDiagnosticsAsync(testSource.Source);
+
+        // Assert
+        Assert.Contains(result, d => d.Id == ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode.Id);
+    }
+
+    [Fact]
     public Task DiagnosticsAreReturned_IfMethodWithProducesResponseTypeAttribute_ReturnsUndocumentedStatusCode()
         => RunTest(ApiDiagnosticDescriptors.API1000_ActionReturnsUndocumentedStatusCode, 404);
 
