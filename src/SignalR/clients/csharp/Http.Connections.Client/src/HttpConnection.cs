@@ -54,6 +54,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private readonly ILoggerFactory _loggerFactory;
     private readonly Uri _url;
     private Func<Task<string?>>? _accessTokenProvider;
+    private readonly Func<Task<string?>>? _appAccessTokenProvider;
     private AccessTokenHttpMessageHandler? _accessTokenHandler;
 
     /// <inheritdoc />
@@ -152,6 +153,8 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _logger = _loggerFactory.CreateLogger(typeof(HttpConnection));
         _httpConnectionOptions = httpConnectionOptions;
+        // Capture the app's access token provider now before any transport overwrites
+        _appAccessTokenProvider = httpConnectionOptions.AccessTokenProvider;
 
         _url = _httpConnectionOptions.Url;
 
@@ -710,11 +713,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     // Get the original app token used to authenticate the /refresh request.
     internal Task<string?> GetRefreshRequestTokenAsync()
     {
-        if (_httpConnectionOptions.AccessTokenProvider == null)
+        if (_appAccessTokenProvider == null)
         {
             return _noAccessToken;
         }
-        return _httpConnectionOptions.AccessTokenProvider();
+        return _appAccessTokenProvider();
     }
 
     private void CheckDisposed()
@@ -752,7 +755,11 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             negotiationResponse.ConnectionToken = _connectionId;
         }
         _connectionToken = negotiationResponse.ConnectionToken;
-        _initialTokenLifetime = negotiationResponse.TokenLifetime;
+        // Preserve a token lifetime reported by an earlier negotiate in the redirect chain.
+        if (negotiationResponse.TokenLifetime is not null)
+        {
+            _initialTokenLifetime = negotiationResponse.TokenLifetime;
+        }
 
         _logScope.ConnectionId = _connectionId;
         return negotiationResponse;
