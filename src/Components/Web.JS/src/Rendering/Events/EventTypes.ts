@@ -179,15 +179,48 @@ function parseChangeEvent(event: Event): ChangeEventArgs {
     return { value: normalizedValue };
   } else if (isMultipleSelectInput(element)) {
     const selectElement = element as HTMLSelectElement;
-    const selectedValues = Array.from(selectElement.options)
-      .filter(option => option.selected)
-      .map(option => option.value);
+    const selectedValues: (string | null)[] = [];
+    for (let i = 0; i < selectElement.options.length; i++) {
+      const option = selectElement.options[i];
+      if (option.selected) {
+        // An <option value="@null"> is rendered with the blazor-null-option marker
+        // attribute and a value of ''. Translate that to null so nullable bound
+        // values receive null in the change event.
+        selectedValues.push(hasNullOptionMarker(option) ? null : option.value);
+      }
+    }
     return { value: selectedValues };
+  } else if (element instanceof HTMLSelectElement) {
+    // Single <select>. If the selected <option> carries the blazor-null-option
+    // marker attribute, the developer wrote value="@null" and we should report
+    // null to .NET so nullable bound values receive null instead of ''.
+    const newValue = getSelectedOptionValue(element);
+    return { value: newValue };
   } else {
     const targetIsCheckbox = isCheckbox(element);
     const newValue = targetIsCheckbox ? !!element['checked'] : element['value'];
     return { value: newValue };
   }
+}
+
+// Marker attribute emitted on <option value="@null"> by RenderTreeBuilder so the
+// client change handler can recognize the developer's null intent. The DOM
+// cannot represent a null <option> value, so the actual value attribute is
+// rendered as an empty string and this marker carries the null meaning.
+const nullOptionMarkerAttributeName = 'blazor-null-option';
+
+function hasNullOptionMarker(option: HTMLOptionElement): boolean {
+  return option.hasAttribute(nullOptionMarkerAttributeName);
+}
+
+function getSelectedOptionValue(selectElement: HTMLSelectElement): string | null {
+  const selectedIndex = selectElement.selectedIndex;
+  if (selectedIndex < 0 || selectedIndex >= selectElement.options.length) {
+    return null;
+  }
+
+  const selectedOption = selectElement.options[selectedIndex];
+  return hasNullOptionMarker(selectedOption) ? null : selectElement.value;
 }
 
 function parseWheelEvent(event: WheelEvent): WheelEventArgs {
@@ -370,7 +403,7 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
 // The following interfaces must be kept in sync with the EventArgs C# classes
 
 interface ChangeEventArgs {
-  value: string | boolean | string[];
+  value: string | boolean | string[] | null | (string | null)[];
 }
 
 interface DragEventArgs {
