@@ -55,6 +55,11 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
+            if (context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            {
+                return Results.BadRequest(antiforgeryValidationFeature.Error?.Message ?? "Antiforgery validation failed.");
+            }
+
             var user = await userManager.GetUserAsync(context.User);
             if (user is null)
             {
@@ -78,6 +83,11 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromQuery] string? username) =>
         {
+            if (context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false } antiforgeryValidationFeature)
+            {
+                return Results.BadRequest(antiforgeryValidationFeature.Error?.Message ?? "Antiforgery validation failed.");
+            }
+
             var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
             var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
             return TypedResults.Content(optionsJson, contentType: "application/json");
