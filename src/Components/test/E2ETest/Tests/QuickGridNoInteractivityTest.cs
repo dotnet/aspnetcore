@@ -212,4 +212,33 @@ public class QuickGridNoInteractivityTest : ServerTestBase<BasicTestAppServerSit
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".third-top-paginator .paginator nav > div > strong:nth-child(1)")).Text);
         Browser.Equal("2", () => Browser.FindElement(By.CssSelector(".third-bottom-paginator .paginator nav > div > strong:nth-child(1)")).Text);
     }
+
+    [Fact]
+    public void PaginatorLocalizedPageStatusUpdatesAfterNavigation()
+    {
+        Navigate($"{ServerPathBase}/quickgrid");
+
+        var paginationText = Browser.FindElement(By.CssSelector(".first-paginator .pagination-text"));
+        Assert.Equal("Page 1 of 5", NormalizeWhiteSpace(paginationText.Text));
+
+        Browser.FindElement(By.CssSelector(".first-paginator .go-next")).Click();
+
+        Browser.Equal(
+            true,
+            () =>
+            {
+                var text = NormalizeWhiteSpace(
+                    Browser.FindElement(By.CssSelector(".first-paginator .pagination-text")).Text);
+                return text.Contains("Page 2 of 5");
+            });
+    }
+
+    private static string NormalizeWhiteSpace(string value)
+    {
+        return string.Join(
+            " ",
+            value.Split(
+                new[] { ' ', '\r', '\n', '\t' },
+                System.StringSplitOptions.RemoveEmptyEntries));
+    }
 }
