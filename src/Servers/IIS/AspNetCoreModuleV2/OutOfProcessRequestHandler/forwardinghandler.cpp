@@ -1276,7 +1276,7 @@ None
 
     case WINHTTP_CALLBACK_STATUS_SENDING_REQUEST:
         //
-        // This is a notification, not a completion.  This notifiation happens
+        // This is a notification, not a completion.  This notification happens
         // during the Send Request operation.
         //
         fAnotherCompletionExpected = TRUE;

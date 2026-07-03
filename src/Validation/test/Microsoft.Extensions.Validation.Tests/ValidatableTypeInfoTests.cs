@@ -830,6 +830,49 @@ public class ValidatableTypeInfoTests : ValidationTestBase
         Assert.Same(auditedProperty, resolved);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_HiddenPropertyOnDerivedType_UsesDeclaredProperty(bool useAsync)
+    {
+        var queryOptions = new DerivedQueryOptions
+        {
+            IfMatch = "etag",
+        };
+        var propertyInfo = CreatePropertyInfo(typeof(DerivedQueryOptions), typeof(string), nameof(DerivedQueryOptions.IfMatch), nameof(DerivedQueryOptions.IfMatch), []);
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions([]),
+            ValidationContext = new ValidationContext(queryOptions),
+        };
+
+        await ValidateAsync(propertyInfo, queryOptions, context, useAsync, default);
+
+        Assert.Null(context.ValidationErrors);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_HiddenGenericPropertyOnDerivedType_UsesDeclaredProperty(bool useAsync)
+    {
+        var queryOptions = new GenericDerivedQueryOptions<int>
+        {
+            IfMatch = new GenericETag<int>(),
+        };
+        var propertyName = nameof(GenericDerivedQueryOptions<int>.IfMatch);
+        var propertyInfo = CreatePropertyInfo(typeof(GenericDerivedQueryOptions<int>), typeof(GenericETag<int>), propertyName, propertyName, []);
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions([]),
+            ValidationContext = new ValidationContext(queryOptions),
+        };
+
+        await ValidateAsync(propertyInfo, queryOptions, context, useAsync, default);
+
+        Assert.Null(context.ValidationErrors);
+    }
+
     private interface IAuditable
     {
         DateTime CreatedAt { get; }
@@ -839,6 +882,38 @@ public class ValidatableTypeInfoTests : ValidationTestBase
     {
         public DateTime CreatedAt { get; set; }
         public string Name { get; set; } = string.Empty;
+    }
+
+    private class QueryOptions
+    {
+        public object? IfMatch { get; set; }
+    }
+
+    private class DerivedQueryOptions : QueryOptions
+    {
+        public new string? IfMatch { get; set; }
+    }
+
+    private class GenericETag
+    {
+    }
+
+    private class GenericETag<T> : GenericETag
+    {
+    }
+
+    private class GenericQueryOptions
+    {
+        public virtual GenericETag? IfMatch { get; set; }
+    }
+
+    private class GenericDerivedQueryOptions<T> : GenericQueryOptions
+    {
+        public new GenericETag<T>? IfMatch
+        {
+            get => base.IfMatch as GenericETag<T>;
+            set => base.IfMatch = value;
+        }
     }
 
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739

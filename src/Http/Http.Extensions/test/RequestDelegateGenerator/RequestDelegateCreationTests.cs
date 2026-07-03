@@ -12,6 +12,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
@@ -561,6 +562,21 @@ app.MapFallback((HttpContext httpContext, int id) =>
 
         Assert.Equal(42, httpContext.Items["id"]);
         Assert.Equal(200, httpContext.Response.StatusCode);
+    }
+
+    [Fact]
+    public async Task RequestDelegateCreation_SupportsMapFallback_UsesProvidedPattern()
+    {
+        var source = """
+app.MapFallback("{*path}", (HttpContext context) => "this is {*path}");
+app.MapFallback("{*path:nonfile}", (HttpContext context) => "this is {*path:nonfile}");
+""";
+        var (_, compilation) = await RunGeneratorAsync(source);
+        var endpoints = GetEndpointsFromCompilation(compilation).OfType<RouteEndpoint>().ToArray();
+
+        Assert.Equal(2, endpoints.Length);
+        Assert.Single(endpoints, e => e.RoutePattern.RawText == "{*path}");
+        Assert.Single(endpoints, e => e.RoutePattern.RawText == "{*path:nonfile}");
     }
 
     [Fact]

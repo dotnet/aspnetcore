@@ -31,6 +31,41 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
             testCases.Add("schemas-by-ref", version);
             testCases.Add("xml", version);
             testCases.Add("unions", version);
+
+            foreach (var enumDocument in EnumDocuments)
+            {
+                testCases.Add(enumDocument, version);
+            }
+        }
+
+        return testCases;
+    }
+
+    // Each enum scenario (naming policy x nullability x parameter source) is its own
+    // OpenAPI document so that the resulting schema can be verified in isolation.
+    private static readonly string[] EnumDocuments =
+    [
+        "enum-pascalcase-nonnullable-param",
+        "enum-pascalcase-nullable-param",
+        "enum-camelcase-nonnullable-param",
+        "enum-camelcase-nullable-param",
+        "enum-pascalcase-nonnullable-body-model",
+        "enum-pascalcase-nullable-body-model",
+        "enum-camelcase-nonnullable-body-model",
+        "enum-camelcase-nullable-body-model",
+        "enum-pascalcase-nonnullable-body-direct",
+        "enum-pascalcase-nullable-body-direct",
+        "enum-camelcase-nonnullable-body-direct",
+        "enum-camelcase-nullable-body-direct",
+    ];
+
+    public static TheoryData<string> EnumDocumentNames()
+    {
+        var testCases = new TheoryData<string>();
+
+        foreach (var enumDocument in EnumDocuments)
+        {
+            testCases.Add(enumDocument);
         }
 
         return testCases;

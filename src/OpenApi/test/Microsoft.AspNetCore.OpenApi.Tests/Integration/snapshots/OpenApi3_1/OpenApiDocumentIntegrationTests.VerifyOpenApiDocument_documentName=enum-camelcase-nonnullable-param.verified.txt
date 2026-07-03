@@ -1,0 +1,58 @@
+﻿{
+  "openapi": "3.1.2",
+  "info": {
+    "title": "Sample | enum-camelcase-nonnullable-param",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/enums/camelcase/nonnullable-param": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "Active",
+                "Inactive",
+                "Pending"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CamelCaseStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CamelCaseStatus": {
+        "enum": [
+          "active",
+          "inactive",
+          "pending"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

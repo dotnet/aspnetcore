@@ -155,6 +155,20 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
+    public void SortByTypeMismatchVirtualizedShowsClearError()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
+
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
+
+        Assert.Contains("Column 'Summary' expects item type", errorMessage);
+        Assert.Contains("Employee", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
+    }
+    
+    [Fact]
     public void QuickGrid_EnableColumnResize()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");

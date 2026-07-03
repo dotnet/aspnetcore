@@ -66,7 +66,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   private _webAssemblyOptions: WebAssemblyServerOptions | undefined;
 
   // Implements RootComponentManager.
-  // An empty array becuase all root components managed
+  // An empty array because all root components managed
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
@@ -108,7 +108,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // When encountering a component with a WebAssembly or Auto render mode,
     // start loading the WebAssembly runtime, even though we're not
-    // activating the component yet. This is becuase WebAssembly resources
+    // activating the component yet. This is because WebAssembly resources
     // may take a long time to load, so starting to load them now potentially reduces
     // the time to interactvity.
     if (descriptor.type === 'webassembly') {
@@ -488,7 +488,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     for (const operation of batch.operations) {
       switch (operation.type) {
         case 'remove': {
-          // We can stop tracking this component now that .NET has acknowedged its removal.
+          // We can stop tracking this component now that .NET has acknowledged its removal.
           const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
           if (component) {
             this.unregisterComponent(component);
