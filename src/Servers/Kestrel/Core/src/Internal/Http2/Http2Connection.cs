@@ -1619,10 +1619,6 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
 
         try
         {
-            // https://www.rfc-editor.org/rfc/rfc9113#section-8.2.2
-            // Connection-specific header fields make a message malformed regardless of how the header name was
-            // encoded. HPACK's indexed-name representation (e.g. the "transfer-encoding" entry at static table
-            // index 57) would otherwise let these fields bypass the check below, so validate every header type.
             if (IsConnectionSpecificHeaderField(name, value))
             {
                 throw new Http2ConnectionErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR, ConnectionEndReason.InvalidRequestHeaders);

@@ -312,10 +312,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
-            // https://www.rfc-editor.org/rfc/rfc9114#section-4.2
-            // Connection-specific header fields make a message malformed regardless of how the header name was
-            // encoded. A QPACK indexed-name representation (referencing a dynamic table entry inserted via the
-            // encoder stream) would otherwise let these fields bypass the check below, so validate every header type.
             if (IsConnectionSpecificHeaderField(name, value))
             {
                 throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
