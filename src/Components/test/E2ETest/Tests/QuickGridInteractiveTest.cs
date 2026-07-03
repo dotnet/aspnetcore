@@ -5,6 +5,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -96,6 +97,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67350")]
     public void PaginatorCorrectItemsPerPage()
     {
         Navigate($"{ServerPathBase}/quickgrid-interactive");
@@ -150,5 +152,19 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
         Assert.Contains("order=asc", Browser.Url);
         Assert.Contains("people_sort=FirstName", Browser.Url);
         Assert.Contains("people_order=asc", Browser.Url);
+    }
+
+    [Fact]
+    public void SortByTypeMismatchVirtualizedShowsClearError()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-typemismatch");
+
+        Browser.Exists(By.CssSelector("#type-mismatch-error-virtualized"));
+
+        var errorMessage = Browser.FindElement(By.CssSelector("#error-message-virtualized")).Text;
+
+        Assert.Contains("Column 'Summary' expects item type", errorMessage);
+        Assert.Contains("Employee", errorMessage);
+        Assert.Contains("which does not match the parent QuickGrid's item type.", errorMessage);
     }
 }

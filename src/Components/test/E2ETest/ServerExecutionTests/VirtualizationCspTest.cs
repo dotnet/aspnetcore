@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit.Abstractions;
@@ -22,6 +23,7 @@ public class VirtualizationCspTest : ServerTestBase<BasicTestAppServerSiteFixtur
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/67352")]
     public void Virtualize_WithItems_DoesNotViolate_StrictStyleCspPolicy()
     {
         // strict-style-csp causes ServerStartup to add `Content-Security-Policy: style-src 'self'`.

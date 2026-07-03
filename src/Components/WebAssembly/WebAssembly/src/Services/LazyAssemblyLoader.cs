@@ -58,7 +58,7 @@ public sealed partial class LazyAssemblyLoader
         }
         catch (FileNotFoundException ex)
         {
-            throw new InvalidOperationException($"Unable to find the following assembly: {ex.FileName}. Make sure that the appplication is referencing the assemblies and that they are present in the output folder.");
+            throw new InvalidOperationException($"Unable to find the following assembly: {ex.FileName}. Make sure that the application is referencing the assemblies and that they are present in the output folder.");
         }
 
         return Task.FromResult<IEnumerable<Assembly>>(loadedAssemblies);
