@@ -228,6 +228,25 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         Assert.Equal("5", strongElements[1].Text);
     }
 
+    [Fact]
+    public void PaginatorRendersCorrectlyUnderNonEnglishCulture()
+    {
+        Browser.Navigate().GoToUrl(_serverFixture.RootUri + ServerPathBase + "?culture=fr-FR");
+        app = Browser.MountTestComponent<SampleQuickGridComponent>();
+
+        var paginator = app.FindElement(By.ClassName("paginator"));
+        var paginationText = paginator.FindElement(By.CssSelector(".pagination-text"));
+        var strongElements = paginationText.FindElements(By.TagName("strong"));
+
+        Assert.Equal(2, strongElements.Count);
+        Assert.Equal("1", strongElements[0].Text);
+        Assert.Equal("5", strongElements[1].Text);
+
+        var status = NormalizeWhiteSpace(paginationText.Text);
+        Assert.DoesNotContain("{0}", status);
+        Assert.DoesNotContain("{1}", status);
+    }
+
     private static string NormalizeWhiteSpace(string value)
     {
         return string.Join(
