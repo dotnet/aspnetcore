@@ -185,7 +185,7 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
                         By.CssSelector(".first-paginator .pagination-text"))
                         .Text);
 
-                return text.Contains("2");
+                return text.StartsWith("Page 2 of 5", StringComparison.Ordinal);
             });
     }
 
