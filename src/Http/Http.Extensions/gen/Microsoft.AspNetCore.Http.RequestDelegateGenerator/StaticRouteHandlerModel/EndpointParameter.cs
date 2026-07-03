@@ -596,6 +596,7 @@ internal class EndpointParameter
         obj is EndpointParameter other &&
         other.Source == Source &&
         other.SymbolName == SymbolName &&
+        other.LookupName == LookupName &&
         other.Ordinal == Ordinal &&
         other.IsOptional == IsOptional &&
         SymbolEqualityComparer.IncludeNullability.Equals(other.Type, Type) &&
@@ -604,8 +605,13 @@ internal class EndpointParameter
     public override int GetHashCode()
     {
         var hashCode = new HashCode();
+        hashCode.Add(Source);
         hashCode.Add(SymbolName);
+        hashCode.Add(LookupName);
+        hashCode.Add(Ordinal);
+        hashCode.Add(IsOptional);
         hashCode.Add(Type, SymbolEqualityComparer.IncludeNullability);
+        hashCode.Add(KeyedServiceKey);
         return hashCode.ToHashCode();
     }
 }
