@@ -8,10 +8,6 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
-// Tests in this file are kept in a separate file with #nullable enable so the
-// nullable-specific behavior of RenderTreeBuilder can be exercised without
-// having to sprinkle `(string?)null` casts through the larger non-nullable
-// RenderTreeBuilderTest file. They share the same AssertFrame helpers.
 public class RenderTreeBuilderNullableTest
 {
     [Fact]
