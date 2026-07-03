@@ -643,6 +643,9 @@ internal sealed class OpenApiSchemaService(
 
     private static string ParseReferenceToken(ReadOnlySpan<char> referenceToken)
     {
+        // https://www.rfc-editor.org/info/rfc6901/#section-6
+        var unescapedReferenceToken = Uri.UnescapeDataString(referenceToken.ToString());
+
         // https://www.rfc-editor.org/info/rfc6901/#section-4
         // Evaluation of each reference token begins by decoding any escaped
         // character sequence.  This is performed by first transforming any
@@ -656,14 +659,13 @@ internal sealed class OpenApiSchemaService(
         // NOTE: we unescape the possibly percent-encoded value even if
         // STJ doesn't correctly percent-encode the ref today.
         // See https://github.com/dotnet/runtime/issues/130162
-        if (referenceToken.Contains("~0", StringComparison.Ordinal) ||
-            referenceToken.Contains("~1", StringComparison.Ordinal))
+        if (unescapedReferenceToken.Contains('~'))
         {
             // Not common case, performance isn't super important.
-            return Uri.UnescapeDataString(referenceToken.ToString().Replace("~1", "/").Replace("~0", "~"));
+            return unescapedReferenceToken.Replace("~1", "/").Replace("~0", "~");
         }
 
-        return Uri.UnescapeDataString(referenceToken.ToString());
+        return unescapedReferenceToken;
     }
 
     private static JsonNode EvaluateReferenceToken(string unescapedReferenceToken, JsonNode currentNode, string fullJsonPointer)
