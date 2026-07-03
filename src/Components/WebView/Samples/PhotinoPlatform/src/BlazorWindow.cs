@@ -10,9 +10,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Photino;
 /// <summary>
 /// A window containing a Blazor web view.
 /// </summary>
-public class BlazorWindow
+public class BlazorWindow : IDisposable
 {
     private readonly PhotinoWebViewManager _manager;
+    private readonly PhysicalFileProvider _fileProvider;
     private readonly string _pathBase;
 
     /// <summary>
@@ -42,11 +43,9 @@ public class BlazorWindow
 
         configureWindow?.Invoke(PhotinoWindow);
 
-        // We assume the host page is always in the root of the content directory, because it's
-        // unclear there's any other use case. We can add more options later if so.
         var contentRootDir = Path.GetDirectoryName(Path.GetFullPath(hostPage))!;
         var hostPageRelativePath = Path.GetRelativePath(contentRootDir, hostPage);
-        var fileProvider = new PhysicalFileProvider(contentRootDir);
+        _fileProvider = new PhysicalFileProvider(contentRootDir);
 
         var dispatcher = new PhotinoDispatcher(PhotinoWindow);
         var jsComponents = new JSComponentConfigurationStore();
@@ -58,7 +57,7 @@ public class BlazorWindow
         }
         var appBaseUri = new Uri(new Uri(PhotinoWebViewManager.AppBaseOrigin), _pathBase);
 
-        _manager = new PhotinoWebViewManager(PhotinoWindow, services, dispatcher, appBaseUri, fileProvider, jsComponents, hostPageRelativePath);
+        _manager = new PhotinoWebViewManager(PhotinoWindow, services, dispatcher, appBaseUri, _fileProvider, jsComponents, hostPageRelativePath);
         RootComponents = new BlazorWindowRootComponents(_manager, jsComponents);
     }
 
@@ -79,9 +78,18 @@ public class BlazorWindow
     {
         _manager.Navigate(_pathBase);
 
-        // This line actually starts Photino and makes the window appear
         Console.WriteLine($"Starting Photino window...");
         PhotinoWindow.WaitForClose();
+    }
+
+    /// <summary>
+    /// Releases all resources used by the <see cref="BlazorWindow"/>.
+    /// </summary>
+    public void Dispose()
+    {
+        _manager.Dispose();
+        _fileProvider.Dispose();
+        GC.SuppressFinalize(this);
     }
 
     private Stream HandleWebRequest(object sender, string scheme, string url, out string contentType)
