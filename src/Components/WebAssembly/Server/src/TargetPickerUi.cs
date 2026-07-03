@@ -78,7 +78,7 @@ public class TargetPickerUi
                 bytesRead += readLen;
             }
             string str = Encoding.UTF8.GetString(_lengthBuffer, 0, bytesRead - 1);
-            if (!int.TryParse(str, out int messageLen))
+            if (!int.TryParse(str, System.Globalization.CultureInfo.InvariantCulture, out int messageLen))
             {
                 return "";
             }
@@ -121,7 +121,7 @@ public class TargetPickerUi
             {
                 await browserDebugClientConnect.ConnectAsync(endpoint.Address, 6000);
             }
-            catch (Exception)
+            catch (SocketException)
             {
                 context.Response.StatusCode = 404;
                 await context.Response.WriteAsync($@"WARNING:
@@ -275,7 +275,7 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
         {
             availableTabs = await GetOpenedBrowserTabs();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException)
         {
             await context.Response.WriteAsync($@"
 <h1>Unable to find debuggable browser tab</h1>
