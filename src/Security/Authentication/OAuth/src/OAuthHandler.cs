@@ -231,7 +231,8 @@ public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> wher
 
     private static OAuthTokenResponse PrepareFailedOAuthTokenResponse(HttpResponseMessage response, string body)
     {
-        var exception = OAuthTokenResponse.GetStandardErrorException(JsonDocument.Parse(body));
+        using var jsonDocument = JsonDocument.Parse(body);
+        var exception = OAuthTokenResponse.GetStandardErrorException(jsonDocument);
 
         if (exception is null)
         {
