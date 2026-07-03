@@ -1471,8 +1471,8 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         if (validatedToken is not JsonWebToken)
         {
-            Logger.InvalidSecurityTokenTypeFromHandler(validatedToken?.GetType());
-            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJsonWebToken, validatedToken?.GetType()));
+            Logger.InvalidSecurityTokenTypeFromHandler(validatedToken.GetType());
+            throw new SecurityTokenException(string.Format(CultureInfo.InvariantCulture, Resources.ValidatedSecurityTokenNotJsonWebToken, validatedToken.GetType()));
         }
 
         if (Options.UseTokenLifetime)
