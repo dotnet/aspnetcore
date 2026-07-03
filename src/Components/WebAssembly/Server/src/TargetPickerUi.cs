@@ -78,7 +78,7 @@ public class TargetPickerUi
                 bytesRead += readLen;
             }
             string str = Encoding.UTF8.GetString(_lengthBuffer, 0, bytesRead - 1);
-            if (!int.TryParse(str, out int messageLen))
+            if (!int.TryParse(str, System.Globalization.CultureInfo.InvariantCulture, out int messageLen) || messageLen < 0 || messageLen > 100 * 1024 * 1024)
             {
                 return "";
             }
