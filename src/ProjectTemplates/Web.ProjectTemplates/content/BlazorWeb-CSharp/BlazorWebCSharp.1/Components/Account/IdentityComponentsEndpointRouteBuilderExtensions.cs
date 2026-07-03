@@ -56,7 +56,6 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromServices] IAntiforgery antiforgery) =>
         {
-            await antiforgery.ValidateRequestAsync(context);
 
             var user = await userManager.GetUserAsync(context.User);
             if (user is null)
@@ -82,8 +81,6 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromServices] IAntiforgery antiforgery,
             [FromQuery] string? username) =>
         {
-            await antiforgery.ValidateRequestAsync(context);
-
             var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
             var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
             return TypedResults.Content(optionsJson, contentType: "application/json");
