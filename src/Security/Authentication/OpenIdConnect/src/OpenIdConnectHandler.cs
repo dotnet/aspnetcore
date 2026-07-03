@@ -1458,7 +1458,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         if (validationResult.Exception != null)
         {
-            throw validationResult.Exception;
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(validationResult.Exception).Throw();
         }
 
         var validatedToken = validationResult.SecurityToken;
