@@ -189,8 +189,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private string PageQueryParameterName => QueryParameterNamePrefix == "" ? "page" : $"{QueryParameterNamePrefix}_page";
     private readonly QueryParameterValueSupplier _queryParameterValueSupplier;
 
-    // Represents the current logical data load cycle.
-    // Incremented whenever a new load is initiated (initial load, refresh, or data source change).
+    // Represents the current logical data load cycle. Incremented whenever a new load is initiated.
     private int _loadCycleId;
 
     // Represents the load cycle for which OnDataLoaded has already been raised.
@@ -203,7 +202,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         _columns = new();
         _internalGridContext = new(this);
-        // Pagination changes should NOT raise events
         _currentPageItemsChanged = new(EventCallback.Factory.Create<PaginationState>(
             this, async () => await RefreshDataCoreAsync(raiseEvents: false)));
         _renderColumnHeaders = RenderColumnHeaders;
@@ -213,7 +211,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         // As a special case, we don't issue the first data load request until we've collected the initial set of columns
         // This is so we can apply default sort order (or any future per-column options) before loading data
         // We use EventCallbackSubscriber to safely hook this async operation into the synchronous rendering flow
-        // This initial collection IS part of the initial data load, so events SHOULD fire
         var columnsFirstCollectedSubscriber = new EventCallbackSubscriber<object?>(
             EventCallback.Factory.Create<object?>(this, async () => await RefreshDataCoreAsync(raiseEvents: true)));
         columnsFirstCollectedSubscriber.SubscribeOrMove(_internalGridContext.ColumnsFirstCollected);
@@ -257,7 +254,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         // We don't want to trigger the first data load until we've collected the initial set of columns,
         // because they might perform some action like setting the default sort order, so it would be wasteful
         // to have to re-query immediately.
-        // This is the initial data load, so we raise events (OnDataLoading, OnDataLoaded)
         return (_columns.Count > 0 && mustRefreshData) ? RefreshDataCoreAsync(raiseEvents: true) : Task.CompletedTask;
     }
 
@@ -442,15 +438,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync(bool raiseEvents = true)
     {
-
-        // Increment the load cycle for explicit or initial data loads.
-        // Internal updates such as sorting, pagination, or navigation pass raiseEvents: false and do not start a new load cycle.
         if (raiseEvents)
         {
             _loadCycleId++;
         }
 
-        // Invoke the data loading event only if raiseEvents is true and a handler is attached
         if (raiseEvents && OnDataLoading.HasDelegate)
         {
             await OnDataLoading.InvokeAsync();
