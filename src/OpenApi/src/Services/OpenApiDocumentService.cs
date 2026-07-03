@@ -570,7 +570,7 @@ internal sealed class OpenApiDocumentService(
 
     private static bool IsServerSentEventsContentType(string contentType)
         => MediaTypeHeaderValue.TryParse(contentType, out var mediaType)
-            && mediaType.MatchesMediaType("text/event-stream");
+            && mediaType.MediaType.Equals("text/event-stream", StringComparison.OrdinalIgnoreCase);
 
     private async Task<List<IOpenApiParameter>?> GetParametersAsync(
         OpenApiDocument document,
