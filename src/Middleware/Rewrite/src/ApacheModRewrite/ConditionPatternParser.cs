@@ -185,7 +185,7 @@ internal sealed class ConditionPatternParser
                 }
             case 'l':
                 // name conflict with -l and -lt/-le, so the assumption is if there is no
-                // charcters after -l, we assume it a symbolic link
+                // characters after -l, we assume it a symbolic link
                 if (!context.Next())
                 {
                     return new ParsedModRewriteInput(invert, ConditionType.PropertyTest, OperationType.SymbolicLink, operand: null);

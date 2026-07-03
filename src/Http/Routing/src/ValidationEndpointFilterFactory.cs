@@ -97,7 +97,10 @@ internal static class ValidationEndpointFilterFactory
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-                var problemDetails = new HttpValidationProblemDetails(validateContext.ValidationErrors)
+                var validationErrors = validateContext.ValidationErrors.ToDictionary(
+                    keySelector: kvp => kvp.Key,
+                    elementSelector: kvp => kvp.Value.ToArray());
+                var problemDetails = new HttpValidationProblemDetails(validationErrors)
                 {
                     Status = StatusCodes.Status400BadRequest
                 };

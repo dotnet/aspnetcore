@@ -10,9 +10,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
+public class EnvironmentViewTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
 {
-    public EnvironmentBoundaryTest(
+    public EnvironmentViewTest(
         BrowserFixture browserFixture,
         ToggleExecutionModeServerFixture<Program> serverFixture,
         ITestOutputHelper output)
@@ -23,7 +23,7 @@ public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerF
     protected override void InitializeAsyncCore()
     {
         Navigate(ServerPathBase);
-        Browser.MountTestComponent<EnvironmentBoundaryContainer>();
+        Browser.MountTestComponent<EnvironmentViewContainer>();
     }
 
     private string GetCurrentEnvironment()

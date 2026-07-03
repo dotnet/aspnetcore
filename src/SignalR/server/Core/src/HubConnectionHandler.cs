@@ -4,7 +4,9 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -144,6 +146,22 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
 
         // -- the connectionContext has been set up --
 
+        var userRefreshFeature = connection.Features.Get<IConnectionUserRefreshFeature>();
+        IDisposable? userRefreshedRegistration = null;
+        if (userRefreshFeature is not null)
+        {
+            // Serializes authentication-refresh handling for this connection so concurrent refreshes don't race the re-key.
+            var authenticationRefreshLock = new SemaphoreSlim(1, 1);
+            userRefreshedRegistration = userRefreshFeature.OnUserRefreshed(static (user, state) =>
+            {
+                var userRefreshedState = (UserRefreshedState)state!;
+                userRefreshedState.Handler.OnUserRefreshed(
+                    userRefreshedState.Connection,
+                    user,
+                    userRefreshedState.AuthenticationRefreshLock);
+            }, new UserRefreshedState(this, connectionContext, authenticationRefreshLock));
+        }
+
         try
         {
             await _lifetimeManager.OnConnectedAsync(connectionContext);
@@ -151,11 +169,64 @@ public class HubConnectionHandler<[DynamicallyAccessedMembers(Hub.DynamicallyAcc
         }
         finally
         {
+            userRefreshedRegistration?.Dispose();
+
             connectionContext.Cleanup();
 
             Log.ConnectedEnding(_logger);
             await _lifetimeManager.OnDisconnectedAsync(connectionContext);
         }
+    }
+
+    private void OnUserRefreshed(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
+    {
+        // Fire and forget; HandleUserRefreshedAsync serializes work per connection through authenticationRefreshLock.
+        _ = HandleUserRefreshedAsync(connection, user, authenticationRefreshLock);
+    }
+
+    private async Task HandleUserRefreshedAsync(HubConnectionContext connection, ClaimsPrincipal user, SemaphoreSlim authenticationRefreshLock)
+    {
+        await authenticationRefreshLock.WaitAsync();
+        try
+        {
+            // Recompute inside the lock so a concurrent refresh observes the latest principal and identifier.
+            var newUserId = connection.GetUserIdentifier(user, _userIdProvider);
+            if (!string.Equals(newUserId, connection.UserIdentifier, StringComparison.Ordinal))
+            {
+                var previousUserId = connection.UserIdentifier;
+                Log.UserIdentifierChangedOnRefresh(_logger, previousUserId, newUserId);
+                connection.Abort();
+                return;
+            }
+
+            connection.ApplyUserState(user, newUserId);
+        }
+        catch (Exception ex)
+        {
+            Log.ErrorApplyingAuthenticationRefresh(_logger, ex);
+            connection.Abort();
+            return;
+        }
+        finally
+        {
+            authenticationRefreshLock.Release();
+        }
+
+        // Fire and forget; the dispatcher serializes through ActiveInvocationLimit so the work runs
+        // alongside other hub invocations subject to the configured MaximumParallelInvocations.
+        _ = _dispatcher.OnAuthenticationRefreshedAsync(connection);
+    }
+
+    private sealed class UserRefreshedState(
+        HubConnectionHandler<THub> handler,
+        HubConnectionContext connection,
+        SemaphoreSlim authenticationRefreshLock)
+    {
+        public HubConnectionHandler<THub> Handler { get; } = handler;
+
+        public HubConnectionContext Connection { get; } = connection;
+
+        public SemaphoreSlim AuthenticationRefreshLock { get; } = authenticationRefreshLock;
     }
 
     private async Task RunHubAsync(HubConnectionContext connection)
