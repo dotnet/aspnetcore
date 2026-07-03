@@ -312,6 +312,15 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
+            // https://www.rfc-editor.org/rfc/rfc9114#section-4.2
+            // Connection-specific header fields make a message malformed regardless of how the header name was
+            // encoded. A QPACK indexed-name representation (referencing a dynamic table entry inserted via the
+            // encoder stream) would otherwise let these fields bypass the check below, so validate every header type.
+            if (IsConnectionSpecificHeaderField(name, value))
+            {
+                throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
+            }
+
             if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
             {
                 // Just use name + value bytes and do full validation for request trailers.
@@ -378,11 +387,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     private void ValidateHeaderContent(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
     {
-        if (IsConnectionSpecificHeaderField(name, value))
-        {
-            throw new Http3StreamErrorException(CoreStrings.HttpErrorConnectionSpecificHeaderField, Http3ErrorCode.MessageError);
-        }
-
         // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
         // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
         for (var i = 0; i < name.Length; i++)
