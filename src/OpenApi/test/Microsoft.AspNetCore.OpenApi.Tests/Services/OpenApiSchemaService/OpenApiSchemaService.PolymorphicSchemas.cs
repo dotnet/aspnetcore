@@ -312,7 +312,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
-            var schema = mediaType.Schema;
 
             foreach (var componentName in new[] { "DictionaryContainerBaseDictionaryContainerAlpha", "DictionaryContainerBaseDictionaryContainerBeta", "DictionaryContainerBaseDictionaryContainerGamma" })
             {

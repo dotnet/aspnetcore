@@ -704,7 +704,15 @@ internal sealed class OpenApiSchemaService(
             // The ABNF syntax for array indices is:
             // array-index = %x30 / ( %x31-39 *(%x30-39) )
             //               ; "0", or digits without a leading "0"
-            if (!int.TryParse(unescapedReferenceToken, NumberStyles.Integer, CultureInfo.InvariantCulture, out var arrayIndex))
+            //
+            // Note that the use of the "-" character to index an array will always
+            // result in such an error condition because by definition it refers to
+            // a nonexistent array element.  Thus, applications of JSON Pointer need
+            // to specify how that character is to be handled, if it is to be
+            // useful.
+            //
+            // In our case, "-" doesn't seem to be useful so we will throw.
+            if (!int.TryParse(unescapedReferenceToken, NumberStyles.None, CultureInfo.InvariantCulture, out var arrayIndex))
             {
                 throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': cannot navigate an array when the current token '{unescapedReferenceToken}' isn't a valid number");
             }
