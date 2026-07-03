@@ -1017,7 +1017,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
             var responseContent = await responseMessage.Content.ReadAsStringAsync(Context.RequestAborted);
             message = new OpenIdConnectMessage(responseContent);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is JsonException or ArgumentException or InvalidOperationException)
         {
             throw new OpenIdConnectProtocolException($"Failed to parse token response body as JSON. Status Code: {(int)responseMessage.StatusCode}. Content-Type: {responseMessage.Content.Headers.ContentType}", ex);
         }
