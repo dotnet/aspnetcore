@@ -30,6 +30,8 @@ internal sealed class InternalQuickGridLocalizer
 
     private string GetString(string key, params object[] arguments)
     {
+        arguments ??= Array.Empty<object>();
+
         if (_quickGridLocalizer is not null)
         {
             var customValue = arguments.Length > 0

@@ -23,7 +23,7 @@ public partial class Paginator : IDisposable
 
     private string QueryName => State.QueryName;
 
-     private InternalQuickGridLocalizer? _localizer;
+    private InternalQuickGridLocalizer? _localizer;
 
     private InternalQuickGridLocalizer Localizer => _localizer ??= CreateLocalizer();
 

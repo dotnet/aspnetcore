@@ -40,6 +40,8 @@ public class QuickGridLocalizer
     {
         get
         {
+            arguments ??= Array.Empty<object>();
+
             var localizedString = this[key];
 
             if (arguments.Length == 0)

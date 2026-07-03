@@ -17,7 +17,7 @@
         <nav role="navigation">
             @if (QuickGridFeatureFlags.EnableUrlBasedQuickGridNavigationAndSorting)
             {
-                 <a class="go-first"
+                <a class="go-first"
                    href="@(CanGoBack ? GetPageUrl(0) : null)"
                    title="@Localizer["GoToFirstPage"]"
                    aria-label="@Localizer["GoToFirstPage"]"
@@ -65,7 +65,7 @@
                     @PaginationPageStatus
                 </div>
 
-                 <button class="go-next"
+                <button class="go-next"
                         type="button"
                         @onclick="GoNextAsync"
                         disabled="@(!CanGoForwards)"
