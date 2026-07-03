@@ -128,6 +128,7 @@ public class BlazorWebTemplatePasskeyAntiforgeryTest
         var endpointContents = File.ReadAllText(endpointFile);
         Assert.DoesNotContain("ValidateRequestAsync", endpointContents);
         Assert.DoesNotContain("IAntiforgery", endpointContents);
+        Assert.Contains("[RequireAntiforgeryToken]", endpointContents);
 
         var passkeySubmitRazorContents = File.ReadAllText(passkeySubmitRazorFile);
         Assert.DoesNotContain("request-token-name", passkeySubmitRazorContents);

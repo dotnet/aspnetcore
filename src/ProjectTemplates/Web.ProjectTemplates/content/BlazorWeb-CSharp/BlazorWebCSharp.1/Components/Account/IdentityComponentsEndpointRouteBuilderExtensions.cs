@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -49,7 +50,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return TypedResults.LocalRedirect($"~/{returnUrl}");
         });
 
-        accountGroup.MapPost("/PasskeyCreationOptions", async (
+        accountGroup.MapPost("/PasskeyCreationOptions", [RequireAntiforgeryToken] async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
@@ -71,7 +72,7 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
-        accountGroup.MapPost("/PasskeyRequestOptions", async (
+        accountGroup.MapPost("/PasskeyRequestOptions", [RequireAntiforgeryToken] async (
             HttpContext context,
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager,
