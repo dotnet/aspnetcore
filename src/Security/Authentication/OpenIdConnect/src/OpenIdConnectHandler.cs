@@ -1196,7 +1196,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                         return nonce;
                     }
                 }
-                catch (Exception ex)
+                catch (CryptographicException ex)
                 {
                     Logger.UnableToProtectNonceCookie(ex);
                 }
