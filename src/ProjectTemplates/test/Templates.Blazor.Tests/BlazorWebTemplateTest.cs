@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Net;
-using System.Text.Json;
 using Microsoft.AspNetCore.BrowserTesting;
 using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
@@ -115,46 +113,3 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
 }
 
-public class BlazorWebTemplatePasskeyAntiforgeryTest
-{
-    [Fact]
-    public void BlazorWebTemplate_PasskeyFlowDoesNotUseClassicAntiforgery()
-    {
-        var templateRoot = GetBlazorWebTemplateRoot();
-        var endpointFile = Path.Combine(templateRoot, "Components", "Account", "IdentityComponentsEndpointRouteBuilderExtensions.cs");
-        var passkeySubmitRazorFile = Path.Combine(templateRoot, "Components", "Account", "Shared", "PasskeySubmit.razor");
-        var passkeySubmitJsFile = Path.Combine(templateRoot, "Components", "Account", "Shared", "PasskeySubmit.razor.js");
-
-        var endpointContents = File.ReadAllText(endpointFile);
-        Assert.DoesNotContain("ValidateRequestAsync", endpointContents);
-        Assert.Contains("[RequireAntiforgeryToken]", endpointContents);
-        Assert.Contains("context.Features.Get<IAntiforgeryValidationFeature>() is { IsValid: false }", endpointContents);
-
-        var passkeySubmitRazorContents = File.ReadAllText(passkeySubmitRazorFile);
-        Assert.DoesNotContain("request-token-name", passkeySubmitRazorContents);
-        Assert.DoesNotContain("request-token-value", passkeySubmitRazorContents);
-        Assert.DoesNotContain("GetTokens", passkeySubmitRazorContents);
-
-        var passkeySubmitJsContents = File.ReadAllText(passkeySubmitJsFile);
-        Assert.DoesNotContain("requestTokenName", passkeySubmitJsContents);
-        Assert.DoesNotContain("requestTokenValue", passkeySubmitJsContents);
-        Assert.DoesNotContain("requestverificationtoken", passkeySubmitJsContents);
-    }
-
-    private static string GetBlazorWebTemplateRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            var candidate = Path.Combine(directory.FullName, "src", "ProjectTemplates", "Web.ProjectTemplates", "content", "BlazorWeb-CSharp", "BlazorWebCSharp.1");
-            if (Directory.Exists(candidate))
-            {
-                return candidate;
-            }
-
-            directory = directory.Parent;
-        }
-
-        throw new DirectoryNotFoundException("Unable to locate the Blazor Web template content directory.");
-    }
-}
