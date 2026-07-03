@@ -243,7 +243,7 @@ internal sealed class ResponseCompressionBody : Stream, IHttpResponseBodyFeature
             if (compressionProvider != null)
             {
                 // Can't use += as StringValues does not override operator+
-                // and the implict conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
+                // and the implicit conversions will cause an incorrect string concat https://github.com/dotnet/runtime/issues/52507
                 headers.ContentEncoding = StringValues.Concat(headers.ContentEncoding, compressionProvider.EncodingName);
                 headers.ContentMD5 = default; // Reset the MD5 because the content changed.
                 headers.ContentLength = default;
