@@ -37,6 +37,47 @@ internal sealed partial class GatewayToolInstallation : IDisposable
     }
 
     /// <summary>
+    /// The directory under the tool-path's NuGet fallback folder (<c>.store</c>) that holds the
+    /// installed package's unpacked contents, mirroring the layout of the original .nupkg.
+    /// </summary>
+    public string PackageContentPath
+    {
+        get
+        {
+            var packageId = GatewayCliTestData.PackageId.ToLowerInvariant();
+            var version = GatewayCliTestData.PackageVersion.ToLowerInvariant();
+            return Path.Combine(ToolPath, ".store", packageId, version, packageId, version);
+        }
+    }
+
+    /// <summary>
+    /// Checks whether the installed package contains the given file, addressed relative to
+    /// <see cref="PackageContentPath"/>.
+    /// </summary>
+    public bool HasFile(string relativePath)
+        => File.Exists(Path.Combine(PackageContentPath, relativePath.Replace('/', Path.DirectorySeparatorChar)));
+
+    /// <summary>
+    /// Reads the contents of a file installed from the package, addressed relative to
+    /// <see cref="PackageContentPath"/>.
+    /// </summary>
+    public string ReadFile(string relativePath)
+    {
+        var path = Path.Combine(PackageContentPath, relativePath.Replace('/', Path.DirectorySeparatorChar));
+        if (!File.Exists(path))
+        {
+            throw new InvalidOperationException($"File '{relativePath}' was not found in the installed '{GatewayCliTestData.PackageId}' tool at '{PackageContentPath}'.");
+        }
+
+        return File.ReadAllText(path);
+    }
+
+    /// <summary>
+    /// Reads the .nuspec that NuGet keeps alongside the installed package's unpacked contents.
+    /// </summary>
+    public string ReadNuspec() => ReadFile($"{GatewayCliTestData.PackageId}.nuspec");
+
+    /// <summary>
     /// Installs the tool into a fresh tool-path from the local package output. Callers must gate the
     /// test with <see cref="RequiresBuiltGatewayCliPackageAttribute"/>.
     /// </summary>
