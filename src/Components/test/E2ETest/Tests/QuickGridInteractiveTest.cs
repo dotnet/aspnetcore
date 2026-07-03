@@ -189,6 +189,28 @@ public class QuickGridInteractiveTest : ServerTestBase<BasicTestAppServerSiteFix
             });
     }
 
+    [Fact]
+    public void PaginatorButtonsUseLocalizedAccessibilityText()
+    {
+        Navigate($"{ServerPathBase}/quickgrid-interactive");
+
+        Assert.Equal("Go to first page",
+            Browser.FindElement(By.CssSelector(".first-paginator .go-first"))
+                .GetDomAttribute("aria-label"));
+
+        Assert.Equal("Go to previous page",
+            Browser.FindElement(By.CssSelector(".first-paginator .go-previous"))
+                .GetDomAttribute("aria-label"));
+
+        Assert.Equal("Go to next page",
+            Browser.FindElement(By.CssSelector(".first-paginator .go-next"))
+                .GetDomAttribute("aria-label"));
+
+        Assert.Equal("Go to last page",
+            Browser.FindElement(By.CssSelector(".first-paginator .go-last"))
+                .GetDomAttribute("aria-label"));
+    }
+
     private static string NormalizeWhiteSpace(string value)
     {
         return string.Join(
