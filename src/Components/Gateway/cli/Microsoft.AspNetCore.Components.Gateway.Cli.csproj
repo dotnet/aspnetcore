@@ -5,8 +5,8 @@
     <PackageId>Microsoft.AspNetCore.Components.Gateway.Cli</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
-    <Description>Command line tool (blazor-gateway) for hosting standalone Blazor WebAssembly applications. Packs the Microsoft.AspNetCore.Components.Gateway binaries as a .NET tool.</Description>
-    <PackageTags>blazor;webassembly;gateway;dotnettool</PackageTags>
+    <Description>Command line tool (blazor-gateway) for hosting Blazor applications.</Description>
+    <PackageTags>blazor;gateway;dotnettool</PackageTags>
     <!-- This project only repackages the gateway binaries as a dotnet tool; it has no code of its own. -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
