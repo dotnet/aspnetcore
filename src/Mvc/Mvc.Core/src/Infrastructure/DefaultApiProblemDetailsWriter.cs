@@ -34,10 +34,15 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
 
     public bool CanWrite(ProblemDetailsContext context)
     {
-        var controllerAttribute = context.AdditionalMetadata?.GetMetadata<ControllerAttribute>() ??
-            context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ControllerAttribute>();
+        // Match the metadata check performed in WriteAsync so this writer does not
+        // claim endpoints it will silently drop. Without this, ProblemDetailsService
+        // selects this writer for any controller endpoint and never falls back to
+        // the next-registered writer when [ApiController] (IApiBehaviorMetadata) is
+        // not present on the endpoint or SuppressMapClientErrors is enabled.
+        var apiControllerAttribute = context.AdditionalMetadata?.GetMetadata<IApiBehaviorMetadata>() ??
+            context.HttpContext.GetEndpoint()?.Metadata.GetMetadata<IApiBehaviorMetadata>();
 
-        return controllerAttribute != null;
+        return apiControllerAttribute != null && !_apiBehaviorOptions.SuppressMapClientErrors;
     }
 
     public ValueTask WriteAsync(ProblemDetailsContext context)
@@ -61,6 +66,28 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
             context.ProblemDetails.Detail,
             context.ProblemDetails.Instance);
 
+        // Preserve the runtime ProblemDetails subtype. ValidationProblemDetails carries
+        // an Errors dictionary as a structural member which the factory-created
+        // ProblemDetails would otherwise drop silently.
+        if (context.ProblemDetails is ValidationProblemDetails validationProblemDetails)
+        {
+            var validationDetails = new ValidationProblemDetails(validationProblemDetails.Errors)
+            {
+                Status = problemDetails.Status,
+                Title = problemDetails.Title,
+                Type = problemDetails.Type,
+                Detail = problemDetails.Detail,
+                Instance = problemDetails.Instance,
+            };
+
+            foreach (var extension in problemDetails.Extensions)
+            {
+                validationDetails.Extensions[extension.Key] = extension.Value;
+            }
+
+            problemDetails = validationDetails;
+        }
+
         if (context.ProblemDetails?.Extensions is not null)
         {
             foreach (var extension in context.ProblemDetails.Extensions)
@@ -72,7 +99,7 @@ internal sealed class DefaultApiProblemDetailsWriter : IProblemDetailsWriter
         var formatterContext = new OutputFormatterWriteContext(
             context.HttpContext,
             _writerFactory.CreateWriter,
-            typeof(ProblemDetails),
+            problemDetails.GetType(),
             problemDetails);
 
         var selectedFormatter = _formatterSelector.SelectFormatter(
