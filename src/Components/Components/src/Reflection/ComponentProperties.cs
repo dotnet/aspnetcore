@@ -98,17 +98,18 @@ internal static class ComponentProperties
         {
             // Logic with components with a CaptureUnmatchedValues parameter
             var isCaptureUnmatchedValuesParameterSetExplicitly = false;
-            var sawAnyNonCascadingParameter = false;
+            // True when the parent supplied at least one direct (non-cascading) parameter on this render.
+            // We use this to decide whether the parent has effectively re-rendered the component with a
+            // new direct parameter set (in which case we may need to clear previously-captured unmatched
+            // attributes), as opposed to a re-render driven only by a cascading value change (in which
+            // case we must not touch the captured unmatched attributes).
+            var parentSuppliedDirectParameters = false;
             Dictionary<string, object>? unmatched = null;
             foreach (var parameter in parameters)
             {
                 if (!parameter.Cascading)
                 {
-                    // We track whether we saw any non-cascading parameter because we want to know whether
-                    // the parent supplied any direct parameters at all. If a ParameterView only contains
-                    // cascading parameter values, that doesn't represent a "new" set of direct parameters
-                    // from the parent, and we must not clear CaptureUnmatchedValues in that case.
-                    sawAnyNonCascadingParameter = true;
+                    parentSuppliedDirectParameters = true;
                 }
 
                 var parameterName = parameter.Name;
@@ -177,12 +178,11 @@ internal static class ComponentProperties
                 // We had some unmatched values, set the CaptureUnmatchedValues property
                 SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
             }
-            else if (sawAnyNonCascadingParameter && !isCaptureUnmatchedValuesParameterSetExplicitly)
+            else if (parentSuppliedDirectParameters && !isCaptureUnmatchedValuesParameterSetExplicitly)
             {
-                // We had a direct (non-cascading) parameter view, but no unmatched values. The
-                // parent stopped supplying the previously-captured unmatched attributes, so we
-                // must reset the capture property to null to allow the renderer to issue
-                // RemoveAttribute edits on the next diff.
+                // The parent supplied a direct parameter view but did not include the previously-captured
+                // unmatched attributes. We must reset the capture property to null so the renderer can
+                // emit RemoveAttribute edits for those omitted attributes on the next diff.
                 SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, (object)null!);
             }
         }
