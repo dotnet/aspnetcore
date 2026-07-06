@@ -35,6 +35,8 @@ public class AgentContext : IDisposable
 
     public async Task SendMessageAsync(ChatMessage message, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(message);
+
         if (Status == ConversationStatus.Streaming)
         {
             throw new InvalidOperationException("A message is already being processed.");
@@ -46,9 +48,10 @@ public class AgentContext : IDisposable
         _turns.Add(turn);
         NotifyTurnAdded(turn);
 
+        _streamingCts?.Dispose();
         _streamingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        await StreamIntoTurnAsync(message, turn, _streamingCts.Token);
+        await StreamIntoTurnAsync(message, turn, _streamingCts.Token, cancellationToken);
     }
 
     public async Task RestoreAsync(CancellationToken cancellationToken = default)
@@ -86,7 +89,8 @@ public class AgentContext : IDisposable
     private async Task StreamIntoTurnAsync(
         ChatMessage message,
         ConversationTurn turn,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        CancellationToken callerToken)
     {
         Status = ConversationStatus.Streaming;
         Error = null;
@@ -182,10 +186,19 @@ public class AgentContext : IDisposable
         }
         catch (Exception ex)
         {
+            // A failing turn is surfaced as conversation state (Status/Error) rather than a
+            // faulted Task: the UI renders the error and RetryAsync replays the last message.
+            // This is the engine's error contract, not a swallowed exception.
             Error = ex;
             Status = ConversationStatus.Error;
             NotifyStatusChanged();
+            return;
         }
+
+        // If the caller's own token requested cancellation, surface it so the returned Task
+        // completes as canceled. Cancellation driven by CancelAsync() (the internal token only)
+        // is a graceful stop and completes normally.
+        callerToken.ThrowIfCancellationRequested();
     }
 
     private async Task<AIContent> InvokeBackendToolAsync(
@@ -209,9 +222,10 @@ public class AgentContext : IDisposable
         var turn = _turns[^1];
         turn.ClearResponseBlocks();
 
+        _streamingCts?.Dispose();
         _streamingCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        await StreamIntoTurnAsync(_lastMessage!, turn, _streamingCts.Token);
+        await StreamIntoTurnAsync(_lastMessage!, turn, _streamingCts.Token, cancellationToken);
     }
 
     public Task CancelAsync()
