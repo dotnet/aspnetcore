@@ -136,7 +136,7 @@ public class MessageList : IComponent, IDisposable
                 builder.AddAttribute(seq + 2, "role", "alert");
                 builder.OpenElement(seq + 3, "span");
                 builder.AddAttribute(seq + 4, "class", "sc-ai-error__message");
-                builder.AddContent(seq + 5, _agentContext.Error?.Message ?? "Something went wrong.");
+                builder.AddContent(seq + 5, "Something went wrong. Please try again.");
                 builder.CloseElement(); // span
                 builder.OpenElement(seq + 6, "button");
                 builder.AddAttribute(seq + 7, "class", "sc-ai-btn sc-ai-btn--secondary");

@@ -24,6 +24,11 @@ public class FunctionApprovalBlock : InteractiveFunctionBlock, IInteractiveBlock
 
     public void Approve()
     {
+        if (Status != ApprovalStatus.Pending)
+        {
+            return;
+        }
+
         Status = ApprovalStatus.Approved;
         var response = ApprovalRequest.CreateResponse(approved: true);
         NotifyChanged();
@@ -32,6 +37,11 @@ public class FunctionApprovalBlock : InteractiveFunctionBlock, IInteractiveBlock
 
     public void Reject(string? reason = null)
     {
+        if (Status != ApprovalStatus.Pending)
+        {
+            return;
+        }
+
         Status = ApprovalStatus.Rejected;
         var response = ApprovalRequest.CreateResponse(approved: false);
         NotifyChanged();

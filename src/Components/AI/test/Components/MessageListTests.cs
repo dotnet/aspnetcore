@@ -139,7 +139,9 @@ public class MessageListTests
 
         var html = cut.GetHtml();
         Assert.Contains("sc-ai-error", html);
-        Assert.Contains("Server error", html);
+        // The default error banner shows a generic message and must not leak the raw exception text.
+        Assert.DoesNotContain("Server error", html);
+        Assert.Contains("Something went wrong", html);
         Assert.Contains("Retry", html);
     }
 

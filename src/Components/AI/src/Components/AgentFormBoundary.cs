@@ -69,7 +69,22 @@ public class AgentFormBoundary : ComponentBase, IDisposable
 
         var action = BlockAction.AsSpan(0, separatorIndex);
         var blockId = BlockAction.AsSpan(separatorIndex + 1);
-        var approved = action.Equals("approve", StringComparison.OrdinalIgnoreCase);
+
+        bool approved;
+        if (action.Equals("approve", StringComparison.OrdinalIgnoreCase))
+        {
+            approved = true;
+        }
+        else if (action.Equals("reject", StringComparison.OrdinalIgnoreCase))
+        {
+            approved = false;
+        }
+        else
+        {
+            // Unrecognized (or tampered) action value from the posted form: ignore it rather
+            // than defaulting to a rejection.
+            return;
+        }
 
         var thread = Agent.Options.Thread;
         if (thread is null)
