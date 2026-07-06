@@ -98,11 +98,6 @@ internal static class ComponentProperties
         {
             // Logic with components with a CaptureUnmatchedValues parameter
             var isCaptureUnmatchedValuesParameterSetExplicitly = false;
-            // True when the parent supplied at least one direct (non-cascading) parameter on this render.
-            // We use this to decide whether the parent has effectively re-rendered the component with a
-            // new direct parameter set (in which case we may need to clear previously-captured unmatched
-            // attributes), as opposed to a re-render driven only by a cascading value change (in which
-            // case we must not touch the captured unmatched attributes).
             var parentSuppliedDirectParameters = false;
             Dictionary<string, object>? unmatched = null;
             foreach (var parameter in parameters)
@@ -180,9 +175,6 @@ internal static class ComponentProperties
             }
             else if (parentSuppliedDirectParameters && !isCaptureUnmatchedValuesParameterSetExplicitly)
             {
-                // The parent supplied a direct parameter view but did not include the previously-captured
-                // unmatched attributes. We must reset the capture property to null so the renderer can
-                // emit RemoveAttribute edits for those omitted attributes on the next diff.
                 SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, (object)null!);
             }
         }
