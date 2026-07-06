@@ -16,18 +16,18 @@ namespace Microsoft.AspNetCore.Components;
 public class ElementReferenceExtensionsTest
 {
     [Fact]
-    public async Task FocusOutAsync_InvokesDomWrapperFocusOut()
+    public async Task BlurAsync_InvokesDomWrapperBlur()
     {
         var jsRuntime = new TestJSRuntime();
         var elementReference = new ElementReference("element-id", new WebElementReferenceContext(jsRuntime));
 
-        await elementReference.FocusOutAsync();
+        await elementReference.BlurAsync();
 
         Assert.Collection(
             jsRuntime.Invocations,
             invocation =>
             {
-                Assert.Equal("Blazor._internal.domWrapper.focusOut", invocation.Identifier);
+                Assert.Equal("Blazor._internal.domWrapper.blur", invocation.Identifier);
                 var args = invocation.Args.Cast<object?>().ToArray();
                 Assert.Single(args);
                 var passedRef = Assert.IsType<ElementReference>(args[0]);
@@ -36,7 +36,7 @@ public class ElementReferenceExtensionsTest
     }
 
     [Fact]
-    public async Task FocusOutAsync_PropagatesJSRuntimeException()
+    public async Task BlurAsync_PropagatesJSRuntimeException()
     {
         var jsRuntime = new TestJSRuntime
         {
@@ -44,7 +44,7 @@ public class ElementReferenceExtensionsTest
         };
         var elementReference = new ElementReference("element-id", new WebElementReferenceContext(jsRuntime));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => elementReference.FocusOutAsync().AsTask());
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => elementReference.BlurAsync().AsTask());
         Assert.Equal("blur failed", ex.Message);
     }
 

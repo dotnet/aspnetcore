@@ -482,7 +482,7 @@ public abstract class ComponentRenderingTestBase : ServerTestBase<ToggleExecutio
     }
 
     [Fact]
-    public void CanUseFocusOutExtensionToBlurElement()
+    public void CanUseBlurAsyncExtensionToBlurElement()
     {
         var appElement = Browser.MountTestComponent<ElementFocusComponent>();
 

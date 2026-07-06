@@ -6,7 +6,7 @@ import '@microsoft/dotnet-js-interop';
 export const domFunctions = {
   focus,
   focusBySelector,
-  focusOut,
+  blur,
 };
 
 function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
@@ -23,7 +23,7 @@ function focus(element: HTMLOrSVGElement, preventScroll: boolean): void {
   }
 }
 
-function focusOut(element: HTMLOrSVGElement): void {
+function blur(element: HTMLOrSVGElement): void {
   if (element instanceof HTMLElement || element instanceof SVGElement) {
     element.blur();
   } else {

@@ -15,7 +15,7 @@
 <hr />
 <input id="focus-input" @ref="inputReference" style="margin-top: 10000px" />
 <hr />
-<button id="focus-out-button" @onclick="FocusOutInput">Click to focus out (blur)!</button>
+<button id="focus-out-button" @onclick="BlurInput">Click to focus out (blur)!</button>
 <hr />
 <input id="focus-out-input" @ref="inputOutReference" />
 
@@ -31,9 +31,9 @@
         await inputReference.FocusAsync(preventScroll);
     }
 
-    private async Task FocusOutInput()
+    private async Task BlurInput()
     {
-        await inputOutReference.FocusOutAsync();
+        await inputOutReference.BlurAsync();
     }
 
     private void FocusDuringOnAfterRenderViaInvoke()
