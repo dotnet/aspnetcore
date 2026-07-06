@@ -119,7 +119,7 @@ public sealed class RazorComponentResultParameterAnalyzer : DiagnosticAnalyzer
         INamedTypeSymbol componentType,
         out HashSet<string> parameterNames)
     {
-        parameterNames = new HashSet<string>(StringComparer.Ordinal);
+        parameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         for (INamedTypeSymbol? type = componentType; type is not null; type = type.BaseType)
         {
