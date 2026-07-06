@@ -45,13 +45,49 @@ public class OidcProviderOptionsTests
     }
 
     [Theory]
-    [InlineData("{\"tokenStorage\":0}", RemoteAuthenticationTokenStorage.SessionStorage)]
-    [InlineData("{\"tokenStorage\":1}", RemoteAuthenticationTokenStorage.LocalStorage)]
-    public void TokenStorage_DeserializesNumericValue(string json, RemoteAuthenticationTokenStorage expected)
+    [InlineData("{\"tokenStorage\":\"SessionStorage\"}", RemoteAuthenticationTokenStorage.SessionStorage)]
+    [InlineData("{\"tokenStorage\":\"LocalStorage\"}", RemoteAuthenticationTokenStorage.LocalStorage)]
+    public void TokenStorage_DeserializesStringValue(string json, RemoteAuthenticationTokenStorage expected)
     {
         var options = JsonSerializer.Deserialize<OidcProviderOptions>(json);
 
         Assert.NotNull(options);
         Assert.Equal(expected, options.TokenStorage);
+    }
+
+    [Theory]
+    [InlineData("{\"tokenStorage\":\"sessionstorage\"}", RemoteAuthenticationTokenStorage.SessionStorage)]
+    [InlineData("{\"tokenStorage\":\"localstorage\"}", RemoteAuthenticationTokenStorage.LocalStorage)]
+    [InlineData("{\"tokenStorage\":\"SESSIONSTORAGE\"}", RemoteAuthenticationTokenStorage.SessionStorage)]
+    public void TokenStorage_DeserializesCaseInsensitively(string json, RemoteAuthenticationTokenStorage expected)
+    {
+        var options = JsonSerializer.Deserialize<OidcProviderOptions>(json);
+
+        Assert.NotNull(options);
+        Assert.Equal(expected, options.TokenStorage);
+    }
+
+    [Fact]
+    public void TokenStorage_UnknownValue_Throws()
+    {
+        Assert.Throws<JsonException>(() =>
+            JsonSerializer.Deserialize<OidcProviderOptions>("{\"tokenStorage\":\"Cookie\"}"));
+    }
+
+    [Fact]
+    public void TokenStorage_NullValue_Throws()
+    {
+        // JsonStringEnumConverter does not accept null for a non-nullable enum value-type.
+        Assert.Throws<JsonException>(() =>
+            JsonSerializer.Deserialize<OidcProviderOptions>("{\"tokenStorage\":null}"));
+    }
+
+    [Fact]
+    public void TokenStorage_MissingKey_DefaultsToSessionStorage()
+    {
+        var options = JsonSerializer.Deserialize<OidcProviderOptions>("{}");
+
+        Assert.NotNull(options);
+        Assert.Equal(RemoteAuthenticationTokenStorage.SessionStorage, options.TokenStorage);
     }
 }
