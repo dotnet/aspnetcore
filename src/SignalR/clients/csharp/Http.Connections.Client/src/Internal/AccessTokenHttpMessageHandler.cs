@@ -50,23 +50,22 @@ internal sealed class AccessTokenHttpMessageHandler : DelegatingHandler
             {
                 _accessToken = tokenForRequest;
             }
+            else
+            {
+#if NET5_0_OR_GREATER
+                request.Options.Set(new HttpRequestOptionsKey<string?>("RefreshRequestToken"), tokenForRequest);
+#else
+                request.Properties["RefreshRequestToken"] = tokenForRequest;
+#endif
+            }
         }
 
         SetAccessToken(tokenForRequest, request);
 
         var result = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        if (isRefresh)
-        {
-            // Only adopt the refreshed token once the server has accepted the refresh, so subsequent
-            // transport requests use the new token. On rejection, keep the previously cached token.
-            if (result.IsSuccessStatusCode)
-            {
-                _accessToken = tokenForRequest;
-            }
-        }
         // retry once with a new token on auth failure
-        else if (shouldRetry && result.StatusCode is HttpStatusCode.Unauthorized)
+        if (shouldRetry && result.StatusCode is HttpStatusCode.Unauthorized)
         {
             HttpConnection.Log.RetryAccessToken(_httpConnection._logger, result.StatusCode);
             result.Dispose();

@@ -804,6 +804,18 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
             _accessTokenProvider = () => Task.FromResult<string?>(accessToken);
             _accessTokenHandler?.UpdateCachedToken(accessToken);
         }
+        else
+        {
+#if NET5_0_OR_GREATER
+            request.Options.TryGetValue(new HttpRequestOptionsKey<string?>("RefreshRequestToken"), out var refreshRequestToken);
+#else
+            var refreshRequestToken = request.Properties.TryGetValue("RefreshRequestToken", out var stashedToken) ? stashedToken as string : null;
+#endif
+            if (!string.IsNullOrEmpty(refreshRequestToken))
+            {
+                _accessTokenHandler?.UpdateCachedToken(refreshRequestToken);
+            }
+        }
 
         return tokenLifetime;
     }
