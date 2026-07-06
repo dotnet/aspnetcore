@@ -33,7 +33,7 @@ public sealed class SuggestionList : IComponent, IDisposable
                 "SuggestionList must be inside an AgentBoundary.");
         _suggestions = Suggestions;
 
-        _statusSub = _agentContext.RegisterOnStatusChanged(status =>
+        _statusSub ??= _agentContext.RegisterOnStatusChanged(status =>
         {
             _isDisabled = status == ConversationStatus.Streaming;
             Render();

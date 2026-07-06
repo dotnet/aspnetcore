@@ -57,7 +57,7 @@ public class MessageInput : IComponent, IDisposable
         _allowAttachments = AllowAttachments;
         _acceptFileTypes = AcceptFileTypes;
 
-        _statusSub = _agentContext.RegisterOnStatusChanged(status =>
+        _statusSub ??= _agentContext.RegisterOnStatusChanged(status =>
         {
             _isDisabled = status == ConversationStatus.Streaming;
             Render();
