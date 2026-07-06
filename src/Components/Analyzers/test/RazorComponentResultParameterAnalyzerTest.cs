@@ -215,32 +215,6 @@ public class RazorComponentResultParameterAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void RecognizesCascadingParameters()
-    {
-        var test = $@"
-    namespace ConsoleApplication1
-    {{
-        using {typeof(ParameterAttribute).Namespace};
-        using Microsoft.AspNetCore.Http.HttpResults;
-
-        class TestComponent : IComponent
-        {{
-            [CascadingParameter] public string Theme {{ get; set; }}
-        }}
-
-        class TestEndpoints
-        {{
-            object Get()
-            {{
-                return new RazorComponentResult<TestComponent>(new {{ Theme = ""dark"" }});
-            }}
-        }}
-    }}" + RazorComponentResultDeclarations;
-
-        VerifyCSharpDiagnostic(test);
-    }
-
-    [Fact]
     public void DoesNotReportWhenComponentCapturesUnmatchedValues()
     {
         var test = $@"

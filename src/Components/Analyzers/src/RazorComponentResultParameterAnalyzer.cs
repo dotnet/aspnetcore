@@ -97,7 +97,7 @@ public sealed class RazorComponentResultParameterAnalyzer : DiagnosticAnalyzer
                     context.ReportDiagnostic(Diagnostic.Create(
                         DiagnosticDescriptors.RazorComponentResultParameterDoesNotExist,
                         GetParameterNameLocation(initializer.Syntax),
-                        componentType.Name,
+                        componentType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
                         parameterName));
                 }
             }, OperationKind.ObjectCreation);
@@ -137,7 +137,7 @@ public sealed class RazorComponentResultParameterAnalyzer : DiagnosticAnalyzer
                     return false;
                 }
 
-                if (ComponentFacts.IsAnyParameter(symbols, property))
+                if (ComponentFacts.IsParameter(symbols, property))
                 {
                     parameterNames.Add(property.Name);
                 }
