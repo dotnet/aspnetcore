@@ -342,7 +342,7 @@ rm {scriptPath};
                     // we now start a proxy every time.
                     // We can't guarantee that we stop/cleanup the proxy on every situation (for example if someone)
                     // kills this process in a "rude" way, but this gets 95% there.
-                    // For cases where the proxy is left open and where there might not be a "visible" window the recomendation
+                    // For cases where the proxy is left open and where there might not be a "visible" window the recommendation
                     // is to kill the process manually. (We will not fail, we will simply notify the proxy is "already" up.
                     if (!_spaProcess.CloseMainWindow())
                     {
