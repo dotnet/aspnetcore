@@ -367,7 +367,7 @@ internal sealed class CertificateConfig
     {
         ConfigSection = configSection;
 
-        // Bind explictly to preserve linkability
+        // Bind explicitly to preserve linkability
         Path = configSection[nameof(Path)];
         KeyPath = configSection[nameof(KeyPath)];
         Password = configSection[nameof(Password)];
