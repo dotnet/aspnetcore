@@ -13,8 +13,17 @@ namespace Microsoft.AspNetCore.Components.AI.Tests.Engine;
 
 public class UIAgentRecordedTests
 {
-    private const string Endpoint = "https://your-resource.cognitiveservices.azure.com/";
-    private const string DeploymentName = "your-deployment-name";
+    // These tests replay recorded LLM responses by default. Recording against a live Azure
+    // OpenAI endpoint only happens when the endpoint and deployment are explicitly provided via
+    // environment variables; otherwise a missing baseline fails fast instead of silently calling
+    // a real service (or writing baselines) using ambient credentials.
+    private static readonly string? Endpoint =
+        Environment.GetEnvironmentVariable("COMPONENTS_AI_AZURE_OPENAI_ENDPOINT");
+    private static readonly string? DeploymentName =
+        Environment.GetEnvironmentVariable("COMPONENTS_AI_AZURE_OPENAI_DEPLOYMENT");
+
+    private static bool AzureConfigured =>
+        !string.IsNullOrEmpty(Endpoint) && !string.IsNullOrEmpty(DeploymentName);
 
     private readonly ITestOutputHelper _output;
     private readonly ILoggerFactory _loggerFactory;
@@ -45,9 +54,9 @@ public class UIAgentRecordedTests
     private static IChatClient CreateAzureOpenAIClient()
     {
         var azureClient = new AzureOpenAIClient(
-            new Uri(Endpoint),
+            new Uri(Endpoint!),
             new DefaultAzureCredential());
-        return azureClient.GetChatClient(DeploymentName).AsIChatClient();
+        return azureClient.GetChatClient(DeploymentName!).AsIChatClient();
     }
 
     private static IChatClient CreateReplayOrRecordClient(string baselineFileName)
@@ -58,7 +67,16 @@ public class UIAgentRecordedTests
             return RecordingLoader.CreateReplayClient(baselineFileName);
         }
 
-        // Record mode: wrap real LLM
+        if (!AzureConfigured)
+        {
+            throw new InvalidOperationException(
+                $"Baseline recording '{baselineFileName}' was not found and no Azure OpenAI endpoint " +
+                $"is configured, so these replay tests cannot run. Set the " +
+                $"COMPONENTS_AI_AZURE_OPENAI_ENDPOINT and COMPONENTS_AI_AZURE_OPENAI_DEPLOYMENT " +
+                $"environment variables (with Azure credentials available) to (re)record the baseline.");
+        }
+
+        // Record mode (opt-in): wrap the real LLM only when Azure is explicitly configured.
         var inner = CreateAzureOpenAIClient();
         return new RecordingChatClient(inner);
     }
