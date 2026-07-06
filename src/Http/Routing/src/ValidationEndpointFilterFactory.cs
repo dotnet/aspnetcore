@@ -156,7 +156,6 @@ internal static class ValidationEndpointFilterFactory
             parameterType == typeof(HttpResponse) ||
             parameterType == typeof(ClaimsPrincipal) ||
             parameterType == typeof(CancellationToken) ||
-            // TODO: Do we need to check for BindAsync as well?
             isService?.IsService(parameterType) == true;
     }
 }
