@@ -54,7 +54,6 @@ internal static class ToolBlockEmitter
         sb.AppendLine("            {");
         sb.AppendLine("                context.MarkHandled(callContent);");
         sb.AppendLine("                state.Call = callContent;");
-        sb.AppendLine("                state.Id = callContent.CallId;");
 
         // Deserialize arguments
         if (candidate.Parameters.Count > 0)

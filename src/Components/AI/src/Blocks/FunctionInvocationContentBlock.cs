@@ -7,7 +7,23 @@ namespace Microsoft.AspNetCore.Components.AI;
 
 public class FunctionInvocationContentBlock : ContentBlock
 {
-    public FunctionCallContent? Call { get; set; }
+    private FunctionCallContent? _call;
+
+    public FunctionCallContent? Call
+    {
+        get => _call;
+        set
+        {
+            _call = value;
+            // A tool block is identified by its call. Deriving the Id here means generated
+            // handlers (which live in the consumer's assembly and cannot set the internal Id
+            // setter) don't need to assign it themselves.
+            if (value is not null && string.IsNullOrEmpty(Id))
+            {
+                Id = value.CallId;
+            }
+        }
+    }
 
     public FunctionResultContent? Result { get; set; }
 
