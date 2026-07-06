@@ -33,6 +33,7 @@ mcp-servers:
     allowed: ["get-latest-package-version"]
 
 safe-outputs:
+  report-failure-as-issue: false
   create-pull-request:
     title-prefix: "[package] "
     labels: [area-networking]

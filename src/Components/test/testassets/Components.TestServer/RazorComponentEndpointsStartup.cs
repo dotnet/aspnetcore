@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
@@ -39,6 +38,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         // Also update the cached field in QuickGridFeatureFlags, since it captures the AppContext
         // switch value once at static initialization and won't see subsequent AppContext changes.
+        // This write at fixture creation is only safe because the E2E suite runs serially
+        // (parallelizeAssembly/parallelizeTestCollections are false); enabling parallelization would
+        // let servers needing opposite values race on this process-global field and reintroduce #66883.
         var featureFlagsType = typeof(Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<>).Assembly
             .GetType("Microsoft.AspNetCore.Components.QuickGrid.QuickGridFeatureFlags");
         featureFlagsType?.GetField("s_enableUrlBasedQuickGridNavigationAndSorting", BindingFlags.Static | BindingFlags.NonPublic)
@@ -96,15 +98,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+            Configuration["Components:UseCultureFromServer"] = "true";
         }
         else
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(options =>
-            {
-                options.UseCultureFromServer = false;
-            });
+            Configuration["Components:UseCultureFromServer"] = "false";
         }
+
+        razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {
