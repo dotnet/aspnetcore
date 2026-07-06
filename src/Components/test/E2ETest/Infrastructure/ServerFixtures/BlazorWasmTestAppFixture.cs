@@ -62,9 +62,7 @@ public class BlazorWasmTestAppFixture<TProgram> : WebHostServerFixture
             args.Add(Environment);
         }
 
-        var app = BlazorGateway.BuildWebHost(args.ToArray());
-        app.MapFallbackToFile("index.html");
-        return app;
+        return BlazorGateway.BuildWebHost(args.ToArray());
     }
 
     private IHost CreateStaticWebHost(string contentRoot)
