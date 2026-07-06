@@ -98,11 +98,19 @@ internal static class ComponentProperties
         {
             // Logic with components with a CaptureUnmatchedValues parameter
             var isCaptureUnmatchedValuesParameterSetExplicitly = false;
+            var sawAnyNonCascadingParameter = false;
             Dictionary<string, object>? unmatched = null;
-            var sawAnyDirectParameter = false;
             foreach (var parameter in parameters)
             {
-                sawAnyDirectParameter = true;
+                if (!parameter.Cascading)
+                {
+                    // We track whether we saw any non-cascading parameter because we want to know whether
+                    // the parent supplied any direct parameters at all. If a ParameterView only contains
+                    // cascading parameter values, that doesn't represent a "new" set of direct parameters
+                    // from the parent, and we must not clear CaptureUnmatchedValues in that case.
+                    sawAnyNonCascadingParameter = true;
+                }
+
                 var parameterName = parameter.Name;
                 if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
                 {
@@ -169,8 +177,12 @@ internal static class ComponentProperties
                 // We had some unmatched values, set the CaptureUnmatchedValues property
                 SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
             }
-            else if (sawAnyDirectParameter && !isCaptureUnmatchedValuesParameterSetExplicitly)
+            else if (sawAnyNonCascadingParameter && !isCaptureUnmatchedValuesParameterSetExplicitly)
             {
+                // We had a direct (non-cascading) parameter view, but no unmatched values. The
+                // parent stopped supplying the previously-captured unmatched attributes, so we
+                // must reset the capture property to null to allow the renderer to issue
+                // RemoveAttribute edits on the next diff.
                 SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, (object)null!);
             }
         }
