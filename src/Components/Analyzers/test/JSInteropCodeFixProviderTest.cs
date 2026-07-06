@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
@@ -134,7 +135,7 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
         }
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
-        VerifyCSharpFix(oldSource, newSource);
+        VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
     }
 
     [Fact]
@@ -184,7 +185,7 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
         }
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
-        VerifyCSharpFix(oldSource, newSource);
+        VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
     }
 
     [Fact]
@@ -232,7 +233,7 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
         }
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
-        VerifyCSharpFix(oldSource, newSource);
+        VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
     }
 
     [Fact]
@@ -310,5 +311,10 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(source, source);
+    }
+
+    private static string NormalizeLineEndings(string source)
+    {
+        return source.ReplaceLineEndings(Environment.NewLine);
     }
 }
