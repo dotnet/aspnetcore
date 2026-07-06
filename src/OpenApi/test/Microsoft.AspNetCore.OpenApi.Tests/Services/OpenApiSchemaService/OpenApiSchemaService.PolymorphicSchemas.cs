@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
@@ -294,5 +295,221 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             // Assert that the schema has a correct self-reference to the base-type. This points to the schema that contains the discriminator.
             Assert.Equal("Employee", ((OpenApiSchemaReference)employeeSchema.Properties["manager"]).Reference.Id);
         });
+    }
+
+    [Fact]
+    public async Task HandlesPolymorphicTypesWithDictionaryPropertiesOnDerivedTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/api", (DictionaryContainerBase container) => { });
+
+        // Assert
+        var document = await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var requestBody = operation.RequestBody.Content;
+            Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
+
+            foreach (var componentName in new[] { "DictionaryContainerBaseDictionaryContainerAlpha", "DictionaryContainerBaseDictionaryContainerBeta", "DictionaryContainerBaseDictionaryContainerGamma" })
+            {
+                Assert.True(document.Components.Schemas.TryGetValue(componentName, out var derivedSchema));
+
+                // Dictionary<string, string> Tags => { "type": "object", "additionalProperties": { "type": "string" } }
+                var tags = derivedSchema.Properties["tags"];
+                Assert.True(tags.Type.Value.HasFlag(JsonSchemaType.Object));
+                Assert.NotNull(tags.AdditionalProperties);
+                Assert.True(tags.AdditionalProperties.Type.Value.HasFlag(JsonSchemaType.String));
+
+                // Dictionary<string, string[]> Labels => additionalProperties is an array of strings and
+                // must not be an empty schema for any derived type.
+                var labels = derivedSchema.Properties["labels"];
+                Assert.True(labels.Type.Value.HasFlag(JsonSchemaType.Object));
+                Assert.NotNull(labels.AdditionalProperties);
+                Assert.True(labels.AdditionalProperties.Type.Value.HasFlag(JsonSchemaType.Array));
+                Assert.NotNull(labels.AdditionalProperties.Items);
+                Assert.True(labels.AdditionalProperties.Items.Type.Value.HasFlag(JsonSchemaType.String));
+            }
+        });
+
+        var actual = await document.SerializeAsJsonAsync(OpenApiSpecVersion.OpenApi3_2);
+        var expected = """
+            {
+              "openapi": "3.2.0",
+              "info": {
+                "title": "OpenApiDocumentServiceTests | Test",
+                "version": "1.0.0"
+              },
+              "paths": {
+                "/api": {
+                  "post": {
+                    "tags": [
+                      "OpenApiDocumentServiceTests"
+                    ],
+                    "requestBody": {
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "$ref": "#/components/schemas/DictionaryContainerBase"
+                          }
+                        }
+                      }
+                    },
+                    "responses": {
+                      "200": {
+                        "description": "OK"
+                      }
+                    }
+                  }
+                }
+              },
+              "components": {
+                "schemas": {
+                  "DictionaryContainerBase": {
+                    "required": [
+                      "$type"
+                    ],
+                    "type": "object",
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/DictionaryContainerBaseDictionaryContainerAlpha"
+                      },
+                      {
+                        "$ref": "#/components/schemas/DictionaryContainerBaseDictionaryContainerBeta"
+                      },
+                      {
+                        "$ref": "#/components/schemas/DictionaryContainerBaseDictionaryContainerGamma"
+                      }
+                    ],
+                    "discriminator": {
+                      "propertyName": "$type",
+                      "mapping": {
+                        "alpha": "#/components/schemas/DictionaryContainerBaseDictionaryContainerAlpha",
+                        "beta": "#/components/schemas/DictionaryContainerBaseDictionaryContainerBeta",
+                        "gamma": "#/components/schemas/DictionaryContainerBaseDictionaryContainerGamma"
+                      }
+                    }
+                  },
+                  "DictionaryContainerBaseDictionaryContainerAlpha": {
+                    "required": [
+                      "tags",
+                      "labels"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "$type": {
+                        "enum": [
+                          "alpha"
+                        ],
+                        "type": "string"
+                      },
+                      "tags": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "labels": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "DictionaryContainerBaseDictionaryContainerBeta": {
+                    "required": [
+                      "tags",
+                      "labels"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "$type": {
+                        "enum": [
+                          "beta"
+                        ],
+                        "type": "string"
+                      },
+                      "tags": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "labels": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "DictionaryContainerBaseDictionaryContainerGamma": {
+                    "required": [
+                      "tags",
+                      "labels"
+                    ],
+                    "type": "object",
+                    "properties": {
+                      "$type": {
+                        "enum": [
+                          "gamma"
+                        ],
+                        "type": "string"
+                      },
+                      "tags": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      "labels": {
+                        "type": [
+                          "null",
+                          "object"
+                        ],
+                        "additionalProperties": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "tags": [
+                {
+                  "name": "OpenApiDocumentServiceTests"
+                }
+              ]
+            }
+            """;
+
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(actual), JsonNode.Parse(expected)));
     }
 }

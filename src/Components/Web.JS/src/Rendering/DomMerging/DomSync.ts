@@ -184,7 +184,7 @@ function treatAsMatch(destination: Node, source: Node) {
 
         const isDestinationInteractive = isInteractiveRootComponentElement(destinationAsLogicalElement);
         if (isDestinationInteractive) {
-          // Don't sync DOM content for already-interactive components becuase their content is managed
+          // Don't sync DOM content for already-interactive components because their content is managed
           // by the renderer.
         } else {
           synchronizeDomContentCore(destination, source);

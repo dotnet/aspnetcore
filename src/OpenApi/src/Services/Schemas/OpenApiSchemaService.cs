@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text.Json;
@@ -595,6 +596,9 @@ internal sealed class OpenApiSchemaService(
 
     private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
     {
+        // The refPath is expected to be a JSON Pointer (RFC 6901)
+        // https://www.rfc-editor.org/info/rfc6901/
+        // It follows the URI Fragment Identifier Representation.
         if (string.IsNullOrWhiteSpace(refPath))
         {
             throw new InvalidOperationException("Reference path cannot be null or empty.");
@@ -605,37 +609,125 @@ internal sealed class OpenApiSchemaService(
             throw new InvalidOperationException($"Only fragment references (starting with '{OpenApiConstants.RefPrefix}') are supported. Found: {refPath}");
         }
 
-        var path = refPath.TrimStart('#', '/');
-        if (string.IsNullOrEmpty(path))
+        // We already checked that the path starts with '#'.
+        var currentPath = refPath.AsSpan().Slice(OpenApiConstants.RefPrefix.Length);
+        var currentNode = rootSchema;
+
+        while (currentPath.Length > 0)
         {
-            return rootSchema;
+            // https://www.rfc-editor.org/info/rfc6901/#section-3
+            // json-pointer    = *( "/" reference-token )
+            if (currentPath[0] != '/')
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{refPath}'. Expected '{currentPath}' to start with '/'");
+            }
+
+            var currentPathWithoutSlash = currentPath.Slice(1);
+            var indexOfNextPath = currentPathWithoutSlash.IndexOf('/');
+
+            var currentReferenceToken =
+                indexOfNextPath == -1
+                ? currentPathWithoutSlash
+                : currentPathWithoutSlash.Slice(0, indexOfNextPath);
+
+            var unescapedReferenceToken = ParseReferenceToken(currentReferenceToken);
+            currentNode = EvaluateReferenceToken(unescapedReferenceToken, currentNode, refPath);
+
+            currentPath = indexOfNextPath == -1
+                ? ReadOnlySpan<char>.Empty
+                : currentPathWithoutSlash.Slice(indexOfNextPath);
         }
 
-        var segments = path.Split('/');
-        var current = rootSchema;
+        return currentNode;
+    }
 
-        for (var i = 0; i < segments.Length; i++)
+    private static string ParseReferenceToken(ReadOnlySpan<char> referenceToken)
+    {
+        // https://www.rfc-editor.org/info/rfc6901/#section-6
+        var unescapedReferenceToken = Uri.UnescapeDataString(referenceToken.ToString());
+
+        // https://www.rfc-editor.org/info/rfc6901/#section-4
+        // Evaluation of each reference token begins by decoding any escaped
+        // character sequence.  This is performed by first transforming any
+        // occurrence of the sequence '~1' to '/', and then transforming any
+        // occurrence of the sequence '~0' to '~'.  By performing the
+        // substitutions in this order, an implementation avoids the error of
+        // turning '~01' first into '~1' and then into '/', which would be
+        // incorrect (the string '~01' correctly becomes '~1' after
+        // transformation).
+        //
+        // NOTE: we unescape the possibly percent-encoded value even if
+        // STJ doesn't correctly percent-encode the ref today.
+        // See https://github.com/dotnet/runtime/issues/130162
+        if (unescapedReferenceToken.Contains('~'))
         {
-            var segment = segments[i];
-            if (current is JsonObject currentObject)
-            {
-                if (currentObject.TryGetPropertyValue(segment, out var nextNode) && nextNode != null)
-                {
-                    current = nextNode;
-                }
-                else
-                {
-                    var partialPath = string.Join('/', segments.Take(i + 1));
-                    throw new InvalidOperationException($"Failed to resolve reference '{refPath}': path segment '{segment}' not found at '#{partialPath}'");
-                }
-            }
-            else
-            {
-                var partialPath = string.Join('/', segments.Take(i));
-                throw new InvalidOperationException($"Failed to resolve reference '{refPath}': cannot navigate beyond '#{partialPath}' - expected object but found {current?.GetType().Name ?? "null"}");
-            }
+            // Not common case, performance isn't super important.
+            return unescapedReferenceToken.Replace("~1", "/").Replace("~0", "~");
         }
 
-        return current;
+        return unescapedReferenceToken;
+    }
+
+    private static JsonNode EvaluateReferenceToken(string unescapedReferenceToken, JsonNode currentNode, string fullJsonPointer)
+    {
+        if (currentNode is JsonObject currentObject)
+        {
+            // https://www.rfc-editor.org/info/rfc6901/#section-4
+            // If the currently referenced value is a JSON object, the new
+            // referenced value is the object member with the name identified by
+            // the reference token.  The member name is equal to the token if it
+            // has the same number of Unicode characters as the token and their
+            // code points are byte-by-byte equal.  No Unicode character
+            // normalization is performed.  If a referenced member name is not
+            // unique in an object, the member that is referenced is undefined
+            // and evaluation fails (see below).
+            if (!currentObject.TryGetPropertyValue(unescapedReferenceToken, out var referencedValue) ||
+                referencedValue is null)
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': property '{unescapedReferenceToken}' not found.");
+            }
+
+            return referencedValue;
+        }
+
+        if (currentNode is JsonArray currentArray)
+        {
+            // https://www.rfc-editor.org/info/rfc6901/#section-4
+            // If the currently referenced value is a JSON array, the reference
+            // token MUST contain either:
+            //   - characters comprised of digits (see ABNF below; note that
+            //     leading zeros are not allowed) that represent an unsigned
+            //     base-10 integer value, making the new referenced value the
+            //     array element with the zero-based index identified by the
+            //     token, or
+            //   - exactly the single character "-", making the new referenced
+            //     value the (nonexistent) member after the last array element.
+            //
+            // The ABNF syntax for array indices is:
+            // array-index = %x30 / ( %x31-39 *(%x30-39) )
+            //               ; "0", or digits without a leading "0"
+            //
+            // Note that the use of the "-" character to index an array will always
+            // result in such an error condition because by definition it refers to
+            // a nonexistent array element.  Thus, applications of JSON Pointer need
+            // to specify how that character is to be handled, if it is to be
+            // useful.
+            //
+            // In our case, "-" doesn't seem to be useful so we will throw.
+            if (!int.TryParse(unescapedReferenceToken, NumberStyles.None, CultureInfo.InvariantCulture, out var arrayIndex))
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': cannot navigate an array when the current token '{unescapedReferenceToken}' isn't a valid number");
+            }
+
+            if (unescapedReferenceToken.StartsWith('0', StringComparison.Ordinal) && unescapedReferenceToken.Length > 1)
+            {
+                throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': array index '{unescapedReferenceToken}' has a leading zero, which is not allowed.");
+            }
+
+            return currentArray[arrayIndex]
+                ?? throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': array index '{arrayIndex}' was not found.");
+        }
+
+        throw new InvalidOperationException($"Failed to resolve reference '{fullJsonPointer}': Unexpected JsonNode '{currentNode.GetType()}'");
     }
 }
