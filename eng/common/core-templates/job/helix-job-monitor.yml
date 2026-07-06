@@ -170,7 +170,7 @@ jobs:
       toolArgs=(
         --helix-base-uri           '${{ parameters.helixBaseUri }}'
         --polling-interval-seconds '${{ parameters.pollingIntervalSeconds }}'
-        --max-wait-minutes         "$((${{ parameters.timeoutInMinutes }} - 2))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
+        --max-wait-minutes         "$((${{ parameters.timeoutInMinutes }} - 5))" # Set the tool's timeout slightly lower than the Azure DevOps job timeout to allow it to exit gracefully.
         --stage-name               '$(System.StageName)'
       )
 

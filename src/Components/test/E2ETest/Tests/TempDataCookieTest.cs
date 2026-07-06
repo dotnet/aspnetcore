@@ -156,4 +156,14 @@ public class TempDataCookieTest : ServerTestBase<BasicTestAppServerSiteFixture<R
         Browser.FindElement(By.Id("set-supply-from-tempdata")).Click();
         Browser.Equal("Supplied from TempData", () => Browser.FindElement(By.Id("supply-parameter-from-tempdata")).Text);
     }
+
+    [Fact]
+    public void StreamingSSR_CookieTempData_DoesNotPersistValuesWrittenAfterFirstFlush()
+    {
+        Navigate($"{ServerPathBase}/streaming-session-persistence");
+        Browser.Exists(By.Id("streaming-complete"));
+
+        Navigate($"{ServerPathBase}/tempdata");
+        Browser.Equal("No message", () => Browser.FindElement(By.Id("message")).Text);
+    }
 }

@@ -51,6 +51,8 @@ public abstract class WebViewManager : IAsyncDisposable
     // through the publish step closes the entire race class.
     private readonly SemaphoreSlim _lifecycleLock = new(initialCount: 1, maxCount: 1);
 
+    internal PageContext CurrentPageContext => _currentPageContext;
+
     /// <summary>
     /// Constructs an instance of <see cref="WebViewManager"/>.
     /// </summary>

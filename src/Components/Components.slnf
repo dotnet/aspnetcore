@@ -13,6 +13,8 @@
       "src\\Components\\Components\\src\\Microsoft.AspNetCore.Components.csproj",
       "src\\Components\\Components\\test\\Microsoft.AspNetCore.Components.Tests.csproj",
       "src\\Components\\CustomElements\\src\\Microsoft.AspNetCore.Components.CustomElements.csproj",
+      "src\\Components\\Media\\src\\Microsoft.AspNetCore.Components.Media.csproj",
+      "src\\Components\\Media\\test\\Microsoft.AspNetCore.Components.Media.Tests.csproj",
       "src\\Components\\Endpoints\\src\\Microsoft.AspNetCore.Components.Endpoints.csproj",
       "src\\Components\\Endpoints\\test\\Microsoft.AspNetCore.Components.Endpoints.Tests.csproj",
       "src\\Components\\Forms\\src\\Microsoft.AspNetCore.Components.Forms.csproj",

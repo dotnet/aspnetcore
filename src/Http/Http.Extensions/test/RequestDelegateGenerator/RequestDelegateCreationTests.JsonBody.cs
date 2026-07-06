@@ -104,10 +104,7 @@ app.MapPost("/", postTodoWithDefault){withFilter}
         var (_, compilation) = await RunGeneratorAsync(source);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var httpContext = CreateHttpContext();
-        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(false));
-        httpContext.Request.Headers["Content-Type"] = "application/json";
-        httpContext.Request.Headers["Content-Length"] = "0";
+        var httpContext = CreateHttpContextWithEmptyJsonBody();
 
         await endpoint.RequestDelegate(httpContext);
         await VerifyResponseBodyAsync(httpContext, string.Empty, expectedStatusCode: 400);

@@ -1219,8 +1219,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             for (var i = 0; i < pathSegment.Length; i++)
             {
                 var ch = pathSegment[i];
-                // The header parser should already be checking this
-                Debug.Assert(32 < ch && ch < 127);
+                if (ch > byte.MaxValue)
+                {
+                    Abort(new ConnectionAbortedException(CoreStrings.FormatHttp3StreamErrorPathInvalid(RawTarget)), Http3ErrorCode.ProtocolError);
+                    return false;
+                }
                 pathBuffer[i] = (byte)ch;
             }
 

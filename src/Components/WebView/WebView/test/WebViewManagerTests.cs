@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebView.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -510,6 +511,82 @@ public class WebViewManagerTests
         await disposeTask; // surface any exception
     }
 
+    [Fact]
+    public async Task CanRenderComponentWithInteractiveServerRenderMode()
+    {
+        // Arrange
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponentWithInteractiveServerChild), "#app", ParameterView.Empty);
+
+        // Act - should not throw NotSupportedException
+        webViewManager.ReceiveAttachPageMessage();
+
+        // Assert
+        Assert.Collection(webViewManager.SentIpcMessages,
+            m => AssertHelpers.IsAttachWebRendererInteropMessage(m),
+            m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+            m => AssertHelpers.IsRenderBatch(m));
+    }
+
+    [Fact]
+    public async Task CanRenderComponentWithInteractiveWebAssemblyRenderMode()
+    {
+        // Arrange
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponentWithInteractiveWebAssemblyChild), "#app", ParameterView.Empty);
+
+        // Act - should not throw NotSupportedException
+        webViewManager.ReceiveAttachPageMessage();
+
+        // Assert
+        Assert.Collection(webViewManager.SentIpcMessages,
+            m => AssertHelpers.IsAttachWebRendererInteropMessage(m),
+            m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+            m => AssertHelpers.IsRenderBatch(m));
+    }
+
+    [Fact]
+    public async Task CanRenderComponentWithInteractiveAutoRenderMode()
+    {
+        // Arrange
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponentWithInteractiveAutoChild), "#app", ParameterView.Empty);
+
+        // Act - should not throw NotSupportedException
+        webViewManager.ReceiveAttachPageMessage();
+
+        // Assert
+        Assert.Collection(webViewManager.SentIpcMessages,
+            m => AssertHelpers.IsAttachWebRendererInteropMessage(m),
+            m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+            m => AssertHelpers.IsRenderBatch(m));
+    }
+
+    [Fact]
+    public async Task CanRenderComponentWithCustomRenderMode()
+    {
+        // Arrange
+        var services = RegisterTestServices().AddTestBlazorWebView().BuildServiceProvider();
+        var fileProvider = new TestFileProvider();
+        var webViewManager = new TestWebViewManager(services, fileProvider);
+        await webViewManager.AddRootComponentAsync(typeof(MyComponentWithCustomRenderModeChild), "#app", ParameterView.Empty);
+
+        // Act - should not throw NotSupportedException even for unknown/custom render modes
+        webViewManager.ReceiveAttachPageMessage();
+
+        // Assert
+        Assert.Collection(webViewManager.SentIpcMessages,
+            m => AssertHelpers.IsAttachWebRendererInteropMessage(m),
+            m => AssertHelpers.IsAttachToDocumentMessage(m, 0, "#app"),
+            m => AssertHelpers.IsRenderBatch(m));
+    }
+
     private static IServiceCollection RegisterTestServices()
     {
         return new ServiceCollection().AddSingleton<SingletonService>().AddScoped<ScopedService>();
@@ -661,6 +738,103 @@ public class WebViewManagerTests
             return Task.CompletedTask;
         }
     }
+
+    // Components with render modes for testing ResolveComponentForRenderMode
+
+    private class ChildComponent : IComponent
+    {
+        private RenderHandle _handle;
+
+        public void Attach(RenderHandle renderHandle) => _handle = renderHandle;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            _handle.Render(builder =>
+            {
+                builder.AddContent(0, "Child content");
+            });
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private class MyComponentWithInteractiveServerChild : IComponent
+    {
+        private RenderHandle _handle;
+
+        public void Attach(RenderHandle renderHandle) => _handle = renderHandle;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            _handle.Render(builder =>
+            {
+                builder.OpenComponent<ChildComponent>(0);
+                builder.AddComponentRenderMode(RenderMode.InteractiveServer);
+                builder.CloseComponent();
+            });
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private class MyComponentWithInteractiveWebAssemblyChild : IComponent
+    {
+        private RenderHandle _handle;
+
+        public void Attach(RenderHandle renderHandle) => _handle = renderHandle;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            _handle.Render(builder =>
+            {
+                builder.OpenComponent<ChildComponent>(0);
+                builder.AddComponentRenderMode(RenderMode.InteractiveWebAssembly);
+                builder.CloseComponent();
+            });
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private class MyComponentWithInteractiveAutoChild : IComponent
+    {
+        private RenderHandle _handle;
+
+        public void Attach(RenderHandle renderHandle) => _handle = renderHandle;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            _handle.Render(builder =>
+            {
+                builder.OpenComponent<ChildComponent>(0);
+                builder.AddComponentRenderMode(RenderMode.InteractiveAuto);
+                builder.CloseComponent();
+            });
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private class MyComponentWithCustomRenderModeChild : IComponent
+    {
+        private RenderHandle _handle;
+
+        public void Attach(RenderHandle renderHandle) => _handle = renderHandle;
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            _handle.Render(builder =>
+            {
+                builder.OpenComponent<ChildComponent>(0);
+                builder.AddComponentRenderMode(new CustomRenderMode());
+                builder.CloseComponent();
+            });
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private class CustomRenderMode : IComponentRenderMode { }
 
     public static class JSInvokableHelpers
     {

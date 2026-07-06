@@ -8,7 +8,10 @@
          which reads properties directly without running the ComputeRunArguments target. -->
     <_GatewayStaticWebAssetsManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'staticwebassets.development.json'))</_GatewayStaticWebAssetsManifest>
     <_GatewayEndpointsManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'staticwebassets.build.endpoints.json'))</_GatewayEndpointsManifest>
+    <!-- Logging filters that suppress noisy framework and OTLP categories during local development.
+         Set GatewayDisableDefaultLoggingFilters=true to get full default logging levels instead. -->
+    <_GatewayDefaultLoggingFiltersArgs Condition="'$(GatewayDisableDefaultLoggingFilters)' != 'true'"> --Logging:LogLevel:Microsoft=Warning --Logging:LogLevel:Microsoft.Hosting.Lifetime=Information --Logging:LogLevel:System.Net.Http.HttpClient.OtlpExporter=Warning</_GatewayDefaultLoggingFiltersArgs>
     <RunCommand>dotnet</RunCommand>
-    <RunArguments>&quot;$(_BlazorGatewayDll)&quot; --environment Development --staticWebAssets &quot;$(_GatewayStaticWebAssetsManifest)&quot; --ClientApps:app:EndpointsManifest &quot;$(_GatewayEndpointsManifest)&quot; --ClientApps:app:PathPrefix &quot;&quot;</RunArguments>
+    <RunArguments>&quot;$(_BlazorGatewayDll)&quot; --environment Development --staticWebAssets &quot;$(_GatewayStaticWebAssetsManifest)&quot; --ClientApps:app:EndpointsManifest &quot;$(_GatewayEndpointsManifest)&quot; --ClientApps:app:PathPrefix &quot;&quot;$(_GatewayDefaultLoggingFiltersArgs)</RunArguments>
   </PropertyGroup>
 </Project>

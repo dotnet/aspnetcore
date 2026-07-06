@@ -72,6 +72,18 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
+    public async Task PersistAllValues_KeepsKey_WhenCallbackReturnsValue()
+    {
+        var httpContext = CreateHttpContextWithSession();
+
+        _supplier.RegisterValueCallback("key", () => "value");
+        _supplier.SetRequestContext(httpContext);
+        await _supplier.PersistAllValues();
+
+        Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
+    }
+
+    [Fact]
     public async Task PersistAllValues_HandlesMultipleKeys()
     {
         _supplier.RegisterValueCallback("key1", () => "value1");
@@ -160,17 +172,17 @@ public class SessionCascadingValueSupplierTest
     }
 
     [Fact]
-    public async Task SetRequestContext_DoesNotRegisterOnStarting_UntilSubscriptionCreated()
+    public async Task SetRequestContext_DoesNotPersist_UntilExplicitlyCalled()
     {
         _supplier.RegisterValueCallback("key", () => "value");
 
-        var httpContext = CreateHttpContextWithSession(out var responseFeature);
+        var httpContext = CreateHttpContextWithSession();
         _supplier.SetRequestContext(httpContext);
 
-        // OnStarting has not been registered yet because no subscription was created
-        await responseFeature.FireOnStartingAsync();
-
         Assert.Null(httpContext.Session.GetString("key"));
+
+        await _supplier.PersistAllValues();
+        Assert.Equal("\"value\"", httpContext.Session.GetString("key"));
     }
 
     internal static DefaultHttpContext CreateHttpContextWithSession()

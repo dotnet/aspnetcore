@@ -574,6 +574,25 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiParameters_HandlesAsParametersRecordWithValidationOnPrimaryConstructor()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([AsParameters] AsParametersRecordWithValidationAttributeOnPrimaryConstructor model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("Id", parameter.Name);
+            Assert.True(parameter.Required);
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiParameters_HandlesFromQueryParametersWithDefaultValueAttribute()
     {
         // Arrange
@@ -1058,6 +1077,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     [Route("/api/{student}")]
     private Student GetStudent(Student student) => student;
+
+    private record AsParametersRecordWithValidationAttributeOnPrimaryConstructor([Required] string Id);
 
     public record Student(string Name)
     {

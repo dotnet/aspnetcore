@@ -11,6 +11,16 @@
 # terminates the hung processes. Dumps are written next to the crash dumps that
 # upload-cores.sh already collects (dotnet-<pid>.core in the working directory),
 # so no additional upload wiring is required.
+#
+# We deliberately capture *minidumps* (--normal) rather than full dumps. A full
+# dump of a hung .NET process can be several GB; capturing several of them and
+# then uploading them as artifacts does not fit inside the cancelTimeout grace
+# window, so the upload is killed and no dump is ever published. A minidump is a
+# few tens of MB, captures in seconds, and uploads comfortably. createdump is
+# .NET-aware and includes the thread stacks and runtime/module memory the DAC
+# needs, so `clrthreads` / `clrstack` still work to identify the hung process and
+# its managed stack -- which is all a hang investigation needs (heap inspection
+# such as `dumpheap` is not).
 
 set -uo pipefail
 
@@ -85,8 +95,8 @@ for pid in $ordered; do
     break
   fi
   out="$wd/dotnet-${pid}.core"
-  echo "Capturing full dump for PID $pid -> $out"
-  if $sudo "$createdump" --full --name "$out" "$pid"; then
+  echo "Capturing minidump for PID $pid -> $out"
+  if $sudo "$createdump" --normal --name "$out" "$pid"; then
     # createdump may run under sudo and write a root-owned file; ensure the
     # agent account can read it for artifact upload.
     $sudo chmod 0644 "$out" 2>/dev/null || true

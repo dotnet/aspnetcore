@@ -968,11 +968,13 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
             return false;
         }
 
-        var index = transferEncoding.LastIndexOf(',');
-        if (transferEncoding.AsSpan().Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-        return false;
+        // Per RFC 7230 §7, list-based headers tolerate empty list elements
+        // (e.g. "chunked,"). Strip any trailing OWS/commas so that the
+        // LastIndexOf-based check below sees the real final coding.
+        ReadOnlySpan<char> trimChars = [' ', '\t', ','];
+        var span = transferEncoding.AsSpan().TrimEnd(trimChars);
+
+        var index = span.LastIndexOf(',');
+        return span.Slice(index + 1).Trim().Equals("chunked", StringComparison.OrdinalIgnoreCase);
     }
 }

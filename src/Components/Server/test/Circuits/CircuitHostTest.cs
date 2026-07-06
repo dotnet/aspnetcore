@@ -709,7 +709,7 @@ public class CircuitHostTest
 
         renderStarted.Wait();
 
-        var pauseTask = Task.Run(() => circuitHost.RequestPauseAsync(CancellationToken.None).AsTask());
+        var pauseTask = Task.Run(() => circuitHost.RequestPauseAsync(CancellationToken.None));
 
         renderReleased = true;
         releaseRender.Set();
@@ -911,7 +911,7 @@ public class CircuitHostTest
         var circuitHost = await CreateConnectedCircuitHostAsync();
 
         var tasks = Enumerable.Range(0, 10)
-            .Select(_ => circuitHost.RequestPauseAsync(CancellationToken.None).AsTask())
+            .Select(_ => circuitHost.RequestPauseAsync(CancellationToken.None))
             .ToArray();
         var results = await Task.WhenAll(tasks);
 
@@ -948,7 +948,7 @@ public class CircuitHostTest
             hosts.Add(await CreateConnectedCircuitHostAsync());
         }
 
-        var tasks = hosts.Select(h => h.RequestPauseAsync(CancellationToken.None).AsTask()).ToArray();
+        var tasks = hosts.Select(h => h.RequestPauseAsync(CancellationToken.None)).ToArray();
         var results = await Task.WhenAll(tasks);
 
         Assert.All(results, Assert.True);
@@ -1060,7 +1060,7 @@ public class CircuitHostTest
     {
         var circuitHost = await CreateConnectedCircuitHostAsync();
 
-        var result = await Task.Run(() => circuitHost.Circuit.RequestCircuitPauseAsync().AsTask());
+        var result = await Task.Run(() => circuitHost.Circuit.RequestCircuitPauseAsync());
 
         Assert.True(result);
     }

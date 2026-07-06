@@ -7,12 +7,12 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.ShortCircuit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -47,13 +47,56 @@ internal sealed partial class EndpointRoutingMiddleware
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
         _metrics = metrics;
-        _next = next ?? throw new ArgumentNullException(nameof(next));
+        ArgumentNullException.ThrowIfNull(next);
         _routeOptions = routeOptions.Value;
+
+        // When the app calls UseRouting() explicitly, the framework defers its implicit post-routing middleware
+        // into a block stored on the global route builder's properties.
+        if (endpointRouteBuilder is IApplicationBuilder applicationBuilder &&
+            applicationBuilder.Properties.TryGetValue(MiddlewareInvokedKeys.PostRoutingPipeline, out var value))
+        {
+            // Consume the block so additional UseRouting() calls don't run it again.
+            applicationBuilder.Properties.Remove(MiddlewareInvokedKeys.PostRoutingPipeline);
+
+            // Reject any custom user-placed code under PostRoutingPipeline
+            if (value is not Func<RequestDelegate, RequestDelegate> postRoutingMiddleware || !IsFrameworkPostRoutingMiddleware(postRoutingMiddleware))
+            {
+                throw new InvalidOperationException($"The '{MiddlewareInvokedKeys.PostRoutingPipeline}' application property is reserved for the framework and cannot be set by application code.");
+            }
+
+            next = postRoutingMiddleware(next);
+        }
+
+        _next = next;
 
         // rootCompositeEndpointDataSource is a constructor parameter only so it always gets disposed by DI. This ensures that any
         // disposable EndpointDataSources also get disposed. _endpointDataSource is a component of rootCompositeEndpointDataSource.
         _ = rootCompositeEndpointDataSource;
         _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
+    }
+
+    private const string PostRoutingMiddlewareMethodName = "CreateMiddleware";
+    private const string PostRoutingMiddlewareAssemblyName = "Microsoft.AspNetCore";
+
+    private static bool IsFrameworkPostRoutingMiddleware(Func<RequestDelegate, RequestDelegate> middleware)
+    {
+        var method = middleware.Method;
+        if (!string.Equals(method.Name, PostRoutingMiddlewareMethodName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var declaringAssembly = method.DeclaringType?.Assembly.GetName();
+        if (declaringAssembly is null || !string.Equals(declaringAssembly.Name, PostRoutingMiddlewareAssemblyName, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        // Both framework assemblies are produced by the same build and share a strong-name key (and an empty token in
+        // unsigned local builds), so an equal public key token proves the block's assembly is first-party.
+        var blockToken = declaringAssembly.GetPublicKeyToken() ?? [];
+        var ownToken = typeof(EndpointRoutingMiddleware).Assembly.GetName().GetPublicKeyToken() ?? [];
+        return blockToken.AsSpan().SequenceEqual(ownToken);
     }
 
     public Task Invoke(HttpContext httpContext)
@@ -137,7 +180,7 @@ internal sealed partial class EndpointRoutingMiddleware
             // can access the feature with the correct value.
             SetMaxRequestBodySize(httpContext);
 
-            var shortCircuitMetadata = endpoint.Metadata.GetMetadata<ShortCircuitMetadata>();
+            var shortCircuitMetadata = endpoint.Metadata.GetMetadata<IShortCircuitMetadata>();
             if (shortCircuitMetadata is not null)
             {
                 return ExecuteShortCircuit(shortCircuitMetadata, endpoint, httpContext);
@@ -155,7 +198,7 @@ internal sealed partial class EndpointRoutingMiddleware
         }
     }
 
-    private Task ExecuteShortCircuit(ShortCircuitMetadata shortCircuitMetadata, Endpoint endpoint, HttpContext httpContext)
+    private Task ExecuteShortCircuit(IShortCircuitMetadata shortCircuitAttribute, Endpoint endpoint, HttpContext httpContext)
     {
         // This check should be kept in sync with the one in EndpointMiddleware
         if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
@@ -178,9 +221,9 @@ internal sealed partial class EndpointRoutingMiddleware
             }
         }
 
-        if (shortCircuitMetadata.StatusCode.HasValue)
+        if (shortCircuitAttribute.StatusCode.HasValue)
         {
-            httpContext.Response.StatusCode = shortCircuitMetadata.StatusCode.Value;
+            httpContext.Response.StatusCode = shortCircuitAttribute.StatusCode.Value;
         }
 
         if (endpoint.RequestDelegate is not null)

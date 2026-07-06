@@ -48,7 +48,6 @@ public class ServerRoutingTest : RoutingTest
     public override void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
         => base.NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66195")]
     public override void CanNavigateToQueryStringPageWithNoQuery()
         => base.CanNavigateToQueryStringPageWithNoQuery();
 }
@@ -100,7 +99,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     {
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/65852")]
     public override void CanRenderHtmlTable()
         => base.CanRenderHtmlTable();
 
@@ -108,7 +106,6 @@ public class ServerVirtualizationTest : VirtualizationTest
     public override void CancelsOutdatedRefreshes_Async()
         => base.CancelsOutdatedRefreshes_Async();
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/66308")]
     public override void DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace()
         => base.DynamicContent_PrependItemsWhileScrolledToMiddle_VisibleItemsStayInPlace();
 

@@ -424,7 +424,7 @@ public class SetCookieHeaderValue
     public static bool TryParse(StringSegment input, [NotNullWhen(true)] out SetCookieHeaderValue? parsedValue)
     {
         var index = 0;
-        return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
+        return SingleValueParser.TryParseValue(input, index, out _, out parsedValue!);
     }
 
     /// <summary>
@@ -542,7 +542,7 @@ public class SetCookieHeaderValue
                 {
                     return 0;
                 }
-                // We don't want to include comma, becouse date may contain it (eg. Sun, 06 Nov...)
+                // We don't want to include comma, because date may contain it (eg. Sun, 06 Nov...)
                 var dateString = ReadToSemicolonOrEnd(input, ref offset, includeComma: false);
                 DateTimeOffset expirationDate;
                 if (!HttpRuleParser.TryStringToDate(dateString, out expirationDate))
