@@ -221,18 +221,22 @@ public class MessageInput : IComponent, IDisposable
 
     private async Task SubmitAsync()
     {
-        if (string.IsNullOrWhiteSpace(_text))
-        {
-            return;
-        }
-
         if (_isDisabled)
         {
             return;
         }
 
+        var hasText = !string.IsNullOrWhiteSpace(_text);
+        if (!hasText && _attachments.Count == 0)
+        {
+            return;
+        }
+
         var contents = new List<AIContent>();
-        contents.Add(new TextContent(_text));
+        if (hasText)
+        {
+            contents.Add(new TextContent(_text));
+        }
 
         foreach (var attachment in _attachments)
         {
