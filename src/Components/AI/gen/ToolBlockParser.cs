@@ -16,41 +16,60 @@ internal static class ToolBlockParser
     private const string ToolResultAttributeFullName = "Microsoft.AspNetCore.Components.AI.ToolResultAttribute";
     private const string FunctionInvocationContentBlockFullName = "Microsoft.AspNetCore.Components.AI.FunctionInvocationContentBlock";
 
-    public static ToolBlockCandidate? Parse(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
+    private static readonly SymbolDisplayFormat s_escapedNamespaceFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers);
+
+    public static ToolBlockParseResult Parse(GeneratorAttributeSyntaxContext ctx, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
 
+        var diagnostics = new List<DiagnosticInfo>();
+
         if (ctx.TargetSymbol is not INamedTypeSymbol classSymbol)
         {
-            return null;
+            return new ToolBlockParseResult(candidate: null, diagnostics);
         }
 
         var classDecl = (ClassDeclarationSyntax)ctx.TargetNode;
+        var location = LocationInfo.From(classDecl.Identifier.GetLocation());
+        var displayName = classSymbol.Name;
 
         // Validate partial
-        if (!classDecl.Modifiers.Any(m => m.Text == "partial"))
+        if (!classDecl.Modifiers.Any(m => m.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword)))
         {
-            ctx.SemanticModel.Compilation.GetDiagnostics(ct);
-            // Report in the generator output step instead
-            return null;
+            diagnostics.Add(new DiagnosticInfo(DiagnosticDescriptors.NotPartial.Id, location, displayName));
+            return new ToolBlockParseResult(candidate: null, diagnostics);
+        }
+
+        // Nested types cannot be represented by the (namespace + simple name) model and
+        // would otherwise emit uncompilable code, so diagnose and skip them.
+        if (classSymbol.ContainingType is not null)
+        {
+            diagnostics.Add(new DiagnosticInfo(DiagnosticDescriptors.NestedType.Id, location, displayName));
+            return new ToolBlockParseResult(candidate: null, diagnostics);
         }
 
         // Validate not abstract
         if (classSymbol.IsAbstract)
         {
-            return null;
+            diagnostics.Add(new DiagnosticInfo(DiagnosticDescriptors.IsAbstract.Id, location, displayName));
+            return new ToolBlockParseResult(candidate: null, diagnostics);
         }
 
         // Validate not generic
         if (classSymbol.IsGenericType)
         {
-            return null;
+            diagnostics.Add(new DiagnosticInfo(DiagnosticDescriptors.IsGeneric.Id, location, displayName));
+            return new ToolBlockParseResult(candidate: null, diagnostics);
         }
 
         // Validate base class
         if (!ExtendsType(classSymbol, FunctionInvocationContentBlockFullName))
         {
-            return null;
+            diagnostics.Add(new DiagnosticInfo(DiagnosticDescriptors.WrongBaseClass.Id, location, displayName));
+            return new ToolBlockParseResult(candidate: null, diagnostics);
         }
 
         // Extract tool name from attribute
@@ -68,10 +87,31 @@ internal static class ToolBlockParser
 
         if (string.IsNullOrEmpty(toolName))
         {
-            return null;
+            diagnostics.Add(new DiagnosticInfo(DiagnosticDescriptors.EmptyToolName.Id, location, displayName));
+            return new ToolBlockParseResult(candidate: null, diagnostics);
         }
 
-        // Collect [ToolParameter] properties
+        var parameters = ParseParameters(classSymbol, diagnostics, ct);
+        var resultProperties = ParseResultProperties(classSymbol, ct);
+
+        var ns = classSymbol.ContainingNamespace.IsGlobalNamespace
+            ? string.Empty
+            : classSymbol.ContainingNamespace.ToDisplayString(s_escapedNamespaceFormat);
+
+        var candidate = new ToolBlockCandidate(
+            @namespace: ns,
+            className: classSymbol.Name,
+            blockTypeGlobal: classSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+            toolName: toolName!,
+            parameters: parameters,
+            resultProperties: resultProperties);
+
+        return new ToolBlockParseResult(candidate, diagnostics);
+    }
+
+    private static List<ToolParameterInfo> ParseParameters(
+        INamedTypeSymbol classSymbol, List<DiagnosticInfo> diagnostics, CancellationToken ct)
+    {
         var parameters = new List<ToolParameterInfo>();
         var seenKeys = new Dictionary<string, string>();
 
@@ -79,70 +119,42 @@ internal static class ToolBlockParser
         {
             ct.ThrowIfCancellationRequested();
 
-            if (member is not IPropertySymbol prop)
+            if (member is not IPropertySymbol prop || !HasAttribute(prop, ToolParameterAttributeFullName, out var paramAttr))
             {
                 continue;
             }
 
-            AttributeData? paramAttr = null;
-            foreach (var attr in prop.GetAttributes())
-            {
-                if (attr.AttributeClass?.ToDisplayString() == ToolParameterAttributeFullName)
-                {
-                    paramAttr = attr;
-                    break;
-                }
-            }
-
-            if (paramAttr is null)
-            {
-                continue;
-            }
-
-            // Check setter
             if (prop.SetMethod is null)
             {
+                diagnostics.Add(new DiagnosticInfo(
+                    DiagnosticDescriptors.PropertyNoSetter.Id, LocationInfo.From(prop.Locations.FirstOrDefault() ?? Location.None), prop.Name));
                 continue;
             }
 
-            // Get argument key
-            string argKey = prop.Name;
-            foreach (var namedArg in paramAttr.NamedArguments)
-            {
-                if (namedArg.Key == "Name" && namedArg.Value.Value is string nameOverride && !string.IsNullOrEmpty(nameOverride))
-                {
-                    argKey = nameOverride;
-                    break;
-                }
-            }
+            var argKey = GetKeyOverride(paramAttr!, prop.Name);
 
-            // Check for duplicate keys
-            if (seenKeys.TryGetValue(argKey, out var existingProp))
+            if (seenKeys.ContainsKey(argKey))
             {
+                diagnostics.Add(new DiagnosticInfo(
+                    DiagnosticDescriptors.DuplicateArgumentKey.Id, LocationInfo.From(prop.Locations.FirstOrDefault() ?? Location.None), argKey));
                 continue;
             }
 
             seenKeys[argKey] = prop.Name;
 
-            var typeKind = GetTypeKind(prop.Type);
-            var isNullable = prop.Type.NullableAnnotation == NullableAnnotation.Annotated
-                || prop.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
-
-            parameters.Add(new ToolParameterInfo
-            {
-                PropertyName = prop.Name,
-                ArgumentKey = argKey,
-                TypeName = prop.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                IsNullable = isNullable,
-                TypeKind = typeKind
-            });
+            parameters.Add(new ToolParameterInfo(
+                propertyName: prop.Name,
+                argumentKey: argKey,
+                typeName: prop.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                isNullable: IsNullable(prop.Type),
+                typeKind: GetTypeKind(prop.Type)));
         }
 
-        var ns = classSymbol.ContainingNamespace.IsGlobalNamespace
-            ? string.Empty
-            : classSymbol.ContainingNamespace.ToDisplayString();
+        return parameters;
+    }
 
-        // Collect [ToolResult] properties
+    private static List<ToolResultPropertyInfo> ParseResultProperties(INamedTypeSymbol classSymbol, CancellationToken ct)
+    {
         var resultProperties = new List<ToolResultPropertyInfo>();
         var seenResultKeys = new Dictionary<string, string>();
 
@@ -150,22 +162,7 @@ internal static class ToolBlockParser
         {
             ct.ThrowIfCancellationRequested();
 
-            if (member is not IPropertySymbol prop)
-            {
-                continue;
-            }
-
-            AttributeData? resultAttr = null;
-            foreach (var attr in prop.GetAttributes())
-            {
-                if (attr.AttributeClass?.ToDisplayString() == ToolResultAttributeFullName)
-                {
-                    resultAttr = attr;
-                    break;
-                }
-            }
-
-            if (resultAttr is null)
+            if (member is not IPropertySymbol prop || !HasAttribute(prop, ToolResultAttributeFullName, out var resultAttr))
             {
                 continue;
             }
@@ -175,46 +172,57 @@ internal static class ToolBlockParser
                 continue;
             }
 
-            string resultKey = prop.Name;
-            foreach (var namedArg in resultAttr.NamedArguments)
-            {
-                if (namedArg.Key == "Name" && namedArg.Value.Value is string nameOverride && !string.IsNullOrEmpty(nameOverride))
-                {
-                    resultKey = nameOverride;
-                    break;
-                }
-            }
+            var resultKey = GetKeyOverride(resultAttr!, prop.Name);
 
-            if (seenResultKeys.TryGetValue(resultKey, out var existingProp2))
+            if (seenResultKeys.ContainsKey(resultKey))
             {
                 continue;
             }
 
             seenResultKeys[resultKey] = prop.Name;
 
-            var resultTypeKind = GetTypeKind(prop.Type);
-            var resultIsNullable = prop.Type.NullableAnnotation == NullableAnnotation.Annotated
-                || prop.Type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
-
-            resultProperties.Add(new ToolResultPropertyInfo
-            {
-                PropertyName = prop.Name,
-                ResultKey = resultKey,
-                TypeName = prop.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-                IsNullable = resultIsNullable,
-                TypeKind = resultTypeKind
-            });
+            resultProperties.Add(new ToolResultPropertyInfo(
+                propertyName: prop.Name,
+                resultKey: resultKey,
+                typeName: prop.Type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+                isNullable: IsNullable(prop.Type),
+                typeKind: GetTypeKind(prop.Type)));
         }
 
-        return new ToolBlockCandidate
-        {
-            Namespace = ns,
-            ClassName = classSymbol.Name,
-            ToolName = toolName!,
-            Parameters = parameters,
-            ResultProperties = resultProperties
-        };
+        return resultProperties;
     }
+
+    private static bool HasAttribute(IPropertySymbol prop, string attributeFullName, out AttributeData? attribute)
+    {
+        foreach (var attr in prop.GetAttributes())
+        {
+            if (attr.AttributeClass?.ToDisplayString() == attributeFullName)
+            {
+                attribute = attr;
+                return true;
+            }
+        }
+
+        attribute = null;
+        return false;
+    }
+
+    private static string GetKeyOverride(AttributeData attribute, string defaultKey)
+    {
+        foreach (var namedArg in attribute.NamedArguments)
+        {
+            if (namedArg.Key == "Name" && namedArg.Value.Value is string nameOverride && !string.IsNullOrEmpty(nameOverride))
+            {
+                return nameOverride;
+            }
+        }
+
+        return defaultKey;
+    }
+
+    private static bool IsNullable(ITypeSymbol type)
+        => type.NullableAnnotation == NullableAnnotation.Annotated
+            || type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T;
 
     private static bool ExtendsType(INamedTypeSymbol symbol, string fullName)
     {

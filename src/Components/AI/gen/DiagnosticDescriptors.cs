@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.AI.SourceGenerators;
@@ -50,7 +51,7 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor DuplicateArgumentKey = new(
         id: "BAIC006",
         title: "Duplicate argument key on ToolBlock",
-        messageFormat: "Properties '{0}' and '{1}' on ToolBlock '{2}' map to the same argument key '{3}'",
+        messageFormat: "A property mapping to argument key '{0}' is already declared on this ToolBlock; the duplicate is ignored",
         category: "BlazorAIComponents",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
@@ -58,7 +59,7 @@ internal static class DiagnosticDescriptors
     public static readonly DiagnosticDescriptor PropertyNoSetter = new(
         id: "BAIC007",
         title: "ToolParameter property has no setter",
-        messageFormat: "Property '{0}' on ToolBlock '{1}' has no setter — it will not be populated from arguments",
+        messageFormat: "Property '{0}' has no setter — it will not be populated from the tool call",
         category: "BlazorAIComponents",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
@@ -70,4 +71,27 @@ internal static class DiagnosticDescriptors
         category: "BlazorAIComponents",
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true);
+
+    public static readonly DiagnosticDescriptor NestedType = new(
+        id: "BAIC009",
+        title: "ToolBlock class must be a top-level type",
+        messageFormat: "ToolBlock class '{0}' must be a top-level (non-nested) type",
+        category: "BlazorAIComponents",
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
+    private static readonly Dictionary<string, DiagnosticDescriptor> s_byId = new()
+    {
+        [NotPartial.Id] = NotPartial,
+        [WrongBaseClass.Id] = WrongBaseClass,
+        [IsAbstract.Id] = IsAbstract,
+        [IsGeneric.Id] = IsGeneric,
+        [EmptyToolName.Id] = EmptyToolName,
+        [DuplicateArgumentKey.Id] = DuplicateArgumentKey,
+        [PropertyNoSetter.Id] = PropertyNoSetter,
+        [DuplicateToolName.Id] = DuplicateToolName,
+        [NestedType.Id] = NestedType,
+    };
+
+    public static DiagnosticDescriptor ById(string id) => s_byId[id];
 }

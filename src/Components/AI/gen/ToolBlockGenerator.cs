@@ -11,24 +11,37 @@ public class ToolBlockGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Step 1: Filter for classes with [ToolBlock] attribute
-        var candidates = context.SyntaxProvider
+        // Step 1: Parse classes with [ToolBlock] into an equatable parse result
+        // (candidate and/or diagnostics).
+        var parseResults = context.SyntaxProvider
             .ForAttributeWithMetadataName(
                 "Microsoft.AspNetCore.Components.AI.ToolBlockAttribute",
                 predicate: static (node, _) => node is ClassDeclarationSyntax,
-                transform: static (ctx, ct) => ToolBlockParser.Parse(ctx, ct))
-            .Where(static c => c is not null)
-            .Select(static (c, _) => c!);
+                transform: static (ctx, ct) => ToolBlockParser.Parse(ctx, ct));
 
-        // Step 2: Emit handler source for each candidate
-        context.RegisterSourceOutput(candidates, static (spc, candidate) =>
+        // Step 2: Report per-declaration diagnostics and emit a handler for each valid candidate.
+        context.RegisterSourceOutput(parseResults, static (spc, result) =>
         {
-            ToolBlockEmitter.EmitHandler(spc, candidate);
+            foreach (var info in result.Diagnostics)
+            {
+                spc.ReportDiagnostic(Diagnostic.Create(
+                    DiagnosticDescriptors.ById(info.DescriptorId),
+                    info.Location?.ToLocation() ?? Location.None,
+                    info.MessageArg));
+            }
+
+            if (result.Candidate is not null)
+            {
+                ToolBlockEmitter.EmitHandler(spc, result.Candidate);
+            }
         });
 
-        // Step 3: Collect all candidates and emit the aggregate registration
-        var allCandidates = candidates.Collect();
-        context.RegisterSourceOutput(allCandidates, static (spc, candidates) =>
+        // Step 3: Collect all valid candidates and emit the aggregate registration.
+        var candidates = parseResults
+            .Where(static r => r.Candidate is not null)
+            .Select(static (r, _) => r.Candidate!)
+            .Collect();
+        context.RegisterSourceOutput(candidates, static (spc, candidates) =>
         {
             ToolBlockEmitter.EmitRegistration(spc, candidates);
         });
