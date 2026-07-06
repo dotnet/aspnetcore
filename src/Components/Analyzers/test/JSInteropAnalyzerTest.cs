@@ -14,6 +14,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
     private static readonly string JSInteropDeclarations = @"
     namespace Microsoft.JSInterop
     {
+        using System;
         using System.Threading;
         using System.Threading.Tasks;
 
@@ -63,6 +64,20 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             TValue Invoke<TValue>(string identifier, params object[] args);
         }
 
+        public class JSException : Exception
+        {
+            public JSException(string message) : base(message)
+            {
+            }
+        }
+
+        public sealed class JSDisconnectedException : Exception
+        {
+            public JSDisconnectedException(string message) : base(message)
+            {
+            }
+        }
+
         public static class JSRuntimeExtensions
         {
             public static ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, params object[] args)
@@ -110,6 +125,9 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
     }
     ";
 
+    private static string GetExpectedUnguardedMessage(string methodName)
+        => $"JS interop call '{methodName}' is not guarded with a try/catch block.";
+
     [Fact]
     public void UnguardedJSRuntimeExtensionsCall_ReportsDiagnostic()
     {
@@ -136,7 +154,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeVoidAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -168,7 +186,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeVoidAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -200,7 +218,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -232,7 +250,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'GetValueAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("GetValueAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -264,7 +282,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'SetValueAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("SetValueAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -296,7 +314,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeConstructorAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeConstructorAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -328,7 +346,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -360,7 +378,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'GetValueAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("GetValueAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -392,7 +410,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'SetValueAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("SetValueAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -424,7 +442,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeConstructorAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeConstructorAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 14, 23) }
             });
@@ -455,7 +473,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'Invoke' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("Invoke"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 13, 17) }
             });
@@ -486,7 +504,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'Invoke' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("Invoke"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 13, 17) }
             });
@@ -524,7 +542,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void JSInteropCallInsideTryCatchWithSpecificException_ReportsDiagnostic()
+    public void JSInteropCallInsideTryCatchWithSpecificException_DoesNotReportDiagnostic()
     {
         var test = @"
     namespace BlazorApp1.Components
@@ -548,26 +566,107 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
                 }
             }
         }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(test);
     }
 
-    namespace Microsoft.JSInterop
+    [Fact]
+    public void JSInteropCallInsideTryCatchWithJSException_DoesNotReportDiagnostic()
     {
-        using System;
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
 
-        public class JSDisconnectedException : Exception
+        class TestComponent : ComponentBase
         {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                try
+                {
+                    await JS.InvokeVoidAsync(""initializeComponent"");
+                }
+                catch (JSException)
+                {
+                }
+            }
         }
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
-        VerifyCSharpDiagnostic(
-            test,
-            new DiagnosticResult
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void JSInteropCallInsideTryCatchWithInvalidOperationException_DoesNotReportDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
             {
-                Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
-                Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 16, 27) }
-            });
+                try
+                {
+                    await JS.InvokeVoidAsync(""initializeComponent"");
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void JSInteropCallInsideTryCatchWithAllKnownInteropExceptions_DoesNotReportDiagnostic()
+    {
+        var test = @"
+    namespace BlazorApp1.Components
+    {
+        using System;
+        using System.Threading.Tasks;
+        using Microsoft.AspNetCore.Components;
+        using Microsoft.JSInterop;
+
+        class TestComponent : ComponentBase
+        {
+            [Inject] public IJSRuntime JS { get; set; } = default!;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                try
+                {
+                    await JS.InvokeVoidAsync(""initializeComponent"");
+                }
+                catch (JSException)
+                {
+                }
+                catch (JSDisconnectedException)
+                {
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+        }
+    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+
+        VerifyCSharpDiagnostic(test);
     }
 
     [Fact]
@@ -637,7 +736,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeVoidAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 20, 27) }
             });
@@ -676,7 +775,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeVoidAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 20, 27) }
             });
@@ -715,7 +814,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeVoidAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 27) }
             });
@@ -757,7 +856,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 24, 23) }
             });
@@ -797,7 +896,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeVoidAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 59) }
             });
@@ -837,7 +936,7 @@ public class JSInteropAnalyzerTest : DiagnosticVerifier
             new DiagnosticResult
             {
                 Id = DiagnosticDescriptors.UnguardedJSInteropCall.Id,
-                Message = "JS interop call 'InvokeVoidAsync' is not guarded with a try/catch-all block.",
+                Message = GetExpectedUnguardedMessage("InvokeVoidAsync"),
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation("Test0.cs", 17, 53) }
             });

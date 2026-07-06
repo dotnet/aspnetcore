@@ -22,6 +22,9 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
     private const string IJSObjectReferenceTypeName = "Microsoft.JSInterop.IJSObjectReference";
     private const string IJSInProcessObjectReferenceTypeName = "Microsoft.JSInterop.IJSInProcessObjectReference";
     private const string ExceptionTypeName = "System.Exception";
+    private const string InvalidOperationExceptionTypeName = "System.InvalidOperationException";
+    private const string JSExceptionTypeName = "Microsoft.JSInterop.JSException";
+    private const string JSDisconnectedExceptionTypeName = "Microsoft.JSInterop.JSDisconnectedException";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.UnguardedJSInteropCall);
@@ -42,6 +45,28 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
             var jsInProcessRuntimeExtensionsType = context.Compilation.GetTypeByMetadataName(JSInProcessRuntimeExtensionsTypeName);
             var jsInProcessObjectReferenceExtensionsType = context.Compilation.GetTypeByMetadataName(JSInProcessObjectReferenceExtensionsTypeName);
             var systemExceptionType = context.Compilation.GetTypeByMetadataName(ExceptionTypeName);
+            var invalidOperationExceptionType = context.Compilation.GetTypeByMetadataName(InvalidOperationExceptionTypeName);
+            var jsExceptionType = context.Compilation.GetTypeByMetadataName(JSExceptionTypeName);
+            var jsDisconnectedExceptionType = context.Compilation.GetTypeByMetadataName(JSDisconnectedExceptionTypeName);
+
+            var knownJsInteropExceptionTypesBuilder = ImmutableArray.CreateBuilder<INamedTypeSymbol>(3);
+
+            if (invalidOperationExceptionType is not null)
+            {
+                knownJsInteropExceptionTypesBuilder.Add(invalidOperationExceptionType);
+            }
+
+            if (jsExceptionType is not null)
+            {
+                knownJsInteropExceptionTypesBuilder.Add(jsExceptionType);
+            }
+
+            if (jsDisconnectedExceptionType is not null)
+            {
+                knownJsInteropExceptionTypesBuilder.Add(jsDisconnectedExceptionType);
+            }
+
+            var knownJsInteropExceptionTypes = knownJsInteropExceptionTypesBuilder.ToImmutable();
 
             if (ijsRuntimeType is null &&
                 ijsInProcessRuntimeType is null &&
@@ -51,7 +76,8 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 jsObjectReferenceExtensionsType is null &&
                 jsInProcessRuntimeExtensionsType is null &&
                 jsInProcessObjectReferenceExtensionsType is null &&
-                systemExceptionType is null)
+                systemExceptionType is null &&
+                knownJsInteropExceptionTypes.IsEmpty)
             {
                 return;
             }
@@ -61,7 +87,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 var invocation = (IInvocationOperation)context.Operation;
                 var targetMethod = invocation.TargetMethod;
 
-                if (IsInsideTryBlockWithCatchAll(invocation, systemExceptionType))
+                if (IsInsideTryBlockWithAllowedExceptionHandling(invocation, systemExceptionType, knownJsInteropExceptionTypes))
                 {
                     return;
                 }
@@ -115,7 +141,10 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
         return IsJSInteropType(receiverType, ijsRuntimeType, ijsInProcessRuntimeType, ijsObjectReferenceType, ijsInProcessObjectReferenceType);
     }
 
-    private static bool IsInsideTryBlockWithCatchAll(IOperation invocationOperation, INamedTypeSymbol systemExceptionType)
+    private static bool IsInsideTryBlockWithAllowedExceptionHandling(
+        IOperation invocationOperation,
+        INamedTypeSymbol? systemExceptionType,
+        ImmutableArray<INamedTypeSymbol> knownJsInteropExceptionTypes)
     {
         var previous = invocationOperation;
         var current = invocationOperation.Parent;
@@ -129,7 +158,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 case IAnonymousFunctionOperation:
                 case ILocalFunctionOperation:
                     return false;
-                case ITryOperation tryOperation when ReferenceEquals(previous, tryOperation.Body) && HasCatchAllClause(tryOperation, systemExceptionType):
+                case ITryOperation tryOperation when ReferenceEquals(previous, tryOperation.Body) && HasAllowedExceptionHandling(tryOperation, systemExceptionType, knownJsInteropExceptionTypes):
                     return true;
             }
 
@@ -140,9 +169,53 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool HasCatchAllClause(ITryOperation tryOperation, INamedTypeSymbol systemExceptionType)
+    private static bool HasAllowedExceptionHandling(
+        ITryOperation tryOperation,
+        INamedTypeSymbol? systemExceptionType,
+        ImmutableArray<INamedTypeSymbol> knownJsInteropExceptionTypes)
     {
+        if (HasCatchAllClause(tryOperation.Catches, systemExceptionType))
+        {
+            return true;
+        }
+
+        if (knownJsInteropExceptionTypes.IsEmpty)
+        {
+            return false;
+        }
+
+        var handledExceptionTypes = ImmutableHashSet.CreateBuilder<INamedTypeSymbol>(SymbolEqualityComparer.Default);
+
         foreach (var catchClause in tryOperation.Catches)
+        {
+            if (catchClause.Filter is not null)
+            {
+                continue;
+            }
+
+            var exceptionType = catchClause.ExceptionType as INamedTypeSymbol;
+            if (exceptionType is null)
+            {
+                continue;
+            }
+
+            handledExceptionTypes.Add(exceptionType);
+        }
+
+        foreach (var exceptionType in knownJsInteropExceptionTypes)
+        {
+            if (handledExceptionTypes.Contains(exceptionType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool HasCatchAllClause(ImmutableArray<ICatchClauseOperation> catchClauses, INamedTypeSymbol? systemExceptionType)
+    {
+        foreach (var catchClause in catchClauses)
         {
             if (catchClause.Filter is not null)
             {
@@ -154,7 +227,8 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 return true;
             }
 
-            if (SymbolEqualityComparer.Default.Equals(catchClause.ExceptionType, systemExceptionType))
+            if (systemExceptionType is not null &&
+                SymbolEqualityComparer.Default.Equals(catchClause.ExceptionType, systemExceptionType))
             {
                 return true;
             }
