@@ -55,7 +55,8 @@ Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemHeight.
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemHeight.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemWidth.get -> float?
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ItemWidth.set -> void
-Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.UpdateContainerWidth(float newWidth) -> void
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialItemsPerRow.get -> int
+Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.InitialItemsPerRow.set -> void
 Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize<TItem>.ScrollToItemAsync(int itemIndex, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode
 Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode.Start = 1 -> Microsoft.AspNetCore.Components.Web.Virtualization.VirtualizeAnchorMode

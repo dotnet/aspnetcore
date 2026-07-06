@@ -257,6 +257,20 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     public float? ItemHeight { get; set; } = null;
 
     /// <summary>
+    /// Gets or sets the initial number of items per row to use during server-side rendering (SSR) when using grid layout mode.
+    /// This value is used during prerendering to calculate the correct grid layout before the JavaScript ResizeObserver
+    /// can measure the actual container width.
+    ///
+    /// This parameter has no effect when <see cref="IsGridLayout"/> is <c>false</c>.
+    /// Defaults to 1 (single column during SSR). Should match your expected layout for the initial render.
+    /// Once hydrated, the ResizeObserver will update this to the actual container width calculation.
+    ///
+    /// Example: If you know your grid will typically display 4 items per row, set this to 4 to prevent layout shift on hydration.
+    /// </summary>
+    [Parameter]
+    public int InitialItemsPerRow { get; set; } = 1;
+
+    /// <summary>
     /// Instructs the component to re-request data from its <see cref="ItemsProvider"/>.
     /// This is useful if external data may have changed. There is no need to call this
     /// when using <see cref="Items"/>.
@@ -432,6 +446,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
                 $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}'.");
         }
 
+        if (IsGridLayout && !ItemWidth.HasValue)
+        {
+            throw new InvalidOperationException(
+                $"{GetType()} requires the '{nameof(ItemWidth)}' parameter to be specified when '{nameof(IsGridLayout)}' is true.");
+        }
+
         if (IsGridLayout && ItemWidth.HasValue && ItemWidth <= 0)
         {
             throw new InvalidOperationException(
@@ -442,6 +462,12 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         {
             throw new InvalidOperationException(
                 $"{GetType()} requires a positive value for parameter '{nameof(ItemHeight)}' when '{nameof(IsGridLayout)}' is true.");
+        }
+
+        if (IsGridLayout && InitialItemsPerRow <= 0)
+        {
+            throw new InvalidOperationException(
+                $"{GetType()} requires a positive value for parameter '{nameof(InitialItemsPerRow)}' when '{nameof(IsGridLayout)}' is true.");
         }
 
         if (_itemSize <= 0)
@@ -459,11 +485,20 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         }
 
         // If grid layout parameters changed, reset measurements
-        if ((IsGridLayout && ItemWidth.HasValue) && (_cachedItemsPerRow == 1 || !ItemWidth.HasValue))
+        if (IsGridLayout && ItemWidth.HasValue)
         {
-            _cachedItemsPerRow = GetItemsPerRow();
-            _totalMeasuredHeight = 0;
-            _measuredItemCount = 0;
+            var newItemsPerRow = GetItemsPerRow();
+            if (newItemsPerRow != _cachedItemsPerRow)
+            {
+                _cachedItemsPerRow = newItemsPerRow;
+                _totalMeasuredHeight = 0;
+                _measuredItemCount = 0;
+            }
+        }
+        else if (IsGridLayout && _cachedItemsPerRow == 1 && InitialItemsPerRow > 1)
+        {
+            // During SSR, use InitialItemsPerRow for grid calculations since ResizeObserver isn't available
+            _cachedItemsPerRow = InitialItemsPerRow;
         }
 
         if (ItemsProvider != null)
@@ -523,7 +558,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (firstRender)
         {
             _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
-            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode);
+            await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter, (int)AnchorMode, IsGridLayout);
             _lastRenderedAnchorMode = AnchorMode;
         }
 
@@ -573,12 +608,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     }
 
     /// <summary>
-    /// JSInvokable method called from JavaScript interop to update the container width
-    /// when using grid layout. This is called by ResizeObserver when the container dimensions change.
+    /// Called from JavaScript interop to update the container width when using grid layout.
+    /// This is called by ResizeObserver when the container dimensions change.
     /// </summary>
     /// <param name="newWidth">The new width of the virtualization container in pixels.</param>
-    [JSInvokable]
-    public void UpdateContainerWidth(float newWidth)
+    void IVirtualizeJsCallbacks.OnContainerWidthChanged(float newWidth)
     {
         if (_containerWidth != newWidth && IsGridLayout && ItemWidth.HasValue)
         {
@@ -716,17 +750,17 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
     /// <returns>Height in pixels as a string suitable for CSS height values.</returns>
     private string GetGridAwareSpacerHeightPx(int itemCount)
     {
+        float heightInPixels;
         if (IsGridLayout && _cachedItemsPerRow > 1)
         {
             var rows = Math.Max(0, (int)Math.Ceiling((float)itemCount / _cachedItemsPerRow));
-            var heightInPixels = (int)(rows * GetItemHeight());
-            return heightInPixels.ToString(CultureInfo.InvariantCulture);
+            heightInPixels = rows * GetItemHeight();
         }
         else
         {
-            var heightInPixels = (int)(itemCount * GetItemHeight());
-            return heightInPixels.ToString(CultureInfo.InvariantCulture);
+            heightInPixels = itemCount * GetItemHeight();
         }
+        return heightInPixels.ToString("F1", CultureInfo.InvariantCulture).TrimEnd('0').TrimEnd('.');
     }
 
     private float GetItemHeight()
@@ -809,11 +843,6 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         UpdateItemDistribution(itemsBefore, visibleItemCapacity, unusedItemCapacity);
     }
 
-    void IVirtualizeJsCallbacks.OnContainerWidthChanged(float containerWidth)
-    {
-        UpdateContainerWidth(containerWidth);
-    }
-
     void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
     {
         if (_pendingAnchorRestore || ShouldSuppressSpacerCallback())
@@ -891,10 +920,11 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         if (IsGridLayout && ItemWidth.HasValue && _containerWidth > 0)
         {
             var itemsPerRow = GetItemsPerRow();
-            var visibleRows = (int)Math.Ceiling(containerSize / effectiveItemSize) + OverscanCount;
+            // Apply consistent 2 * OverscanCount buffering for grid mode to match linear mode behavior
+            var visibleRows = (int)Math.Ceiling(containerSize / effectiveItemSize) + (2 * OverscanCount);
             var visibleItemsInGrid = visibleRows * itemsPerRow;
 
-            var rowsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - OverscanCount);
+            var rowsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / effectiveItemSize) - (2 * OverscanCount));
             itemsInSpacer = rowsInSpacer * itemsPerRow;
 
             visibleItemCapacity = visibleItemsInGrid;

@@ -46,7 +46,7 @@ function getScaleFactor(spacerBefore: HTMLElement, spacerAfter: HTMLElement): nu
   return (Number.isFinite(scale) && scale > 0) ? scale : 1;
 }
 
-function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, anchorMode = 1, rootMargin = 50): void {
+function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spacerAfter: HTMLElement, anchorMode = 1, rootMargin = 50, isGridLayout = false): void {
   // If the component was disposed before the JS interop call completed, the element references may be null
   // or the elements may have been disconnected from the DOM. Return early to avoid errors.
   if (!spacerBefore || !spacerAfter || !spacerBefore.isConnected || !spacerAfter.isConnected) {
@@ -145,34 +145,39 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
   intersectionObserver.observe(spacerBefore);
   intersectionObserver.observe(spacerAfter);
 
-  // ResizeObserver for tracking container width (for grid layout support)
+  // ResizeObserver for tracking container width (for grid layout support only)
   let lastReportedContainerWidth = 0;
   let containerWidthObserverThrottleTimeout: ReturnType<typeof setTimeout> | null = null;
-  const containerWidthResizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
-    if (containerWidthObserverThrottleTimeout) {
-      return; // Already scheduled
-    }
+  let containerWidthResizeObserver: ResizeObserver | null = null;
 
-    const containerElement = spacerBefore.parentElement;
-    if (!containerElement || !containerElement.isConnected) {
-      return;
-    }
-
-    containerWidthObserverThrottleTimeout = setTimeout(() => {
-      containerWidthObserverThrottleTimeout = null;
-      const currentWidth = containerElement.clientWidth;
-
-      if (Math.abs(currentWidth - lastReportedContainerWidth) > 1) {
-        lastReportedContainerWidth = currentWidth;
-        dotNetHelper.invokeMethodAsync('OnContainerWidthChanged', currentWidth);
+  // Only create and start observing container width if grid layout is enabled
+  if (isGridLayout) {
+    containerWidthResizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]): void => {
+      if (containerWidthObserverThrottleTimeout) {
+        return; // Already scheduled
       }
-    }, THROTTLE_MS);
-  });
 
-  // Start observing container width changes
-  const containerElement = spacerBefore.parentElement;
-  if (containerElement) {
-    containerWidthResizeObserver.observe(containerElement);
+      const containerElement = spacerBefore.parentElement;
+      if (!containerElement || !containerElement.isConnected) {
+        return;
+      }
+
+      containerWidthObserverThrottleTimeout = setTimeout(() => {
+        containerWidthObserverThrottleTimeout = null;
+        const currentWidth = containerElement.clientWidth;
+
+        if (Math.abs(currentWidth - lastReportedContainerWidth) > 1) {
+          lastReportedContainerWidth = currentWidth;
+          dotNetHelper.invokeMethodAsync('OnContainerWidthChanged', currentWidth);
+        }
+      }, THROTTLE_MS);
+    });
+
+    // Start observing container width changes
+    const containerElement = spacerBefore.parentElement;
+    if (containerElement) {
+      containerWidthResizeObserver.observe(containerElement);
+    }
   }
 
   let convergingElements = false;
@@ -586,7 +591,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       stopConvergenceObserving();
       anchoredItems.clear();
       resizeObserver.disconnect();
-      containerWidthResizeObserver.disconnect();
+      containerWidthResizeObserver?.disconnect();
       if (containerWidthObserverThrottleTimeout) {
         clearTimeout(containerWidthObserverThrottleTimeout);
         containerWidthObserverThrottleTimeout = null;
