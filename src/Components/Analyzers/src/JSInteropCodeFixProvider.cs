@@ -90,10 +90,8 @@ public sealed class JSInteropCodeFixProvider : CodeFixProvider
         {
             return document;
         }
-
+        newRoot = Formatter.Format(newRoot, document.Project.Solution.Workspace, cancellationToken: cancellationToken);
         var newDocument = document.WithSyntaxRoot(newRoot);
-        var formattedRoot = await Formatter.FormatAsync(newDocument, Formatter.Annotation, cancellationToken: cancellationToken).ConfigureAwait(false);
-
-        return formattedRoot;
+        return newDocument;
     }
 }

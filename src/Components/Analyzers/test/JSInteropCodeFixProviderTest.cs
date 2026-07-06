@@ -14,79 +14,79 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     protected override CodeFixProvider GetCSharpCodeFixProvider() => new JSInteropCodeFixProvider();
 
     private static readonly string JSInteropDeclarations = @"
-    namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop
+{
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    public interface IJSRuntime
     {
-        using System.Threading;
-        using System.Threading.Tasks;
-
-        public interface IJSRuntime
-        {
-            ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
-            ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args);
-        }
-
-        public interface IJSObjectReference : System.IAsyncDisposable
-        {
-            ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
-            ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args);
-        }
-
-        public interface IJSInProcessRuntime : IJSRuntime
-        {
-            TValue Invoke<TValue>(string identifier, params object[] args);
-        }
-
-        public interface IJSInProcessObjectReference : IJSObjectReference
-        {
-            TValue Invoke<TValue>(string identifier, params object[] args);
-        }
-
-        public static class JSRuntimeExtensions
-        {
-            public static ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, params object[] args)
-                => default;
-            public static ValueTask<TValue> InvokeAsync<TValue>(this IJSRuntime jsRuntime, string identifier, params object[] args)
-                => default;
-            public static ValueTask<TValue> InvokeAsync<TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object[] args)
-                => default;
-            public static ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object[] args)
-                => default;
-        }
-
-        public static class JSObjectReferenceExtensions
-        {
-            public static ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, params object[] args)
-                => default;
-            public static ValueTask<TValue> InvokeAsync<TValue>(this IJSObjectReference jsObjectReference, string identifier, params object[] args)
-                => default;
-            public static ValueTask<TValue> InvokeAsync<TValue>(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object[] args)
-                => default;
-            public static ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object[] args)
-                => default;
-        }
+        ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
+        ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args);
     }
-    ";
+
+    public interface IJSObjectReference : System.IAsyncDisposable
+    {
+        ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args);
+        ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args);
+    }
+
+    public interface IJSInProcessRuntime : IJSRuntime
+    {
+        TValue Invoke<TValue>(string identifier, params object[] args);
+    }
+
+    public interface IJSInProcessObjectReference : IJSObjectReference
+    {
+        TValue Invoke<TValue>(string identifier, params object[] args);
+    }
+
+    public static class JSRuntimeExtensions
+    {
+        public static ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, params object[] args)
+            => default;
+        public static ValueTask<TValue> InvokeAsync<TValue>(this IJSRuntime jsRuntime, string identifier, params object[] args)
+            => default;
+        public static ValueTask<TValue> InvokeAsync<TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object[] args)
+            => default;
+        public static ValueTask InvokeVoidAsync(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object[] args)
+            => default;
+    }
+
+    public static class JSObjectReferenceExtensions
+    {
+        public static ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, params object[] args)
+            => default;
+        public static ValueTask<TValue> InvokeAsync<TValue>(this IJSObjectReference jsObjectReference, string identifier, params object[] args)
+            => default;
+        public static ValueTask<TValue> InvokeAsync<TValue>(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object[] args)
+            => default;
+        public static ValueTask InvokeVoidAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, params object[] args)
+            => default;
+    }
+}
+";
 
     private static readonly string BlazorComponentDeclarations = @"
-    namespace Microsoft.AspNetCore.Components
+namespace Microsoft.AspNetCore.Components
+{
+    using System;
+    using System.Threading.Tasks;
+
+    public interface IComponent
     {
-        using System;
-        using System.Threading.Tasks;
-
-        public interface IComponent
-        {
-        }
-
-        public sealed class InjectAttribute : Attribute
-        {
-        }
-
-        public abstract class ComponentBase : IComponent
-        {
-            protected virtual Task OnAfterRenderAsync(bool firstRender) => Task.CompletedTask;
-        }
     }
-    ";
+
+    public sealed class InjectAttribute : Attribute
+    {
+    }
+
+    public abstract class ComponentBase : IComponent
+    {
+        protected virtual Task OnAfterRenderAsync(bool firstRender) => Task.CompletedTask;
+    }
+}
+";
 
     [Fact]
     public void WrapsUnguardedInvokeVoidAsyncInTryCatch()
@@ -111,19 +111,19 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         var newSource = @"
-    namespace BlazorApp1.Components
+namespace BlazorApp1.Components
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
     {
-        using System;
-        using System.Threading.Tasks;
-        using Microsoft.AspNetCore.Components;
-        using Microsoft.JSInterop;
+        private IJSRuntime JS = default!;
 
-        class TestComponent : ComponentBase
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            private IJSRuntime JS = default!;
-
-            protected override async Task OnAfterRenderAsync(bool firstRender)
-            {
             try
             {
                 await JS.InvokeVoidAsync(""initializeChart"");
@@ -132,8 +132,8 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
             {
             }
         }
-        }
-    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+    }
+}" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
     }
@@ -161,19 +161,19 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         var newSource = @"
-    namespace BlazorApp1.Components
+namespace BlazorApp1.Components
+{
+    using System;
+    using System.Threading.Tasks;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
     {
-        using System;
-        using System.Threading.Tasks;
-        using Microsoft.AspNetCore.Components;
-        using Microsoft.JSInterop;
+        private IJSRuntime JS = default!;
 
-        class TestComponent : ComponentBase
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            private IJSRuntime JS = default!;
-
-            protected override async Task OnAfterRenderAsync(bool firstRender)
-            {
             try
             {
                 await JS.InvokeAsync<string>(""prompt"", ""Name?"");
@@ -182,8 +182,8 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
             {
             }
         }
-        }
-    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+    }
+}" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
     }
@@ -210,18 +210,18 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
     }" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         var newSource = @"
-    namespace BlazorApp1.Components
+namespace BlazorApp1.Components
+{
+    using System;
+    using Microsoft.AspNetCore.Components;
+    using Microsoft.JSInterop;
+
+    class TestComponent : ComponentBase
     {
-        using System;
-        using Microsoft.AspNetCore.Components;
-        using Microsoft.JSInterop;
+        private IJSRuntime JS = default!;
 
-        class TestComponent : ComponentBase
+        public void DisplayCustomer()
         {
-            private IJSRuntime JS = default!;
-
-            public void DisplayCustomer()
-            {
             try
             {
                 JS.InvokeVoidAsync(""console.log"", ""hello"");
@@ -230,8 +230,8 @@ public class JSInteropCodeFixProviderTest : CodeFixVerifier
             {
             }
         }
-        }
-    }" + BlazorComponentDeclarations + JSInteropDeclarations;
+    }
+}" + BlazorComponentDeclarations + JSInteropDeclarations;
 
         VerifyCSharpFix(NormalizeLineEndings(oldSource), NormalizeLineEndings(newSource));
     }
