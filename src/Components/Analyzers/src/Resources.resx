@@ -259,6 +259,6 @@
     <value>Unguarded JS interop call</value>
   </data>
   <data name="UnguardedJSInteropCall_FixTitle" xml:space="preserve">
-    <value>Wrap JSInterlop call in a try/catch block.</value>
+    <value>Wrap JS interop call in a try/catch block.</value>
   </data>
 </root>
