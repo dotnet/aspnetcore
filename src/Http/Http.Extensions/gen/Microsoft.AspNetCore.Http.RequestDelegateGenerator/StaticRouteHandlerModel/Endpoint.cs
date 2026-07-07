@@ -124,7 +124,7 @@ internal class Endpoint
 
         for (var i = 0; i < a.Parameters.Length; i++)
         {
-            if (!a.Parameters[i].SignatureEquals(b.Parameters[i]))
+            if (!a.Parameters[i].Equals(b.Parameters[i]))
             {
                 return false;
             }
@@ -141,7 +141,7 @@ internal class Endpoint
 
         foreach (var parameter in endpoint.Parameters)
         {
-            hashCode.Add(parameter.Type, SymbolEqualityComparer.Default);
+            hashCode.Add(parameter);
         }
 
         return hashCode.ToHashCode();
