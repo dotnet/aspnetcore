@@ -36,7 +36,7 @@ public sealed class JSInteropCodeFixProvider : CodeFixProvider
             return;
         }
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         var invocation = root.FindToken(diagnosticSpan.Start)
