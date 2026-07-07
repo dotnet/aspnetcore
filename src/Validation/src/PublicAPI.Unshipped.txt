@@ -35,24 +35,29 @@ Microsoft.Extensions.Validation.ErrorMessageLocalizationContext.MemberName.init 
 Microsoft.Extensions.Validation.IValidatableInfoResolver.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableParameterInfo) -> bool
 Microsoft.Extensions.Validation.IValidatableInfoResolver.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo) -> bool
 Microsoft.Extensions.Validation.IValidatableParameterInfo
+Microsoft.Extensions.Validation.IValidatableParameterInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void
 Microsoft.Extensions.Validation.IValidatableParameterInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.Extensions.Validation.IValidatablePropertyInfo
+Microsoft.Extensions.Validation.IValidatablePropertyInfo.Validate(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context) -> void
 Microsoft.Extensions.Validation.IValidatablePropertyInfo.ValidateAsync(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.Extensions.Validation.IValidatableTypeInfo
-Microsoft.Extensions.Validation.IValidatableTypeInfo.TryFindProperty(string! propertyName, Microsoft.Extensions.Validation.ValidationOptions! validationOptions) -> Microsoft.Extensions.Validation.IValidatablePropertyInfo?
+Microsoft.Extensions.Validation.IValidatableTypeInfo.TryFindProperty(string! propertyName, Microsoft.Extensions.Validation.ValidationOptions! validationOptions, out Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo) -> bool
+Microsoft.Extensions.Validation.IValidatableTypeInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void
 Microsoft.Extensions.Validation.IValidatableTypeInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.Extensions.Validation.IValidationLocalizer
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveDisplayName(in Microsoft.Extensions.Validation.DisplayNameLocalizationContext context) -> string?
 Microsoft.Extensions.Validation.IValidationLocalizer.ResolveErrorMessage(in Microsoft.Extensions.Validation.ErrorMessageLocalizationContext context) -> string?
 Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidatablePropertyInfo(System.Type! declaringType, System.Type! propertyType, string! name, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
-Microsoft.Extensions.Validation.ValidatableTypeInfo.TryFindProperty(string! propertyName, Microsoft.Extensions.Validation.ValidationOptions! validationOptions) -> Microsoft.Extensions.Validation.IValidatablePropertyInfo?
+Microsoft.Extensions.Validation.ValidatableTypeInfo.TryFindProperty(string! propertyName, Microsoft.Extensions.Validation.ValidationOptions! validationOptions, out Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo) -> bool
 Microsoft.Extensions.Validation.ValidatableTypeInfo.ValidatableTypeInfo(System.Type! type, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Validation.ValidatablePropertyInfo!>! members, Microsoft.Extensions.Validation.DisplayNameInfo? displayNameInfo = null) -> void
 Microsoft.Extensions.Validation.ValidateContext.AddValidationError(Microsoft.Extensions.Validation.ValidationErrorContext validationErrorContext) -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.IReadOnlyDictionary<string!, System.Collections.Generic.IEnumerable<string!>!>?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.get -> Microsoft.Extensions.Validation.IValidationLocalizer?
 Microsoft.Extensions.Validation.ValidationOptions.Localizer.set -> void
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableParameterInfo? validatableInfo) -> bool
-Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatablePropertyInfo(System.Type! type, string! propertyName, out Microsoft.Extensions.Validation.IValidatablePropertyInfo? validatablePropertyInfo) -> bool
 Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableTypeInfo? validatableTypeInfo) -> bool
+virtual Microsoft.Extensions.Validation.ValidatableParameterInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void
+virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.Validate(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context) -> void
 virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object! containingObject, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+virtual Microsoft.Extensions.Validation.ValidatableTypeInfo.Validate(object? value, Microsoft.Extensions.Validation.ValidateContext! context) -> void

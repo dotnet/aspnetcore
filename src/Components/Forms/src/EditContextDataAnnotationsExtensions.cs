@@ -83,7 +83,8 @@ public static partial class EditContextDataAnnotationsExtensions
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             if (_validationOptions is not null &&
-                _validationOptions.TryGetValidatablePropertyInfo(modelType, fieldIdentifier.FieldName, out var validatablePropertyInfo))
+                _validationOptions.TryGetValidatableTypeInfo(modelType, out var typeInfo) &&
+                typeInfo.TryFindProperty(fieldIdentifier.FieldName, _validationOptions, out var validatablePropertyInfo))
             {
                 var cts = new CancellationTokenSource();
                 var task = ValidateFieldAsync(fieldIdentifier, validatablePropertyInfo, cts.Token);

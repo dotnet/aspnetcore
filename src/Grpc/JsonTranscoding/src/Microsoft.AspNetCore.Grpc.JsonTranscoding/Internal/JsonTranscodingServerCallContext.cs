@@ -51,7 +51,7 @@ internal sealed class JsonTranscodingServerCallContext : ServerCallContext, ISer
         IsJsonRequestContent = JsonRequestHelpers.HasJsonContentType(HttpContext.Request, out var charset);
         RequestEncoding = JsonRequestHelpers.GetEncodingFromCharset(charset) ?? Encoding.UTF8;
 
-        // HttpContext.Items is publically exposed as ServerCallContext.UserState.
+        // HttpContext.Items is publicly exposed as ServerCallContext.UserState.
         // Because this is a custom ServerCallContext, HttpContext must be added to UserState so GetHttpContext() continues to work.
         // https://github.com/grpc/grpc-dotnet/blob/7ef184f3c4cd62fbc3cde55e4bb3e16b58258ca1/src/Grpc.AspNetCore.Server/ServerCallContextExtensions.cs#L53-L61
         HttpContext.Items["__HttpContext"] = HttpContext;
