@@ -19,7 +19,7 @@
     {
         @if (useItemsProvider)
         {
-            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@initialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" ItemsProvider="@GetItemsAsync" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" ItemComparer="@_itemComparer" InitialItemIndex="@initialItemIndex" Context="item">
                 <ItemContent>
                     <div class="item"
                          data-index="@item.Index"
@@ -38,7 +38,7 @@
         }
         else
         {
-            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
+            <Virtualize @ref="virtualizeRef" Items="@items" ItemSize="50" OverscanCount="@overscanCount" AnchorMode="@anchorMode" InitialItemIndex="@initialItemIndex" Context="item">
                 <div class="item"
                      data-index="@item.Index"
                      data-anchor-mode="@((int)anchorMode)"
@@ -84,6 +84,7 @@
     <button id="delete-below" @onclick="DeleteBelow">Delete 10 Below</button>
     <button id="expand-item" @onclick="ExpandVisibleItem">Expand Item 3 to 400px</button>
     <button id="set-small-count" @onclick="SetSmallCount">Set 5 Items</button>
+    <button id="set-console-scenario" @onclick="SetConsoleScenario">Console scenario (40 items, overscan 100)</button>
     <button id="toggle-provider" @onclick="ToggleProvider">
         Source: @(useItemsProvider ? "ItemsProvider" : "Items")
     </button>
@@ -110,6 +111,7 @@
     private VirtualizeAnchorMode anchorMode = VirtualizeAnchorMode.Start;
     private bool useVariableHeight = false;
     private bool useItemsProvider = false;
+    private int overscanCount = 15;
     private bool useProviderDelay = false;
     private bool useProviderGate = false;
     private TaskCompletionSource providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -266,6 +268,20 @@
         nextPrependIndex = -1;
         nextAppendIndex = 5;
         statusMessage = "Set to 5 items";
+        if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
+    }
+
+    // Reproduces the Aspire dashboard "Console logs": a large OverscanCount and a dataset that is
+    // taller than the viewport but still has fewer total items than the Virtualize visible capacity
+    private async Task SetConsoleScenario()
+    {
+        overscanCount = 100;
+        items = Enumerable.Range(0, 40)
+            .Select(i => new DynamicItem { Index = i, Height = GetHeight(i) })
+            .ToList();
+        nextPrependIndex = -1;
+        nextAppendIndex = 40;
+        statusMessage = "Console scenario: 40 items, overscan 100";
         if (useItemsProvider && virtualizeRef != null) { await virtualizeRef.RefreshDataAsync(); }
     }
 
