@@ -21,7 +21,6 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
     private const string IJSInProcessRuntimeTypeName = "Microsoft.JSInterop.IJSInProcessRuntime";
     private const string IJSObjectReferenceTypeName = "Microsoft.JSInterop.IJSObjectReference";
     private const string IJSInProcessObjectReferenceTypeName = "Microsoft.JSInterop.IJSInProcessObjectReference";
-    private const string ExceptionTypeName = "System.Exception";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.UnguardedJSInteropCall);
@@ -41,7 +40,6 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
             var jsObjectReferenceExtensionsType = context.Compilation.GetTypeByMetadataName(JSObjectReferenceExtensionsTypeName);
             var jsInProcessRuntimeExtensionsType = context.Compilation.GetTypeByMetadataName(JSInProcessRuntimeExtensionsTypeName);
             var jsInProcessObjectReferenceExtensionsType = context.Compilation.GetTypeByMetadataName(JSInProcessObjectReferenceExtensionsTypeName);
-            var systemExceptionType = context.Compilation.GetTypeByMetadataName(ExceptionTypeName);
 
             if (ijsRuntimeType is null &&
                 ijsInProcessRuntimeType is null &&
@@ -50,8 +48,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 jsRuntimeExtensionsType is null &&
                 jsObjectReferenceExtensionsType is null &&
                 jsInProcessRuntimeExtensionsType is null &&
-                jsInProcessObjectReferenceExtensionsType is null &&
-                systemExceptionType is null)
+                jsInProcessObjectReferenceExtensionsType is null)
             {
                 return;
             }
@@ -61,7 +58,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 var invocation = (IInvocationOperation)context.Operation;
                 var targetMethod = invocation.TargetMethod;
 
-                if (IsInsideTryBlockWithCatchAll(invocation, systemExceptionType))
+                if (IsInsideTryBlockWithCatch(invocation))
                 {
                     return;
                 }
@@ -115,7 +112,7 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
         return IsJSInteropType(receiverType, ijsRuntimeType, ijsInProcessRuntimeType, ijsObjectReferenceType, ijsInProcessObjectReferenceType);
     }
 
-    private static bool IsInsideTryBlockWithCatchAll(IOperation invocationOperation, INamedTypeSymbol systemExceptionType)
+    private static bool IsInsideTryBlockWithCatch(IOperation invocationOperation)
     {
         var previous = invocationOperation;
         var current = invocationOperation.Parent;
@@ -129,35 +126,12 @@ public sealed class JSInteropAnalyzer : DiagnosticAnalyzer
                 case IAnonymousFunctionOperation:
                 case ILocalFunctionOperation:
                     return false;
-                case ITryOperation tryOperation when ReferenceEquals(previous, tryOperation.Body) && HasCatchAllClause(tryOperation, systemExceptionType):
+                case ITryOperation tryOperation when tryOperation.Catches.Length > 0 && ReferenceEquals(previous, tryOperation.Body):
                     return true;
             }
 
             previous = current;
             current = current.Parent;
-        }
-
-        return false;
-    }
-
-    private static bool HasCatchAllClause(ITryOperation tryOperation, INamedTypeSymbol systemExceptionType)
-    {
-        foreach (var catchClause in tryOperation.Catches)
-        {
-            if (catchClause.Filter is not null)
-            {
-                continue;
-            }
-
-            if (catchClause.ExceptionType is null)
-            {
-                return true;
-            }
-
-            if (SymbolEqualityComparer.Default.Equals(catchClause.ExceptionType, systemExceptionType))
-            {
-                return true;
-            }
         }
 
         return false;
