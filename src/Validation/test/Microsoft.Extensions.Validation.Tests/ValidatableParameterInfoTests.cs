@@ -10,10 +10,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
-public class ValidatableParameterInfoTests
+public class ValidatableParameterInfoTests : ValidationTestBase
 {
-    [Fact]
-    public async Task Validate_RequiredParameter_AddsErrorWhenNull()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_RequiredParameter_AddsErrorWhenNull(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -25,7 +27,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.ValidateAsync(null, context, default);
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -35,8 +37,10 @@ public class ValidatableParameterInfoTests
         Assert.Equal("The Test Parameter field is required.", error.Value.Single());
     }
 
-    [Fact]
-    public async Task Validate_RequiredParameter_ShortCircuitsOtherValidations()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_RequiredParameter_ShortCircuitsOtherValidations(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -50,7 +54,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.ValidateAsync(null, context, default);
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -60,8 +64,10 @@ public class ValidatableParameterInfoTests
         Assert.Equal("The Test Parameter field is required.", error.Value.Single());
     }
 
-    [Fact]
-    public async Task Validate_SkipsValidation_WhenNullAndNotRequired()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_SkipsValidation_WhenNullAndNotRequired(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -73,15 +79,17 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.ValidateAsync(null, context, default);
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
         Assert.True(errors is null || errors.Count == 0); // No errors added
     }
 
-    [Fact]
-    public async Task Validate_WithRangeAttribute_ValidatesCorrectly()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_WithRangeAttribute_ValidatesCorrectly(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -93,7 +101,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.ValidateAsync(5, context, default);
+        await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -103,8 +111,10 @@ public class ValidatableParameterInfoTests
         Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
     }
 
-    [Fact]
-    public async Task Validate_WithDisplayNameAttribute_UsesDisplayNameInErrorMessage()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_WithDisplayNameAttribute_UsesDisplayNameInErrorMessage(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -116,7 +126,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.ValidateAsync(null, context, default);
+        await ValidateAsync(paramInfo, null, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -127,8 +137,10 @@ public class ValidatableParameterInfoTests
         Assert.Equal("The Custom Display Name field is required.", error.Value.First());
     }
 
-    [Fact]
-    public async Task Validate_WhenValidatableTypeHasErrors_AddsNestedErrors()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_WhenValidatableTypeHasErrors_AddsNestedErrors(bool useAsync)
     {
         // Arrange
         var personTypeInfo = new TestValidatableTypeInfo(
@@ -157,7 +169,7 @@ public class ValidatableParameterInfoTests
         var person = new Person(); // Name is null, so should fail validation
 
         // Act
-        await paramInfo.ValidateAsync(person, context, default);
+        await ValidateAsync(paramInfo, person, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -168,8 +180,10 @@ public class ValidatableParameterInfoTests
         Assert.Equal("The Name field is required.", errorValue);
     }
 
-    [Fact]
-    public async Task Validate_WithEnumerableOfValidatableType_ValidatesEachItem()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_WithEnumerableOfValidatableType_ValidatesEachItem(bool useAsync)
     {
         // Arrange
         var personTypeInfo = new TestValidatableTypeInfo(
@@ -202,7 +216,7 @@ public class ValidatableParameterInfoTests
         };
 
         // Act
-        await paramInfo.ValidateAsync(people, context, default);
+        await ValidateAsync(paramInfo, people, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -213,8 +227,10 @@ public class ValidatableParameterInfoTests
         Assert.Equal("The Name field is required.", errorValue);
     }
 
-    [Fact]
-    public async Task Validate_MultipleErrorsOnSameParameter_CollectsAllErrors()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_MultipleErrorsOnSameParameter_CollectsAllErrors(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -230,7 +246,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        await paramInfo.ValidateAsync(5, context, default);
+        await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -242,8 +258,10 @@ public class ValidatableParameterInfoTests
             e => Assert.Equal("Custom error", e));
     }
 
-    [Fact]
-    public async Task Validate_WithContextPrefix_AddsErrorsWithCorrectPrefix()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_WithContextPrefix_AddsErrorsWithCorrectPrefix(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -256,7 +274,7 @@ public class ValidatableParameterInfoTests
         context.CurrentValidationPath = "parent";
 
         // Act
-        await paramInfo.ValidateAsync(5, context, default);
+        await ValidateAsync(paramInfo, 5, context, useAsync, default);
 
         // Assert
         var errors = context.ValidationErrors;
@@ -266,8 +284,10 @@ public class ValidatableParameterInfoTests
         Assert.Equal("The field Test Parameter must be between 10 and 100.", error.Value.First());
     }
 
-    [Fact]
-    public async Task Validate_ExceptionDuringValidation_Rethrown()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Validate_ExceptionDuringValidation_Rethrown(bool useAsync)
     {
         // Arrange
         var paramInfo = CreateTestParameterInfo(
@@ -279,7 +299,7 @@ public class ValidatableParameterInfoTests
         var context = CreateValidatableContext();
 
         // Act
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => paramInfo.ValidateAsync("test", context, default));
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => ValidateAsync(paramInfo, "test", context, useAsync, default));
 
         // Assert
         Assert.Equal("Test exception", ex.Message);

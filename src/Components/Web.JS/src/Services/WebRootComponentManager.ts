@@ -13,6 +13,7 @@ import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
+import { JSEventRegistry } from './JSEventRegistry';
 
 type RootComponentOperationBatch = {
   batchId: number;
@@ -66,11 +67,11 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   private _webAssemblyOptions: WebAssemblyServerOptions | undefined;
 
   // Implements RootComponentManager.
-  // An empty array becuase all root components managed
+  // An empty array because all root components managed
   // by WebRootComponentManager are added and removed dynamically.
   public readonly initialComponents: never[] = [];
 
-  public constructor(private readonly _circuitInactivityTimeoutMs: number) {
+  public constructor(private readonly _circuitInactivityTimeoutMs: number, private readonly _jsEventRegistry: JSEventRegistry) {
     // After a renderer attaches, we need to activate any components that were
     // previously skipped for interactivity.
     registerRendererAttachedListener(() => {
@@ -108,7 +109,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     // When encountering a component with a WebAssembly or Auto render mode,
     // start loading the WebAssembly runtime, even though we're not
-    // activating the component yet. This is becuase WebAssembly resources
+    // activating the component yet. This is because WebAssembly resources
     // may take a long time to load, so starting to load them now potentially reduces
     // the time to interactvity.
     if (descriptor.type === 'webassembly') {
@@ -176,7 +177,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private startCircutIfNotStarted() {
     if (!hasStartedServer()) {
-      return startServer(this);
+      return startServer(this, this._jsEventRegistry);
     }
 
     if (!isCircuitAvailable()) {
@@ -488,7 +489,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     for (const operation of batch.operations) {
       switch (operation.type) {
         case 'remove': {
-          // We can stop tracking this component now that .NET has acknowedged its removal.
+          // We can stop tracking this component now that .NET has acknowledged its removal.
           const component = this._rootComponentsBySsrComponentId.get(operation.ssrComponentId);
           if (component) {
             this.unregisterComponent(component);
